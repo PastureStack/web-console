@@ -4,6 +4,20 @@ import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
 import { loadScript } from 'ui/utils/load-script';
 
 const RTL_LANGUAGES = ['fa-ir'];
+const MOMENT_LOCALES = {
+  'de-de': 'de',
+  'fa-ir': 'fa',
+  'fil-ph': 'tl-ph',
+  'fr-fr': 'fr',
+  'hu-hu': 'hu',
+  'ja-jp': 'ja',
+  'ko-kr': 'ko',
+  'pt-br': 'pt-br',
+  'ru-ru': 'ru',
+  'uk-ua': 'uk',
+  'zh-hans': 'zh-cn',
+  'zh-tw': 'zh-tw',
+};
 
 export default Ember.Service.extend({
   prefs         : Ember.inject.service(),
@@ -74,11 +88,27 @@ export default Ember.Service.extend({
     let session = this.get('session');
     lang = lang || session.get(C.SESSION.LANGUAGE);
 
+    this.setMomentLocale(lang);
+    this.setDocumentLanguage(lang);
     session.set(C.SESSION.LANGUAGE, lang);
     if ( savePref && session.get(C.SESSION.ACCOUNT_ID) ) {
       return this.set(`prefs.${C.PREFS.LANGUAGE}`, lang);
     } else {
       return Ember.RSVP.resolve();
+    }
+  },
+
+  setMomentLocale(lang) {
+    const normalized = this.normalizeLang(lang || C.LANGUAGE.DEFAULT);
+    moment.locale(MOMENT_LOCALES[normalized] || 'en');
+  },
+
+  setDocumentLanguage(lang) {
+    const normalized = this.normalizeLang(lang || C.LANGUAGE.DEFAULT);
+
+    if (typeof document !== 'undefined' && document.documentElement) {
+      document.documentElement.setAttribute('lang', normalized);
+      document.documentElement.setAttribute('dir', this.isRtl(normalized) ? 'rtl' : 'ltr');
     }
   },
 

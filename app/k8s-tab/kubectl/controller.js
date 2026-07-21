@@ -44,6 +44,7 @@ export default Ember.Controller.extend({
   growl: Ember.inject.service(),
   k8s: Ember.inject.service(),
   projects: Ember.inject.service(),
+  consoleWorkspace: Ember.inject.service('console-workspace'),
 
   step: 1,
   kubeconfig: '',
@@ -51,6 +52,13 @@ export default Ember.Controller.extend({
   downloadUrl: 'http://kubernetes.io/docs/user-guide/prereqs/',
 
   actions: {
+    openTerminal(forceNew) {
+      this.get('consoleWorkspace').openTerminal(this.get('model.instance'), {
+        command: this.get('model.command'),
+        forceNew: forceNew === true,
+      });
+    },
+
     generate() {
       let supportsAuth = this.get('k8s.supportsAuth');
       this.set('step', 2);

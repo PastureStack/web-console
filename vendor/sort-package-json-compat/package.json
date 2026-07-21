@@ -1,0 +1,11 @@
+{
+  "name": "sort-package-json",
+  "version": "3.6.2-rc16.0",
+  "private": true,
+  "description": "RC16 CommonJS compatibility wrapper for sort-package-json 3.x used by Ember CLI 2.18.",
+  "license": "MIT",
+  "main": "index.js",
+  "dependencies": {
+    "sort-package-json-upstream": "npm:sort-package-json@3.6.1"
+  }
+}

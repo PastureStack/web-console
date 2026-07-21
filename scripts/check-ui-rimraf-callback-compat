@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+failures = []
+
+expected_dep = "file:vendor/rimraf-callback-compat/rimraf-6.1.3.tgz"
+rimraf_dep = package.get("devDependencies", {}).get("rimraf")
+if rimraf_dep != expected_dep:
+    failures.append(f"root rimraf dependency is {rimraf_dep!r}")
+
+override = package.get("overrides", {}).get("rimraf")
+if override != "$rimraf":
+    failures.append(f"global rimraf override is {override!r}")
+
+root_rimraf = packages.get("node_modules/rimraf", {})
+if root_rimraf.get("version") != "6.1.3":
+    failures.append(f"root rimraf version is {root_rimraf.get('version')!r}")
+if root_rimraf.get("resolved") != expected_dep:
+    failures.append(f"root rimraf resolved is {root_rimraf.get('resolved')!r}")
+
+rimraf_real = packages.get("node_modules/rimraf-real", {})
+if rimraf_real.get("version") != "6.1.3":
+    failures.append(f"rimraf-real version is {rimraf_real.get('version')!r}")
+
+legacy_paths = [
+    "node_modules/rimraf/node_modules/glob",
+    "node_modules/rimraf/node_modules/inflight",
+]
+for legacy_path in legacy_paths:
+    if legacy_path in packages:
+        failures.append(f"legacy nested package remains {legacy_path} version={packages[legacy_path].get('version')!r}")
+
+for package_path, meta in sorted(packages.items()):
+    if not package_path.startswith("node_modules/"):
+        continue
+    name = package_path.split("node_modules/")[-1]
+    version = str(meta.get("version", ""))
+    if name == "rimraf" and version.startswith("2."):
+        failures.append(f"old rimraf remains {package_path} version={version}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_RIMRAF_CALLBACK_COMPAT_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_RIMRAF_CALLBACK_COMPAT_OK root=6.1.3 wrapper=file:vendor/rimraf-callback-compat/rimraf-6.1.3.tgz rimraf_real=6.1.3")
+print("Legacy rimraf 2.x and rimraf nested glob/inflight paths are absent from the Node 24 lock baseline.")
+print("failure_count=0")
+PY

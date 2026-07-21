@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+dev = package.get("devDependencies", {})
+overrides = package.get("overrides", {})
+expected_spec = "file:vendor/osenv-compat/osenv-0.2.0-rc16.0.tgz"
+if dev.get("osenv") != expected_spec:
+    fail("OSENV_COMPAT_DEV_DEP_UNEXPECTED", actual=dev.get("osenv"))
+if overrides.get("osenv") != "$osenv":
+    fail("OSENV_COMPAT_OVERRIDE_UNEXPECTED", actual=overrides.get("osenv"))
+
+wrapper_manifest = Path("vendor/osenv-compat/package.json")
+wrapper_index = Path("vendor/osenv-compat/index.js")
+wrapper_license = Path("vendor/osenv-compat/LICENSE")
+wrapper_tarball = Path("vendor/osenv-compat/osenv-0.2.0-rc16.0.tgz")
+for required in (wrapper_manifest, wrapper_index, wrapper_license, wrapper_tarball):
+    if not required.is_file():
+        fail("OSENV_COMPAT_FILE_MISSING", file=required)
+
+if wrapper_manifest.is_file():
+    wrapper = json.loads(wrapper_manifest.read_text(encoding="utf-8"))
+    if wrapper.get("name") != "osenv":
+        fail("OSENV_COMPAT_NAME_UNEXPECTED", actual=wrapper.get("name"))
+    if wrapper.get("version") != "0.2.0-rc16.0":
+        fail("OSENV_COMPAT_VERSION_UNEXPECTED", actual=wrapper.get("version"))
+    if wrapper.get("main") != "index.js":
+        fail("OSENV_COMPAT_MAIN_UNEXPECTED", actual=wrapper.get("main"))
+
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+root = packages.get("", {})
+if package.get("devDependencies", {}) != root.get("devDependencies", {}):
+    fail("OSENV_COMPAT_LOCK_ROOT_DEV_DEP_DRIFT")
+compat = packages.get("node_modules/osenv", {})
+if compat.get("version") != "0.2.0-rc16.0":
+    fail("OSENV_COMPAT_LOCK_VERSION_UNEXPECTED", actual=compat.get("version"))
+if compat.get("resolved") != expected_spec:
+    fail("OSENV_COMPAT_LOCK_RESOLUTION_UNEXPECTED", actual=compat.get("resolved"))
+
+old_osenv = [
+    (path, meta.get("version"))
+    for path, meta in sorted(packages.items())
+    if path.startswith("node_modules/")
+    and path.endswith("node_modules/osenv")
+    and meta.get("version") != "0.2.0-rc16.0"
+]
+for path, version in old_osenv:
+    fail("OLD_OSENV_REINTRODUCED", package=path, version=version)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+print(f"UI_OSENV_COMPAT_OK wrapper=vendor/osenv-compat version=0.2.0-rc16.0 lockfile={lock_path}")
+print("Old osenv 0.1.x is removed from the Node 24 lock baseline; bower-config and npm-package-arg behavior is covered by the Node 24 smoke.")
+print("failure_count=0")
+PY
