@@ -1,0 +1,3569 @@
+languageName: Filipino (Pilipinas)
+languageContribute: Tumulong na isalin ang PastureStack
+uiText:
+  process: Proseso
+  childExecution: Kaugnay na execution
+  webhookExperimental: >-
+    Eksperimental: Magdaragdag ng mga Webhook feature sa mga susunod na release, at maaaring magbago ang kasalukuyang
+    kakayahan.
+  certificateBits: bit
+  redirecting: 'Sandali lang habang ibinabalik ka namin sa {appName}.'
+  secretsExperimental: 'Eksperimental: Idaragdag ang suporta sa Compose at CLI sa susunod na release.'
+  relationIn: 'Nasa:'
+  relationOn: 'Host:'
+  dockerComposeFile: docker-compose.yml
+  pastureStackCompose: PastureStack Compose
+branding:
+  recoveryNode: 'Node sa pag-recover ng {appName}'
+generic:
+  actions: Mga Aksyon
+  activate: I-activate
+  any: Lahat
+  as: Bilang
+  cancel: Kanselahin
+  closeModal: Isara
+  created: Nilikha
+  default: Default
+  description: Paglalarawan
+  disable: Huwag paganahin
+  disabled: Hindi pinagana
+  domainName: Domain Name
+  edit: I-edit
+  emptyString: ''
+  enable: Paganahin
+  enabled: Pinagana
+  environment: Kapaligiran
+  expires: Mag-e-expire
+  healthy: Malusog
+  id: ID
+  image: Imahe
+  internal: Panloob
+  ipAddress: IP Address
+  limit: Limitahan
+  loading: Naglo-load...
+  missing: Walang salin
+  moreActions: Higit pang mga Aksyon
+  noActionsAvailable: Walang available na aksyon
+  na: Hindi naaangkop
+  name: Pangalan
+  none: Wala
+  ports: Mga daungan
+  remove: Alisin
+  role: Tungkulin
+  save: I-save
+  saved: Nai-save
+  saving: Nagtitipid
+  search: Maghanap
+  selectActionBelow: Pumili ng aksyon sa ibaba
+  state: Estado
+  test: Pagsubok
+  testing: Pagsubok
+  to: hanggang
+  total: Kabuuan
+  type: Uri
+  unknown: Hindi alam
+  uuid: UUID
+  noo: Hindi
+  yess: Oo
+accountsPage:
+  index:
+    header: Mga account
+    localLink: Magdagdag ng Account
+    table:
+      state: Estado
+      id: ID
+      kind: Mabait
+      username: Username
+      name: Pangalan
+      identity: Pagkakakilanlan
+      noData: Wala pang mga account
+      noName: wala
+  new:
+    header: Magdagdag ng Account
+    form:
+      username:
+        labelText: Login Username
+        placeholder: hal. jsmith
+      password:
+        labelText: Password
+      name:
+        labelText: Pangalan
+        placeholder: hal. John Smith
+      type:
+        labelText: Uri ng Account
+        dropdownList: null
+      description:
+        labelText: Paglalarawan
+        placeholder: hal. Ang account na ito ay para kay John Smith
+apiPage:
+  header: Environment API Keys
+  actionButton: Magdagdag ng Environment API Key
+  content: >
+    Ang mga susi ng kapaligiran API ay nakatali sa partikular na Kapaligiran na ito (<code>{displayName}</code>) at
+    maaari lamang manipulahin ang mga mapagkukunan sa loob doon.  Ang ibang mga account na may access sa Environment na
+    ito ay maaari ding pamahalaan ang mga key na ito.
+  currentEndpoint: 'Endpoint (v2-beta):'
+  legacyEndpoint: 'Endpoint (v1):'
+  table:
+    state: Estado
+    name: Pangalan
+    description: Paglalarawan
+    publicValue: Access Key
+    created: Nilikha
+    noData: Wala pang mga susi para sa Environment na ito.
+    noName: wala
+    noDescription: wala
+    noPublicValue: Walang pampublikong halaga
+  account:
+    header: Mga Susi ng Account API.
+    buttonText: Magdagdag ng Account API Key
+    content:
+      paragraph1: Account API Keys ay nakatali sa iyong partikular na account
+      paragraph2: 'at maaaring gumawa, magtanggal, at magmanipula ng lahat ng Environment kung saan mayroon kang access.'
+    table:
+      noData: Wala ka pang anumang Account API key.
+auditLogsPage:
+  header: Talaan ng Pag-audit
+  form:
+    eventType:
+      placeholder: Uri ng Kaganapan
+    resourceType:
+      placeholder: 'Uri ng mapagkukunan:'
+      dropdownPlaceholder: 'Pumili ng Uri ng Mapagkukunan:'
+      dropdownList: null
+    resourceId:
+      placeholder: Resource ID
+    requestIp:
+      placeholder: Humiling ng IP
+    authType:
+      placeholder: 'Uri ng Auth:'
+      dropdownPlaceholder: 'Pumili ng Uri ng Auth:'
+      dropdownList: null
+    clearButtonText: I-clear ang Mga Filter
+    searchButtonText: Maghanap
+  table:
+    time: Oras
+    eventType: Uri ng Kaganapan
+    description: Paglalarawan
+    environment: Kapaligiran
+    resourceTypeId: Uri ng Resource／ID
+    identity: Pagkakakilanlan
+    authIp: Paraan ng Authentication／IP Address
+  authTypes:
+    none: Wala
+    apiKey: API Key
+    headerAuth: HTTP Header Authentication
+    hostRegistration: Pagrehistro ng Host
+    tokenAccount: Token ng Account
+    uiSession: Session ng Web Console
+  first: Unang Pahina
+  next: Susunod na Pahina
+authPage:
+  shibboleth:
+    header:
+      title: Shibboleth Authentication
+    enabled:
+      header: '{providerName} ay pinagana'
+      required: >
+        {appName} ay naka-configure upang payagan ang pag-access sa {orgs, plural, =0 {walang mga organisasyon} =1 {#
+        organisasyon} other {# organisasyon}} at {users, plural, =0 {walang gumagamit} =1 {# user} other {# user}}.
+      restricted: >
+        {appName} ay naka-configure upang payagan ang pag-access sa mga miyembro ng kapaligiran, {orgs, plural, =0
+        {walang mga organisasyon} =1 {# organisasyon} other {# organisasyon}} at {users, plural, =0 {walang gumagamit}
+        =1 {# user} other {# user}}.
+      unrestricted: '{appName} ay naka-configure upang payagan ang access sa sinumang {providerName} user.'
+      authenticated:
+        header:
+          text: Pagpapatunay
+          helpText: >-
+            Para baguhin ang na-configure na Shibboleth application, huwag paganahin ang access control sa ibaba at
+            pagkatapos ay i-set up itong muli.
+      disableAccess:
+        header: Danger Zone™
+        warning: >-
+          <b class="text-danger">Pag-iingat:</b> Ang hindi pagpapagana ng kontrol sa pag-access ay magbibigay ng
+          kumpletong kontrol sa {appName} sa sinumang makakarating sa pahinang ito o sa API.
+        confirmDisable: Sigurado ka ba?  Mag-click muli upang talagang huwag paganahin ang kontrol sa pag-access
+        disable: I-disable ang access control
+      groupsField: 'Mga pangkat:'
+      displayName: 'Display Name:'
+      userName: 'Username:'
+      userId: 'Gumagamit ID:'
+    disabled:
+      header: 1. I-configure ang Shibboleth Account
+      label: '{providerName} ay hindi naka-configure'
+      warning: >-
+        Maaaring i-configure ang {appName} upang paghigpitan ang pag-access sa isang hanay ng mga {providerName} na user
+        at grupo.  Kasalukuyang hindi ito naka-set up, kaya ang sinumang makakarating sa page na ito (o ang API) ay may
+        ganap na kontrol sa system.
+      name:
+        labelText: Field ng Display Name
+      username:
+        labelText: Field ng User Name
+      uid:
+        labelText: UID Patlang
+      groups:
+        labelText: Field ng Mga Grupo
+      testAuth:
+        header: 2. Subukan at paganahin ang pagpapatunay
+        subtext: 'Suriin kung ang iyong application ay na-configure nang tama sa pamamagitan ng pagsubok sa pagpapatunay dito:'
+        buttonText:
+          pre: Patotohanan gamit ang IDP
+          post: Naghihintay ng sagot mula sa IDP
+    providerName:
+      shibboleth: Shibboleth
+  root:
+    header: Access Control
+    providers:
+      activeDirectory: Active Directory
+      azureAd: Azure AD
+      github: GitHub
+      local: Mga lokal na account
+      openldap: OpenLDAP
+      shibboleth: Shibboleth
+  github:
+    standard: GitHub
+    enterprise: GitHub Enterprise
+    header:
+      enabled:
+        label: '{github} ay pinagana'
+        required: >
+          {appName} ay naka-configure upang payagan ang pag-access sa {orgs, plural, =0 {walang mga organisasyon} =1 {#
+          organisasyon} other {# organisasyon}} at {users, plural, =0 {walang gumagamit} =1 {# user} other {# user}}.
+        restricted: >
+          {appName} ay naka-configure upang payagan ang pag-access sa mga miyembro ng kapaligiran, {orgs, plural, =0
+          {walang mga organisasyon} =1 {# organisasyon} other {# organisasyon}} at {users, plural, =0 {walang gumagamit}
+          =1 {# user} other {# user}}.
+        unrestricted: '{appName} ay naka-configure upang payagan ang access sa sinumang {github} user.'
+      disabled:
+        label: GitHub ay hindi naka-configure
+        warning: >-
+          Maaaring i-configure ang {appName} upang paghigpitan ang pag-access sa isang hanay ng mga GitHub user at
+          miyembro ng organisasyon.  Kasalukuyang hindi ito naka-set up, kaya ang sinumang makakarating sa page na ito
+          (o ang API) ay may ganap na kontrol sa system.
+    authenticated:
+      header:
+        text: Pagpapatunay
+        enterpriseHostName: 'Enterprise Host:'
+        clientId:
+          text: 'Kliyente ID:'
+          helpText: >-
+            Para baguhin ang na-configure na GitHub application, huwag paganahin ang access control sa ibaba at
+            pagkatapos ay i-set up itong muli.
+      disableAccess:
+        header: Danger Zone™
+        warning: >-
+          <b class="text-danger">Pag-iingat:</b> Ang hindi pagpapagana ng kontrol sa pag-access ay magbibigay ng
+          kumpletong kontrol sa {appName} sa sinumang makakarating sa pahinang ito o sa API.
+        confirmDisable: Sigurado ka ba?  Mag-click muli upang talagang huwag paganahin ang kontrol sa pag-access
+        disable: I-disable ang access control
+    notAuthenticated:
+      header: 1. I-setup ang isang GitHub Application
+      ul:
+        li1:
+          text: >-
+            Para sa karaniwang GitHub, <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer">i-click dito</a>
+            upang pumunta sa mga setting ng application sa isang bagong window.
+          ul:
+            li1: >-
+              Para sa Github Enterprise, mag-login sa iyong account.  Mag-click sa Mga Setting, pagkatapos ay Mga
+              Application.
+        li2:
+          text: 'I-click ang "Magrehistro ng bagong aplikasyon" at punan ang form:'
+          ul:
+            li1: '<b>Pangalan ng aplikasyon:</b> <span class="text-muted">Kahit anong gusto mo, hal. Aking {appName}</span>'
+            li2: '<b>URL ng homepage:</b> '
+            li3: '<b>Paglalarawan ng aplikasyon:</b> <span class="text-muted">Anumang gusto mo, opsyonal</span>'
+            li4: Authorization callback URL
+        li3:
+          text: 'I-click ang "Magrehistro ng Application" '
+      form:
+        header: '2. I-configure ang {appName} upang magamit ang iyong aplikasyon para sa pagpapatunay'
+        subtext: Kopyahin at i-paste ang Client ID at Secret mula sa kanang sulok sa itaas ng iyong bagong likhang application.
+        clientId:
+          labelText: Kliyente ID
+        clientSecret:
+          labelText: Lihim ng kliyente
+        ghEnterprise:
+          labelText: Gumamit ng pribadong GitHub Enterprise installation
+        isGHEnterprise:
+          labelText: Gumamit ng secure na koneksyon
+        enterpriseHost:
+          labelText: Host ng Enterprise
+          placeholder: hal. github.example.com
+    testAuth:
+      header: 3. Subukan at paganahin ang pagpapatunay
+      subtext: 'Suriin kung ang iyong application ay na-configure nang tama sa pamamagitan ng pagsubok sa pagpapatunay dito:'
+      buttonText:
+        pre: Patotohanan gamit ang GitHub
+        post: Naghihintay ng sagot mula sa GitHub
+  azuread:
+    header:
+      enabled: Azure AD Ang pagpapatunay ay <b>pinagana</b>
+      disabled: Azure AD Ang pagpapatunay ay <b class="text-warning">hindi naka-configure</b>
+    subtext:
+      enabled: '{appName} ay naka-configure upang payagan ang access sa mga account sa Azure AD'
+      disabled: >-
+        Maaaring i-configure ang {appName} upang paghigpitan ang pag-access sa isang set ng mga account na tinukoy sa
+        database ng {appName}.  Kasalukuyang hindi ito naka-set up, kaya ang sinumang makakarating sa page na ito (o ang
+        API) ay may ganap na kontrol sa system.
+    enabled:
+      header: Danger Zone™
+      warning: >-
+        <b class="text-danger">Pag-iingat:</b> Ang hindi pagpapagana ng kontrol sa pag-access ay magbibigay ng
+        kumpletong kontrol sa {appName} sa sinumang makakarating sa pahinang ito o sa API.
+      reallyDisable: Sigurado ka ba?  Mag-click muli upang talagang huwag paganahin ang kontrol sa pag-access
+      promptDisable: I-disable ang access control
+    configure:
+      header: 1. I-configure ang Azure AD Account
+      tenantId:
+        label: Nangungupahan ID
+        placeholder: Isang mahabang UUID string
+        help: Mula sa Azure AD portal
+      clientId:
+        label: Kliyente ID
+        placeholder: Isang mahabang UUID string
+      domain:
+        label: Domain
+        placeholder: hal. youcompany.onmicrosoft.com
+      adminAccountUsername:
+        label: Username ng Admin Account
+        placeholder: hal. pasturestack-admin
+        help: Isang user na nakakabasa ng impormasyon tungkol sa ibang mga user
+      adminAccountPassword:
+        label: Password ng Admin Account
+    test:
+      header: 2. Subukan at paganahin ang pagpapatunay
+      help: >-
+        Suriin na ang lahat ay na-configure nang tama sa pamamagitan ng pagsubok sa pagpapatunay gamit ang iyong
+        account:
+      username:
+        label: Login Username
+        placeholder: hal. jsmith
+      password:
+        label: Login Password
+      pre: Patotohanan gamit ang Azure
+      post: Naghihintay ng sagot mula sa Azure
+  localAuth:
+    header:
+      enabled: Ang Lokal na Pagpapatunay ay <b>pinagana</b>
+      disabled: Ang Lokal na Pagpapatunay ay <b class="text-warning">hindi naka-configure</b>
+    subtext:
+      enabled:
+        text: '{appName} ay isinaayos upang payagan ang pag-access sa mga account sa lokal na database nito.'
+        linkText: Pamahalaan ang Mga Account
+      disabled: >-
+        Maaaring i-configure ang {appName} upang paghigpitan ang pag-access sa isang set ng mga account na tinukoy sa
+        database ng {appName}.  Kasalukuyang hindi ito naka-set up, kaya ang sinumang makakarating sa page na ito (o ang
+        API) ay may ganap na kontrol sa system.
+    accessEnabled:
+      header: Danger Zone™
+      warning: >-
+        <b class="text-danger">Pag-iingat:</b> Ang hindi pagpapagana ng kontrol sa pag-access ay magbibigay ng
+        kumpletong kontrol sa {appName} sa sinumang makakarating sa pahinang ito o sa API.
+      buttonText:
+        disable: Sigurado ka ba?  Mag-click muli upang talagang huwag paganahin ang kontrol sa pag-access
+        prompt: I-disable ang access control
+    accessDisabled:
+      header: 1. Mag-set up ng Admin user
+      helpText: 'Ang user na ito ay magiging admin na may ganap na kontrol sa {appName}.'
+      form:
+        login:
+          labelText: Login Username
+          placeholder: hal. jsmith
+        name:
+          labelText: Buong Pangalan
+          placeholder: hal. John Smith
+        password:
+          labelText: Password
+        confirmPassword:
+          labelText: Kumpirmahin ang Password
+    accessControl:
+      header: 2. Paganahin ang Access Control
+      helpText: I-click upang paganahin ang kontrol sa pag-access at mag-log in.
+      buttonText:
+        pre: Paganahin ang Local Auth
+        post: Pinapagana...
+backupTargetsPage:
+  header: Mga Backup na Target
+  linkTo: Magdagdag ng Backup Target
+  newTarget:
+    hr: NFS Mga Pagpipilian sa Config
+    header: Magdagdag ng Backup Target
+  server:
+    label: NFS Server
+    placeholder: hal. my-nfs-server.example.com
+  share:
+    label: NFS Ibahagi
+    placeholder: hal. /mnt/volume-backups
+  mountOptions:
+    label: NFS Mga Pagpipilian sa Mount
+    placeholder: 'hal. nfsvers=4,proto=udp'
+catalogPage:
+  index:
+    header: 'Catalog:'
+    manage: Pamahalaan
+    search:
+      placeholder: Hanapin...
+    category: 'Kategorya:'
+    certified:
+      rancher:
+        rancher: mga orihinal na tagapangasiwa ng upstream
+        partner: Opisyal
+      pl:
+        rancher: Pangunahin
+        partner: Opisyal
+    noData:
+      singular: Walang mga katugmang template.
+      plural: Walang mga katugmang template sa catalog na ito.
+    action:
+      launch: Tingnan ang mga Detalye
+      notCompatible: Hindi Compatible
+      alreadyDeployed: Na-deploy na
+consolePage:
+  header: 'Shell:'
+  closeButton: Isara
+certificatesPage:
+  table:
+    cn: Domain Name
+    expiresDate: Mag-e-expire
+    noCn: wala
+    otherNames: '{count} pang pangalan'
+  detail:
+    header: 'Sertipiko:'
+    description: Paglalarawan
+    info:
+      labelText: Impormasyon
+      valid: Wastong Simula
+      expires: Mag-e-expire
+      algorithm: Algorithm
+      issuer: Tagapagbigay
+      serialNumber: Serial Number
+      version: Bersyon
+    domainNames:
+      labelText: Mga Pangalan ng Domain
+  index:
+    header: Mga sertipiko
+    linkTo: Magdagdag ng Sertipiko
+    table:
+      header:
+        state: Estado
+        name: Pangalan
+        domain: Domain Name
+        expires: Mag-e-expire
+      body:
+        noData: Wala ka pang anumang mga sertipiko.
+  new:
+    header: Magdagdag ng Sertipiko
+    form:
+      name:
+        placeholder: hal. mydomain.com
+      description:
+        placeholder: hal. EV cert para sa mydomain.com
+containersPage:
+  table:
+    ipAddress: IP Address
+    primaryHost: Pangunahing Host
+    primaryHostUnknown: Hindi alam
+    image: Imahe
+    stats: Stats
+    sparkPrefixCpu: 'CPU: '
+    sparkPrefixMemory: 'Memorya: '
+    sparkPrefixNetwork: 'Network: '
+    sparkPrefixStorage: 'Imbakan: '
+    command: Utos
+    noCommand: wala
+  index:
+    header: Mga container
+    linkTo: Magdagdag ng Container
+    table:
+      header:
+        state: Estado
+        name: Pangalan
+        ip: IP Address
+        host: Host
+        image: Imahe
+        command: Utos
+      body:
+        noData: Wala ka pang mga container
+        noMatch: Walang mga container na tumutugma sa kasalukuyang paghahanap
+  new:
+    form:
+      name:
+        placeholder: hal. myapp
+      description:
+        placeholder: hal. Aking Aplikasyon
+  containerPage:
+    header: 'Container:'
+    subtext:
+      on: sa
+      in: sa
+    infoMultiStats:
+      created: 'Nilikha:'
+      tooltip:
+        host: Kopyahin ang IP Sa Clipboard
+      host: 'Host:'
+      ip: 'Container IP:'
+      docker: 'Docker ID:'
+      image: 'Image:'
+      command: 'utos:'
+      entryPoint: 'Entry Point:'
+      description: 'Paglalarawan:'
+      stack: 'Stack/Serbisyo:'
+      memoryReservation:
+        labelText: 'Pagpapareserba ng Memorya: '
+      milliCpuReservation:
+        labelText: 'mCPU Pagpapareserba: '
+    navTabs:
+      labels: Mga label
+      volumes: Mga volume
+      ports: Mga daungan
+      command: Utos
+      networking: Networking
+      healthCheck: Health Check
+      scheduling: Pag-iiskedyul
+      security: Seguridad
+    portsTab:
+      table:
+        header:
+          ip: IP Address
+          public: Pampubliko sa Host
+          private: Pribado sa Container
+          protocol: Protocol
+        body:
+          noData: Walang port ang container na ito
+    volumesTab:
+      table:
+        header:
+          name: Pangalan
+          mount: Mount Point
+          shared: Ibinahagi kay
+          writable: Naisusulat
+          snapshot: Snapshot Timeline
+        body:
+          error:
+            data: 'Tandaan:'
+            error: Error
+            noData: Walang volume ang container na ito
+          noContainers: Walang ibang container
+containerSubpod:
+  childContainers: Mga container
+  childSidekicks: Mga sidekick
+dockerCLI:
+  header: Swarm CLI
+failWhalePage:
+  header: Error
+  reloadButton: |
+    <a href="#" onclick="window.location.href = window.location.href; return false;">I-reload</a> upang subukan muli o
+  logoutButton: mag log out
+haPage:
+  header: Mataas na Availability
+  setup:
+    prefix: >-
+      Maaaring i-deploy ang maramihang mga container ng server sa iba't ibang mga host upang ang {appName} ay patuloy na
+      tumatakbo kahit na nabigo ang isa sa mga host.
+    link: Tingnan ang dokumentasyon
+    suffix: ' para sa impormasyon sa pag-setup at paggamit.'
+  table:
+    address: Advertise na Address
+    port: Port
+    heartbeat: Huling Nakita
+    clustered: Naka-cluster
+helpBtn:
+  title: Pumunta sa dokumentasyon
+helpPage:
+  header: Tulong
+  banner: Mga anunsyo
+  releaseText: 'Inilabas:'
+  environment:
+    header: Ano ang kapaligiran?
+    content: >
+      <p>Sinusuportahan ng {appName} ang pagpapangkat ng mga mapagkukunan sa maraming kapaligiran. Ang bawat isa ay
+      nakakakuha ng sarili nitong hanay ng mga serbisyo at mapagkukunan ng imprastraktura, at pagmamay-ari ng isa o
+      higit pang GitHub na user, team o organisasyon.</p>
+        <p>Halimbawa, maaari kang lumikha ng hiwalay na "dev", "test", at "production" na kapaligiran upang panatilihing hiwalay ang mga bagay sa isa't isa, at bigyan ang "dev" ng access sa iyong buong organisasyon ngunit paghigpitan ang "production" environment sa isang mas maliit na team.</p>
+    manageLink: Pamahalaan ang Mga Kapaligiran
+  host:
+    header: Ano ang host?
+    content: >
+      Bago idagdag ang unang serbisyo o maglunsad ng container, magdagdag ng kahit isang Linux host na gumagamit ng katugmang bersyon ng Docker. Dapat maabot ng host ang {appName} server sa pamamagitan ng HTTP. Sinusuportahan ng {appName} ang mga virtual at pisikal na Linux host sa pampublikong cloud, pribadong cloud, at bare-metal na kapaligiran.
+    contentLink: Matuto pa
+    addHostLink: Magdagdag ng Host
+  stacks:
+    header: Ano ang mga stack at serbisyo?
+    content:
+      paragraph1: >
+        Ang service ay grupo ng mga container na ginawa mula sa iisang Docker image. Pinalalawak nito ang konsepto ng
+        Docker "link" gamit ang lightweight distributed DNS service ng {appName} para sa service discovery. Maaaring
+        idagdag ang mga service nang paisa-isa o sa pamamagitan ng pag-deploy ng item mula sa Catalog.
+      paragraph2: >-
+        Maaari ring gamitin ng service ang mga built-in feature ng {appName}, gaya ng load balancing, health monitoring,
+        upgrade support, at high availability.
+      link: Matuto pa
+    addServiceLink: Pamahalaan ang Mga Serbisyo
+    addCatalogLink: Idagdag Mula sa Catalog
+    noHosts: Kasalukuyan kang walang host. Mangyaring magdagdag ng host bago magdagdag ng Mga Serbisyo.
+    manageServiceLink: Pamahalaan ang Mga Serbisyo
+  issues:
+    header:
+      text: Mga Problema at Dokumentasyon
+      tagline: May nakita ka bang problema?
+      fileBug: Mag-ulat ng Problema
+    content:
+      paragraph1: >
+        Ang {appName} ay isang open source software platform na nagbibigay ng imprastrakturang sadyang binuo para
+        magpatakbo ng mga container sa production environment. Habang mas ginagamit ang mga Docker container bilang
+        application workload, lumalawak din ang mga pangangailangan sa networking, storage, load balancing, seguridad,
+        service discovery, at resource management.
+      graphic1:
+        text: May nakita ka bang bug?
+        link: Mag-ulat ng problema sa GitHub
+      graphic2:
+        text: Para sa higit pang impormasyon
+        link: Dokumentasyon
+      graphic3:
+        text: Kailangan mo ba ng tulong sa pag-troubleshoot?
+        link: Tingnan ang mga madalas itanong
+  commercial:
+    header: Suporta sa Komersyal
+    content: |
+      PastureStack ay pinananatili ng komunidad at hindi inaangkin na nagbibigay ng komersyal na suporta.
+hostsPage:
+  addContainer: Magdagdag ng Container
+  index:
+    header: Mga host
+    addHost: Magdagdag ng Host
+    tooltip:
+      listView: Listahan
+      groupedView: Nakapangkat na Stack at Sidekicks
+    columns:
+      emptyMessage: Wala pang host o container.
+    showSystem: Ipakita ang System
+  new:
+    customDriver: Custom na host
+    otherDriver: Ibang machine driver
+    header:
+      linkTo: 'Mga host: '
+      text: Magdagdag ng Host
+    manageLink: Pamahalaan ang mga available na driver ng makina
+    form:
+      name:
+        placeholder: hal. host01
+  hostPage:
+    header:
+      linkTo: 'Host:'
+    addContainer:
+      linkTo: Magdagdag ng Container
+    infoMultiStats:
+      ip: 'IP:'
+      cpu: 'CPU:'
+      memory: 'Memorya:'
+      storage: 'Imbakan:'
+      provider:
+        labelText: 'Provider:'
+        noHost: Custom
+      kernel: 'Kernel:'
+      docker: 'Docker:'
+      os: 'OS:'
+      description: 'Paglalarawan:'
+      milliCpu:
+        labelText: mCPU
+      localStorageMb:
+        labelText: Lokal na Limitasyon
+    navTabs:
+      containers: Mga container
+      ports: Mga daungan
+      labels: Mga label
+      storage: Imbakan
+    containersTab:
+      table:
+        header:
+          state: Estado
+          name: Pangalan
+          ip: IP Address
+          image: Image (Utos)
+          stats: Stats
+        body:
+          noData: Wala pang anumang container ang host na ito
+    portsTab:
+      table:
+        header:
+          ip: IP Address
+          port: Port
+          service: Serbisyo
+          container: Container
+        body:
+          noData: Walang anumang port ang host na ito
+    storageTab:
+      table:
+        header:
+          state: Estado
+          hostPath: Landas ng Host
+          mounts: Mga bundok
+        body:
+          noData: Ang host na ito ay walang anumang volume
+iePage:
+  unsupported: Hindi sinusuportahan ang Internet Explorer.
+k8sTab:
+  dashboard:
+    header: Kubernetes Dashboard
+    dashboard:
+      header: Dashboard
+      content: >-
+        Ang Kubernetes Dashboard ay isang general-purpose web UI para sa mga Kubernetes cluster. Magagamit ito upang
+        pamahalaan at i-troubleshoot ang mga application sa cluster, pati na rin ang cluster mismo.
+      button: Kubernetes UI
+  kubectl:
+    header: Kubernetes CLI
+    stepOne:
+      generateConfigText: >
+        Upang gamitin <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">kubectl</a> (v1.4+ lang) sa iyong workstation, i-click ang
+        button para bumuo ng API key at config file:
+      generateButton: Bumuo ng Config
+    stepTwo:
+      progress: Binubuo...
+    stepThree:
+      helpText: |
+        Ilagay ito sa <code>~/.kube/config</code>:
+      downloadText: >
+        Pagkatapos <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">download</a> (kung kinakailangan) at tumakbo
+        <code>kubectl</code>
+    shell:
+      helpText: |
+        O gamitin ang madaling gamiting shell na ito upang direktang maisagawa <code>kubectl</code> mga utos:
+loginPage:
+  greeting: 'Kamusta!<br>Maligayang pagdating sa {appName}'
+  githubMessage: >-
+    Ginagamit ng {appName} ang GitHub para pamahalaan ang mga account at team.  I-click ang button sa ibaba upang
+    mag-log in at bigyan kami ng read-only na access sa iyong pangunahing GitHub na impormasyon ng account.
+  shibbolethMessage: >-
+    Ang {appName} ay gumagamit ng Shibboleth upang pamahalaan ang mga account.  I-click ang button sa ibaba upang
+    mag-log in sa na-configure na Shibboleth IDP.
+  shibbolethError:
+    '401': Hindi awtorisado
+    '403': Bawal
+    '422': Hindi Maprosesong Entidad
+    '500': Panloob na Server Error
+    generic: 'Nagkaroon ng error ({errorCode}) habang sinusubukan kang i-log in. Pakisubukang muli.'
+  error:
+    authFailed: Mali ang username o Password.
+    timedOut: Nag-time out ang iyong session.  Mag-log in muli upang magpatuloy.
+machinePage:
+  header: Mga Driver ng Makina
+  inactive: Hindi aktibo
+  download: I-download ang Package
+  upgradeAvailable: Magagamit ang Pag-upgrade
+  upgrading: Pag-upgrade
+  activating: Pag-activate
+  viewUi: Tingnan ang UI
+  subtext: Dagdag <code>docker-machine</code> maaaring i-load ang mga driver dito at magamit sa screen ng Add Host.
+  add: Magdagdag ng Machine Driver
+  builtin: Kasama sa system
+  other: Iba pa
+  table:
+    header:
+      state: Estado
+      name: Pangalan
+      url: Driver URL
+      uiUrl: UI URL
+      checksum: Checksum
+    noData: Wala kang mga Machine Driver
+mesosPage:
+  header: Pangkalahatang-ideya
+  actionLink: Buksan ang Mesos UI
+  banner:
+    header: Iyong kumpol
+    content: |
+      Kasalukuyan kang mayroon {hosts, plural, =1 {# aktibong host} other {# aktibong host}} sa iyong Mesos cluster
+    link: Tingnan o magdagdag ng mga host
+  launch:
+    header: Ilunsad
+    content: Maaari kang maglunsad ng mga frameworks mula sa aming catalog.
+    button: Maglunsad ng Framework
+  manage:
+    header: Pamahalaan
+    content: Pamahalaan ang Mesos mula sa Mesos UI.
+    button: Mesos UI
+notFoundPage:
+  header: Ang pahina na iyong hinahanap ay wala!
+  linkTo: Umuwi ka na
+projectList:
+  index:
+    header: Mga kapaligiran
+    new: Magdagdag ng Kapaligiran
+    subtext: >
+      <p>Sinusuportahan ng {appName} ang pagpapangkat ng mga mapagkukunan sa maramihang <b>kapaligiran</b>.  Ang bawat
+      isa ay nakakakuha ng sarili nitong hanay ng mga serbisyo at mapagkukunan ng imprastraktura, at pagmamay-ari ng isa
+      o higit pang mga user o grupo.</p>
+
+      <p>Halimbawa, maaari kang lumikha ng hiwalay na "dev", "test", at "production" na kapaligiran upang panatilihing
+      hiwalay ang mga bagay sa isa't isa, at bigyan ang "dev" ng access sa iyong buong organisasyon ngunit paghigpitan
+      ang "production" environment sa isang mas maliit na team.</p>
+    alert: >-
+      Walang mga aktibong kapaligiran.  Kakailanganin mong gumawa o mag-activate ng isa bago mo magawa ang anumang
+      bagay.
+    table:
+      header:
+        orchestration: Orkestrasyon
+        projectTemplate: Template
+      body:
+        noData: Wala ka pang mga environment
+  indexTemplate:
+    header: Mga Template ng Kapaligiran
+    new: Magdagdag ng Template
+    subtext: >
+      <p>Pinapahintulutan ng environment template ang pagpili ng mga serbisyong pang-imprastraktura na ide-deploy.</p>
+
+      <p>Kabilang dito ang container orchestration, networking, health check, DNS, metadata, scheduling, service
+      discovery, at storage.</p>
+    table:
+      header:
+        stacks: Mga stack
+        isPublic: Pampubliko
+      body:
+        noData: Wala ka pang anumang mga template ng kapaligiran
+registriesPage:
+  index:
+    header: Mga rehistro
+    linkTo: Magdagdag ng Registry
+    table:
+      header:
+        state: Estado
+        address: Address
+        email: Email
+        username: Username
+        created: Nilikha
+      body:
+        noData: Wala ka pang rehistro
+  new:
+    header: Magdagdag ng Registry
+    form:
+      custom:
+        labelText: Address
+        placeholder: hal. registry.example.com
+        help: 'Ang hostname lang o IP address, huwag isama ang protocol (https://)'
+      email:
+        labelText: Email
+        placeholder: hal. you@example.com
+      username:
+        labelText: Username
+        placeholder: hal. username
+      password:
+        labelText: Password
+        placeholder: hal. password
+secretsPage:
+  index:
+    header: Mga lihim
+    linkTo: Magdagdag ng Lihim
+    noData: Wala ka pang mga Sikreto
+    noMatch: Walang mga Lihim na tumutugma sa kasalukuyang paghahanap
+servicePage:
+  header: 'Serbisyo:'
+  multistat:
+    type: 'Uri:'
+    fqdn: 'FQDN:'
+    scale: 'Scale:'
+    image: 'Image:'
+    entryPoint: 'Entrypoint:'
+    command: 'utos:'
+    description: 'Paglalarawan:'
+    global: Global
+  external:
+    externalIp: Panlabas IPs
+    externalHostname: 'Panlabas na Hostname:'
+  navTabs:
+    portRules: Mga Panuntunan ng Balancer
+    certificates: Mga sertipiko
+    ports: Mga daungan
+    containers: Mga container
+    labels: Mga label
+    links: Mga link
+    log: Log
+  containersTab:
+    table:
+      header:
+        ipAddress: IP Address
+        host: Host
+        image: Imahe
+        stats: Stats
+      body:
+        noData: Ang serbisyong ito ay wala pang anumang mga container.
+  linksTab:
+    header: Mga link
+    noData: Walang Link
+  certsTab:
+    default: Default na Sertipiko
+    additional: Mga karagdagang SNI na Sertipiko
+  new:
+    form:
+      name:
+        placeholder: hal. myapp
+      description:
+        placeholder: hal. Ang aking aplikasyon
+  newAlias:
+    form:
+      name:
+        placeholder: hal. myapp
+      description:
+        placeholder: hal. Kasalukuyang bersyon ng MyApp
+  newBalancer:
+    upgradeImage: 'Ang imahe ng balancer software ay ia-upgrade mula sa <code>{from}</code> sa <code>{to}</code>.'
+    form:
+      name:
+        placeholder: hal. website
+      description:
+        placeholder: hal. Balancer para sa mycompany.com
+  portsTab:
+    table:
+      header:
+        port: Port
+        host: Host IP
+      body:
+        noData: Ang Serbisyong ito ay walang mga port.
+    notActive: Available lang ang mga port habang Aktibo ang serbisyo.
+  logTab:
+    table:
+      header:
+        date: Petsa
+        level: Antas
+        event: Kaganapan
+        description: Paglalarawan
+      body:
+        noData: Wala pang mga kaganapan sa log.
+  type:
+    service: Serbisyo
+    scalinggroup: Pangkat ng Pagsusukat
+    loadbalancerservice: Load Balancer
+    dnsservice: Alyas ng Serbisyo
+    externalservice: Panlabas
+    kubernetesservice: Serbisyo ng K8s
+    composeservice: Compose Serbisyo
+    networkdriverservice: Serbisyo sa Network
+    storagedriverservice: Serbisyo ng Imbakan
+settingsPage:
+  header: Mga setting
+stacksPage:
+  header:
+    all: Lahat ng Stacks
+    user: Mga Stack ng Aplikasyon
+    custom: '{name} Mga stack'
+    tags: '"{tags}" Mga stack'
+    infra: Mga Stack ng Imprastraktura
+  actionButton: Magdagdag ng Stack ng Aplikasyon
+  catalogButton: Idagdag mula sa Catalog
+  sort:
+    label: Ayusin ayon sa
+    state: Estado
+    name: Pangalan
+  tags:
+    all: Lahat ng Tag
+    one: 'Tag: {name}'
+  noInfra: Kasalukuyang wala kang anumang Stack ng Infrastructure
+  noMatch: Walang Stack na tumutugma sa napiling tag
+  new:
+    header: Magdagdag ng Stack ng Aplikasyon
+    composeLabel: 'Opsyonal: Mag-import Compose'
+    form:
+      name:
+        placeholder: hal. myapp
+      description:
+        placeholder: hal. MyApp Salansan
+      dockerCompose:
+        label: 'Opsyonal: docker-compose.yml'
+        placeholder: Mga nilalaman ng docker-compose.yml
+      rancherCompose:
+        label: 'Opsyonal: pasturestack-compose.yml'
+        placeholder: Nilalaman ng pasturestack-compose.yml
+      startOnCreate:
+        label: Simulan ang mga serbisyo pagkatapos gumawa
+storagePoolsPage:
+  header: Mga Driver ng Imbakan
+  volume: Dami ID
+  orphaned: Naulila na Backup
+  nav:
+    pools: Mga pool
+    backups: Mga backup
+  index:
+    noData: Walang mga driver ng storage
+  newVolume:
+    header: Magdagdag ng Volume
+    form:
+      driverOptions: Mga Pagpipilian sa Pagmamaneho
+      addActionLabel: Magdagdag ng Opsyon
+swarmPage:
+  projects:
+    index:
+      header: Mga proyekto
+      linkTo: Magdagdag ng Proyekto
+      table:
+        header:
+          services: Mga serbisyo
+        body:
+          noData: Wala ka pang anumang mga Proyekto.
+    new:
+      header: Magdagdag ng Proyekto
+      form:
+        name:
+          placeholder: hal. myapp
+        description:
+          placeholder: hal. MyApp Proyekto
+        variables:
+          addActionLabel: Magdagdag ng Variable Substitution
+          keyLabel: Variable
+          keyPlaceholder: hal. FOO
+          valuePlaceholder: hal. bar
+        dockerCompose:
+          labelText: docker-compose.yml
+          placeholder: I-paste ang mga nilalaman ng docker-compose.yml
+    project:
+      linkTo: 'Proyekto:'
+      table:
+        header:
+          ports: Mga daungan
+          containers: Mga container
+        body:
+          noData: Ang Proyektong ito ay wala pang mga Serbisyo.
+  services:
+    header: Mga serbisyo
+    table:
+      header:
+        ports: Mga daungan
+        containers: Mga container
+      body:
+        noData: Wala ka pang anumang Serbisyo.
+processExecutions:
+  collapseAll: I-collapse lahat
+  expandAll: I-expand lahat
+  resourceTypeId: Uri ng Resource／ID
+processesPage:
+  header: Mga proseso
+  tab:
+    summary: Buod
+    pools: Mga pool
+    running: Tumatakbo
+    delayed: Naantala
+    ready: handa na
+    completed: Kamakailang Nakumpleto
+  summary:
+    noData: Walang mga prosesong kasalukuyang naka-iskedyul
+    table:
+      running: Tumatakbo
+      ready: handa na
+      delay: Naantala
+  pools:
+    noData: Walang nakitang pool
+    noMatch: Walang mga pool na tumutugma sa kasalukuyang paghahanap
+    table:
+      activeTasks: Aktibo
+      poolSize: Laki ng Pool
+      rejectedTasks: Tinanggihan
+      completedTasks: Nakumpleto
+      queueSize: Laki ng Pila
+      queueRemainingCapacity: Nananatili ang pila
+  list:
+    table:
+      resource: mapagkukunan
+      exitReason: Lumabas Dahilan
+      startTime: Oras ng Pagsisimula
+      endTime: Oras ng Pagtatapos
+      runTime: Oras ng Pagtakbo
+      runAfter: Patakbuhin pagkatapos
+    noData: 'Walang mga prosesong kasalukuyang {which}'
+    noMatch: Walang mga prosesong tumutugma sa kasalukuyang paghahanap
+virtualMachinePage:
+  header: 'Virtual Machine:'
+  multistat:
+    host: 'Host:'
+    hostIp: 'Host IP:'
+    vmIp: 'VM IP:'
+    image: 'Image:'
+    description: 'Paglalarawan:'
+  navTabs:
+    labels: Mga label
+virtualMachinesPage:
+  header: Mga Virtual Machine
+  linkTo: Magdagdag ng Virtual Machine
+  table:
+    body:
+      noData: Wala ka pang mga virtual machine.
+waitingPage:
+  hosts:
+    header: |
+      {expectHosts, plural, =1 {Idinaragdag ang iyong unang host} other {Magdagdag ng mga host}}
+    content: >
+      Dapat kang magdagdag ng hindi bababa sa {expectHosts, plural, =1 {isang solong Linux host na sumusuporta} other {#
+      Linux host na sumusuporta}} Docker {minVersion} o mas mataas at maabot ang {appName} server sa pamamagitan ng
+      HTTP.<br/>
+
+      {appName} sumusuporta sa pagdaragdag ng mga Linux host sa anyo ng isang virtual o pisikal na makina mula sa
+      anumang mga pampublikong tagapagbigay ng ulap, mga pribadong naka-host na ulap, o kahit na mga bare metal na
+      server.
+    contentLink: Matuto pa
+    linkToHost: Magdagdag ng Host
+    setup:
+      mesos: Pagse-set up ng Mesos
+      swarm: Pagse-set up ng Swarm
+      kubernetes: Pagse-set up ng Kubernetes
+aliasServicePartial:
+  serviceLinks:
+    labelText: Mga Link ng Serbisyo
+    linkTo: Tingnan ang mga Detalye
+  links: Mga link
+  noLinks: Walang Link
+  description: 'Paglalarawan:'
+externalServicePartial:
+  extService:
+    labelText: Serbisyong Panlabas
+    linkTo: Tingnan ang mga Detalye
+  ips: IPs
+  hostname: 'Pangalan ng host:'
+  description: 'Paglalarawan:'
+hostPartial:
+  host:
+    addCommon:
+      quanity: Dami
+      new:
+        form:
+          name:
+            placeholder: hal. host01
+    addOptions:
+      labels: Mga label
+ldap:
+  providerName:
+    openldap: OpenLDAP
+    ad: Active Directory
+  header:
+    editing:
+      label: I-edit ang Active Directory Configuration
+    enabled:
+      label: '{providerName} ay pinagana'
+      required: >
+        {appName} ay naka-configure upang payagan ang pag-access sa {groups, plural, =0 {walang mga grupo} =1 {#
+        pangkat} other {# pangkat}} at {users, plural, =0 {walang gumagamit} =1 {# user} other {# user}}.
+      restricted: >
+        {appName} ay naka-configure upang payagan ang pag-access sa mga miyembro ng kapaligiran, {groups, plural, =0
+        {walang mga grupo} =1 {# pangkat} other {# pangkat}} at {users, plural, =0 {walang gumagamit} =1 {# user} other
+        {# user}}.
+      unrestricted: '{appName} ay naka-configure upang payagan ang access sa sinumang {providerName} user.'
+    disabled:
+      label: '{providerName} ay hindi naka-configure'
+      warning: >-
+        Maaaring i-configure ang {appName} upang paghigpitan ang pag-access sa isang hanay ng mga {providerName} na user
+        at grupo.  Kasalukuyang hindi ito naka-set up, kaya ang sinumang makakarating sa page na ito (o ang API) ay may
+        ganap na kontrol sa system.
+  accessEnabled:
+    header: Pagpapatunay
+    subtext: 'Para baguhin ang configuration ng server, piliin ang edit button at subukan ang bagong configuration bago i-save.'
+    general:
+      header: Heneral
+      server: 'Server:'
+      tls: 'TLS:'
+      serviceAccount: 'Account ng Serbisyo:'
+      searchBase: 'Base sa Paghahanap:'
+      defaultDomain: 'Default na Domain:'
+      timeout: 'Timeout ng Koneksyon:'
+    users:
+      header: Mga gumagamit
+      objectClass: 'Klase ng Bagay:'
+      login: 'Field sa Pag-login:'
+      name: 'Field ng Pangalan:'
+      search: 'Field ng Paghahanap:'
+      enabled: 'Patlang ng Katayuan:'
+      disabledBitMask: 'Hindi pinagana BitMask:'
+    group:
+      header: Grupo
+      objectClass: 'Klase ng Bagay:'
+      name: 'Field ng Pangalan:'
+      search: 'Field ng Paghahanap:'
+    disable:
+      header: Danger Zone™
+      warning: >-
+        <b class="text-danger">Pag-iingat:</b> Ang hindi pagpapagana ng kontrol sa pag-access ay magbibigay ng
+        kumpletong kontrol sa {appName} sa sinumang makakarating sa pahinang ito o sa API.
+      confirmDisable:
+        pre: I-disable ang access control
+        post: Sigurado ka ba?  Mag-click muli upang talagang huwag paganahin ang kontrol sa pag-access
+  accessConfig:
+    header: 'I-configure ang isang {providerName} server'
+    subtext1: >-
+      Ilagay ang address, port, at protocol para kumonekta sa iyong {providerName} server.  <code>389</code> ay ang
+      karaniwang port para sa insecure, <code>636</code> para sa TLS.
+    subtext2: >-
+      Kailangan ng {appName} ng service account na mayroong (read-only) na access sa lahat ng domain na makakapag-login,
+      para matukoy namin kung saang grupo miyembro ang user kapag humiling sila gamit ang API key.
+    advanced:
+      open: Itago ang Advanced
+      closed: Ipakita ang Advanced
+    timeout:
+      labelText: Timeout ng Koneksyon
+      unit: ms
+    port:
+      labelText: Port
+      checkbox: TLS
+    groupSearchBase:
+      labelText: Base sa Paghahanap ng Grupo
+      placeholder: 'hal. ou=Groups,dc=mycompany,dc=com'
+      helpText: >-
+        Kung nakatakda, hahanapin ang mga grupo sa ilalim lamang ng base na ito sa halip na sa ilalim ng User Search
+        Base.
+    defaultDomain:
+      helpText: Gagamitin ang domain na ito kung magla-log in ang isang user nang hindi tinukoy ang isa.
+      labelText: Default na Domain sa Pag-login
+      placeholder: hal. mycompany
+  customizeSchema:
+    header: I-customize ang Schema
+    helpText: >-
+      Kung ang iyong schema ay hindi tumutugma sa karaniwang ActiveDirectory na format, maaari mo itong i-customize
+      dito.
+    users:
+      header: Mga gumagamit
+      objectClass:
+        labelText: Klase ng Bagay
+      login:
+        labelText: Patlang sa Pag-login
+      name:
+        labelText: Field ng Pangalan
+      search:
+        labelText: Field ng Paghahanap
+      status:
+        labelText: Patlang ng Katayuan
+      disabledBitMask:
+        labelText: Naka-disable na Status Bitmask
+      userMemberAttribute:
+        labelText: Katangian ng Miyembro ng User
+    groups:
+      header: Mga grupo
+      objectClass:
+        labelText: Klase ng Bagay
+      name:
+        labelText: Field ng Pangalan
+      search:
+        labelText: Field ng Paghahanap
+      groupMemberUser:
+        labelText: Katangian ng User ng Miyembro ng Grupo
+        placeholder: uid
+      groupMemberMapping:
+        labelText: Katangian ng Pagma-map ng Miyembro ng Grupo
+      groupDN:
+        labelText: Pangkat DN Field
+        placeholder: distinguishedName
+  testAuth:
+    header: Subukan at paganahin ang pagpapatunay
+    editingHeader: Subukan at i-save ang bagong configuration
+    helpText: >-
+      Suriin kung ang lahat ay na-configure nang tama sa pamamagitan ng pagsubok sa pagpapatunay gamit ang iyong
+      {providerName} account:
+    userName:
+      labelText: Ang iyong Username
+    password:
+      labelText: Ang iyong Password
+    authenticate:
+      pre: Patotohanan
+      post: Pagsubok...
+      test: Subukan at I-save
+servicePartial:
+  noContainers:
+    label: Wala pang container.
+    inactive:
+      start: Magsimula
+serviceInfoPartial:
+  info:
+    label: Impormasyon
+    linkTo: Tingnan ang mga Detalye
+  image: 'Image:'
+  entryPoint: 'Entrypoint:'
+  command: 'utos:'
+  description: 'Paglalarawan:'
+  containers: Mga container
+  scale: Scale
+  global: Global
+  noContainers: Walang Container
+  ports: Mga daungan
+  noPublicPorts: Walang Public Ports
+  links: Mga link
+  noLinks: Walang Link
+  fqdn: 'FQDN:'
+advancedSection:
+  hrText: Mga Advanced na Opsyon
+catalogBox:
+  sourcePrefix: nasa
+catalogSettings:
+  header: Catalog
+  subtext: >-
+    Naglalaman ang mga catalog ng mga template na nagpapadali sa pag-deploy ng application sa pamamagitan ng ilang
+    tanong sa configuration.
+  certified:
+    header:
+      rancher: '{appName} Sertipikadong Aklatan'
+      pl: Sertipikadong Aklatan
+    detail:
+      rancher: >-
+        Mga compatibility template na pinapanatili ng independiyenteng komunidad ng PastureStack. Nag-iiba ang
+        availability at support depende sa template.
+      pl: >-
+        Kinakailangan ang mga pinapanatili na template para sa mga pangunahing feature gaya ng suporta sa
+        Kubernetes/Mesos/Swarm.
+  community:
+    header:
+      rancher: Naiambag ng Komunidad
+      pl: Naiambag ng Komunidad
+    detail:
+      rancher: Mga template na ginawa at pinapanatili ng komunidad. Hindi sertipikado ng orihinal na vendor.
+      pl: Mga template na ginawa at pinapanatili ng mga miyembro ng komunidad.
+  more:
+    header: Custom
+    helpText: >-
+      Maaari mong tukuyin ang sarili mong mga pinagmumulan ng custom na catalog dito.  Ang bawat isa ay nangangailangan
+      ng isang natatanging pangalan at isang URL iyon <code>git clone</code> kayang hawakan (tingnan <a
+      href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">mga doc</a> para sa karagdagang
+      impormasyon).
+    addActionLabel: Magdagdag ng Catalog
+    name:
+      label: Pangalan
+      placeholder: hal. mycatalog
+    url:
+      label: URL
+      placeholder: 'hal. https://github.com/mycompany/mycatalog.git'
+    kind:
+      label: Mabait
+      native: Katutubo
+      helm: Helm
+    branch:
+      label: Sangay
+      placeholder: hal. master
+confirmDelete:
+  title: Sigurado ka bang gusto mong tanggalin
+  environmentNote: >-
+    Tandaan: Ang lahat ng mga mapagkukunan sa loob ng Environment na ito ay permanenteng aalisin, kabilang ang anumang
+    mga Host na ginawa sa pamamagitan ng {appName}.
+  protip: 'ProTip: Hawakan ang {key} key habang nagki-click sa Delete para i-bypass ang kumpirmasyon na ito.'
+  confirmAction: Tanggalin
+  cancelAction: Kanselahin
+  largeDeleteText: '{key} at {othersCount} iba pa'
+containerLogs:
+  title: 'Mga log: {instanceName}'
+  onlyCombined: >-
+    <b>Tandaan:</b> Ang pinagsamang stdout/stderr log lang ang available para sa container na ito dahil pinatakbo ito
+    gamit ang flag na TTY (-t).
+  combined: pinagsama-sama
+  stdout: Standard Out
+  stderr: Karaniwang Error
+  protip: 'ProTip: Hawakan ang {key} key kapag binubuksan ang mga log para maglunsad ng bagong window.'
+  scrollTop: Mag-scroll sa Itaas
+  scrollBottom: Mag-scroll sa Ibaba
+  clear: I-clear ang Screen
+  unknownDate: Hindi alam na petsa
+  status:
+    initializing: Sinisimulan...
+    connecting: Kumokonekta...
+    connected: Nakakonekta
+    disconnected: Nadiskonekta
+    closed: sarado
+containerShell:
+  protip: 'ProTip: Hawakan ang {key} key kapag binubuksan ang shell access para maglunsad ng bagong window.'
+  status:
+    initializing: Sinisimulan...
+    error: 'Error: {error}'
+    connecting: Kumokonekta...
+    connected: Nakakonekta
+    disconnected: Nadiskonekta
+    closed: sarado
+copyToClipboard:
+  tooltip: Kopyahin sa Clipboard
+  copied: Kinopya!
+dangerZone:
+  header: Mga Advanced na Setting
+  subtext: >-
+    Magpatuloy nang may pag-iingat; hindi na kailangang baguhin ng mga karaniwang user ang mga ito.  Maaaring masira ng
+    mga maling value ang iyong {appName} installation.  Ang mga setting na nabago ay ipinapakita sa bold.
+  showLabel: Naiintindihan ko na maaari kong masira ang mga bagay sa pamamagitan ng pagbabago ng mga advanced na setting.
+devicePermissions:
+  all: Lahat
+  none: wala
+  read: Basahin
+  write: Sumulat
+  mknod: Mknod
+editAccount:
+  title: I-edit ang Account
+  form:
+    name:
+      label: Pangalan
+      placeholder: hal. John Smith
+    kind:
+      label: Uri ng Account
+      user: Gumagamit
+      admin: Admin
+    description:
+      label: Paglalarawan
+      placeholder: hal. Ang account na ito ay para kay John Smith
+    publicValue:
+      label: Login Username
+    oldPassword:
+      label: Kasalukuyang Password
+    newPassword:
+      label: Bagong Password
+    confirmPassword:
+      label: Kumpirmahin ang Password
+    identity:
+      label: Pagkakakilanlan
+editAliasService:
+  title: I-edit ang Alyas ng Serbisyo
+editApiKey:
+  title:
+    justCreated: API Nagawa ang Susi
+    editing: I-edit ang API Key
+    new: Bagong API Key
+  publicValue:
+    label: Access Key (Username)
+  secretValue:
+    label: Secret Key (Password)
+  name:
+    placeholder: hal. Mga server ng app
+  description:
+    placeholder: hal. Ang key na ito ay ginagamit ng mga server ng app para mag-deploy ng mga container
+  saveWarning1: I-save ang mga susi sa itaas!  Ito ang tanging pagkakataon na makikita mo ang sikreto.
+  saveWarning2: 'Kung mawala mo ito, kakailanganin mong lumikha ng bagong API key.'
+  noteOptional: >-
+    Ang pangalan at/o paglalarawan ay opsyonal upang matulungan kang matandaan kung para saan ito ginagamit.  Maaari ka
+    lamang lumikha ng isang susi sa pamamagitan ng pag-click sa Gumawa.
+editBalancerService:
+  title: I-edit ang Load Balancer
+  haproxy:
+    label: haproxy.cfg
+    help: |
+      Dagdag <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a>
+      ang configuration ay maaaring ilagay dito at idaragdag sa configuration na nabuo ng {appName}.
+    global:
+      label: <code>global</code> seksyon
+      prompt: Mga linya ng custom na pandaigdigang seksyon
+    defaults:
+      label: <code>defaults</code> seksyon
+      prompt: Mga linya ng seksyon ng custom na default
+editCertificate:
+  title: I-edit ang Sertipiko
+  name:
+    placeholder: hal. mydomain.com
+  description:
+    placeholder: hal. EV cert para sa mydomain.com
+  noteKeyWriteOnly: >-
+    Tandaan: Ang Private Key ay sadyang blangko dahil ang field ay write-only.  Kakailanganin mong ibigay muli ang
+    Pribadong Key upang i-update ang certificate, kahit na hindi ito nagbago.
+editContainer:
+  title:
+    vm: I-edit ang VM
+    container: I-edit ang Container
+  name:
+    placeholder: hal. myapp
+  description:
+    placeholder: hal. Aking Aplikasyon
+editExternalService:
+  title: I-edit ang Panlabas na Serbisyo
+  name:
+    placeholder: hal. panlabas-db
+  description:
+    placeholder: hal. Panlabas na pisikal na database server
+editHost:
+  title: I-edit ang Host
+  hostname:
+    label: Hostname
+    help: Tulad ng iniulat ng host operating system.
+  customName:
+    label: Custom na Pangalan
+    placeholder: hal. dev1
+    help: 'Kung hahayaan itong walang laman, ipapakita ang Hostname bilang Pangalan.'
+  description:
+    label: Paglalarawan
+    placeholder: hal. Ang aking development host
+  labels:
+    label: Mga label
+  ips:
+    label: Scheduler IPs
+    valueLabel: IP Address
+    valuePlaceholder: hal. 1.2.3.4
+    addActionLabel: Magdagdag ng IP
+    help: >-
+      Kung ibinigay, pipiliin at ibubuklod ng scheduler ang mga nai-publish na port sa isa sa mga ibinigay na
+      pampublikong IP address.
+  requireAny:
+    label: Mangailangan ng Label ng Container
+    help: >-
+      Kapag itinakda, kailangang taglay ng container ang isa o higit pa sa mga tinukoy na label upang ma-schedule sa
+      host na ito. Kapag walang value, sapat na ang magkatugmang label key.
+    addActionLabel: Magdagdag ng Kinakailangang Label
+editProjectTemplate:
+  title:
+    add: Magdagdag ng Template
+    edit: 'I-edit ang Template: {displayName}'
+  orchestration: Orkestrasyon
+  builtinOrchestration: Built-in na orchestration
+  stackEdit: I-edit ang Config
+  stackRequired: Kinakailangan
+  access:
+    label: Pagbabahaginan
+    private: 'Pribado: Available lang sa akin'
+    public: 'Pampubliko: Available sa lahat ng user (admin lang)'
+  error:
+    conflict: Salungatan
+    enabling: 'Ang napiling bersyon ng {tplCategory} stack "{stackName}" ay hindi sumusuporta sa {orchestration} Orchestration.'
+    changing: >-
+      Ang kasalukuyang pinaganang {tplCategory} stack na "{stackName}" ay hindi sumusuporta sa {orchestration}
+      Orchestration.
+editRegistry:
+  title: I-edit ang Registry
+  address:
+    label: Address
+  email:
+    label: Email
+    placeholder: hal. you@example.com
+  username:
+    label: Username
+    placeholder: hal. username
+  password:
+    label: Password
+    placeholder: hal. password
+editService:
+  title: I-edit ang Serbisyo
+editStack:
+  title: I-edit ang Stack
+  name:
+    label: Pangalan ng Stack
+    placeholder: hal. myapp
+  description:
+    label: Paglalarawan
+    placeholder: hal. MyApp Salansan
+  group:
+    label: Mga tag
+    placeholder: 'hal. frontend, produksyon'
+    help: >-
+      Listahan ng mga tag na pinaghihiwalay ng kuwit.  Maaaring i-filter ng mga indibidwal na tag ang listahan ng
+      Stacks.
+envCatalog:
+  header: Pamahalaan ang Mga Catalog
+  subtext: >-
+    Maaari mong tukuyin ang iyong sariling mga pinagmumulan ng custom na catalog dito, na magiging available lang sa mga
+    user ng environment na ito.  Ang mga pandaigdigang katalogo ay magagamit sa lahat ng mga kapaligiran at maaari
+    lamang baguhin sa Mga Setting ng Admin ng isang administrator.  Ang bawat catalog ay nangangailangan ng isang
+    natatanging pangalan at isang URL iyon <code>git clone</code> kayang hawakan (tingnan <a
+    href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">mga doc</a> para sa karagdagang
+    impormasyon).
+  addActionLabel: Magdagdag ng Catalog
+stackHeader:
+  backLink: 'stack:'
+  outputs: Mga output
+  add:
+    service: Magdagdag ng Serbisyo
+    balancer: Magdagdag ng Load Balancer
+    external: Magdagdag ng Panlabas na Serbisyo
+    alias: Magdagdag ng Alyas ng Serbisyo
+    vm: Magdagdag ng Virtual Machine
+formatIp:
+  noIp: wala
+  unknownIp: Hindi alam
+formBalancerRules:
+  label: Mga Panuntunan sa Port
+  noRules: Walang Panuntunan
+  addServiceLabel: Magdagdag ng Panuntunan ng Serbisyo
+  addSelectorLabel: Magdagdag ng Selector Rule
+  target: Target
+  access:
+    label: Access
+    public: Pampubliko
+    internal: Panloob
+  protocol:
+    label: Protocol
+  region:
+    label: Rehiyon
+    placeholder: hal. rehiyon1
+  environment:
+    label: Kapaligiran
+    placeholder: hal. pag-unlad
+  weight:
+    label: Timbang
+    placeholder: hal. 1
+  sourceIp:
+    label: Host IP
+    placeholder: hal. 1.2.3.4
+  sourcePort:
+    label: Port
+    placeholder: hal. 80
+  path:
+    label: Daan
+    placeholder: hal. /foo
+  hostname:
+    label: Humiling ng Host
+    placeholder: hal. example.com
+  backendName:
+    label: Backend
+    placeholder: hal. webapp
+  targetPort:
+    label: Port
+    placeholder: hal. 80
+  priority:
+    label: Priyoridad
+    moveUp: Itaas
+    moveDown: Ilipat Pababa
+  serviceId:
+    label: Serbisyo
+  selector:
+    label: Tagapili
+    placeholder: hal. foo=bar
+  help:
+    prefix: >-
+      Itinutugma ang mga panuntunan ng Host at Path mula sa itaas hanggang sa ibaba sa pagkakasunod-sunod na
+      ipinapakita.  Ang mga backend ay papangalanan nang random bilang default;  upang i-customize ang mga nabuong
+      backend, magbigay ng pangalan at pagkatapos ay sumangguni doon sa custom na haproxy.cfg.
+    showBackendLink: Ipakita ang mga custom na pangalan ng backend.
+    showIpLink: Ipakita ang mga opsyon sa address ng host IP.
+    showRegionLink: Ipakita ang mga opsyon sa rehiyon.
+    suffix: ''
+formCommand:
+  command:
+    label: Utos
+    placeholder: hal. /usr/sbin/httpd -f httpd.conf
+  entryPoint:
+    label: Entry Point
+    placeholder: hal. /bin/sh
+  workingDir:
+    label: Nagtrabaho si Dir
+    placeholder: hal. /myapp
+  user:
+    label: Gumagamit
+    placeholder: hal. apache
+  console:
+    label: Console
+    both: Interactive at TTY <span class="text-muted">(-i -t)</span>
+    interactive: Interaktibo <span class="text-muted">(-i)</span>
+    terminal: TTY <span class="text-muted">(-t)</span>
+    none: wala
+  autoRestart:
+    label: Auto-restart
+    startOnceFalse: Laging
+    startOnceTrue: Huwag kailanman (Simulan Minsan)
+    no: Hindi kailanman
+    onFailure: 'Sa kabiguan <span class="text-muted">(hindi-0 exit code)</span>, magpakailanman'
+    onFailureCondPrefix: 'Sa kabiguan, hanggang sa'
+    onFailureCondSuffix: |
+      {limit, plural, =1 {oras} other {beses}}
+    always: Laging
+  drainTimeout:
+    label: I-drain ang Timeout
+    unit: ms
+  environment:
+    label: Kapaligiran
+    addAction: Magdagdag ng Environment Variable
+    keyLabel: Variable
+    keyPlaceholder: hal. FOO
+    valueLabel: Halaga
+    valuePlaceholder: hal. bar
+formContainerLinks:
+  label: Mga link
+  addActionLabel: Magdagdag ng Link
+  noContainers: Walang ibang mga container na mali-link.
+  noLinks: Walang mga link ang container na ito.
+  targetInstance:
+    label: Container ng Patutunguhan
+    prompt: Pumili ng Container...
+  name:
+    label: Bilang Pangalan
+    placeholder: hal. database
+formDisks:
+  addDiskLabel: Magdagdag ng Disk
+  addRootDiskLabel: Magdagdag ng Root Disk
+  name:
+    rootDisk: Root Disk
+    label: Pangalan
+    placeholder: hal. datos
+  size:
+    label: Sukat
+    rootDisk: Tinutukoy ng root image
+  readIops:
+    label: Basahin ang Iops
+    placeholder: hal. 1000
+  writeIops:
+    label: Sumulat ng Iops
+    placeholder: hal. 1000
+  driver:
+    label: Driver
+formEngineOpts:
+  engineInstallUrl:
+    label: Docker I-install ang URL
+    placeholder: 'hal. http://get.docker.com/'
+    recommended: Inirerekomenda
+    latest: Pinakabago
+  engineStorageDriver:
+    label: Driver ng Imbakan
+    placeholder: hal. overlay
+  engineOpts:
+    label: Mga Opsyon sa Engine
+    addActionLabel: Magdagdag ng Opsyon sa Engine
+    keyPlaceholder: hal. log-driver
+    valuePlaceholder: hal. syslog
+  engineLabels:
+    label: Mga Label ng Engine
+    addActionLabel: Magdagdag ng Engine Label
+    keyLabel: Label
+  engineEnv:
+    label: Kapaligiran ng Engine
+    addActionLabel: Magdagdag ng Environment Variable
+    keyLabel: Variable
+    keyPlaceholder: hal. HTTP_PROXY
+    valuePlaceholder: 'hal. http://your-proxy:8080'
+  engineInsecureRegistry:
+    label: Mga Insecure na Rehistro
+    addActionLabel: Magdagdag ng Insecure Registry
+    valueLabel: Registry Domain
+    valuePlaceholder: hal. registry.example.com
+  engineRegistryMirror:
+    label: Mga Salamin sa Rehistro
+    addActionLabel: Magdagdag ng Registry Mirror
+    valueLabel: Salamin URL
+    valuePlaceholder: 'hal. https://my-mirror.example.com:5000'
+formHealthCheck:
+  windowsUnsupported: Hindi available sa Windows ang health check.
+  label: Uri
+  checkType:
+    none: wala
+    tcp: TCP Magbubukas ang Koneksyon
+    http: HTTP Tumutugon sa 2xx/3xx
+  request:
+    label: HTTP Kahilingan
+  method:
+    prompt: 'Pumili ng HTTP na Paraan:'
+  path:
+    placeholder: Path ng Kahilingan hal. /healthcheck
+  version:
+    prompt: 'Pumili ng HTTP na Bersyon:'
+  host:
+    label: Header ng host
+    placeholder: hal. www.example.com
+  port:
+    label: Port
+    placeholder: hal. 80
+  initializingTimeout:
+    label: Sinisimulan ang Timeout
+    unit: ms
+  reinitializingTimeout:
+    label: Reinitializing Timeout
+    unit: ms
+  interval:
+    label: Suriin ang Interval
+    unit: ms
+  timeout:
+    label: Tingnan ang Timeout
+    unit: ms
+  healthyThreshold:
+    label: Malusog Pagkatapos
+    unit: mga tagumpay
+  unhealthyThreshold:
+    label: Hindi malusog Pagkatapos
+    unit: mga kabiguan
+  strategy:
+    label: Kapag Hindi malusog
+    none: Huwag kumilos
+    recreate: Muling likhain
+    recreateOnQuorumPrefix: 'Muling likhain, kapag hindi bababa sa'
+    recreateOnQuorumSuffix: |
+      {quorum, plural, =1 {container ay} other {mga container ay}} malusog
+formKeyValue:
+  addAction: Magdagdag ng Pares
+  key:
+    label: Susi
+    placeholder: Susi
+  separator: '='
+  value:
+    label: Halaga
+    placeholder: Halaga
+  protip: 'ProTip: Mag-paste ng isa o higit pang mga linya ng key=value pairs sa anumang key field para sa madaling bulk entry.'
+formImage:
+  label: Piliin ang Imahe
+  vm:
+    placeholder: 'hal. ubuntu:26.04'
+    dropdownLabel: '{appName} Mga image'
+  container:
+    placeholder: 'hal. ubuntu:mapagkakatiwalaan'
+  pullImage:
+    label: Palaging hilahin ang image bago gumawa
+formNameDescription:
+  name:
+    label: Pangalan
+    placeholder: Pangalan
+  description:
+    label: Paglalarawan
+    placeholder: Paglalarawan
+formNetwork:
+  links:
+    table:
+      dest: Container ng Patutunguhan
+      as: Bilang Pangalan
+      data:
+        dest: 'Container ng Patutunguhan:'
+        as: 'Bilang Pangalan:'
+  networkMode:
+    label: Network
+    bridge: tulay
+    container: Container
+    host: Host
+    managed: Pinamamahalaan
+    nat: NAT
+    transparent: Transparent
+    none: wala
+  container:
+    label: container
+  requestedIp:
+    label: Hiniling IP
+    placeholder: hal. 10.42.2.24
+    help: >-
+      Humiling ng isang partikular na IP sa 10.42.0.0/16 block.  Kung ang IP ay ginagamit na, isang random ang
+      itatalaga.
+  retainIp:
+    label: Panatilihin ang IP
+    reuse: Gamitin muli ang mga address ng IP kapag nag-a-upgrade o nagpapalit ng mga hindi malusog na pagkakataon.
+  dns:
+    label: DNS
+    enable: 'Paganahin ang pagtuklas ng serbisyo ng {appName} DNS.'
+  hostname:
+    label: Hostname
+    placeholder: hal. web
+    dockerId: Gamitin ang Docker container ID
+    containerName: Gamitin ang pangalan ng container
+    custom: Magtakda ng partikular na hostname
+  domainName:
+    label: Domain Name
+    placeholder: hal. example.com
+  resolvingServers:
+    label: Paglutas ng mga Server
+    addActionLabel: Magdagdag ng Server
+    placeholder: hal. 8.8.4.4
+  searchDomains:
+    label: Maghanap ng mga Domain
+    placeholder: hal. prod.example.com
+    addActionLabel: Magdagdag ng Domain
+formPorts:
+  addAction: Port Map
+  bindAddress:
+    label: Pampublikong Host IP (Opsyonal)
+    placeholder: 'hal. 1.2.3.4; Default: anuman'
+  public:
+    label: Public Host Port
+    placeholder: hal. 80
+  private:
+    label: Pribadong Container Port
+    placeholder: hal. 8080
+  protocol:
+    label: Protocol
+  noPorts: Walang port map ang container na ito.
+  error:
+    privateRequired: Kinakailangan ang Pribadong Container Port para sa bawat panuntunan sa port.
+    publicRequired: Kinakailangan ang Public Host Port kung tinukoy ang Host IP.
+    mixedIpPort: 'Port {ip}:{port}/{proto} ay may higit sa isang pagmamapa.'
+    mixedPort: 'Ang port {port}/{proto} ay may higit sa isang pagmamapa.'
+  showIpLink: Ipakita ang field ng Host IP.
+formScale:
+  label: Scale
+  global:
+    vm: Palaging magpatakbo ng isang instance ng virtual machine na ito sa bawat host
+    container: Palaging magpatakbo ng isang instance ng container na ito sa bawat host
+  regular:
+    vm: |
+      Takbo {scale, plural, =0 {walang virtual machine} =1 {1 virtual machine} other {# virtual machine}}
+    container: |
+      Takbo {scale, plural, =0 {walang container} =1 {1 container} other {# na container}}
+formScheduling:
+  canRequestHost:
+    vm: Takbo <b>lahat</b> mga virtual machine sa isang partikular na host
+    containers: Takbo <b>lahat</b> mga container sa isang partikular na host
+  runSpecific: Patakbuhin sa isang partikular na host
+  noRules: Walang mga panuntunan sa pag-iiskedyul
+  autoRun: 'Awtomatikong tumakbo sa bawat host na tumutugma sa mga panuntunan sa pag-iiskedyul:'
+  autoPick:
+    vm: 'Awtomatikong pumili ng mga host para sa bawat virtual machine na tumutugma sa mga panuntunan sa pag-iiskedyul:'
+    container: 'Awtomatikong pumili ng mga host para sa bawat panuntunan sa pag-iiskedyul ng pagtutugma ng container:'
+    host: 'Awtomatikong pumili ng host na tumutugma sa mga panuntunan sa pag-iiskedyul:'
+  addRule: Magdagdag ng Panuntunan sa Pag-iiskedyul
+  condition: kundisyon
+  field: Patlang
+  key: Susi
+  value: Halaga
+formSecrets:
+  label: Mga lihim
+  noData: Walang Sikreto
+  addLabel: Magdagdag ng Lihim
+  name:
+    label: Bilang Pangalan
+    placeholder: hal. db_password
+  secret:
+    label: Lihim
+  uid:
+    label: Gumagamit ID
+    placeholder: hal. 0 (ugat)
+  gid:
+    label: Pangkat ID
+    placeholder: hal. 0 (gulong)
+  mode:
+    label: File Mode (octal)
+    placeholder: hal. 0444 (octal)
+  help:
+    prefix: 'Magagamit ang mga lihim sa <code>/run/secrets/</code> sa loob ng Container na may ibinigay na filename.  '
+    showPermissionsLink: I-customize ang pagmamay-ari ng file at mga pahintulot
+    suffix: ''
+formSecurity:
+  key: Susi
+  value: Halaga
+  logConfig:
+    addActionLabel: Magdagdag ng Opsyon
+    keyPlaceholder: hal. syslog-facility
+    valuePlaceholder: hal. demonyo
+  privileged:
+    label: Pribilehiyo
+    checkbox: Buong pag-access sa host
+  pidMode:
+    label: PID Mode
+    checkbox: Host
+  memoryLimit:
+    label: Memory Limit
+    placeholder: Walang limitasyon
+    mb: MB
+  swapLimit:
+    label: + Limitasyon sa Pagpalit
+    mb: MB
+    placeholder1: Nangangailangan ng Memory Limit
+    placeholder2: Walang limitasyon
+  cpuPinning:
+    label: CPU Pinning
+    placeholder: 'hal. 0,3; Default: Lahat'
+  shares:
+    label: Mga pagbabahagi
+    placeholder: hal. 1024
+  capabilities:
+    add: Idagdag
+    drop: Ihulog
+    label: Mga kakayahan
+    helpBlock:
+      text: >-
+        Nagbibigay-daan sa iyo ang mga kakayahan na magbigay ng mahusay na kontrol sa mga pribilehiyo ng superuser na
+        available sa container.
+      link: Higit pang impormasyon
+  deviceBinding:
+    label: Pag-binding ng Device
+    addActionLabel: Magdagdag ng Pagbubuklod
+    pathHost:
+      label: Path sa Host
+      placeholder: hal. /dev/sdc
+    pathContainer:
+      label: Path sa Container
+      placeholder: hal. /dev/xsdc
+    permissions:
+      label: Mga Pahintulot
+      placeholder: 'hal. 0,3; Default: Lahat'
+  logDriver:
+    label: Log Driver
+    placeholder: hal. syslog
+  logOptions:
+    label: Mga Opsyon sa Log
+  memoryReservation:
+    label: Pagpapareserba ng Memorya
+  milliCpuReservation:
+    label: mCPU Pagpapareserba
+  isolation:
+    label: Paghihiwalay
+    default: Default (Container)
+    hyperv: HyperV (VM)
+formServiceLinks:
+  asName: bilang pangalan
+  addAction: Mga Link ng Serbisyo
+  noServices: Walang ibang mga serbisyong mali-link.
+  noLinks: Ang serbisyong ito ay walang mga link ng serbisyo.
+  service:
+    label: Serbisyong Patutunguhan
+  name:
+    label: Bilang Pangalan
+    placeholder: hal. database
+formSslTermination:
+  defaultCertificate:
+    prompt: Pumili ng Sertipiko...
+  alternateCertificate:
+    prompt: Pumili ng Sertipiko...
+  certificate: Sertipiko*
+  alternateCerts: Mga Kahaliling Sert
+  addAlternate: Magdagdag ng Kahaliling Sertipiko
+  noCertificates: Walang mga certificate na magagamit.
+  noAlternateCertificates: Walang ibang certificate na magagamit.
+  helpBlock: >
+    "Note: Some older SSL/TLS clients do not support <a href="https://en.wikipedia.org/wiki/Server_Name_Indication"
+    target="_blank" rel="noopener noreferrer">Indikasyon ng Pangalan ng Server (SNI)</a>; ang mga kliyenteng ito ay palaging iaalok ang
+    pangunahing Sertipiko Ang mga modernong kliyente ay iaalok ng isang naaangkop na sertipiko mula sa listahan ng Mga
+    Alternate na Sertipiko kung may nakitang tugma."
+  notNeeded: Walang mga SSL/TLS port na na-configure.
+formStickiness:
+  stickiness: Ang lagkit
+  none: wala
+  newCookie: Gumawa ng bagong cookie
+  cookieName: Pangalan ng Cookie
+  mode: Mode
+  modeChoices:
+    rewrite: Isulat muli
+    insert: Ipasok
+    prefix: Prefix
+  domain: Domain
+  options: Mga pagpipilian
+  indirect: Hindi direkta
+  sendHeader: Magpadala ng walang cache na header
+  onPost: Itakda lamang ang cookie sa POST
+  noPorts: Walang HTTP Port Rules na na-configure.
+  placeholder:
+    sticky: hal. malagkit
+    domain: hal. mydomain.com
+formTarget:
+  target: Target
+  pointAddress: Ituro sa IP (mga) Address
+  pointHostname: Ituro ang isang Hostname
+  addTarget: Magdagdag ng Target IP
+  ipPlaceholder: hal. 192.168.2.24
+  hostnamePlaceholder: hal. mysql.example.com
+formTargets:
+  title: Mga target
+  addAction: Magdagdag ng Serbisyo
+  hostname:
+    label: Humiling ng Host Header
+    placeholder: hal. svc.com
+  srcPort:
+    label: Source Port
+    placeholder: hal. 80
+  value:
+    label: Target na Serbisyo
+  path:
+    label: Path ng Kahilingan
+    placeholder: hal. /svc
+  dstPort:
+    label: Target na Port
+    placeholder: hal. 8080
+  advanced:
+    toggle: Ipakita ang mga advanced na opsyon sa pagruruta
+    detail: 'Direktang mga kahilingan sa iba''t ibang serbisyo batay sa port, Host header, o path ng kahilingan'
+    help1: >
+      If Request Host and/or Path are specified, connections to HTTP listening ports will be routed to the appropriate
+      target based on the request.
+
+      Halimbawa, maaari mong gamitin ito upang magpadala ng trapiko para sa domain1.com sa ibang serbisyo kaysa sa
+      domain2.com, o domain3.com/admin sa ibang serbisyo kaysa sa domain3.com.
+    help2: >
+      Ang mga katugmang kahilingan ay ipapadala sa Target na Serbisyo sa Target na Port.
+
+      Kung hindi iyon nakatakda, ang Default na Target na port para sa Source Port.  Kung hindi rin nakatakda iyon, ang
+      Source Port.
+  noHostnames: (Hindi mabalanse sa mga hostname)
+formUserData:
+  placeholder: hal. Impormasyon ng configuration para sa container
+  isVmPlaceholder: hal. Impormasyon sa pagsasaayos para sa virtual machine
+formUserLabels:
+  addAction: Magdagdag ng Label
+  key:
+    label: Susi
+    placeholder: hal. foo
+  separator: '='
+  value:
+    label: Halaga
+    placeholder: hal. bar
+  protip: 'ProTip: Mag-paste ng isa o higit pang mga linya ng key=value pairs sa anumang key field para sa madaling bulk entry.'
+formUpgrade:
+  size: Laki ng Batch
+  interval: Batch Interval
+  sec: sec
+  behavior: Simulan ang Gawi
+  startStop: Magsimula bago Huminto
+  whichServices: Aling mga Serbisyo
+formValueArray:
+  addActionLabel: Magdagdag ng Halaga
+  valueLabel: Halaga
+  valuePlacholder: Halaga
+  protip: 'Tip: Mag-paste ng isa o higit pang linya ng mga value sa alinmang field para sa mabilisang maramihang pagpasok.'
+formVirtualMachines:
+  vcpus: vCPUs
+  memory: Alaala
+formVolumes:
+  windowsUnsupported: Hindi available sa Windows ang volume.
+  pathPlaceholder: 'hal. [pangalan-ng-volume: o /path/sa/host:]/path/sa/container[:ro]'
+  value:
+    prompt: Pumili ng Container...
+  volumes: Mga volume
+  volumesFrom: Mga Volume Mula sa
+  volumeDriver:
+    label: Volume Driver
+    placeholder: hal. pasturestack-nfs
+  noLaunchConfigs: Walang iba pang mga launch config sa serbisyong ito na ibabahagi ng volume.
+  noHostContainers: Ang host na ito ay walang container kung saan magagamit ang mga volume.
+  onlySingleHost: Available lang kapag nagdaragdag ng container sa isang partikular na host.
+  addActionLabel: Magdagdag ng Volume
+  errors:
+    invalidName: 'Ang mga pangalan ng volume ay maaari lamang maglaman ng mga titik, numero, gitling, underscore, at tuldok.'
+heroAddService:
+  infra:
+    header: Magdagdag ng Infrastructure Stacks
+    paragraph: >-
+      Ang mga stack ng imprastraktura ay nagdaragdag ng mga kakayahan tulad ng mga bagong Orchestration engine, storage
+      at networking provider sa {appName}.
+  service:
+    header: Pagdaragdag ng Unang Application Stack
+    paragraph1: >
+      Ang service ay grupo ng mga container na ginawa mula sa iisang Docker image. Pinalalawak nito ang konsepto ng
+      Docker 'link' gamit ang lightweight distributed DNS service ng {appName} para sa service discovery.
+
+      Maaaring idagdag ang mga service nang paisa-isa o sa pamamagitan ng pag-deploy ng item mula sa Catalog.
+    paragraph2: >-
+      Maaari ring gamitin ng service ang mga built-in feature ng {appName}, gaya ng load balancing, health monitoring,
+      upgrade support, at high availability.
+    contentLink: Matuto pa
+  addService: Gumawa ng Service
+  addCatalog: I-configure
+  linkToCatalog: Mag-browse ng Catalog
+hookPage:
+  receiver:
+    header: Receiver Hooks
+    buttonText: Magdagdag ng Receiver
+    content: >-
+      Ang mga receiver hook ay nagbibigay sa iyo ng URL na maaaring matamaan para mag-trigger ng pagkilos sa loob ng
+      {appName}.
+    noData: Walang receiver hook.
+  scaleService:
+    label: I-scale ang isang Serbisyo
+    detailPrefix: 'Iskala {action} '
+    detailLink: '{displayService}'
+    detailSuffix: 'ni {amount}'
+  scaleHost:
+    label: I-scale ang bilang ng mga Host
+    detail: 'Tumutugma sa {labels} {action} ni {amount}'
+  serviceUpgrade:
+    label: I-upgrade ang isang Serbisyo
+    detail: 'Pagtutugma ng {labels} kung kailan <code>{tag}</code> pagbabago'
+  fields:
+    kind:
+      label: Mabait
+    detail:
+      label: Detalye
+    url:
+      label: Trigger URL
+hostSettings:
+  header: Pagpaparehistro ng host URL
+  subtext: 'Anong base URL ang dapat gamitin ng mga host para kumonekta sa {appName} API?'
+  hostUrl:
+    local: 'Ang address ng site na ito:'
+    new:
+      labelText: 'Iba pa:'
+      placeholder: 'hal. http://example.com:8080'
+  helpText:
+    static1: 'Huwag isama <code>/v1</code> o anumang iba pang landas, ngunit kung ginagawa mo'
+    static2: 'sa harap ng {appName}, siguraduhing gamitin <code>https://</code>.'
+    isRancher: Suriin ang gabay sa pagwawakas ng TLS sa dokumentasyon ng PastureStack Server.
+    sslTerm: SSL pagwawakas
+  notPublic:
+    alert: >
+      Sigurado ka bang maaabot ng lahat ng host na gagawin mo <code>{activeValue}</code> ?<br/>Mukhang isang pribadong
+      IP o lokal na network.
+  badTld:
+    alert: >
+      Ang <code>.local</code> Ang Top-Level Domain ay nakalaan ng RFC6762 para sa Multicast DNS.  Ang paggamit nito
+      bilang iyong Pagpaparehistro URL ay hindi inirerekomenda at maaaring magdulot ng DNS mga isyu sa paglutas.
+      Mangyaring pumili ng ibang hostname o IP.
+hostPod:
+  supportState:
+    unsupported: Hindi sinusuportahang bersyon ng Docker.
+    untested: Hindi pa nasubok na bersyon ng Docker.
+  groupedInstances:
+    namespace: 'Namespace:'
+    stack: 'stack:'
+    standalone: Mga Standalone na Container
+identityBlock:
+  loading: Naglo-load...
+  systemService: Serbisyo ng System
+infoMultiStats:
+  connecting: Kumokonekta...
+  utilizationStats: Available lang ang mga istatistika ng paggamit habang aktibo/tumatakbo.
+  time:
+    now: Ngayon
+    minutesSecondsAgo: '{minutes} minuto at {seconds} segundo ang nakalipas'
+    minutesAgo: '{count} minuto ang nakalipas'
+    secondsAgo: '{count} segundo ang nakalipas'
+  cpuSection:
+    labelText: CPU
+    system: Sistema
+    user: Gumagamit
+  networkSection:
+    labelText: Network
+    transmit: Ipadala
+    receive: Tumanggap
+  memorySection:
+    labelText: Alaala
+    used: Ginamit
+  storageSection:
+    labelText: Imbakan
+    read: Basahin
+    write: Sumulat
+inputCertificate:
+  key:
+    label: Pribadong Susi
+    placeholder: 'I-paste ang pribadong key, simula sa PEM RSA pribadong key header'
+  cert:
+    label: Sertipiko
+    placeholder: 'Idikit sa pangunahing sertipiko, simula sa -----BEGIN CERTIFICATE-----'
+  certChain:
+    label: Chain Certs
+    placeholder: 'Opsyonal; I-paste ang mga karagdagang naka-chain na certificate, simula sa -----BEGIN CERTIFICATE-----'
+  metaXML:
+    label: Metadata XML
+    placeholder: Idikit sa IDP Metadata XML
+inputIdentity:
+  placeholder:
+    github: Magdagdag ng GitHub user o pangalan ng organisasyon
+    generic: Magdagdag ng user o pangkat ayon sa pangalan
+  dropdownLabel:
+    teams: Iyong Mga Koponan at Organisasyon
+    groups: Iyong mga Grupo
+inputPassword:
+  buttonText: Bumuo
+inputTextFile:
+  tooltip: Basahin mula sa isang file
+k8s:
+  containerSection:
+    name: Pangalan ng Container
+    status: Katayuan
+    message: Mensahe
+    ready: handa na
+    restarts: Nagsisimula muli
+    noData: Walang Container
+  deploymentSection:
+    name: Pangalan ng Deployment
+    generation: henerasyon
+    replicas: Mga replika
+    selectors: Mga pumipili
+    containers: Mga container
+    noData: Walang Deployment
+  formContainerPorts:
+    portMap: Port Map
+    addPort: Magdagdag ng Port
+    table:
+      header:
+        hostIp: Host IP
+        hostPort: Host Port
+        containerPort: Port ng Container
+        protocol: Protocol
+      body:
+        name: hal. web
+        hostIp: hal. 19.82.8.24
+        hostPort: hal. 80
+        containerPort: hal. 8080
+    noPorts: Walang port map ang container na ito.
+  heroAddStack:
+    header: Pagdaragdag ng Unang Application Stack
+    content: >
+      Dini-deploy ang mga stack mula sa Catalog ng {appName} upang mapanatiling magkakasama ang mga kaugnay na Deployment,
+      Replication Controller, at iba pang resource.
+    linkToCatalog: Idagdag Mula sa Catalog
+  newOrEditResource:
+    edit: 'I-edit ang {type}'
+    add: 'Magdagdag ng {type}'
+    placeholder: Resouce YAML o JSON na kahulugan
+  podSection:
+    name: Pangalan ng Pod
+    status: Katayuan
+    containers: Mga container
+    hostIp: Host IP
+    podIp: Pod IP
+    noData: Walang Pods
+  rcSection:
+    name: RC Pangalan
+    replicas: Mga replika
+    selectors: Mga pumipili
+    containers: Mga container
+    noData: Walang Replication Controller
+  replicasetSection:
+    name: Pangalan ng Replica Set
+    replicas: Mga replika
+    selectors: Mga pumipili
+    containers: Mga container
+    noData: Walang Replica Sets
+  servicePorts:
+    port: Port
+    containerPort: Port ng Container
+    nodePort: Node Port
+    protocol: Protocol
+    noPorts: Walang Ports
+  serviceRow:
+    defaultType: ClusterIP
+  serviceSection:
+    name: Pangalan ng Serbisyo
+    clusterIp: Cluster IP
+    pods: Mga pod
+    clusterPorts: Mga Cluster Port
+    nodePorts: Mga Node Port
+    selectors: Mga pumipili
+    noData: Walang Serbisyo
+lbAddtlInfo:
+  info: Impormasyon
+  viewDetails: Tingnan ang mga Detalye
+  defaultCertificate: Default na Sertipiko
+  alternateCertificate: Kahaliling Sertipiko
+  description: 'Paglalarawan: '
+  containers: Mga container
+  noContainers: Walang Container
+  scale: Scale
+  global: Global
+  ports: Mga daungan
+  noPorts: Walang pampublikong host port
+  targets: Mga target
+  to: sa
+labelsSection:
+  kind: Mabait
+  key: Susi
+  value: Halaga
+  noData: Walang mga label
+loginShibboleth:
+  buttonText: Patotohanan gamit ang Shibboleth
+  logout: Mag-log out sa identity provider
+serviceLog:
+  running: Tumatakbo
+loginGithub:
+  buttonText: Patotohanan gamit ang GitHub
+loginUserPass:
+  userLabel: Username
+  userPlaceholder: hal. jsmith
+  loginLabel: Mag-log In
+  loggingInLabel: Nagla-log In...
+  passwordLabel: Password
+machine:
+  driverAmazon:
+    accessSection: Access sa Account
+    accessKey:
+      label: Access Key
+      placeholder: Ang iyong AWS access key
+    secretKey:
+      label: Secret Key
+      placeholder: Ang iyong AWS secret key
+      provided: Ibinigay
+    region:
+      label: Rehiyon
+    accessKeyHelp: Idikit ang iyong AWS key pair dito. Gagamitin namin ang key na ito para gawin ang iyong mga bagong Instance.
+    loginAction: 'Susunod: Patotohanan at pumili ng network'
+    loadingAvailability: Nilo-load ang Availablility Zone at VPC na impormasyon mula sa EC2...
+    vpcSection: Availability Zone at VPC
+    availabilityZone: Availability Zone
+    subnet: VPC/Subnet
+    securityGroupSelect: 'Susunod: Pumili ng Security Group'
+    loadingSecurity: Nilo-load ang impormasyon ng pangkat ng seguridad mula sa EC2...
+    securityGroupSection: Grupo ng Seguridad
+    securityGroup:
+      label: Grupo ng Seguridad
+      defaultExisting: 'Pamantayan: Gamitin ang umiiral <code>{groupName}</code> pangkat'
+      defaultCreate: 'Pamantayan: Awtomatikong gumawa ng a <code>{groupName}</code> pangkat'
+      custom: 'Custom: Pumili ng kasalukuyang pangkat'
+      updating: Ina-update ang Security Group...
+      creating: Gumagawa ng Security Group...
+    portHelp:
+      link: Matuto pa
+      text: tungkol sa mga port na bubuksan.
+    needs:
+      label: 'Para gumana nang tama ang {appName}, kakailanganin ng iyong grupo ng seguridad na payagan ang trapiko:'
+      item1: >-
+        Mula sa {appName} server hanggang <code>TCP</code> daungan <code>22</code> <span class="text-muted">(SSH para
+        i-install at i-configure ang Docker)</span>
+      item2: >-
+        Mula sa at Sa lahat ng iba pang mga host sa <code>UDP</code> mga daungan <code>500</code> at <code>4500</code>
+        <span class="text-muted">(para sa IPsec networking)</span></li>
+      item3: Ang mga tuntuning ito ay <b>hindi</b> awtomatikong maidaragdag.
+    setInstanceAction: 'Susunod: Itakda ang mga opsyon sa Instance'
+    instanceSection: Halimbawa
+    instanceOptionsSection: Mga Pagpipilian sa Instance
+    instanceType:
+      label: Uri ng Instance
+    rootSize:
+      label: Sukat ng ugat
+      unit: GB
+    ami:
+      label: AMI
+      placeholder: Isang Ubuntu AMI
+      compatibilityGuide: Gabay sa compatibility ng image sa Amazon EC2
+    sshUser:
+      label: SSH Gumagamit
+      placeholder: hal. ubuntu
+    iam:
+      label: IAM Profile
+    privateIp:
+      label: Pribado IP
+    onlyPrivate:
+      label: Gumamit lamang ng pribadong IP address
+    tags:
+      error: 'Ang mga tag ay maaaring hindi naglalaman ng mga kuwit. Pakiayos ang tag: {tag}'
+      label: EC2 Mga tag
+      addAction: Magdagdag ng Tag
+      keyLabel: Tag
+      keyPlaceholder: hal. FOO
+      valueLabel: Halaga
+      valuePlaceholder: hal. bar
+  driverAzure:
+    helpBlock: >-
+      Makakahanap ka ng mga tagubilin kung paano gumawa ng Kliyente ID at Lihim <a
+      href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank" rel="noopener noreferrer">dito</a>.
+    accountAccessSection: Access sa Account
+    placementSection: Paglalagay
+    networkSection: Network
+    subscriptionId:
+      label: Subscription ID
+      placeholder: Ang iyong Azure subscription ID
+    subscriptionCert:
+      label: Sert ng Subscription
+      placeholder: Ang iyong sertipiko ng subscription sa Azure.
+    instanceSection: Halimbawa
+    image:
+      label: Imahe
+      placeholder: 'canonical:UbuntuServer:16.04.0-LTS:pinakabago'
+    vmType:
+      label: VM Uri
+    size:
+      label: VM Sukat
+    dockerPort:
+      label: Docker Port
+      placeholder: '2376'
+    publishSettingsFile:
+      label: I-publish ang Mga Setting
+      placeholder: Ang iyong file ng Mga Setting ng I-publish
+    environment:
+      label: Kapaligiran
+      placeholder: AzurePublicCloud
+    resourceGroup:
+      label: Resource Group
+      placeholder: docker-machine
+    sshUser:
+      label: SSH Gumagamit
+      placeholder: usr1
+    storageType:
+      label: Uri ng Imbakan
+    vnet:
+      label: VNet
+      placeholder: '[resourcegroup:]pangalan'
+    subnet:
+      label: Subnet
+      placeholder: halimbawa-sub-pangalan
+    subnetPrefix:
+      label: Subnet Prefix
+      placeholder: 128.42.0.0/21
+    availabilitySet:
+      label: Itakda ang Availability
+      placeholder: availability-set-name
+    openPort:
+      label: Buksan ang Port
+      placeholder: 'Pinaghihiwalay ng kuwit, hal. 80,443'
+    privateIpAddress:
+      label: Pribado IP
+      placeholder: 127.0.0.1
+    usePrivateIp:
+      label: Gamitin ang Pribadong IP Para Kumonekta
+    staticPublicIp:
+      label: Pampubliko IP
+    noPublicIp:
+      label: Walang Pampubliko IP
+    clientId:
+      label: Kliyente ID
+      placeholder: Iyong Kliyente ID
+    clientSecret:
+      label: Lihim ng kliyente
+      placeholder: Lihim ng Kliyente mo
+    regionSection: Rehiyon
+    region:
+      label: Rehiyon
+  driverCustom:
+    step1: >-
+      Maghanda ng Linux host, i-install ang <a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a>, at tingnan ang <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">gabay sa compatibility ng host</a> bago magrehistro.
+    step2: 'Tiyaking pinapayagan ng anumang pangkat ng seguridad o firewall ang trapiko:'
+    step2li: >-
+      Mula sa at Sa lahat ng iba pang mga host sa <code>UDP</code> mga daungan <code>500</code> at <code>4500</code>
+      <span class="text-muted">(para sa IPsec networking)</span>
+    step3: 'Opsyonal: Magdagdag ng mga label na ilalapat sa host.'
+    step4: >-
+      Tukuyin ang pampublikong IP na gagamitin sa pagrehistro ng host na ito. Kapag blangko, awtomatiko itong tutukuyin
+      ng PastureStack. Itakda ito nang manu-mano kapag nasa likod ng firewall o NAT ang host, o magkasama sa iisang host
+      ang control server at agent.
+    agentIp:
+      placeholder: hal. 1.2.3.4
+    step5Copy: 'Kopyahin, i-paste, at patakbuhin ang command sa ibaba para irehistro ang host'
+    generating: Bumubuo ng pagpaparehistro URL...
+    step5Close:
+      part1: I-click ang malapit sa ibaba.  Dapat mag-pop up ang bagong host sa
+      link: Mga host
+      part2: screen sa loob ng isang minuto.
+    close: Isara
+    windows:
+      windowsHeader: Windows Host
+      linuxHeader: Linux Host
+      step1: >-
+        Maghanda ng Windows Server 2016 host, i-install ang <a href="https://docs.docker.com/engine/install/"
+        target="_blank" rel="noopener noreferrer">Docker</a>, at tingnan ang <a
+        href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">gabay sa
+        compatibility ng host</a> bago magrehistro.
+      step2: 'Lumikha ng isang transparent na Docker Network:'
+      step2Copy: docker network create -d transparent transparent
+      step3: 'Kopyahin, i-paste, at patakbuhin ang utos sa ibaba sa PowerShell upang simulan ang ahente ng {appName}.'
+    windowsSteps:
+      step1: >-
+        Maghanda ng Windows Server 2016 host, i-install ang <a href="https://docs.docker.com/engine/install/"
+        target="_blank" rel="noopener noreferrer">Docker</a>, at tingnan ang <a
+        href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">gabay sa
+        compatibility ng host</a> bago magrehistro.
+      step2: 'Suriin at i-install ang RemoteAccess at Routing sa mga feature ng Windows:'
+      step2Copy: 'Get-WindowsFeature -Name "RemoteAccess","Routing" | Install-WindowsFeature'
+      step2Note: 'Tandaan: Ang Windows machine ay kailangang i-reboot kung ang mga application ay na-install.'
+      step3: >-
+        Tumukoy ng natatanging subnet para sa Windows host. Upang masuportahan ang isang overlay na network sa Windows,
+        ang bawat host sa kapaligiran ay dapat na may natatanging subnet.
+      step4: >-
+        Tukuyin ang router IP para sa subnet ng host. Ang IP na ito ay ginagamit upang ipasa ang trapiko sa network sa
+        pagitan ng iba't ibang mga host.
+      routerIp:
+        placeholder: hal. 1.2.3.4
+      subnet:
+        placeholder: hal. 192.168.0.0/24
+      step5: >-
+        Tukuyin ang pampublikong IP na gagamitin sa pagrehistro ng host na ito. Kapag blangko, awtomatiko itong
+        tutukuyin ng PastureStack. Itakda ito nang manu-mano kapag nasa likod ng firewall o NAT ang host, o magkasama sa
+        iisang host ang control server at agent.
+      step6: 'Opsyonal: Magdagdag ng mga label na ilalapat sa host.'
+      step7: 'Kopyahin, i-paste, at patakbuhin ang utos sa ibaba sa PowerShell upang simulan ang ahente ng {appName}.'
+  driverDigitalocean:
+    sizeLabel: >
+      {highMem, select, true {Mataas na Memory: } other {}}{memoryGb} GB RAM, {disk} GB Disk, {vcpus, plural, =1 {#
+      vCPU} other {# vCPUs}}
+    accountSection: Access sa Account
+    authAccountButton: 'Susunod: I-configure ang Droplet'
+    accessToken:
+      label: Access Token*
+      placeholder: Ang iyong DigitalOcean API access token
+      help: |
+        Isang Personal Access Token mula sa DigitalOcean
+        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank" rel="noopener noreferrer">Mga app at API</a> screen
+    instanceSection: Halimbawa
+    image:
+      label: Imahe
+    sshUser:
+      label: SSH Gumagamit
+      placeholder: usr1
+    size:
+      label: Sukat
+    regionSection: Rehiyon
+    region:
+      label: Rehiyon
+    optionsSection: Mga pagpipilian
+    backups:
+      label: Paganahin ang Mga Pag-backup
+    ipv6:
+      label: Paganahin ang IPv6
+    privateNetworking:
+      label: Paganahin ang Pribadong Networking
+    monitoring:
+      label: Paganahin ang Pagsubaybay
+    tags:
+      addActionLabel: Magdagdag ng Droplet Tag
+      valueLabel: Mga tag
+      placeholder: hal. dev
+  driverExoscale:
+    accountSection: Access sa Account
+    apiKey:
+      label: API Susi
+      placeholder: Ang iyong Exoscale API Key
+    secretKey:
+      label: Secret Key
+      placeholder: Ang iyong Exoscale secret key
+      provided: Ibinigay
+    accountHelp: Idikit ang iyong Exoscale key pair dito.  Gagamitin namin ang key na ito para gawin ang iyong mga bagong Instance.
+    loginAction: 'Susunod: Authenticate at pumili ng Zone'
+    loadingSecurity: Nilo-load ang impormasyon ng pangkat ng seguridad mula sa Exoscale...
+    securityGroupSection: Grupo ng Seguridad
+    securityGroup:
+      label: Grupo ng Seguridad
+      defaultExisting: 'Pamantayan: Gamitin ang umiiral <code>{groupName}</code> pangkat'
+      defaultCreate: 'Pamantayan: Awtomatikong gumawa ng a <code>{groupName}</code> pangkat'
+      custom: 'Custom: Pumili ng kasalukuyang pangkat'
+      updating: Ina-update ang Security Group...
+      creating: Gumagawa ng Security Group...
+    loadingZone: Nilo-load ang impormasyon ng zone mula sa Exoscale...
+    zoneSection: Sona
+    selectZoneAction: 'Susunod: Pumili ng Security Group'
+    zone:
+      label: Sona
+    portHelp:
+      link: Matuto pa
+      text: tungkol sa mga port na bubuksan.
+    needs:
+      label: 'Para gumana nang tama ang {appName}, kakailanganin ng iyong grupo ng seguridad na payagan ang trapiko:'
+      item1: >-
+        Mula sa {appName} server hanggang <code>TCP</code> daungan <code>22</code> <span class="text-muted">(SSH para
+        i-install at i-configure ang Docker)</span>
+      item2: >-
+        Mula sa at Sa lahat ng iba pang mga host sa <code>UDP</code> mga daungan <code>500</code> at <code>4500</code>
+        <span class="text-muted">(para sa IPsec networking)</span></li>
+      item3: Ang mga tuntuning ito ay <b>hindi</b> awtomatikong maidaragdag.
+    selectSecurityGroupAction: 'Susunod: Itakda ang mga opsyon sa Instance'
+    loadingInstance: Kinukuha ang mga available na setting ng Instance...
+    instanceSection: Halimbawa
+    instanceProfile:
+      label: Profile ng Instance
+    diskSize:
+      label: Sukat ng ugat
+    sshUser:
+      label: SSH Gumagamit
+      placeholder: pinili bilang default ng docker-machine
+    template:
+      label: Template
+  driverOtc:
+    access: Access sa Account
+    authorize: Pahintulutan
+    next:
+      availability: 'Susunod: Piliin ang Availability'
+      networks: 'Susunod: Piliin ang Subnet'
+      instance: 'Susunod: Piliin ang Mga Pagpipilian sa Instance'
+    errors:
+      akId: Kinakailangan ang Access Key ID.
+      akS: Kailangan ng Access Key Secret
+      project: Kailangan ng Project ID.
+    loadingAvailability: Naglo-load ng Availability at VPCs
+    loadingNetworks: Naglo-load ng Mga Network
+    loadingFlavors: Naglo-load ng Mga Opsyon sa Instance
+    provided:
+      password: Ibinigay ang Password
+    projectId: Proyekto ID
+    osUsername: OpenStack Username
+    osPassword: OpenStack Password
+    osUserDomainName: OpenStack Domain Name
+    osProjectName: OpenStack Pangalan ng Proyekto
+    accessKey: Access Key ID
+    accessSecret: I-access ang Key Secret
+    availableZone:
+      header: Availability
+      label:
+        zone: Sona
+        region: Rehiyon
+      dropdown:
+        zone: Pumili ng Zone
+    region: null
+    vpcAndSecurity:
+      header: Subnet at Security Groups
+      vpc: VPC
+      security: Grupo ng Seguridad
+      subnet: Subnet
+      dropdown:
+        vpc: Pumili ng VPC
+        security: Pumili ng Security Group
+        subnet: Pumili ng isang Subnet
+    instance:
+      header: Halimbawa
+      options: Mga Pagpipilian sa Instance
+      flavorid: lasa ID
+      images: Mga imahe
+      sshUser: SSH Gumagamit
+      rootPassword: Root Password
+      rootVolume: Sukat ng Dami ng Root
+      rootVolumeType: Uri ng Dami ng Root
+      size: Laki ng Bandwidth
+      dropdown:
+        flavorid: Pumili ng Flavor
+        imageid: Pumili ng Image
+        type: Pumili ng Uri ng Volume
+  driverOther:
+    driverSection: Driver
+    driver:
+      label: Driver
+    optionsSection: '{driverName} Mga Pagpipilian'
+  driverPacket:
+    accountSection: Access sa Account
+    projectId:
+      label: Proyekto
+      placeholder: Ang iyong Packet proyekto ID
+    apiKey:
+      label: API Susi
+      placeholder: Ang iyong Packet API key
+    apiKeyHelp: 'Mula sa Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank" rel="noopener noreferrer">API Mga susi</a> screen'
+    instanceSection: Halimbawa
+    image:
+      label: Imahe
+    size:
+      label: Sukat
+    regionSection: Rehiyon
+    region:
+      label: Rehiyon
+  driverRackspace:
+    accountSection: Access sa Account
+    username:
+      label: Username
+      placeholder: Ang iyong RackSpace username
+    apiKey:
+      label: API Susi
+      placeholder: Ang iyong RackSpace API key
+    accountHelp: Mula sa screen ng Mga Setting ng Account ng RackSpace control panel
+    regionSection: Rehiyon
+    region:
+      label: Rehiyon
+    instanceSection: Halimbawa
+    flavor:
+      label: lasa
+  driverUbiquity:
+    accountSection: Access sa Account
+    clientId:
+      label: Reseller ID
+      placeholder: Ang Iyong Ubiquity Hosting API Reseller ID
+    apiUsername:
+      label: Remote ID
+      placeholder: Ang Iyong Ubiquity Hosting Remote ID
+    apiToken:
+      label: Access Key
+      placeholder: Ang iyong Ubiquity Hosting Access Key
+      provided: Ibinigay
+    accountHelp: >-
+      Mahahanap mo ang iyong mga kredensyal sa Ubiquity Hosting API. <a
+      href="https://motion.ubiquityhosting.com/api">dito</a>. Walang account? Matuto pa tungkol sa <a
+      href="http://www.ubiquityhosting.com/">Ubiquity Hosting</a> ngayon!
+    loginAction: 'Susunod: Authenticate at Gumawa ng Bagong Cloud Instance'
+    loadingInstance: Nilo-load ang mga detalye ng paglikha ng cloud instance...
+    instanceSection: Halimbawa
+    regionSection: Rehiyon
+    region:
+      label: Rehiyon
+    image:
+      label: Imahe
+    flavor:
+      label: lasa
+  driverVsphere:
+    accountSection: Access sa Account
+    vcenter:
+      label: vCenter Host
+      placeholder: vCenter o ESXi hostname/IP
+    vcenterPort:
+      label: vCenter Port
+    username:
+      label: Username
+    password:
+      label: Password
+    instanceSection: Halimbawa
+    cpuCount:
+      label: CPUs
+    memorySize:
+      label: Alaala
+      unit: MB
+    diskSize:
+      label: Disk
+      unit: MB
+    boot2dockerUrl:
+      label: OS ISO URL
+      placeholder: 'Default: Pinakabagong image ng boot2docker'
+    schedulingSection: Pag-iiskedyul
+    dataCenter:
+      label: Data Center
+    pool:
+      label: Pool
+    host:
+      label: Host
+      placeholder: Gamitin ang '/' kung gumagamit ng cluster
+    network:
+      label: Network
+    dataStore:
+      label: Tindahan ng Data
+  driverAliyunecs:
+    accountSection: Seksyon ng Pag-access sa Account
+    accessKey:
+      label: Access Key*
+      placeholder: Ang iyong Aliyun Account Access Key
+    accessKeySecret:
+      label: Access Key Secret*
+      placeholder: Ang sikreto ng iyong Susi
+    apiEndpoint:
+      label: Api Endpoint
+      placeholder: Pribadong Aliyun Api Server Endpoint
+    instanceSection: Seksyon ng Instance
+    instanceDescription:
+      label: Paglalarawan ng Halimbawa
+      placeholder: Paglalarawan ng Halimbawa
+    instanceType:
+      label: Uri ng Instance
+      placeholder: Uri ng Instance
+    systemImage:
+      label: Image ng system
+      placeholder: Image ng system
+    instanceTag:
+      label: Tag ng Instance
+      placeholder: Ang iyong Instance Tag sa Aliyun
+    internetMaxBandwidth:
+      label: Internet Max Bandwidth
+      placeholder: 1 hanggang 100
+    aliyunSLB:
+      label: Aliyun SLB ID
+      placeholder: Aliyun SLB ID
+    storageSection: Impormasyon sa Imbakan
+    ioOptimized:
+      label: Na-optimize ang I/O ng storage ng instance
+      placeholder: wala o na-optimize
+    systemDiskCategory:
+      label: Kategorya ng System Disk
+      placeholder: 'Kapag na-optimize ang Storage, maaari kang mag-input ng cloud_efficiency, cloud_ssd o ephemeral_ssd.'
+    dataDiskCategory:
+      label: Kategorya ng Data Disk
+      placeholder: 'Kapag na-optimize ang Storage, maaari kang mag-input ng cloud_efficiency, cloud_ssd o ephemeral_ssd.'
+    dataDiskSize:
+      label: Laki ng Data Disk
+      placeholder: Sukat ng Disk
+    region:
+      label: Rehiyon
+      placeholder: Rehiyon
+    zone:
+      label: Available Zone
+      placeholder: Blangko para sa awtomatikong pagpili
+    networkSection: Seksyon ng Network
+    routeCIDR:
+      label: Ruta CIDR
+      placeholder: hal. 192.168.1.0/24
+    vpcId:
+      label: Aliyun VPC ID
+      placeholder: Aliyun VPC ID
+    vswitchId:
+      label: Aliyun Vswitch ID
+      placeholder: Aliyun Vswitch ID
+    privateIp:
+      label: Pribado IP
+      placeholder: Pribadong IP sa Pribadong Network
+    privateAddressOnly:
+      label: Pribadong Address Lamang
+    securitySection: Seksyon ng Seguridad
+    securityGroup:
+      label: Grupo ng Seguridad
+      placeholder: Grupo ng Seguridad
+    sshPassword:
+      label: SSH Password
+      placeholder: 'Itakda ang Instance SSH Password, Blangko para sa Auto set'
+    errors:
+      nameTooShort: Ang haba ng pangalan ay dapat katumbas o higit sa dalawa.
+      nameNotValid: Ang pangalan ay hindi wasto ayon sa Aliyun ECS hostname na panuntunan.
+      nameTooLong: Ang haba ng pangalan ay dapat katumbas o mas mababa sa tatlumpung.
+      accessKeyRequired: Kinakailangan ang access key.
+      accessSecretRequired: Kinakailangan ang lihim ng pag-access.
+      sshPasswordLengthNotValid: Ang haba ng SSH password ay dapat nasa pagitan ng walo at tatlumpu.
+      sshPasswordInvalidCharacter: Ang password ng SSH ay naglalaman ng mga hindi wastong character.
+      sshPasswordFormatError: >-
+        Ang password ng SSH ay dapat maglaman ng hindi bababa sa tatlo sa apat na uri ng mga sumusunod na character:
+        malalaking titik, maliliit na titik, numero, at mga espesyal na character.
+      nameNotValidForApp: 'Ang pangalan ay hindi wasto ayon sa {appName} hostname na panuntunan.'
+modalAboutComponent:
+  component: Component
+  version: Bersyon
+  cattle: Orchestration Engine
+  cli: CLI
+  ui: User Interface
+  compose: Compose
+  machineService: Host Provisioner
+  close: Isara
+modalAuditlogInfo:
+  header: Karagdagang Impormasyon sa Log
+  request: 'Hiling na Bagay:'
+  response: 'Tugon na Bagay:'
+modalContainerStop:
+  uom: segundo
+  header: Sigurado ka bang gusto mong huminto
+  helpText: Ang container ay sapilitang wawakasan kung hindi ito titigil sa sarili bago mag-expire ang timeout
+  protip: 'ProTip: Hawakan ang {key} key habang nagki-click sa stop upang i-bypass ang kumpirmasyon na ito.'
+  label: Timeout
+  placeholder: '10'
+  button: Tumigil ka
+modalConfirmDeactivate:
+  header: Sigurado ka bang gusto mo
+  protip: 'ProTip: Hawakan ang {key} key habang nagki-click sa {isServiceButton} para i-bypass ang kumpirmasyon na ito.'
+  cancel: Kanselahin
+  buttons:
+    project:
+      message: i-deactivate ang iyong kapaligiran
+      button: I-deactivate
+    environment:
+      message: ihinto ang mga serbisyo para sa
+      button: Itigil ang Serbisyo
+    default:
+      message: i-deactivate
+      button: I-deactivate
+modalEditBackup:
+  edit: I-edit ang Backup
+  create: Gumawa ng Backup
+  nameLabel: Pangalan ng backup
+  backupTarget: Backup Target
+  backupTargetPlaceholder: Pumili ng Backup na target...
+modalEditDriver:
+  header:
+    create: Magdagdag ng Machine Driver
+    edit: I-edit ang Machine Driver
+  url:
+    label: I-download ang URL
+    help: Ang URL para i-download ang machine driver binary 64-bit Linux.
+  uiUrl:
+    label: Custom UI URL
+    help: 'Opsyonal: Ang URL na ilo-load para sa naka-customize na screen ng Add Hosts para sa driver na ito.'
+    link: >-
+      Tingnan ang <a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">PastureStack Web Console</a> para
+      sa karagdagang impormasyon.
+  checksum:
+    label: Checksum
+    help: 'Opsyonal: I-verify na ang na-download na driver ay tumutugma sa inaasahang checksum.'
+modalEditSetting:
+  title: I-edit ang Advanced na Setting
+  name:
+    label: Pangalan
+  value:
+    label: Halaga
+  reset:
+    label: I-reset sa Default
+modalEditSnapshot:
+  edit: I-edit ang Snapshot
+  create: Lumikha ng Snapshot
+  nameLabel: Pangalan ng Snapshot
+modalFeedback:
+  header: 'Maligayang pagdating sa {appName}!'
+  subtitle: 'Bago ka magsimula, mangyaring sabihin sa amin ang kaunti tungkol sa iyong sarili...'
+  send: Magsimula
+modalHostEvacuate:
+  header: Sigurado ka bang gusto mong lumikas
+  helpText: >-
+    Ide-deactivate nito ang (mga) host at tatanggalin ang lahat ng container na hindi pang-imprastraktura na tumatakbo
+    dito.
+  protip: 'ProTip: Hawakan ang {key} key habang nagki-click sa stop upang i-bypass ang kumpirmasyon na ito.'
+  button: Lumikas
+modalProcessError:
+  header: Impormasyon sa Pagbubukod
+  cause: 'Dahilan:'
+  none: N/A
+  stackTrace: 'Stack Trace:'
+  close: Isara
+modalRollbackVolume:
+  title:
+    snapshot: Rollback sa isang Snapshot
+    backup: Rollback sa isang Backup
+modalShell:
+  title: 'Shell: {instanceName}'
+modalWelcome:
+  header: 'Maligayang pagdating sa {appName}!'
+  closeModal: Nakuha ko
+newAliasService:
+  header: Magdagdag ng Alyas ng Serbisyo
+newBalancer:
+  header:
+    add: Magdagdag ng Load Balancer
+    edit: I-edit ang Load Balancer
+    upgrade: I-upgrade ang Load Balancer
+  tabs:
+    ssl: SSL Pagwawakas
+    stickiness: Ang lagkit
+    custom: Custom na haproxy.cfg
+    labels: Mga label
+    scheduling: Pag-iiskedyul
+  custom: >
+    Dagdag <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a> maaaring ilagay dito ang configuration at isasama sa configuration na nabuo ng {appName}.
+  config:
+    prompt: Custom na nilalaman ng haproxy.cfg
+  error:
+    noRules: Pumili ng isa o higit pang mga panuntunan sa port na pakikinggan
+    noSourcePort: Kinakailangan ang Source Port sa bawat panuntunan
+    noRegion: Kinakailangan ang rehiyon para sa custom na target ng serbisyo
+    noEnvironment: Kinakailangan ang kapaligiran para sa custom na target ng serbisyo
+    missingEnvironment: Kinakailangan ang kapaligiran
+    invalidSourcePort: 'Di-wastong source port: ''{num}'''
+    invalidTargetPort: 'Di-wastong target na port: ''{num}'''
+    invalidWeight: 'Di-wastong timbang: ''{num}'''
+    mixedPort: 'Ang Port {num} ay may maraming panuntunan na may magkasalungat na access/protcol'
+    noTarget: Kinakailangan ang target sa bawat panuntunan
+    needsCertificate: Kailangan ng certificate dahil may SSL/TLS port rules
+newCatalog:
+  version:
+    prompt: Pumili ng bersyon...
+    default: 'Ang default sa oras (kasalukuyang {version})'
+  saveUpgrade: Mag-upgrade
+  saveNew: Ilunsad
+  saveConfigure: I-configure
+  upgrade: 'I-upgrade:'
+  catalog: 'Catalog:'
+  category: 'Kategorya:'
+  support: 'Suporta:'
+  official: Na-validate na Template
+  maintainedBy: Pinapanatili ng mga miyembro ng komunidad
+  maintainer: 'Tagapagpanatili:'
+  license: 'Lisensya:'
+  url: 'Proyekto URL:'
+  titleAdd: 'Magdagdag ng {name} Stack'
+  titleUpgrade: 'I-upgrade ang {name} Stack'
+  titleConfigure: 'I-configure ang {name} Stack'
+  templateVersion: Bersyon ng Template
+  selectVersionAdd: Pumili ng bersyon ng template na i-deploy
+  selectVersionUpgrade: Pumili ng bersyon ng template kung saan mag-a-upgrade
+  selectVersionConfigure: Pumili ng bersyon ng template na iko-configure
+  newStack: Bagong Stack
+  config: Mga Pagpipilian sa Pag-configure
+  unknownType: 'Hindi nakikilalang uri ng tanong:'
+  startService: Simulan ang mga serbisyo pagkatapos gumawa
+  preview: Silipin
+  txt: answers.txt
+  noConfig: Ang template na ito ay walang mga pagpipilian sa pagsasaayos
+newContainer:
+  add:
+    container: Magdagdag ng Container
+    vm: Magdagdag ng Virtual Machine
+    service: |
+      Idagdag {numServices, plural, =1 {Serbisyo} other {Mga serbisyo}}
+  upgrade:
+    container: I-upgrade ang Container
+    vm: I-upgrade ang Virtual Machine
+    service: |
+      Mag-upgrade {numServices, plural, =1 {Serbisyo} other {# Serbisyo}}
+  tabs:
+    disks: Mga disk
+    userData: Data ng Gumagamit
+    command: Utos
+    volumes: Mga volume
+    networking: Networking
+    security: Seguridad/Host
+    healthCheck: Health Check
+    labels: Mga label
+    scheduling: Pag-iiskedyul
+    balancing: Pagbabalanse
+    secrets: Mga lihim
+  selectUpgrade: Pumili ng isa o higit pang mga serbisyong ia-upgrade.
+  saveUpgrade: Mag-upgrade
+  saveNew: Lumikha
+  removeSidekick: Alisin ang Sidekick na ito
+  name:
+    placeholder: hal. myapp
+  description:
+    placeholder: hal. Aking Aplikasyon
+  emptyPrimaryService: (Pangunahing Serbisyo)
+  emptySidekick: '(Sidekick #{num})'
+  addSidekickContainer: Magdagdag ng Sidekick Container
+  addSidekickVm: Magdagdag ng Sidekick VM
+newExternalService:
+  header: Magdagdag ng Panlabas na Serbisyo
+  alert: 'Tandaan: Gagamitin lang ito kung ang panlabas na serbisyo ay target ng isang load balancer.'
+newReceiver:
+  title:
+    edit: I-edit ang Receiver
+    add: Magdagdag ng Receiver
+  name:
+    placeholder: hal. scale-web
+  driver:
+    label: Mabait
+  action:
+    label: Aksyon
+    up: Palakihin
+    down: Ibaba ang Scale
+  batchSize:
+    label: I-upgrade ang laki ng batch
+  deleteOption:
+    label: 'Kapag Pinababa, Alisin'
+    mostRecent: Ang pinakakamakailang ginawang Host
+    leastRecent: Ang pinakamatandang Host
+  hostSelector:
+    label: Tagapili ng Host
+    addActionLabel: Magdagdag ng Selector Label
+    help:
+      up: >-
+        Ang mga host na may katugmang mga label ay gagamitin bilang template para sa pag-deploy ng bago {by, plural, =1
+        {host} other {mga host}}.
+      down: Ang mga host na may katugmang mga label ay magiging mga kandidato para maalis sa panahon ng pagbabawas.
+  image:
+    label: Docker Pangalan ng image
+  service:
+    label: Target na Serbisyo
+  serviceSelector:
+    label: Tagapili ng Serbisyo
+    addActionLabel: Magdagdag ng Selector Label
+    help: Maa-upgrade ang mga serbisyong tumutugma sa ibinigay na label
+  amount:
+    label: Sa pamamagitan ng
+  min:
+    label: Minimum na Scale
+    placeholder: hal. 1
+  max:
+    label: Pinakamataas na Scale
+    placeholder: hal. 20
+  payloadFormat:
+    label: Format ng Payload ng Webhook
+    alicloud: Alibaba Cloud Docker Hub
+    dockerhub: Docker Hub
+    azure: Azure Registry ng Container
+  addressType:
+    label: Uri ng Address
+    registry: Pampubliko
+    registry-vpc: VPC
+    registry-internal: Classic
+  tag:
+    label: Tag ng Image
+    placeholder: hal. pinakabago
+    help: Tanging ang registry pushes sa ibinigay na tag ang magdudulot ng pag-upgrade ng serbisyo.
+newSecret:
+  title:
+    edit: I-edit ang Lihim
+    add: Magdagdag ng Lihim
+  name:
+    placeholder: hal. api-token
+  description:
+    placeholder: hal. Lihim na token para sa API
+  value:
+    label: Lihim na Halaga
+    placeholder: Ang lihim na halaga
+pageFooter:
+  about: 'Tungkol sa {appName}'
+  notARelease: (Hindi isang Paglabas)
+  help: Tulong
+  documentation: Dokumentasyon
+  faq: Mga Madalas Itanong
+  issues: Mag-ulat ng Problema
+  download:
+    link: I-download ang CLI
+    headerCli: PastureStack CLI
+    headerCompose: PastureStack Compose
+    mac: Mac OS X
+    windows: Windows
+    linux: Linux
+    deprecated: Hindi na ginagamit
+pagination:
+  multi: >
+    {pages, plural, =0 {0 item} =1 {{count} {count, select, =1 {item} other {Mga bagay}}} other {{from} - {to} ng
+    {count}}}
+pageHeaderEnvironment:
+  namespace: Namespace
+projectRow:
+  none: Walang paglalarawan
+  orchestration: Orkestrasyon
+projectUpgrade:
+  header: I-upgrade ang Kapaligiran
+  detail: >-
+    Kasama sa {appName} {appVersion} ang mga pagbabago na nangangailangan ng pag-upgrade sa mga kasalukuyang serbisyo ng
+    system at mga container ng load balancer.
+  notOwner: Tanging isang may-ari ng environment na ito o isang administrator ang maaaring magsagawa ng pag-upgrade.
+  actionButton: Mag-upgrade Ngayon
+  banner: Ina-upgrade ang Kapaligiran...
+registryRow:
+  address: Address
+  email: Email
+  username: Username
+  created: Nilikha
+reservationParameters:
+  label: Limitasyon ng Mapagkukunan
+  localStorage:
+    labelText: Lokal na Imbakan
+    placeholder: 'Default: Buong host'
+    unit: MB
+  memory:
+    labelText: Alaala
+    placeholder: 'Default: Buong host'
+    unit: MB
+  milliCpu:
+    labelText: CPU
+    placeholder: 'Default: Buong host'
+    unit: mCPU
+saveCancel:
+  saving: Nagse-save...
+  saved: Na-save!
+  edit: I-save
+  create: Lumikha
+  cancel: Kanselahin
+schema:
+  inputBoolean:
+    y: totoo
+    n: Mali
+  inputCertificate:
+    prompt: Pumili ng Sertipiko...
+  inputEnum:
+    option: Pumili ng opsyon...
+  inputService:
+    prompt: Pumili ng Serbisyo...
+    custom:
+      prompt: Custom...
+      placeholder: hal. region1/environment1/stack1/service1
+  inputSecret:
+    prompt: Pumili ng isang Secret...
+schedulingRuleRow:
+  theHost: Ang host
+  must: dapat
+  should: dapat
+  shouldNot: hindi dapat
+  mustNot: hindi dapat
+  haveA: magkaroon ng isang
+  of: ng
+  hostLabel: label ng host
+  containerLabel: container na may label
+  serviceName: serbisyo na may pangalan
+  containerName: container na may pangalan
+serviceLink:
+  withAlias:
+    sameStack: '{service} bilang {alias}'
+    differentStack: '{stack}/{service} bilang {alias}'
+  noAlias:
+    sameStack: '{service}'
+    differentStack: '{stack}/{service}'
+sidekickAddtlInfo:
+  info: Impormasyon
+  image: Imahe
+  entryPoint: Entrypoint
+  command: Utos
+  containers: Mga container
+  noContainers: Walang Container
+  labels: Mga label
+  noLabels: Walang Mga Label
+siteAccess:
+  header: Access sa Site
+  helpText: 'I-configure kung sino ang dapat pahintulutang mag-log in at gumamit ng {appName}.'
+  unrestricted: 'Payagan ang anumang wastong {individuals}'
+  restricted: 'Payagan ang mga miyembro ng Environment, kasama ang Awtorisadong {individuals} at {collection}'
+  required: 'Limitahan ang pag-access sa Awtorisadong {individuals} at {collection} lamang'
+  listHeader: 'Awtorisadong {individuals} at {collection}'
+  noIdentity: wala
+  users: Mga gumagamit
+  groups: Mga grupo
+  organizations: Mga organisasyon
+snapshotTimeline:
+  noData: Walang Snapshot Data
+stackSection:
+  toggleDetails: I-toggle ang mga detalye ng stack
+  outputs: Mga output
+  description: Paglalarawan
+  none: Walang Serbisyo
+  tags: Mga tag
+  container: |
+    {numContainers, plural, =1 {Container} other {Mga container}}
+  service: |
+    {numServices, plural, =1 {Serbisyo} other {Mga serbisyo}}
+  sidekick: |
+    {numSidekicks, plural, =1 {+ 1 Sidekick} other {+ # Sidekicks}}
+  add:
+    service: Magdagdag ng Serbisyo
+    loadBalancer: Magdagdag ng Load Balancer
+    serviceAlias: Magdagdag ng Alyas ng Serbisyo
+    externalService: Magdagdag ng Panlabas na Serbisyo
+    virtualMachine: Magdagdag ng Virtual Machine
+  table:
+    dataTitle:
+      state: Estado
+      serviceName: Pangalan ng Serbisyo
+      kind: Mabait
+      details: Mga Detalye
+      containers: Mga container
+      actions: Mga aksyon
+  upgradeImage: I-upgrade ang Imahe ng Container
+snapshotSection:
+  none: Hindi naka-back up
+  multiple: 'Maramihan: {latestDate}'
+storagePoolSection:
+  outputs: Mga output
+  readOnly: (read-only)
+  hosts:
+    header: Mga host
+    none: Walang Host
+  volumes:
+    header: Mga volume
+    add: Magdagdag ng Volume
+    none: Walang Volume
+  models:
+    table:
+      header:
+        volumeName: Pangalan ng Volume
+        snapshotState: Estado ng Snapshot
+        snapshotName: Pangalan ng Snapshot
+        backedUp: Naka-back Up
+        mounts: 'Mga Mount (Container: Path)'
+svgServiceContainer:
+  sidekicks: Mga sidekick
+swarm:
+  containerSection:
+    state: Estado
+    name: Pangalan ng Container
+    image: Imahe
+    none: Walang Container
+  serviceSection:
+    state: Estado
+    name: Pangalan ng Serbisyo
+    ports: Mga daungan
+    containers: Mga container
+    none: Walang Serbisyo
+swarmTab:
+  dashboard:
+    header: Dashboard
+    dashboard:
+      content: >-
+        Ang Portainer ay isang lightweight management UI na nagbibigay-daan sa iyong madaling pamahalaan ang iyong
+        Docker swarm cluster
+      button: Portainer UI
+telemetryOpt:
+  header: Mga istatistika
+  subtext: >
+    Kapag naka-enable ang opsyong ito, maaaring mangolekta ang installation ng anonymous na configuration information
+    upang makatulong sa pagpapahusay ng {appName}.<br/>Hindi kokolektahin ang mga partikular na resource name o address,
+    at hindi ibabahagi sa third party ang mabubuong statistics.
+  learnMore:
+    label: Matuto pa
+  label: Payagan ang pangongolekta ng anonymous na statistics
+tooltipLink:
+  list: Listahan
+  linkGraph: Link Graph
+  composeYaml: Compose YAML
+tooltipWarning:
+  notConfigured: Hindi Na-configure ang Access Control
+  dismiss: I-dismiss
+upgradeBtn:
+  version:
+    current: Kasalukuyan
+  status:
+    none: wala
+    loading: Sinusuri ang mga upgrade...
+    current: Napapanahon
+    available: Available ang upgrade
+    inprogress: Kasalukuyang nag-upgrade
+    upgraded: 'Na-upgrade: Tapusin ang Pag-upgrade'
+    notfound: Hindi nahanap ang bersyon ng template
+    error: Error sa pagsuri para sa pag-upgrade
+    required: Kinakailangan ang pag-upgrade
+viewEditDescription:
+  form:
+    name:
+      placeholder: hal. lab
+    description:
+      placeholder: hal. Kapaligiran para sa eksperimento ng developer
+viewEditProject:
+  nativeEngine: Built-in na Engine
+  showEdit:
+    edit: 'I-edit ang Environment:'
+    add: Magdagdag ng Kapaligiran
+    template: Template ng Kapaligiran
+    accessControl: Access Control
+    noMembers: Magdagdag ng isa o higit pang miyembro na maaaring gumamit ng environment na ito.
+  networkPolicy:
+    label: Patakaran sa Network
+    description: Kontrolin kung anong mga container ang pinapayagang makipag-ugnayan sa isa't isa sa Pamamahala ng Network.
+    unsupported: >-
+      Ang kapaligirang ito ay may mga panuntunan sa patakaran sa network na hindi pa sinusuportahan ng UI.  Pakigamit
+      ang API para pamahalaan ang patakaran.
+    noManager: >-
+      Available lang ang Mga Patakaran sa Network para sa mga environment na gumagamit ng PastureStack orchestration engine na may
+      naka-deploy na template ng imprastraktura ng Network Policy Manager.
+    withinStack: Sa loob ng Stack
+    withinService: Sa loob ng Serbisyo
+    withinLinked: Sa pagitan ng Mga Naka-link na Serbisyo
+    default: Lahat ng Iba pa
+    allow: Payagan
+    deny: Tanggihan
+  header: 'kapaligiran:'
+  description: Paglalarawan
+  helpBlock: |
+    Hindi pinagana ang Access Control.<br/>
+    Ang sinumang may access sa API/UI ay kumikilos bilang isang admin at makakagamit ng anumang kapaligiran.
+vmConsole:
+  header: 'Console:'
+  protip: 'ProTip: Hawakan ang {key} key kapag binubuksan ang shell access para maglunsad ng bagong window.'
+  canvas: Hindi suportado ang canvas.
+  footerActions:
+    buttonSend: Ipadala ang Ctrl-Alt-Delete
+    buttonCancel: Isara
+volumeRow:
+  mounts:
+    readOnly: (read-only)
+waitOrchestration:
+  count: '({sub} ng {count})'
+waitKubernetes:
+  addHost: Magdagdag ng kahit isang host
+  activateHost: Naghihintay na maging aktibo ang isang host
+  createStack: Paglikha ng Kubernetes system stack
+  startServices: Pagsisimula ng mga serbisyo
+  waitApi: Naghihintay para sa Kubernetes API
+waitMesos:
+  addHost: Magdagdag ng hindi bababa sa tatlong host
+  activateHost: Hinihintay na maging aktibo ang mga host
+  createStack: Paglikha ng Mesos system stack
+  startServices: Pagsisimula ng mga serbisyo
+  waitApi: Naghihintay para sa nangungunang Mesos Master
+waitSwarm:
+  addHost: Magdagdag ng kahit isang host
+  activateHost: Naghihintay na maging aktibo ang isang host
+  createStack: Paglikha ng Swarm system stack
+  startServices: Pagsisimula ng mga serbisyo
+containerChoices:
+  hostGroup: 'Host: {name}'
+  hostGroupWithState: 'Host: {name} ({state})'
+  unknownHost: 'Host: ???'
+  containerOption: '{name}'
+  containerOptionWithState: '{name} ({state})'
+driver:
+  multiHostNames: 'Pangalanan ang mga host <b>{first}</b> — <b>{last}</b>'
+allServices:
+  stackGroup: 'Stack: {name}'
+  noName: '(Stack: {id})'
+nav:
+  srToggleNav: I-toggle ang Navigation
+  srToggleDropdown: Buksan o isara ang dropdown
+  environment:
+    label: Kapaligiran
+    all: Lahat ng Kapaligiran
+    your: Ang iyong mga kapaligiran
+    selected: Napiling Kapaligiran
+    manage: Pamahalaan ang Mga Kapaligiran
+    edit: 'I-edit ang "{name}"'
+  namespace:
+    label: Namespace
+    manage: Pamahalaan ang Mga Namespace
+  notReady: Nagse-set Up...
+  k8s:
+    tab: Kubernetes
+    cli: CLI
+    dashboard: Dashboard
+    system: Mga Stack ng Infrastructure
+  swarm:
+    tab: Swarm
+    cli: CLI
+    dashboard: Portainer
+    system: Imprastraktura
+  mesos:
+    tab: Mesos
+    web: Pangkalahatang-ideya
+    system: Imprastraktura
+  cattle:
+    tab: Mga stack
+    all: Lahat
+    user: Gumagamit
+    system: Imprastraktura
+  catalog:
+    tab: Catalog
+    all: Lahat
+    library: Aklatan
+    community: Komunidad
+  infra:
+    tab: Imprastraktura
+    hosts: Mga host
+    containers: Mga container
+    vms: Mga Virtual Machine
+    storagePage: Imbakan
+    backupTarget: Mga Backup na Target
+    certificates: Mga sertipiko
+    registries: Mga rehistro
+    secrets: Mga lihim
+  admin:
+    tab: Admin
+    audit: Talaan ng Pag-audit
+    processes: Mga proseso
+    accounts: Mga account
+    access: Access Control
+    machine: Mga Driver ng Makina
+    settings: Mga setting
+    ha: Mataas na Availability
+  api:
+    tab: API
+    keys: Mga susi
+    hooks: Mga Webhook
+  user:
+    label: 'Menu ng Gumagamit: {username}'
+    logout: Mag-log out
+    yourAccount: Iyong Account
+    changePassword: Baguhin ang Password
+    theme: Tema
+    themeLight: Liwanag
+    themeAuto: Awtomatiko
+    themeDark: Madilim
+  noHosts:
+    prefix: >-
+      Bago magdagdag ng unang service o maglunsad ng container, basahin muna ang <a
+      href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">gabay sa compatibility
+      ng Docker</a>:
+    link: Magdagdag ng host
+    suffix: ''
+  noHostsWindows:
+    prefix: 'Bago magdagdag ng unang service o maglunsad ng container, kailangan munang magdagdag ng Windows host.'
+    link: Magdagdag ng host
+    suffix: ''
+action:
+  activate: I-activate
+  backup: Gumawa ng backup snapshot
+  deleteBackup: Tanggalin ang Backup
+  cancelUpgrade: Kanselahin ang Pag-upgrade
+  cancelRollback: Kanselahin ang Rollback
+  clone: I-clone
+  console: Buksan ang Console
+  deactivate: I-deactivate
+  edit: I-edit
+  evacuate: Lumikas
+  execute: Ipatupad ang Shell
+  exportConfig: I-export ang Config
+  finishUpgrade: Tapusin ang Pag-upgrade
+  logs: Tingnan ang Mga Log
+  machineConfig: Configuration ng machine
+  purge: Permanenteng alisin
+  remove: Tanggalin
+  replay: I-replay
+  restart: I-restart
+  restore: Ibalik
+  retry: Subukan muli
+  rollback: Ibalik sa naunang bersyon
+  revertToSnapshot: I-revert ang Volume sa Snapshot
+  restoreFromBackup: Ibalik ang Volume mula sa Backup
+  setDefault: Itakda bilang Default
+  snapshot: Gumawa ng snapshot
+  start: Magsimula
+  startServices: Simulan ang Mga Serbisyo
+  stop: Tumigil ka
+  stopServices: Itigil ang Serbisyo
+  switchNamespace: Lumipat sa Namespace na ito
+  switchEnvironment: Lumipat sa Kapaligiran na ito
+  upgrade: Mag-upgrade
+  upgradeOrEdit: I-upgrade/I-edit
+  viewConfig: Tingnan ang Config
+  viewGraph: Tingnan ang Graph
+  viewInApi: Tingnan sa API
+  viewInstance: Tingnan ang Instance
+validation:
+  required: '"{key}" ay kinakailangan'
+  arrayLength:
+    exactly: '"{key}"dapat maglaman {count, plural, =1 {# item} other {# item}}'
+    between: '"{key}" ay dapat maglaman ng pagitan {min} at {max} {max, plural, =1 {aytem} other {mga bagay}}'
+    min: '"{key}" ay dapat maglaman ng hindi bababa sa {count} {count, plural, =1 {aytem} other {mga bagay}}'
+    max: '"{key}" ay dapat naglalaman ng higit sa lahat {count} {count, plural, =1 {aytem} other {mga bagay}}'
+  stringLength:
+    exactly: '"{key}"dapat {count, plural, =1 {# character} other {# character}}'
+    between: '"{key}"dapat nasa pagitan {min} at {max} {max, plural, =1 {karakter} other {mga karakter}}'
+    min: '"{key}"dapat hindi bababa sa {count} {count, plural, =1 {karakter} other {mga karakter}}'
+    max: '"{key}"Dapat ay higit sa lahat {count} {count, plural, =1 {karakter} other {mga karakter}}'
+  number:
+    exactly: 'Ang "{key}" ay dapat na eksaktong {val}'
+    between: 'Ang "{key}" ay dapat nasa pagitan ng {min} at {max}'
+    min: 'Ang "{key}" ay dapat hindi bababa sa {val}'
+    max: 'Ang "{key}" ay dapat na hindi hihigit sa {val}'
+  chars: '"{key}" naglalaman ng {count, plural, =1 {isang hindi wastong karakter} other {# di-wastong mga character}}: {chars}'
+model:
+  account:
+    kind:
+      registeredAgent: Nakarehistrong Ahente
+      agent: Ahente
+      service: Serbisyo
+      user: Gumagamit
+      admin: Admin
+      project: Kapaligiran
+  identity:
+    displayType:
+      user: Gumagamit
+      team: Koponan
+      group: Grupo
+      org: Organisasyon
+      localUser: Lokal na Gumagamit
+      unknown: '{type}?'
+  openldapconfig:
+    server:
+      label: Hostname o IP Address
+    serviceAccountUsername:
+      label: Username ng Account ng Serbisyo
+    serviceAccountPassword:
+      label: Password ng Account ng Serbisyo
+    domain:
+      label: Base sa Paghahanap ng Gumagamit
+      placeholder: 'hal. ou=Users,dc=mycompany,dc=com'
+      help: Ang mga user lang sa ibaba ng base na ito ang gagamitin.
+  projectMember:
+    role:
+      member: Miyembro
+      owner: May-ari
+      readonly: Basahin lamang
+      restricted: Pinaghihigpitan
+  scaleService:
+    min: Minimum na Scale
+    max: Pinakamataas na Scale
+    amount: Sa pamamagitan ng

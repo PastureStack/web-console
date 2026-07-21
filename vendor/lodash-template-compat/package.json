@@ -1,0 +1,10 @@
+{
+  "name": "lodash.template",
+  "version": "4.18.1-rc16.0",
+  "description": "RC16 compatibility wrapper around lodash template from maintained lodash 4.",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "lodash-real": "npm:lodash@4.17.21"
+  }
+}

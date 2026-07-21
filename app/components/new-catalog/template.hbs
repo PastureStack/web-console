@@ -14,7 +14,7 @@
 <section class="{{sectionClass}} row">
   <div class="col-sm-12 col-md-3">
     {{#if templateResource.links.icon}}
-      <img src={{templateResource.links.icon}} alt={{templateResource.name}} class="r-mr20" style="height:75px;max-width: 100%;">
+      <img src={{templateResource.links.icon}} alt={{templateResource.localizedName}} class="r-mr20" style="height:75px;max-width: 100%;">
     {{/if}}
 
     <div>
@@ -49,9 +49,9 @@
       </div>
     {{else}}
       <h2 class="r-mb10">
-        {{t (if editing titleUpgrade titleAdd) name=templateResource.name}}
+        {{t (if editing titleUpgrade titleAdd) name=templateResource.localizedName}}
       </h2>
-      <p>{{templateResource.description}}</p>
+      <p>{{templateResource.localizedDescription}}</p>
     {{/if}}
   {{/if}}
 </section>

@@ -1,9 +1,13 @@
 import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
-import ShellQuote from 'npm:shell-quote';
+import ShellQuote from 'ui/utils/shell-quote';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { compare as compareVersion } from 'ui/utils/parse-version';
+import {
+  localizedCatalogQuestionField,
+  localizedCatalogReadme
+} from 'ui/utils/localized-catalog-field';
 
 export default Ember.Component.extend(NewOrEdit, {
   intl: Ember.inject.service(),
@@ -83,6 +87,19 @@ export default Ember.Component.extend(NewOrEdit, {
   updateReadme: function() {
     let model = this.get('selectedTemplateModel');
     this.set('readmeContent', null);
+    if ( model ) {
+      let localizedReadme = localizedCatalogReadme(
+        model.get('files'),
+        this.get('intl._locale')
+      );
+
+      if ( localizedReadme ) {
+        this.set('readmeContent', localizedReadme);
+        this.set('loadingReadme', false);
+        return;
+      }
+    }
+
     if ( model && model.hasLink('readme') ) {
       this.set('loadingReadme', true);
       model.followLink('readme').then((response) => {
@@ -149,7 +166,25 @@ export default Ember.Component.extend(NewOrEdit, {
 
       this.get('catalog').fetchByUrl(url).then((response) => {
         if (response.questions) {
+          let labels = response.get('labels') || {};
+          let locale = this.get('intl._locale');
+
           response.questions.forEach((item) => {
+            item.label = localizedCatalogQuestionField(
+              labels,
+              locale,
+              item.variable,
+              'label',
+              item.label
+            );
+            item.description = localizedCatalogQuestionField(
+              labels,
+              locale,
+              item.variable,
+              'description',
+              item.description
+            );
+
             // This will be the component that is rendered to edit this answer
             item.inputComponent = 'schema/input-'+item.type;
 
