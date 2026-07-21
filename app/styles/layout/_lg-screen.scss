@@ -1,3 +1,5 @@
+$screen-lg: null !default;
+
 @media (min-width: $screen-lg) {
   HEADER NAV.navbar .nav > LI > A {
     padding: 0 20px;

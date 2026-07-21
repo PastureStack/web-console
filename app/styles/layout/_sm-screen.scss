@@ -1,3 +1,9 @@
+$lightGray: null !default;
+$screen-sm: null !default;
+$screen-sm-max: null !default;
+$screen-xs: null !default;
+$table-border-color: null !default;
+
 /*xs*/
 @media (min-width: $screen-xs) {
   // 480px
