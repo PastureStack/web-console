@@ -1,15 +1,13 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
-moduleFor('controller:hosts', 'HostsController', {
-  // Specify the other units that are required for this test.
-  // needs: ['controller:foo']
-});
+import Ember from 'ember';
+import HostsController from 'ui/hosts/controller';
+
+module('Unit | Controller | hosts');
 
 // Replace this with your real tests.
 test('it exists', function(assert) {
-  var controller = this.subject();
+  var controller = HostsController.create();
   assert.ok(controller);
+  Ember.run(() => controller.destroy());
 });

@@ -1,0 +1,333 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+import sys
+
+base_imports = []
+
+entrypoints = {
+    Path("app/styles/app-light.scss"): base_imports,
+    Path("app/styles/app-dark.scss"): base_imports,
+}
+
+expected_remaining_import_boundaries = {}
+
+load_css_expected = [
+    "app/styles/helpers/functions",
+    "app/styles/base/fonts",
+    "vendor/bootstrap-sass/assets/stylesheets/bootstrap",
+    "vendor/bootswatch-cosmo/bootswatch",
+    "app/styles/vendors/liquidfire-tweak",
+    "app/styles/vendors/copy-to-clipboard",
+    "app/styles/vendors/prism-theme",
+    "vendor/ember-power-select/app/styles/ember-power-select",
+    "app/styles/vendors/power-select",
+    "app/styles/vendors/bootstrap-tweak",
+    "app/styles/layout/header",
+    "app/styles/layout/footer",
+    "app/styles/layout/layout",
+    "app/styles/layout/flex-box",
+    "app/styles/components/growl",
+    "app/styles/components/resource-actions",
+    "app/styles/components/login",
+    "app/styles/components/progress-bar",
+    "app/styles/components/pod",
+    "app/styles/components/github-avatar",
+    "app/styles/components/slider",
+    "app/styles/components/sortable",
+    "app/styles/components/spark-line",
+    "app/styles/components/multi-stats",
+    "app/styles/components/tooltip",
+    "app/styles/components/container-shell",
+    "app/styles/components/timeline",
+    "app/styles/components/modals",
+    "app/styles/components/catalog-box",
+    "app/styles/components/input-service",
+    "app/styles/components/hero-add-service",
+    "app/styles/components/project-upgrade",
+    "app/styles/pages/loading",
+    "app/styles/pages/fail-whale",
+    "app/styles/pages/host",
+    "app/styles/pages/registry",
+    "app/styles/pages/stack",
+    "app/styles/pages/container",
+    "app/styles/pages/about",
+    "app/styles/pages/welcome",
+    "app/styles/pages/settings",
+    "app/styles/pages/catalog",
+    "app/styles/pages/service-addtl-info",
+    "app/styles/pages/virtualmachine",
+    "app/styles/pages/auth-ldap",
+    "app/styles/layout/lg-screen",
+    "app/styles/layout/md-screen",
+    "app/styles/layout/sm-screen",
+    "app/styles/layout/xs-screen",
+]
+
+base_uses = [
+    "sass:meta",
+    "app/styles/base/colors",
+    "vendor/icons/variables",
+    "vendor/bootswatch-cosmo/variables",
+    "{theme}",
+    "app/styles/helpers/mixins",
+    "app/styles/helpers/bootstrap-root-bridge",
+]
+
+use_expected = {
+    Path("app/styles/app-light.scss"): [
+        item.format(theme="app/styles/themes/light") for item in base_uses
+    ],
+    Path("app/styles/app-dark.scss"): [
+        item.format(theme="app/styles/themes/dark") for item in base_uses
+    ],
+}
+
+configured_load_css_expected = {
+    "vendor/bootstrap-sass/assets/stylesheets/bootstrap": ['$with: $bootstrap-config'],
+    "app/styles/vendors/copy-to-clipboard": ['"brand-info": $brand-info', '"brand-primary-dark": $brand-primary-dark', '"green": $green', '"pre-bg": $pre-bg', '"primary": $primary'],
+    "vendor/bootswatch-cosmo/bootswatch": ['"brand-danger": $brand-danger', '"brand-info": $brand-info', '"brand-primary": $brand-primary', '"brand-success": $brand-success', '"brand-warning": $brand-warning', '"state-danger-bg": $state-danger-bg', '"state-success-bg": $state-success-bg', '"state-warning-bg": $state-warning-bg', '"text-color": $text-color'],
+    "app/styles/vendors/power-select": ['"accent-two": $accent-two', '"bottom-row": $bottom-row', '"dropdown-border": $dropdown-border', '"input-bg": $input-bg', '"line-height-small": $line-height-small', '"link-color": $link-color', '"padding-small-horizontal": $padding-small-horizontal', '"padding-small-vertical": $padding-small-vertical', '"table-bg-accent": $table-bg-accent', '"table-bg-hover": $table-bg-hover', '"text-color": $text-color'],
+    "app/styles/vendors/bootstrap-tweak": ['"accent-two": $accent-two', '"blueTwo": $blueTwo', '"body-bg": $body-bg', '"bold-weight": $bold-weight', '"border-radius-base": $border-radius-base', '"brand-danger": $brand-danger', '"brand-info": $brand-info', '"brand-primary": $brand-primary', '"brand-success": $brand-success', '"brand-warning": $brand-warning', '"btn-danger-hover": $btn-danger-hover', '"btn-default-bg": $btn-default-bg', '"btn-default-border": $btn-default-border', '"btn-default-color": $btn-default-color', '"btn-default-hover": $btn-default-hover', '"btn-disabled-bg": $btn-disabled-bg', '"btn-disabled-color": $btn-disabled-color', '"btn-primary-bg": $btn-primary-bg', '"btn-primary-border": $btn-primary-border', '"btn-primary-color": $btn-primary-color', '"btn-primary-hover": $btn-primary-hover', '"dropdown-bg": $dropdown-bg', '"dropdown-link-color": $dropdown-link-color', '"greenDark": $greenDark', '"icon-chevron-down": $icon-chevron-down', '"icon-chevron-up": $icon-chevron-up', '"input-bg": $input-bg', '"input-border": $input-border', '"input-color": $input-color', '"lightGray": $lightGray', '"lightGrayTwo": $lightGrayTwo', '"lightTealDark": $lightTealDark', '"line-height-computed": $line-height-computed', '"link-color": $link-color', '"midGray": $midGray', '"midGrayDark": $midGrayDark', '"normal-weight": $normal-weight', '"page-header-border-color": $page-header-border-color', '"primary": $primary', '"primaryDark": $primaryDark', '"redDark": $redDark', '"table-bg": $table-bg', '"table-border-color": $table-border-color', '"tealTwoDark": $tealTwoDark', '"text-color": $text-color', '"well-bg": $well-bg', '"yellowDark": $yellowDark'],
+    "app/styles/layout/header": ['"brand-warning": $brand-warning', '"btn-default-color": $btn-default-color', '"cursor-disabled": $cursor-disabled', '"dropdown-bg": $dropdown-bg', '"dropdown-border": $dropdown-border', '"dropdown-link-active-bg": $dropdown-link-active-bg', '"kubbtn": $kubbtn', '"lightGray": $lightGray', '"lightTeal": $lightTeal', '"link-color": $link-color', '"logo-bg": $logo-bg', '"navbar-height": $navbar-height', '"project-btn": $project-btn', '"text-color": $text-color', '"text-muted": $text-muted', '"top-row": $top-row'],
+    "app/styles/layout/footer": ['"footer": $footer', '"midGrayDark": $midGrayDark'],
+    "app/styles/layout/layout": ['"accent-two": $accent-two', '"body-bg": $body-bg', '"bold-weight": $bold-weight', '"brand-primary": $brand-primary', '"font-size-small": $font-size-small', '"icon-check": $icon-check', '"lightGrayDark": $lightGrayDark', '"lightGrayTwo": $lightGrayTwo', '"lightestGray": $lightestGray', '"line-height-base": $line-height-base', '"line-height-computed": $line-height-computed', '"main-padding": $main-padding', '"midGray": $midGray', '"normal-weight": $normal-weight', '"orange": $orange', '"page-header-border-color": $page-header-border-color', '"primary": $primary', '"tab-bg": $tab-bg', '"tab-color": $tab-color', '"tab-hover": $tab-hover', '"table-bg-accent": $table-bg-accent', '"table-bg-hover": $table-bg-hover', '"table-border-color": $table-border-color', '"table-cell-padding": $table-cell-padding', '"tealTwo": $tealTwo', '"well-bg": $well-bg', '"well-border": $well-border'],
+    "app/styles/layout/flex-box": ['"table-border-color": $table-border-color'],
+    "app/styles/components/growl": ['"brand-danger": $brand-danger'],
+    "app/styles/components/resource-actions": ['"text-color": $text-color'],
+    "app/styles/components/login": ['"primary": $primary'],
+    "app/styles/components/progress-bar": ['"lightestGray": $lightestGray'],
+    "app/styles/components/pod": ['"accent-one": $accent-one', '"border-radius-base": $border-radius-base', '"brand-primary-dark": $brand-primary-dark', '"btn-default-bg": $btn-default-bg', '"btn-default-color": $btn-default-color', '"lightGray": $lightGray', '"link-color": $link-color', '"link-hover-color": $link-hover-color', '"normal-weight": $normal-weight', '"table-bg": $table-bg', '"table-bg-accent": $table-bg-accent', '"table-border-color": $table-border-color', '"text-color": $text-color'],
+    "app/styles/components/slider": ['"blueTwo": $blueTwo', '"lightGray": $lightGray', '"lightGrayDark": $lightGrayDark', '"midGray": $midGray', '"midGrayDark": $midGrayDark'],
+    "app/styles/components/sortable": ['"lightGrayTwo": $lightGrayTwo', '"midGray": $midGray', '"midGrayDark": $midGrayDark', '"table-bg-hover": $table-bg-hover', '"well-bg": $well-bg'],
+    "app/styles/components/spark-line": ['"blueDark": $blueDark', '"green": $green', '"table-bg-accent": $table-bg-accent', '"teal": $teal', '"yellowTwo": $yellowTwo'],
+    "app/styles/components/multi-stats": ['"blueDark": $blueDark', '"green": $green', '"screen-sm-max": $screen-sm-max', '"screen-sm-min": $screen-sm-min', '"screen-xs-max": $screen-xs-max', '"shadow": $shadow', '"table-bg": $table-bg', '"table-border-color": $table-border-color', '"teal": $teal', '"yellow": $yellow', '"yellowDark": $yellowDark'],
+    "app/styles/components/tooltip": ['"lightTeal": $lightTeal', '"lightTealDark": $lightTealDark', '"primary": $primary', '"primaryDark": $primaryDark', '"redDark": $redDark'],
+    "app/styles/components/timeline": ['"lightGray": $lightGray', '"navyTwoDark": $navyTwoDark', '"orangeDark": $orangeDark'],
+    "app/styles/components/github-avatar": ['"lightGray": $lightGray'],
+    "app/styles/components/catalog-box": ['"accent-one": $accent-one', '"blueTwo": $blueTwo', '"greenTwo": $greenTwo', '"greenTwoDark": $greenTwoDark', '"icon-pasture-stack": $icon-pasture-stack', '"lightTeal": $lightTeal', '"lightTealDark": $lightTealDark', '"primary": $primary', '"primaryDark": $primaryDark', '"table-bg-accent": $table-bg-accent'],
+    "app/styles/pages/loading": ['"midGray": $midGray', '"yellowDark": $yellowDark'],
+    "app/styles/pages/fail-whale": ['"lightTeal": $lightTeal', '"teal": $teal'],
+    "app/styles/pages/about": ['"bold-weight": $bold-weight', '"screen-sm-max": $screen-sm-max'],
+    "app/styles/pages/welcome": ['"border-radius-large": $border-radius-large', '"brand-info": $brand-info', '"page-header-border-color": $page-header-border-color', '"well-bg": $well-bg'],
+    "app/styles/pages/settings": ['"light-grey": $light-grey'],
+    "app/styles/pages/catalog": ['"bold-weight": $bold-weight'],
+    "app/styles/pages/service-addtl-info": ['"page-header-border-color": $page-header-border-color', '"red": $red', '"shadow": $shadow', '"tab-active-bg": $tab-active-bg', '"table-border-color": $table-border-color', '"well-bg": $well-bg'],
+    "app/styles/pages/stack": ['"accent-three": $accent-three', '"accent-two": $accent-two', '"blueDark": $blueDark', '"bold-weight": $bold-weight', '"brand-danger": $brand-danger', '"brand-info": $brand-info', '"brand-success": $brand-success', '"brand-warning": $brand-warning', '"light-grey": $light-grey', '"midGray": $midGray', '"table-bg": $table-bg', '"table-bg-accent": $table-bg-accent', '"table-border-color": $table-border-color', '"text-color": $text-color', '"text-muted": $text-muted', '"well-bg": $well-bg'],
+    "app/styles/layout/lg-screen": ['"screen-lg": $screen-lg'],
+    "app/styles/layout/md-screen": ['"screen-md": $screen-md', '"screen-md-max": $screen-md-max'],
+    "app/styles/layout/sm-screen": ['"lightGray": $lightGray', '"screen-sm": $screen-sm', '"screen-sm-max": $screen-sm-max', '"screen-xs": $screen-xs', '"table-border-color": $table-border-color'],
+    "app/styles/layout/xs-screen": ['"accent-two": $accent-two', '"brand-info": $brand-info', '"link-color": $link-color', '"screen-xs-max": $screen-xs-max', '"table-border-color": $table-border-color', '"well-bg": $well-bg'],
+}
+
+import_re = re.compile(r'^\s*@import\s+["\']([^"\']+)["\'];\s*$')
+load_css_re = re.compile(r'^\s*@include\s+meta\.load-css\(["\']([^"\']+)["\'](?:\s*,.*)?\);\s*$')
+use_re = re.compile(r'^\s*@use\s+["\']([^"\']+)["\'](?:\s+as\s+(?:\*|[A-Za-z_-][\w-]*))?;\s*$')
+global_dependency_re = re.compile(r"(?<![\w-])\$[A-Za-z_-][\w-]*|@include\s+|@extend\s+|^\s*@import\s+", re.M)
+variable_re = re.compile(r"^\s*(\$[A-Za-z_-][\w-]*)\s*:", re.M)
+bootstrap_config_key_re = re.compile(r'"([^"]+)":')
+
+
+def variable_aliases(path, namespace):
+    return [
+        f"{name}: {namespace}.{name};"
+        for name in variable_re.findall(Path(path).read_text(encoding="utf-8"))
+    ]
+
+
+compatibility_aliases = {
+    "color": variable_aliases("app/styles/base/_colors.scss", "colors"),
+    "icon": variable_aliases("vendor/icons/variables.scss", "icons"),
+    "bootswatch": variable_aliases("vendor/bootswatch-cosmo/_variables.scss", "bootswatch"),
+}
+
+theme_aliases = {
+    Path("app/styles/app-light.scss"): variable_aliases("app/styles/themes/_light.scss", "theme"),
+    Path("app/styles/app-dark.scss"): variable_aliases("app/styles/themes/_dark.scss", "theme"),
+}
+
+bootstrap_default_only_variables = {
+    "bootstrap-sass-asset-helper",
+    "btn-border-radius-base",
+    "btn-border-radius-large",
+    "btn-border-radius-small",
+    "form-group-margin-bottom",
+    "zindex-modal-background",
+    "nav-tabs-border-color",
+    "nav-tabs-link-hover-border-color",
+    "nav-tabs-active-link-hover-bg",
+    "nav-tabs-active-link-hover-color",
+    "nav-tabs-active-link-hover-border-color",
+    "nav-tabs-justified-link-border-color",
+    "nav-tabs-justified-active-link-border-color",
+    "jumbotron-heading-font-size",
+    "dl-horizontal-breakpoint",
+}
+
+bootstrap_variable_names = {
+    name[1:]
+    for name in variable_re.findall(
+        Path("vendor/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss").read_text(encoding="utf-8")
+    )
+}
+bootstrap_config_expected = bootstrap_variable_names - bootstrap_default_only_variables
+
+
+def bootstrap_config_keys(source):
+    match = re.search(r"\$bootstrap-config:\s*\((.*?)\);", source, re.S)
+    if not match:
+        return set()
+    return set(bootstrap_config_key_re.findall(match.group(1)))
+
+
+def app_style_partial(import_name):
+    if not import_name.startswith("app/styles/"):
+        return None
+    parts = Path(import_name)
+    return Path(*parts.parts[:-1]) / f"_{parts.name}.scss"
+
+
+def remaining_import_class(import_name):
+    if import_name.startswith(("vendor/", "app/styles/base/", "app/styles/helpers/")):
+        return "foundation"
+    if import_name.startswith("app/styles/themes/"):
+        return "theme"
+    if not import_name.startswith("app/styles/"):
+        return "vendor"
+
+    path = app_style_partial(import_name)
+    if path is None or not path.is_file():
+        return "missing"
+
+    source = path.read_text(encoding="utf-8")
+    stripped_source = "\n".join(
+        line for line in source.splitlines()
+        if not line.strip().startswith("//")
+    )
+    if not global_dependency_re.search(stripped_source):
+        return "css-only"
+    return "global-dependent"
+
+failures = []
+class_counts = {}
+boundary_counts = {}
+
+for path, expected_imports in entrypoints.items():
+    if not path.is_file():
+        failures.append(f"SASS_IMPORT_ENTRYPOINT_MISSING file={path}")
+        continue
+
+    imports = []
+    load_css = []
+    uses = []
+    load_css_lines = {}
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        import_match = import_re.match(line)
+        if import_match:
+            imports.append(import_match.group(1))
+        elif "@import" in line:
+            failures.append(f"SASS_IMPORT_UNPARSED file={path}:{number} line={line.strip()}")
+
+        load_css_match = load_css_re.match(line)
+        if load_css_match:
+            load_css.append(load_css_match.group(1))
+            load_css_lines[load_css_match.group(1)] = line.strip()
+
+        use_match = use_re.match(line)
+        if use_match:
+            uses.append(use_match.group(1))
+
+    if imports != expected_imports:
+        failures.append(
+            f"SASS_IMPORT_BOUNDARY_CHANGED file={path} expected_count={len(expected_imports)} actual_count={len(imports)}"
+        )
+        missing = [item for item in expected_imports if item not in imports]
+        extra = [item for item in imports if item not in expected_imports]
+        if missing:
+            failures.append(f"SASS_IMPORT_BOUNDARY_MISSING file={path} imports={','.join(missing)}")
+        if extra:
+            failures.append(f"SASS_IMPORT_BOUNDARY_EXTRA file={path} imports={','.join(extra)}")
+
+    if load_css != load_css_expected:
+        failures.append(
+            f"SASS_LOAD_CSS_BOUNDARY_CHANGED file={path} expected_count={len(load_css_expected)} actual_count={len(load_css)}"
+        )
+
+    expected_uses = use_expected[path]
+    if uses != expected_uses:
+        failures.append(
+            f"SASS_USE_BOUNDARY_CHANGED file={path} expected_count={len(expected_uses)} actual_count={len(uses)}"
+        )
+        missing_uses = [item for item in expected_uses if item not in uses]
+        extra_uses = [item for item in uses if item not in expected_uses]
+        if missing_uses:
+            failures.append(f"SASS_USE_BOUNDARY_MISSING file={path} uses={','.join(missing_uses)}")
+        if extra_uses:
+            failures.append(f"SASS_USE_BOUNDARY_EXTRA file={path} uses={','.join(extra_uses)}")
+
+    for name, expected_configs in configured_load_css_expected.items():
+        line = load_css_lines.get(name, "")
+        for expected_config in expected_configs:
+            if expected_config not in line:
+                failures.append(f"SASS_CONFIGURED_LOAD_CSS_MISSING file={path} import={name} expected={expected_config}")
+
+    source = path.read_text(encoding="utf-8")
+    actual_bootstrap_config_keys = bootstrap_config_keys(source)
+    if not actual_bootstrap_config_keys:
+        failures.append(f"SASS_BOOTSTRAP_CONFIG_MISSING file={path}")
+    else:
+        missing_bootstrap_config = sorted(bootstrap_config_expected - actual_bootstrap_config_keys)
+        extra_bootstrap_config = sorted(actual_bootstrap_config_keys - bootstrap_config_expected)
+        if missing_bootstrap_config:
+            failures.append(
+                f"SASS_BOOTSTRAP_CONFIG_MISSING_KEYS file={path} keys={','.join(missing_bootstrap_config)}"
+            )
+        if extra_bootstrap_config:
+            failures.append(
+                f"SASS_BOOTSTRAP_CONFIG_EXTRA_KEYS file={path} keys={','.join(extra_bootstrap_config)}"
+            )
+
+    for alias_type, expected_aliases in compatibility_aliases.items():
+        for expected_alias in expected_aliases:
+            if expected_alias not in source:
+                failures.append(f"SASS_{alias_type.upper()}_ALIAS_MISSING file={path} expected={expected_alias}")
+    for expected_alias in theme_aliases[path]:
+        if expected_alias not in source:
+            failures.append(f"SASS_THEME_ALIAS_MISSING file={path} expected={expected_alias}")
+
+    for import_name in imports:
+        import_class = remaining_import_class(import_name)
+        class_counts[import_class] = class_counts.get(import_class, 0) + 1
+        boundary = expected_remaining_import_boundaries.get(import_name)
+        if boundary is None:
+            failures.append(f"SASS_REMAINING_IMPORT_BOUNDARY_UNKNOWN file={path} import={import_name}")
+        else:
+            boundary_counts[boundary] = boundary_counts.get(boundary, 0) + 1
+        if import_class == "missing":
+            failures.append(f"SASS_IMPORT_PARTIAL_MISSING file={path} import={import_name}")
+        elif import_class == "css-only":
+            failures.append(f"SASS_IMPORT_CSS_ONLY_LEAF_STILL_PINNED file={path} import={import_name}")
+
+if failures:
+    for failure in failures:
+        print(failure)
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=49 use_per_entrypoint=7")
+print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
+print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
+print(f"bootstrap_config_keys={len(bootstrap_config_expected)} bootstrap_default_only_keys={len(bootstrap_default_only_variables)}")
+print("No Sass @import remains in the app-light/app-dark entrypoint boundary; vendored Bootstrap internals remain separately tracked.")
+print("Configured sass:meta.load-css migrations must keep explicit theme variable injection; do not rely on hidden global Sass scope.")
+print("No CSS-only app stylesheet partial remains pinned to @import; new CSS-only leaf imports must use sass:meta.load-css.")
+print("Bootstrap now loads through sass:meta.load-css with explicit configuration and a root compatibility bridge.")
+print("Cross-module @extend bridges must stay explicit until selector-provider redesign proves byte-identical CSS.")
+print("failure_count=0")
+PY

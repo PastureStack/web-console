@@ -1,8 +1,9 @@
 import Ember from 'ember';
 import { alternateLabel } from 'ui/utils/platform';
 import ThrottledResize from 'ui/mixins/throttled-resize';
-import Terminal from 'npm:xterm';
-import { proposeGeometry } from 'ui/utils/xterm-fit-addon';
+
+const Terminal = window.Terminal;
+const FitAddon = window.FitAddon.FitAddon;
 
 const DEFAULT_COMMAND = ["/bin/sh","-c",'TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c "/bin/bash" /dev/null || exec /bin/bash) || exec /bin/sh'];
 
@@ -19,6 +20,8 @@ export default Ember.Component.extend(ThrottledResize, {
   error: null,
   socket: null,
   term: null,
+  fitAddon: null,
+  termDataDisposable: null,
 
   actions: {
     contextMenuHandler() {
@@ -33,11 +36,15 @@ export default Ember.Component.extend(ThrottledResize, {
   fit() {
     var term = this.get('term');
     var socket = this.get('socket');
-    if (term && socket)
+    var fitAddon = this.get('fitAddon');
+    if (term && socket && fitAddon)
     {
-      var geometry = proposeGeometry(term);
+      var geometry = fitAddon.proposeDimensions();
+      if (!geometry) {
+        return;
+      }
       socket.send(`:resizeTTY:${geometry.cols},${geometry.rows}`);
-      term.resize(geometry.cols, geometry.rows);
+      fitAddon.fit();
     }
   },
 
@@ -81,30 +88,31 @@ export default Ember.Component.extend(ThrottledResize, {
       this.set('status','initializing');
 
       var term = new Terminal({
-        useStyle: true,
-        screenKeys: true,
         cursorBlink: false
       });
+      var fitAddon = new FitAddon();
+      term.loadAddon(fitAddon);
       this.set('term', term);
+      this.set('fitAddon', fitAddon);
 
-      term.on('data', function(data) {
+      this.set('termDataDisposable', term.onData(function(data) {
         //console.log('To Server:',data);
-        socket.send(btoa(unescape(encodeURIComponent(data))));// jshint ignore:line
-      });
+        socket.send(btoa(unescape(encodeURIComponent(data))));
+      }));
 
-      term.open(this.$('.shell-body')[0], true);
+      term.open(this.$('.shell-body')[0]);
       this.fit();
       socket.onmessage = (message) => {
         this.set('status','connected');
         this.sendAction('connected');
         //console.log('From Server:',message.data);
-        term.write(decodeURIComponent(escape(atob(message.data))));// jshint ignore:line
+        term.write(decodeURIComponent(escape(atob(message.data))));
       };
 
       socket.onclose = () => {
         try {
           this.set('status','closed');
-          term.destroy();
+          this.disposeTerminal();
           if ( !this.get('userClosed') )
           {
             this.sendAction('dismiss');
@@ -119,12 +127,7 @@ export default Ember.Component.extend(ThrottledResize, {
     this.set('status','closed');
     this.set('userClosed',true);
 
-    var term = this.get('term');
-    if (term)
-    {
-      term.destroy();
-      this.set('term', null);
-    }
+    this.disposeTerminal();
 
     var socket = this.get('socket');
     if (socket)
@@ -134,6 +137,26 @@ export default Ember.Component.extend(ThrottledResize, {
     }
 
     this.sendAction('disconnected');
+  },
+
+  disposeTerminal: function() {
+    var disposable = this.get('termDataDisposable');
+    if (disposable && disposable.dispose) {
+      disposable.dispose();
+    }
+    this.set('termDataDisposable', null);
+
+    var fitAddon = this.get('fitAddon');
+    if (fitAddon && fitAddon.dispose) {
+      fitAddon.dispose();
+    }
+    this.set('fitAddon', null);
+
+    var term = this.get('term');
+    if (term) {
+      term.dispose();
+      this.set('term', null);
+    }
   },
 
   willDestroyElement: function() {

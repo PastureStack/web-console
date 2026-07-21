@@ -1,5 +1,55 @@
-$normal-weight: normal;
-$bold-weight: 700;
+$accent-two: null !default;
+$blueTwo: null !default;
+$body-bg: null !default;
+$bold-weight: 700 !default;
+$border-radius-base: null !default;
+$brand-danger: null !default;
+$brand-info: null !default;
+$brand-primary: null !default;
+$brand-success: null !default;
+$brand-warning: null !default;
+$btn-danger-hover: null !default;
+$btn-default-bg: null !default;
+$btn-default-border: null !default;
+$btn-default-color: null !default;
+$btn-default-hover: null !default;
+$btn-disabled-bg: null !default;
+$btn-disabled-color: null !default;
+$btn-primary-bg: null !default;
+$btn-primary-border: null !default;
+$btn-primary-color: null !default;
+$btn-primary-hover: null !default;
+$dropdown-bg: null !default;
+$dropdown-link-color: null !default;
+$greenDark: null !default;
+$icon-chevron-down: null !default;
+$icon-chevron-up: null !default;
+$input-bg: null !default;
+$input-border: null !default;
+$input-color: null !default;
+$lightGray: null !default;
+$lightGrayTwo: null !default;
+$lightTealDark: null !default;
+$line-height-computed: null !default;
+$link-color: null !default;
+$midGray: null !default;
+$midGrayDark: null !default;
+$normal-weight: normal !default;
+$page-header-border-color: null !default;
+$primary: null !default;
+$primaryDark: null !default;
+$redDark: null !default;
+$table-bg: null !default;
+$table-border-color: null !default;
+$tealTwoDark: null !default;
+$text-color: null !default;
+$well-bg: null !default;
+$yellowDark: null !default;
+
+@mixin box-shadow($shadow...) {
+  -webkit-box-shadow: $shadow;
+          box-shadow: $shadow;
+}
 
 a {
   color: $link-color;
@@ -683,7 +733,6 @@ HR {
 }
 
 LABEL {
-  @extend .no-select;
   font-weight: $bold-weight;
 }
 
@@ -818,7 +867,7 @@ LABEL.checkbox, LABEL.radio {
 
     &:after {
       content: $icon-chevron-down;
-      font-family: 'rancher-icons';
+      font-family: 'pasturestack-icons';
       position: absolute;
       right: 5px;
       font-size: 10px;
@@ -833,7 +882,7 @@ LABEL.checkbox, LABEL.radio {
 
       &:after {
         content: $icon-chevron-up;
-        font-family: 'rancher-icons';
+        font-family: 'pasturestack-icons';
         position: absolute;
         right: 5px;
         top: 0;

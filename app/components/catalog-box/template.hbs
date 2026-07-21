@@ -1,8 +1,14 @@
 {{yield 'header'}}
-{{#if model.certified}}
-  <div class="{{model.certifiedClass}}">
-    <strong>{{model.certified}}</strong>
+{{#if model.isUpstreamFirstParty}}
+  <div class="badge-pasturestack">
+    <strong>{{model.upstreamFirstPartyBadge}}</strong>
   </div>
+{{else}}
+  {{#if model.certified}}
+    <div class="{{model.certifiedClass}}">
+      <strong>{{model.certified}}</strong>
+    </div>
+  {{/if}}
 {{/if}}
 {{#if showIcon}}
   <div class="catalog-icon">
@@ -11,14 +17,14 @@
 {{/if}}
 <div class="itemwrap">
   <h5>
-    {{model.name}}
+    {{model.localizedName}}
   </h5>
   {{#if showSource}}
-    <span class="small">in <span class="text-capitalize">{{model.catalogId}}</span></span>
+    <span class="small">{{t 'catalogBox.sourcePrefix'}} <span class="text-capitalize">{{model.catalogId}}</span></span>
   {{/if}}
   {{#if showDescription}}
     <hr class="r-m10" />
-    <div class="r-mt10 description">{{model.description}}</div>
+    <div class="r-mt10 description">{{model.localizedDescription}}</div>
   {{/if}}
 </div>
 <div class="footer">
