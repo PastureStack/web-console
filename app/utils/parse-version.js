@@ -1,4 +1,4 @@
-import Semver from 'npm:semver';
+const Semver = window.rc16Semver;
 
 export function satisfies(version, range) {
   // Semver doesn't take padding zeros like 17.03.1

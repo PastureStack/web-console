@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+overrides = package.get("overrides", {}) or {}
+if overrides.get("raw-body") != "2.5.3":
+    fail("RAW_BODY_OVERRIDE_UNEXPECTED", actual=overrides.get("raw-body"), expected="2.5.3")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    raw_body = packages.get("node_modules/raw-body", {})
+    nested_raw_body = packages.get("node_modules/body/node_modules/raw-body")
+    if raw_body.get("version") != "2.5.3":
+        fail("RAW_BODY_LOCK_VERSION_UNEXPECTED", actual=raw_body.get("version"), expected="2.5.3")
+    if nested_raw_body is not None:
+        fail("BODY_NESTED_RAW_BODY_REMAINS", version=nested_raw_body.get("version"))
+    for path, info in packages.items():
+        if path.endswith("/raw-body") and info.get("deprecated"):
+            fail("DEPRECATED_RAW_BODY_REMAINS", package=path, version=info.get("version"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_RAW_BODY_OVERRIDE_OK raw-body=2.5.3 lockfile={lock_path} package_count={package_count}")
+print("The no-publish live-reload body path resolves to maintained raw-body 2.5.3 and no longer carries body/node_modules/raw-body 1.1.7.")
+print("failure_count=0")
+PY
