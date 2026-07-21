@@ -1,0 +1,33 @@
+<div
+  class="workspace-terminal-body"
+  contenteditable="{{contenteditable}}"
+  oncontextmenu={{action "contextMenuHandler"}}
+></div>
+
+<footer class="workspace-terminal-footer">
+  <div class="workspace-terminal-status">
+    <span class="console-workspace-status-dot status-{{status}}" aria-hidden="true"></span>
+    {{t (concat-str 'consoleWorkspace.session.status.' status)}}
+  </div>
+
+  {{#unless isEnded}}
+    {{#if isController}}
+      <span class="workspace-terminal-control text-success">
+        <i class="icon icon-key" aria-hidden="true"></i>
+        {{t 'consoleWorkspace.session.controller'}}
+      </span>
+    {{else}}
+      <button type="button" class="btn btn-xs btn-default" {{action "takeControl"}}>
+        <i class="icon icon-key" aria-hidden="true"></i>
+        {{t 'consoleWorkspace.session.takeControl'}}
+      </button>
+    {{/if}}
+  {{/unless}}
+
+  {{#if (or (eq status "disconnected") (eq status "error"))}}
+    <button type="button" class="btn btn-xs btn-default" {{action "reconnect"}}>
+      <i class="icon icon-refresh" aria-hidden="true"></i>
+      {{t 'consoleWorkspace.window.reconnect'}}
+    </button>
+  {{/if}}
+</footer>

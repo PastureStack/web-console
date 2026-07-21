@@ -1,6 +1,8 @@
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 
 var Port = Resource.extend({
+  intl: Ember.inject.service(),
   _publicIp: null,
   _publicIpState: null,
   displayPublicIp: function() {
@@ -21,7 +23,7 @@ var Port = Resource.extend({
     }
     else if ( this.get('_publicIpState') === 2 )
     {
-      return '(Unknown IP)';
+      return `(${this.get('intl').t('formatIp.unknownIp')})`;
     }
     else if ( !this.get('_publicIpState') )
     {
@@ -32,11 +34,11 @@ var Port = Resource.extend({
         this.set('_publicIpState', 2);
       });
 
-      return 'Loading...';
+      return this.get('intl').t('generic.loading');
     }
 
     return null;
-  }.property('_publicIpState','_publicIp','publicIpAddressId','bindAddress','publicPort'),
+  }.property('_publicIpState','_publicIp','publicIpAddressId','bindAddress','publicPort','intl._locale'),
 });
 
 export default Port;

@@ -1,6 +1,5 @@
 module.exports = function(app, options) {
   var path = require('path');
-  var ForeverAgent = require('forever-agent');
   var HttpProxy = require('http-proxy');
   var httpServer = options.httpServer;
 
@@ -15,7 +14,7 @@ module.exports = function(app, options) {
 
   proxy.on('error', onProxyError);
 
-  // WebSocket for Rancher
+  // WebSocket for the compatible API
   httpServer.on('upgrade', function proxyWsRequest(req, socket, head) {
     proxyLog('WS', req);
     if ( socket.ssl ) {
@@ -32,7 +31,7 @@ module.exports = function(app, options) {
     'WebHook': config.webhookEndpoint,
   }
 
-  // Rancher API
+  // compatible API
   console.log('Proxying API to', config.apiServer);
   Object.keys(map).forEach(function(label) {
     let base = map[label];

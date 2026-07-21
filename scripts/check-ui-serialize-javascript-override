@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+overrides = package.get("overrides", {})
+if overrides.get("serialize-javascript") != "7.0.5":
+    fail("SERIALIZE_JAVASCRIPT_OVERRIDE_UNEXPECTED", actual=overrides.get("serialize-javascript"), expected="7.0.5")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    versions = {
+        path: meta.get("version")
+        for path, meta in packages.items()
+        if path.endswith("node_modules/serialize-javascript")
+    }
+    if not versions:
+        fail("SERIALIZE_JAVASCRIPT_LOCK_MISSING")
+    for package_path, actual in sorted(versions.items()):
+        if actual != "7.0.5":
+            fail("SERIALIZE_JAVASCRIPT_LOCK_VERSION_UNEXPECTED", package=package_path, actual=actual, expected="7.0.5")
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_SERIALIZE_JAVASCRIPT_OVERRIDE_OK serialize-javascript=7.0.5 lockfile={lock_path} package_count={package_count}")
+print("ember-intl 2.13 keeps its existing serialize(result) call while npm resolves the maintained serializer version.")
+print("failure_count=0")
+PY

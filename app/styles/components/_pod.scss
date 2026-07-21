@@ -1,3 +1,19 @@
+@use "sass:color";
+
+$accent-one: null !default;
+$border-radius-base: null !default;
+$brand-primary-dark: null !default;
+$btn-default-bg: null !default;
+$btn-default-color: null !default;
+$lightGray: null !default;
+$link-color: null !default;
+$link-hover-color: null !default;
+$normal-weight: null !default;
+$table-bg: null !default;
+$table-bg-accent: null !default;
+$table-border-color: null !default;
+$text-color: null !default;
+
 $pod-border      : $lightGray;
 $pod-border-dark : $table-border-color;
 $pod-bg          : $table-bg;
@@ -77,7 +93,6 @@ $subpod-detail   : $table-bg-accent;
   }
 
   .pod-message {
-    @extend .clip;
     text-align     : center;
     font-size      : 12px;
   }
@@ -129,7 +144,7 @@ $subpod-detail   : $table-bg-accent;
   .subpod-header {
     margin           : -5px -5px 0 -5px;
     background-color : $table-border-color;
-    background-color: mix($brand-primary-dark, $table-bg-accent, 15%);
+    background-color: color.mix($brand-primary-dark, $table-bg-accent, 15%);
     padding          : 5px;
 
 
@@ -216,7 +231,7 @@ $subpod-detail   : $table-bg-accent;
   }
 
   .subpod-detail {
-    color      : lighten($text-color, 30%);
+    color      : color.adjust($text-color, $lightness: 30%);
     font-size  : 11px;;
     margin-top : 2px;
     text-align : right;

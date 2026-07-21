@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+if (package.get("devDependencies", {}) or {}).get("yamljs") != "0.3.0":
+    fail("YAMLJS_DIRECT_VERSION_UNEXPECTED", actual=(package.get("devDependencies", {}) or {}).get("yamljs"), expected="0.3.0")
+
+override = (package.get("overrides", {}) or {}).get("yamljs", {}) or {}
+if not isinstance(override, dict):
+    fail("YAMLJS_OVERRIDE_NOT_OBJECT", actual=override)
+else:
+    if override.get(".") != "0.3.0":
+        fail("YAMLJS_ROOT_OVERRIDE_UNEXPECTED", actual=override.get("."), expected="0.3.0")
+    if override.get("glob") != "$glob":
+        fail("YAMLJS_GLOB_OVERRIDE_UNEXPECTED", actual=override.get("glob"), expected="$glob")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    yamljs = packages.get("node_modules/yamljs", {})
+    if yamljs.get("version") != "0.3.0":
+        fail("YAMLJS_LOCK_VERSION_UNEXPECTED", actual=yamljs.get("version"), expected="0.3.0")
+    glob = packages.get("node_modules/yamljs/node_modules/glob") or packages.get("node_modules/glob") or {}
+    if glob.get("version") != "13.0.6":
+        fail("YAMLJS_GLOB_LOCK_VERSION_UNEXPECTED", actual=glob.get("version"), expected="13.0.6")
+    for removed in [
+        "node_modules/yamljs/node_modules/inflight",
+        "node_modules/yamljs/node_modules/path-is-absolute",
+    ]:
+        if removed in packages:
+            fail("YAMLJS_LEGACY_DEPENDENCY_REMAINS", package=removed, version=packages[removed].get("version"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_YAMLJS_GLOB_OVERRIDE_OK yamljs=0.3.0 glob=13.0.6 lockfile={lock_path} package_count={package_count}")
+print("The no-publish YAML helper path resolves maintained glob 13.0.6 and keeps YAML parse/stringify/load behavior covered by the Node smoke.")
+print("failure_count=0")
+PY
