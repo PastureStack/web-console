@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+overrides = package.get("overrides", {}) or {}
+if overrides.get("sane") != "5.0.1":
+    fail("SANE_OVERRIDE_UNEXPECTED", actual=overrides.get("sane"), expected="5.0.1")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    sane = packages.get("node_modules/sane", {})
+    merge = packages.get("node_modules/merge", {})
+    if sane.get("version") != "5.0.1":
+        fail("SANE_LOCK_VERSION_UNEXPECTED", actual=sane.get("version"), expected="5.0.1")
+    if merge.get("version") != "2.1.1":
+        fail("LACSSO_MERGE_COMPAT_DEPENDENCY_MISSING", actual=merge.get("version"), expected="2.1.1")
+    for removed in ["node_modules/fsevents", "node_modules/sane/node_modules/fsevents"]:
+        if removed in packages:
+            fail("FSEVENTS_V1_PATH_REMAINS", package=removed, version=packages[removed].get("version"))
+    for path, info in packages.items():
+        if path.endswith("/sane") and info.get("deprecated"):
+            fail("DEPRECATED_SANE_REMAINS", package=path, version=info.get("version"))
+        if path.endswith("/fsevents") and info.get("deprecated"):
+            fail("DEPRECATED_FSEVENTS_REMAINS", package=path, version=info.get("version"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_SANE5_WATCHER_OVERRIDE_OK sane=5.0.1 merge=2.1.1 lockfile={lock_path} package_count={package_count}")
+print("The no-publish watcher path resolves maintained sane 5.0.1, preserves lacsso's legacy merge module lookup, and no longer carries deprecated fsevents 1.x.")
+print("failure_count=0")
+PY

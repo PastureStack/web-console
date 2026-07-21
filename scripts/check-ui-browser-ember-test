@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+node_image=${PASTURESTACK_NODE24_IMAGE:-node:24-bookworm}
+launcher=${PASTURESTACK_UI_TESTEM_LAUNCHER:-chromium}
+chromium_package=${PASTURESTACK_CHROMIUM_APT_PACKAGE:-chromium}
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "UI_BROWSER_EMBER_TEST_DOCKER_MISSING image=$node_image"
+  exit 1
+fi
+
+docker run --rm \
+  -v "$repo_root:/src:ro" \
+  -e "PASTURESTACK_UI_TESTEM_LAUNCHER=$launcher" \
+  -e "PASTURESTACK_CHROMIUM_APT_PACKAGE=$chromium_package" \
+  "$node_image" \
+  bash -lc '
+    set -euo pipefail
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update >/dev/null
+    apt-get install -y --no-install-recommends "$PASTURESTACK_CHROMIUM_APT_PACKAGE" ca-certificates >/dev/null
+
+    tmpdir=$(mktemp -d)
+    cleanup() {
+      rm -rf "$tmpdir"
+    }
+    trap cleanup EXIT
+
+    cp -a /src/. "$tmpdir/"
+    cd "$tmpdir"
+    cp docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json package-lock.json
+
+    node <<'"'"'NODE'"'"'
+const fs = require("fs");
+const path = "testem.json";
+const launcher = process.env.PASTURESTACK_UI_TESTEM_LAUNCHER || "chromium";
+const data = JSON.parse(fs.readFileSync(path, "utf8"));
+const chromeArgs = (data.browser_args && data.browser_args.Chrome) || [];
+
+data.launch_in_ci = [launcher];
+data.launch_in_dev = [launcher];
+data.browser_args = data.browser_args || {};
+data.browser_args[launcher] = data.browser_args[launcher] || chromeArgs;
+
+fs.writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
+NODE
+
+    npm ci --ignore-scripts --no-audit --no-fund
+    if [[ "$PASTURESTACK_UI_TESTEM_LAUNCHER" = "chromium" ]]; then
+      export CHROME_BIN="${CHROME_BIN:-/usr/bin/chromium}"
+    fi
+    ./node_modules/.bin/ember test
+  '
+
+echo "UI_BROWSER_EMBER_TEST_OK image=$node_image launcher=$launcher"
+echo "failure_count=0"

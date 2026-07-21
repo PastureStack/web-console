@@ -1,22 +1,22 @@
 <tr>
-  <td class="force-wrap" data-title="State:">
+  <td class="force-wrap" data-title="{{t 'swarm.serviceSection.state'}}:">
     {{badge-state model=model}}
   </td>
-  <td class="force-wrap" data-title="Name:">
+  <td class="force-wrap" data-title="{{t 'swarm.serviceSection.name'}}:">
     <a href="#" {{action "toggleExpand"}}><i class="icon {{if expanded 'icon-minus-square' 'icon-plus-square'}}"/></a>
     {{#link-to "service" model.stackId model.id}}{{model.displayName}}{{/link-to}}
   </td>
-  <td class="force-wrap service-detail" data-title="Ports:">
+  <td class="force-wrap service-detail" data-title="{{t 'swarm.serviceSection.ports'}}:">
     {{model.displayPorts}}
   </td>
-  <td class="force-wrap" data-title="Containers:">
+  <td class="force-wrap" data-title="{{t 'swarm.serviceSection.containers'}}:">
     {{#if model.instances.length}}
       {{model.instances.length}}
     {{else}}
       <span class="text-muted">{{t 'generic.none'}}</span>
     {{/if}}
   </td>
-  <td class="actions" data-title="Actions:">
+  <td class="actions" data-title="{{t 'generic.actions'}}:">
     {{action-menu model=model}}
   </td>
 </tr>

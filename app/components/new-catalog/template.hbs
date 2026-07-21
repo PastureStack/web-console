@@ -14,7 +14,7 @@
 <section class="{{sectionClass}} row">
   <div class="col-sm-12 col-md-3">
     {{#if templateResource.links.icon}}
-      <img src={{templateResource.links.icon}} alt={{templateResource.name}} class="r-mr20" style="height:75px;max-width: 100%;">
+      <img src={{templateResource.links.icon}} alt={{templateResource.localizedName}} class="r-mr20" style="height:75px;max-width: 100%;">
     {{/if}}
 
     <div>
@@ -23,10 +23,19 @@
     <div>
       <small><strong>{{t 'newCatalog.category'}}</strong> {{join-array templateResource.categoryArray}}</small>
     </div>
-    {{#if (eq templateResource.certifiedType 'rancher')}}
-      <small><strong>{{t 'newCatalog.support'}} </strong>{{t 'newCatalog.official'}}</small>
+    {{#if templateResource.isUpstreamFirstParty}}
+      <div>
+        <small><strong>{{t 'newCatalog.origin'}}</strong> {{t 'newCatalog.upstreamFirstParty'}}</small>
+      </div>
+      <div>
+        <small><strong>{{t 'newCatalog.currentMaintenance'}}</strong> {{t 'newCatalog.communityMaintained'}}</small>
+      </div>
     {{else}}
-      <small><strong>{{t 'newCatalog.support'}} </strong>{{t 'newCatalog.maintainedBy'}}</small>
+      {{#if (eq templateResource.certifiedType 'rancher')}}
+        <small><strong>{{t 'newCatalog.support'}} </strong>{{t 'newCatalog.official'}}</small>
+      {{else}}
+        <small><strong>{{t 'newCatalog.support'}} </strong>{{t 'newCatalog.maintainedBy'}}</small>
+      {{/if}}
     {{/if}}
     {{#if templateResource.maintainer}}
       <div>
@@ -39,7 +48,7 @@
       </div>
     {{/if}}
     {{#if templateResource.links.project}}
-      <small class="force-wrap"><strong>{{t 'newCatalog.url'}}</strong> <a href="{{templateResource.cleanProjectUrl}}" target="_blank">{{templateResource.cleanProjectUrl}}</a></small>
+      <small class="force-wrap"><strong>{{t 'newCatalog.url'}}</strong> <a href="{{templateResource.cleanProjectUrl}}" target="_blank" rel="noopener noreferrer">{{templateResource.cleanProjectUrl}}</a></small>
     {{/if}}
   </div>
   {{#if showDescription}}
@@ -49,9 +58,9 @@
       </div>
     {{else}}
       <h2 class="r-mb10">
-        {{t (if editing titleUpgrade titleAdd) name=templateResource.name}}
+        {{t (if editing titleUpgrade titleAdd) name=templateResource.localizedName}}
       </h2>
-      <p>{{templateResource.description}}</p>
+      <p>{{templateResource.localizedDescription}}</p>
     {{/if}}
   {{/if}}
 </section>
