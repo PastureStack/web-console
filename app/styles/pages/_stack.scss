@@ -1,3 +1,22 @@
+@use "sass:math";
+
+$accent-three: null !default;
+$accent-two: null !default;
+$blueDark: null !default;
+$bold-weight: null !default;
+$brand-danger: null !default;
+$brand-info: null !default;
+$brand-success: null !default;
+$brand-warning: null !default;
+$light-grey: #9CB6B5 !default;
+$midGray: null !default;
+$table-bg: null !default;
+$table-bg-accent: null !default;
+$table-border-color: null !default;
+$text-color: null !default;
+$text-muted: null !default;
+$well-bg: null !default;
+
 $stackHeight: 66px;
 $stateRadius: 13px;
 $stateBorder: 2px;
@@ -201,7 +220,7 @@ $singleCountWidth : 120px;
     }
 
     .stack-state {
-      top: ($singleStackHeight - $stateBorder)/2 - $stateRadius;
+      top: math.div($singleStackHeight - $stateBorder, 2) - $stateRadius;
     }
 
     .header-left {
@@ -392,7 +411,6 @@ $singleCountWidth : 120px;
   }
 }
 
-$light-grey: #9CB6B5;
 $tiffany-blue: #0ABFB2;
 $mabel: #CCE3EE;
 $regal-blue: #034967;

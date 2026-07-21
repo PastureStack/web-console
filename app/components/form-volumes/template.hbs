@@ -1,5 +1,5 @@
 {{#if projects.current.isWindows}}
-  <div class="text-center r-p20">Volume support is not currently available for Windows.</div>
+  <div class="text-center r-p20">{{t 'formVolumes.windowsUnsupported'}}</div>
 {{else}}
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
@@ -15,7 +15,7 @@
           {{#each volumesArray as |vol|}}
             <tr>
               <td>
-                {{input type="text" class="form-control volume-path" value=vol.value placeholder="e.g. [volumename: or /path/on/host:]/path/in/container[:ro]"}}
+                {{input type="text" class="form-control volume-path" value=vol.value placeholder=(t 'formVolumes.pathPlaceholder')}}
               </td>
               <td width="30" class="text-right">
                 <button class="btn btn-primary btn-sm" {{action "removeVolume" vol}}><i class="icon icon-minus"/></button>

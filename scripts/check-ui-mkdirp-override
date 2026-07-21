@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+
+override = (
+    package.get("overrides", {})
+    .get("broccoli-templater", {})
+    .get("broccoli-filter", {})
+    .get("mkdirp")
+)
+if override != "0.5.6":
+    fail("MKDIRP_OVERRIDE_UNEXPECTED", actual=override)
+
+old_path = "node_modules/broccoli-templater/node_modules/broccoli-filter/node_modules/mkdirp"
+if old_path in packages:
+    fail("OLD_MKDIRP_PATH_REINTRODUCED", package=old_path, version=packages[old_path].get("version"))
+
+root_mkdirp = packages.get("node_modules/mkdirp", {})
+if root_mkdirp.get("version") != "0.5.6":
+    fail("ROOT_MKDIRP_VERSION_UNEXPECTED", actual=root_mkdirp.get("version"))
+
+old_mkdirp = [
+    (path, meta.get("version"))
+    for path, meta in sorted(packages.items())
+    if path.startswith("node_modules/")
+    and path.split("node_modules/")[-1] == "mkdirp"
+    and str(meta.get("version", "")).startswith("0.3.")
+]
+for path, version in old_mkdirp:
+    fail("OLD_MKDIRP_REINTRODUCED", package=path, version=version)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+print(f"UI_MKDIRP_OVERRIDE_OK mkdirp=0.5.6 lockfile={lock_path}")
+print("The only deprecated mkdirp 0.3.x path is removed; broccoli-templater's legacy broccoli-filter resolves the already-present mkdirp 0.5.6 callback/sync API.")
+print("failure_count=0")
+PY

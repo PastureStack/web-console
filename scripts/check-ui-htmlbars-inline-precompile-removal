@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+package_name = "ember-cli-htmlbars-inline-precompile"
+package_path = Path("package.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+
+package = json.loads(package_path.read_text(encoding="utf-8"))
+failures = []
+
+manifest_paths = [
+    package_path,
+    Path("vendor/lacsso/package.json"),
+    Path("vendor/ember-cli-pagination/package.json"),
+    Path("vendor/ember-rl-dropdown/package.json"),
+]
+for manifest_path in manifest_paths:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    for section in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
+        if package_name in manifest.get(section, {}):
+            failures.append(f"{manifest_path} {section} still declares {package_name}")
+
+overrides = package.get("overrides", {})
+if package_name in overrides:
+    failures.append(f"package.json overrides still declares {package_name}")
+
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+for path in sorted(lock.get("packages", {})):
+    if package_name in path:
+        failures.append(f"lockfile still resolves {path}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_HTMLBARS_INLINE_PRECOMPILE_REMOVAL_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print(f"UI_HTMLBARS_INLINE_PRECOMPILE_REMOVAL_OK package={package_name} lockfile={lock_path}")
+print("The deprecated inline-precompile addon is not a direct dependency, override target, or resolved lockfile package.")
+print("failure_count=0")
+PY

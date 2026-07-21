@@ -146,7 +146,7 @@ export let PacketOs = [
   },
   {
     "slug": "rancher",
-    "name": "RancherOS",
+    "name": "Legacy container OS",
     "distro": "rancher",
     "version": "0.7.0",
     "provisionable_on": [

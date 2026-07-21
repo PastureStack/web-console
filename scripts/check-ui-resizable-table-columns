@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+initializer=app/initializers/resizable-table-columns.js
+utility=app/utils/resizable-table-columns.js
+styles=app/styles/components/_sortable.scss
+test_file=tests/unit/utils/resizable-table-columns-test.js
+failures=0
+
+require_file() {
+  local file=$1
+  if [[ ! -f "$file" ]]; then
+    echo "RESIZABLE_TABLE_REQUIRED_FILE_MISSING file=$file"
+    failures=$((failures + 1))
+  fi
+}
+
+require_pattern() {
+  local file=$1
+  local pattern=$2
+  local description=$3
+  if ! grep -Eq "$pattern" "$file"; then
+    echo "RESIZABLE_TABLE_PATTERN_MISSING file=$file description=$description"
+    failures=$((failures + 1))
+  fi
+}
+
+require_file "$initializer"
+require_file "$utility"
+require_file "$styles"
+require_file "$test_file"
+
+require_pattern "$utility" 'table\.grid:not\(\[data-column-resize="off"\]\)' 'data-grid selector with an explicit opt-out'
+require_pattern "$utility" 'MutationObserver' 'dynamic Ember table discovery'
+require_pattern "$utility" 'directHeaderCells' 'legacy direct-TH header support'
+require_pattern "$utility" 'data-table-column-sizer' 'shared colgroup sizing'
+require_pattern "$utility" 'pointerdown' 'pointer drag resizing'
+require_pattern "$utility" 'ArrowLeft.*ArrowRight.*Enter' 'keyboard resizing and auto-fit'
+require_pattern "$utility" 'MAX_INITIAL_COLUMN_WIDTH' 'bounded initial auto-fit width'
+require_pattern "$utility" 'headerWidthHints' 'legacy width hints used as auto-fit minimums'
+require_pattern "$styles" 'white-space:[[:space:]]*nowrap' 'desktop non-wrapping cells'
+require_pattern "$styles" 'overflow-x:[[:space:]]*auto' 'horizontal overflow containment'
+require_pattern "$styles" '@media \(max-width:[[:space:]]*694px\)' 'stacked mobile fallback'
+
+if [[ $failures -ne 0 ]]; then
+  echo "failure_count=$failures"
+  exit 1
+fi
+
+echo "UI_RESIZABLE_TABLE_COLUMNS_OK selector=table.grid auto_fit=true pointer=true keyboard=true mobile_fallback=true"
+echo "Only rendered data grids with a multi-column table header are enhanced; layout tables remain unchanged."
+echo "failure_count=0"

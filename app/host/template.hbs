@@ -87,7 +87,7 @@
                </div>
               {{/each}}
             {{else}}
-              <div class="col-md-6 r-p0">{{host.diskBlurb}} (total)</div>
+              <div class="col-md-6 r-p0">{{host.diskBlurb}} ({{t 'generic.total'}})</div>
             {{/if}}
             <div class="col-md-6 r-p0">
               {{t 'hostsPage.hostPage.infoMultiStats.localStorageMb.labelText'}}: {{host.localStorageBlurb}}

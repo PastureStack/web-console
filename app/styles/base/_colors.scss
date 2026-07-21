@@ -1,3 +1,5 @@
+@use "sass:color";
+
 //== Colors
 //
 //## Gray and brand colors for use across Bootstrap.
@@ -5,9 +7,9 @@
 $gray-base             : #2b2b2b;
 $gray-darker           : #99a3a8;
 $gray-dark             : #334851;
-$gray                  : lighten($gray-base, 33.5%); // #555
-$gray-light            : #cacbd1; //lighten($gray-base, 60%);   // #999
-$gray-lighter          : #eff2f6; //lighten($gray-base, 90%); // #eee
+$gray                  : color.adjust($gray-base, $lightness: 33.5%); // #555
+$gray-light            : #cacbd1; // derived legacy value: #999
+$gray-lighter          : #eff2f6; // derived legacy value: #eee
 
 $primary               : #0075a8;
 $primaryDark           : #00558b;

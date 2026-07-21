@@ -118,7 +118,7 @@ export default Resource.extend({
   certifiedClass: function() {
     let type = this.get('certifiedType');
     if ( type === 'rancher' && this.get('settings.isRancher') ) {
-      return 'badge-rancher-logo';
+      return 'badge-pasturestack-logo';
     } else {
       return 'badge-' + type;
     }
@@ -138,7 +138,7 @@ export default Resource.extend({
     }
 
     if ( this.get('catalogId') !== C.CATALOG.LIBRARY_KEY && (out === C.LABEL.CERTIFIED_RANCHER || looksLikeCertified) ) {
-      // Rancher-certified things can only be in the library catalog.
+      // Platform-certified things can only be in the library catalog.
       out = null;
     }
 

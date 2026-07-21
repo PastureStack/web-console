@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+build_path = Path("ember-cli-build.js")
+historical_manifest = Path("docs/baselines/package.node-sass-baseline.json")
+
+if not historical_manifest.is_file():
+    fail("MISSING_NODE_SASS_HISTORICAL_MANIFEST", file=historical_manifest)
+else:
+    old = json.loads(historical_manifest.read_text(encoding="utf-8"))
+    if old.get("dependencies", {}).get("node-sass") != "^4.12.0":
+        fail("NODE_SASS_HISTORICAL_MANIFEST_DRIFT")
+
+dependencies = package.get("dependencies", {})
+dev_dependencies = package.get("devDependencies", {})
+if "node-sass" in dependencies or "node-sass" in dev_dependencies:
+    fail("NODE_SASS_STILL_DECLARED")
+if dependencies.get("sass") != "1.99.0":
+    fail("SASS_DECLARATION_UNEXPECTED", actual=dependencies.get("sass"), expected="1.99.0")
+if dev_dependencies.get("ember-cli-sass") != "^10.0.1":
+    fail("EMBER_CLI_SASS_VERSION_CHANGED", actual=dev_dependencies.get("ember-cli-sass"), expected="^10.0.1")
+overrides = package.get("overrides", {})
+lacsso_manifest = Path("vendor/lacsso/package.json")
+if not lacsso_manifest.is_file():
+    fail("LACSSO_VENDOR_MANIFEST_MISSING", file=lacsso_manifest)
+else:
+    lacsso_package = json.loads(lacsso_manifest.read_text(encoding="utf-8"))
+    if lacsso_package.get("dependencies", {}).get("ember-cli-sass") != "10.0.1":
+        fail("LACSSO_EMBER_CLI_SASS_VENDOR_VERSION_UNEXPECTED", actual=lacsso_package.get("dependencies", {}).get("ember-cli-sass"), expected="10.0.1")
+
+build_source = build_path.read_text(encoding="utf-8")
+if "node-sass" in build_source:
+    fail("NODE_SASS_REQUIRE_STILL_PRESENT", file=build_path)
+if "require('sass')" not in build_source and 'require("sass")' not in build_source:
+    fail("DART_SASS_REQUIRE_MISSING", file=build_path)
+if not re.search(r"implementation:\s*dartSass", build_source):
+    fail("DART_SASS_IMPLEMENTATION_MISSING", file=build_path)
+
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("")
+    if lock.get("lockfileVersion") != 3:
+        fail("PACKAGE_LOCK_VERSION_UNEXPECTED", actual=lock.get("lockfileVersion"), expected=3)
+    if not root:
+        fail("PACKAGE_LOCK_ROOT_MISSING")
+    else:
+        for field in ("dependencies", "devDependencies", "engines"):
+            if package.get(field, {}) != root.get(field, {}):
+                fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    if "node_modules/node-sass" in packages:
+        fail("NODE_SASS_STILL_RESOLVED", package="node_modules/node-sass")
+    sass = packages.get("node_modules/sass", {})
+    if sass.get("version") != "1.99.0":
+        fail("SASS_LOCK_VERSION_UNEXPECTED", actual=sass.get("version"), expected="1.99.0")
+    if "node_modules/ember-cli-sass" not in packages:
+        fail("EMBER_CLI_SASS_LOCK_MISSING")
+    lacsso_sass = packages.get("vendor/lacsso/node_modules/ember-cli-sass", {}) or packages.get("node_modules/lacsso/node_modules/ember-cli-sass", {})
+    if lacsso_sass and lacsso_sass.get("version") != "10.0.1":
+        fail("LACSSO_EMBER_CLI_SASS_LOCK_UNEXPECTED", actual=lacsso_sass.get("version"), expected="10.0.1")
+    if "node_modules/lacsso/node_modules/broccoli-sass-source-maps" in packages:
+        fail("LACSSO_OLD_SASS_PIPELINE_STILL_RESOLVED")
+    package_count = len(packages)
+    if package_count < 1000:
+        fail("PACKAGE_LOCK_COUNT_TOO_LOW", actual=package_count, minimum=1000)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_SASS_REPLACEMENT_OK sass=1.99.0 lockfile={lock_path} package_count={package_count}")
+print("node-sass is absent from current package.json, ember-cli-build.js, and the sass replacement lock baseline.")
+print("This is a no-publish dependency/build-chain step; browser artifact publication still requires CSS and route regression tests.")
+print("failure_count=0")
+PY

@@ -159,9 +159,9 @@
             </label>
           </div>
 
-          {{#if (and settings.isRancher (not isCustomSecurityGroup))}}
-            <p class="help-block r-ml20"><a href="{{settings.docsBase}}/hosts/amazon/#required-ports-for-rancher-to-work" target="_blank">{{t 'machine.driverAmazon.portHelp.link'}}</a> {{t 'machine.driverAmazon.portHelp.text'}}</p>
-          {{/if}}
+          {{#unless isCustomSecurityGroup}}
+            <p class="help-block r-ml20"><a href="{{settings.docsBase}}/network-ports/" target="_blank" rel="noopener noreferrer">{{t 'machine.driverAmazon.portHelp.link'}}</a> {{t 'machine.driverAmazon.portHelp.text'}}</p>
+          {{/unless}}
 
           <div class="radio">
             <label>
@@ -264,11 +264,9 @@
       </div>
       <div class="col-md-4">
         {{input type="text" classNames="form-control" placeholder=(t 'machine.driverAmazon.ami.placeholder') value=amazonec2Config.ami}}
-        {{#if settings.isRancher}}
-          <p class="help-block">
-            <a href="https://github.com/rancher/os/blob/master/README.md/#user-content-amazon" target="_blank">{{t 'machine.driverAmazon.ami.rancherList'}}</a>
-          </p>
-        {{/if}}
+        <p class="help-block">
+          <a href="{{settings.docsBase}}/hosts/#amazon-ec2-image-requirements" target="_blank" rel="noopener noreferrer">{{t 'machine.driverAmazon.ami.compatibilityGuide'}}</a>
+        </p>
       </div>
       <div class="col-md-2 form-label">
         <label class="form-control-static">{{t 'machine.driverAmazon.sshUser.label'}}</label>

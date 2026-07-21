@@ -1,114 +1,40 @@
-Rancher UI
---------
+# PastureStack Web Console
 
-Perhaps you like managing Cattle.
+Web Console provides the browser interface for compatible environments, hosts, stacks, services, containers, catalogs, storage, networking, access control, and administration.
 
-[![Build Status](https://drone.rancher.io/api/badges/rancher/ui/status.svg)](https://drone.rancher.io/rancher/ui)
+PastureStack is an independent community effort to preserve, audit, and modernize the Rancher 1.6 ecosystem. It is not affiliated with or endorsed by Rancher Labs or SUSE.
 
-## Usage
+**Upstream:** [`rancher/ui`](https://github.com/rancher/ui), preserved from its `1.6-dev` line. This GitHub fork retains upstream history, authorship, dates, tags, licenses, and dependency notices. PastureStack maintenance is consolidated into one commit after the preserved upstream boundary.
 
-Prerequisites:
-* [Bower](from http://bower.io/)
-* [Git](http://git-scm.com/)
-* [Node.js](http://nodejs.org/) 0.12.x (with NPM)
+## Project status
 
-If you're on a Mac and use Homebrew, you can follow these steps:
-```bash
-  brew install node watchman
-  npm install -g bower
+This is a migration proof of concept. Existing Node 24, Ember, Sass, dependency, browser-smoke, terminal, console, and test-harness modernization is retained. Product-owned names, logos, icons, package metadata, and visible text use PastureStack branding. API models and protocol fields remain compatible.
+
+The language picker includes English, German, Persian, Filipino, French,
+Hungarian, Japanese, Korean, Brazilian Portuguese, Russian, Ukrainian,
+Simplified Chinese, and Traditional Chinese for Taiwan. Every selectable locale
+must satisfy the complete message contract and regional formatting gates
+documented in [Localization](docs/localization.md).
+
+No CI/CD, static artifact publication, release, deployment, or
+production-readiness claim is enabled.
+
+## Build and test
+
+```sh
+npm ci --ignore-scripts
+npm run build -- --environment=production
+npm test
+bash scripts/package-static-candidate 1.6.56 dist build/ui/1.6.56.tar.gz
 ```
 
-Setup:
-```bash
-  git clone 'https://github.com/rancher/ui'
-  cd 'ui'
-  ./scripts/update-dependencies
-```
+The packaging command uses the current Git commit timestamp by default, or an
+explicit `SOURCE_DATE_EPOCH`, and emits a deterministic tarball plus a portable
+SHA-256 file. It creates a candidate only; publishing remains a separate,
+reviewed release step.
 
-Run development server:
-```bash
-  npm start
-```
+The repository includes explicit modernization gates because its historical frontend toolchain cannot be trusted without review. See [COMPATIBILITY.md](COMPATIBILITY.md), [SECURITY.md](SECURITY.md), and [ORIGIN.md](ORIGIN.md).
 
-Connect to UI at https://localhost:8000/ .  The server automatically picks up file changes, restarts itself, and reloads the web browser.  This is intended only for development, see below for distributing customizations.
+## License and attribution
 
-Run development server pointed at another instance of the Rancher API
-```bash
-  RANCHER="http://rancher:8080/" npm start
-```
-
-and/or pointed at another instance of the Catalog API
-```bash
-  CATALOG="http://catalog:8088/" npm start
-```
-
-RANCHER and CATALOG can also be `hostname[:port]` or `ip[:port]`.
-
-### Compiling for distribution
-
-Rancher releases include a static copy of the UI passed in during build as a tarball.  To generate that, run:
-```bash
-  ./scripts/build-static
-```
-
-### Customizing
-
-We highly suggest making customizations as an [ember-cli addon](http://ember-cli.com/extending/#developing-addons-and-blueprints) rather than forking this repo, making a bunch of changes and then fighting conflicts to keep it up to date with upstream forever.  [ui-example-addon-machine](https://github.com/rancher/ui-example-addon-machine) is an example addon that adds a custom screen for a docker-machine driver.  If there is no way for you to get to what you want to change from an addon, PRs to this repo that add generalized hooks so that you can are accepted.
-
-### Translations
-Rancher UI supports localization via translations files. You can swap translations live by utilizing the Language Picker located in the footer. If you would like to add your own translations files follow the directions below.
-
-- Fork the Rancher UI repo
-- Copy the ```en-us.yaml``` file located in ```/translations``` folder and rename using the ```<language-code>/<country-code>.yaml``` format ([Supported Locales](https://github.com/andyearnshaw/Intl.js/tree/master/locale-data/jsonp))
-- Replace the values on each key with you're new values corresponding to your language
-- Ensure you replace the ```languageName``` value as this is what will be displayed in the language picker in the UI
-- While developing you can use ```SHFT + L``` when not focused in an input or text area to toggle the languages between your currently selected language and a special *none* language to see what key values are missing
-- When you've finished you're translations issue a pull request back to the Rancher UI repo to have your translation included
-
-### Hosting remotely
-
-If you want to customize the UI, re-packaging all of Rancher to distribute the UI is possible but not terribly convenient. Instead you can change Cattle to load the UI source from a remote web server:
-
-- Build with `./scripts/build-static -l -c 'your-server.com'`
-- Upload `./dist/static/latest` so that it's available at http://your-server.com/latest (you can rename the "latest" part with the `-v` flag)
-- If your Rancher is behind a SSL proxy, your-server must also respond to SSL requests
-- Change the value of http[s]://your-rancher:8080/v1/settings/api.ui.index to `//yourserver.com/latest`
-
-### Running Tests
-
-```bash
-  npm install -g ember-cli
-```
-
-* `ember test`
-* `ember test --server`
-
-### Bugs & Issues
-Please submit bugs and issues to [rancher/rancher](//github.com/rancher/rancher/issues) with a title starting with `[UI] `.
-
-Or just [click here](//github.com/rancher/rancher/issues/new?title=%5BUI%5D%20) to create a new issue.
-
-
-#### Useful links
-
-* ember: http://emberjs.com/
-* ember-cli: http://www.ember-cli.com/
-* Development Browser Extensions
-  * [ember inspector for chrome](https://chrome.google.com/webstore/detail/ember-inspector/bmdblncegkenkacieihfhpjfppoconhi)
-  * [ember inspector for firefox](https://addons.mozilla.org/en-US/firefox/addon/ember-inspector/)
-
-License
-=======
-Copyright (c) 2014-2016 [Rancher Labs, Inc.](http://rancher.com)
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+The inherited project remains licensed under [Apache License 2.0](LICENSE), with additional attribution in [COPYRIGHT_DETAILS.md](COPYRIGHT_DETAILS.md). Bundled dependencies retain their own licenses and notices. PastureStack contributors claim authorship only for their own changes.

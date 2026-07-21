@@ -1,3 +1,15 @@
+$blueDark: null !default;
+$green: null !default;
+$screen-sm-max: null !default;
+$screen-sm-min: null !default;
+$screen-xs-max: null !default;
+$shadow: null !default;
+$table-bg: null !default;
+$table-border-color: null !default;
+$teal: null !default;
+$yellow: null !default;
+$yellowDark: null !default;
+
 .container-multi-stat {
   background: $table-bg;
   box-shadow: 0 0 2px $shadow;

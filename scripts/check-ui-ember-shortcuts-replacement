@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+bower = json.loads(Path("bower.json").read_text())
+if "ember-shortcuts" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on ember-shortcuts")
+
+build = Path("ember-cli-build.js").read_text()
+if "bower_components/ember-shortcuts" in build:
+    raise SystemExit("ember-cli-build.js must not import Bower ember-shortcuts")
+
+manager = Path("app/utils/shortcut-manager.js").read_text()
+required_manager_markers = [
+    "keydown.pasturestack-shortcuts",
+    "register(context, shortcuts)",
+    "unregister(context)",
+    "enable()",
+    "disable()",
+    "event.preventDefault()",
+    "context.send(action)",
+]
+for marker in required_manager_markers:
+    if marker not in manager:
+        raise SystemExit(f"shortcut manager missing marker: {marker}")
+
+init = Path("app/initializers/app.js").read_text()
+required_init_markers = [
+    "import ShortcutManager from 'ui/utils/shortcut-manager';",
+    "application.register('shortcuts:main', ShortcutManager);",
+    "application.inject('component', 'shortcuts', 'shortcuts:main');",
+    "application.inject('route',     'shortcutManager', 'shortcuts:main');",
+]
+for marker in required_init_markers:
+    if marker not in init:
+        raise SystemExit(f"initializer missing marker: {marker}")
+
+route = Path("app/application/route.js").read_text()
+required_route_markers = [
+    "registerShortcuts()",
+    "unregisterShortcuts()",
+    "manager.register(this, this.get('shortcuts'))",
+    "manager.unregister(this)",
+    "'shift+l': 'langToggle'",
+]
+for marker in required_route_markers:
+    if marker not in route:
+        raise SystemExit(f"application route missing marker: {marker}")
+PY_CHECK
+
+if grep -R "bower_components/ember-shortcuts" -n ember-cli-build.js app tests 2>/dev/null; then
+  echo "ember-shortcuts Bower import must not remain in active source paths" >&2
+  exit 1
+fi
+
+echo "ui-ember-shortcuts-replacement-ok"

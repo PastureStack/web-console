@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 128" role="img" aria-labelledby="title">
+  <title id="title">PastureStack</title>
+  <g transform="translate(0 0)">
+    <path fill="#5aa252" d="M18 31 59 7a10 10 0 0 1 10 0l41 24-46 27z"/>
+    <path fill="#5aa252" d="m13 42 51 30 51-30v20L69 89a10 10 0 0 1-10 0L13 62z"/>
+    <path fill="#115b43" d="m13 69 46 27a10 10 0 0 0 10 0l46-27v18a10 10 0 0 1-5 9l-41 24a10 10 0 0 1-10 0L18 96a10 10 0 0 1-5-9z"/>
+    <circle cx="64" cy="76" r="7" fill="#e8a62b"/>
+  </g>
+  <text x="148" y="83" fill="#35443d" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="58" font-weight="700" letter-spacing="1">PastureStack</text>
+</svg>

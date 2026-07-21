@@ -1,14 +1,12 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
-moduleFor('route:loading', 'LoadingRoute', {
-  // Specify the other units that are required for this test.
-  // needs: ['controller:foo']
-});
+import Ember from 'ember';
+import LoadingRoute from 'ui/loading/route';
+
+module('Unit | Route | loading');
 
 test('it exists', function(assert) {
-  var route = this.subject();
+  var route = LoadingRoute.create();
   assert.ok(route);
+  Ember.run(() => route.destroy());
 });

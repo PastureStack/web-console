@@ -8,7 +8,8 @@ export default Ember.Controller.extend(Sortable, {
 
   sortableContent   : Ember.computed.alias('model.auditLog'),
   resourceTypeAndId : null,
-  modalService: Ember.inject.service('modal'),
+  modalService      : Ember.inject.service('modal'),
+  intl              : Ember.inject.service(),
 
   actions: {
     updateResourceType: function(type) {
@@ -110,12 +111,12 @@ export default Ember.Controller.extend(Sortable, {
       var val = C.AUTH_TYPES[key];
       if ( val !== C.AUTH_TYPES.HeaderAuth && val !== C.AUTH_TYPES.TokenAccount )
       {
-        out.push({name: key, value: val});
+        out.push({name: key, value: this.get('intl').t(val)});
       }
     });
 
     this.set('authTypes', out);
-  }.on('init'),
+  }.on('init').observes('intl._locale'),
 
   setSortOrderObserver: function() {
     var out = 'asc';

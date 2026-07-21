@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+baseline=docs/baselines/npm-package-lock.node24-ignore-scripts.json
+historical_manifest=docs/baselines/package.node-sass-baseline.json
+
+python3 - "$baseline" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+baseline_path = Path(sys.argv[1])
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+if not baseline_path.is_file():
+    fail("MISSING_UI_DEPENDENCY_BASELINE", file=baseline_path)
+else:
+    package = json.loads(Path("docs/baselines/package.node-sass-baseline.json").read_text(encoding="utf-8"))
+    lock = json.loads(baseline_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("")
+
+    if lock.get("name") != package.get("name"):
+        fail("UI_BASELINE_NAME_DRIFT", package=package.get("name"), baseline=lock.get("name"))
+    if lock.get("version") != package.get("version"):
+        fail("UI_BASELINE_VERSION_DRIFT", package=package.get("version"), baseline=lock.get("version"))
+    if lock.get("lockfileVersion") != 3:
+        fail("UI_BASELINE_LOCKFILE_VERSION_UNEXPECTED", actual=lock.get("lockfileVersion"), expected=3)
+    if not root:
+        fail("UI_BASELINE_ROOT_PACKAGE_MISSING")
+    else:
+        for field in ("dependencies", "devDependencies", "engines"):
+            package_value = package.get(field, {})
+            baseline_value = root.get(field, {})
+            if package_value != baseline_value:
+                fail("UI_BASELINE_ROOT_FIELD_DRIFT", field=field)
+
+    expected_resolutions = {
+        "node_modules/ember-cli": "2.9.1",
+        "node_modules/node-sass": "4.14.1",
+        "node_modules/ember-cli-sass": "10.0.1",
+        "node_modules/dompurify": "1.0.11",
+        "node_modules/express": "4.22.1",
+    }
+    for package_path, expected_version in expected_resolutions.items():
+        actual = packages.get(package_path, {}).get("version")
+        if actual != expected_version:
+            fail("UI_BASELINE_RESOLUTION_DRIFT", package=package_path, actual=actual, expected=expected_version)
+
+    package_count = len(packages)
+    if package_count < 1000:
+        fail("UI_BASELINE_PACKAGE_COUNT_TOO_LOW", actual=package_count, minimum=1000)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_DEPENDENCY_BASELINE_OK file={baseline_path} manifest=docs/baselines/package.node-sass-baseline.json package_count={package_count}")
+print("This baseline was generated with npm package-lock-only and ignore-scripts; it is not an approved UI build recipe.")
+print("failure_count=0")
+PY

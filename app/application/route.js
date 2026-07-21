@@ -16,6 +16,30 @@ export default Ember.Route.extend({
   hideTimer      : null,
   previousLang   : null,
 
+  init() {
+    this._super(...arguments);
+    this.registerShortcuts();
+  },
+
+  willDestroy() {
+    this.unregisterShortcuts();
+    this._super(...arguments);
+  },
+
+  registerShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.register === 'function') {
+      manager.register(this, this.get('shortcuts'));
+    }
+  },
+
+  unregisterShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.unregister === 'function') {
+      manager.unregister(this);
+    }
+  },
+
   actions: {
     loading(transition) {
       this.incrementProperty('loadingId');
@@ -147,7 +171,7 @@ export default Ember.Route.extend({
     let github   = this.get('github');
     let stateMsg = 'Authorization state did not match, please try again.';
 
-    this.get('language').initLanguage();
+    let languagePromise = this.get('language').initLanguage();
 
     transition.finally(() => {
       this.controllerFor('application').setProperties({
@@ -183,7 +207,7 @@ export default Ember.Route.extend({
     } else if ( params.code ) {
 
       if ( github.stateMatches(params.state) ) {
-        return this.get('access').login(params.code).then(() => {
+        return languagePromise.then(() => this.get('access').login(params.code)).then(() => {
           // Abort the orignial transition that was coming in here since
           // we'll redirect the user manually in finishLogin
           // if we dont then model hook runs twice to finish the transition itself
@@ -209,6 +233,8 @@ export default Ember.Route.extend({
         return Ember.RSVP.reject(obj);
       }
     }
+
+    return languagePromise;
 
     function reply(err,code) {
       try {

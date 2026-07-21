@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PYCHECK'
+import json
+import re
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+dev_deps = package.get("devDependencies", {}) or {}
+if dev_deps.get("commonmark") != "0.31.2":
+    fail("COMMONMARK_NPM_DEP_VERSION_UNEXPECTED", actual=dev_deps.get("commonmark"), expected="0.31.2")
+if "commonmark" in (bower.get("dependencies", {}) or {}):
+    fail("COMMONMARK_STILL_IN_BOWER_DEPENDENCIES")
+if "node_modules/commonmark/dist/commonmark.js" not in build:
+    fail("COMMONMARK_NPM_IMPORT_MISSING")
+if "bower_components/commonmark" in build:
+    fail("COMMONMARK_BOWER_IMPORT_STILL_PRESENT")
+
+packages = lock.get("packages", {}) or {}
+root_dev = (packages.get("", {}) or {}).get("devDependencies", {}) or {}
+if root_dev.get("commonmark") != "0.31.2":
+    fail("COMMONMARK_LOCK_ROOT_VERSION_UNEXPECTED", actual=root_dev.get("commonmark"), expected="0.31.2")
+commonmark_pkg = packages.get("node_modules/commonmark", {}) or {}
+if commonmark_pkg.get("version") != "0.31.2":
+    fail("COMMONMARK_LOCK_PACKAGE_VERSION_UNEXPECTED", actual=commonmark_pkg.get("version"), expected="0.31.2")
+if commonmark_pkg.get("resolved") and "commonmark/-/commonmark-0.31.2.tgz" not in commonmark_pkg.get("resolved", ""):
+    fail("COMMONMARK_LOCK_RESOLVED_UNEXPECTED", resolved=commonmark_pkg.get("resolved"))
+
+usage_count = 0
+for path in Path("app").rglob("*.js"):
+    usage_count += len(re.findall(r"\bcommonmark\.", path.read_text(encoding="utf-8")))
+if usage_count < 2:
+    fail("COMMONMARK_GLOBAL_USAGE_COUNT_TOO_LOW", actual=usage_count, minimum=2)
+
+modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in ["No-Publish CommonMark 0.31.2 Upgrade Candidate", "commonmark@0.31.2", "node_modules/commonmark/dist/commonmark.js"]:
+    if phrase not in modernization:
+        fail("COMMONMARK_MIGRATION_DOC_MISSING", phrase=phrase)
+
+node24_smoke = Path("scripts/node24-lock-smoke.js").read_text(encoding="utf-8")
+for phrase in ["expectVersion(\"commonmark\", \"0.31.2\")", "expectCommonmarkBrowserGlobal", "commonmark-global-smoke-ok", "node_modules/commonmark/dist/commonmark.js"]:
+    if phrase not in node24_smoke:
+        fail("COMMONMARK_NODE24_LOCK_SMOKE_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_COMMONMARK_BOWER_MIGRATION_OK commonmark_global_usages={usage_count} lock={lock_path}")
+print("failure_count=0")
+PYCHECK

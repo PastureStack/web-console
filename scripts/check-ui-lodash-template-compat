@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+failures = []
+
+expected = "file:vendor/lodash-template-compat/lodash.template-4.18.1-rc16.0.tgz"
+dep = package.get("devDependencies", {}).get("lodash.template")
+if dep != expected:
+    failures.append(f"root lodash.template dependency is {dep!r}")
+
+override = package.get("overrides", {}).get("lodash.template")
+if override != "$lodash.template":
+    failures.append(f"lodash.template override is {override!r}")
+
+root = packages.get("node_modules/lodash.template", {})
+if root.get("version") != "4.18.1-rc16.0":
+    failures.append(f"root lodash.template version is {root.get('version')!r}")
+if root.get("resolved") != expected:
+    failures.append(f"root lodash.template resolved is {root.get('resolved')!r}")
+
+real = packages.get("node_modules/lodash-real", {})
+if real.get("version") != "4.17.21":
+    failures.append(f"lodash-real version is {real.get('version')!r}")
+
+for legacy_path in (
+    "node_modules/broccoli-templater/node_modules/lodash.template",
+    "node_modules/ember-cli/node_modules/lodash.template",
+    "node_modules/sourcemap-validator/node_modules/lodash.template",
+):
+    if legacy_path in packages:
+        failures.append(f"legacy lodash.template remains at {legacy_path} version={packages[legacy_path].get('version')!r}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_LODASH_TEMPLATE_COMPAT_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_LODASH_TEMPLATE_COMPAT_OK wrapper=4.18.1-rc16.0 lodash_real=4.17.21")
+print("Ember CLI, Broccoli Templater, and Sourcemap Validator resolve lodash.template through the maintained wrapper.")
+print("failure_count=0")
+PY

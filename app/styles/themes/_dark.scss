@@ -1,10 +1,14 @@
+@use "sass:color";
+@use "app/styles/base/colors" as *;
+@use "vendor/bootswatch-cosmo/variables" as *;
+
 //** Background color for `<body>`.
 $body-bg                             : $black;
 //** Global text color on `<body>`.
 $text-color                          : $lightGray;
 
 $brand-primary                       : $blue; //button non state
-$brand-primary-dark                  : darken($brand-primary, 20%);
+$brand-primary-dark                  : color.adjust($brand-primary, $lightness: -20%);
 
 //states
 $brand-success                       : rgba($greenDark, .75); //good
@@ -14,9 +18,9 @@ $brand-warning                       : rgba($yellow, .75); // orange degraded
 $brand-danger                        : rgba($redDark, .75); // stopped inactive bad
 
 //** Global textual link color.
-$link-color                          : lighten($brand-primary, 12%);
-//** Link hover color set via `darken()` function.
-$link-hover-color                    : lighten($brand-primary, 15%);
+$link-color                          : color.adjust($brand-primary, $lightness: 12%);
+//** Link hover color.
+$link-hover-color                    : color.adjust($brand-primary, $lightness: 15%);
 //** Link hover decoration.
 $link-hover-decoration               : none;
 
@@ -33,9 +37,9 @@ $top-row-link-active                 : $primary;
 $bottom-row                          : $blackDark;
 $bottom-row-link                     : $primary;
 $bottom-row-link-active              : $lightGray;
-$logo-bg                             : darken($primaryDark, 6%);
-$project-btn                         : darken($primaryDark, 2%);
-$kubbtn                              : darken($primaryDark, .15%);
+$logo-bg                             : color.adjust($primaryDark, $lightness: -6%);
+$project-btn                         : color.adjust($primaryDark, $lightness: -2%);
+$kubbtn                              : color.adjust($primaryDark, $lightness: -.15%);
 
 /*footer*/
 $footer                              : $blackDark;
@@ -50,7 +54,7 @@ $table-bg                            : rgba($darkestGrayDark, .20);
 $table-bg-accent                     : rgba($darkestGrayDark, .5);
 
 //** Background color used for `.table-hover`.
-$table-bg-hover                      : transparentize($yellow, .85);
+$table-bg-hover                      : color.adjust($yellow, $alpha: -.85);
 $table-bg-active                     : $table-bg-hover;
 //** Border color for table and cell borders.
 $table-border-color                  : rgba(255,255,255,.15);
@@ -100,7 +104,7 @@ $component-active-bg                 : $brand-primary;
 
 /*Forms*/
 //** Placeholder text color
-$input-color-placeholder             : darken($lightestGray, 50%);
+$input-color-placeholder             : color.adjust($lightestGray, $lightness: -50%);
 
 //** `<input>` background color
 $input-bg                            : rgba($lightestGray, .1);
@@ -132,7 +136,7 @@ $input-group-addon-bg                : $gray-lighter;
 //** Background for the dropdown menu.
 
 
-$dropdown-bg                         : mix(rgba($gray, .9), rgba($darkestGray, .95));
+$dropdown-bg                         : color.mix(rgba($gray, .9), rgba($darkestGray, .95));
 
 //** Dropdown menu `border-color`.
 $dropdown-border                     : transparent;
@@ -165,12 +169,12 @@ $dropdown-caret-color                : #000;
 
 $navbar-default-color                : #ecf0f1;
 $navbar-default-bg                   : #3498db;
-$navbar-default-border               : darken($navbar-default-bg, 6.5%);
+$navbar-default-border               : color.adjust($navbar-default-bg, $lightness: -6.5%);
 
 // Navbar links
 $navbar-default-link-color           : #fff;
 $navbar-default-link-hover-color     : #fff;
-$navbar-default-link-hover-bg        : darken($navbar-default-bg, 10%);
+$navbar-default-link-hover-bg        : color.adjust($navbar-default-bg, $lightness: -10%);
 $navbar-default-link-active-color    : $navbar-default-link-hover-color;
 $navbar-default-link-active-bg       : $navbar-default-link-hover-bg;
 $navbar-default-link-disabled-color  : $lightGray;
@@ -191,12 +195,12 @@ $navbar-default-toggle-border-color  : transparent;
 // Reset inverted navbar basics
 $navbar-inverse-color                : #fff;
 $navbar-inverse-bg                   : $brand-primary;
-$navbar-inverse-border               : darken($navbar-inverse-bg, 10%);
+$navbar-inverse-border               : color.adjust($navbar-inverse-bg, $lightness: -10%);
 
 // Inverted navbar links
 $navbar-inverse-link-color           : #fff;
 $navbar-inverse-link-hover-color     : #fff;
-$navbar-inverse-link-hover-bg        : darken($navbar-inverse-bg, 10%);
+$navbar-inverse-link-hover-bg        : color.adjust($navbar-inverse-bg, $lightness: -10%);
 $navbar-inverse-link-active-color    : $navbar-inverse-link-hover-color;
 $navbar-inverse-link-active-bg       : $navbar-inverse-link-hover-bg;
 $navbar-inverse-link-disabled-color  : #fff;
@@ -261,11 +265,11 @@ $jumbotron-bg                        : $gray-lighter;
 
 $state-success-text                  : #fff;
 $state-success-bg                    : $brand-success;
-$state-success-border                : darken(adjust-hue($state-success-bg, -10), 5%);
+$state-success-border                : color.adjust(color.adjust($state-success-bg, $hue: -10), $lightness: -5%);
 
 $state-info-text                     : #fff;
 $state-info-bg                       : $brand-info;
-$state-info-border                   : darken(adjust-hue($state-info-bg, -10), 7%);
+$state-info-border                   : color.adjust(color.adjust($state-info-bg, $hue: -10), $lightness: -7%);
 
 $state-warning-bg                    : $brand-warning;
 $state-warning-text                  : #fff;
@@ -273,7 +277,7 @@ $state-warning-border                : $yellowDark;
 
 $state-danger-text                   : #fff;
 $state-danger-bg                     : $brand-danger;
-$state-danger-border                 : darken(adjust-hue($state-danger-bg, -10), 3%);
+$state-danger-border                 : color.adjust(color.adjust($state-danger-bg, $hue: -10), $lightness: -3%);
 
 
 //** Tooltip text color
@@ -310,14 +314,14 @@ $popover-fallback-border-color       : $lightGray;
 //** Popover arrow color
 $popover-arrow-color                 : $popover-bg;
 //** Popover outer arrow color
-$popover-arrow-outer-color           : fadein($popover-border-color, 5%);
+$popover-arrow-outer-color           : color.adjust($popover-border-color, $alpha: 0.05);
 //** Popover outer arrow fallback color
-$popover-arrow-outer-fallback-color  : darken($popover-fallback-border-color, 20%);
+$popover-arrow-outer-fallback-color  : color.adjust($popover-fallback-border-color, $lightness: -20%);
 
 
 
 //** Popover title background color
-$popover-title-bg                    : darken($popover-bg, 3%);
+$popover-title-bg                    : color.adjust($popover-bg, $lightness: -3%);
 
 
 /*Labels*/
@@ -402,7 +406,7 @@ $list-group-active-bg                : $component-active-bg;
 //** Border color of active list elements
 $list-group-active-border            : $list-group-border;
 //** Text color for content within active list items
-$list-group-active-text-color        : lighten($list-group-active-bg, 40%);
+$list-group-active-text-color        : color.adjust($list-group-active-bg, $lightness: 40%);
 
 //** Text color of disabled list items
 $list-group-disabled-color           : $gray-light;
@@ -454,13 +458,13 @@ $thumbnail-caption-color             : $text-color;
 
 /*Wells*/
 $well-bg                             : $blackDark;
-$well-border                         : darken($well-bg, 7%);
+$well-border                         : color.adjust($well-bg, $lightness: -7%);
 
 
 /*Tabs*/
 $tab-bg                               : $darkestGray;
 $tab-active-bg                       : $well-bg;
-$tab-hover                           : darken($brand-primary, 5%);
+$tab-hover                           : color.adjust($brand-primary, $lightness: -5%);
 $tab-color                           : $brand-primary;
 
 /*badges*/
@@ -531,12 +535,12 @@ $hr-border                           : $gray-lighter;
 /*environment*/
 /*k8s*/
 
-$k8sBlue      : darken(#326de6, 10%);
+$k8sBlue      : color.adjust(#326de6, $lightness: -10%);
 $k8sDarkTeal  : #07919d;
-$k8sTeal      : darken(#09c1d1, 5%);
-$k8sLightTeal : darken(#deeced, 5%);
-$k8sOrange    : transparentize(#f9a38f, .75);
-$k8sGray      : darken(#7d7d7d, 20%);
+$k8sTeal      : color.adjust(#09c1d1, $lightness: -5%);
+$k8sLightTeal : color.adjust(#deeced, $lightness: -5%);
+$k8sOrange    : color.adjust(#f9a38f, $alpha: -.75);
+$k8sGray      : color.adjust(#7d7d7d, $lightness: -20%);
 $k8sAccent    : $navyTwo;
 $k8sBodyBg    : $navyTwoDark;
 $k8sHeader    : $k8sDarkTeal;

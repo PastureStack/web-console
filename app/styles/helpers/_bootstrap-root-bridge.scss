@@ -1,0 +1,53 @@
+@mixin emit-bootstrap-root-bridge {
+  .btn-group-xs > .btn {
+    @extend .btn-xs;
+  }
+
+  .input-group-sm > .input-group-addon,
+  .input-group-sm > .input-group-btn > .btn {
+    @extend .input-sm;
+  }
+
+  .initialism {
+    @extend .text-uppercase;
+  }
+
+  .copy-btn.small {
+    @extend .text-muted;
+  }
+
+  UL.list-circles,
+  UL.list-lines {
+    @extend .list-unstyled;
+  }
+
+  .gh-block .gh-block-detail,
+  .protip {
+    @extend .text-muted;
+  }
+
+  .advanced-link {
+    @extend a;
+    @extend .hand;
+  }
+
+  .container-tooltip .bottom-row .col,
+  .service-addtl-info .description,
+  .pod .pod-message,
+  .state,
+  .grid .state > span {
+    @extend .clip;
+  }
+
+  .container-tooltip .tooltip-content-inner .dismiss {
+    @extend .hand;
+  }
+
+  .btn-circle-text {
+    @extend .btn-circle;
+  }
+
+  LABEL {
+    @extend .no-select;
+  }
+}

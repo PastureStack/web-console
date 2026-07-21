@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+expected = ">=24"
+files = [
+    Path("package.json"),
+    Path("docs/baselines/package.node-sass-baseline.json"),
+    Path("docs/baselines/npm-package-lock.node24-ignore-scripts.json"),
+    Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"),
+]
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+for path in files:
+    if not path.is_file():
+        fail("UI_NODE24_ENGINE_FILE_MISSING", file=path)
+        continue
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if "package-lock" in path.name or path.name.startswith("npm-package-lock"):
+        actual = ((data.get("packages") or {}).get("") or {}).get("engines", {}).get("node")
+    else:
+        actual = data.get("engines", {}).get("node")
+    if actual != expected:
+        fail("UI_NODE24_ENGINE_DRIFT", file=path, actual=actual, expected=expected)
+
+transitive_legacy = []
+for path in files:
+    if not path.is_file() or not path.name.startswith("npm-package-lock"):
+        continue
+    data = json.loads(path.read_text(encoding="utf-8"))
+    for package_path, package_data in (data.get("packages") or {}).items():
+        if package_path == "":
+            continue
+        engines = package_data.get("engines")
+        if isinstance(engines, dict) and engines.get("node") == ">= 0.12.0":
+            transitive_legacy.append(f"{path}:{package_path}")
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print("UI_NODE24_ENGINE_BASELINE_OK node_engine=>=24")
+if transitive_legacy:
+    print("known_transitive_legacy_node_engine_markers=" + ",".join(transitive_legacy))
+print("The active UI maintenance source and lock baseline roots no longer advertise Node 0.12 compatibility; transitive legacy package metadata remains a documented no-publish blocker.")
+print("failure_count=0")
+PY

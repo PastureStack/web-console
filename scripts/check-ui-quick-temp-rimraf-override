@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+quick_temp_override = (package.get("overrides", {}) or {}).get("quick-temp", {}) or {}
+if quick_temp_override.get("rimraf") != "6.1.3":
+    fail("QUICK_TEMP_RIMRAF_OVERRIDE_UNEXPECTED", actual=quick_temp_override.get("rimraf"), expected="6.1.3")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    quick_temp = packages.get("node_modules/quick-temp", {})
+    rimraf = packages.get("node_modules/quick-temp/node_modules/rimraf") or packages.get("node_modules/rimraf", {})
+    if quick_temp.get("version") != "0.1.9":
+        fail("QUICK_TEMP_LOCK_VERSION_UNEXPECTED", actual=quick_temp.get("version"), expected="0.1.9")
+    if rimraf.get("version") != "6.1.3":
+        fail("QUICK_TEMP_RIMRAF_LOCK_VERSION_UNEXPECTED", actual=rimraf.get("version"), expected="6.1.3")
+    for removed in ["node_modules/quick-temp/node_modules/glob", "node_modules/quick-temp/node_modules/inflight"]:
+        if removed in packages:
+            fail("QUICK_TEMP_LEGACY_DEPENDENCY_REMAINS", package=removed, version=packages[removed].get("version"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_QUICK_TEMP_RIMRAF_OVERRIDE_OK quick-temp=0.1.9 rimraf=6.1.3 lockfile={lock_path} package_count={package_count}")
+print("The no-publish quick-temp path resolves maintained rimraf 6.1.3 and no longer carries quick-temp's nested legacy glob/inflight path.")
+print("failure_count=0")
+PY

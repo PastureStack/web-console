@@ -1,28 +1,16 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
-import Ember from 'ember';
 import { initialize } from 'ui/initializers/touch';
 
-var container, application;
-
-moduleFor('initializer:touch', {
-  setup: function() {
-    Ember.run(function() {
-      container = new Ember.Container();
-      application = Ember.Application.create();
-      application.deferReadiness();
-    });
-  }
-});
+module('Initializer | touch');
 
 // Replace this with your real tests.
-test('it works', function(assert) {
-  initialize(container, application);
+test('it marks the body for touch-aware styling', function(assert) {
+  var body = $('BODY');
 
-  // you would normally confirm the results of the initializer here
-  assert.ok(true);
+  body.removeClass('touch no-touch');
+  initialize();
+
+  assert.ok(body.hasClass('touch') || body.hasClass('no-touch'));
+  body.removeClass('touch no-touch');
 });
-

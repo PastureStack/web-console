@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+dev = package.get("devDependencies", {})
+deps = package.get("dependencies", {})
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+component_path = Path("app/components/container-shell/component.js")
+build_path = Path("ember-cli-build.js")
+old_fit_path = Path("app/utils/xterm-fit-addon.js")
+
+if "xterm" in dev or "xterm" in deps:
+    fail("LEGACY_XTERM_STILL_DECLARED")
+if dev.get("@xterm/xterm") != "6.0.0":
+    fail("XTERM_PACKAGE_UNEXPECTED", actual=dev.get("@xterm/xterm"), expected="6.0.0")
+if dev.get("@xterm/addon-fit") != "0.11.0":
+    fail("XTERM_FIT_PACKAGE_UNEXPECTED", actual=dev.get("@xterm/addon-fit"), expected="0.11.0")
+
+component = component_path.read_text(encoding="utf-8")
+required = [
+    "window.Terminal",
+    "window.FitAddon.FitAddon",
+    "term.onData",
+    "term.loadAddon",
+    "fitAddon.proposeDimensions",
+    "fitAddon.fit()",
+    "disposeTerminal",
+]
+for marker in required:
+    if marker not in component:
+        fail("XTERM_COMPONENT_MARKER_MISSING", marker=marker)
+
+for marker in ["npm:xterm", "term.on('data'", "term.destroy()", "rowContainer"]:
+    if marker in component:
+        fail("LEGACY_XTERM_COMPONENT_MARKER", marker=marker)
+
+if old_fit_path.exists():
+    fail("OLD_XTERM_FIT_ADDON_STILL_PRESENT", file=old_fit_path)
+
+build_source = build_path.read_text(encoding="utf-8")
+if "nodeAssets" in build_source and "'xterm'" in build_source:
+    fail("LEGACY_XTERM_NODE_ASSET_STILL_PRESENT")
+if "node_modules/@xterm/xterm/css/xterm.css" not in build_source:
+    fail("XTERM_CSS_IMPORT_MISSING")
+if "node_modules/@xterm/xterm/lib/xterm.js" not in build_source:
+    fail("XTERM_JS_IMPORT_MISSING")
+if "node_modules/@xterm/addon-fit/lib/addon-fit.js" not in build_source:
+    fail("XTERM_FIT_JS_IMPORT_MISSING")
+
+if not lock_path.is_file():
+    fail("MISSING_XTERM_LOCK_BASELINE", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("XTERM_LOCK_ROOT_FIELD_DRIFT", field=field)
+    if "node_modules/xterm" in packages:
+        fail("LEGACY_XTERM_STILL_RESOLVED")
+    xterm = packages.get("node_modules/@xterm/xterm", {})
+    if xterm.get("version") != "6.0.0":
+        fail("XTERM_LOCK_VERSION_UNEXPECTED", actual=xterm.get("version"), expected="6.0.0")
+    fit = packages.get("node_modules/@xterm/addon-fit", {})
+    if fit.get("version") != "0.11.0":
+        fail("XTERM_FIT_LOCK_VERSION_UNEXPECTED", actual=fit.get("version"), expected="0.11.0")
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_XTERM_MIGRATION_OK xterm=6.0.0 addon_fit=0.11.0 lockfile={lock_path} package_count={package_count}")
+print("Legacy xterm package, private rowContainer fit logic, and old terminal data/dispose APIs are absent from the candidate source path.")
+print("This is a no-publish UI source step; shell/noVNC/browser regression is still required before publishing a rebuilt UI artifact.")
+print("failure_count=0")
+PY

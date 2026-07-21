@@ -228,7 +228,7 @@ export default Ember.Component.extend(NewOrEdit, {
     var active = this.get('activeOrchestration');
 
     var drivers = [
-      {name: 'cattle', title: 'Cattle', source: 'Built-In', image: `${this.get('app.baseAssets')}assets/images/logos/provider-orchestration.svg`}
+      {name: 'cattle', title: this.get('intl').t('editProjectTemplate.builtinOrchestration'), source: 'PastureStack', image: `${this.get('app.baseAssets')}assets/images/logos/pasturestack-mark.svg`}
     ];
 
     let map = this.get('stacksMap');
@@ -236,7 +236,7 @@ export default Ember.Component.extend(NewOrEdit, {
     this.get('orchestrationIds').forEach((id) => {
       let tpl = (map[id]||{}).tpl;
       if ( tpl ) {
-        drivers.push({name: id, title: tpl.name, source: 'in ' + ucFirst(tpl.catalogId), image: tpl.links.icon});
+        drivers.push({name: id, title: tpl.name, source: this.get('intl').t('catalogBox.sourcePrefix') + ' ' + ucFirst(tpl.catalogId), image: tpl.links.icon});
         seen[tpl.name] = (seen[tpl.name]||0)+1;
       }
     });
@@ -249,7 +249,7 @@ export default Ember.Component.extend(NewOrEdit, {
     this.set('showOrchestrationOrigin', multiple);
 
     return drivers;
-  }.property('activeOrchestration'),
+  }.property('activeOrchestration','intl._locale'),
 
   willSave() {
     let intl = this.get('intl');

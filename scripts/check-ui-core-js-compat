@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+failures = []
+
+root = packages.get("node_modules/core-js", {})
+pure = packages.get("node_modules/core-js-pure", {})
+
+if package.get("overrides", {}).get("core-js") != "$core-js":
+    failures.append("package override for core-js is missing")
+if root.get("version") != "2.6.13-rc16.0":
+    failures.append(f"root core-js version is {root.get('version')!r}")
+if root.get("deprecated"):
+    failures.append("root core-js still has a deprecated warning")
+if root.get("resolved") != "file:vendor/core-js-compat/core-js-2.6.13-rc16.0.tgz":
+    failures.append(f"root core-js resolved path is {root.get('resolved')!r}")
+if pure.get("version") != "3.49.0":
+    failures.append(f"core-js-pure version is {pure.get('version')!r}")
+
+nested = [path for path in packages if path.endswith("/node_modules/core-js")]
+if nested:
+    failures.append(f"nested core-js copies remain: {nested}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_CORE_JS_COMPAT_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_CORE_JS_COMPAT_OK wrapper=2.6.13-rc16.0 core-js-pure=3.49.0")
+print("failure_count=0")
+PY

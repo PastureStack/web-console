@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+dev = package.get("devDependencies", {})
+overrides = package.get("overrides", {})
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+if "includePolyfill" in build:
+    fail("LEGACY_BABEL_INCLUDE_POLYFILL_REMAINS")
+expected = {
+    "ember-cli-babel": "8.3.1",
+}
+for name, version in expected.items():
+    if dev.get(name) != version:
+        fail("UI_BABEL_HTMLBARS_DECLARATION_UNEXPECTED", package=name, actual=dev.get(name), expected=version)
+    override = overrides.get(name)
+    override_version = override.get(".") if isinstance(override, dict) else override
+    if override_version != version:
+        fail("UI_BABEL_HTMLBARS_OVERRIDE_UNEXPECTED", package=name, actual=override, expected=version)
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    for name, version in expected.items():
+        matches = {
+            path: meta.get("version")
+            for path, meta in packages.items()
+            if path.endswith(f"node_modules/{name}")
+        }
+        if not matches:
+            fail("UI_BABEL_HTMLBARS_LOCK_PACKAGE_MISSING", package=name)
+            continue
+        for package_path, actual in sorted(matches.items()):
+            if actual != version:
+                fail("UI_BABEL_HTMLBARS_LOCK_VERSION_UNEXPECTED", package=package_path, actual=actual, expected=version)
+    htmlbars_checker = packages.get("node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker", {})
+    if htmlbars_checker.get("version") != "1.3.1":
+        fail(
+            "EMBER_CLI_HTMLBARS_VERSION_CHECKER_UNEXPECTED",
+            actual=htmlbars_checker.get("version"),
+            expected="1.3.1",
+        )
+    legacy_babel = {
+        path: meta.get("version")
+        for path, meta in packages.items()
+        if path.endswith("node_modules/ember-cli-babel") and not str(meta.get("version", "")).startswith("8.")
+    }
+    for package_path, actual in sorted(legacy_babel.items()):
+        fail("EMBER_CLI_BABEL_LEGACY_VERSION_STILL_RESOLVED", package=package_path, actual=actual)
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_BABEL_HTMLBARS_UPGRADE_OK ember-cli-babel=8.3.1 inline-precompile=removed lockfile={lock_path} package_count={package_count}")
+print("Direct and override paths no longer resolve ember-cli-babel 5.x; old Babel/core-js paths can still remain through other Ember test add-ons and stay blocked before UI artifact publication.")
+print("failure_count=0")
+PY

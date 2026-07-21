@@ -1,3 +1,9 @@
+$lightGrayTwo: null !default;
+$midGray: null !default;
+$midGrayDark: null !default;
+$table-bg-hover: null !default;
+$well-bg: null !default;
+
 .sortable-table {
   .fixed-header,
   .fixed-header-actions {
@@ -71,4 +77,117 @@ TH.sortable {
 .sortable-table .total {
   font-weight: bold;
   background-color: $lightGrayTwo;
+}
+
+.table-column-scroll-host {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table.grid[data-resizable-columns="true"] {
+  max-width: none;
+
+  > thead > th,
+  > thead > tr > th {
+    position: relative;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  > tbody > tr > td:not([colspan]),
+  > tfoot > tr > td:not([colspan]) {
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  > tbody > tr > td:not([colspan]):not(.actions):not(.subtable):not(.table-column-wrap),
+  > tfoot > tr > td:not([colspan]):not(.actions):not(.subtable):not(.table-column-wrap) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .table-column-resize-handle {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    right: -5px;
+    bottom: 0;
+    width: 10px;
+    cursor: col-resize;
+    touch-action: none;
+
+    &::after {
+      position: absolute;
+      top: 20%;
+      bottom: 20%;
+      left: 4px;
+      width: 1px;
+      background: currentColor;
+      content: "";
+      opacity: 0;
+      transition: opacity .15s ease;
+    }
+
+    &:hover::after,
+    &:focus::after {
+      opacity: .45;
+    }
+
+    &:focus {
+      outline: 2px solid currentColor;
+      outline-offset: -2px;
+    }
+  }
+
+  &.table-column-measuring {
+    > thead > th,
+    > thead > tr > th,
+    > tbody > tr > td,
+    > tfoot > tr > td {
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      white-space: nowrap !important;
+    }
+  }
+}
+
+body.table-column-resizing,
+body.table-column-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+// The existing small-screen grid turns each cell into a labelled card row.
+// Column widths and handles only apply while the table uses desktop semantics.
+@media (max-width: 694px) {
+  .table-column-scroll-host {
+    overflow-x: visible;
+  }
+
+  table.grid[data-resizable-columns="true"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+
+    > thead > th,
+    > thead > tr > th,
+    > tbody > tr > td,
+    > tfoot > tr > td {
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      overflow-wrap: anywhere;
+    }
+
+    .table-column-resize-handle {
+      display: none;
+    }
+  }
 }

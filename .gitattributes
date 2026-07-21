@@ -1,0 +1,14 @@
+* text=auto
+
+# Shell gates must stay LF even when maintainers work from Windows with
+# core.autocrlf=true; CRLF makes WSL/Linux bash fail before validation starts.
+scripts/* text eol=lf
+*.sh text eol=lf
+
+# Security smoke tests pin these vendored browser assets by SHA-256. Keep their
+# checked-out bytes stable on Windows and Linux.
+vendor/ember/*.js text eol=lf
+vendor/jquery/jquery.js text eol=lf
+vendor/ansi-up/ansi-up-global.js text eol=lf
+vendor/semver/semver-global.js text eol=lf
+vendor/shell-quote/shell-quote-global.js text eol=lf

@@ -41,7 +41,7 @@
                 </li>
                 <li class="force-wrap">
                   <label>{{t 'certificatesPage.detail.info.algorithm'}}</label>
-                  {{model.certificate.algorithm}}{{#if model.certificate.keySize}} - {{model.certificate.keySize}} bits{{/if}}
+                  {{model.certificate.algorithm}}{{#if model.certificate.keySize}} - {{model.certificate.keySize}} {{t 'uiText.certificateBits'}}{{/if}}
                 </li>
                 <li class="force-wrap">
                   <label>{{t 'certificatesPage.detail.info.issuer'}}</label>

@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+failures = []
+
+expected = "$intl-messageformat-parser"
+dev_deps = package.get("devDependencies", {})
+if dev_deps.get("intl-messageformat-parser") != "file:vendor/intl-messageformat-parser-compat/intl-messageformat-parser-1.8.2-rc16.0.tgz":
+    failures.append("root intl-messageformat-parser devDependency is not the rc16 local tarball")
+
+override = package.get("overrides", {}).get("intl-messageformat")
+if not isinstance(override, dict) or override.get("intl-messageformat-parser") != expected:
+    failures.append("intl-messageformat parser override does not point at the root rc16 compat package")
+
+if package.get("overrides", {}).get("intl-messageformat-parser") != expected:
+    failures.append("root intl-messageformat-parser override does not point at the rc16 compat package")
+
+root = packages.get("node_modules/intl-messageformat-parser", {})
+if root.get("version") != "1.8.2-rc16.0":
+    failures.append(f"root intl-messageformat-parser version is {root.get('version')!r}")
+if root.get("resolved") != "file:vendor/intl-messageformat-parser-compat/intl-messageformat-parser-1.8.2-rc16.0.tgz":
+    failures.append(f"root intl-messageformat-parser resolved path is {root.get('resolved')!r}")
+if root.get("deprecated"):
+    failures.append("root intl-messageformat-parser still has deprecated metadata in the lock baseline")
+
+nested_path = "node_modules/intl-messageformat/node_modules/intl-messageformat-parser"
+if nested_path in packages:
+    failures.append(f"nested intl-messageformat parser remains at {packages[nested_path].get('version')!r}")
+
+vendor_tgz = Path("vendor/intl-messageformat-parser-compat/intl-messageformat-parser-1.8.2-rc16.0.tgz")
+if not vendor_tgz.is_file():
+    failures.append(f"missing compatibility package tarball {vendor_tgz}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_INTL_MESSAGEFORMAT_PARSER_COMPAT_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_INTL_MESSAGEFORMAT_PARSER_COMPAT_OK parser=1.8.2-rc16.0 nested_parser=absent deprecated_metadata=absent")
+print("intl-messageformat 1.x still receives the legacy messageFormatPattern AST while the deprecated upstream npm package is removed from the active install graph.")
+print("failure_count=0")
+PY

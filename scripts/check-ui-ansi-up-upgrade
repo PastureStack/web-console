@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+dev = package.get("devDependencies", {})
+if dev.get("ansi_up") != "6.0.6":
+    fail("ANSI_UP_DECLARATION_UNEXPECTED", actual=dev.get("ansi_up"), expected="6.0.6")
+
+component_path = Path("app/components/container-logs/component.js")
+component = component_path.read_text(encoding="utf-8")
+required_markers = [
+    "function createAnsiUp()",
+    "window.rc16AnsiUp",
+    "AnsiUpModule.AnsiUp || window.AnsiUp",
+    "ansiUp.escape_html = false",
+    "ansiUp.ansi_to_html(Util.escapeHtml(msg))",
+]
+for marker in required_markers:
+    if marker not in component:
+        fail("ANSI_UP_COMPONENT_MARKER_MISSING", marker=marker)
+if "AnsiUp.ansi_to_html(Util.escapeHtml(msg))" in component:
+    fail("ANSI_UP_LEGACY_STATIC_CALL_STILL_PRESENT")
+if "ansiUp.ansi_to_html(msg)" in component:
+    fail("ANSI_UP_UNESCAPED_LOG_CALL_PRESENT")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    ansi_up = packages.get("node_modules/ansi_up")
+    if not ansi_up:
+        fail("ANSI_UP_LOCK_MISSING")
+    elif ansi_up.get("version") != "6.0.6":
+        fail("ANSI_UP_LOCK_VERSION_UNEXPECTED", actual=ansi_up.get("version"), expected="6.0.6")
+    for package_path, metadata in sorted(packages.items()):
+        if package_path.endswith("node_modules/ansi_up") and metadata.get("version") != "6.0.6":
+            fail("ANSI_UP_LEGACY_LOCK_VERSION_PRESENT", package=package_path, actual=metadata.get("version"))
+    package_count = len(packages)
+
+build_source = Path("ember-cli-build.js").read_text(encoding="utf-8")
+if "vendor/ansi-up/ansi-up-global.js" not in build_source:
+    fail("ANSI_UP_VENDOR_IMPORT_MISSING")
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_ANSI_UP_UPGRADE_OK ansi_up=6.0.6 lockfile={lock_path} package_count={package_count}")
+print("container log ANSI conversion keeps pre-escaped log text and disables ansi_up 6 built-in escaping to avoid double escaping.")
+print("failure_count=0")
+PY

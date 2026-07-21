@@ -62,6 +62,8 @@ export default Ember.Component.extend(ThrottledResize, {
       ranksep: 50,
       marginx: 30,
       marginy: 30
+    }).setDefaultEdgeLabel(function() {
+      return {};
     });
 
     var render = new dagreD3.render();

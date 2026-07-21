@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import MultiStatsSocket from 'ui/utils/multi-stats';
-import { formatPercent, formatMib, formatKbps, pluralize } from 'ui/utils/util';
+import { formatPercent, formatMib, formatKbps } from 'ui/utils/util';
 
 const MAX_POINTS = 60;
 const TICK_COUNT = 6;
@@ -27,6 +27,7 @@ const GRADIENT_COLORS = [
 ];
 
 export default Ember.Component.extend({
+  intl: Ember.inject.service(),
   model: null,
   linkName: 'containerStats',
   single: true,
@@ -669,7 +670,7 @@ function formatSecondsAgo(d) {
   var ago = Math.max(0,MAX_POINTS - d - 1) * this.get('renderSeconds');
   if ( ago === 0 )
   {
-    return 'Now';
+    return this.get('intl').t('infoMultiStats.time.now');
   }
 
   if ( ago >= 60 )
@@ -678,15 +679,18 @@ function formatSecondsAgo(d) {
     var sec = ago - 60*min;
     if ( sec > 0 )
     {
-      return `${min} min, ${sec} sec ago`;
+      return this.get('intl').t('infoMultiStats.time.minutesSecondsAgo', {
+        minutes: min,
+        seconds: sec,
+      });
     }
     else
     {
-      return pluralize(min,'minute') +  ' ago';
+      return this.get('intl').t('infoMultiStats.time.minutesAgo', { count: min });
     }
   }
 
-  return pluralize(ago,'second') + ' ago';
+  return this.get('intl').t('infoMultiStats.time.secondsAgo', { count: ago });
 }
 
 function formatKey(single, store, key /*, ratio, _id, index*/) {

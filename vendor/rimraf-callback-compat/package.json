@@ -1,0 +1,13 @@
+{
+  "name": "rimraf",
+  "version": "6.1.3",
+  "description": "RC16 callback-compatible wrapper around rimraf 6 for legacy Broccoli callers.",
+  "main": "index.js",
+  "bin": {
+    "rimraf": "bin.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "rimraf-real": "npm:rimraf@6.1.3"
+  }
+}

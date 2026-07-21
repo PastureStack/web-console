@@ -89,7 +89,7 @@ var ProjectTemplate = Resource.extend(PolledResource, {
     if ( orch ) {
       return orch.get('icon');
     } else {
-      return `${this.get('app.baseAssets')}assets/images/logos/provider-orchestration.svg`;
+      return `${this.get('app.baseAssets')}assets/images/logos/pasturestack-mark.svg`;
     }
   }.property('stacks.[]'),
 });

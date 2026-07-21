@@ -1,11 +1,8 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
 import util from 'ui/utils/util';
 
-moduleFor('util:util');
+module('Unit | Utility | util');
 
 // Replace this with your real tests.
 test('it works', function(assert) {

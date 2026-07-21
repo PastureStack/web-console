@@ -1,0 +1,15 @@
+{
+  "name": "core-js",
+  "version": "2.6.13-rc16.0",
+  "description": "RC16 compatibility facade for legacy core-js@2 library/fn paths backed by core-js-pure@3.",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "core-js-pure": "3.49.0"
+  },
+  "files": [
+    "index.js",
+    "library",
+    "UPSTREAM.md"
+  ]
+}

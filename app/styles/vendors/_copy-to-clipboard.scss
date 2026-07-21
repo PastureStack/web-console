@@ -1,4 +1,10 @@
 
+$brand-info: null !default;
+$brand-primary-dark: null !default;
+$green: null !default;
+$pre-bg: null !default;
+$primary: null !default;
+
 .copy-pre {
   position: relative;
 }
@@ -39,7 +45,6 @@
 }
 
 .copy-btn.small {
-  @extend .text-muted;
   padding: 0;
 
   &:hover {

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">PastureStack</title>
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#72b65b"/>
+      <stop offset="1" stop-color="#3f8f4d"/>
+    </linearGradient>
+    <linearGradient id="stack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#176b4b"/>
+      <stop offset="1" stop-color="#0b4f3b"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#field)" d="M18 31 59 7a10 10 0 0 1 10 0l41 24-46 27z"/>
+  <path fill="url(#field)" d="m13 42 51 30 51-30v20L69 89a10 10 0 0 1-10 0L13 62z"/>
+  <path fill="url(#stack)" d="m13 69 46 27a10 10 0 0 0 10 0l46-27v18a10 10 0 0 1-5 9l-41 24a10 10 0 0 1-10 0L18 96a10 10 0 0 1-5-9z"/>
+  <g fill="none" stroke="#f5f1e8" stroke-linecap="round" stroke-linejoin="round" stroke-width="5">
+    <path d="M25 42c16 0 29 5 39 14 12-9 25-14 39-14M25 62c16 0 29 5 39 14 12-9 25-14 39-14"/>
+    <path d="M64 76v24M45 88l19 12 19-12"/>
+  </g>
+  <g fill="#e8a62b" stroke="#f5f1e8" stroke-width="4">
+    <circle cx="64" cy="76" r="7"/>
+    <circle cx="45" cy="88" r="6"/>
+    <circle cx="83" cy="88" r="6"/>
+    <circle cx="64" cy="105" r="6"/>
+  </g>
+</svg>

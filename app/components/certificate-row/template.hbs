@@ -8,13 +8,13 @@
   {{#if model.CN}}
     {{model.CN}}
     {{#if model.countableSans.length}}
-      + {{model.countableSans.length}} other{{if (eq model.countableSans.length 1) "" "s"}}
+      + {{t 'certificatesPage.table.otherNames' count=model.countableSans.length}}
     {{/if}}
   {{else}}
-    <span class="text-muted">None</span>
+    <span class="text-muted">{{t 'certificatesPage.table.noCn'}}</span>
   {{/if}}
 </td>
-<td data-title="certificatesPage.table.expiresDate:">
+<td data-title="{{t 'certificatesPage.table.expiresDate'}}:">
   <span class="{{if model.expiresSoon "text-bold text-danger"}}">
     {{date-from-now model.expiresDate}}
   </span>

@@ -1,3 +1,5 @@
+$light-grey: null !default;
+
 .auth-driver {
   &.activedirectory {
     background-image: url('images/providers/activedirectory.svg');
@@ -12,7 +14,7 @@
   }
 
   &.local {
-    background-image: url('images/logos/provider-local.svg');
+    background-image: url('images/logos/pasturestack-mark.svg');
   }
 
   &.openldap {

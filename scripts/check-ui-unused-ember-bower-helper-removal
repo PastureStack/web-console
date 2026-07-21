@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+removed = ["ember-cli-shims", "ember-qunit-notifications", "ember-resolver"]
+bower = json.loads(Path("bower.json").read_text())
+for dep in removed:
+    if dep in bower.get("dependencies", {}):
+        raise SystemExit(f"bower.json must not depend on {dep}")
+
+pkg = json.loads(Path("package.json").read_text())
+if "ember-resolver" not in pkg.get("devDependencies", {}):
+    raise SystemExit("package.json must keep npm ember-resolver for app/resolver.js")
+
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text())
+if lock.get("packages", {}).get("node_modules/ember-resolver", {}).get("version") != "2.1.1":
+    raise SystemExit("lock baseline must resolve npm ember-resolver 2.1.1")
+
+resolver = Path("app/resolver.js").read_text()
+if "import Resolver from 'ember-resolver';" not in resolver:
+    raise SystemExit("app/resolver.js must import npm ember-resolver")
+PY_CHECK
+
+if grep -R "bower_components/ember-cli-shims\|bower_components/ember-qunit-notifications\|bower_components/ember-resolver" -n ember-cli-build.js app tests 2>/dev/null; then
+  echo "unused Ember Bower helper imports must not remain in active source paths" >&2
+  exit 1
+fi
+
+grep -q "expectVersion(\"ember-resolver\", \"2.1.1\")" scripts/node24-lock-smoke.js
+
+echo "ui-unused-ember-bower-helper-removal-ok"

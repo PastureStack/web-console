@@ -3,7 +3,7 @@ import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 const { getOwner } = Ember;
 
-function proxifyUrl(url, proxyBase) {
+export function proxifyUrl(url, proxyBase) {
   let parsed = Util.parseUrl(url);
 
   if ( parsed.hostname.indexOf('.') === -1  || // No dot, local name like localhost

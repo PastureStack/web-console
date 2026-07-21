@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+pkg = json.loads(Path("package.json").read_text())
+bower = json.loads(Path("bower.json").read_text())
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text())
+
+if "prism" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on prism")
+if pkg.get("devDependencies", {}).get("prismjs") != "1.30.0":
+    raise SystemExit("package.json must pin prismjs 1.30.0")
+if lock.get("packages", {}).get("node_modules/prismjs", {}).get("version") != "1.30.0":
+    raise SystemExit("lock baseline must resolve prismjs 1.30.0")
+PY_CHECK
+
+if grep -R "bower_components/prism" -n ember-cli-build.js app tests docs 2>/dev/null; then
+  echo "Prism must be imported from npm prismjs, not Bower" >&2
+  exit 1
+fi
+
+grep -q "node_modules/prismjs/prism.js" ember-cli-build.js
+grep -q "node_modules/prismjs/components/prism-yaml.js" ember-cli-build.js
+grep -q "node_modules/prismjs/components/prism-bash.js" ember-cli-build.js
+grep -q "expectPrismBrowserGlobals" scripts/node24-lock-smoke.js
+
+echo "ui-prism-bower-migration-ok"

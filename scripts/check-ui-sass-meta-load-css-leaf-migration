@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+import sys
+
+entries = [
+    Path("app/styles/app-light.scss"),
+    Path("app/styles/app-dark.scss"),
+]
+
+leaf_imports = [
+    "app/styles/vendors/liquidfire-tweak",
+    "app/styles/vendors/prism-theme",
+    "app/styles/components/container-shell",
+    "app/styles/components/input-service",
+    "app/styles/components/hero-add-service",
+    "app/styles/components/project-upgrade",
+    "app/styles/pages/registry",
+    "app/styles/pages/container",
+    "app/styles/pages/virtualmachine",
+]
+
+partial_paths = {
+    "app/styles/vendors/liquidfire-tweak": Path("app/styles/vendors/_liquidfire-tweak.scss"),
+    "app/styles/vendors/prism-theme": Path("app/styles/vendors/_prism-theme.scss"),
+    "app/styles/components/container-shell": Path("app/styles/components/_container-shell.scss"),
+    "app/styles/components/input-service": Path("app/styles/components/_input-service.scss"),
+    "app/styles/components/hero-add-service": Path("app/styles/components/_hero-add-service.scss"),
+    "app/styles/components/project-upgrade": Path("app/styles/components/_project-upgrade.scss"),
+    "app/styles/pages/registry": Path("app/styles/pages/_registry.scss"),
+    "app/styles/pages/container": Path("app/styles/pages/_container.scss"),
+    "app/styles/pages/virtualmachine": Path("app/styles/pages/_virtualmachine.scss"),
+}
+
+global_dependency_re = re.compile(r"(?<![\w-])\$[A-Za-z_-][\w-]*|@include\s+|@extend\s+|^\s*@import\s+", re.M)
+
+failures = []
+
+for entry in entries:
+    text = entry.read_text(encoding="utf-8")
+    if not text.startswith('@use "sass:meta";\n'):
+        failures.append(f"SASS_META_USE_MISSING file={entry}")
+
+    for name in leaf_imports:
+        import_double = f'@import "{name}";'
+        import_single = f"@import '{name}';"
+        include = f'@include meta.load-css("{name}");'
+        if import_double in text or import_single in text:
+            failures.append(f"SASS_LEAF_IMPORT_STILL_PRESENT file={entry} import={name}")
+        if include not in text:
+            failures.append(f"SASS_LEAF_LOAD_CSS_MISSING file={entry} import={name}")
+
+for name, path in partial_paths.items():
+    if not path.is_file():
+        failures.append(f"SASS_LEAF_PARTIAL_MISSING import={name} file={path}")
+        continue
+    source = path.read_text(encoding="utf-8")
+    stripped_source = "\n".join(
+        line for line in source.splitlines()
+        if not line.strip().startswith("//")
+    )
+    if global_dependency_re.search(stripped_source):
+        failures.append(f"SASS_LEAF_PARTIAL_NOT_LOAD_CSS_SAFE import={name} file={path}")
+
+if failures:
+    for failure in failures:
+        print(failure)
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_SASS_META_LOAD_CSS_LEAF_MIGRATION_OK migrated_leaf_imports=9 entrypoints=2")
+print("CSS-only product-owned leaf partials are loaded with sass:meta.load-css instead of @import; full production CSS diff remains required before publication.")
+print("failure_count=0")
+PY

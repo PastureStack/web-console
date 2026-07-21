@@ -1,5 +1,20 @@
-languageName: "English"
-languageContribute: "Help Translate Rancher"
+languageName: "English (United States)"
+languageContribute: "Help Translate PastureStack"
+
+uiText:
+  process: Process
+  childExecution: Child execution
+  webhookExperimental: "Experimental: More webhook features will be added in future releases, and the existing capabilities may change."
+  certificateBits: bits
+  redirecting: "Please wait while we redirect you back to {appName}."
+  secretsExperimental: "Experimental: Compose and CLI support will be added in a future release."
+  relationIn: "In:"
+  relationOn: "On:"
+  dockerComposeFile: docker-compose.yml
+  pastureStackCompose: PastureStack Compose
+
+branding:
+  recoveryNode: "{appName} recovery node"
 
 ##############################
 # Really generic things used in multiple places (use sparingly)
@@ -32,6 +47,7 @@ generic:
   loading: "Loading..."
   missing: "*%MISSING%*"
   moreActions: More Actions
+  noActionsAvailable: No actions available
   na: 'n/a'
   name: Name
   none: None
@@ -42,6 +58,7 @@ generic:
   saved: Saved
   saving: Saving
   search: Search
+  selectActionBelow: Select an action below
   state: State
   test: Test
   testing: Testing
@@ -142,6 +159,13 @@ auditLogsPage:
     resourceTypeId: "Resource Type:ID"
     identity: Identity
     authIp: "Auth & IP"
+  authTypes:
+    none: None
+    apiKey: API Key
+    headerAuth: Header Authentication
+    hostRegistration: Host Registration
+    tokenAccount: Account Token
+    uiSession: UI Session
   first: First Page
   next: Next Page
 
@@ -209,6 +233,13 @@ authPage:
       shibboleth: Shibboleth
   root:
     header: Access Control
+    providers:
+      activeDirectory: Active Directory
+      azureAd: Azure AD
+      github: GitHub
+      local: Local accounts
+      openldap: OpenLDAP
+      shibboleth: Shibboleth
   github:
     standard: GitHub
     enterprise: GitHub Enterprise
@@ -256,7 +287,7 @@ authPage:
       header: "1. Setup a GitHub Application"
       ul:
         li1:
-          text: 'For standard GitHub, <a href="https://github.com/settings/developers" target="_blank">click here</a> to go applications settings in a new window.'
+          text: 'For standard GitHub, <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer">click here</a> to go applications settings in a new window.'
           ul:
             li1: "For Github Enterprise, login to your account.  Click on Settings, then Applications."
         li2:
@@ -315,7 +346,7 @@ authPage:
         placeholder: e.g. youcompany.onmicrosoft.com
       adminAccountUsername:
         label: Admin Account Username
-        placeholder: e.g. rancher-admin
+        placeholder: e.g. pasturestack-admin
         help: A user that can read information about other users
       adminAccountPassword:
         label: Admin Account Password
@@ -392,7 +423,7 @@ catalogPage:
     category: "Category:"
     certified:
       rancher:
-        rancher: Rancher Labs
+        rancher: the original upstream maintainers
         partner: Official
       pl:
         rancher: Core
@@ -414,6 +445,7 @@ certificatesPage:
     cn: Domain Name
     expiresDate: Expires
     noCn: None
+    otherNames: "{count, plural, =1 {# other name} other {# other names}}"
   detail:
     header: 'Certificate:'
     description: Description
@@ -552,14 +584,17 @@ failWhalePage:
 haPage:
   header: High Availability
   setup:
-    prefix: "Multiple server containers can be deployed on different hosts so that {appName} keeps running even if one of the hosts fail.  "
-    link: See documentation
-    suffix: " for information on setup and usage."
+    prefix: Deploy multiple server containers on different hosts so {appName} remains available if one host fails. For setup and usage details, see
+    link: high-availability documentation
+    suffix: .
   table:
     address: Advertised  Address
     port: Port
     heartbeat: Last Seen
     clustered: Clustered
+
+helpBtn:
+  title: Go to documentation
 
 helpPage:
   header: Helpful links & Information
@@ -574,8 +609,7 @@ helpPage:
   host:
     header: What is a host?
     content: |
-      Before adding your first service or launching a container, you must add at least a single Linux host that supports Docker {minVersion} or higher and be able to reach the {appName} server via HTTP. {appName} supports adding Linux hosts in the form of a virtual or physical
-          machine from any public cloud providers, privately hosted clouds, or even bare metal servers.
+      Before adding your first service or launching a container, add at least one Linux host running a compatible Docker version. The host must be able to reach the {appName} server over HTTP. {appName} supports virtual and physical Linux hosts in public clouds, private clouds, and bare-metal environments.
     contentLink: Learn More
     addHostLink: Add Host
   stacks:
@@ -603,35 +637,14 @@ helpPage:
         link: File an issue on GitHub.
       graphic2:
         text: For more information
-        link: |
-          <a href="{docsLink}" target="_blank">about using {appName} Visit our docs.</a>
-          <br/>or <a href="{companyLink}/learn/" target="_blank">check out our getting started documentation.</a>
+        link: Documentation
       graphic3:
         text: Need help troubleshooting?
         link: Check out our FAQs
-  forums:
-    header: From the Forums
-    tagline: Join the conversation
-    buttonText: On the forums
-    announcements:
-      header: Announcements
-      buttonText: View More Annoucement Topics
-    general:
-      header: General
-      buttonText: View More General Topics
-    rancherOs:
-      header: RancherOS
-      buttonText: View More RancherOS Topics
-    rancher:
-      header: Rancher
-      buttonText: View More Rancher Topics
-    convoy:
-      header: Convoy
-      buttonText: View More Convoy Topics
   commercial:
     header: Commercial Support
     content: |
-      At Rancher Labs we provide commercial, enterprise-grade support for {appName}, including an available 24x7 support team, and priority bug fixes.  In addition we provide implementation, integration and consulting services for organizations looking to implement and scale {appName}.  For more information on any of these services, please email our sales team: <a href="mailto:sales@rancher.com">sales@rancher.com</a>
+      PastureStack is community-maintained and does not claim to provide commercial support.
 
 hostsPage:
   addContainer: Add Container
@@ -645,6 +658,8 @@ hostsPage:
       emptyMessage: No hosts or containers yet.
     showSystem: Show System
   new:
+    customDriver: Custom host
+    otherDriver: Other machine driver
     header:
       linkTo: "Hosts: "
       text: Add Host
@@ -706,6 +721,9 @@ hostsPage:
         body:
           noData: This host does not have any volumes
 
+iePage:
+  unsupported: Internet Explorer is not supported.
+
 k8sTab:
   dashboard:
     header: Kubernetes Dashboard
@@ -717,7 +735,7 @@ k8sTab:
     header: Kubernetes CLI
     stepOne:
       generateConfigText: |
-        To use <a href="{downloadUrl}" target="_blank">kubectl</a> (v1.4+ only) on your workstation, click the button to generate an API key and config file:
+        To use <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">kubectl</a> (v1.4+ only) on your workstation, click the button to generate an API key and config file:
       generateButton: Generate Config
     stepTwo:
       progress: Generating...
@@ -725,7 +743,7 @@ k8sTab:
       helpText: |
         Put this into <code>~/.kube/config</code>:
       downloadText: |
-        Then <a href="{downloadUrl}" target="_blank">download</a> (if needed) and run <code>kubectl</code>
+        Then <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">download</a> (if needed) and run <code>kubectl</code>
     shell:
       helpText: |
         Or use this handy shell to directly execute <code>kubectl</code> commands:
@@ -815,8 +833,8 @@ projectList:
     header: Environment Templates
     new: Add Template
     subtext: |
-      <p>An environment template allows users to define a different combination of infrastructure services to be deployed.
-      <p>The infrastructure services includes but not limited to container orchestration (i.e. cattle, kubernetes, mesos, swarm, networking) or rancher services (i.e healthcheck, dns, metadata, scheduling, service discovery and storage)</p>
+      <p>An environment template lets users choose the infrastructure services to deploy.</p>
+      <p>Infrastructure services include container orchestration, networking, health checks, DNS, metadata, scheduling, service discovery, and storage.</p>
     table:
       header:
         stacks: Stacks
@@ -978,8 +996,8 @@ stacksPage:
         label: "Optional: docker-compose.yml"
         placeholder: Contents of docker-compose.yml
       rancherCompose:
-        label: "Optional: rancher-compose.yml"
-        placeholder: Contents of rancher-compose.yml
+        label: "Optional: pasturestack-compose.yml"
+        placeholder: Contents of pasturestack-compose.yml
       startOnCreate:
         label: Start services after creating
 
@@ -1039,6 +1057,11 @@ swarmPage:
         containers: Containers
       body:
         noData: You do not have any Services yet.
+
+processExecutions:
+  collapseAll: Collapse all
+  expandAll: Expand all
+  resourceTypeId: Resource Type／ID
 
 processesPage:
   header: Processes
@@ -1308,6 +1331,9 @@ advancedSection:
   hrText: Advanced Options
 
 
+catalogBox:
+  sourcePrefix: in
+
 catalogSettings:
   header: Catalog
   subtext: Catalogs contain templates that allow users to easily deploy applications by answering a few questions
@@ -1316,18 +1342,18 @@ catalogSettings:
       rancher: "{appName} Certified Library"
       pl: Certified Library
     detail:
-      rancher: Templates required for core Rancher features such as Kubernetes/Mesos/Swarm orchestration support.  Maintained and supported by Rancher Labs.
-      pl: Officially maintained templates required for core features such as Kubernetes/Mesos/Swarm support.
+      rancher: Compatibility templates maintained by the independent PastureStack community. Availability and support vary by template.
+      pl: Maintained templates required for core features such as Kubernetes/Mesos/Swarm support.
   community:
     header:
       rancher: Community Contributed
       pl: Community Contributed
     detail:
-      rancher: Templates created and maintained by community members.  Not certified by Rancher Labs.
+      rancher: Templates created and maintained by community members.  Not certified by the original vendor.
       pl: Templates created and maintained by community members.
   more:
     header: Custom
-    helpText: You can define your own custom catalog sources here.  Each one needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank">docs</a> for more info).
+    helpText: You can define your own custom catalog sources here.  Each one needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">docs</a> for more info).
     addActionLabel: Add Catalog
     name:
       label: Name
@@ -1361,6 +1387,7 @@ containerLogs:
   scrollTop: Scroll to Top
   scrollBottom: Scroll to Bottom
   clear: Clear Screen
+  unknownDate: Unknown date
   status:
     initializing: Initializing...
     connecting: Connecting...
@@ -1444,7 +1471,7 @@ editBalancerService:
   haproxy:
     label: haproxy.cfg
     help: |
-      Additional <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank">haproxy.cfg</a>
+      Additional <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a>
       configuration can be put here and will be appended to the configuration generated by {appName}.
     global:
       label: '<code>global</code> section'
@@ -1499,7 +1526,7 @@ editHost:
     help:  If provided, the scheduler will select and bind published ports to one of the given public IP addresses.
   requireAny:
     label: Require Container Label
-    help: If provided, containers must have one or more of the given labels in order to be eligible for scheduling onto this host.  If the value is left empty, a container with a matching key is eligible regardless of value.  <code>io.rancher.container.system</code> is required to allow system containers on to the host.
+    help: If provided, containers must have one or more of the given labels to be eligible for scheduling onto this host. If the value is empty, a container with a matching key is eligible regardless of value.
     addActionLabel: Add Required Label
 
 editProjectTemplate:
@@ -1507,6 +1534,7 @@ editProjectTemplate:
     add: Add Template
     edit: "Edit Template: {displayName}"
   orchestration: Orchestration
+  builtinOrchestration: Built-in orchestration
   stackEdit: Edit Config
   stackRequired: Required
   access:
@@ -1550,7 +1578,7 @@ editStack:
 
 envCatalog:
   header: Manage Catalogs
-  subtext: You can define your own custom catalog sources here, which will be available only to users of this environment.  Global catalogs are available to all environments and can only be modified in Admin Settings by an administrator.  Each catalog needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank">docs</a> for more info).
+  subtext: You can define your own custom catalog sources here, which will be available only to users of this environment.  Global catalogs are available to all environments and can only be modified in Admin Settings by an administrator.  Each catalog needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">docs</a> for more info).
   addActionLabel: Add Catalog
 
 stackHeader:
@@ -1732,6 +1760,7 @@ formEngineOpts:
     valuePlaceholder: e.g. https://my-mirror.example.com:5000
 
 formHealthCheck:
+  windowsUnsupported: Health check support is not currently available for Windows.
   label: Type
   checkType:
     none: None
@@ -1794,7 +1823,7 @@ formKeyValue:
 formImage:
   label: Select Image
   vm:
-    placeholder: e.g. rancher/vm-ubuntu
+    placeholder: e.g. ubuntu:26.04
     dropdownLabel: "{appName} Images"
   container:
     placeholder: "e.g. ubuntu:trusty"
@@ -2019,7 +2048,7 @@ formSslTermination:
   noCertificates: There are no certificates to use.
   noAlternateCertificates: There are no other certificates to use.
   helpBlock: |
-    "Note: Some older SSL/TLS clients do not support <a href="https://en.wikipedia.org/wiki/Server_Name_Indication" target="_blank">Server Name Indication (SNI)</a>; these clients will always be offered the main Certificate  Modern clients will be offered an appropriate certificate from the Alternate Certificates list if a match is found."
+    "Note: Some older SSL/TLS clients do not support <a href="https://en.wikipedia.org/wiki/Server_Name_Indication" target="_blank" rel="noopener noreferrer">Server Name Indication (SNI)</a>; these clients will always be offered the main Certificate  Modern clients will be offered an appropriate certificate from the Alternate Certificates list if a match is found."
   notNeeded: There are no SSL/TLS ports configured.
 
 formStickiness:
@@ -2028,6 +2057,10 @@ formStickiness:
   newCookie: Create new cookie
   cookieName: Cookie Name
   mode: Mode
+  modeChoices:
+    rewrite: Rewrite
+    insert: Insert
+    prefix: Prefix
   domain: Domain
   options: Options
   indirect: Indirect
@@ -2044,6 +2077,8 @@ formTarget:
   pointAddress: Point to IP Address(es)
   pointHostname: Point to a Hostname
   addTarget: Add Target IP
+  ipPlaceholder: e.g. 192.168.2.24
+  hostnamePlaceholder: e.g. mysql.example.com
 
 formTargets:
   title: Targets
@@ -2106,13 +2141,15 @@ formVirtualMachines:
   memory: Memory
 
 formVolumes:
+  windowsUnsupported: Volume support is not currently available for Windows.
+  pathPlaceholder: "e.g. [volume-name: or /path/on/host:]/path/in/container[:ro]"
   value:
     prompt: Select a Container...
   volumes: Volumes
   volumesFrom: Volumes From
   volumeDriver:
     label: Volume Driver
-    placeholder: 'e.g. rancher-nfs'
+    placeholder: 'e.g. pasturestack-nfs'
   noLaunchConfigs: There are no other launch configs in this service to share volumes with.
   noHostContainers: This host has no containers to use the volumes from.
   onlySingleHost: Only available when adding a container to a particular host.
@@ -2172,7 +2209,7 @@ hostSettings:
   helpText:
     static1: "Don't include <code>/v1</code> or any other path, but if you are doing"
     static2: "in front of {appName}, be sure to use <code>https://</code>."
-    isRancher: '<a href="{docsBase}/installing-rancher/installing-server/basic-ssl-config/" target="_blank">SSL termination</a>'
+    isRancher: Review TLS termination guidance in the PastureStack Server documentation.
     sslTerm: SSL termination
   notPublic:
     alert: |
@@ -2192,10 +2229,16 @@ hostPod:
 
 identityBlock:
   loading: Loading...
+  systemService: System Service
 
 infoMultiStats:
   connecting: Connecting...
   utilizationStats: Utilization stats are only available while active/running.
+  time:
+    now: Now
+    minutesSecondsAgo: "{minutes} min, {seconds} sec ago"
+    minutesAgo: "{count, plural, =1 {# minute ago} other {# minutes ago}}"
+    secondsAgo: "{count, plural, =1 {# second ago} other {# seconds ago}}"
   cpuSection:
     labelText: CPU
     system: System
@@ -2215,7 +2258,7 @@ infoMultiStats:
 inputCertificate:
   key:
     label: Private Key
-    placeholder: "Paste in the private key, starting with -----BEGIN RSA PRIVATE KEY-----"
+    placeholder: "Paste in the private key, starting with PEM RSA private key header"
   cert:
     label: Certificate
     placeholder: "Paste in the primary certificate, starting with -----BEGIN CERTIFICATE-----"
@@ -2338,6 +2381,10 @@ labelsSection:
 
 loginShibboleth:
   buttonText: Authenticate with Shibboleth
+  logout: Log out from the identity provider
+
+serviceLog:
+  running: Running
 
 loginGithub:
   buttonText: Authenticate with GitHub
@@ -2363,7 +2410,7 @@ machine:
       label: Region
     accessKeyHelp: "Paste in your AWS key pair here. We'll use this key to create your new Instances."
     loginAction: "Next: Authenticate & select a network"
-    loadingAvailability: Loading Availablility Zone and VPC info from EC2...
+    loadingAvailability: Loading Availability Zone and VPC information from EC2...
     vpcSection: Availability Zone & VPC
     availabilityZone: Availability Zone
     subnet: VPC/Subnet
@@ -2396,7 +2443,7 @@ machine:
     ami:
       label: AMI
       placeholder: An Ubuntu AMI
-      rancherList: RancherOS AMI List
+      compatibilityGuide: Amazon EC2 image compatibility guidance
     sshUser:
       label: SSH User
       placeholder: e.g. ubuntu
@@ -2416,7 +2463,7 @@ machine:
       valuePlaceholder: e.g. bar
 
   driverAzure:
-    helpBlock: 'You can find instructions on how to create a Client ID and Secret <a href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank">here</a>.'
+    helpBlock: 'You can find instructions on how to create a Client ID and Secret <a href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank" rel="noopener noreferrer">here</a>.'
     accountAccessSection: Account Access
     placementSection: Placement
     networkSection: Network
@@ -2486,11 +2533,11 @@ machine:
       label: Region
 
   driverCustom:
-    step1: Start up a Linux machine somewhere and install a <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank">supported version</a> of <a href="http://www.docker.com/" target="_blank" rel="noreferrer nofollow">Docker</a> on it.
+    step1: Start a Linux machine, install <a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a>, and review the <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">host compatibility guidance</a> before registration.
     step2: "Make sure any security groups or firewalls allow traffic:"
     step2li: From and To all other hosts on <code>UDP</code> ports <code>500</code> and <code>4500</code> <span class="text-muted">(for IPsec networking)</span>
     step3: "Optional: Add labels to be applied to the host."
-    step4: "Specify the public IP that should be registered for this host.  If left empty, Rancher will auto-detect the IP to use.  This generally works for machines with unique public IPs, but will not work if the machine is behind a firewall/NAT or if it is the same machine that is running the <code>{rancherImage}</code> container."
+    step4: "Specify the public IP to register for this host. If left empty, PastureStack will detect it automatically. Set it manually when the host is behind a firewall or NAT, or when the control server and agent share the same host."
     agentIp:
         placeholder: e.g. 1.2.3.4
     step5Copy: Copy, paste, and run the command below to register the host with
@@ -2503,12 +2550,12 @@ machine:
     windows:
       windowsHeader: Windows Host
       linuxHeader: Linux Host
-      step1: Start up a Windows Server 2016 machine somewhere and install the latest version of <a href="https://msdn.microsoft.com/en-us/virtualization/windowscontainers/quick_start/quick_start_windows_server" target="_blank" rel="noreferrer nofollow">Docker</a> on it.
+      step1: Start a Windows Server 2016 machine, install <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer">Docker</a>, and review the <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">host compatibility guidance</a> before registration.
       step2: "Create a transparent Docker Network:"
       step2Copy: docker network create -d transparent transparent
       step3: Copy, paste, and run the command below in PowerShell to start the {appName} agent.
     windowsSteps:
-      step1: Start up a Windows Server 2016 machine somewhere and install a <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank">supported version</a> of <a href="https://docs.docker.com/engine/installation/windows/docker-ee/" target="_blank" rel="noreferrer nofollow">Docker</a> on it.
+      step1: Start a Windows Server 2016 machine, install <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer">Docker</a>, and review the <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">host compatibility guidance</a> before registration.
       step2: "Check and install RemoteAccess and Routing in Windows features:"
       step2Copy: Get-WindowsFeature -Name "RemoteAccess","Routing" | Install-WindowsFeature
       step2Note: "Note: Windows machine will need to be rebooted if the applications were installed."
@@ -2518,7 +2565,7 @@ machine:
           placeholder: e.g. 1.2.3.4
       subnet:
           placeholder: e.g. 192.168.0.0/24
-      step5: "Specify the public IP that should be registered for this host.  If left empty, Rancher will auto-detect the IP to use.  This generally works for machines with unique public IPs, but will not work if the machine is behind a firewall/NAT or if it is the same machine that is running the <code>{rancherImage}</code> container."
+      step5: "Specify the public IP to register for this host. If left empty, PastureStack will detect it automatically. Set it manually when the host is behind a firewall or NAT, or when the control server and agent share the same host."
       step6: "Optional: Add labels to be applied to the host."
       step7: Copy, paste, and run the command below in PowerShell to start the {appName} agent.
 
@@ -2535,7 +2582,7 @@ machine:
       placeholder: Your DigitalOcean API access token
       help: |
         A Personal Access Token from the DigitalOcean
-        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank">Apps & API</a> screen
+        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank" rel="noopener noreferrer">Apps & API</a> screen
     instanceSection: Instance
     image:
       label: Image
@@ -2676,7 +2723,7 @@ machine:
     apiKey:
       label: API Key
       placeholder: Your Packet API key
-    apiKeyHelp: From the Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank">API Keys</a> screen
+    apiKeyHelp: From the Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank" rel="noopener noreferrer">API Keys</a> screen
     instanceSection: Instance
     image:
       label: Image
@@ -2848,11 +2895,11 @@ machine:
 modalAboutComponent:
   component: Component
   version: Version
-  cattle: Cattle
+  cattle: Orchestration Engine
   cli: CLI
   ui: User Interface
   compose: Compose
-  machineService: Machine Service
+  machineService: Host Provisioner
   close: Close
 
 modalAuditlogInfo:
@@ -2901,7 +2948,7 @@ modalEditDriver:
   uiUrl:
     label: Custom UI URL
     help: "Optional: The URL to load for customized Add Hosts screen for this driver."
-    link: See <a href="https://github.com/rancher/ui-driver-skel" target="_blank">ui-driver-skel</a> for more info.
+    link: See <a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">PastureStack Web Console</a> for more info.
   checksum:
     label: Checksum
     help: "Optional: Verify that the downloaded driver matches the expected checksum."
@@ -2965,7 +3012,7 @@ newBalancer:
     labels: Labels
     scheduling: Scheduling
   custom: |
-    Additional <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="nofollow noopener">haproxy.cfg</a> configuration can be put here and will be merged together with the configuration generated by {appName}.
+    Additional <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a> configuration can be put here and will be merged together with the configuration generated by {appName}.
   config:
     prompt: Custom haproxy.cfg content
   error:
@@ -2992,7 +3039,7 @@ newCatalog:
   catalog: "Catalog:"
   category: "Category:"
   support: "Support:"
-  official: Officially Certified
+  official: Validated Template
   maintainedBy: Maintained by community members
   maintainer: "Maintainer:"
   license: "License:"
@@ -3127,17 +3174,16 @@ newSecret:
     placeholder: The secret value
 
 pageFooter:
+  about: "About {appName}"
   notARelease: (Not a Release)
   help: Help
   documentation: Documentation
   faq: FAQs
   issues: File an Issue
-  forums: Forums
-  slack: Slack
   download:
     link: Download CLI
-    headerCli: Rancher CLI
-    headerCompose: Rancher Compose
+    headerCli: PastureStack CLI
+    headerCompose: PastureStack Compose
     mac: Mac OS X
     windows: Windows
     linux: Linux
@@ -3255,6 +3301,7 @@ snapshotTimeline:
   noData: No Snapshot Data
 
 stackSection:
+  toggleDetails: Toggle stack details
   outputs: Outputs
   description: Description
   none: No Services
@@ -3340,7 +3387,7 @@ swarmTab:
 telemetryOpt:
   header: Statistics
   subtext: |
-    Rancher Labs would like to collect anonymous information about the configuration of your installation to help make {appName} better.<br/>Your data will not be shared with anyone else, and no specific resource names or addresses are collected.
+    When this option is enabled, the installation can collect anonymous configuration information to help improve {appName}.<br/>No specific resource names or addresses are collected, and the resulting statistics are not shared with third parties.
   learnMore:
     label: Learn More
   label: Allow collection of anonymous statistics
@@ -3376,6 +3423,7 @@ viewEditDescription:
       placeholder: e.g. Environment for developer experimentation
 
 viewEditProject:
+  nativeEngine: Native Engine
   showEdit:
     edit: "Edit Environment:"
     add: Add Environment
@@ -3386,7 +3434,7 @@ viewEditProject:
     label: Network Policy
     description: Control what containers are allowed to communicate with each other over the Managed Network.
     unsupported: This environment has network policy rules which are not yet supported by the UI.  Please use the API to manage the policy.
-    noManager: Network Policies are available only for environments using Cattle Orchestration with the Network Policy Manager infrastructure template deployed.
+    noManager: Network Policies are available only for environments using the PastureStack orchestration engine with the Network Policy Manager infrastructure template deployed.
     withinStack: Within Stack
     withinService: Within Service
     withinLinked: Between Linked Services
@@ -3529,11 +3577,11 @@ nav:
     themeAuto: Auto
     themeDark: Dark
   noHosts:
-    prefix: "Before adding your first service or launching a container, you'll need to add a Linux host with a <a href=\"{docsBase}/hosts/#supported-docker-versions\" target=\"_blank\">supported version</a> of Docker.  "
+    prefix: "Before adding your first service or launching a container, review the <a href=\"{docsBase}/hosts/#supported-docker-versions\" target=\"_blank\" rel=\"noopener noreferrer\">Docker compatibility guidance</a> first:"
     link: "Add a host"
     suffix: ""
   noHostsWindows:
-    prefix: "Before adding your first service or launching a container, you'll need to add a Windows host.  "
+    prefix: "Before adding your first service or launching a container, complete this step first:"
     link: "Add a host"
     suffix: ""
 

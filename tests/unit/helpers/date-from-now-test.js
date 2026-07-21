@@ -1,13 +1,10 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
 import {
   dateFromNow
 } from 'ui/helpers/date-from-now';
 
-moduleFor('helper:date-from-now');
+module('Unit | Helper | date from now');
 
 // Replace this with your real tests.
 test('it works', function(assert) {

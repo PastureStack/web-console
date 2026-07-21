@@ -1,3 +1,33 @@
+@use "sass:math";
+
+$accent-two: null !default;
+$body-bg: null !default;
+$bold-weight: null !default;
+$brand-primary: null !default;
+$font-size-small: null !default;
+$icon-check: null !default;
+$lightGrayDark: null !default;
+$lightGrayTwo: null !default;
+$lightestGray: null !default;
+$line-height-base: null !default;
+$line-height-computed: null !default;
+$main-padding: null !default;
+$midGray: null !default;
+$normal-weight: null !default;
+$orange: null !default;
+$page-header-border-color: null !default;
+$primary: null !default;
+$tab-bg: null !default;
+$tab-color: null !default;
+$tab-hover: null !default;
+$table-bg-accent: null !default;
+$table-bg-hover: null !default;
+$table-border-color: null !default;
+$table-cell-padding: null !default;
+$tealTwo: null !default;
+$well-bg: null !default;
+$well-border: null !default;
+
 /**********
 * Body
 **********/
@@ -125,7 +155,7 @@ MAIN {
 }
 
 BODY.white MAIN {
-  margin-top    : $main-padding/2;
+  margin-top    : math.div($main-padding, 2);
   margin-right  : $main-padding;
   margin-bottom : $main-padding;
   margin-left   : $main-padding;
@@ -156,7 +186,6 @@ SECTION {
 }
 
 UL.list-circles {
-  @extend .list-unstyled;
   margin-top  : 10px;
   font-weight : $bold-weight;
 
@@ -211,8 +240,6 @@ UL.with-room {
 }
 
 UL.list-lines {
-  @extend .list-unstyled;
-
   &>LI {
     margin-top    : 5px;
     border-bottom : 1px solid #e8ecf2;
@@ -290,6 +317,12 @@ UL.list-lines {
   overflow      : hidden;
   white-space   : nowrap;
   word-wrap     : break-word;
+}
+
+.container-tooltip .bottom-row .col,
+.service-addtl-info .description,
+.pod .pod-message {
+  @extend .clip;
 }
 
 .force-wrap {
@@ -396,6 +429,14 @@ TABLE.graphs {
 .hand {
   cursor : pointer;
   cursor : hand;
+}
+
+.container-tooltip .tooltip-content-inner .dismiss {
+  @extend .hand;
+}
+
+.advanced-link {
+  @extend .hand;
 }
 
 .inline-block {
@@ -757,7 +798,7 @@ TABLE.graphs {
     content          : $icon-check;
     top              : -15px;
     right            : -15px;
-    font-family      : 'rancher-icons';
+    font-family      : 'pasturestack-icons';
     font-size        : 18px;
     position         : absolute;
     background-color : $tealTwo;

@@ -1,3 +1,11 @@
+@use "sass:color";
+
+$lightTeal: null !default;
+$lightTealDark: null !default;
+$primary: null !default;
+$primaryDark: null !default;
+$redDark: null !default;
+
 .tooltip-triangle {
   content    : '';
   background : transparent;
@@ -68,7 +76,7 @@
     background : $primaryDark;
 
     &::hover {
-      background: lighten($primaryDark, 15%);
+      background: color.adjust($primaryDark, $lightness: 15%);
     }
 
     .icon-chevron-down {
@@ -89,7 +97,6 @@
     }
 
     .dismiss {
-      @extend .hand;
       height     : 100%;
       background : $primaryDark;
       margin     : -5px;
@@ -139,7 +146,6 @@
     font-size     : 12px;
 
     .col {
-      @extend .clip;
       display : inline-block;
       width   : 50%;
       float   : left;
@@ -196,4 +202,3 @@ div.tooltip-warning {
     color            : white;
   }
 }
-

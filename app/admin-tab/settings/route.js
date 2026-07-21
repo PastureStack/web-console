@@ -19,7 +19,6 @@ export default Ember.Route.extend({
       return Ember.Object.create({
         host:      settings.get(C.SETTING.API_HOST),
         catalog:   settings.get(C.SETTING.CATALOG_URL),
-        telemetry: settings.get(C.SETTING.TELEMETRY),
       });
     });
   },

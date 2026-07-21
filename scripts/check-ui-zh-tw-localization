@@ -1,0 +1,240 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const YAML = require('yamljs');
+
+const repoRoot = path.resolve(__dirname, '..');
+const enPath = path.join(repoRoot, 'translations', 'en-us.yaml');
+const zhTwPath = path.join(repoRoot, 'translations', 'zh-tw.yaml');
+const en = YAML.load(enPath);
+const zhTw = YAML.load(zhTwPath);
+const zhTwSource = fs.readFileSync(zhTwPath, 'utf8');
+const buildSource = fs.readFileSync(path.join(repoRoot, 'ember-cli-build.js'), 'utf8');
+const languageSource = fs.readFileSync(path.join(repoRoot, 'app', 'services', 'user-language.js'), 'utf8');
+const auditTemplateSource = fs.readFileSync(path.join(repoRoot, 'app', 'admin-tab', 'audit-logs', 'template.hbs'), 'utf8');
+const haTemplateSource = fs.readFileSync(path.join(repoRoot, 'app', 'admin-tab', 'ha', 'template.hbs'), 'utf8');
+const dateTimeSource = fs.readFileSync(path.join(repoRoot, 'app', 'utils', 'date-time.js'), 'utf8');
+const dateStrSource = fs.readFileSync(path.join(repoRoot, 'app', 'helpers', 'date-str.js'), 'utf8');
+const dateCalendarSource = fs.readFileSync(path.join(repoRoot, 'app', 'helpers', 'date-calendar.js'), 'utf8');
+const dateRecentSource = fs.readFileSync(path.join(repoRoot, 'app', 'helpers', 'date-recent.js'), 'utf8');
+const containerLogsSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'container-logs', 'component.js'), 'utf8');
+const snapshotTooltipSource = fs.readFileSync(path.join(repoRoot, 'app', 'templates', 'tooltip-snapshot-timeline.hbs'), 'utf8');
+const stacksNewTemplateSource = fs.readFileSync(path.join(repoRoot, 'app', 'stacks', 'new', 'template.hbs'), 'utf8');
+const moment = require(path.join(repoRoot, 'node_modules', 'moment'));
+require(path.join(repoRoot, 'node_modules', 'moment', 'locale', 'zh-tw'));
+
+function flatten(value, prefix = '', result = {}) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    Object.keys(value).forEach((key) => {
+      flatten(value[key], prefix ? `${prefix}.${key}` : key, result);
+    });
+  } else {
+    result[prefix] = value;
+  }
+
+  return result;
+}
+
+const enLeaves = flatten(en);
+const zhTwLeaves = flatten(zhTw);
+const failures = [];
+
+function duplicateMappingKeys(source) {
+  const levels = [];
+  const seen = new Set();
+  const duplicates = [];
+
+  source.split(/\r?\n/u).forEach((line) => {
+    const match = line.match(/^(\s*)(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_.-]+)):\s*/u);
+    if (!match) {
+      return;
+    }
+
+    const indent = match[1].length;
+    const key = match[2] || match[3] || match[4];
+    while (levels.length > 0 && levels[levels.length - 1].indent >= indent) {
+      levels.pop();
+    }
+
+    const fullKey = [...levels.map((level) => level.key), key].join('.');
+    if (seen.has(fullKey)) {
+      duplicates.push(fullKey);
+    } else {
+      seen.add(fullKey);
+    }
+    levels.push({ indent, key });
+  });
+
+  return duplicates;
+}
+
+duplicateMappingKeys(zhTwSource).forEach((key) => {
+  failures.push(`duplicate_key=${key}`);
+});
+
+Object.keys(enLeaves).forEach((key) => {
+  const enValue = enLeaves[key];
+  if (enValue !== null && enValue !== '' && !(key in zhTwLeaves)) {
+    failures.push(`missing_key=${key}`);
+  }
+});
+
+const forbiddenTerms = [
+  '審計', '許可權', '禁用', '模板', '列表', '回滾', '只讀', '生成',
+  'IP地址', '秘鑰', '一臺', '瞭解', '例項', '控制檯', '證書', '平臺',
+  '自定義', '獲取', '單擊', '全域性', '擴充套件', '位掩碼', '物理機',
+  '教程', '協議', '令牌', '源埠', '郵箱', '超時', '重啟', '客戶端',
+  '公網', '私網', '會話', '粘性', '校驗和', '引數', 'Windoes',
+  'Kuberetes', 'Mess Master', 'laestDate', 'APK Key', '制貼上', 'Powershell',
+  '主機名稱稱', '網網域', '程式程式', '登陸', '詳情', '擴縮容',
+  '擴容', '縮容', '步長', '未創',
+  '刪除從容器', '密文', '添加', '波爾泰納', '請求頭', '主機頭',
+  '查看', '未通過身分驗證'
+];
+
+forbiddenTerms.forEach((term) => {
+  if (zhTwSource.includes(term)) {
+    failures.push(`forbidden_term=${term}`);
+  }
+});
+
+if (/(?<!網)域名/u.test(zhTwSource)) {
+  failures.push('forbidden_term=域名');
+}
+
+const malformedKeys = [
+  'formVirtualMachines.memoy',
+  'inputPassword.buttonTet',
+  'loginUserPass.passwordLabl',
+  'machine.driverAzure.region.labl',
+  'machine.driverPacket.region.labl',
+  'modalAboutComponent.cloe',
+  'modalProcessError.cloe',
+  'projectRow.orchestratin',
+  'siteAccess.organizatios',
+  'tooltipWarning.dismis',
+  'vmConsole.footerActions.buttonCancl'
+];
+
+malformedKeys.forEach((key) => {
+  if (key in zhTwLeaves) {
+    failures.push(`malformed_key=${key}`);
+  }
+});
+
+const typographyRules = [
+  ['cjk_before_link', /[\u3400-\u9fff]<a\b/u],
+  ['link_before_cjk', /<\/a>[\u3400-\u9fff]/u],
+  ['cjk_latin_adjacency', /[\u3400-\u9fff][A-Za-z0-9]|[A-Za-z0-9][\u3400-\u9fff]/u],
+  ['stray_middle_dot', /[·•・･]/u],
+  ['replacement_character', /\uFFFD/u],
+  ['ascii_ellipsis', /\.\.\./u]
+];
+
+typographyRules.forEach(([name, pattern]) => {
+  if (pattern.test(zhTwSource)) {
+    failures.push(`typography=${name}`);
+  }
+});
+
+const requiredValues = {
+  'auditLogsPage.header': '稽核日誌',
+  'nav.admin.audit': '稽核日誌',
+  'auditLogsPage.table.authIp': '驗證方式／IP 位址',
+  'auditLogsPage.authTypes.apiKey': 'API 金鑰',
+  'identityBlock.systemService': '系統服務',
+  'stacksPage.header.user': '應用程式堆疊',
+  'stacksPage.header.infra': '基礎架構堆疊',
+  'stacksPage.actionButton': '新增應用堆疊',
+  'stacksPage.new.header': '新增應用堆疊',
+  'servicePage.type.service': '服務',
+  'editStack.name.label': '堆疊名稱',
+  'generic.noo': '否',
+  'generic.yess': '是',
+  'authPage.localAuth.accessControl.helpText': '按一下以啟用存取控制並登入。',
+  'hookPage.scaleService.label': '調整服務規模',
+  'hookPage.scaleHost.label': '調整主機數量',
+  'newContainer.tabs.secrets': '機密資料',
+  'modalAboutComponent.cattle': '編排引擎',
+  'modalAboutComponent.machineService': '主機建置服務'
+};
+
+Object.entries(requiredValues).forEach(([key, expected]) => {
+  if (zhTwLeaves[key] !== expected) {
+    failures.push(`unexpected_value=${key}`);
+  }
+});
+
+if (!buildSource.includes("app.import('node_modules/moment/locale/zh-tw.js');")) {
+  failures.push('missing_runtime_locale=moment_zh_tw');
+}
+if (!languageSource.includes("'zh-tw': 'zh-tw'")) {
+  failures.push('missing_runtime_locale_sync=moment');
+}
+if (!auditTemplateSource.includes("{{t 'generic.none'}}")) {
+  failures.push('untranslated_audit_empty_value=None');
+}
+if (!zhTwLeaves['stackSection.service'].includes('堆疊服務')) {
+  failures.push('unexpected_value=stackSection.service');
+}
+if (!haTemplateSource.includes('{{date-str member.heartbeat}}')) {
+  failures.push('unlocalized_absolute_time=ha_heartbeat');
+}
+if (!dateTimeSource.includes("TAIWAN_DATE_TIME_FORMAT = 'YYYY年M月D日 Ahh點mm分ss秒'")) {
+  failures.push('missing_taiwan_date_time_format');
+}
+if (!dateTimeSource.includes("TAIWAN_TIME_FORMAT = 'Ahh點mm分ss秒'")) {
+  failures.push('missing_taiwan_time_format');
+}
+if (!dateStrSource.includes("from 'ui/utils/date-time'")) {
+  failures.push('date_helper_not_using_shared_formatter=date-str');
+}
+if (!dateCalendarSource.includes("from 'ui/utils/date-time'")) {
+  failures.push('date_helper_not_using_shared_formatter=date-calendar');
+}
+if (!dateRecentSource.includes("from 'ui/utils/date-time'")) {
+  failures.push('date_helper_not_using_shared_formatter=date-recent');
+}
+if (!containerLogsSource.includes('formatDateTime(match[1])')) {
+  failures.push('date_display_not_using_shared_formatter=container-logs');
+}
+if (/toLocale(?:Date|Time)String\s*\(/u.test(containerLogsSource)) {
+  failures.push('browser_locale_date_format=container-logs');
+}
+if (snapshotTooltipSource.includes('{{format-date')) {
+  failures.push('date_display_not_using_shared_formatter=snapshot-tooltip');
+}
+if (!snapshotTooltipSource.includes('{{date-str model.created}}')) {
+  failures.push('missing_date_helper=snapshot-tooltip');
+}
+if (!stacksNewTemplateSource.includes('nameLabel="editStack.name.label"')) {
+  failures.push('generic_stack_name_label=stacks-new');
+}
+
+const previousMomentLocale = moment.locale();
+moment.locale('zh-tw');
+const taiwanDateTime = moment.parseZone('2026-07-20T21:48:35+08:00')
+  .format('YYYY年M月D日 Ahh點mm分ss秒');
+moment.locale(previousMomentLocale);
+if (taiwanDateTime !== '2026年7月20日 晚上09點48分35秒') {
+  failures.push(`unexpected_taiwan_date_time=${taiwanDateTime}`);
+}
+if (zhTwLeaves['k8s.podSection.podIp'] !== 'Pod IP 位址') {
+  failures.push('unexpected_value=k8s.podSection.podIp');
+}
+if (zhTwLeaves['machine.driverAzure.resourceGroup.placeholder'] !== 'docker-machine') {
+  failures.push('changed_machine_contract=machine.driverAzure.resourceGroup.placeholder');
+}
+
+if (failures.length > 0) {
+  failures.forEach((failure) => console.error(`ZH_TW_LOCALIZATION_ERROR ${failure}`));
+  console.error(`ZH_TW_LOCALIZATION_FAILURE_COUNT=${failures.length}`);
+  process.exit(1);
+}
+
+console.log(
+  `ZH_TW_LOCALIZATION_OK en_leaves=${Object.keys(enLeaves).length} ` +
+  `zh_tw_leaves=${Object.keys(zhTwLeaves).length} missing=0`
+);

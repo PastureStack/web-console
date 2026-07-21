@@ -1,3 +1,10 @@
+$page-header-border-color: null !default;
+$red: null !default;
+$shadow: null !default;
+$tab-active-bg: null !default;
+$table-border-color: null !default;
+$well-bg: null !default;
+
 .summary-shown {
   margin-bottom: 320px;
 }
@@ -85,7 +92,6 @@
     }
   }
   .description {
-    @extend .clip;
     padding: 5px 25px 0 25px;
     div:first-of-type {
       padding-top: 2px;

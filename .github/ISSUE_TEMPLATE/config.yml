@@ -1,0 +1,6 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/PastureStack/server/tree/main/docs
+    about: Read the operation and compatibility documentation before filing an issue.
+

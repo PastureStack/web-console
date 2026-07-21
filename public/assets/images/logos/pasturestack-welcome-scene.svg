@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" preserveAspectRatio="xMidYMax slice" role="img" aria-labelledby="title">
+  <title id="title">PastureStack pasture and connected stack</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#eef9fa"/><stop offset="1" stop-color="#9bd9dc"/></linearGradient>
+  </defs>
+  <rect width="1600" height="520" fill="url(#sky)"/>
+  <circle cx="900" cy="260" r="150" fill="#f4ce63"/>
+  <path d="M0 390Q330 90 760 390T1600 380V520H0Z" fill="#a8c873"/>
+  <path d="M0 440Q420 280 800 430t800-30v120H0Z" fill="#6fa64d"/>
+  <g transform="translate(1190 220) scale(1.3)">
+    <path fill="#115b43" d="m0 24 54-24 54 24-54 28zM0 48l54 28 54-28v18L54 94 0 66z"/>
+    <g fill="none" stroke="#f5f1e8" stroke-width="4"><path d="M54 52v32M34 64l20 12 20-12"/></g>
+    <circle cx="54" cy="52" r="6" fill="#e8a62b"/>
+  </g>
+</svg>

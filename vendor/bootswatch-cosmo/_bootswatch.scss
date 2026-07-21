@@ -1,3 +1,15 @@
+@use "sass:color";
+
+$brand-danger: null !default;
+$brand-info: null !default;
+$brand-primary: null !default;
+$brand-success: null !default;
+$brand-warning: null !default;
+$state-danger-bg: null !default;
+$state-success-bg: null !default;
+$state-warning-bg: null !default;
+$text-color: null !default;
+
 // Cosmo 3.3.1
 // Bootswatch
 // -----------------------------------------------------
@@ -167,7 +179,8 @@ table,
 
 .progress {
   height: 8px;
-  @include box-shadow(none);
+  -webkit-box-shadow: none;
+          box-shadow: none;
   .progress-bar {
     font-size: 8px;
     line-height: 8px;
@@ -199,7 +212,7 @@ a.list-group-item {
 
     &.active:hover,
     &.active:focus {
-      background-color: darken($state-success-bg, 5%);
+      background-color: color.adjust($state-success-bg, $lightness: -5%);
     }
   }
 
@@ -210,7 +223,7 @@ a.list-group-item {
     
     &.active:hover,
     &.active:focus {
-      background-color: darken($state-warning-bg, 5%);
+      background-color: color.adjust($state-warning-bg, $lightness: -5%);
     }
   }
 
@@ -221,7 +234,7 @@ a.list-group-item {
     
     &.active:hover,
     &.active:focus {
-      background-color: darken($state-danger-bg, 5%);
+      background-color: color.adjust($state-danger-bg, $lightness: -5%);
     }
   }
 }

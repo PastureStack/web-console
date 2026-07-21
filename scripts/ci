@@ -1,34 +1,84 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
-
-BUILD_DEBUG="${BUILD_DEBUG:-}"
-if [[ -n "${BUILD_DEBUG}" ]]; then
-    set -x
-    env
-fi
-
-# cd to app root
-CWD=$(dirname $0)
-if [[ `basename $(pwd)` = 'scripts' ]]; then
+CWD=$(dirname "$0")
+if [[ $(basename "$(pwd)") = "scripts" ]]; then
   cd ../
 else
-  cd `dirname $CWD`
+  cd "$(dirname "$CWD")"
 fi
 
-if [[ "${ENABLE_DOCKER}" == "true" ]]; then
-  wrapdocker
-  docker pull google/cloud-sdk
-fi
-
-./scripts/clean
-./scripts/bootstrap
-
-if [[ "${UPLOAD_LATEST}" == "true" ]] && [[ "${ENABLE_DOCKER}" == "true" ]]; then
-  ./scripts/build
-  ./scripts/build-static -l -u
-  # (build-static contains a call to test)
-else
-  ./scripts/build
-  ./scripts/test
-fi
+./scripts/check-modernization-blockers
+node ./scripts/check-ui-zh-tw-localization
+node ./scripts/check-ui-localization-quality
+./scripts/check-ui-resizable-table-columns
+./scripts/check-dependency-baseline
+./scripts/check-sass-replacement
+./scripts/check-ui-sass-deprecation-source
+./scripts/check-ui-sass-meta-load-css-leaf-migration
+./scripts/check-ui-sass-import-boundary
+./scripts/check-ui-root-url-config
+./scripts/check-xterm-migration
+./scripts/check-ui-xml-audit-overrides
+./scripts/check-ui-ember-cli-testem-upgrade
+./scripts/check-ui-babel-htmlbars-upgrade
+./scripts/check-ui-htmlbars-inline-precompile-removal
+./scripts/check-ui-ember-cli-babel-rimraf-override
+./scripts/check-ui-dompurify-removal
+./scripts/check-ui-ansi-up-upgrade
+./scripts/check-ui-serialize-javascript-override
+./scripts/check-ui-clean-css-override
+./scripts/check-ui-raw-body-override
+./scripts/check-ui-sane5-watcher-override
+./scripts/check-ui-quick-temp-rimraf-override
+./scripts/check-ui-sync-disk-cache-rimraf-override
+./scripts/check-ui-temp-rimraf-override
+./scripts/check-ui-broccoli-terser-rimraf-override
+./scripts/check-ui-rimraf-callback-compat
+./scripts/check-ui-uuid11-overrides
+./scripts/check-ui-legacy-dev-addon-removal
+./scripts/check-ui-disabled-build-addon-removal
+./scripts/check-ui-dependency-checker-removal
+./scripts/check-ui-dev-server-dep-cleanup
+./scripts/check-ui-ember-load-initializers-upgrade
+./scripts/check-ui-legacy-version-checker-resolvers
+./scripts/check-ui-test-harness-blockers
+./scripts/check-ui-browser-ember-test
+./scripts/check-ui-node24-engine-baseline
+./scripts/check-ui-async-bower-migration
+./scripts/check-ui-jquery-cookie-bower-migration
+./scripts/check-ui-jgrowl-bower-migration
+./scripts/check-ui-md5-identicon-bower-migration
+./scripts/check-ui-bootstrap-sass-bower-migration
+./scripts/check-ui-bootstrap-multiselect-vendor
+./scripts/check-ui-dagre-graphlib-vendor
+./scripts/check-ui-novnc-vendor-bower-removal
+./scripts/check-ui-position-calculator-vendor
+./scripts/check-ui-ember-shortcuts-replacement
+./scripts/check-ui-unused-ember-bower-helper-removal
+./scripts/check-ui-ember-bower-vendor-runtime
+./scripts/check-ui-browserify-removal
+./scripts/check-ui-prism-bower-migration
+./scripts/check-ui-moment-bower-migration
+./scripts/check-ui-lodash-bower-migration
+./scripts/check-ui-commonmark-bower-migration
+./scripts/check-ui-c3-d3-bower-migration
+./scripts/check-ui-yamljs-glob-override
+./scripts/check-ui-glob-cjs-default-compat
+./scripts/check-ui-ember-api-store-fetch-upgrade
+./scripts/check-ui-core-js-compat
+./scripts/check-ui-deprecated-warning-backlog
+./scripts/check-ui-mkdirp-override
+./scripts/check-ui-exists-sync-compat
+./scripts/check-ui-inflight-compat
+./scripts/check-ui-osenv-compat
+./scripts/check-ui-sort-package-json-compat
+./scripts/check-ui-source-map-url-compat
+./scripts/check-ui-intl-messageformat-parser-compat
+./scripts/check-ui-intl-messageformat-parser-dedupe
+./scripts/check-ui-intl-relativeformat-compat
+./scripts/check-ui-lodash-template-compat
+./scripts/check-ui-static-artifact-layout
+./scripts/check-ui-candidate-browser-smoke-harness
+./scripts/check-ui-candidate-css-diff-harness
+./scripts/check-node24-lock-baseline

@@ -8,7 +8,8 @@
 // };
 
 module.exports = function(app, options) {
-  var globSync   = require('glob').sync;
+  var glob       = require('glob');
+  var globSync   = glob.globSync || glob.sync;
   var mocks      = globSync('./mocks/**/*.js', { cwd: __dirname }).map(require);
   var proxies    = globSync('./proxies/**/*.js', { cwd: __dirname }).map(require);
 

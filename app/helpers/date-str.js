@@ -1,13 +1,10 @@
 import Ember from 'ember';
+import { formatDateTime } from 'ui/utils/date-time';
 
 export function dateStr(params, options) {
-  var format = 'MMM DD, YYYY hh:mm:ss A';
-  if ( options && options.format )
-  {
-    format = options.format;
-  }
+  let format = options && options.format;
 
-  return moment(params[0]).format(format);
+  return formatDateTime(params[0], format);
 }
 
 export default Ember.Helper.helper(dateStr);

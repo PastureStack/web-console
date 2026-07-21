@@ -1,0 +1,10 @@
+{
+  "name": "glob",
+  "version": "13.0.6",
+  "description": "RC16 compatibility wrapper around glob 13 for legacy Babel _interopRequireDefault callers.",
+  "main": "index.js",
+  "license": "ISC",
+  "dependencies": {
+    "glob-real": "npm:glob@13.0.6"
+  }
+}

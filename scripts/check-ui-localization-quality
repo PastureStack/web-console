@@ -1,0 +1,752 @@
+#!/usr/bin/env node
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+const YAML = require('yamljs');
+const messageParser = require('intl-messageformat-parser');
+
+const repoRoot = path.resolve(__dirname, '..');
+const translationsDir = path.join(repoRoot, 'translations');
+const english = YAML.load(path.join(translationsDir, 'en-us.yaml'));
+const englishLeaves = flatten(english);
+const englishSource = fs.readFileSync(path.join(translationsDir, 'en-us.yaml'), 'utf8');
+const failures = [];
+const requiredLocales = [
+  'de-de', 'fa-ir', 'fil-ph', 'fr-fr', 'hu-hu', 'ja-jp', 'ko-kr',
+  'pt-br', 'ru-ru', 'uk-ua', 'zh-hans', 'zh-tw'
+];
+
+const requiredValues = {
+  'de-de': {
+    languageName: 'Deutsch (Deutschland)',
+    'uiText.childExecution': 'Untergeordnete Ausführung',
+    'generic.environment': 'Umgebung',
+    'generic.image': 'Image',
+    'auditLogsPage.header': 'Auditprotokolle',
+    'nav.admin.audit': 'Auditprotokolle',
+    'stacksPage.header.user': 'Anwendungs-Stacks',
+    'stacksPage.header.infra': 'Infrastruktur-Stacks',
+    'stacksPage.actionButton': 'Anwendungs-Stack hinzufügen',
+    'editStack.name.label': 'Stack-Name',
+    'pageFooter.issues': 'Problem melden',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'fa-ir': {
+    languageName: 'فارسی (ایران)',
+    languageContribute: 'به ترجمه PastureStack کمک کنید',
+    'uiText.childExecution': 'اجرای زیرمجموعه',
+    'generic.environment': 'محیط',
+    'auditLogsPage.header': 'گزارش‌های ممیزی',
+    'nav.admin.audit': 'گزارش ممیزی',
+    'stacksPage.header.user': 'پشته‌های برنامه',
+    'stacksPage.header.infra': 'پشته‌های زیرساخت',
+    'stacksPage.actionButton': 'افزودن پشته برنامه',
+    'editStack.name.label': 'نام پشته',
+    'heroAddService.service.header': 'افزودن نخستین پشته',
+    'pageFooter.help': 'راهنما',
+    'pageFooter.documentation': 'مستندات',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'ja-jp': {
+    languageName: '日本語 (日本)',
+    'uiText.childExecution': '子実行',
+    'generic.environment': '環境',
+    'generic.noActionsAvailable': '利用できる操作はありません',
+    'auditLogsPage.header': '監査ログ',
+    'nav.admin.audit': '監査ログ',
+    'stacksPage.header.user': 'アプリケーションスタック',
+    'stacksPage.header.infra': 'インフラストラクチャスタック',
+    'stacksPage.actionButton': 'アプリケーションスタックを追加',
+    'editStack.name.label': 'スタック名',
+    'pageFooter.issues': '問題を報告',
+    'processExecutions.resourceTypeId': 'リソース種別／ID',
+    'infoMultiStats.time.now': '現在',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'ko-kr': {
+    languageName: '한국어 (대한민국)',
+    'uiText.childExecution': '하위 실행',
+    'generic.environment': '환경',
+    'generic.noActionsAvailable': '사용할 수 있는 작업이 없습니다',
+    'auditLogsPage.header': '감사 로그',
+    'nav.admin.audit': '감사 로그',
+    'stacksPage.header.user': '애플리케이션 스택',
+    'stacksPage.header.infra': '인프라 스택',
+    'stacksPage.actionButton': '애플리케이션 스택 추가',
+    'editStack.name.label': '스택 이름',
+    'pageFooter.issues': '문제 보고',
+    'processExecutions.resourceTypeId': '리소스 유형／ID',
+    'infoMultiStats.time.now': '현재',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'fil-ph': {
+    languageName: 'Filipino (Pilipinas)',
+    'uiText.childExecution': 'Kaugnay na execution',
+    'generic.environment': 'Kapaligiran',
+    'generic.image': 'Imahe',
+    'generic.noActionsAvailable': 'Walang available na aksyon',
+    'containersPage.index.header': 'Mga container',
+    'containersPage.index.linkTo': 'Magdagdag ng Container',
+    'auditLogsPage.header': 'Talaan ng Pag-audit',
+    'nav.admin.audit': 'Talaan ng Pag-audit',
+    'stacksPage.header.user': 'Mga Stack ng Aplikasyon',
+    'stacksPage.header.infra': 'Mga Stack ng Imprastraktura',
+    'stacksPage.actionButton': 'Magdagdag ng Stack ng Aplikasyon',
+    'stacksPage.sort.label': 'Ayusin ayon sa',
+    'editStack.name.label': 'Pangalan ng Stack',
+    'heroAddService.service.header': 'Pagdaragdag ng Unang Application Stack',
+    'nav.srToggleDropdown': 'Buksan o isara ang dropdown',
+    'pageFooter.issues': 'Mag-ulat ng Problema',
+    'processExecutions.resourceTypeId': 'Uri ng Resource／ID',
+    'infoMultiStats.time.now': 'Ngayon',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'fr-fr': {
+    languageName: 'Français (France)',
+    'uiText.childExecution': 'Exécution secondaire',
+    'generic.environment': 'Environnement',
+    'auditLogsPage.header': 'Journaux d’audit',
+    'nav.admin.audit': 'Journaux d’audit',
+    'stacksPage.header.user': 'Stacks d’applications',
+    'stacksPage.header.infra': 'Stacks d’infrastructure',
+    'stacksPage.actionButton': 'Ajouter un stack d’application',
+    'editStack.name.label': 'Nom du stack',
+    'heroAddService.service.header': 'Ajouter votre première stack',
+    'pageFooter.issues': 'Signaler un problème',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'hu-hu': {
+    languageName: 'Magyar (Magyarország)',
+    'uiText.childExecution': 'Alárendelt végrehajtás',
+    'generic.environment': 'Környezet',
+    'auditLogsPage.header': 'Auditnaplók',
+    'nav.admin.audit': 'Auditnaplók',
+    'stacksPage.header.user': 'Alkalmazásvermek',
+    'stacksPage.header.infra': 'Infrastruktúra-vermek',
+    'stacksPage.actionButton': 'Alkalmazásverem hozzáadása',
+    'editStack.name.label': 'Verem neve',
+    'heroAddService.service.header': 'Az első alkalmazásverem hozzáadása',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'pt-br': {
+    languageName: 'Português (Brasil)',
+    'uiText.childExecution': 'Execução secundária',
+    'generic.environment': 'Ambiente',
+    'auditLogsPage.header': 'Logs de Auditoria',
+    'nav.admin.audit': 'Log de Auditoria',
+    'stacksPage.header.user': 'Stacks de aplicações',
+    'stacksPage.header.infra': 'Stacks de infraestrutura',
+    'stacksPage.actionButton': 'Adicionar stack de aplicação',
+    'editStack.name.label': 'Nome do stack',
+    'heroAddService.service.header': 'Adicionar sua primeira stack',
+    'pageFooter.issues': 'Relatar um problema',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'ru-ru': {
+    languageName: 'Русский (Россия)',
+    'uiText.childExecution': 'Дочернее выполнение',
+    'generic.environment': 'Среда',
+    'auditLogsPage.header': 'Журнал аудита',
+    'nav.admin.audit': 'Журнал аудита',
+    'stacksPage.header.user': 'Стеки приложений',
+    'stacksPage.header.infra': 'Стеки инфраструктуры',
+    'stacksPage.actionButton': 'Добавить стек приложения',
+    'editStack.name.label': 'Имя стека',
+    'pageFooter.issues': 'Сообщить о проблеме',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'uk-ua': {
+    languageName: 'Українська (Україна)',
+    'uiText.childExecution': 'Дочірнє виконання',
+    'generic.environment': 'Середовище',
+    'auditLogsPage.header': 'Журнал аудиту',
+    'nav.admin.audit': 'Журнал аудиту',
+    'stacksPage.header.user': 'Стеки застосунків',
+    'stacksPage.header.infra': 'Стеки інфраструктури',
+    'stacksPage.actionButton': 'Додати стек застосунку',
+    'editStack.name.label': 'Ім’я стека',
+    'heroAddService.service.header': 'Додати перший стек',
+    'pageFooter.issues': 'Повідомити про проблему',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'zh-hans': {
+    languageName: '简体中文（中国大陆）',
+    languageContribute: '帮助翻译 PastureStack',
+    'uiText.process': '进程',
+    'uiText.childExecution': '子执行项',
+    'generic.environment': '环境',
+    'stacksPage.header.user': '应用堆栈',
+    'stacksPage.header.infra': '基础设施堆栈',
+    'stacksPage.actionButton': '添加应用堆栈',
+    'editStack.name.label': '堆栈名称',
+    'heroAddService.service.header': '创建第一个应用堆栈',
+    'pageFooter.issues': '报告问题',
+    'modalAboutComponent.cattle': 'Orchestration Engine',
+    'modalAboutComponent.machineService': 'Host Provisioner',
+  },
+  'zh-tw': {
+    languageName: '繁體中文（台灣）',
+    'generic.noActionsAvailable': '目前沒有可用的操作',
+    'pageFooter.help': '說明',
+    'pageFooter.documentation': '說明文件',
+    'pageFooter.issues': '回報問題',
+    'helpPage.header': '使用說明',
+    'helpPage.issues.header.text': '問題回報與說明文件',
+    'processExecutions.resourceTypeId': '資源類型／ID',
+    'infoMultiStats.time.minutesSecondsAgo': '{minutes}分{seconds}秒前',
+    'machine.driverAmazon.ami.compatibilityGuide': 'Amazon EC2 映像檔相容性說明',
+    'modalAboutComponent.cattle': '編排引擎',
+    'modalAboutComponent.machineService': '主機建置服務',
+  },
+};
+
+if (englishLeaves.languageName !== 'English (United States)') {
+  failures.push('unexpected_value=en-us:languageName');
+}
+Object.entries(englishLeaves).forEach(([key, value]) => {
+  if (typeof value === 'string' && /\b(?:rancher(?:\s+labs)?|suse)\b/iu.test(value)) {
+    failures.push(`obsolete_visible_brand=en-us:${key}`);
+  }
+});
+if (/target="_blank"(?!\s+rel="noopener noreferrer")/u.test(englishSource)) {
+  failures.push('unsafe_external_link=en-us');
+}
+if (/\bCattle\b/u.test(englishSource)) {
+  failures.push('obsolete_visible_component_name=en-us');
+}
+[
+  ['modalAboutComponent.cattle', 'Orchestration Engine'],
+  ['modalAboutComponent.machineService', 'Host Provisioner'],
+].forEach(([key, expected]) => {
+  if (englishLeaves[key] !== expected) {
+    failures.push(`unexpected_value=en-us:${key}`);
+  }
+});
+
+const semanticFalseFriends = {
+  'de-de': /\b(?:Hinrichtung eines Kindes|Umwelt|Bild(?:er|es)?)\b/u,
+  'fa-ir': /(?:اعدام کودک|محیط زیست|حسابرسی|رنچر|ظرف|اهراز|مشکشلات|همهow|Availablility)/u,
+  'fil-ph': /\b(?:lalagyan|larawan)\b|layunin-built|hindi kilalang impormasyon|Kubernetes Ang dashboard/iu,
+  'fr-fr': /(?:Exécution d'enfants|ui-pilote-skel|\b[Pp]iles?\b)/u,
+  'hu-hu': /(?:Gyermek kivégzés|Hozzáférési naplók)/u,
+  'pt-br': /(?:Execução infantil|Meio Ambiente|\b[Pp]ilhas?\b)/u,
+  'ru-ru': /(?:Детская казнь|Окружающая среда|окружающая среда)/u,
+  'uk-ua': /(?:Дитяча страта|Навколишнє середовище)/u,
+  'zh-hans': /(?:处决儿童|工艺流程)/u,
+};
+
+// These fragments lock the natural word order around the host warning's
+// embedded documentation link. Translating the linked words and the trailing
+// sentence independently previously produced grammatically broken banners in
+// nearly every locale even though all translation keys were present.
+const regionalNoHostsFragments = {
+  'de-de': 'Leitfaden zur Docker-Kompatibilität</a>:',
+  'fa-ir': 'راهنمای سازگاری Docker</a> را بررسی کنید:',
+  'fil-ph': 'gabay sa compatibility ng Docker</a>:',
+  'fr-fr': 'instructions de compatibilité Docker</a> :',
+  'hu-hu': 'Docker-kompatibilitási útmutatót</a>:',
+  'ja-jp': 'Docker の互換性ガイド</a>をご確認ください：',
+  'ko-kr': 'Docker 호환성 안내</a>를 먼저 확인하세요:',
+  'pt-br': 'orientações de compatibilidade do Docker</a>:',
+  'ru-ru': 'руководством по совместимости Docker</a>:',
+  'uk-ua': 'настановами щодо сумісності з Docker</a>:',
+  'zh-hans': 'Docker 兼容性说明</a>：',
+  'zh-tw': 'Docker 相容性說明</a>：',
+};
+
+const exactEnglishAllowlist = new Set([
+  'PastureStack', 'GitHub', 'Docker', 'Kubernetes', 'Mesos', 'Swarm', 'Compose',
+  'Convoy', 'OpenLDAP', 'Active Directory', 'API', 'CLI', 'ID', 'UUID', 'URL',
+  'URI', 'IP', 'FQDN', 'HTTP', 'HTTPS', 'TCP', 'UDP', 'TLS', 'SSL', 'LDAP',
+  'YAML', 'JSON', 'CPU', 'vCPU', 'vCPUs', 'RAM', 'mCPU', 'TTY', 'NAT', 'DNS',
+  'MB', 'GB', 'ms', 'N/A', 'n/a', 'Mac OS X', 'Windows', 'Linux', 'Helm', 'Cattle',
+  'docker-compose.yml', 'haproxy.cfg', 'answers.txt',
+  'TTY <span class="text-muted">(-t)</span>', 'Alibaba Cloud Docker Hub'
+]);
+
+// An exact English value is accepted only when every word is part of a
+// reviewed technical vocabulary. This deliberately does not include general
+// interface verbs such as add, move, run, remove, report, or log out. The
+// previous "three words or fewer" shortcut allowed hundreds of untranslated
+// buttons and table labels to pass unnoticed.
+const technicalEnglishTokens = new Set(`
+  access control key keys username password secret secrets token api endpoint
+  environment domain name authorization callback authentication active
+  directory azure ad github enterprise nfs server catalog shell algorithm
+  serial number ip ips address stats cpu cpus network host docker id entry
+  point entrypoint networking health check protocol mount snapshot timeline
+  error port provider custom kernel os mcpu kubernetes dashboard ui cli driver
+  checksum mesos template email fqdn scale global log load balancer tag
+  variable virtual machine vm ldap tls uid distinguishedname service alias helm
+  container standard out tty file mode pid memory limit pinning hyperv prefix
+  target source batch interval sec vcpus volume receiver hooks display resource
+  group node cluster clusterip root disk data center pool availability available
+  zone ami iam profile subnet vpc vnet subscription openstack remote reseller
+  metadata xml namespace admin component compose user interface timeout stack
+  trace sidekick classic portainer link graph default region image images
+  isolation native engine pools status system team transparent version webhooks
+  generation details agent backend branch info upgrade console total action
+  actions date documentation instance message label route rc windows linux mac
+  swarm pasturestack orchestration provisioner shibboleth mknod pod
+  azurepubliccloud usr aliyun slb cidr hub yaml type vcenter ssh scheduler
+  registry reinitializing public certs internet max bandwidth backup read only
+  ec tags map trigger chain url hostname vswitch login beta set octal v
+`.trim().split(/\s+/u));
+
+const localeIdenticalEnglishWords = {
+  'de-de': new Set([
+    'Details', 'Generation', 'in', 'In:', 'Isolation', 'Links', 'Name',
+    'Service', 'Status', 'System', 'Team', 'Transparent', 'Version', 'Zone'
+  ]),
+  'fr-fr': new Set([
+    'Action', 'Actions', 'Console', 'Date', 'Documentation', 'Instance',
+    'Message', 'Mode', 'Orchestration', 'Port', 'Ports', 'Secret', 'Secrets',
+    'Service', 'Stacks', 'Total', 'Variable', 'Version', 'Volumes', 'Zone'
+  ]),
+  'pt-br': new Set(['Stack:', 'Stacks', 'Total', 'Volumes', 'Webhooks']),
+};
+
+const machineContractKeys = [
+  'machine.driverCustom.windows.step2Copy',
+  'machine.driverCustom.windowsSteps.step2Copy',
+  'machine.driverAzure.resourceGroup.placeholder',
+];
+
+const mixedLanguageAllowlist = new Set([
+  ...machineContractKeys,
+  'formCommand.command.placeholder',
+  'formVolumes.pathPlaceholder',
+  'machine.driverCustom.windows.step2Copy',
+  'machine.driverCustom.windowsSteps.step2Copy',
+]);
+
+function containsLongLatinPhrase(value) {
+  const stripped = value
+    .replace(/<code>[\s\S]*?<\/code>/giu, ' ')
+    .replace(/<[^>]+>/gu, ' ')
+    .replace(/https?:\/\/\S+/giu, ' ')
+    .replace(/\{[^{}]+\}/gu, ' ')
+    .replace(/\b(?:PastureStack|Docker|GitHub|Linux|Windows|API|CLI|DNS|HTTP|HTTPS|SSH|SSL|TLS|URL|ID|IP|FQDN|YAML|JSON|CPU|RAM|Kubernetes|Mesos|Swarm|Compose|EC2|VPC|Availability Zone|Web Console|Host Provisioner|Orchestration Engine|Server Name Indication|Network Policy Manager|MyApp|John Smith)\b/giu, ' ');
+
+  return /\b[A-Za-z]+(?:[ /&-]+[A-Za-z]+){3,}\b/u.test(stripped);
+}
+
+const localeScriptPatterns = {
+  'fa-ir': /[\u0600-\u06FF]/u,
+  'ja-jp': /[\u3040-\u30FF\u3400-\u9FFF]/u,
+  'ko-kr': /[\uAC00-\uD7AF]/u,
+  'ru-ru': /[\u0400-\u04FF]/u,
+  'uk-ua': /[\u0400-\u04FF]/u,
+  'zh-hans': /[\u3400-\u9FFF]/u,
+  'zh-tw': /[\u3400-\u9FFF]/u,
+};
+
+function flatten(value, prefix = '', result = {}) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    Object.keys(value).forEach((key) => {
+      flatten(value[key], prefix ? `${prefix}.${key}` : key, result);
+    });
+  } else {
+    result[prefix] = value;
+  }
+  return result;
+}
+
+function collectArguments(ast, result = new Set()) {
+  (ast.elements || []).forEach((element) => {
+    if (element.type === 'argumentElement') {
+      result.add(element.id);
+      if (element.format && element.format.options) {
+        element.format.options.forEach((option) => collectArguments(option.value, result));
+      }
+    }
+  });
+  return result;
+}
+
+function messageArguments(message) {
+  return [...collectArguments(messageParser.parse(message))].sort();
+}
+
+function duplicateMappingKeys(source) {
+  const levels = [];
+  const seen = new Set();
+  const duplicates = [];
+  source.split(/\r?\n/u).forEach((line) => {
+    const match = line.match(/^(\s*)(?:"([^"]+)"|'([^']+)'|([A-Za-z0-9_.-]+)):\s*/u);
+    if (!match) {
+      return;
+    }
+    const indent = match[1].length;
+    const key = match[2] || match[3] || match[4];
+    while (levels.length > 0 && levels[levels.length - 1].indent >= indent) {
+      levels.pop();
+    }
+    const fullKey = [...levels.map((level) => level.key), key].join('.');
+    if (seen.has(fullKey)) {
+      duplicates.push(fullKey);
+    }
+    seen.add(fullKey);
+    levels.push({ indent, key });
+  });
+  return duplicates;
+}
+
+function allowedExactEnglish(value, key, locale) {
+  const trimmed = value.trim();
+  if (!/[A-Za-z]/.test(trimmed) || exactEnglishAllowlist.has(trimmed)) {
+    return true;
+  }
+  if ((localeIdenticalEnglishWords[locale] || new Set()).has(trimmed)) {
+    return true;
+  }
+  if (machineContractKeys.includes(key)) {
+    return true;
+  }
+  if (/^(?:https?:\/\/|\/|[A-Za-z]:\\)/.test(trimmed)) {
+    return true;
+  }
+  if (/^[A-Z0-9_.:+/#%()\[\]{}<>=,&;'" -]+$/.test(trimmed)) {
+    return true;
+  }
+  if (/^[\w.-]+\.(?:ya?ml|json|cfg|conf|txt|iso|img|tar|gz|zip)$/i.test(trimmed)) {
+    return true;
+  }
+  if (/^\{[A-Za-z_][A-Za-z0-9_]*\}(?: \(\{[A-Za-z_][A-Za-z0-9_]*\}\))?$/.test(trimmed)) {
+    return true;
+  }
+  const withoutArguments = trimmed.replace(/\{[^{}]+\}/gu, '');
+  if (!/[A-Za-z]/u.test(withoutArguments)) {
+    return true;
+  }
+  const words = withoutArguments
+    .replace(/<[^>]+>/gu, ' ')
+    .match(/[A-Za-z]+/gu) || [];
+
+  return words.length > 0 && words.every((word) => technicalEnglishTokens.has(word.toLowerCase()));
+}
+
+requiredLocales.forEach((locale) => {
+  const localePath = path.join(translationsDir, `${locale}.yaml`);
+  if (!fs.existsSync(localePath)) {
+    failures.push(`missing_locale=${locale}`);
+    return;
+  }
+  const source = fs.readFileSync(localePath, 'utf8');
+  let values;
+  try {
+    values = YAML.load(localePath);
+  } catch (error) {
+    failures.push(`invalid_yaml=${locale}:${error.message}`);
+    return;
+  }
+  const leaves = flatten(values);
+  duplicateMappingKeys(source).forEach((key) => failures.push(`duplicate_key=${locale}:${key}`));
+
+  if (/target="_blank"(?!\s+rel="noopener noreferrer")/u.test(source)) {
+    failures.push(`unsafe_external_link=${locale}`);
+  }
+  if (/\bCattle\b/u.test(source)) {
+    failures.push(`obsolete_visible_component_name=${locale}`);
+  }
+  if (semanticFalseFriends[locale] && semanticFalseFriends[locale].test(source)) {
+    failures.push(`semantic_false_friend=${locale}`);
+  }
+
+  Object.entries(leaves).forEach(([key, value]) => {
+    if (typeof value === 'string' && /\b(?:rancher(?:\s+labs)?|suse)\b/iu.test(value)) {
+      failures.push(`obsolete_visible_brand=${locale}:${key}`);
+    }
+  });
+
+  Object.keys(englishLeaves).forEach((key) => {
+    const englishValue = englishLeaves[key];
+    const localizedValue = leaves[key];
+    if (!(key in leaves)) {
+      failures.push(`missing_key=${locale}:${key}`);
+      return;
+    }
+    if (typeof englishValue === 'string' && englishValue !== '') {
+      if (typeof localizedValue !== 'string' || localizedValue === '') {
+        failures.push(`empty_value=${locale}:${key}`);
+        return;
+      }
+      try {
+        const expectedArguments = messageArguments(englishValue);
+        const actualArguments = messageArguments(localizedValue);
+        if (JSON.stringify(expectedArguments) !== JSON.stringify(actualArguments)) {
+          failures.push(`argument_mismatch=${locale}:${key}`);
+        }
+      } catch (error) {
+        failures.push(`invalid_icu=${locale}:${key}`);
+      }
+      if (localizedValue.trim() === englishValue.trim() && !allowedExactEnglish(localizedValue, key, locale)) {
+        failures.push(`untranslated_value=${locale}:${key}`);
+      }
+      if (localeScriptPatterns[locale] && localeScriptPatterns[locale].test(localizedValue) &&
+          !mixedLanguageAllowlist.has(key) && containsLongLatinPhrase(localizedValue)) {
+        failures.push(`mixed_language_phrase=${locale}:${key}`);
+      }
+    }
+  });
+
+  Object.keys(leaves).filter((key) => !(key in englishLeaves)).forEach((key) => {
+    failures.push(`orphan_key=${locale}:${key}`);
+  });
+
+  if (/⟦PST(?:SEP)?\d+⟧|__970\d{5}__|qzx97\d{5}xzq|<x\s+id=["']pst97\d{5}["']\s*\/?>|\[PST(?:\d{5}|[a-z]+)\]|\*%MISSING%?\s*\*|\uFFFD/iu.test(source) ||
+      /\bTODO\b/u.test(source)) {
+    failures.push(`translation_artifact=${locale}`);
+  }
+  if (locale !== 'en-us' && /the original upstream maintainers|PastureStack[- ]Labs/iu.test(source)) {
+    failures.push(`unlocalized_upstream_attribution=${locale}`);
+  }
+  if (/companyLink|\/learn\/|cattle\/adding-services/iu.test(source)) {
+    failures.push(`obsolete_translation_link=${locale}`);
+  }
+  if (locale === 'ja-jp' && !/[ぁ-んァ-ヶ一-龠々]/u.test(source)) {
+    failures.push('missing_script=ja-jp');
+  }
+  if (locale === 'ko-kr' && !/[가-힣]/u.test(source)) {
+    failures.push('missing_script=ko-kr');
+  }
+  if (locale === 'fa-ir' && !/[\u0600-\u06FF]/u.test(source)) {
+    failures.push('missing_script=fa-ir');
+  }
+
+  Object.entries(requiredValues[locale] || {}).forEach(([key, expected]) => {
+    if (leaves[key] !== expected) {
+      failures.push(`unexpected_value=${locale}:${key}`);
+    }
+  });
+  if (!String(leaves['nav.noHosts.prefix'] || '').includes(regionalNoHostsFragments[locale])) {
+    failures.push(`unnatural_host_warning=${locale}`);
+  }
+  machineContractKeys.forEach((key) => {
+    if (leaves[key] !== englishLeaves[key]) {
+      failures.push(`changed_machine_contract=${locale}:${key}`);
+    }
+  });
+});
+
+function filesBelow(directory, extension, result = []) {
+  fs.readdirSync(directory, { withFileTypes: true }).forEach((entry) => {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      filesBelow(fullPath, extension, result);
+    } else if (entry.name.endsWith(extension)) {
+      result.push(fullPath);
+    }
+  });
+  return result;
+}
+
+function lineNumberAt(source, offset) {
+  return source.slice(0, offset).split(/\r?\n/u).length;
+}
+
+const allowedLiteralText = /^(?:GB|Mbps|\(CN\)|https:\/\/|ubuntu:\d+\.\d+|alpine:\d+\.\d+)$/iu;
+filesBelow(path.join(repoRoot, 'app'), '.hbs').forEach((templatePath) => {
+  const relativePath = path.relative(repoRoot, templatePath).replace(/\\/g, '/');
+  const rawSource = fs.readFileSync(templatePath, 'utf8');
+  const source = rawSource
+    .replace(/<!--[\s\S]*?-->/gu, '')
+    .replace(/\{\{![\s\S]*?\}\}/gu, '');
+
+  for (const match of source.matchAll(/>([^<]+)</gu)) {
+    const residual = match[1]
+      .replace(/\{\{[\s\S]*?\}\}/gu, '')
+      .replace(/&(?:[A-Za-z][A-Za-z0-9]+|#[0-9]+);/gu, '')
+      .trim();
+    if (/[A-Za-z]{2,}/u.test(residual) && !allowedLiteralText.test(residual)) {
+      failures.push(
+        `hardcoded_template_text=${relativePath}:${lineNumberAt(source, match.index)}:${residual.slice(0, 80)}`
+      );
+    }
+  }
+
+  for (const match of source.matchAll(/\b(aria-label|title|alt|placeholder|data-title)="([^"]+)"/gu)) {
+    const attribute = match[1];
+    const value = match[2];
+    if (!/[A-Za-z]{2,}/u.test(value) || value.includes('{{')) {
+      continue;
+    }
+    if (attribute === 'placeholder' && /^[A-Za-z][\w-]*(?:\.[\w-]+)+$/u.test(value)) {
+      continue;
+    }
+    if (value === 'PastureStack') {
+      continue;
+    }
+    failures.push(
+      `hardcoded_template_attribute=${relativePath}:${lineNumberAt(source, match.index)}:${attribute}`
+    );
+  }
+});
+
+const footerSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'page-footer', 'template.hbs'), 'utf8');
+const footerComponentSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'page-footer', 'component.js'), 'utf8');
+const constantsSource = fs.readFileSync(path.join(repoRoot, 'app', 'utils', 'constants.js'), 'utf8');
+const helpSource = fs.readFileSync(path.join(repoRoot, 'app', 'authenticated', 'project', 'help', 'template.hbs'), 'utf8');
+const languageSource = fs.readFileSync(path.join(repoRoot, 'app', 'services', 'user-language.js'), 'utf8');
+const buildSource = fs.readFileSync(path.join(repoRoot, 'ember-cli-build.js'), 'utf8');
+const dateTimeSource = fs.readFileSync(path.join(repoRoot, 'app', 'utils', 'date-time.js'), 'utf8');
+const infoMultiStatsSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'info-multi-stats', 'component.js'), 'utf8');
+const serviceLogSource = fs.readFileSync(path.join(repoRoot, 'app', 'models', 'servicelog.js'), 'utf8');
+const portModelSource = fs.readFileSync(path.join(repoRoot, 'app', 'models', 'port.js'), 'utf8');
+const issueTemplatePath = path.join(repoRoot, '.github', 'ISSUE_TEMPLATE', 'bug-report.md');
+const issueConfigPath = path.join(repoRoot, '.github', 'ISSUE_TEMPLATE', 'config.yml');
+const heroAddServiceSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'hero-add-service', 'template.hbs'), 'utf8');
+const languageDropdownSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'language-dropdown', 'template.hbs'), 'utf8');
+const helpButtonSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'help-btn', 'component.js'), 'utf8');
+const pageHeaderSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'page-header', 'template.hbs'), 'utf8');
+const humansSource = fs.readFileSync(path.join(repoRoot, 'public', 'humans.txt'), 'utf8');
+const settingsSource = fs.readFileSync(path.join(repoRoot, 'app', 'services', 'settings.js'), 'utf8');
+const orchestrationNameSource = fs.readFileSync(path.join(repoRoot, 'app', 'utils', 'orchestration-name.js'), 'utf8');
+const authenticatedRouteSource = fs.readFileSync(path.join(repoRoot, 'app', 'authenticated', 'route.js'), 'utf8');
+const applicationRouteSource = fs.readFileSync(path.join(repoRoot, 'app', 'application', 'route.js'), 'utf8');
+const adminSettingsSource = fs.readFileSync(path.join(repoRoot, 'app', 'admin-tab', 'settings', 'template.hbs'), 'utf8');
+
+[
+  ['footer_forum', footerSource, /forum|slack|wechat/iu],
+  ['footer_component_community', footerComponentSource, /forum|slack|wechat/iu],
+  ['community_constant', constantsSource, /FORUM|SLACK/],
+  ['broken_service_docs', helpSource, /cattle\/adding-services|companyLink|\/learn\//],
+  ['footer_visibility_gate', footerSource, /settings\.isRancher/u],
+  ['help_visibility_gate', helpSource, /settings\.isRancher/u],
+  ['service_docs_visibility_gate', heroAddServiceSource, /settings\.isRancher/u],
+  ['language_contribution_visibility_gate', languageDropdownSource, /settings\.isRancher/u],
+  ['help_button_visibility_gate', helpButtonSource, /settings\.isRancher/u],
+].forEach(([name, source, pattern]) => {
+  if (pattern.test(source)) {
+    failures.push(`obsolete_reference=${name}`);
+  }
+});
+
+if (/\b(?:rancher(?:\s+labs)?|suse)\b|[\w.+-]+@[\w.-]+\.[a-z]{2,}/iu.test(humansSource)) {
+  failures.push('obsolete_or_private_attribution=public_humans');
+}
+if (!orchestrationNameSource.includes("return 'PastureStack Orchestration Engine';") ||
+    settingsSource.includes("this.get('projects.current.displayOrchestration')")) {
+  failures.push('unmapped_visible_orchestration_name');
+}
+if (authenticatedRouteSource.includes("toggleModal('modal-welcome')") ||
+    adminSettingsSource.includes('settings/telemetry-opt')) {
+  failures.push('unsupported_telemetry_prompt_visible');
+}
+if (!applicationRouteSource.includes('let languagePromise = this.get(\'language\').initLanguage();') ||
+    !applicationRouteSource.includes('return languagePromise;')) {
+  failures.push('application_renders_before_locale_ready');
+}
+
+const amazonDriverSource = fs.readFileSync(
+  path.join(repoRoot, 'app', 'components', 'machine', 'driver-amazonec2', 'template.hbs'),
+  'utf8'
+);
+if (/github\.com\/rancher|ami\.rancherList|settings\.isRancher/iu.test(amazonDriverSource)) {
+  failures.push('obsolete_reference=amazon_image_guidance');
+}
+if (!amazonDriverSource.includes('{{settings.docsBase}}/hosts/#amazon-ec2-image-requirements')) {
+  failures.push('missing_help_link=amazon_image_guidance');
+}
+
+if (!constantsSource.includes("GITHUB: 'https://github.com/PastureStack/web-console'")) {
+  failures.push('unexpected_issue_repository');
+}
+if (!fs.existsSync(issueTemplatePath) || !fs.existsSync(issueConfigPath)) {
+  failures.push('missing_issue_reporting_contract');
+}
+['fil-PH', 'ja-JP', 'ko-KR'].forEach((locale) => {
+  const localeDataPath = path.join(
+    repoRoot, 'node_modules', 'intl', 'locale-data', 'jsonp', `${locale}.js`
+  );
+  if (!fs.existsSync(localeDataPath)) {
+    failures.push(`missing_intl_locale_data=${locale}`);
+  }
+});
+if (fs.existsSync(path.join(repoRoot, 'public', 'assets', 'images', 'wechat-qr-code.jpg'))) {
+  failures.push('obsolete_community_asset=wechat_qr');
+}
+['/hosts/', '/services/', '/faqs/'].forEach((suffix) => {
+  if (!helpSource.includes(`{{docsLink}}${suffix}`)) {
+    failures.push(`missing_help_link=${suffix}`);
+  }
+});
+if (!helpSource.includes('rel="noopener noreferrer"')) {
+  failures.push('missing_external_link_protection=help');
+}
+if (/\bcol-sm-\s/u.test(helpSource)) {
+  failures.push('invalid_responsive_grid_class=help');
+}
+if (!/minVersion=settings\.minDockerVersion\}\}\s*\r?\n\s*<a/u.test(pageHeaderSource)) {
+  failures.push('missing_link_separator=no_hosts_banner');
+}
+
+const momentLocaleMap = {
+  'de-de': 'de', 'fa-ir': 'fa', 'fil-ph': 'tl-ph', 'fr-fr': 'fr',
+  'hu-hu': 'hu', 'ja-jp': 'ja', 'ko-kr': 'ko', 'pt-br': 'pt-br',
+  'ru-ru': 'ru', 'uk-ua': 'uk', 'zh-hans': 'zh-cn', 'zh-tw': 'zh-tw'
+};
+Object.entries(momentLocaleMap).forEach(([locale, momentLocale]) => {
+  if (!languageSource.includes(`'${locale}': '${momentLocale}'`)) {
+    failures.push(`missing_moment_mapping=${locale}`);
+  }
+  if (!buildSource.includes(`moment/locale/${momentLocale}.js`)) {
+    failures.push(`missing_moment_bundle=${locale}`);
+  }
+});
+if (!dateTimeSource.includes("resolvedFormat = 'LL LTS'")) {
+  failures.push('missing_localized_date_time_format');
+}
+if (!dateTimeSource.includes("resolvedFormat = 'LTS'")) {
+  failures.push('missing_localized_time_format');
+}
+if (!dateTimeSource.includes("PHILIPPINES_DATE_TIME_FORMAT = 'LL h:mm:ss A'") ||
+    !dateTimeSource.includes("PHILIPPINES_TIME_FORMAT = 'h:mm:ss A'")) {
+  failures.push('missing_philippines_12_hour_format');
+}
+if (!dateTimeSource.includes('moment(value).locale(locale).format(resolvedFormat)')) {
+  failures.push('date_formatter_does_not_refresh_active_locale');
+}
+if (!buildSource.includes("app.import('vendor/moment-default-locale.js');") ||
+    !fs.readFileSync(path.join(repoRoot, 'vendor', 'moment-default-locale.js'), 'utf8').includes("moment.locale('en');")) {
+  failures.push('missing_deterministic_default_moment_locale');
+}
+if (!infoMultiStatsSource.includes("intl').t('infoMultiStats.time.now'") ||
+    /return ['"]Now['"]| min, .* sec ago|pluralize\(.*(?:minute|second)/u.test(infoMultiStatsSource)) {
+  failures.push('unlocalized_relative_time=utilization_graph');
+}
+if (!serviceLogSource.includes('formatDurationSeconds(sec)') ||
+    !serviceLogSource.includes("intl').t('serviceLog.running'") ||
+    /return sec \+ ["'] sec["']|return ["']Running["']/u.test(serviceLogSource)) {
+  failures.push('unlocalized_runtime=service_log');
+}
+if (!portModelSource.includes("intl').t('formatIp.unknownIp'") ||
+    !portModelSource.includes("intl').t('generic.loading'") ||
+    /Unknown IP|return ["']Loading\.\.\.["']/u.test(portModelSource)) {
+  failures.push('unlocalized_status=port_model');
+}
+
+if (failures.length > 0) {
+  failures.slice(0, 300).forEach((failure) => console.error(`UI_LOCALIZATION_ERROR ${failure}`));
+  if (failures.length > 300) {
+    console.error(`UI_LOCALIZATION_ERROR additional_failures=${failures.length - 300}`);
+  }
+  console.error(`UI_LOCALIZATION_FAILURE_COUNT=${failures.length}`);
+  process.exit(1);
+}
+
+console.log(
+  `UI_LOCALIZATION_OK locales=${requiredLocales.length} ` +
+  `english_leaves=${Object.keys(englishLeaves).length} missing=0 orphan=0 invalid_icu=0`
+);

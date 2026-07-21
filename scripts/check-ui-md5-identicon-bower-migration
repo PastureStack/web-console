@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PYCHECK'
+import json
+import re
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+dev_deps = package.get("devDependencies", {}) or {}
+if dev_deps.get("identicon.js") != "2.3.3":
+    fail("IDENTICON_NPM_DEP_VERSION_UNEXPECTED", actual=dev_deps.get("identicon.js"), expected="2.3.3")
+if dev_deps.get("md5-jkmyers") != "0.0.1":
+    fail("MD5_NPM_DEP_VERSION_UNEXPECTED", actual=dev_deps.get("md5-jkmyers"), expected="0.0.1")
+for dep in ["identicon.js", "md5-jkmyers"]:
+    if dep in (bower.get("dependencies", {}) or {}):
+        fail("MD5_IDENTICON_STILL_IN_BOWER_DEPENDENCIES", dep=dep)
+for expected in [
+    "node_modules/identicon.js/pnglib.js",
+    "node_modules/identicon.js/identicon.js",
+    "node_modules/md5-jkmyers/md5.js",
+]:
+    if expected not in build:
+        fail("MD5_IDENTICON_NPM_IMPORT_MISSING", path=expected)
+for forbidden in [
+    "bower_components/identicon.js/pnglib.js",
+    "bower_components/identicon.js/identicon.js",
+    "bower_components/md5-jkmyers/md5.js",
+]:
+    if forbidden in build:
+        fail("MD5_IDENTICON_BOWER_IMPORT_STILL_PRESENT", path=forbidden)
+
+packages = lock.get("packages", {}) or {}
+root_dev = (packages.get("", {}) or {}).get("devDependencies", {}) or {}
+expected = {"identicon.js": "2.3.3", "md5-jkmyers": "0.0.1"}
+for dep, version in expected.items():
+    if root_dev.get(dep) != version:
+        fail("MD5_IDENTICON_LOCK_ROOT_VERSION_UNEXPECTED", dep=dep, actual=root_dev.get(dep), expected=version)
+    package_path = f"node_modules/{dep}"
+    pkg = packages.get(package_path, {}) or {}
+    if pkg.get("version") != version:
+        fail("MD5_IDENTICON_LOCK_PACKAGE_VERSION_UNEXPECTED", dep=dep, actual=pkg.get("version"), expected=version)
+    if pkg.get("resolved") and f"{dep}/-/{dep}-{version}.tgz" not in pkg.get("resolved", ""):
+        fail("MD5_IDENTICON_LOCK_RESOLVED_UNEXPECTED", dep=dep, resolved=pkg.get("resolved"))
+
+identity_text = Path("app/models/identity.js").read_text(encoding="utf-8")
+if "new Identicon(md5(" not in identity_text:
+    fail("IDENTITY_MODEL_IDENTICON_MD5_USAGE_MISSING")
+usage_count = len(re.findall(r"\bIdenticon\b", identity_text)) + len(re.findall(r"\bmd5\(", identity_text))
+if usage_count < 2:
+    fail("MD5_IDENTICON_USAGE_COUNT_TOO_LOW", actual=usage_count, minimum=2)
+
+modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in ["No-Publish Bower md5/identicon Migration Candidate", "identicon.js@2.3.3", "md5-jkmyers@0.0.1", "node_modules/identicon.js/identicon.js"]:
+    if phrase not in modernization:
+        fail("MD5_IDENTICON_MIGRATION_DOC_MISSING", phrase=phrase)
+
+node24_smoke = Path("scripts/node24-lock-smoke.js").read_text(encoding="utf-8")
+for phrase in ["expectPackageJsonVersion(\"identicon.js\", \"2.3.3\")", "expectPackageJsonVersion(\"md5-jkmyers\", \"0.0.1\")", "expectMd5IdenticonBrowserGlobals", "md5-identicon-global-smoke-ok"]:
+    if phrase not in node24_smoke:
+        fail("MD5_IDENTICON_NODE24_LOCK_SMOKE_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_MD5_IDENTICON_BOWER_MIGRATION_OK usage_count={usage_count} lock={lock_path}")
+print("failure_count=0")
+PYCHECK

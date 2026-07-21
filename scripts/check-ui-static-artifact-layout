@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+tmpdir=$(mktemp -d)
+cleanup() {
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+mkdir -p "$tmpdir/dist/assets"
+mkdir -p "$tmpdir/dist/translations"
+cat >"$tmpdir/dist/index.html" <<'HTML'
+<!doctype html>
+<script src="assets/vendor-test.js"></script>
+<script src="assets/ui-test.js"></script>
+HTML
+printf 'vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
+printf 'source map\n' >"$tmpdir/dist/assets/ui-test.js.map"
+printf '{}\n' >"$tmpdir/dist/translations/en-us.json"
+printf '{}\n' >"$tmpdir/dist/translations/none.json"
+
+out="$tmpdir/9.9.9.tar.gz"
+out_repeat="$tmpdir/9.9.9-repeat.tar.gz"
+SOURCE_DATE_EPOCH=1700000000 bash ./scripts/package-static-candidate 9.9.9 "$tmpdir/dist" "$out" >"$tmpdir/ui-static-layout.out"
+
+# Repack after changing source mtimes to prove that the release tarball is
+# controlled by SOURCE_DATE_EPOCH rather than the build host clock.
+touch -d '@1800000000' "$tmpdir/dist/index.html" "$tmpdir/dist/assets/ui-test.js"
+SOURCE_DATE_EPOCH=1700000000 bash ./scripts/package-static-candidate 9.9.9 "$tmpdir/dist" "$out_repeat" >/dev/null
+if ! cmp -s "$out" "$out_repeat"; then
+  echo "STATIC_ARTIFACT_NOT_REPRODUCIBLE first=$out second=$out_repeat"
+  exit 1
+fi
+
+tar_list="$tmpdir/tar.list"
+tar -tzf "$out" > "$tar_list"
+grep -qx '9.9.9/index.html' "$tar_list"
+grep -qx '9.9.9/VERSION.txt' "$tar_list"
+grep -qx '9.9.9/assets/vendor-test.js' "$tar_list"
+grep -qx '9.9.9/assets/ui-test.js' "$tar_list"
+grep -qx '9.9.9/translations/en-us.json' "$tar_list"
+
+if grep -Eq '\.map$' "$tar_list"; then
+  echo "SOURCE_MAP_ENTRY_PRESENT"
+  exit 1
+fi
+
+
+if grep -Eq '/translations/none\.json$' "$tar_list"; then
+  echo "DEVELOPMENT_LOCALE_ENTRY_PRESENT"
+  exit 1
+fi
+
+if grep -qx 'index.html' "$tar_list"; then
+  echo "BARE_INDEX_ENTRY_PRESENT"
+  exit 1
+fi
+
+extract="$tmpdir/extract"
+mkdir -p "$extract"
+tar -xzf "$out" -C "$extract"
+version=$(cat "$extract/9.9.9/VERSION.txt")
+if [[ "$version" != "9.9.9" ]]; then
+  echo "VERSION_TXT_MISMATCH actual=$version expected=9.9.9"
+  exit 1
+fi
+
+if [[ ! -s "${out}.sha256" ]]; then
+  echo "SHA256_FILE_MISSING file=${out}.sha256"
+  exit 1
+fi
+
+checksum_target=$(awk 'NR == 1 {print $2}' "${out}.sha256")
+if [[ "$checksum_target" != "$(basename "$out")" ]]; then
+  echo "SHA256_TARGET_NOT_PORTABLE actual=$checksum_target expected=$(basename "$out")"
+  exit 1
+fi
+(
+  cd "$(dirname "$out")"
+  sha256sum -c "$(basename "${out}.sha256")"
+)
+
+cat "$tmpdir/ui-static-layout.out"
+echo "ui-static-artifact-reproducible-ok"
+echo "ui-static-artifact-layout-ok"
+echo "failure_count=0"

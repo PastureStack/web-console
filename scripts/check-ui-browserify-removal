@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+dev = package.get("devDependencies", {}) or {}
+if "ember-browserify" in dev:
+    fail("EMBER_BROWSERIFY_DEPENDENCY_REMAINS", version=dev.get("ember-browserify"))
+if "ember-cli-uglify" in dev:
+    fail("EMBER_CLI_UGLIFY_DEPENDENCY_REMAINS", version=dev.get("ember-cli-uglify"))
+if dev.get("ember-cli-terser") != "^4.0.2":
+    fail("EMBER_CLI_TERSER_DEPENDENCY_MISSING", version=dev.get("ember-cli-terser"))
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    for package_path in packages:
+        if package_path.endswith("node_modules/ember-browserify"):
+            fail("EMBER_BROWSERIFY_LOCK_PACKAGE_REMAINS", package=package_path)
+        if package_path.endswith("node_modules/ember-cli-uglify"):
+            fail("EMBER_CLI_UGLIFY_LOCK_PACKAGE_REMAINS", package=package_path)
+    if "node_modules/ember-cli-terser" not in packages:
+        fail("EMBER_CLI_TERSER_LOCK_PACKAGE_MISSING")
+
+source_roots = [Path("app"), Path("addon"), Path("tests")]
+for root in source_roots:
+    if not root.exists():
+        continue
+    for path in root.rglob("*.js"):
+        text = path.read_text(encoding="utf-8")
+        if "npm:" in text:
+            fail("NPM_IMPORT_REMAINS", file=path)
+
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+for marker in [
+    "node_modules/@xterm/xterm/lib/xterm.js",
+    "node_modules/@xterm/addon-fit/lib/addon-fit.js",
+    "vendor/ansi-up/ansi-up-global.js",
+    "vendor/intl-format-cache/memoizer-shim.js",
+    "vendor/semver/semver-global.js",
+    "vendor/shell-quote/shell-quote-global.js",
+]:
+    if marker not in build:
+        fail("BROWSER_VENDOR_IMPORT_MISSING", marker=marker)
+
+intl_shim = Path("vendor/intl-format-cache/memoizer-shim.js")
+if not intl_shim.is_file():
+    fail("INTL_FORMAT_CACHE_MEMOIZER_SHIM_MISSING", file=intl_shim)
+else:
+    shim_text = intl_shim.read_text(encoding="utf-8")
+    for marker in ["define('intl-format-cache/memoizer'", "memoizeFormatConstructor"]:
+        if marker not in shim_text:
+            fail("INTL_FORMAT_CACHE_MEMOIZER_SHIM_MARKER_MISSING", marker=marker)
+
+docs = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in [
+    "No-Publish ember-browserify Removal",
+    "npm:",
+    "ember-browserify",
+    "sourceType: module",
+    "ember-cli-terser",
+    "intl-format-cache/memoizer",
+]:
+    if phrase not in docs:
+        fail("BROWSERIFY_REMOVAL_DOC_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"ui-browserify-removal-ok lockfile={lock_path}")
+print("failure_count=0")
+PY

@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+dev_deps = package.get("devDependencies", {}) or {}
+if "forever-agent" in dev_deps:
+    fail("FOREVER_AGENT_STILL_DECLARED")
+expected_glob = "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz"
+if dev_deps.get("glob") != expected_glob:
+    fail("GLOB_VERSION_UNEXPECTED", actual=dev_deps.get("glob"), expected=expected_glob)
+
+proxy_source = Path("server/proxies/api.js").read_text(encoding="utf-8")
+if "forever-agent" in proxy_source or "ForeverAgent" in proxy_source:
+    fail("FOREVER_AGENT_PROXY_REQUIRE_REMAINS")
+
+server_source = Path("server/index.js").read_text(encoding="utf-8")
+for phrase in ["var glob       = require('glob');", "glob.globSync || glob.sync"]:
+    if phrase not in server_source:
+        fail("MODERN_GLOB_SERVER_COMPAT_MISSING", phrase=phrase)
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    root = (lock.get("packages", {}) or {}).get("", {})
+    if root.get("devDependencies", {}) != dev_deps:
+        fail("SASS_REPLACEMENT_LOCK_DEV_DEPENDENCIES_DRIFT")
+    packages = lock.get("packages", {}) or {}
+    glob_pkg = packages.get("node_modules/glob", {})
+    if glob_pkg.get("version") != "13.0.6":
+        fail("GLOB_LOCK_VERSION_UNEXPECTED", actual=glob_pkg.get("version"), expected="13.0.6")
+    for removed in ["node_modules/request", "node_modules/forever-agent"]:
+        if removed in packages:
+            fail("DEV_SERVER_REQUEST_RETIREMENT_PACKAGE_REMAINS", package=removed)
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_DEV_SERVER_DEP_CLEANUP_OK glob=13.0.6 direct_forever_agent=removed lockfile={lock_path} package_count={package_count}")
+print("The no-publish Ember dev-server path no longer carries forever-agent/request in the active lock and uses the current glob sync API compatibility shim.")
+print("failure_count=0")
+PY

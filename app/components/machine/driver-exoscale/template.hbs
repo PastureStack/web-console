@@ -81,7 +81,7 @@
 
     <div class="footer-actions">
       <button {{action "selectZone"}} class="btn btn-primary">{{t 'machine.driverExoscale.selectZoneAction'}}</button>
-      <button {{action "cancel"}} class="btn btn-link">Cancel</button>
+      <button {{action "cancel"}} class="btn btn-link">{{t 'generic.cancel'}}</button>
     </div>
   {{/if}}
 </section>
@@ -114,9 +114,9 @@
             {{/if}}
           </label></div>
 
-          {{#if (and settings.isRancher (not isCustomSecurityGroup))}}
-            <p class="help-block r-ml20"><a href="{{settings.docsBase}}/hosts/exoscale/#required-ports-for-rancher-to-work" target="_blank">{{t 'machine.driverExoscale.portHelp.link'}}</a> {{t 'machine.driverExoscale.portHelp.text'}}</p>
-          {{/if}}
+          {{#unless isCustomSecurityGroup}}
+            <p class="help-block r-ml20"><a href="{{settings.docsBase}}/network-ports/" target="_blank" rel="noopener noreferrer">{{t 'machine.driverExoscale.portHelp.link'}}</a> {{t 'machine.driverExoscale.portHelp.text'}}</p>
+          {{/unless}}
 
           <div class="radio"><label>{{radio-button selection=whichSecurityGroup value="custom"}} {{t 'machine.driverExoscale.securityGroup.custom'}}</label></div>
           {{#if isCustomSecurityGroup}}
@@ -146,7 +146,7 @@
 
     <div class="footer-actions">
       <button {{action "selectSecurityGroup"}} class="btn btn-primary">{{t 'machine.driverExoscale.selectSecurityGroupAction'}}</button>
-      <button {{action "cancel"}} class="btn btn-link">Cancel</button>
+      <button {{action "cancel"}} class="btn btn-link">{{t 'generic.cancel'}}</button>
     </div>
   {{/if}}
 </section>

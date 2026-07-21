@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
-import ShellQuote from 'npm:shell-quote';
+import ShellQuote from 'ui/utils/shell-quote';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { compare as compareVersion } from 'ui/utils/parse-version';

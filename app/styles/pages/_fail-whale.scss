@@ -1,5 +1,10 @@
+@use "sass:color";
+
+$lightTeal: null !default;
+$teal: null !default;
+
 .fail-whale {
-  background-color: lighten($lightTeal, 25%);
+  background-color: color.adjust($lightTeal, $lightness: 25%);
   position: fixed;
   top: 0;
   bottom: 0;
@@ -35,11 +40,11 @@
     }
   }
 
-  .failcow {
+  .failmark {
     display: block;
     margin: 0 auto;
     width: 178px;
-    animation: failcow 20s linear;
+    animation: failmark 20s linear;
     -webkit-animation-delay: 6s; /* Chrome, Safari, Opera */
     animation-delay:6s;
     transform: translate(0,0)  scaleX(0.5) scaleY(0.5) ;
@@ -107,7 +112,7 @@
   }
 }
 
-@keyframes failcow {
+@keyframes failmark {
   0% {
     transform: translate(0,-50%)  scaleX(0.5) scaleY(0.5) ;
     opacity: 0;

@@ -1,4 +1,7 @@
-$timeline-height: 15px;
+$lightGray: null !default;
+$navyTwoDark: null !default;
+$orangeDark: null !default;
+$timeline-height: 15px !default;
 
 @mixin timeline-dot {
   border-radius: 50%;

@@ -21,7 +21,7 @@ let RANCHER_INGRESS_RULES = [
     IpProtocol: 'tcp'
   },
 
-  // Rancher IPSec
+  // PastureStack IPsec
   {
     FromPort: 500,
     ToPort: 500,
@@ -35,7 +35,7 @@ let RANCHER_INGRESS_RULES = [
     IpProtocol: 'udp'
   },
 
-  // Rancher VXLAN
+  // PastureStack VXLAN
   //{
   //  FromPort: 4789,
   //  ToPort: 4789,

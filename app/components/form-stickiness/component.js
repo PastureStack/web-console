@@ -1,6 +1,7 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend({
+  intl: Ember.inject.service(),
   service           : null,
 
   lbConfig: Ember.computed.alias('service.lbConfig'),
@@ -10,11 +11,13 @@ export default Ember.Component.extend({
   isNone           : Ember.computed.equal('stickiness','none'),
   isCookie         : Ember.computed.equal('stickiness','cookie'),
 
-  modeChoices: [
-    {value: 'rewrite', label: 'Rewrite'},
-    {value: 'insert',  label: 'Insert'},
-    {value: 'prefix',  label: 'Prefix'},
-  ],
+  modeChoices: Ember.computed('intl._locale', function() {
+    return [
+      {value: 'rewrite', label: this.get('intl').t('formStickiness.modeChoices.rewrite')},
+      {value: 'insert',  label: this.get('intl').t('formStickiness.modeChoices.insert')},
+      {value: 'prefix',  label: this.get('intl').t('formStickiness.modeChoices.prefix')},
+    ];
+  }),
 
   init() {
     this._super(...arguments);

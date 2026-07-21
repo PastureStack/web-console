@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+bower = json.loads(Path("bower.json").read_text())
+if "no-vnc" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on no-vnc")
+
+vendor = Path("vendor/novnc.js")
+if not vendor.exists():
+    raise SystemExit("vendor/novnc.js must remain checked in until a replacement noVNC migration lands")
+
+packager = Path("scripts/package-novnc").read_text()
+if "bower_components/no-vnc" in packager:
+    raise SystemExit("scripts/package-novnc must not use the old Bower no-vnc path")
+if "is disabled in the rc16 maintenance source tree" not in packager:
+    raise SystemExit("scripts/package-novnc must fail closed with an rc16 explanation")
+PY_CHECK
+
+grep -q "app.import('vendor/novnc.js')" ember-cli-build.js
+grep -q "expectNoVNCVendorGlobal" scripts/node24-lock-smoke.js
+
+if ./scripts/package-novnc >/tmp/rc16-package-novnc.out 2>/tmp/rc16-package-novnc.err; then
+  echo "scripts/package-novnc must fail closed" >&2
+  exit 1
+fi
+grep -q "disabled in the rc16 maintenance source tree" /tmp/rc16-package-novnc.err
+rm -f /tmp/rc16-package-novnc.out /tmp/rc16-package-novnc.err
+
+echo "ui-novnc-vendor-bower-removal-ok"

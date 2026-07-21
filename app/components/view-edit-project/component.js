@@ -96,7 +96,7 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
     });
 
     if ( !choices.length ) {
-      choices.push({id: null, name: 'None', image: `${this.get('app.baseAssets')}assets/images/logos/provider-orchestration.svg`});
+      choices.push({id: null, name: 'None', image: `${this.get('app.baseAssets')}assets/images/logos/pasturestack-mark.svg`});
     }
 
     choices.forEach(function(driver) {

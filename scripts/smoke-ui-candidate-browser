@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: scripts/smoke-ui-candidate-browser [UI_CANDIDATE_TARBALL]
+
+Runs a real Chromium smoke test against a built PastureStack Web Console candidate artifact
+without publishing it. The script serves the extracted UI on UI_SMOKE_BASE and
+proxies compatible API paths to `PASTURESTACK_API_TARGET`.
+
+Required environment:
+  PASTURESTACK_USER          PastureStack local-auth username
+  PASTURESTACK_PASS          PastureStack local-auth password
+
+Optional environment:
+  UI_CANDIDATE_TARBALL  Artifact to extract if no positional tarball is passed
+  UI_ROOT               Already extracted UI root; used only when no tarball is set
+  UI_SMOKE_BASE         Browser-facing UI base URL; default http://127.0.0.1:8098
+  PASTURESTACK_API_TARGET    Compatible API origin; default http://127.0.0.1:8080
+  PASTURESTACK_PROJECT_ID    Project ID used by default route coverage; default 1a5
+  UI_SMOKE_ROUTES       Comma-separated route list to visit after login
+  UI_SMOKE_OUT_DIR      Screenshot/output directory; default a temp directory
+
+Example container invocation:
+  docker run --rm --network host --env-file /tmp/pasturestack-ui-smoke.env \
+    -v "$PWD:/repo:ro" -v /path/to/ui-artifacts:/artifacts/ui:ro \
+    mcr.microsoft.com/playwright:v1.56.1-noble \
+    bash -lc 'npm install --prefix /tmp/pw --no-audit --no-fund playwright@1.56.1 >/tmp/pw.log 2>&1; NODE_PATH=/tmp/pw/node_modules /repo/scripts/smoke-ui-candidate-browser /artifacts/ui/1.6.53-candidate.tar.gz'
+USAGE
+}
+
+candidate=${1:-${UI_CANDIDATE_TARBALL:-}}
+ui_root=${UI_ROOT:-}
+
+if [[ -z "$candidate" && -z "$ui_root" ]]; then
+  usage
+  exit 2
+fi
+
+export PASTURESTACK_USER="${PASTURESTACK_USER:-${RANCHER_USER:-}}"
+export PASTURESTACK_PASS="${PASTURESTACK_PASS:-${RANCHER_PASS:-}}"
+
+if [[ -z "$PASTURESTACK_USER" || -z "$PASTURESTACK_PASS" ]]; then
+  echo "PASTURESTACK_CREDENTIAL_ENV_MISSING required=PASTURESTACK_USER,PASTURESTACK_PASS" >&2
+  exit 2
+fi
+
+if ! node -e "require.resolve('playwright')" >/dev/null 2>&1; then
+  echo "PLAYWRIGHT_NODE_MODULE_MISSING install playwright and set NODE_PATH before running this smoke" >&2
+  exit 2
+fi
+
+tmpdir=$(mktemp -d)
+cleanup() {
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+if [[ -n "$candidate" ]]; then
+  if [[ ! -f "$candidate" ]]; then
+    echo "UI_CANDIDATE_TARBALL_MISSING file=$candidate" >&2
+    exit 1
+  fi
+  ui_root="$tmpdir/ui-root"
+  mkdir -p "$ui_root"
+  tar -xzf "$candidate" -C "$ui_root" --strip-components=1
+fi
+
+if [[ ! -f "$ui_root/index.html" ]]; then
+  echo "UI_ROOT_INDEX_MISSING file=$ui_root/index.html" >&2
+  exit 1
+fi
+
+if [[ ! -d "$ui_root/assets" ]]; then
+  echo "UI_ROOT_ASSETS_MISSING dir=$ui_root/assets" >&2
+  exit 1
+fi
+
+export UI_ROOT="$ui_root"
+export UI_SMOKE_BASE="${UI_SMOKE_BASE:-http://127.0.0.1:8098}"
+export PASTURESTACK_API_TARGET="${PASTURESTACK_API_TARGET:-${RANCHER_API_TARGET:-${API_TARGET:-http://127.0.0.1:8080}}}"
+export PASTURESTACK_PROJECT_ID="${PASTURESTACK_PROJECT_ID:-${RANCHER_PROJECT_ID:-1a5}}"
+export UI_SMOKE_OUT_DIR="${UI_SMOKE_OUT_DIR:-$tmpdir/out}"
+
+mkdir -p "$UI_SMOKE_OUT_DIR"
+node "$repo_root/scripts/ui-candidate-browser-smoke.js"

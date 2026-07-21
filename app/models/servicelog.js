@@ -1,7 +1,9 @@
 import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
+import { formatDurationSeconds } from 'ui/utils/date-time';
 
 var ServiceLog = Resource.extend({
+  intl: Ember.inject.service(),
   actions: {
     goToInstance() {
       let id = this.get('instanceId');
@@ -28,14 +30,14 @@ var ServiceLog = Resource.extend({
     return choices;
   }.property('instanceId'),
 
-  runTime: Ember.computed('created', 'endTime', function(){
+  runTime: Ember.computed('created', 'endTime', 'intl._locale', function(){
     if ( this.get('endTime') ) {
       let sec =  moment(this.get('endTime')).diff(this.get('created'), 'seconds');
       if (sec > 0) {
-        return sec + " sec";
+        return formatDurationSeconds(sec);
       }
     } else {
-      return "Running";
+      return this.get('intl').t('serviceLog.running');
     }
   }),
 

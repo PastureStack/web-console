@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+removed_addons = {
+    "ember-cli-inject-live-reload",
+    "ember-cli-sri",
+}
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+for section in ("dependencies", "devDependencies", "overrides"):
+    values = package.get(section, {}) or {}
+    for name in sorted(removed_addons):
+        if name in values:
+            fail("DISABLED_BUILD_ADDON_PRESENT_IN_PACKAGE", section=section, package=name)
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+    package_count = 0
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    for package_path in sorted(packages):
+        for name in removed_addons:
+            if package_path.endswith("node_modules/" + name) or f"node_modules/{name}/" in package_path:
+                fail("DISABLED_BUILD_ADDON_PRESENT_IN_LOCK", package=name, path=package_path)
+    package_count = len(packages)
+
+build_text = Path("ember-cli-build.js").read_text(encoding="utf-8")
+if "SRI" in build_text or "live-reload" in build_text or "liveReload" in build_text:
+    fail("DISABLED_BUILD_ADDON_MARKER_PRESENT", file="ember-cli-build.js")
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_DISABLED_BUILD_ADDON_REMOVAL_OK lockfile={lock_path} package_count={package_count}")
+print("ember-cli-inject-live-reload and ember-cli-sri are absent from the current no-publish UI graph.")
+print("failure_count=0")
+PY

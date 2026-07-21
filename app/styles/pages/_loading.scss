@@ -1,4 +1,7 @@
-/*Rancher Branded*/
+$midGray: null !default;
+$yellowDark: null !default;
+
+/* PastureStack branded loading state */
 .loader {
   position: relative;
   text-align: center;
@@ -26,7 +29,7 @@
   .loadfield,
   .icon-spin {
     animation: none;
-    -webkit-animation:: none;
+    -webkit-animation: none;
   }
 }
 
@@ -81,7 +84,7 @@
   animation:         fade 30s ease-in-out infinite; /* IE 10+, Fx 29+ */
 }
 
-.cow {
+.brand-mark {
   height: 65px;
   margin     : 60px auto;
   position   : relative;

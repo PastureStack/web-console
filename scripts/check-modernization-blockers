@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+failures=0
+
+require_file() {
+  local file=$1
+  if [[ ! -f "$file" ]]; then
+    echo "MISSING_REQUIRED_FILE file=$file"
+    failures=$((failures + 1))
+  fi
+}
+
+require_no_pattern() {
+  local pattern=$1
+  local description=$2
+  shift 2
+  local matches
+  matches=$(grep -RInE "$pattern" "$@" 2>/dev/null || true)
+  if [[ -n "$matches" ]]; then
+    echo "FORBIDDEN_ACTIVE_UI_BUILD_MARKER description=$description"
+    echo "$matches"
+    failures=$((failures + 1))
+  fi
+}
+
+require_file package.json
+require_file bower.json
+require_file docs/modernization.md
+require_file ORIGIN.md
+require_file COMPATIBILITY.md
+
+version=$(python3 - <<'PY'
+import json
+with open('package.json', encoding='utf-8') as f:
+    print(json.load(f).get('version', ''))
+PY
+)
+if [[ "$version" != "1.6.56-pasturestack.4" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.4"
+  failures=$((failures + 1))
+fi
+
+require_no_pattern 'rancher/dind|deb\.nodesource\.com/setup_6|setup_6\.x|phantomjs|npm install -g bower|releases\.rancher\.com/ui' \
+  'EOL or unreviewed upstream artifact build dependency in executable UI entrypoints' \
+  scripts/bootstrap scripts/build scripts/build-static scripts/ci scripts/update-dependencies
+
+if [[ $failures -ne 0 ]]; then
+  echo "failure_count=$failures"
+  exit 1
+fi
+
+cat <<MSG
+UI_MODERNIZATION_GATE_OK version=$version
+Known compatibility-gated UI dependency blockers remain in package.json/bower.json and docs/modernization.md.
+This gate only proves the active CI/bootstrap/build entrypoints no longer execute the EOL Node 6/Bower/PhantomJS/rancher-dind path.
+failure_count=0
+MSG

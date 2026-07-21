@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import json
+from pathlib import Path
+
+repo = Path(__file__).resolve().parents[1]
+package_path = repo / "package.json"
+lock_path = repo / "docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+package = json.loads(package_path.read_text())
+lock = json.loads(lock_path.read_text())
+packages = lock.get("packages", {})
+
+
+def fail(message):
+    raise SystemExit(message)
+
+
+def package_entry(path):
+    item = packages.get(path)
+    if not item:
+        fail(f"missing lock package path: {path}")
+    return item
+
+
+if package.get("devDependencies", {}).get("ember-api-store") != "2.3.5":
+    fail("package.json must pin ember-api-store to 2.3.5")
+
+root_deps = packages.get("", {}).get("devDependencies", {})
+if root_deps.get("ember-api-store") != "2.3.5":
+    fail("lock root must pin ember-api-store to 2.3.5")
+
+api_store = package_entry("node_modules/ember-api-store")
+if api_store.get("version") != "2.3.5":
+    fail(f"lock resolves ember-api-store {api_store.get('version')} instead of 2.3.5")
+
+api_store_deps = api_store.get("dependencies", {})
+if "ember-network" in api_store_deps:
+    fail("ember-api-store must not depend on deprecated ember-network")
+if api_store_deps.get("ember-fetch") != "^3.4.0":
+    fail(f"ember-api-store must depend on ember-fetch ^3.4.0, got {api_store_deps.get('ember-fetch')}")
+if api_store_deps.get("broccoli-file-creator") != "^1.1.1":
+    fail(f"ember-api-store must keep broccoli-file-creator ^1.1.1, got {api_store_deps.get('broccoli-file-creator')}")
+
+ember_fetch = package_entry("node_modules/ember-fetch")
+if ember_fetch.get("version") != "3.4.5":
+    fail(f"lock resolves ember-fetch {ember_fetch.get('version')} instead of 3.4.5")
+
+broccoli_file_creator = package_entry("node_modules/broccoli-file-creator")
+if broccoli_file_creator.get("version") != "1.2.0":
+    fail(f"lock resolves broccoli-file-creator {broccoli_file_creator.get('version')} instead of 1.2.0")
+
+for forbidden in [
+    "node_modules/ember-network",
+    "node_modules/ember-auto-import",
+    "node_modules/eslint",
+    "node_modules/babel-eslint",
+]:
+    if forbidden in packages:
+        fail(f"forbidden dependency returned to lock: {forbidden}")
+
+deprecated = [path for path, item in packages.items() if item.get("deprecated")]
+if len(deprecated) > 24:
+    fail(f"deprecated package count increased above 24: {len(deprecated)}")
+
+if len(packages) > 1189:
+    fail(f"package count increased above 1189: {len(packages)}")
+
+print(
+    "ui-ember-api-store-fetch-upgrade-ok "
+    f"version=2.3.5 ember-fetch=3.4.5 deprecated_count={len(deprecated)} package_count={len(packages)}"
+)

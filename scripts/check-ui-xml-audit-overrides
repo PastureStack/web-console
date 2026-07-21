@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+overrides = package.get("overrides", {})
+if overrides.get("xmldom") != "npm:@xmldom/xmldom@0.9.10":
+    fail("XMLDOM_OVERRIDE_UNEXPECTED", actual=overrides.get("xmldom"), expected="npm:@xmldom/xmldom@0.9.10")
+if overrides.get("xmlhttprequest-ssl") != "4.0.0":
+    fail("XMLHTTPREQUEST_SSL_OVERRIDE_UNEXPECTED", actual=overrides.get("xmlhttprequest-ssl"), expected="4.0.0")
+if "ws" in overrides:
+    fail("WS_OVERRIDE_BLOCKED", reason="ws_8_breaks_socketio_1_6_websocket_smoke")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_PACKAGE_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    for field in ("dependencies", "devDependencies", "engines"):
+        if package.get(field, {}) != root.get(field, {}):
+            fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
+    xmldom = packages.get("node_modules/xmldom")
+    if xmldom and xmldom.get("version") != "0.9.10":
+        fail("XMLDOM_LOCK_VERSION_UNEXPECTED", actual=xmldom.get("version"), expected="absent_or_0.9.10")
+    if xmldom and xmldom.get("name") not in (None, "@xmldom/xmldom"):
+        fail("XMLDOM_LOCK_NAME_UNEXPECTED", actual=xmldom.get("name"), expected="@xmldom/xmldom")
+    xhr = packages.get("node_modules/xmlhttprequest-ssl")
+    if xhr and xhr.get("version") != "4.0.0":
+        fail("XMLHTTPREQUEST_SSL_LOCK_VERSION_UNEXPECTED", actual=xhr.get("version"), expected="absent_or_4.0.0")
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+xml_state = "absent" if "node_modules/xmldom" not in packages else packages["node_modules/xmldom"].get("version")
+xhr_state = "absent" if "node_modules/xmlhttprequest-ssl" not in packages else packages["node_modules/xmlhttprequest-ssl"].get("version")
+print(f"UI_XML_AUDIT_OVERRIDES_OK xmldom={xml_state} xmlhttprequest-ssl={xhr_state} lockfile={lock_path} package_count={package_count}")
+print("The current no-publish UI graph either removes xmldom/xmlhttprequest-ssl through the testem path or resolves them to maintained versions if reintroduced.")
+print("failure_count=0")
+PY

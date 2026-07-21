@@ -1,0 +1,229 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+dev_deps = package.get("devDependencies", {}) or {}
+if "ember-cli-qunit" in dev_deps:
+    fail("EMBER_CLI_QUNIT_STILL_PRESENT")
+if "ember-qunit" in dev_deps:
+    fail("EMBER_QUNIT_STILL_PRESENT")
+if "ember-test-helpers" in dev_deps:
+    fail("EMBER_TEST_HELPERS_STILL_PRESENT")
+if dev_deps.get("qunit") != "2.25.0":
+    fail("DIRECT_QUNIT_VERSION_UNEXPECTED", actual=dev_deps.get("qunit"), expected="2.25.0")
+
+all_test_files = [path for path in Path("tests").rglob("*") if path.is_file()]
+test_files = [path for path in Path("tests").rglob("*.js")]
+if len(all_test_files) < 40:
+    fail("UI_TEST_TOTAL_FILE_COUNT_TOO_LOW", actual=len(all_test_files), minimum=40)
+if len(test_files) < 38:
+    fail("UI_TEST_JS_FILE_COUNT_TOO_LOW", actual=len(test_files), minimum=38)
+
+module_for_count = 0
+module_for_component_count = 0
+direct_qunit_import_count = 0
+for path in test_files:
+    text = path.read_text(encoding="utf-8")
+    module_for_count += len(re.findall(r"\bmoduleFor\s*\(", text))
+    module_for_component_count += len(re.findall(r"\bmoduleForComponent\s*\(", text))
+    direct_qunit_import_count += len(re.findall(r"from ['\"]qunit['\"]", text))
+
+if module_for_count != 0:
+    fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
+if module_for_component_count != 0:
+    fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
+if direct_qunit_import_count != 38:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=38)
+
+direct_qunit_tests = [
+    Path("tests/unit/helpers/date-calendar-test.js"),
+    Path("tests/unit/helpers/date-from-now-test.js"),
+    Path("tests/unit/helpers/date-str-test.js"),
+    Path("tests/unit/helpers/lower-case-test.js"),
+    Path("tests/unit/helpers/nl-to-br-test.js"),
+    Path("tests/unit/helpers/upper-case-test.js"),
+    Path("tests/unit/utils/util-test.js"),
+    Path("tests/unit/bulk-action-handler/service-test.js"),
+    Path("tests/unit/routes/loading-test.js"),
+    Path("tests/unit/routes/index-test.js"),
+    Path("tests/unit/stack/chart/controller-test.js"),
+    Path("tests/unit/stack/chart/route-test.js"),
+    Path("tests/unit/backuptargets/route-test.js"),
+    Path("tests/unit/container/volumes/route-test.js"),
+    Path("tests/unit/container/ports/route-test.js"),
+    Path("tests/unit/container/labels/route-test.js"),
+    Path("tests/unit/storagepools/pools/route-test.js"),
+    Path("tests/unit/pods/container/route-test.js"),
+    Path("tests/unit/pods/login/route-test.js"),
+    Path("tests/unit/pods/hosts/controller-test.js"),
+    Path("tests/unit/pods/hosts/route-test.js"),
+    Path("tests/unit/pods/logout/route-test.js"),
+    Path("tests/unit/routes/fail-whale-test.js"),
+    Path("tests/unit/initializers/extend-ember-input-test.js"),
+    Path("tests/unit/initializers/touch-test.js"),
+    Path("tests/unit/pods/hosts/new/route-test.js"),
+    Path("tests/integration/components/select-tab/component-test.js"),
+]
+for path in direct_qunit_tests:
+    text = path.read_text(encoding="utf-8")
+    if "from 'ember-qunit'" in text or 'from "ember-qunit"' in text:
+        fail("DIRECT_QUNIT_TEST_STILL_IMPORTS_EMBER_QUNIT", file=path)
+    if re.search(r"\bmoduleFor\s*\(", text):
+        fail("DIRECT_QUNIT_TEST_STILL_USES_MODULE_FOR", file=path)
+    if "from 'qunit'" not in text and 'from "qunit"' not in text:
+        fail("DIRECT_QUNIT_TEST_MISSING_DIRECT_QUNIT_IMPORT", file=path)
+
+for path in test_files + [Path("tests/test-helper.js")]:
+    text = path.read_text(encoding="utf-8")
+    if "from 'ember-qunit'" in text or 'from "ember-qunit"' in text:
+        fail("EMBER_QUNIT_IMPORT_REMAINS", file=path)
+
+test_helper = Path("tests/test-helper.js").read_text(encoding="utf-8")
+for phrase in ["import TestLoader from 'ember-cli-test-loader/test-support/index';", "TestLoader.load();"]:
+    if phrase not in test_helper:
+        fail("DIRECT_QUNIT_TEST_HELPER_BOOTSTRAP_MISSING", phrase=phrase)
+
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+bower_deps = bower.get("dependencies", {}) or {}
+if bower_deps:
+    fail("BOWER_DEPENDENCIES_REMAIN", actual=",".join(sorted(bower_deps)))
+
+testem_json = json.loads(Path("testem.json").read_text(encoding="utf-8"))
+if testem_json.get("launch_in_ci") != ["Chrome"]:
+    fail("TESTEM_CI_BROWSER_UNEXPECTED", actual=testem_json.get("launch_in_ci"), expected="Chrome")
+if "PhantomJS" in json.dumps(testem_json):
+    fail("TESTEM_JSON_STILL_REFERENCES_PHANTOMJS")
+chrome_args = testem_json.get("browser_args", {}).get("Chrome", [])
+required_chrome_args = [
+    "--headless=new",
+    "--disable-gpu",
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--remote-debugging-port=0",
+]
+for arg in required_chrome_args:
+    if arg not in chrome_args:
+        fail("TESTEM_CHROME_ARG_MISSING", arg=arg)
+
+testem_js = Path("testem.js").read_text(encoding="utf-8")
+if "PhantomJS" in testem_js or "phantomjs" in testem_js:
+    fail("TESTEM_JS_STILL_REFERENCES_PHANTOMJS")
+for phrase in ['"Chrome"', '"browser_args"', '"--headless=new"']:
+    if phrase not in testem_js:
+        fail("TESTEM_JS_CHROME_HEADLESS_CONFIG_MISSING", phrase=phrase)
+
+build_js = Path("ember-cli-build.js").read_text(encoding="utf-8")
+for phrase in [
+    "node_modules/qunit/qunit/qunit.css",
+    "node_modules/qunit/qunit/qunit.js",
+    "vendor/qunit-module-shim.js",
+    "{ type: 'test' }",
+]:
+    if phrase not in build_js:
+        fail("DIRECT_QUNIT_TEST_SUPPORT_IMPORT_MISSING", phrase=phrase)
+
+qunit_shim = Path("vendor/qunit-module-shim.js")
+if not qunit_shim.is_file():
+    fail("DIRECT_QUNIT_MODULE_SHIM_MISSING", file=qunit_shim)
+else:
+    shim_text = qunit_shim.read_text(encoding="utf-8")
+    for phrase in ["define('qunit'", "exports.module = QUnit.module;", "exports.test = QUnit.test;"]:
+        if phrase not in shim_text:
+            fail("DIRECT_QUNIT_MODULE_SHIM_MARKER_MISSING", phrase=phrase)
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    root = (lock.get("packages", {}) or {}).get("", {})
+    if root.get("devDependencies", {}) != dev_deps:
+        fail("SASS_REPLACEMENT_LOCK_DEV_DEPENDENCIES_DRIFT")
+    packages = lock.get("packages", {}) or {}
+    for package_path in packages:
+        if package_path == "node_modules/ember-cli-qunit" or package_path.startswith("node_modules/ember-cli-qunit/"):
+            fail("EMBER_CLI_QUNIT_STILL_IN_LOCK", path=package_path)
+        if package_path == "node_modules/ember-qunit" or package_path.startswith("node_modules/ember-qunit/"):
+            fail("EMBER_QUNIT_STILL_IN_LOCK", path=package_path)
+        if package_path == "node_modules/ember-test-helpers" or package_path.startswith("node_modules/ember-test-helpers/"):
+            fail("EMBER_TEST_HELPERS_STILL_IN_LOCK", path=package_path)
+    if packages.get("node_modules/qunit", {}).get("version") != "2.25.0":
+        fail("DIRECT_QUNIT_LOCK_VERSION_UNEXPECTED", actual=packages.get("node_modules/qunit", {}).get("version"))
+
+browser_gate = Path("scripts/check-ui-browser-ember-test")
+if not browser_gate.is_file():
+    fail("BROWSER_EMBER_TEST_GATE_MISSING", file=browser_gate)
+else:
+    gate_text = browser_gate.read_text(encoding="utf-8")
+    for phrase in [
+        "node:24-bookworm",
+        "PASTURESTACK_UI_TESTEM_LAUNCHER",
+        "npm ci --ignore-scripts --no-audit --no-fund",
+        "./node_modules/.bin/ember test",
+    ]:
+        if phrase not in gate_text:
+            fail("BROWSER_EMBER_TEST_GATE_MARKER_MISSING", phrase=phrase)
+
+compiler_path = Path("vendor/ember/ember-template-compiler.js")
+if not compiler_path.exists():
+    fail("VENDORED_TEMPLATE_COMPILER_MISSING", file=compiler_path)
+
+environment = Path("config/environment.js").read_text(encoding="utf-8")
+if "templateCompilerPath: 'vendor/ember/ember-template-compiler.js'" not in environment:
+    fail("VENDORED_TEMPLATE_COMPILER_CONFIG_MISSING")
+
+modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
+required_phrases = [
+    "No-Publish Test Harness Blocker Inventory",
+    "No-Publish Low-Risk Route And Service Direct QUnit Migration",
+    "No-Publish Route Model Direct QUnit Migration",
+    "No-Publish Session And Initializer Direct QUnit Migration",
+    "No-Publish Hosts New Direct QUnit Migration",
+    "No-Publish Select Tab Direct QUnit Migration",
+    "No-Publish Browser Ember Test Gate",
+    "No-Publish Ember QUnit Helper Removal",
+    "No-Publish Testem Browser Runtime Modernization",
+    "vendor/ember/ember-template-compiler.js",
+    "ember-cli-qunit",
+    "moduleFor",
+]
+for phrase in required_phrases:
+    if phrase not in modernization:
+        fail("TEST_HARNESS_BLOCKER_DOC_MISSING", phrase=phrase)
+
+ci = Path("scripts/ci").read_text(encoding="utf-8")
+if "./scripts/check-ui-browser-ember-test" not in ci:
+    fail("BROWSER_EMBER_TEST_CI_GATE_MISSING")
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(
+    "UI_TEST_HARNESS_BLOCKERS_RECORDED "
+    f"test_files={len(all_test_files)} js_files={len(test_files)} moduleFor={module_for_count} "
+    f"moduleForComponent={module_for_component_count} directQunitImports={direct_qunit_import_count} "
+    "directQunitTests=27 testemCiBrowser=Chrome vendored_template_compiler=present browserEmberGate=present emberQunitHelpers=removed"
+)
+print("Browser ember test is now a no-publish source gate; generated asset diff and live route smoke remain required before artifact publication.")
+print("failure_count=0")
+PY

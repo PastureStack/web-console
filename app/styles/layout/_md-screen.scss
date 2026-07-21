@@ -1,3 +1,6 @@
+$screen-md: null !default;
+$screen-md-max: null !default;
+
 @media (min-width: $screen-md) {
   .navbar-toggle {
     display: none;

@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+allowed = set()
+
+
+def is_deprecated_warning_family(name, version):
+    version = version or ""
+    if name == "core-js":
+        return not version.endswith("-rc16.0")
+    if name == "glob":
+        return version.startswith(("5.", "7.", "9."))
+    if name == "rimraf":
+        return version.startswith("2.")
+    if name == "exists-sync":
+        return not version.endswith("-rc16.0")
+    if name == "osenv":
+        return not version.endswith("-rc16.0")
+    if name == "source-map-url":
+        return not version.endswith("-rc16.0")
+    if name == "inflight":
+        return not version.endswith("-rc16.0")
+    if name == "lodash.template":
+        return not version.endswith("-rc16.0")
+    if name == "intl-relativeformat":
+        return not version.endswith("-rc16.0")
+    if name == "intl-messageformat-parser":
+        return not version.endswith("-rc16.0")
+    return False
+
+
+hits = []
+for package_path, meta in sorted(lock.get("packages", {}).items()):
+    if not package_path.startswith("node_modules/"):
+        continue
+    name = package_path.split("node_modules/")[-1]
+    version = str(meta.get("version", ""))
+    if is_deprecated_warning_family(name, version):
+        hits.append((name, version, package_path))
+
+unexpected = [hit for hit in hits if hit not in allowed]
+current = [hit for hit in hits if hit in allowed]
+
+if unexpected:
+    for name, version, package_path in unexpected:
+        print(f"UI_DEPRECATED_WARNING_UNEXPECTED name={name} version={version} path={package_path}")
+    print(f"failure_count={len(unexpected)}")
+    sys.exit(1)
+
+by_name = {}
+for name, _, _ in current:
+    by_name[name] = by_name.get(name, 0) + 1
+
+summary = ",".join(f"{name}:{count}" for name, count in sorted(by_name.items()))
+print(f"UI_DEPRECATED_WARNING_BACKLOG_OK current_deprecated_paths={len(current)} max_allowed={len(allowed)} lockfile={lock_path}")
+print(f"known_deprecated_warning_families={summary}")
+print("No unexpected deprecated warning family/path was introduced; removing existing entries is allowed and should not require this gate to keep old paths.")
+print("failure_count=0")
+PY

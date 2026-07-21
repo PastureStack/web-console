@@ -1,13 +1,10 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
 import {
   upperCase
 } from 'ui/helpers/upper-case';
 
-moduleFor('helper:upper-case');
+module('Unit | Helper | upper case');
 
 // Replace this with your real tests.
 test('it works with strings', function(assert) {

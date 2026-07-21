@@ -2,6 +2,8 @@ import Ember from 'ember';
 import C from 'ui/utils/constants';
 
 export default Ember.Component.extend({
+  intl              : Ember.inject.service(),
+
   // Identity or externalId+externalIdType
   identity          : null,
   externalIdType    : null,
@@ -59,7 +61,11 @@ export default Ember.Component.extend({
   displayDescription: function() {
     var out;
     var name = this.get('identity.name');
-    if ( this.get('identity.externalIdType') === C.PROJECT.TYPE_GITHUB_TEAM )
+    if ( name === 'System Service' )
+    {
+      out = this.get('intl').t('identityBlock.systemService');
+    }
+    else if ( this.get('identity.externalIdType') === C.PROJECT.TYPE_GITHUB_TEAM )
     {
       out = name.replace(/:.*/,'') + ' team';
     }
@@ -72,5 +78,5 @@ export default Ember.Component.extend({
       }
     }
     return out;
-  }.property('identity.{externalIdType,name,externalId}'),
+  }.property('identity.{externalIdType,name,externalId}', 'intl._locale'),
 });

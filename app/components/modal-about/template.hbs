@@ -12,41 +12,41 @@
 
   {{#if settings.rancherVersion}}
     <tr>
-      <td data-title="Component"><a href="https://github.com/rancher/rancher" target="_blank">{{settings.appName}}</a></td>
-      <td data-title="Version">{{settings.rancherVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/server" target="_blank" rel="noopener noreferrer">{{settings.appName}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.rancherVersion}}</td>
     </tr>
   {{/if}}
   {{#if settings.cattleVersion}}
     <tr>
-      <td data-title="Component"><a href="https://github.com/rancher/cattle" target="_blank">{{t 'modalAboutComponent.cattle'}}</a></td>
-      <td data-title="Version">{{settings.cattleVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/orchestration-engine" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.cattle'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.cattleVersion}}</td>
     </tr>
   {{/if}}
   {{#if settings.uiVersion}}
     <tr>
-      <td data-title="Component"><a href="https://github.com/rancher/ui" target="_blank">{{t 'modalAboutComponent.ui'}}</a></td>
-      <td data-title="Version">{{settings.uiVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.ui'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.uiVersion}}</td>
     </tr>
   {{/if}}
   {{#if settings.cliVersion}}
     <tr>
-      <td data-title="Component"><a href="https://github.com/rancher/cli" target="_blank">{{settings.appName}} {{t 'modalAboutComponent.cli'}}</a></td>
-      <td data-title="Version">{{settings.cliVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/cli" target="_blank" rel="noopener noreferrer">{{settings.appName}} {{t 'modalAboutComponent.cli'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.cliVersion}}</td>
     </tr>
   {{/if}}
   {{#if settings.composeVersion}}
     <tr>
-      <td data-title="Component"><a href="https://github.com/rancher/rancher-compose" target="_blank">{{settings.appName}} {{t 'modalAboutComponent.compose'}}</a></td>
-      <td data-title="Version">{{settings.composeVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/compose-cli" target="_blank" rel="noopener noreferrer">{{settings.appName}} {{t 'modalAboutComponent.compose'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.composeVersion}}</td>
     </tr>
   {{/if}}
   {{#if settings.goMachineVersion}}
     <tr>
-      <td data-title="Component"><a href="https://github.com/rancher/go-machine-service" target="_blank">{{t 'modalAboutComponent.machineService'}}</a></td>
-      <td data-title="Version">
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/host-provisioner" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.machineService'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">
         {{settings.goMachineVersion}}
         {{#if settings.dockerMachineVersion}}
-          (<a href="https://github.com/docker/machine" target="_blank">{{t 'modalAboutComponent.dockerMachine'}}</a> {{settings.dockerMachineVersion}})
+          (<a href="https://github.com/docker/machine" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.dockerMachine'}}</a> {{settings.dockerMachineVersion}})
         {{/if}}
       </td>
     </tr>

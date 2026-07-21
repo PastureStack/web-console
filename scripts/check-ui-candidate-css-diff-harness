@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+tmpdir=$(mktemp -d)
+cleanup() {
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+make_candidate() {
+  local name=$1
+  local color=$2
+  local root="$tmpdir/$name/1.0.0"
+  mkdir -p "$root/assets"
+  printf '<!doctype html>\n' >"$root/index.html"
+  printf '1.0.0\n' >"$root/VERSION.txt"
+  for css in vendor vendor.rtl ui ui.rtl ui-light ui-light.rtl ui-dark ui-dark.rtl; do
+    printf '.%s { color: %s; }\n' "$css" "$color" >"$root/assets/$css.css"
+  done
+  tar -czf "$tmpdir/$name.tar.gz" -C "$tmpdir/$name" 1.0.0
+}
+
+make_candidate base red
+make_candidate same red
+make_candidate changed blue
+
+./scripts/diff-ui-candidate-css "$tmpdir/base.tar.gz" "$tmpdir/same.tar.gz"
+
+if ./scripts/diff-ui-candidate-css "$tmpdir/base.tar.gz" "$tmpdir/changed.tar.gz" >/tmp/ui-css-diff-negative.out 2>&1; then
+  echo "UI_CSS_DIFF_NEGATIVE_CASE_DID_NOT_FAIL"
+  exit 1
+fi
+
+grep -q "UI_CSS_DIFF_CHANGED file=assets/vendor.css" /tmp/ui-css-diff-negative.out
+grep -q "failure_count=" /tmp/ui-css-diff-negative.out
+
+if [[ ! -x scripts/diff-ui-candidate-css ]]; then
+  echo "UI_CSS_DIFF_SCRIPT_NOT_EXECUTABLE"
+  exit 1
+fi
+
+if ! grep -q "./scripts/check-ui-candidate-css-diff-harness" scripts/ci; then
+  echo "UI_CSS_DIFF_CI_GATE_MISSING"
+  exit 1
+fi
+
+echo "ui-candidate-css-diff-harness-ok"
+echo "failure_count=0"
