@@ -1,27 +1,48 @@
----
-languageName: "فارسی"
-languageContribute: "در ترجمه رنچر کمک کنید!"
+languageName: فارسی (ایران)
+languageContribute: به ترجمه PastureStack کمک کنید
+uiText:
+  process: فرآیند
+  childExecution: اجرای زیرمجموعه
+  webhookExperimental: 'آزمایشی: ویژگی‌های وب‌هوک بیشتری در نسخه‌های بعدی اضافه خواهند شد و قابلیت‌های موجود ممکن است تغییر کنند.'
+  certificateBits: بیت ها
+  redirecting: 'لطفا صبر کنید تا ما شما را به {appName} هدایت کنیم.'
+  secretsExperimental: 'آزمایشی: پشتیبانی Compose و CLI در نسخه بعدی اضافه خواهد شد.'
+  relationIn: 'در:'
+  relationOn: 'روشن:'
+  dockerComposeFile: docker-compose.yml
+  pastureStackCompose: PastureStack Compose
+branding:
+  recoveryNode: '{appName} گره بازیابی'
 generic:
   actions: اکشن ها
   activate: قعال سازی
+  any: هر
   as: به عنوان
   cancel: لغو
   closeModal: بستن
   created: ساخته شد
   default: پیش فرض
   description: توضیح
+  disable: غیر فعال کردن
   disabled: غیر فعال
   domainName: نام دامنه
+  edit: ویرایش کنید
+  emptyString: ''
+  enable: فعال کردن
   enabled: فعال
+  environment: محیط
   expires: منقضی می شود
   healthy: سالم
   id: آیدی
   image: تصویر
   internal: داخلی
   ipAddress: آدرس آی پی
-  loading: "در حال بارگزاری..."
-  missing: "*%یافت نشده%*"
+  limit: محدود کنید
+  loading: در حال بارگزاری...
+  missing: '*%یافت نشده%*'
   moreActions: اکشن های بیشتر
+  noActionsAvailable: هیچ اقدامی در دسترس نیست
+  na: n/a
   name: نام
   none: هیچ یک
   ports: پورت ها
@@ -30,14 +51,18 @@ generic:
   save: ذخیره
   saved: ذخیره شد
   saving: در حال ذخیره سازی
+  search: جستجو کنید
+  selectActionBelow: یک اقدام زیر را انتخاب کنید
   state: وضعیت
   test: تست
   testing: در حال تست
   to: به
+  total: مجموع
   type: نوع
   unknown: ناشناس
-  noo: false
-  yess: true
+  uuid: UUID
+  noo: خیر
+  yess: بله
 accountsPage:
   index:
     header: حساب ها
@@ -48,6 +73,7 @@ accountsPage:
       kind: نوع
       username: نام کاربری
       name: نام
+      identity: هویت
       noData: هنوز حسابی وجود ندارد
       noName: هیچ یک
   new:
@@ -55,20 +81,26 @@ accountsPage:
     form:
       username:
         labelText: نام کاربری برای ورود
-        placeholder: "مثال. jsmith"
+        placeholder: مثال. jsmith
       password:
         labelText: رمز عبور
       name:
         labelText: نام
-        placeholder: "مثال. John Smith"
+        placeholder: مثال. John Smith
       type:
         labelText: نوع حساب
+        dropdownList: null
       description:
         labelText: توضیح
-        placeholder: "مثال. این حساب متعلق به آقای حسینی است"
+        placeholder: مثال. این حساب متعلق به آقای حسینی است
 apiPage:
   header: کلید های API محیط
   actionButton: افزودن کلید API
+  content: >
+    کلیدهای محیط API به این محیط خاص (<code>{displayName}</code>) گره خورده اند و فقط می توانند منابع را در آنجا دستکاری
+    کنند.  سایر حساب‌های دارای دسترسی به این Environment نیز می‌توانند این کلیدها را مدیریت کنند.
+  currentEndpoint: 'نقطه پایانی (v2-beta):'
+  legacyEndpoint: 'نقطه پایانی (v1):'
   table:
     state: وضعیت
     name: نام
@@ -82,21 +114,28 @@ apiPage:
   account:
     header: کلید های API حساب
     buttonText: افزودن کلید API
+    content:
+      paragraph1: کلیدهای حساب API به حساب خاص شما گره خورده است
+      paragraph2: و می تواند تمام محیط‌هایی را که به آنها دسترسی دارید ایجاد، حذف و دستکاری کند.
     table:
-      noData: "شما هنوز هیچ کلیدی ندارید."
+      noData: شما هنوز هیچ کلیدی ندارید.
 auditLogsPage:
+  header: گزارش‌های ممیزی
   form:
     eventType:
       placeholder: نوع رویداد
     resourceType:
-      placeholder: "نوع منبع:"
+      placeholder: 'نوع منبع:'
       dropdownPlaceholder: 'یک منیع انتخاب کنید:'
+      dropdownList: null
     resourceId:
       placeholder: شناسه منبع
     requestIp:
       placeholder: آی پی درخواست
     authType:
-      dropdownPlaceholder: 'یک نوع اهراز هویت انتخاب کنید:'
+      placeholder: 'نوع احراز هویت:'
+      dropdownPlaceholder: 'یک نوع احراز هویت انتخاب کنید:'
+      dropdownList: null
     clearButtonText: پاک کردن فیلتر ها
     searchButtonText: جستجو
   table:
@@ -104,30 +143,52 @@ auditLogsPage:
     eventType: نوع رویداد
     description: توضیح
     environment: محیر
-    resourceTypeId: "نوع منبع:شناسه"
+    resourceTypeId: 'نوع منبع:شناسه'
+    identity: هویت
+    authIp: احراز هویت و IP
+  authTypes:
+    none: هیچ کدام
+    apiKey: API کلید
+    headerAuth: احراز هویت هدر
+    hostRegistration: ثبت نام میزبان
+    tokenAccount: رمز حساب
+    uiSession: UI جلسه
   first: صفحه اول
   next: صفحه بعد
 authPage:
   shibboleth:
+    header:
+      title: Shibboleth احراز هویت
     enabled:
-      header: "{providerName} فعال است"
-      unrestricted: "{appName} تنظیم شده تا به هر کاربر {providerName} دسترسی دهد."
+      header: '{providerName} فعال است'
+      required: >
+        {appName} پیکربندی شده است تا اجازه دسترسی به {orgs, plural, =0 {هیچ سازمانی} =1 {#سازمان} other {# سازمان}} و
+        {users, plural, =0 {بدون کاربر} =1 {# کاربر} other {# کاربر}}.
+      restricted: >
+        {appName} برای اجازه دسترسی به اعضای محیط پیکربندی شده است، {orgs, plural, =0 {هیچ سازمانی} =1 {#سازمان} other
+        {# سازمان}} و {users, plural, =0 {بدون کاربر} =1 {# کاربر} other {# کاربر}}.
+      unrestricted: '{appName} تنظیم شده تا به هر کاربر {providerName} دسترسی دهد.'
       authenticated:
         header:
-          text: اهراز هویت
-          helpText: "برای تغییر Shibboleth application, کنترل دسترسی زیر را غیر فعال کرده و دوباره تنظیم کنید."
+          text: احراز هویت
+          helpText: 'برای تغییر Shibboleth application, کنترل دسترسی زیر را غیر فعال کرده و دوباره تنظیم کنید.'
       disableAccess:
-        warning: '<b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی به هر شهصی که به این صفحه دسترسی یابد کنترل کامل خواهد داد.'
-        confirmDisable: "آیا مطمئن هستید؟  برای تایید عیر فعال سازی دوباره کلیک کنید."
+        header: منطقه خطر&trade;
+        warning: >-
+          <b class="text-danger">احتیاط:</b> غیرفعال کردن کنترل دسترسی، کنترل کامل {appName} را به هر کسی که بتواند به
+          این صفحه یا API دسترسی پیدا کند، می دهد.
+        confirmDisable: آیا مطمئن هستید؟  برای تایید عیر فعال سازی دوباره کلیک کنید.
         disable: غیر فعال سازی کنترل دسترسی
       groupsField: 'گروه ها:'
       displayName: 'نام نمایشی:'
       userName: 'نام کاربری:'
       userId: 'شناسه کاربر:'
     disabled:
-      header: '1. تنظیم حساب Shibboleth'
-      label: "{providerName} تنظیم نشده است"
-      warning: "{appName} می تواند تنظیم شود تا دسترسی به کاربران و گروه های {providerName} را محدود کند. این انکان فعلا تنظیم نشده, بنابراین هر شخصی با دسترسی به این صفحه (یا API) به سیستم کنترل کامل دارد."
+      header: 1. تنظیم حساب Shibboleth
+      label: '{providerName} تنظیم نشده است'
+      warning: >-
+        {appName} می تواند تنظیم شود تا دسترسی به کاربران و گروه های {providerName} را محدود کند. این انکان فعلا تنظیم
+        نشده, بنابراین هر شخصی با دسترسی به این صفحه (یا API) به سیستم کنترل کامل دارد.
       name:
         labelText: نمایش فیلد نام
       username:
@@ -137,161 +198,233 @@ authPage:
       groups:
         labelText: فیلد گروه ها
       testAuth:
-        header: '3. تست و فعال سازی اهراز هویت'
-        subtext: 'از تنظیم بودن برنامه با تست اهراز هویت اطمینان حاصل کنید:'
+        header: 3. تست و فعال سازی احراز هویت
+        subtext: 'از تنظیم بودن برنامه با تست احراز هویت اطمینان حاصل کنید:'
         buttonText:
-          pre: اهراز هویت با IDP
+          pre: احراز هویت با IDP
           post: در انتظار دریافت پاسخ از IDP
+    providerName:
+      shibboleth: Shibboleth
   root:
-    header: Access Control
+    header: کنترل دسترسی
+    providers:
+      activeDirectory: Active Directory
+      azureAd: Azure AD
+      github: GitHub
+      local: حساب های محلی
+      openldap: OpenLDAP
+      shibboleth: Shibboleth
   github:
+    standard: GitHub
+    enterprise: GitHub سازمانی
     header:
       enabled:
-        label: "{github} فعال است"
-        unrestricted: "{appName} تنظیم شده تا به هر کاربر {github} دسترسی دهد."
+        label: '{github} فعال است'
+        required: >
+          {appName} پیکربندی شده است تا اجازه دسترسی به {orgs, plural, =0 {هیچ سازمانی} =1 {#سازمان} other {# سازمان}} و
+          {users, plural, =0 {بدون کاربر} =1 {# کاربر} other {# کاربر}}.
+        restricted: >
+          {appName} برای اجازه دسترسی به اعضای محیط پیکربندی شده است، {orgs, plural, =0 {هیچ سازمانی} =1 {#سازمان} other
+          {# سازمان}} و {users, plural, =0 {بدون کاربر} =1 {# کاربر} other {# کاربر}}.
+        unrestricted: '{appName} تنظیم شده تا به هر کاربر {github} دسترسی دهد.'
       disabled:
         label: GitHub تنظیم نشده است
+        warning: >-
+          {appName} را می توان برای محدود کردن دسترسی به مجموعه ای از کاربران GitHub و اعضای سازمان پیکربندی کرد.  این
+          در حال حاضر تنظیم نشده است، بنابراین هر کسی که به این صفحه (یا API) برسد، کنترل کاملی بر سیستم دارد.
     authenticated:
       header:
-        text: اهراز هویت
+        text: احراز هویت
+        enterpriseHostName: 'میزبان سازمانی:'
         clientId:
-          helpText: "برای تغییر برنامه GitHub, دسترسی کنترل زیر را غیر فعال کرده و دوباره تنظیم کنید."
+          text: 'مشتری ID:'
+          helpText: 'برای تغییر برنامه GitHub, دسترسی کنترل زیر را غیر فعال کرده و دوباره تنظیم کنید.'
       disableAccess:
-        warning: '<b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی به هر کاربری در {appName} اجازه می دهد به این صفحه دسترسی داشته باشد.'
-        confirmDisable: "برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید."
+        header: منطقه خطر&trade;
+        warning: >-
+          <b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی به هر کاربری در {appName} اجازه می دهد به این
+          صفحه دسترسی داشته باشد.
+        confirmDisable: برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید.
         disable: غیر فعال سازی کنترل دسترسی
     notAuthenticated:
-      header: "1. تنظیم یک برنامه GitHub"
+      header: 1. تنظیم یک برنامه GitHub
       ul:
         li1:
-          text: 'برای GitHub استاندارد, <a href="https://github.com/settings/developers" target="_blank">کلیک کنید</a>.'
+          text: 'برای GitHub استاندارد, <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer">کلیک کنید</a>.'
           ul:
-            li1: "برای Github Enterprise, وارد حساب کاربری خود شوید. ابتدا روی تنظیمات کلیک کرده, سپس وارد برنامه ها شوید."
+            li1: 'برای Github Enterprise, وارد حساب کاربری خود شوید. ابتدا روی تنظیمات کلیک کرده, سپس وارد برنامه ها شوید.'
         li2:
           text: ' "Register new application" را انتخاب و فرم را پر کنید:'
           ul:
             li1: '<b>نام Application :</b> <span class="text-muted">Anything you like, مثال. My {appName}</span>'
             li2: '<b>آدرس صفحه خانه: </b> '
             li3: '<b>توضیحات Application:</b> <span class="text-muted">پر کردن این گزینه دلخواه است</span>'
+            li4: پاسخ تماس مجوز URL
         li3:
           text: '"ثبت Application" را انتخاب کنید '
       form:
-        header: '2. تنظیم {appName} برای استفاده از اپلیکیشن شما برای اهراز هویت'
-        subtext: 'Client ID و Secret را از قسمت بالا-سمت راست کپی و پیست کرده.'
+        header: '2. تنظیم {appName} برای استفاده از اپلیکیشن شما برای احراز هویت'
+        subtext: Client ID و Secret را از قسمت بالا-سمت راست کپی و پیست کرده.
         clientId:
           labelText: شناسه کلاینت
+        clientSecret:
+          labelText: راز مشتری
+        ghEnterprise:
+          labelText: از نصب خصوصی GitHub Enterprise استفاده کنید
         isGHEnterprise:
           labelText: استفاده از اتصال امن
         enterpriseHost:
-          labelText: هاست Enterprise
-          placeholder: 'مثال. github.example.com'
+          labelText: میزبان Enterprise
+          placeholder: مثال. github.example.com
     testAuth:
-      header: '3. تست و فعال سازی اهراز هویت'
+      header: 3. تست و فعال سازی احراز هویت
+      subtext: 'با آزمایش احراز هویت با آن، بررسی کنید که برنامه شما به درستی پیکربندی شده است:'
       buttonText:
-        pre: اهراز هویت with GitHub
+        pre: احراز هویت با GitHub
         post: در انتظار پاسخ از GitHub
   azuread:
     header:
-      enabled: 'اهراز هویت Azure AD <b>فعال است</b>'
-      disabled: 'اهراز هویت Azure AD <b class="text-warning">تنظیم نشده است</b>'
+      enabled: احراز هویت Azure AD <b>فعال است</b>
+      disabled: احراز هویت Azure AD <b class="text-warning">تنظیم نشده است</b>
     subtext:
-      disabled: '{appName} می تواند تنظیم شود تا دسترسی به برخی حساب ها که در دیتابیس تعریف شده اند را محدود کند. این کار هنوز انجام نشده، بنابراین هر شخصی با دسترسی به این صفحه،  به سیستم کنترل کامل دارد.'
+      enabled: '{appName} برای اجازه دسترسی به حساب‌های موجود در Azure AD پیکربندی شده است.'
+      disabled: >-
+        {appName} می تواند تنظیم شود تا دسترسی به برخی حساب ها که در دیتابیس تعریف شده اند را محدود کند. این کار هنوز
+        انجام نشده، بنابراین هر شخصی با دسترسی به این صفحه،  به سیستم کنترل کامل دارد.
     enabled:
-      warning: '<b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی دسترسی کامل به {appName} را به هر شخصی که به این صفحه دسترسی پیدا کند می دهد'
-      reallyDisable: 'آیا مطمئن هستید؟  برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید'
+      header: منطقه خطر&trade;
+      warning: >-
+        <b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی دسترسی کامل به {appName} را به هر شخصی که به این
+        صفحه دسترسی پیدا کند می دهد
+      reallyDisable: آیا مطمئن هستید؟  برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید
       promptDisable: غیر فعال سازی کنترل دسترسی
     configure:
-      header: '1. تنظیم Azure AD Account'
+      header: 1. تنظیم Azure AD Account
+      tenantId:
+        label: مستاجر ID
+        placeholder: یک رشته طولانی UUID
+        help: از پورتال Azure AD
       clientId:
         label: شناسه کلاینت
+        placeholder: یک رشته طولانی UUID
       domain:
         label: دامنه
         placeholder: مثال. youcompany.onmicrosoft.com
       adminAccountUsername:
         label: نام کاربری مدیر
-        placeholder: مثال. rancher-admin
+        placeholder: به عنوان مثال چراگاه-مدیر
         help: کاربری که می تواند اطلاعات کاربران دیگر را بخواند
       adminAccountPassword:
         label: رمز عبور مدیر
     test:
-      header: '2. تست و فعال سازی اعراز هویت'
+      header: 2. تست و فعال سازی اعراز هویت
+      help: 'با آزمایش احراز هویت با حساب خود، بررسی کنید که همه چیز به درستی پیکربندی شده است:'
       username:
         label: نام کاربری
-        placeholder: 'مثال. jsmith'
+        placeholder: مثال. jsmith
       password:
         label: رمز عبور
-      pre: اهراز هویت با Azure
+      pre: احراز هویت با Azure
       post: در انتظار پاسخ از Azure
   localAuth:
     header:
-      enabled: 'اهراز هویت لوکال <b>فعال است</b>'
-      disabled: 'اهراز هویت لوکال <b class="text-warning">تنظیم نشده است</b>'
+      enabled: احراز هویت لوکال <b>فعال است</b>
+      disabled: احراز هویت لوکال <b class="text-warning">تنظیم نشده است</b>
     subtext:
       enabled:
+        text: '{appName} برای اجازه دسترسی به حساب‌های موجود در پایگاه داده محلی خود پیکربندی شده است.'
         linkText: مدیریت حساب ها
-      disabled: '{appName} می تواند تنظیم شود تا دسترسی به برخی حساب ها که در دیتابیس تعریف شده اند را محدود کند. این کار هنوز انجام نشده، بنابراین هر شخصی با دسترسی به این صفحه،  به سیستم کنترل کامل دارد.'
+      disabled: >-
+        {appName} می تواند تنظیم شود تا دسترسی به برخی حساب ها که در دیتابیس تعریف شده اند را محدود کند. این کار هنوز
+        انجام نشده، بنابراین هر شخصی با دسترسی به این صفحه،  به سیستم کنترل کامل دارد.
     accessEnabled:
-      header: 'خطر&trade;'
-      warning: '<b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی دسترسی کامل به {appName} را به هر شخصی که به این صفحه دسترسی پیدا کند می دهد'
+      header: خطر&trade;
+      warning: >-
+        <b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی دسترسی کامل به {appName} را به هر شخصی که به این
+        صفحه دسترسی پیدا کند می دهد
       buttonText:
-        disable: 'آیا مطمئن هستید؟  برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید'
+        disable: آیا مطمئن هستید؟  برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید
         prompt: غیر فعال سازی کنترل دسترسی
     accessDisabled:
-      header: '1. ایجاد کاربر ادمین'
+      header: 1. ایجاد کاربر ادمین
       helpText: 'این کاربر در {appName} کنترل کامل خواهد داشت.'
       form:
         login:
           labelText: نام کاربری برای ورود
-          placeholder: 'مثال. jsmith'
+          placeholder: مثال. jsmith
         name:
           labelText: نام کامل
-          placeholder: 'مثال. John Smith'
+          placeholder: مثال. John Smith
         password:
           labelText: رمز عبور
         confirmPassword:
           labelText: تایید رمز عبور
     accessControl:
-      header: '2. فعال سازی کنترل دسترسی'
-      helpText: 'برای فعال سازی کنترل دسترسی کلیک کرده و وارد شوید.'
+      header: 2. فعال سازی کنترل دسترسی
+      helpText: برای فعال سازی کنترل دسترسی کلیک کرده و وارد شوید.
       buttonText:
-        pre: فعال سازی اهراز هویت لوکال
-        post: 'در حال فعال سازی...'
-  0:
-    header: کنترل دسترسی
+        pre: فعال سازی احراز هویت لوکال
+        post: در حال فعال سازی...
 backupTargetsPage:
+  header: اهداف پشتیبان
   linkTo: افزودن Backup Target
   newTarget:
+    hr: NFS گزینه های پیکربندی
     header: افزودن Backup Target
   server:
-    placeholder: 'مثال. my-nfs-server.example.com'
+    label: NFS سرور
+    placeholder: مثال. my-nfs-server.example.com
   share:
-    placeholder: 'مثال. /mnt/volume-backups'
+    label: NFS به اشتراک بگذارید
+    placeholder: مثال. /mnt/volume-backups
   mountOptions:
+    label: NFS گزینه های نصب
     placeholder: 'مثال. nfsvers=4,proto=udp'
 catalogPage:
   index:
     header: 'کاتالوگ:'
+    manage: مدیریت کنید
     search:
       placeholder: جستجو...
-    category: "دسته بندی:"
+    category: 'دسته بندی:'
+    certified:
+      rancher:
+        rancher: نگهدارنده اصلی بالادست
+        partner: رسمی
+      pl:
+        rancher: هسته
+        partner: رسمی
     noData:
       singular: هیچ templates سازگاری وجود ندارد.
       plural: هیچ templates سازگاری در این کاتالوگ وجود ندارد.
+    action:
+      launch: مشاهده جزئیات
+      notCompatible: سازگار نیست
+      alreadyDeployed: قبلا مستقر شده است
 consolePage:
+  header: 'پوسته:'
   closeButton: بستن
 certificatesPage:
   table:
     cn: نام دامنه
+    expiresDate: منقضی می شود
     noCn: هیچ یک
+    otherNames: '{count, plural, =1 {# نام دیگر} other {# نام دیگر}}'
   detail:
+    header: 'گواهی:'
     description: توضیح
     info:
       labelText: اطلاعات
+      valid: شروع معتبر
+      expires: منقضی می شود
+      algorithm: الگوریتم
+      issuer: صادر کننده
       serialNumber: شماره سریال
       version: نسخه
     domainNames:
       labelText: نام های دامنه
   index:
+    header: گواهینامه ها
     linkTo: افزودن Certificate
     table:
       header:
@@ -307,16 +440,23 @@ certificatesPage:
       name:
         placeholder: مثال. mydomain.com
       description:
-        placeholder: مثال. EV cert for mydomain.com
+        placeholder: 'برای مثال: گواهی EV برای mydomain.com'
 containersPage:
   table:
     ipAddress: آدرس آی پی
+    primaryHost: میزبان اصلی
     primaryHostUnknown: ناشناخته
     image: تصویر
+    stats: آمار
+    sparkPrefixCpu: 'CPU: '
+    sparkPrefixMemory: 'حافظه: '
+    sparkPrefixNetwork: 'شبکه: '
+    sparkPrefixStorage: 'ذخیره سازی: '
     command: دستور
     noCommand: هیچ یک
   index:
-    linkTo: افزودن Container
+    header: کانتینرها
+    linkTo: افزودن کانتینر
     table:
       header:
         state: وضعیت
@@ -327,6 +467,7 @@ containersPage:
         command: دستور
       body:
         noData: شما هنوز هیچ containers ندارید.
+        noMatch: هیچ کانتینری با جستجوی فعلی مطابقت ندارد
   new:
     form:
       name:
@@ -334,23 +475,41 @@ containersPage:
       description:
         placeholder: مثال. My Application
   containerPage:
+    header: 'کانتینر:'
     subtext:
-      "on": true
+      on: در
+      in: در
     infoMultiStats:
+      created: 'ایجاد شده:'
       tooltip:
         host: کپی گرفتن از IP
       host: 'میزبان:'
+      ip: 'کانتینر IP:'
+      docker: 'Docker ID:'
       image: 'تصویر:'
       command: 'دستور:'
+      entryPoint: 'نقطه ورود:'
       description: 'توضیح:'
+      stack: 'پشته/سرویس:'
+      memoryReservation:
+        labelText: 'رزرو حافظه: '
+      milliCpuReservation:
+        labelText: 'mCPU رزرو: '
     navTabs:
-      labels: برچسب ها
+      labels: برچسب‌ها
+      volumes: حجم ها
       ports: پورت ها
       command: دستور
+      networking: شبکه سازی
+      healthCheck: بررسی سلامت
+      scheduling: برنامه ریزی
+      security: امنیت
     portsTab:
       table:
         header:
           ip: آدرس آی پی
+          public: عمومی در میزبان
+          private: خصوصی در کانتینر
           protocol: پروتوکل
         body:
           noData: این container هیچ پورتی ندارد.
@@ -358,74 +517,113 @@ containersPage:
       table:
         header:
           name: نام
+          mount: نقطه کوه
+          shared: به اشتراک گذاشته شده با
           writable: قابل نوشتن
+          snapshot: جدول زمانی اسنپ شات
         body:
           error:
             data: 'توجه:'
             error: خطا
+            noData: این کانتینر حجمی ندارد
+          noContainers: کانتینرها دیگری وجود ندارد
+containerSubpod:
+  childContainers: کانتینرها
+  childSidekicks: سایدکیکس
+dockerCLI:
+  header: Swarm CLI
 failWhalePage:
   header: خطا
   reloadButton: |
     <a href="#" onclick="window.location.href = window.location.href; return false;">بارگزاری مجدد</a> یا
   logoutButton: خروج
+haPage:
+  header: در دسترس بودن بالا
+  setup:
+    prefix: >-
+      چندین کانتینر سرور را می توان بر روی میزبان های مختلف مستقر کرد تا {appName} حتی در صورت خرابی یکی از میزبان ها به کار
+      خود ادامه دهد.
+    link: مستندات را ببینید
+    suffix: ' برای اطلاعات در مورد راه اندازی و استفاده'
+  table:
+    address: آدرس آگهی شده
+    port: بندر
+    heartbeat: آخرین بازدید
+    clustered: خوشه ای
+helpBtn:
+  title: به مستندات بروید
 helpPage:
-  header: اطلاعات و پیوند های مفید
+  header: راهنما و پیوندهای مفید
+  banner: اطلاعیه ها
+  releaseText: 'منتشر شد:'
   environment:
     header: محیط چیست؟
-    manageLink: مدیریت محیط ها
+    content: >
+      <p>{appName} امکان گروه‌بندی منابع در چند محیط را فراهم می‌کند. هر محیط مجموعه مستقلی از سرویس‌ها و منابع زیرساختی دارد
+      و به یک یا چند کاربر، تیم یا سازمان اختصاص می‌یابد.</p>
+        <p> برای مثال، ممکن است محیط‌های جداگانه «dev»، «test» و «production» ایجاد کنید تا چیزها را از یکدیگر جدا نگه دارید، و به «dev» اجازه دسترسی به کل سازمان خود بدهید، اما محیط «تولید» را به یک تیم کوچک‌تر محدود کنید.</p>
+    manageLink: مدیریت محیط‌ها
   host:
-    header: هاست چیست؟
+    header: میزبان چیست؟
+    content: >
+      پیش از افزودن نخستین سرویس یا راه‌اندازی یک کانتینر، دست‌کم یک میزبان Linux با نسخه سازگار Docker اضافه کنید. میزبان باید بتواند از طریق HTTP به سرور {appName} متصل شود. {appName} از میزبان‌های مجازی و فیزیکی Linux در ابرهای عمومی، ابرهای خصوصی و محیط‌های سخت‌افزاری پشتیبانی می‌کند.
     contentLink: اطلاعات بیشتر
-    addHostLink: افزودن Host
+    addHostLink: افزودن میزبان
   stacks:
+    header: پشته‌ها و سرویس‌ها چه هستند؟
     content:
+      paragraph1: >
+        یک سرویس به سادگی مجموعه‌ای از کانتینرها است که از همان تصویر Docker ایجاد شده‌اند، اما مفهوم «پیوند» Docker را
+        گسترش می‌دهد تا از سرویس DNS توزیع‌شده و سبک {appName} برای کشف سرویس استفاده کند. سرویس‌ها را می‌توان به‌صورت
+        جداگانه یا با استقرار یک مورد از کاتالوگ اضافه کرد.
+      paragraph2: >-
+        هر سرویس می‌تواند از قابلیت‌های داخلی {appName} مانند متعادل‌کننده بار، پایش سلامت، پشتیبانی از ارتقا و دسترس‌پذیری بالا استفاده کند.
       link: اطلاعات بیشتر
-    addServiceLink: مدیریت سرویس ها
+    addServiceLink: مدیریت سرویس‌ها
     addCatalogLink: افزودن از کاتالوگ
-    noHosts: شما در حال حاضر هیچ هاستی ندارید. لطفا قبل از افزودن سرویس ها یک هاست اضافه کنید.
-    manageServiceLink: مدیریت سرویس ها
+    noHosts: در حال حاضر هیچ میزبانی ندارید. لطفاً پیش از افزودن سرویس، یک میزبان اضافه کنید.
+    manageServiceLink: مدیریت سرویس‌ها
   issues:
     header:
-      text: مشکشلات & مستندات
-      tagline: مشکلی یافته اید?
+      text: مشکلات و مستندات
+      tagline: مشکلی پیدا کرده‌اید؟
       fileBug: گزارش مشکل
     content:
+      paragraph1: >
+        {appName} یک پلت فرم نرم افزار منبع باز است که زیرساخت هدفمندی را برای اجرای کانتینرها در تولید پیاده سازی می
+        کند. کانتینرهای Docker، به‌عنوان یک حجم کاری برنامه‌ای که به طور فزاینده‌ای محبوب می‌شود، نیازمندی‌های جدیدی را
+        در خدمات زیرساختی مانند شبکه، ذخیره‌سازی، متعادل‌کننده بار، امنیت، کشف خدمات و مدیریت منابع ایجاد می‌کند.
       graphic1:
-        text: مشکلی پیدا کرده اید؟
-        link: گزارش مشکلی در GitHub.
+        text: مشکلی پیدا کرده‌اید؟
+        link: گزارش مشکل در GitHub
       graphic2:
         text: برای اطلاعات بیشتر
-        link: |
-          <a href="{docsLink}" target="_blank">در مورد {appName} مستندات ما را مشاهده کنید.</a>
-          <br/>or <a href="{companyLink}/learn/" target="_blank">مشاهده مستندات</a>
+        link: مستندات
       graphic3:
         text: نیاز به راهنمایی دارید؟
-  forums:
-    header: از تالار های گفتگو
-    tagline: به مکالمه بپیوندید
-    buttonText: در تالار های گفتگو
-    announcements:
-      buttonText: مشاهده موضوعات بیشتر در مورد Annoucement
-    general:
-      buttonText: مشاهده موضوعات بیشتر در مورد General
-    rancherOs:
-      buttonText: مشاهده موضوعات بیشتر در مورد RancherOS
-    rancher:
-      buttonText: مشاهده موضوعات بیشتر در مورد Rancher
-    convoy:
-      buttonText: مشاهده موضوعات بیشتر در مورد Convoy
+        link: پرسش‌های متداول را بررسی کنید
+  commercial:
+    header: پشتیبانی تجاری
+    content: |
+      PastureStack توسط جامعه نگهداری می‌شود و ادعای ارائه پشتیبانی تجاری ندارد.
 hostsPage:
-  addContainer: افزودن Container
+  addContainer: افزودن کانتینر
   index:
-    header: میزبان ها
-    addHost: افزودن هاست
+    header: میزبان‌ها
+    addHost: افزودن میزبان
     tooltip:
       listView: لیست
+      groupedView: پشته‌ها و دسته های جانبی گروه بندی شده
+    columns:
+      emptyMessage: هنوز میزبان یا کانتینری وجود ندارد.
     showSystem: نمایش سیستم
   new:
+    customDriver: میزبان سفارشی
+    otherDriver: درایور دستگاه دیگر
     header:
       linkTo: 'میزبان: '
       text: افزودن میزبان
+    manageLink: درایورهای دستگاه موجود را مدیریت کنید
     form:
       name:
         placeholder: مثال. host01
@@ -433,12 +631,28 @@ hostsPage:
     header:
       linkTo: 'میزبان:'
     addContainer:
-      linkTo: افزودن Container
+      linkTo: افزودن کانتینر
     infoMultiStats:
+      ip: 'IP:'
+      cpu: 'CPU:'
+      memory: 'حافظه:'
+      storage: 'ذخیره سازی:'
+      provider:
+        labelText: 'ارائه دهنده:'
+        noHost: سفارشی
+      kernel: 'هسته:'
+      docker: 'Docker:'
+      os: 'OS:'
       description: 'توضیح:'
+      milliCpu:
+        labelText: mCPU
+      localStorageMb:
+        labelText: محدودیت محلی
     navTabs:
+      containers: کانتینرها
       ports: پورت ها
-      labels: برچسب ها
+      labels: برچسب‌ها
+      storage: ذخیره سازی
     containersTab:
       table:
         header:
@@ -446,32 +660,70 @@ hostsPage:
           name: نام
           ip: آدرس آی پی
           image: تصویر (Command)
+          stats: آمار
         body:
-          noData: این هاست هیچ containers ندارد.
+          noData: این میزبان هیچ containers ندارد.
     portsTab:
       table:
         header:
           ip: آدرس آی پی
+          port: بندر
           service: سرویس
+          container: کانتینر
         body:
-          noData: این هاست هیچ پورتی ندارد.
+          noData: این میزبان هیچ پورتی ندارد.
     storageTab:
       table:
         header:
           state: وضعیت
           hostPath: میزبان Path
+          mounts: سوار می شود
         body:
-          noData: این هاست هیچ volumes ندارد.
+          noData: این میزبان هیچ volumes ندارد.
+iePage:
+  unsupported: اینترنت اکسپلورر پشتیبانی نمی شود.
 k8sTab:
+  dashboard:
+    header: Kubernetes داشبورد
+    dashboard:
+      header: داشبورد
+      content: >-
+        Kubernetes داشبورد یک هدف عمومی و مبتنی بر وب UI برای خوشه‌های Kubernetes است. این به کاربران اجازه می دهد تا
+        برنامه های در حال اجرا در کلاستر را مدیریت کرده و آنها را عیب یابی کنند و همچنین خود خوشه را مدیریت کنند.
+      button: Kubernetes UI
   kubectl:
+    header: Kubernetes CLI
     stepOne:
+      generateConfigText: >
+        برای استفاده از <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">kubectl</a> (فقط نسخه 1.4+) در ایستگاه کاری خود، روی
+        دکمه برای ایجاد یک کلید و فایل پیکربندی API کلیک کنید:
       generateButton: تولید تنظیمات
     stepTwo:
       progress: در حال تولید...
+    stepThree:
+      helpText: |
+        این را در <code>~/.kube/config</code> قرار دهید:
+      downloadText: >
+        سپس <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer"></a> را دانلود کنید (در صورت نیاز) و <code>kubectl</code> را اجرا
+        کنید
+    shell:
+      helpText: |
+        یا از این پوسته مفید برای اجرای مستقیم دستورات <code>kubectl</code> استفاده کنید:
 loginPage:
-  greeting: "سلام!<br>به {appName} خوش آمدید"
-  githubMessage: "{appName} از GitHub برای مدیریت حساب ها و تیم ها استفاده می کند.  دکمه زیر را فشار دهید و وارد شوید و به ما دسترسی خواندن اطلاعات اولیه خساب GitHub تان را بدهید."
-  shibbolethMessage: "{appName} از Shibboleth  برای مدیریت حساب ها استفاده می کند. برای ورود به Shibboleth IDP بر روی دکمه زیر کلیک کنید."
+  greeting: 'سلام!<br>به {appName} خوش آمدید'
+  githubMessage: >-
+    {appName} از GitHub برای مدیریت حساب ها و تیم ها استفاده می کند.  دکمه زیر را فشار دهید و وارد شوید و به ما دسترسی
+    خواندن اطلاعات اولیه خساب GitHub تان را بدهید.
+  shibbolethMessage: '{appName} از Shibboleth  برای مدیریت حساب ها استفاده می کند. برای ورود به Shibboleth IDP بر روی دکمه زیر کلیک کنید.'
+  shibbolethError:
+    '401': غیر مجاز
+    '403': ممنوع
+    '422': موجودیت غیر قابل پردازش
+    '500': خطای سرور داخلی
+    generic: 'هنگام تلاش برای ورود به سیستم، خطایی ({errorCode}) روی داد. لطفاً دوباره امتحان کنید.'
+  error:
+    authFailed: نام کاربری یا رمز عبور اشتباه است.
+    timedOut: زمان جلسه شما به پایان رسیده است.  برای ادامه دوباره وارد شوید.
 machinePage:
   header: درایور های ماشین
   inactive: غیر فعال
@@ -480,19 +732,26 @@ machinePage:
   upgrading: در حال ارتقا
   activating: در حال فعال سازی
   viewUi: مشاهده رابط کاربری
-  subtext: "<code>docker-machine</code> های اضافی می توانند اینجا بارگزاری شده و در صفحه افزودن هاست استفاده شوند."
+  subtext: <code>docker-machine</code> های اضافی می توانند اینجا بارگزاری شده و در صفحه افزودن میزبان استفاده شوند.
   add: افزودن درایور ماشی
+  builtin: ساخته شده در
   other: دیگر
   table:
     header:
       state: وضعیت
       name: نام
+      url: درایور URL
+      uiUrl: UI URL
+      checksum: چک جمع
     noData: شما هیچ درایور ماشینی ندارید
 mesosPage:
+  header: نمای کلی
   actionLink: باز کردن Mesos UI
   banner:
     header: cluster شما
-    link: مشاهده یا افزودن هاست
+    content: |
+      شما در حال حاضر دارید {hosts, plural, =1 {# میزبان فعال} other {# میزبان فعال}} در خوشه Mesos شما
+    link: مشاهده یا افزودن میزبان
   launch:
     header: اجرا
     content: شما می توانید فریموورک ها را از کاتالوگ ما اجرا کنید.
@@ -500,21 +759,42 @@ mesosPage:
   manage:
     header: مدیریت
     content: مدیریت Mesos از Mesos UI.
+    button: Mesos UI
 notFoundPage:
-  header: "چنین صفحه ای وجود ندارد"
+  header: چنین صفحه ای وجود ندارد
   linkTo: خانه
 projectList:
   index:
-    header: محیط ها
-    subtext: |
-      <p>{appName} supports grouping resources into multiple <b>environments</b>.  Each one gets its own set of services and infrastructure resources, and is owned by one or more GitHub users, teams or organizations.</p>
-      <p>For example, you might create separate &quot;dev&quot;, &quot;test&quot;, and &quot;production&quot; environments to keep things isolated from each other, and give &quot;dev&quot; access to your entire organization but restrict the &quot;production&quot; environment to a smaller team.</p>
+    header: محیط‌ها
+    new: افزودن محیط
+    subtext: >
+      <p>{appName} امکان گروه‌بندی منابع در چند <b>محیط</b> را فراهم می‌کند. هر محیط مجموعه مستقلی از
+      سرویس‌ها و منابع زیرساختی دارد و به یک یا چند کاربر یا گروه اختصاص می‌یابد.</p>
+
+      <p>برای مثال، می‌توانید محیط‌های جداگانه «dev»، «test» و «production» بسازید، دسترسی سازمان را به «dev» بدهید
+      و دسترسی به محیط «production» را به یک تیم کوچک‌تر محدود کنید.</p>
     alert: محیط فعالی یافت نشد. شما قبل از هر کاری ابتدا باید یک محیط را فعال یا ایجاد کنید.
     table:
+      header:
+        orchestration: ارکستراسیون
+        projectTemplate: الگو
       body:
-        noData: "شما هیچ محیطی ندارید."
+        noData: شما هیچ محیطی ندارید.
+  indexTemplate:
+    header: قالب های محیطی
+    new: اضافه کردن الگو
+    subtext: |
+      <p>یک الگوی محیطی به کاربران امکان می دهد خدمات زیرساختی را برای استقرار انتخاب کنند.</p>
+      <p>خدمات زیرساخت شامل هماهنگی کانتینر، شبکه، بررسی سلامت، DNS، ابرداده، زمان‌بندی، کشف خدمات و ذخیره‌سازی است.</p>
+    table:
+      header:
+        stacks: پشته‌ها
+        isPublic: عمومی
+      body:
+        noData: شما هنوز هیچ قالب محیطی ندارید
 registriesPage:
   index:
+    header: رجیستری ها
     linkTo: افزودن Registry
     table:
       header:
@@ -523,13 +803,15 @@ registriesPage:
         email: ایمیل
         username: نام کاربری
         created: ساخته شد
+      body:
+        noData: شما هنوز هیچ ثبتی ندارید
   new:
     header: افزودن Registry
     form:
       custom:
         labelText: آدرس
         placeholder: مثال. registry.example.com
-        help: 'فقط نام هاست یا آدرس آی پی, پروتوکل را وارد نکنید (https://)'
+        help: 'فقط نام میزبان یا آدرس آی پی, پروتوکل را وارد نکنید (https://)'
       email:
         labelText: ایمیل
         placeholder: مثال. you@example.com
@@ -539,28 +821,49 @@ registriesPage:
       password:
         labelText: رمز عبور
         placeholder: مثال. password
+secretsPage:
+  index:
+    header: اسرار
+    linkTo: راز را اضافه کنید
+    noData: شما هنوز هیچ رازی ندارید
+    noMatch: هیچ رازی با جستجوی فعلی مطابقت ندارد
 servicePage:
   header: 'سرویس:'
   multistat:
     type: 'نوع:'
+    fqdn: 'FQDN:'
+    scale: 'مقیاس:'
     image: 'تصویر:'
+    entryPoint: 'نقطه ورود:'
     command: 'دستور:'
     description: 'توضیح:'
     global: سراسری
+  external:
+    externalIp: خارجی IPs
+    externalHostname: 'نام میزبان خارجی:'
   navTabs:
+    portRules: قوانین متعادل کننده
+    certificates: گواهینامه ها
     ports: پورت ها
-    labels: برچسب ها
+    containers: کانتینرها
+    labels: برچسب‌ها
     links: پیوند ها
+    log: ورود به سیستم
   containersTab:
     table:
       header:
         ipAddress: آدرس آی پی
         host: میزبان
         image: تصویر
+        stats: آمار
       body:
         noData: این سرویس هنوز containers ای ندارد.
   linksTab:
     header: پیوند ها
+    noData: بدون لینک
+  certsTab:
+    default: گواهی پیش فرض
+    additional: گواهی‌های SNI اضافی
   new:
     form:
       name:
@@ -572,8 +875,9 @@ servicePage:
       name:
         placeholder: مثال. myapp
       description:
-        placeholder: مثال. Current version of MyApp
+        placeholder: 'برای مثال: نسخه فعلی MyApp'
   newBalancer:
+    upgradeImage: 'تصویر نرم افزار متعادل کننده از <code>{from}</code> به <code>{to}</code> ارتقا می یابد.'
     form:
       name:
         placeholder: مثال. website
@@ -594,37 +898,67 @@ servicePage:
         level: سطح
         event: رویداد
         description: توضیح
+      body:
+        noData: هنوز هیچ رویداد گزارشی وجود نداشته است.
+  type:
+    service: خدمات
+    scalinggroup: گروه مقیاس بندی
+    loadbalancerservice: متعادل کننده بار
+    dnsservice: نام مستعار سرویس
+    externalservice: خارجی
+    kubernetesservice: سرویس K8s
+    composeservice: Compose سرویس
+    networkdriverservice: خدمات شبکه
+    storagedriverservice: سرویس ذخیره سازی
+settingsPage:
+  header: تنظیمات
 stacksPage:
   header:
-    all: همه Stacks
-    user: Stack های کاربر
-  actionButton: افزودن Stack
+    all: همه پشته‌ها
+    user: پشته‌های برنامه
+    custom: '{name} پشته‌ها'
+    tags: 'پشته‌های "{tags}".'
+    infra: پشته‌های زیرساخت
+  actionButton: افزودن پشته برنامه
   catalogButton: افزودن fاز کاتالوگ
   sort:
     label: مرتب سازی بر اساس
     state: وضعیت
     name: نام
-  noInfra: شما هیچ Infrastructure Stacks ندارید
+  tags:
+    all: همه برچسب‌ها
+    one: 'برچسب: {name}'
+  noInfra: شما هیچ پشته‌های زیرساخت ندارید
+  noMatch: هیچ پشته ای با برچسب انتخابی مطابقت ندارد
   new:
-    header: افزودن Stack
+    header: افزودن پشته
     composeLabel: 'اختیاری: Import Compose'
     form:
       name:
         placeholder: مثال. myapp
       description:
-        placeholder: مثال. MyApp Stack
+        placeholder: مثال. MyApp پشته
       dockerCompose:
         label: 'اختیاری: docker-compose.yml'
         placeholder: محتوای docker-compose.yml
       rancherCompose:
-        label: 'اختیاری: rancher-compose.yml'
-        placeholder: محتوای rancher-compose.yml
+        label: 'اختیاری: pasturestack-compose.yml'
+        placeholder: محتویات pasturestack-compose.yml
       startOnCreate:
-        label: شروع سرویس ها بعد ایجاد
+        label: شروع سرویس‌ها بعد ایجاد
 storagePoolsPage:
+  header: درایورهای ذخیره سازی
+  volume: حجم ID
+  orphaned: پشتیبان گیری یتیم
+  nav:
+    pools: استخرها
+    backups: پشتیبان گیری
+  index:
+    noData: بدون درایور ذخیره سازی
   newVolume:
     header: افزودن Volume
     form:
+      driverOptions: گزینه های درایور
       addActionLabel: افزودن گزینه
 swarmPage:
   projects:
@@ -633,7 +967,7 @@ swarmPage:
       linkTo: افزودن پروژه
       table:
         header:
-          services: سرویس ها
+          services: سرویس‌ها
         body:
           noData: شما هیچ پروژه ای ندارید.
     new:
@@ -649,30 +983,73 @@ swarmPage:
           keyPlaceholder: مثال. FOO
           valuePlaceholder: مثال. bar
         dockerCompose:
+          labelText: docker-compose.yml
           placeholder: اطلاعات docker-compose.yml را پیست کنید
     project:
       linkTo: 'پروژه:'
       table:
         header:
           ports: پورت ها
+          containers: کانتینرها
         body:
           noData: این پروژه هیچ سرویسی ندارد.
   services:
-    header: سرویس ها
+    header: سرویس‌ها
     table:
       header:
         ports: پورت ها
+        containers: کانتینرها
       body:
         noData: شما هیچ سرویسی ندارید.
+processExecutions:
+  collapseAll: همه را جمع کن
+  expandAll: همه را گسترش دهید
+  resourceTypeId: نوع منبع／ID
+processesPage:
+  header: فرآیندها
+  tab:
+    summary: خلاصه
+    pools: استخرها
+    running: در حال دویدن
+    delayed: با تاخیر
+    ready: آماده است
+    completed: اخیرا تکمیل شده است
+  summary:
+    noData: هیچ فرآیندی در حال حاضر برنامه ریزی نشده است
+    table:
+      running: در حال دویدن
+      ready: آماده است
+      delay: با تاخیر
+  pools:
+    noData: هیچ استخری پیدا نشد
+    noMatch: هیچ استخری با جستجوی فعلی مطابقت ندارد
+    table:
+      activeTasks: فعال
+      poolSize: اندازه استخر
+      rejectedTasks: رد شد
+      completedTasks: تکمیل شد
+      queueSize: اندازه صف
+      queueRemainingCapacity: صف باقی می ماند
+  list:
+    table:
+      resource: منبع
+      exitReason: دلیل خروج
+      startTime: زمان شروع
+      endTime: زمان پایان
+      runTime: زمان اجرا
+      runAfter: اجرا بعد
+    noData: 'هیچ فرآیندی در حال حاضر وجود ندارد {which}'
+    noMatch: هیچ فرآیندی با جستجوی فعلی مطابقت ندارد
 virtualMachinePage:
   header: 'ماشین مجازی:'
   multistat:
     host: 'میزبان:'
     hostIp: 'آی پی میزبان:'
+    vmIp: 'VM IP:'
     image: 'تصویر:'
     description: 'توضیح:'
   navTabs:
-    labels: برچسب ها
+    labels: برچسب‌ها
 virtualMachinesPage:
   header: ماشین های مجازی
   linkTo: افزودن ماشین مجازی
@@ -681,37 +1058,53 @@ virtualMachinesPage:
       noData: شما هیچ ماشین مجازی ندارید.
 waitingPage:
   hosts:
+    header: |
+      {expectHosts, plural, =1 {اضافه کردن اولین میزبان} other {میزبان اضافه کنید}}
+    content: >
+      حداقل باید اضافه کنید {expectHosts, plural, =1 {یک میزبان Linux که پشتیبانی می کند} other {# Linux میزبان هایی که
+      پشتیبانی می کنند}} Docker {minVersion} یا بالاتر و قادر به رسیدن به {appName} سرور از طریق HTTP.<br/>
+
+      {appName} از افزودن میزبان Linux در قالب یک ماشین مجازی یا فیزیکی از هر ارائه دهنده ابر عمومی، ابرهای میزبان خصوصی
+      یا حتی سرورهای فلزی خالی پشتیبانی می کند.
     contentLink: اطلاعات بیشتر
-    linkToHost: افزودن هاست
+    linkToHost: افزودن میزبان
     setup:
       mesos: در حال تنظیم Mesos
       swarm: در حال تنظیم Swarm
       kubernetes: در حال تنظیم Kubernetes
 aliasServicePartial:
   serviceLinks:
-    labelText: لینک سرویس ها
+    labelText: لینک سرویس‌ها
     linkTo: مشاهده جزئیات
   links: پیوند ها
+  noLinks: بدون لینک
   description: 'توضیح:'
 externalServicePartial:
   extService:
     labelText: سرویس خارجی
     linkTo: مشاهده جزئیات
-  hostname: 'نام هاست:'
+  ips: IPs
+  hostname: 'نام میزبان:'
   description: 'توضیح:'
 hostPartial:
   host:
     addCommon:
+      quanity: مقدار
       new:
         form:
           name:
             placeholder: مثال. host01
     addOptions:
-      labels: برچسب ها
+      labels: برچسب‌ها
 ldap:
+  providerName:
+    openldap: OpenLDAP
+    ad: Active Directory
   header:
+    editing:
+      label: ویرایش Active Directory پیکربندی
     enabled:
-      label: "{providerName} فعال است"
+      label: '{providerName} فعال است'
       required: |
         {appName} تنظیم شده تا دسترسی را بدهد به {groups, plural,
         =0 {no groups}
@@ -732,49 +1125,76 @@ ldap:
         =1 {# user}
         other {# users}
         }.
-      unrestricted: "{appName} تنظیم شده تا دسترسی را به هر کاربر {providerName} بدهد."
+      unrestricted: '{appName} تنظیم شده تا دسترسی را به هر کاربر {providerName} بدهد.'
     disabled:
-      label: "{providerName} تنظیم نشده"
+      label: '{providerName} تنظیم نشده'
+      warning: >-
+        {appName} را می توان برای محدود کردن دسترسی به مجموعه ای از کاربران و گروه های {providerName} پیکربندی کرد.  این
+        در حال حاضر تنظیم نشده است، بنابراین هر کسی که به این صفحه (یا API) برسد، کنترل کاملی بر سیستم دارد.
   accessEnabled:
-    header: اهراز هویت
-    subtext: "برای تغییر تنظیمات سرور, کنترل دسترسی را در بخش پایین غیر فعال کرده و دوباره تنظیم کنید."
+    header: احراز هویت
+    subtext: 'برای تغییر تنظیمات سرور, کنترل دسترسی را در بخش پایین غیر فعال کرده و دوباره تنظیم کنید.'
     general:
-      server: "سرور:"
-      serviceAccount: "حصاب سرویس:"
-      defaultDomain: "دامنه پیش فرض:"
+      header: ژنرال
+      server: 'سرور:'
+      tls: 'TLS:'
+      serviceAccount: 'حصاب سرویس:'
+      searchBase: 'پایگاه جستجو:'
+      defaultDomain: 'دامنه پیش فرض:'
+      timeout: 'پایان زمان اتصال:'
     users:
       header: کاربران
-      login: "فیلد ورود:"
-      name: "فیلد نام:"
-      search: "فیلد جستجو:"
-      enabled: "فیلد وضعیت:"
+      objectClass: 'کلاس شی:'
+      login: 'فیلد ورود:'
+      name: 'فیلد نام:'
+      search: 'فیلد جستجو:'
+      enabled: 'فیلد وضعیت:'
+      disabledBitMask: 'غیرفعال شده BitMask:'
     group:
       header: گروه
-      name: "فیلد نام:"
-      search: "فیلد جستجو:"
+      objectClass: 'کلاس شی:'
+      name: 'فیلد نام:'
+      search: 'فیلد جستجو:'
     disable:
-      warning: '<b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی دسترسی کامل به {appName} را به هر شخصی که به این صفحه دسترسی پیدا کند می دهد'
+      header: منطقه خطر&trade;
+      warning: >-
+        <b class="text-danger">هشدار:</b> غیر فعال سازی کنترل دسترسی دسترسی کامل به {appName} را به هر شخصی که به این
+        صفحه دسترسی پیدا کند می دهد
       confirmDisable:
         pre: غیر فعال سازی کنترل دسترسی
-        post: "آیا مطمئن هستید؟  برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید"
+        post: آیا مطمئن هستید؟  برای غیر فعال سازی کنترل دسترسی دوباره کلیک کنید
   accessConfig:
-    header: "1. تنظیم یک سرور {providerName}"
-    hostName:
-      labelText: نام هاست یا آدرس آی پی
+    header: '1. تنظیم یک سرور {providerName}'
+    subtext1: >-
+      آدرس، پورت و پروتکل را برای اتصال به سرور {providerName} خود وارد کنید.  <code>389</code> پورت استاندارد برای
+      ناامن، <code>636</code> برای TLS است.
+    subtext2: >-
+      {appName} به یک حساب سرویس نیاز دارد که دسترسی (فقط خواندنی) به همه دامنه‌هایی داشته باشد که می‌توانند وارد سیستم
+      شوند، به طوری که وقتی کاربر با کلید API درخواست می‌کند، بتوانیم تعیین کنیم که در چه گروه‌هایی عضو است.
+    advanced:
+      open: پنهان کردن پیشرفته
+      closed: نمایش پیشرفته
+    timeout:
+      labelText: زمان اتصال
+      unit: ms
     port:
       labelText: پورت
-    serviceUsername:
-      labelText: نام کاربری حساب سرویس
-    servicePassword:
-      labelText: رمز عبور حساب سرویس
-    searchBase:
-      placeholder: "مثال. dc=mycompany,dc=com"
+      checkbox: TLS
+    groupSearchBase:
+      labelText: پایگاه جستجوی گروهی
+      placeholder: به عنوان مثال ou=گروه ها،dc=mycompany،dc=com
+      helpText: اگر تنظیم شود، گروه‌ها به جای جستجوی کاربر، فقط در این پایگاه جستجو می‌شوند.
     defaultDomain:
+      helpText: این دامنه در صورتی استفاده خواهد شد که کاربر بدون تعیین یکی وارد شود.
       labelText: دامنه پیش فرض ورود
-      placeholder: "مثال. mycompany"
+      placeholder: مثال. mycompany
   customizeSchema:
+    header: سفارشی کردن طرحواره
+    helpText: اگر طرح شما با قالب استاندارد ActiveDirectory مطابقت ندارد، می توانید آن را در اینجا سفارشی کنید.
     users:
       header: کاربران
+      objectClass:
+        labelText: کلاس شی
       login:
         labelText: فیلد ورود
       name:
@@ -785,23 +1205,39 @@ ldap:
         labelText: فیلد وضعیت
       disabledBitMask:
         labelText: غیر فعال سازیd Status Bitmask
+      userMemberAttribute:
+        labelText: ویژگی اعضای کاربر
     groups:
       header: گروه ها
+      objectClass:
+        labelText: کلاس شی
       name:
         labelText: فیلد نام
       search:
         labelText: فیلد جستجو
+      groupMemberUser:
+        labelText: ویژگی کاربر عضو گروه
+        placeholder: uid
+      groupMemberMapping:
+        labelText: ویژگی نقشه برداری اعضای گروه
+      groupDN:
+        labelText: گروه DN فیلد
+        placeholder: distinguishedName
   testAuth:
-    header: "3. تست و فعال سازی اعراز هویت"
+    header: 3. تست و فعال سازی اعراز هویت
+    editingHeader: تنظیمات جدید را تست و ذخیره کنید
+    helpText: 'با آزمایش احراز هویت با حساب {providerName} خود، بررسی کنید که همه چیز به درستی پیکربندی شده است:'
     userName:
       labelText: نام کاربری شما
     password:
       labelText: رمز عبور شما
     authenticate:
-      pre: اهراز هویت
-      post: "در حال تست..."
+      pre: احراز هویت
+      post: در حال تست...
+      test: تست و ذخیره کنید
 servicePartial:
   noContainers:
+    label: هنوز کانتینری وجود ندارد.
     inactive:
       start: شروع
 serviceInfoPartial:
@@ -809,48 +1245,113 @@ serviceInfoPartial:
     label: اطلاعات
     linkTo: مشاهده جزئیات
   image: 'تصویر:'
+  entryPoint: 'نقطه ورود:'
   command: 'دستور:'
   description: 'توضیح:'
+  containers: کانتینرها
+  scale: مقیاس
   global: سراسری
+  noContainers: بدون کانتینر
   ports: پورت ها
+  noPublicPorts: بدون بنادر عمومی
   links: پیوند ها
+  noLinks: بدون لینک
+  fqdn: 'FQDN:'
+advancedSection:
+  hrText: گزینه های پیشرفته
+catalogBox:
+  sourcePrefix: در
 catalogSettings:
   header: کاتالوگ
-  subtext: کاتالوگ ها contain templates that allow users to easily deploy applications by answering a few questions
+  subtext: >-
+    کاتالوگ ها شامل قالب هایی هستند که به کاربران اجازه می دهند با پاسخ دادن به چند سوال به راحتی برنامه ها را مستقر
+    کنند
   certified:
+    header:
+      rancher: '{appName} کتابخانه معتبر'
+      pl: کتابخانه تایید شده
     detail:
-      rancher: Optional templates maintained and supported by Rancher Labs.
-      pl: Officially maintained and supported optional templates.
+      rancher: >-
+        الگوهای سازگاری که توسط انجمن مستقل PastureStack نگهداری می شود. در دسترس بودن و پشتیبانی بر اساس الگو متفاوت
+        است.
+      pl: Maintained optional templates.
+  community:
+    header:
+      rancher: جامعه مشارکت کرد
+      pl: جامعه مشارکت کرد
+    detail:
+      rancher: الگوهایی که اعضای جامعه ایجاد و نگهداری می‌کنند و فروشندهٔ اصلی آن‌ها را تأیید نکرده است.
+      pl: الگوهایی که توسط اعضای انجمن ایجاد و نگهداری می شوند.
   more:
+    header: سفارشی
+    helpText: >-
+      شما می توانید منابع کاتالوگ سفارشی خود را در اینجا تعریف کنید.  هر یک به یک نام منحصر به فرد و یک URL نیاز دارد که
+      <code>git clone</code> بتواند آن را مدیریت کند (برای اطلاعات بیشتر به <a
+      href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">docs</a> مراجعه کنید).
     addActionLabel: افزودن Catalog
     name:
       label: نام
       placeholder: مثال. mycatalog
     url:
+      label: URL
       placeholder: 'مثال. https://github.com/mycompany/mycatalog.git'
+    kind:
+      label: مهربان
+      native: بومی
+      helm: Helm
     branch:
       label: شاخه
-      placeholder: 'مثال. master'
+      placeholder: مثال. master
 confirmDelete:
-  environmentNote: 'توجه: همه resources inside this Environment will be permanently removed, including any Hosts that were created through {appName}.'
+  title: آیا مطمئن هستید که می خواهید حذف کنید؟
+  environmentNote: >-
+    توجه: همه منابع این محیط، از جمله میزبان‌هایی که از طریق {appName} ایجاد شده‌اند، برای همیشه حذف خواهند شد.
+  protip: 'ProTip: کلید {key} را در حین کلیک روی Delete نگه دارید تا این تایید را دور بزنید.'
+  confirmAction: حذف کنید
   cancelAction: لغو
+  largeDeleteText: '{key} و {othersCount} دیگران'
 containerLogs:
-  onlyCombined: "<b>توجه:</b> Only combined stdout/stderr logs are available for this container because it was run with the TTY (-t) flag."
+  title: 'گزارش‌ها: {instanceName}'
+  onlyCombined: >-
+    <b>توجه:</b> چون این کانتینر با گزینه TTY (-t) اجرا شده است، فقط گزارش ترکیبی stdout/stderr در دسترس است.
+  combined: ترکیب شده است
+  stdout: خروجی استاندارد
+  stderr: خطای استاندارد
+  protip: 'ProTip: کلید {key} را هنگام باز کردن گزارش‌ها برای راه‌اندازی یک پنجره جدید نگه دارید.'
+  scrollTop: به بالا بروید
+  scrollBottom: به پایین بروید
+  clear: پاک کردن صفحه
+  unknownDate: تاریخ نامعلوم
   status:
+    initializing: در حال شروع...
     connecting: در حال اتصال
     connected: متصل
     disconnected: اتصال قطع شده
     closed: بسته شده
 containerShell:
+  protip: 'ProTip: هنگام باز کردن دسترسی پوسته برای راه‌اندازی یک پنجره جدید، کلید {key} را نگه دارید.'
   status:
+    initializing: در حال شروع...
     error: 'خطا: {error}'
     connecting: در حال اتصال
     connected: متصل
     disconnected: اتصال قطع شده
     closed: بسته شده
+copyToClipboard:
+  tooltip: در کلیپ بورد کپی کنید
+  copied: کپی شده!
+dangerZone:
+  header: تنظیمات پیشرفته
+  subtext: >-
+    با احتیاط ادامه دهید؛ کاربران معمولی نیازی به تغییر این موارد نخواهند داشت.  مقادیر نادرست می تواند نصب {appName}
+    شما را خراب کند.  تنظیماتی که تغییر کرده اند به صورت پررنگ نشان داده شده اند.
+  showLabel: می‌دانم که می‌توانم با تغییر تنظیمات پیشرفته، چیزها را خراب کنم.
 devicePermissions:
   all: همه
   none: هیچ یک
+  read: بخوانید
+  write: بنویسید
+  mknod: Mknod
 editAccount:
   title: ویرایش Account
   form:
@@ -858,56 +1359,118 @@ editAccount:
       label: نام
       placeholder: مثال. John Smith
     kind:
+      label: نوع حساب
+      user: کاربر
       admin: مدیر
     description:
       label: توضیح
-      placeholder: مثال. This account is for John Smith
+      placeholder: 'برای مثال: حساب John Smith'
+    publicValue:
+      label: ورود نام کاربری
+    oldPassword:
+      label: رمز عبور فعلی
+    newPassword:
+      label: رمز عبور جدید
+    confirmPassword:
+      label: رمز عبور را تایید کنید
+    identity:
+      label: هویت
 editAliasService:
-  title: ویرایش Service Alias
+  title: ویرایش نام مستعار سرویس
 editApiKey:
   title:
     justCreated: کلید API Created
     editing: ویرایش API Key
+    new: کلید API جدید
+  publicValue:
+    label: کلید دسترسی (نام کاربری)
+  secretValue:
+    label: کلید مخفی (رمز عبور)
   name:
     placeholder: مثال. App servers
   description:
-    placeholder: مثال. This key is used by the app servers to deploy containers
-  noteOptional: نام and/or description are optional to help you remember what it's used for.  You can just create a key by clicking Create.
+    placeholder: 'برای مثال: این کلید برای استقرار کانتینرها توسط سرورهای برنامه استفاده می‌شود'
+  saveWarning1: کلیدهای بالا را ذخیره کنید!  این تنها زمانی است که می توانید راز را ببینید.
+  saveWarning2: اگر آن را گم کردید، باید یک کلید API جدید ایجاد کنید.
+  noteOptional: >-
+    نام و توضیحات اختیاری هستند و به یادآوری کاربرد کلید کمک می‌کنند. می‌توانید بدون آن‌ها و با کلیک روی «ایجاد» کلید را بسازید.
 editBalancerService:
-  title: ویرایش Load Balancer
+  title: ویرایش متعادل‌کنندهٔ بار
+  haproxy:
+    label: haproxy.cfg
+    help: |
+      <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a> اضافی
+      پیکربندی را می توان در اینجا قرار داد و به پیکربندی ایجاد شده توسط {appName} اضافه می شود.
+    global:
+      label: بخش <code>global</code>
+      prompt: خطوط بخش جهانی سفارشی
+    defaults:
+      label: بخش <code>defaults</code>
+      prompt: خطوط بخش پیش فرض های سفارشی
 editCertificate:
   title: ویرایش Certificate
   name:
     placeholder: مثال. mydomain.com
   description:
-    placeholder: مثال. EV cert for mydomain.com
-  noteKeyWriteOnly: 'توجه: The Private Key is intentionally blank because the field is write-only.  You will need to provide the Private Key again to update the certificate, even if it hasn''t changed.'
+    placeholder: 'برای مثال: گواهی EV برای mydomain.com'
+  noteKeyWriteOnly: >-
+    توجه: کلید خصوصی به‌عمد خالی است، زیرا این فیلد فقط قابل نوشتن است. برای به‌روزرسانی گواهی، حتی اگر کلید تغییر نکرده باشد، باید آن را دوباره وارد کنید.
 editContainer:
   title:
     vm: ویرایش VM
-    container: ویرایش Container
+    container: ویرایش کانتینر
   name:
     placeholder: مثال. myapp
   description:
     placeholder: مثال. My Application
 editExternalService:
-  title: ویرایش External Service
+  title: ویرایش سرویس خارجی
   name:
     placeholder: مثال. external-db
   description:
-    placeholder: مثال. External physical database server
+    placeholder: 'برای مثال: سرور فیزیکی پایگاه داده خارجی'
 editHost:
-  title: ویرایش هاست
+  title: ویرایش میزبان
   hostname:
-    label: نام هاست
+    label: نام میزبان
+    help: همانطور که توسط سیستم عامل میزبان گزارش شده است.
   customName:
+    label: نام سفارشی
     placeholder: مثال. dev1
-    help: اگر این بخش خالی باشد, نام هاست به عنوان نام نمایش داده خواهد شد.
+    help: 'اگر این بخش خالی باشد, نام میزبان به عنوان نام نمایش داده خواهد شد.'
   description:
     label: توضیح
     placeholder: مثال. My development host
   labels:
-    label: برچسب ها
+    label: برچسب‌ها
+  ips:
+    label: زمانبندی IPs
+    valueLabel: IP آدرس
+    valuePlaceholder: به عنوان مثال 1.2.3.4
+    addActionLabel: افزودن IP
+    help: در صورت ارائه، زمان‌بند پورت‌های منتشر شده را به یکی از آدرس‌های عمومی داده شده IP انتخاب و متصل می‌کند.
+  requireAny:
+    label: نیاز به برچسب کانتینر
+    help: >-
+      در صورت ارائه، کانتینرها باید دارای یک یا چند برچسب از برچسب‌های داده شده باشند تا برای زمان بندی در این میزبان
+      واجد شرایط باشند. اگر مقدار خالی باشد، یک کانتینر با کلید منطبق بدون در نظر گرفتن مقدار واجد شرایط است.
+    addActionLabel: برچسب مورد نیاز را اضافه کنید
+editProjectTemplate:
+  title:
+    add: اضافه کردن الگو
+    edit: 'ویرایش الگو: {displayName}'
+  orchestration: ارکستراسیون
+  builtinOrchestration: ارکستراسیون داخلی
+  stackEdit: ویرایش پیکربندی
+  stackRequired: مورد نیاز
+  access:
+    label: اشتراک گذاری
+    private: 'خصوصی: فقط در دسترس من است'
+    public: 'عمومی: در دسترس همه کاربران (فقط مدیر)'
+  error:
+    conflict: درگیری
+    enabling: 'نسخه انتخاب شده از پشته {tplCategory} "{stackName}" از ارکستراسیون {orchestration} پشتیبانی نمی کند.'
+    changing: 'پشته فعال شده {tplCategory} "{stackName}" از {orchestration} Orchestration پشتیبانی نمی کند.'
 editRegistry:
   title: ویرایش Registry
   address:
@@ -924,44 +1487,125 @@ editRegistry:
 editService:
   title: ویرایش Service
 editStack:
-  title: ویرایش Stack
+  title: ویرایش پشته برنامه
   name:
-    label: نام
+    label: نام پشته
     placeholder: مثال. myapp
   description:
     label: توضیح
-    placeholder: مثال. MyApp Stack
+    placeholder: مثال. MyApp پشته
   group:
-    placeholder: مثال. frontend, production
-    help: The stacks list can be filtered by tags (comma-separated)
+    label: برچسب‌ها
+    placeholder: 'مثال. frontend, production'
+    help: فهرست پشته‌ها را می‌توان با برچسب‌های جداشده با ویرگول فیلتر کرد.
+envCatalog:
+  header: مدیریت کاتالوگ ها
+  subtext: >-
+    شما می توانید منابع کاتالوگ سفارشی خود را در اینجا تعریف کنید که فقط برای کاربران این محیط در دسترس خواهد بود.
+    کاتالوگ‌های جهانی برای همه محیط‌ها در دسترس هستند و فقط توسط مدیر می‌توانند در تنظیمات مدیریت اصلاح شوند.  هر
+    کاتالوگ به یک نام منحصر به فرد و یک URL نیاز دارد که <code>git clone</code> بتواند آن را مدیریت کند (برای اطلاعات
+    بیشتر به <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">docs</a> مراجعه کنید).
+  addActionLabel: اضافه کردن کاتالوگ
 stackHeader:
+  backLink: 'پشته:'
   outputs: خروجی ها
   add:
     service: افزودن سرویس
-    balancer: افزودن Load Balancer
-    external: افزودن External Service
-    alias: افزودن سرویس Alias
+    balancer: افزودن متعادل‌کنندهٔ بار
+    external: افزودن سرویس خارجی
+    alias: افزودن نام مستعار سرویس
     vm: افزودن ماشین مجازی
 formatIp:
   noIp: هیچ یک
   unknownIp: ناشناخته
+formBalancerRules:
+  label: قوانین بندر
+  noRules: بدون قوانین
+  addServiceLabel: قانون سرویس را اضافه کنید
+  addSelectorLabel: قانون انتخابگر را اضافه کنید
+  target: هدف
+  access:
+    label: دسترسی داشته باشید
+    public: عمومی
+    internal: داخلی
+  protocol:
+    label: پروتکل
+  region:
+    label: منطقه
+    placeholder: به عنوان مثال منطقه 1
+  environment:
+    label: محیط
+    placeholder: به عنوان مثال توسعه
+  weight:
+    label: وزن
+    placeholder: به عنوان مثال 1
+  sourceIp:
+    label: میزبان IP
+    placeholder: به عنوان مثال 1.2.3.4
+  sourcePort:
+    label: بندر
+    placeholder: به عنوان مثال 80
+  path:
+    label: مسیر
+    placeholder: به عنوان مثال /فو
+  hostname:
+    label: درخواست میزبان
+    placeholder: به عنوان مثال example.com
+  backendName:
+    label: بک‌اند
+    placeholder: به عنوان مثال برنامه وب
+  targetPort:
+    label: بندر
+    placeholder: به عنوان مثال 80
+  priority:
+    label: اولویت
+    moveUp: حرکت به بالا
+    moveDown: حرکت به پایین
+  serviceId:
+    label: خدمات
+  selector:
+    label: انتخابگر
+    placeholder: به عنوان مثال فو = بار
+  help:
+    prefix: >-
+      قوانین میزبان و مسیر از بالا به پایین و به همان ترتیبی که نمایش داده شده‌اند بررسی می‌شوند. نام بک‌اندها به‌طور
+      پیش‌فرض به‌صورت تصادفی ساخته می‌شود. برای سفارشی‌سازی، یک نام وارد کنید و سپس در فایل haproxy.cfg به همان نام ارجاع دهید.
+    showBackendLink: نمایش نام‌های سفارشی بک‌اند
+    showIpLink: نمایش گزینه های آدرس میزبان IP.
+    showRegionLink: نمایش گزینه های منطقه
+    suffix: ''
 formCommand:
   command:
     label: دستور
     placeholder: مثال. /usr/sbin/httpd -f httpd.conf
+  entryPoint:
+    label: نقطه ورود
+    placeholder: به عنوان مثال /bin/sh
   workingDir:
+    label: مدیر کاری
     placeholder: مثال. /myapp
   user:
     label: کاربر
     placeholder: مثال. apache
   console:
     label: کنسول
+    both: تعاملی &amp; TTY <span class="text-muted">(-i -t)</span>
+    interactive: تعاملی <span class="text-muted">(-i)</span>
+    terminal: TTY <span class="text-muted">(-t)</span>
     none: هیچ یک
   autoRestart:
+    label: راه اندازی مجدد خودکار
     startOnceFalse: همیشه
     startOnceTrue: هرگز (یک بار اجرا)
-    "no": هرگز
+    no: هرگز
+    onFailure: در صورت شکست <span class="text-muted">(کد خروج غیر 0)</span>، برای همیشه
+    onFailureCondPrefix: در مورد شکست، تا
+    onFailureCondSuffix: |
+      {limit, plural, =1 {زمان} other {بارها}}
     always: همیشه
+  drainTimeout:
+    label: اتمام زمان تخلیه
+    unit: ms
   environment:
     label: محیط Vars
     addAction: افزودن Environment Variable
@@ -972,6 +1616,11 @@ formCommand:
 formContainerLinks:
   label: پیوند ها
   addActionLabel: افزودن پیوند
+  noContainers: هیچ کانتینر دیگری برای پیوند وجود ندارد.
+  noLinks: این کانتینر هیچ پیوندی ندارد.
+  targetInstance:
+    label: کانتینر مقصد
+    prompt: انتخاب کانتینر ...
   name:
     label: به عنوان
     placeholder: مثال. database
@@ -984,64 +1633,114 @@ formDisks:
     placeholder: مثال. data
   size:
     label: اندازه
+    rootDisk: با تصویر ریشه تعیین می شود
   readIops:
+    label: آیوپس را بخوانید
     placeholder: مثال. 1000
   writeIops:
+    label: Iops را بنویسید
     placeholder: مثال. 1000
+  driver:
+    label: راننده
 formEngineOpts:
   engineInstallUrl:
+    label: Docker URL را نصب کنید
     placeholder: 'مثال. http://get.docker.com/'
+    recommended: توصیه می شود
     latest: آخرین
   engineStorageDriver:
+    label: درایور ذخیره سازی
     placeholder: مثال. overlay
   engineOpts:
+    label: گزینه های موتور
     addActionLabel: افزودن Engine Option
     keyPlaceholder: مثال. log-driver
     valuePlaceholder: مثال. syslog
   engineLabels:
+    label: برچسب‌های موتور
     addActionLabel: افزودن Engine Label
     keyLabel: برچسب
   engineEnv:
+    label: محیط موتور
     addActionLabel: افزودن Environment Variable
     keyLabel: متغیر
     keyPlaceholder: مثال. HTTP_PROXY
     valuePlaceholder: 'مثال. http://your-proxy:8080'
   engineInsecureRegistry:
+    label: ثبت نامهای ناامن
     addActionLabel: افزودن Insecure Registry
+    valueLabel: دامنه رجیستری
     valuePlaceholder: مثال. registry.example.com
   engineRegistryMirror:
+    label: آینه های رجیستری
     addActionLabel: افزودن Registry Mirror
+    valueLabel: آینه URL
     valuePlaceholder: 'مثال. https://my-mirror.example.com:5000'
 formHealthCheck:
+  windowsUnsupported: پشتیبانی بررسی سلامت در حال حاضر برای Windows در دسترس نیست.
   label: Health Check
   checkType:
     none: هیچ یک
+    tcp: TCP اتصال باز می شود
+    http: HTTP 2xx/3xx پاسخ می‌دهد
+  request:
+    label: HTTP درخواست
+  method:
+    prompt: 'یک روش HTTP را انتخاب کنید:'
   path:
     placeholder: Request Path مثال. /healthcheck
+  version:
+    prompt: 'یک نسخه HTTP را انتخاب کنید:'
   host:
     label: میزبان Header
     placeholder: مثال. www.example.com
   port:
+    label: بندر
     placeholder: مثال. 80
+  initializingTimeout:
+    label: شروع به اتمام زمان
+    unit: ms
+  reinitializingTimeout:
+    label: شروع مجدد Timeout
+    unit: ms
+  interval:
+    label: فاصله را بررسی کنید
+    unit: ms
+  timeout:
+    label: مهلت زمانی را بررسی کنید
+    unit: ms
   healthyThreshold:
     label: Healthy Threshold
+    unit: موفقیت ها
   unhealthyThreshold:
     label: Unhealthy Threshold
+    unit: شکست ها
+  strategy:
+    label: وقتی ناسالم
+    none: اقدامی نکنید
+    recreate: دوباره ایجاد کنید
+    recreateOnQuorumPrefix: دوباره ایجاد کنید، فقط زمانی که حداقل
+    recreateOnQuorumSuffix: |
+      {quorum, plural, =1 {کانتینر است} other {کانتینرها هستند}} سالم
 formKeyValue:
   addAction: افزودن Pair
   key:
     label: کلید
     placeholder: کلید
+  separator: '='
   value:
     label: ارزش
     placeholder: ارزش
+  protip: 'ProTip: برای ورود آسان انبوه، یک یا چند خط از جفت‌های کلید=مقدار را در هر فیلد کلیدی جای‌گذاری کنید.'
 formImage:
+  label: Image را انتخاب کنید
   vm:
-    placeholder: مثال. rancher/vm-ubuntu
+    placeholder: 'مثال. ubuntu:26.04'
+    dropdownLabel: '{appName} تصاویر'
   container:
-    placeholder: "مثال. ubuntu:trusty"
+    placeholder: 'مثال. ubuntu:trusty'
   pullImage:
-    label: همیشه pull image before creating
+    label: همیشه پیش از ایجاد، ایمیج را دریافت کنید
 formNameDescription:
   name:
     label: نام
@@ -1052,48 +1751,119 @@ formNameDescription:
 formNetwork:
   links:
     table:
+      dest: کانتینر مقصد
       as: به عنوان
       data:
+        dest: 'کانتینر مقصد:'
         as: 'به عنوان:'
   networkMode:
     label: شبکه
+    bridge: پل
+    container: کانتینر
     host: میزبان
+    managed: مدیریت شد
+    nat: NAT
+    transparent: شفاف
     none: هیچ یک
+  container:
+    label: کانتینر
   requestedIp:
+    label: درخواست شده IP
     placeholder: مثال. 10.42.2.24
+    help: >-
+      یک IP خاص را در بلوک 10.42.0.0/16 درخواست کنید.  اگر IP از قبل در حال استفاده باشد، یک مورد تصادفی اختصاص داده می
+      شود.
+  retainIp:
+    label: حفظ IP
+    reuse: هنگام ارتقا یا جایگزینی نمونه‌های ناسالم، از آدرس‌های IP دوباره استفاده کنید.
   dns:
-    enable: فعال سازی {appName} DNS service discovery
+    label: DNS
+    enable: 'فعال سازی {appName} DNS service discovery'
   hostname:
-    label: نام هاست
+    label: نام میزبان
     placeholder: مثال. web
     dockerId: استفاده از Docker container ID
     containerName: استفاده از نام container
-    custom: انتخاب یک هاست مشخص
+    custom: انتخاب یک میزبان مشخص
   domainName:
     label: نام دامنه
     placeholder: مثال. example.com
   resolvingServers:
+    label: حل کردن سرورها
+    addActionLabel: افزودن سرور
     placeholder: مثال. 8.8.4.4
   searchDomains:
+    label: جستجوی دامنه ها
     placeholder: مثال. prod.example.com
+    addActionLabel: دامنه اضافه کنید
 formPorts:
   addAction: Port maps
+  bindAddress:
+    label: میزبان عمومی IP (اختیاری)
+    placeholder: 'به عنوان مثال 1.2.3.4; پیش فرض: هر'
+  public:
+    label: بندر میزبان عمومی
+    placeholder: به عنوان مثال 80
   private:
-    placeholder: "مثال. 8080"
+    label: بندر کانتینر خصوصی
+    placeholder: مثال. 8080
   protocol:
     label: پروتوکل
+  noPorts: این کانتینر هیچ نقشه بندری ندارد.
+  error:
+    privateRequired: پورت کانتینر خصوصی برای هر قانون پورت مورد نیاز است.
+    publicRequired: اگر میزبان IP مشخص شده باشد، پورت میزبان عمومی مورد نیاز است.
+    mixedIpPort: 'پورت {ip}:{port}/{proto} بیش از یک نقشه برداری دارد.'
+    mixedPort: 'پورت {port}/{proto} بیش از یک نقشه برداری دارد.'
+  showIpLink: نمایش فیلد میزبان IP
 formScale:
+  label: مقیاس
   global:
-    vm: همیشه run one instance of this virtual machine on every host
-    container: همیشه run one instance of this container on every host
+    vm: همیشه یک نمونه از این ماشین مجازی را روی هر میزبان اجرا کنید
+    container: همیشه یک نمونه از این کانتینر را روی هر میزبان اجرا کنید
+  regular:
+    vm: |
+      اجرا کنید {scale, plural, =0 {بدون ماشین مجازی} =1 {1 ماشین مجازی} other {# ماشین های مجازی}}
+    container: |
+      اجرا کنید {scale, plural, =0 {بدون کانتینر} =1 {1 کانتینر} other {# کانتینر}}
 formScheduling:
   canRequestHost:
-    vm: اجرای <b>همه</b> ماشین های مجازی بر روی یک هاست مشخص
-    containers: اجرای <b>همه</b> containers بر روی یک هاست مشخص
+    vm: اجرای <b>همه</b> ماشین های مجازی بر روی یک میزبان مشخص
+    containers: اجرای <b>همه</b> containers بر روی یک میزبان مشخص
+  runSpecific: روی یک میزبان خاص اجرا شود
+  noRules: بدون قوانین زمان بندی
+  autoRun: 'به‌طور خودکار روی قوانین زمان‌بندی مطابق با میزبان اجرا شود:'
+  autoPick:
+    vm: 'به طور خودکار میزبان‌ها را برای هر ماشین مجازی مطابق با قوانین زمان بندی انتخاب کنید:'
+    container: 'میزبان‌ها را برای هر کانتینر مطابق با قوانین زمان‌بندی انتخاب کنید:'
+    host: 'به‌طور خودکار قوانین زمان‌بندی مطابق با میزبان را انتخاب کنید:'
   addRule: افزودن Scheduling Rule
+  condition: شرایط
   field: فیلد
   key: کلید
   value: ارزش
+formSecrets:
+  label: اسرار
+  noData: بدون راز
+  addLabel: راز را اضافه کنید
+  name:
+    label: به عنوان نام
+    placeholder: به عنوان مثال db_password
+  secret:
+    label: راز
+  uid:
+    label: کاربر ID
+    placeholder: به عنوان مثال 0 (ریشه)
+  gid:
+    label: گروه ID
+    placeholder: به عنوان مثال 0 (چرخ)
+  mode:
+    label: حالت فایل (اکتال)
+    placeholder: به عنوان مثال 0444 (هشتی)
+  help:
+    prefix: 'Secrets در <code>/run/secrets/</code> داخل کانتینر با نام فایل داده شده در دسترس خواهد بود.  '
+    showPermissionsLink: مالکیت و مجوزهای فایل را سفارشی کنید
+    suffix: ''
 formSecurity:
   key: کلید
   value: ارزش
@@ -1102,27 +1872,41 @@ formSecurity:
     keyPlaceholder: مثال. syslog-facility
     valuePlaceholder: مثال. daemon
   privileged:
-    checkbox: دسترسی کامل به هاست
+    label: ممتاز
+    checkbox: دسترسی کامل به میزبان
   pidMode:
+    label: حالت PID
     checkbox: میزبان
   memoryLimit:
     label: حافظه محدود
     placeholder: نامحدود
+    mb: MB
   swapLimit:
+    label: + محدودیت تعویض
+    mb: MB
     placeholder1: دارای محدودیت حافظه
     placeholder2: نامحدود
   cpuPinning:
+    label: CPU پین کردن
     placeholder: 'مثال. 0,3; Default: همه'
   shares:
+    label: سهام
     placeholder: مثال. 1024
   capabilities:
     add: افزودن
+    drop: رها کردن
+    label: قابلیت ها
     helpBlock:
+      text: قابلیت ها به شما این امکان را می دهد که کنترل دقیقی بر روی امتیازات superuser موجود در کانتینر فراهم کنید.
       link: اطلاعات بیشتر
   deviceBinding:
+    label: اتصال دستگاه
+    addActionLabel: Binding را اضافه کنید
     pathHost:
+      label: مسیر در میزبان
       placeholder: مثال. /dev/sdc
     pathContainer:
+      label: مسیر در کانتینر
       placeholder: مثال. /dev/xsdc
     permissions:
       label: دسترسی ها
@@ -1130,34 +1914,71 @@ formSecurity:
   logDriver:
     label: درایور Log
     placeholder: مثال. syslog
+  logOptions:
+    label: گزینه های ورود
+  memoryReservation:
+    label: رزرو حافظه
+  milliCpuReservation:
+    label: mCPU رزرو
+  isolation:
+    label: انزوا
+    default: پیش فرض (کانتینر)
+    hyperv: HyperV (VM)
 formServiceLinks:
+  asName: به عنوان نام
   addAction: سرویس Links
+  noServices: هیچ سرویس دیگری برای پیوند وجود ندارد.
+  noLinks: این سرویس لینک سرویس ندارد.
+  service:
+    label: سرویس مقصد
   name:
     label: به عنوان
     placeholder: مثال. database
 formSslTermination:
+  defaultCertificate:
+    prompt: انتخاب گواهی ...
+  alternateCertificate:
+    prompt: انتخاب گواهی ...
+  certificate: گواهی*
+  alternateCerts: گواهی‌های جایگزین
   addAlternate: افزودن Alternate Certificate
-  noCertificates: There are no other certificates to use.
-  helpBlock: |
-    "توجه: Some older SSL/TLS clients do not support <a href="https://en.wikipedia.org/wiki/Server_Name_Indication" target="_blank">Server Name Indication (SNI)</a>; these clients will always be offered the main Certificate  Modern clients will be offered an appropriate certificate from the Alternate Certificates list if a match is found."
+  noCertificates: گواهی دیگری برای استفاده وجود ندارد.
+  noAlternateCertificates: هیچ گواهی دیگری برای استفاده وجود ندارد.
+  helpBlock: >
+    "توجه: برخی از کارخواه‌های قدیمی SSL/TLS از <a href="https://en.wikipedia.org/wiki/Server_Name_Indication"
+    target="_blank" rel="noopener noreferrer">Server Name Indication (SNI)</a> پشتیبانی نمی‌کنند و همیشه گواهی اصلی را دریافت می‌کنند. کارخواه‌های جدید، در صورت تطابق، گواهی مناسب را از فهرست گواهی‌های جایگزین دریافت می‌کنند."
+  notNeeded: هیچ پورت SSL/TLS پیکربندی نشده است.
 formStickiness:
+  stickiness: چسبندگی
   none: هیچ یک
   newCookie: ساختن کوکی جدید
   cookieName: نام کوکی
+  mode: حالت
+  modeChoices:
+    rewrite: بازنویسی کنید
+    insert: درج کنید
+    prefix: پیشوند
   domain: دامنه
   options: گزینه ها
-  noPorts: There are no HTTP listening ports configured.
+  indirect: غیر مستقیم
+  sendHeader: ارسال سرصفحه بدون کش
+  onPost: کوکی را فقط روی POST تنظیم کنید
+  noPorts: هیچ قاعده‌ای برای پورت شنونده HTTP تنظیم نشده است.
   placeholder:
     sticky: مثال. sticky
     domain: مثال. mydomain.com
 formTarget:
+  target: هدف
   pointAddress: اشاره به آدرس آی پی(es)
-  pointHostname: اشاره به نام هاست
+  pointHostname: اشاره به نام میزبان
   addTarget: افزودن Target IP
+  ipPlaceholder: به عنوان مثال 192.168.2.24
+  hostnamePlaceholder: به عنوان مثال mysql.example.com
 formTargets:
+  title: اهداف
   addAction: افزودن سرویس
   hostname:
-    label: هاست درخواست
+    label: میزبان درخواست
     placeholder: مثال. svc.com
   srcPort:
     label: پورت منبع
@@ -1172,67 +1993,173 @@ formTargets:
     placeholder: مثال. 8080
   advanced:
     toggle: نمایش تنظیمات پیشرفته ی routing
+    detail: درخواست ها را بر اساس پورت، هدر میزبان یا مسیر درخواست به سرویس‌های مختلف هدایت کنید
+    help1: >
+      اگر درخواست میزبان و/یا مسیر مشخص شده باشد، اتصالات به پورت‌های شنیداری HTTP بر اساس درخواست به هدف مناسب هدایت
+      می‌شوند.
+
+      برای مثال، می‌توانید از این برای ارسال ترافیک domain1.com به سرویسی متفاوت از domain2.com یا domain3.com/admin به
+      سرویسی متفاوت از domain3.com استفاده کنید.
+    help2: |
+      درخواست های تطبیق به سرویس هدف در بندر هدف ارسال می شود.
+      اگر تنظیم نشده است، درگاه هدف پیش فرض برای پورت منبع.  اگر آن نیز تنظیم نشده است، پورت منبع.
+  noHostnames: (نمی توان با نام میزبان تعادل برقرار کرد)
 formUserData:
-  placeholder: "مثال. اطلاعات تنظیمات برای container"
-  isVmPlaceholder: "مثال. اطلاعات تنظیمات برای ماشین مجازی"
+  placeholder: مثال. اطلاعات تنظیمات برای container
+  isVmPlaceholder: مثال. اطلاعات تنظیمات برای ماشین مجازی
 formUserLabels:
   addAction: افزودن برچسب
   key:
     label: کلید
     placeholder: مثال. foo
+  separator: '='
   value:
     label: ارزش
     placeholder: مثال. bar
-  protip: 'نکته: Paste one or more lines of key=value pairs into any key field for easy bulk entry.'
+  protip: 'نکته: برای ورود گروهی آسان، یک یا چند خط از جفت‌های key=value را در هر فیلد کلید جای‌گذاری کنید.'
 formUpgrade:
+  size: اندازه دسته
+  interval: فاصله دسته ای
+  sec: ثانیه
   behavior: شروع Behavior
   startStop: شروع قبل از توقف
-  whichServices: کدام سرویس ها
+  whichServices: کدام سرویس‌ها
 formValueArray:
   addActionLabel: افزودن Value
   valueLabel: ارزش
   valuePlacholder: ارزش
-  protip: 'نکته: Paste one or more lines of values into any field for easy bulk entry.'
+  protip: 'نکته: برای ورود گروهی آسان، یک یا چند خط از مقادیر را در هر فیلد جای‌گذاری کنید.'
 formVirtualMachines:
+  vcpus: vCPUs
   memory: حافظه
 formVolumes:
+  windowsUnsupported: پشتیبانی از حجم در حال حاضر برای Windows در دسترس نیست.
+  pathPlaceholder: 'به عنوان مثال [volume-name: or /path/on/host:]/path/in/container[:ro]'
   value:
-    prompt: یک Container انتخاب کنید...
+    prompt: یک کانتینر انتخاب کنید...
+  volumes: حجم ها
+  volumesFrom: جلدها از
+  volumeDriver:
+    label: درایور حجم
+    placeholder: به عنوان مثال چراگاه-nfs
+  noLaunchConfigs: هیچ پیکربندی راه اندازی دیگری در این سرویس برای اشتراک گذاری حجم ها وجود ندارد.
+  noHostContainers: این میزبان محفظه ای برای استفاده از حجم ها ندارد.
+  onlySingleHost: فقط هنگام اضافه کردن یک کانتینر به یک میزبان خاص در دسترس است.
+  addActionLabel: افزودن حجم
+  errors:
+    invalidName: نام جلد فقط می تواند شامل حروف، اعداد، خط فاصله، خط زیر و نقطه باشد.
 heroAddService:
   infra:
-    header: افزودن Infrastructure Stacks
+    header: افزودن پشته‌های زیرساخت
+    paragraph: >-
+      پشته‌های زیرساخت قابلیت‌هایی مانند موتورهای ارکستراسیون جدید، ذخیره‌سازی و ارائه‌دهندگان شبکه را به {appName}
+      اضافه می‌کنند.
   service:
-    header: افزودن اولین Stack شما
+    header: افزودن نخستین پشته
+    paragraph1: >
+      یک سرویس صرفاً گروهی از کانتینرها است که از همان تصویر Docker ایجاد شده‌اند، اما مفهوم «پیوند» Docker را به اهرم
+      {appName} سرویس توزیع شده سبک DNS برای کشف خدمات گسترش می‌دهد.
+
+      خدمات را می توان به صورت جداگانه یا با استقرار یک مورد از کاتالوگ اضافه کرد.
+    paragraph2: >-
+      یک سرویس همچنین می تواند از سایر خدمات داخلی {appName} مانند متعادل کننده بار، نظارت بر سلامت، پشتیبانی ارتقاء و
+      در دسترس بودن بالا استفاده کند.
     contentLink: اطلاعات بیشتر
   addService: تعریف یک سرویس
   addCatalog: تنظیم
   linkToCatalog: Browse کاتالوگ
+hookPage:
+  receiver:
+    header: قلاب گیرنده
+    buttonText: افزودن گیرنده
+    content: 'قلاب‌های گیرنده یک URL به شما می‌دهند که می‌توان آن را برای شروع یک عمل در داخل {appName} ضربه زد.'
+    noData: بدون قلاب گیرنده
+  scaleService:
+    label: مقیاس یک سرویس
+    detailPrefix: 'مقیاس {action} '
+    detailLink: '{displayService}'
+    detailSuffix: 'توسط {amount}'
+  scaleHost:
+    label: تعداد میزبان‌ها را مقیاس کنید
+    detail: 'مطابقت {labels} {action} توسط {amount}'
+  serviceUpgrade:
+    label: یک سرویس را ارتقا دهید
+    detail: 'مطابق با {labels} زمانی که <code>{tag}</code> تغییر می کند'
+  fields:
+    kind:
+      label: مهربان
+    detail:
+      label: جزئیات
+    url:
+      label: ماشه URL
 hostSettings:
   header: میزبان Registration URL
+  subtext: 'میزبان ها باید از چه پایه URL برای اتصال به {appName} API استفاده کنند؟'
   hostUrl:
-    local: "آدرس این سایت:"
+    local: 'آدرس این سایت:'
     new:
-      labelText: "چیز دیگر:"
-      placeholder: "مثال. http://example.com:8080"
+      labelText: 'چیز دیگر:'
+      placeholder: 'مثال. http://example.com:8080'
+  helpText:
+    static1: <code>/v1</code> یا هر مسیر دیگری را وارد نکنید، اما اگر انجام می دهید
+    static2: 'در مقابل {appName}، حتما از <code>https://</code> استفاده کنید.'
+    isRancher: راهنمای خاتمه TLS را در مستندات سرور PastureStack مرور کنید.
+    sslTerm: SSL خاتمه
   notPublic:
-    alert: |
-      آیا مطمئن هستید تمام هاست های شما به  <code>{activeValue}</code> دسترسی خواهند داشت ?<br/> این آدرس به نظر یک آی پی خصوصی یا داخلی است.
+    alert: >
+      آیا مطمئن هستید تمام میزبان های شما به  <code>{activeValue}</code> دسترسی خواهند داشت ?<br/> این آدرس به نظر یک آی
+      پی خصوصی یا داخلی است.
+  badTld:
+    alert: >
+      دامنه سطح بالا <code>.local</code> توسط RFC6762 برای Multicast DNS رزرو شده است.  استفاده از این به عنوان ثبت نام
+      URL توصیه نمی شود و ممکن است باعث مشکلات حل DNS شود.  لطفاً نام میزبان دیگری یا IP را انتخاب کنید.
+hostPod:
+  supportState:
+    unsupported: نسخه Docker پشتیبانی نشده است
+    untested: نسخه آزمایش نشده Docker
+  groupedInstances:
+    namespace: 'فضای نام:'
+    stack: 'پشته:'
+    standalone: کانتینرهای مستقل
 identityBlock:
   loading: در حال بارگزاری...
+  systemService: سرویس سیستم
 infoMultiStats:
   connecting: در حال اتصال
+  utilizationStats: آمار استفاده فقط در زمان فعال/در حال اجرا در دسترس است.
+  time:
+    now: در حال حاضر
+    minutesSecondsAgo: '{minutes} دقیقه، {seconds} ثانیه قبل'
+    minutesAgo: '{count, plural, =1 {# دقیقه پیش} other {# دقیقه پیش}}'
+    secondsAgo: '{count, plural, =1 {# ثانیه پیش} other {# ثانیه پیش}}'
   cpuSection:
+    labelText: CPU
     system: سیستم
     user: کاربر
   networkSection:
     labelText: شبکه
+    transmit: انتقال دهد
     receive: دریافت
   memorySection:
     labelText: حافظه
     used: استفاده شده
   storageSection:
+    labelText: ذخیره سازی
     read: خواندن
     write: نوشتن
+inputCertificate:
+  key:
+    label: کلید خصوصی
+    placeholder: در کلید خصوصی جای‌گذاری کنید، با هدر کلید خصوصی PEM RSA شروع کنید
+  cert:
+    label: گواهی
+    placeholder: در گواهی اولیه جای‌گذاری کنید، با -----BEGIN CERTIFICATE----- شروع می‌شود
+  certChain:
+    label: گواهی‌های زنجیره ای
+    placeholder: اختیاری؛ در گواهی‌های زنجیره‌ای اضافی، با -----BEGIN CERTIFICATE----- شروع کنید.
+  metaXML:
+    label: فراداده XML
+    placeholder: چسباندن در IDP فراداده XML
 inputIdentity:
   placeholder:
     github: افزودن یک کاربر GitHub یا نام سازمان
@@ -1246,52 +2173,92 @@ inputTextFile:
   tooltip: خواندن از یک فایل
 k8s:
   containerSection:
-    name: نام Container
+    name: نام کانتینر
     status: وضعیت
     message: پیغام
     ready: آماده
+    restarts: دوباره راه اندازی می شود
+    noData: بدون کانتینر
+  deploymentSection:
+    name: نام استقرار
+    generation: نسل
+    replicas: ماکت ها
+    selectors: انتخابگرها
+    containers: کانتینرها
+    noData: بدون استقرار
   formContainerPorts:
+    portMap: نقشه بندر
     addPort: پورت افزودن
     table:
       header:
         hostIp: آی پی میزبان
         hostPort: پورت میزبان
-        containerPort: پورت Container
+        containerPort: پورت کانتینر
         protocol: پروتوکل
       body:
         name: مثال. web
         hostIp: مثال. 19.82.8.24
         hostPort: مثال. 80
         containerPort: مثال. 8080
+    noPorts: این کانتینر هیچ نقشه بندری ندارد.
   heroAddStack:
-    header: افزودن اولین Stack شما
+    header: افزودن نخستین پشته
+    content: >
+      پشته‌ها از کاتالوگ {appName} مستقر می شوند و گروهی از Deployments، Replication Controller ها یا دیگر منابع را
+      سازماندهی می کنند.
     linkToCatalog: افزودن از کاتالوگ
   newOrEditResource:
-    edit: ویرایش {type}
-    add: افزودن {type}
+    edit: 'ویرایش {type}'
+    add: 'افزودن {type}'
+    placeholder: تعریف منبع YAML یا JSON
   podSection:
     name: نام Pod
     status: وضعیت
+    containers: کانتینرها
     hostIp: آی پی میزبان
+    podIp: پاد IP
+    noData: بدون غلاف
   rcSection:
     name: نام RC
+    replicas: ماکت ها
+    selectors: انتخابگرها
+    containers: کانتینرها
+    noData: بدون کنترل کننده تکرار
   replicasetSection:
     name: نام Replica Set
+    replicas: ماکت ها
+    selectors: انتخابگرها
+    containers: کانتینرها
+    noData: بدون مجموعه ماکت
   servicePorts:
     port: پورت
-    containerPort: پورت Container
+    containerPort: پورت کانتینر
     nodePort: پورت Node
     protocol: پروتوکل
     noPorts: بدون پورت
+  serviceRow:
+    defaultType: ClusterIP
   serviceSection:
     name: نام سرویس
+    clusterIp: خوشه IP
+    pods: غلاف
+    clusterPorts: پورت های خوشه ای
+    nodePorts: پورت های گره
+    selectors: انتخابگرها
     noData: سرویسی وجود ندارد
 lbAddtlInfo:
   info: اطلاعات
   viewDetails: مشاهده جزئیات
   defaultCertificate: Certificate پیش فرض
+  alternateCertificate: گواهی جایگزین
   description: 'توضیح: '
+  containers: کانتینرها
+  noContainers: بدون کانتینر
+  scale: مقیاس
+  global: جهانی
   ports: پورت ها
+  noPorts: بدون پورت میزبان عمومی
+  targets: اهداف
   to: به
 labelsSection:
   kind: نوع
@@ -1299,9 +2266,12 @@ labelsSection:
   value: ارزش
   noData: بدون برچسب
 loginShibboleth:
-  buttonText: اهراز هویت با Shibboleth
+  buttonText: احراز هویت با Shibboleth
+  logout: از ارائه دهنده هویت خارج شوید
+serviceLog:
+  running: در حال دویدن
 loginGithub:
-  buttonText: اهراز هویت با GitHub
+  buttonText: احراز هویت با GitHub
 loginUserPass:
   userLabel: نام کاربری
   userPlaceholder: مثال. jsmith
@@ -1311,8 +2281,21 @@ loginUserPass:
 machine:
   driverAmazon:
     accessSection: دسترسی به حساب
-    loginAction: 'بعدی: اهراز هویت & انتخاب یک شبکه'
-    loadingAvailability: در حال بارگزاری Availablility Zone and VPC info from EC2...
+    accessKey:
+      label: کلید دسترسی
+      placeholder: کلید دسترسی AWS شما
+    secretKey:
+      label: کلید مخفی
+      placeholder: کلید مخفی AWS شما
+      provided: ارائه شده است
+    region:
+      label: منطقه
+    accessKeyHelp: جفت کلید AWS خود را در اینجا بچسبانید. ما از این کلید برای ایجاد نمونه‌های جدید شما استفاده می‌کنیم.
+    loginAction: 'بعدی: احراز هویت & انتخاب یک شبکه'
+    loadingAvailability: در حال بارگذاری اطلاعات Availability Zone و VPC از EC2…
+    vpcSection: منطقه در دسترس و VPC
+    availabilityZone: منطقه در دسترس بودن
+    subnet: VPC/زیر شبکه
     securityGroupSelect: 'بعدی: انتخاب یک گروه امنیت'
     loadingSecurity: در حال بارگزاری اطلاعات گروه از EC2...
     securityGroupSection: گروه امنیت
@@ -1327,41 +2310,173 @@ machine:
       link: اطلاعات بیشتر
       text: در مورد پورت هایی که باز خواهند بود
     needs:
-      item2: From and To all other hosts on <code>UDP</code> ports <code>500</code> and <code>4500</code> <span class="text-muted">(برای شبکه IPsec)</span></li>
+      label: 'برای اینکه {appName} به درستی کار کند، گروه امنیتی شما باید به ترافیک اجازه دهد:'
+      item1: >-
+        از سرور {appName} تا پورت <code>TCP</code> <code>22</code> <span class="text-muted">(SSH برای نصب و پیکربندی
+        Docker)</span>
+      item2: >-
+        ارتباط رفت و برگشت با همه میزبان‌های دیگر در پورت‌های <code>UDP</code> <code>500</code> و <code>4500</code> <span
+        class="text-muted">(برای شبکه IPsec)</span></li>
       item3: این قوانین بطور خودکار اضافه <b>نخواهند شد</b>.
     setInstanceAction: 'بعدی: Set Instance options'
+    instanceSection: نمونه
+    instanceOptionsSection: گزینه های نمونه
+    instanceType:
+      label: نوع نمونه
     rootSize:
       label: روت Size
+      unit: GB
+    ami:
+      label: AMI
+      placeholder: اوبونتو AMI
+      compatibilityGuide: راهنمای سازگاری تصویر آمازون EC2
     sshUser:
       label: کاربر SSH
       placeholder: مثال. ubuntu
+    iam:
+      label: IAM نمایه
     privateIp:
       label: IP خصوصی
     onlyPrivate:
       label: فقط از IP خصوصی استفاده شود
+    tags:
+      error: 'برچسب‌ها ممکن است حاوی کاما نباشند. لطفاً برچسب را اصلاح کنید: {tag}'
+      label: EC2 برچسب‌ها
+      addAction: برچسب اضافه کنید
+      keyLabel: برچسب بزنید
+      keyPlaceholder: به عنوان مثال FOO
+      valueLabel: ارزش
+      valuePlaceholder: به عنوان مثال نوار
   driverAzure:
+    helpBlock: >-
+      می‌توانید دستورالعمل‌های نحوه ایجاد Client ID و Secret <a
+      href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank" rel="noopener noreferrer"> را در اینجا </a> بیابید.
+    accountAccessSection: دسترسی به حساب
+    placementSection: قرار دادن
     networkSection: شبکه
+    subscriptionId:
+      label: اشتراک ID
+      placeholder: اشتراک Azure شما ID
+    subscriptionCert:
+      label: گواهی اشتراک
+      placeholder: گواهی اشتراک Azure شما
+    instanceSection: نمونه
     image:
       label: تصویر
+      placeholder: 'متعارف:UbuntuServer:16.04.0-LTS:جدیدترین'
+    vmType:
+      label: VM نوع
     size:
       label: اندازه
+    dockerPort:
+      label: Docker بندر
+      placeholder: '2376'
+    publishSettingsFile:
+      label: انتشار تنظیمات
+      placeholder: فایل تنظیمات انتشار شما
     environment:
       label: محیط
+      placeholder: AzurePublicCloud
+    resourceGroup:
+      label: گروه منابع
+      placeholder: docker-machine
+    sshUser:
+      label: SSH کاربر
+      placeholder: usr1
+    storageType:
+      label: نوع ذخیره سازی
+    vnet:
+      label: VNet
+      placeholder: '[گروه منابع:] نام'
+    subnet:
+      label: زیر شبکه
+      placeholder: مثال - نام فرعی
+    subnetPrefix:
+      label: پیشوند زیر شبکه
+      placeholder: 128.42.0.0/21
+    availabilitySet:
+      label: مجموعه در دسترس بودن
+      placeholder: در دسترس بودن-مجموعه-نام
     openPort:
+      label: پورت را باز کنید
       placeholder: 'Comma-separated, مثال. 80,443'
+    privateIpAddress:
+      label: خصوصی IP
+      placeholder: 127.0.0.1
+    usePrivateIp:
+      label: از Private IP برای اتصال استفاده کنید
+    staticPublicIp:
+      label: عمومی IP
+    noPublicIp:
+      label: عمومی نیست IP
     clientId:
       label: شناسه کلاینت
+      placeholder: مشتری شما ID
+    clientSecret:
+      label: راز مشتری
+      placeholder: راز مشتری شما
+    regionSection: منطقه
+    region:
+      label: منطقه
   driverCustom:
-    step2li: From and To all other hosts on <code>UDP</code> ports <code>500</code> and <code>4500</code> <span class="text-muted">(برای شبکه IPsec)</span>
-    step3: 'اختیاری: افزودن برچسب برای هاست.'
-    step5Copy: دستور زیر را کپی و پیست و اجرا کرده تا هاست شما ثبت شود
-    generating: "در حال ایجاد registration URL..."
+    step1: >-
+      یک دستگاه Linux راه اندازی کنید، نصب کنید <a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a>، و بررسی کنید <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">راهنمای سازگاری میزبان</a> قبل از ثبت نام
+    step2: 'مطمئن شوید که هر گروه امنیتی یا فایروال اجازه ترافیک را می دهد:'
+    step2li: >-
+      ارتباط رفت و برگشت با همه میزبان‌های دیگر در پورت‌های <code>UDP</code> <code>500</code> و <code>4500</code> <span
+      class="text-muted">(برای شبکه IPsec)</span>
+    step3: 'اختیاری: افزودن برچسب برای میزبان.'
+    step4: >-
+      IP عمومی را برای ثبت نام در این میزبان مشخص کنید. اگر خالی بماند، PastureStack آن را به طور خودکار تشخیص می دهد.
+      هنگامی که میزبان پشت فایروال یا NAT قرار دارد، یا زمانی که سرور کنترل و عامل یک میزبان را به اشتراک می گذارند، آن
+      را به صورت دستی تنظیم کنید.
+    agentIp:
+      placeholder: به عنوان مثال 1.2.3.4
+    step5Copy: دستور زیر را کپی و پیست و اجرا کرده تا میزبان شما ثبت شود
+    generating: در حال ایجاد registration URL...
     step5Close:
-      part1: دکمه بستن را انتخاب کنید. هاست جدید تا دقایقی بعد بر روی
-      link: میزبان ها
+      part1: دکمه بستن را انتخاب کنید. میزبان جدید تا دقایقی بعد بر روی
+      link: میزبان‌ها
       part2: صفحه نمایش ظاهر خواهد شد.
     close: بستن
+    windows:
+      windowsHeader: Windows میزبان
+      linuxHeader: Linux میزبان
+      step1: >-
+        یک دستگاه Windows Server 2016 راه اندازی کنید، نصب کنید <a href="https://docs.docker.com/engine/install/"
+        target="_blank" rel="noopener noreferrer">Docker</a>، و بررسی کنید <a
+        href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">راهنمای سازگاری
+        میزبان</a> قبل از ثبت نام
+      step2: 'یک شبکه شفاف Docker ایجاد کنید:'
+      step2Copy: docker network create -d transparent transparent
+      step3: 'دستور زیر را در PowerShell کپی، پیست و اجرا کنید تا عامل {appName} راه اندازی شود.'
+    windowsSteps:
+      step1: >-
+        یک دستگاه Windows Server 2016 راه اندازی کنید، نصب کنید <a href="https://docs.docker.com/engine/install/"
+        target="_blank" rel="noopener noreferrer">Docker</a>، و بررسی کنید <a
+        href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">راهنمای سازگاری
+        میزبان</a> قبل از ثبت نام
+      step2: 'ویژگی‌های RemoteAccess و Routing را در Windows بررسی و نصب کنید:'
+      step2Copy: 'Get-WindowsFeature -Name "RemoteAccess","Routing" | Install-WindowsFeature'
+      step2Note: 'توجه: اگر برنامه‌ها نصب شده باشند، دستگاه Windows باید راه‌اندازی مجدد شود.'
+      step3: >-
+        یک زیر شبکه منحصر به فرد برای میزبان Windows مشخص کنید. به منظور پشتیبانی از یک شبکه همپوشانی در Windows، هر
+        میزبان در محیط باید یک زیرشبکه منحصر به فرد داشته باشد.
+      step4: روتر IP را برای زیر شبکه میزبان مشخص کنید. این IP برای انتقال ترافیک شبکه بین میزبان‌های مختلف استفاده می شود.
+      routerIp:
+        placeholder: به عنوان مثال 1.2.3.4
+      subnet:
+        placeholder: به عنوان مثال 192.168.0.0/24
+      step5: >-
+        IP عمومی را برای ثبت نام در این میزبان مشخص کنید. اگر خالی بماند، PastureStack آن را به طور خودکار تشخیص می دهد.
+        هنگامی که میزبان پشت فایروال یا NAT قرار دارد، یا زمانی که سرور کنترل و عامل یک میزبان را به اشتراک می گذارند،
+        آن را به صورت دستی تنظیم کنید.
+      step6: 'اختیاری: برچسب‌هایی را اضافه کنید تا به میزبان اعمال شوند.'
+      step7: 'دستور زیر را در PowerShell کپی، پیست و اجرا کنید تا عامل {appName} راه اندازی شود.'
   driverDigitalocean:
+    sizeLabel: >
+      {highMem, select, true {حافظه بالا: } other {}}{memoryGb} GB RAM، {disk} GB دیسک، {vcpus, plural, =1 {# vCPU}
+      other {# vCPUs}}
     accountSection: دسترسی به حساب
     authAccountButton: 'بعدی: تنظیم Droplet'
     accessToken:
@@ -1369,11 +2484,18 @@ machine:
       placeholder: شناسه دسترسی DigitalOcean API شما
       help: |
         یک شناسه دسترسی خصوصی از DigitalOcean
-        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank">Apps & API</a> screen
+        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank" rel="noopener noreferrer">Apps & API</a> screen
+    instanceSection: نمونه
     image:
       label: تصویر
+    sshUser:
+      label: SSH کاربر
+      placeholder: usr1
     size:
       label: اندازه
+    regionSection: منطقه
+    region:
+      label: منطقه
     optionsSection: گزینه ها
     backups:
       label: فعال سازی Backups
@@ -1381,11 +2503,23 @@ machine:
       label: فعال سازی IPv6
     privateNetworking:
       label: فعال سازی شبکه خصوصی
+    monitoring:
+      label: مانیتورینگ را فعال کنید
+    tags:
+      addActionLabel: برچسب قطره را اضافه کنید
+      valueLabel: برچسب‌ها
+      placeholder: به عنوان مثال توسعه دهنده
   driverExoscale:
     accountSection: دسترسی به حساب
     apiKey:
       label: کلید API
-    loginAction: 'بعدی: اهراز هویت & انتخاب یک گروه امنیت'
+      placeholder: کلید Exoscale API شما
+    secretKey:
+      label: کلید مخفی
+      placeholder: کلید مخفی Exoscale شما
+      provided: ارائه شده است
+    accountHelp: جفت کلید Exoscale خود را در اینجا بچسبانید.  ما از این کلید برای ایجاد نمونه‌های جدید شما استفاده می‌کنیم.
+    loginAction: 'بعدی: احراز هویت & انتخاب یک گروه امنیت'
     loadingSecurity: در حال بارگزاری اطلاعات گروه امنیت از Exoscale...
     securityGroupSection: گروه امنیت
     securityGroup:
@@ -1395,72 +2529,245 @@ machine:
       custom: 'Custom: انتخاب یک گروه موجود'
       updating: در حال بروز رسانی گروه امنیت...
       creating: در حال ساخت گروه امنیت...
+    loadingZone: در حال بارگیری اطلاعات منطقه از Exoscale...
+    zoneSection: منطقه
+    selectZoneAction: 'بعد: یک گروه امنیتی را انتخاب کنید'
+    zone:
+      label: منطقه
     portHelp:
       link: اطلاعات بیشتر
       text: در مورد پورت هایی که باز خواهند بود.
+    needs:
+      label: 'برای اینکه {appName} به درستی کار کند، گروه امنیتی شما باید به ترافیک اجازه دهد:'
+      item1: >-
+        از سرور {appName} تا پورت <code>TCP</code> <code>22</code> <span class="text-muted">(SSH برای نصب و پیکربندی
+        Docker)</span>
+      item2: >-
+        از و به همه میزبان‌های دیگر در پورت‌های <code>UDP</code> <code>500</code> و <code>4500</code> <span
+        class="text-muted"> (برای شبکه IPsec)</span></li>
+      item3: این قوانین <b>به طور خودکار </b> اضافه نمی شوند.
     selectSecurityGroupAction: 'بعدی: Set Instance options'
+    loadingInstance: در حال واکشی تنظیمات نمونه موجود...
+    instanceSection: نمونه
+    instanceProfile:
+      label: نمایه نمونه
     diskSize:
       label: روت Size
+    sshUser:
+      label: SSH کاربر
+      placeholder: به طور پیش فرض توسط docker-machine انتخاب شده است
+    template:
+      label: الگو
+  driverOtc:
+    access: دسترسی به حساب
+    authorize: مجاز کردن
+    next:
+      availability: 'بعد: Availability را انتخاب کنید'
+      networks: 'بعد: Subnet را انتخاب کنید'
+      instance: 'بعد: گزینه های نمونه را انتخاب کنید'
+    errors:
+      akId: یک کلید دسترسی ID مورد نیاز است
+      akS: یک راز کلید دسترسی مورد نیاز است
+      project: یک پروژه ID مورد نیاز است
+    loadingAvailability: در حال بارگیری در دسترس بودن و VPCs
+    loadingNetworks: در حال بارگذاری شبکه ها
+    loadingFlavors: در حال بارگیری گزینه های نمونه
+    provided:
+      password: رمز عبور ارائه شده است
+    projectId: پروژه ID
+    osUsername: OpenStack نام کاربری
+    osPassword: OpenStack رمز عبور
+    osUserDomainName: OpenStack نام دامنه
+    osProjectName: OpenStack نام پروژه
+    accessKey: کلید دسترسی ID
+    accessSecret: دسترسی به رمز کلید
+    availableZone:
+      header: در دسترس بودن
+      label:
+        zone: منطقه
+        region: منطقه
+      dropdown:
+        zone: یک منطقه را انتخاب کنید
+    region: null
+    vpcAndSecurity:
+      header: زیر شبکه و گروه های امنیتی
+      vpc: VPC
+      security: گروه امنیتی
+      subnet: زیر شبکه
+      dropdown:
+        vpc: یک VPC را انتخاب کنید
+        security: یک گروه امنیتی را انتخاب کنید
+        subnet: یک زیرشبکه را انتخاب کنید
+    instance:
+      header: نمونه
+      options: گزینه های نمونه
+      flavorid: طعم ID
+      images: تصاویر
+      sshUser: SSH کاربر
+      rootPassword: رمز عبور ریشه
+      rootVolume: اندازه حجم ریشه
+      rootVolumeType: نوع حجم ریشه
+      size: اندازه پهنای باند
+      dropdown:
+        flavorid: یک طعم را انتخاب کنید
+        imageid: یک تصویر را انتخاب کنید
+        type: نوع حجم را انتخاب کنید
+  driverOther:
+    driverSection: راننده
+    driver:
+      label: راننده
+    optionsSection: '{driverName} گزینه ها'
   driverPacket:
     accountSection: دسترسی به حساب
     projectId:
       label: پروژه
+      placeholder: پروژه Packet شما ID
     apiKey:
       label: کلید API
+      placeholder: کلید Packet API شما
+    apiKeyHelp: 'از صفحه Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank" rel="noopener noreferrer">API کلیدها</a> صفحه نمایش'
+    instanceSection: نمونه
     image:
       label: تصویر
     size:
       label: اندازه
+    regionSection: منطقه
+    region:
+      label: منطقه
   driverRackspace:
     accountSection: دسترسی به حساب
     username:
       label: نام کاربری
+      placeholder: نام کاربری RackSpace شما
     apiKey:
       label: کلید API
+      placeholder: کلید RackSpace API شما
+    accountHelp: از صفحه تنظیمات حساب کنترل پنل RackSpace
+    regionSection: منطقه
+    region:
+      label: منطقه
+    instanceSection: نمونه
+    flavor:
+      label: طعم دهنده
   driverUbiquity:
     accountSection: دسترسی به حساب
+    clientId:
+      label: فروشنده ID
+      placeholder: میزبان Ubiquity شما API فروشنده ID
+    apiUsername:
+      label: کنترل از راه دور ID
+      placeholder: کنترل از راه دور میزبانی Ubiquity شما ID
     apiToken:
       label: کلید دسترسی
-    loginAction: 'بعدی: اهراز هویت & ساخت a New Cloud Instance'
-    loadingInstance: در حال بارگزاری cloud instance creation details...
+      placeholder: کلید دسترسی به میزبانی Ubiquity شما
+      provided: ارائه شده است
+    accountHelp: >-
+      می توانید اعتبارنامه میزبان Ubiquity API <a href="https://motion.ubiquityhosting.com/api"> را در اینجا </a> بیابید.
+      حساب کاربری ندارید؟ امروز درباره <a href="http://www.ubiquityhosting.com/">Ubiquity Hosting</a> بیشتر بیاموزید!
+    loginAction: 'بعدی: احراز هویت و ایجاد نمونه ابری جدید'
+    loadingInstance: در حال بارگذاری جزئیات ایجاد نمونه ابری…
+    instanceSection: نمونه
+    regionSection: منطقه
+    region:
+      label: منطقه
     image:
       label: تصویر
+    flavor:
+      label: طعم دهنده
   driverVsphere:
     accountSection: دسترسی به حساب
     vcenter:
-      label: هاست vCenter
+      label: میزبان vCenter
+      placeholder: vCenter یا ESXi نام میزبان/IP
     vcenterPort:
       label: پورت vCenter
     username:
       label: نام کاربری
     password:
       label: رمز عبور
+    instanceSection: نمونه
     cpuCount:
       label: پردازنده ها
     memorySize:
       label: حافظه
+      unit: MB
     diskSize:
       label: دیسک
+      unit: MB
     boot2dockerUrl:
+      label: OS ISO URL
       placeholder: 'پیش فرض: آخرین boot2docker image'
+    schedulingSection: برنامه ریزی
+    dataCenter:
+      label: مرکز داده
+    pool:
+      label: استخر
     host:
       label: میزبان
+      placeholder: در صورت استفاده از خوشه از '/' استفاده کنید
     network:
       label: شبکه
+    dataStore:
+      label: فروشگاه داده
   driverAliyunecs:
+    accountSection: بخش دسترسی به حساب
+    accessKey:
+      label: کلید دسترسی*
+      placeholder: کلید دسترسی به حساب Aliyun شما
+    accessKeySecret:
+      label: راز کلید دسترسی*
+      placeholder: راز کلید شما
+    apiEndpoint:
+      label: نقطه پایانی Api
+      placeholder: نقطه پایانی سرور Api خصوصی Aliyun
+    instanceSection: بخش نمونه
+    instanceDescription:
+      label: شرح نمونه
+      placeholder: شرح نمونه
+    instanceType:
+      label: نوع نمونه
+      placeholder: نوع نمونه
+    systemImage:
+      label: تصویر سیستم
+      placeholder: تصویر سیستم
+    instanceTag:
+      label: برچسب نمونه
+      placeholder: برچسب نمونه شما در Aliyun
     internetMaxBandwidth:
       label: حداکثر پهنای باند اینترنت
       placeholder: 1 تا 100
+    aliyunSLB:
+      label: Aliyun SLB ID
+      placeholder: Aliyun SLB ID
     storageSection: اطلاعات فضای ذخیره سازی
     ioOptimized:
+      label: ذخیره سازی نمونه I/O بهینه شده است
       placeholder: هیچکدام یا بهینه شده
+    systemDiskCategory:
+      label: دسته دیسک سیستم
+      placeholder: وقتی فضای ذخیره‌سازی بهینه شده است، می‌توانید cloud_efficiency، cloud_ssd یا ephemeral_ssd را وارد کنید.
+    dataDiskCategory:
+      label: دسته دیسک داده
+      placeholder: وقتی فضای ذخیره‌سازی بهینه شده است، می‌توانید cloud_efficiency، cloud_ssd یا ephemeral_ssd را وارد کنید.
     dataDiskSize:
+      label: اندازه دیسک داده
       placeholder: اندازه دیسک
+    region:
+      label: منطقه
+      placeholder: منطقه
     zone:
+      label: منطقه در دسترس
       placeholder: خالی برای انتخاب خودکار
     networkSection: بخش شبکه
     routeCIDR:
+      label: مسیر CIDR
       placeholder: مثال. 192.168.1.0/24
+    vpcId:
+      label: Aliyun VPC ID
+      placeholder: Aliyun VPC ID
+    vswitchId:
+      label: Aliyun Vswitch ID
+      placeholder: Aliyun Vswitch ID
     privateIp:
       label: آی پی خصوصی
       placeholder: آی پی خصوصی در شبکه خصوصی
@@ -1472,23 +2779,49 @@ machine:
       placeholder: گروه امنیت
     sshPassword:
       label: رمز عبور SSH
+      placeholder: تنظیم نمونه SSH رمز عبور، خالی برای تنظیم خودکار
+    errors:
+      nameTooShort: طول نام باید برابر یا بیشتر از دو باشد.
+      nameNotValid: این نام طبق قانون نام میزبان Aliyun ECS نامعتبر است.
+      nameTooLong: طول نام باید مساوی یا کمتر از سی باشد.
+      accessKeyRequired: کلید دسترسی مورد نیاز است.
+      accessSecretRequired: راز دسترسی لازم است.
+      sshPasswordLengthNotValid: طول رمز عبور SSH باید بین هشت تا سی باشد.
+      sshPasswordInvalidCharacter: رمز عبور SSH حاوی کاراکترهای نامعتبر است.
+      sshPasswordFormatError: 'رمز عبور SSH باید حداقل شامل سه مورد از چهار نوع نویسه زیر باشد: حروف بزرگ، حروف کوچک، اعداد و نویسه‌های خاص.'
+      nameNotValidForApp: 'این نام طبق قانون نام میزبان {appName} نامعتبر است.'
 modalAboutComponent:
+  component: جزء
   version: نسخه
+  cattle: Orchestration Engine
+  cli: CLI
   ui: رابط کاربری
-  machineService: سرویس ماشین
+  compose: Compose
+  machineService: Host Provisioner
   close: بستن
 modalAuditlogInfo:
   header: افزودنitional Log Info
+  request: 'شی درخواست:'
+  response: 'هدف پاسخ:'
+modalContainerStop:
+  uom: ثانیه
+  header: آیا مطمئن هستید که می خواهید متوقف شوید؟
+  helpText: اگر کانتینر قبل از انقضای مهلت متوقف نشود، به اجبار خاتمه می یابد
+  protip: 'ProTip: برای دور زدن این تایید، کلید {key} را در حالی که روی توقف کلیک می‌کنید، نگه دارید.'
+  label: تایم اوت
+  placeholder: '10'
+  button: توقف کنید
 modalConfirmDeactivate:
   header: آیا اطمینان دارید
+  protip: 'ProTip: برای دور زدن این تأیید، کلید {key} را در حالی که روی {isServiceButton} کلیک می‌کنید، نگه دارید.'
   cancel: لغو
   buttons:
     project:
       message: غیر فعال سازی محیط شما
       button: غیر فعال سازی
     environment:
-      message: متوقف نمودن سرویس ها برای
-      button: متوقف نمودن سرویس ها
+      message: متوقف نمودن سرویس‌ها برای
+      button: متوقف نمودن سرویس‌ها
     default:
       message: غیر فعال سازی
       button: غیر فعال سازی
@@ -1496,51 +2829,122 @@ modalEditBackup:
   edit: ویرایش Backup
   create: ساختن Backup
   nameLabel: نام Backup
+  backupTarget: هدف پشتیبان
+  backupTargetPlaceholder: انتخاب یک هدف پشتیبان...
 modalEditDriver:
   header:
     create: افزودن درایور ماشین
     edit: ویرایش درایور ماشین
   url:
     label: دانلود URL
+    help: URL برای دانلود درایور دستگاه باینری 64 بیتی Linux.
   uiUrl:
-    help: 'اختیاری: The URL to load for customized Add Hosts screen for this driver.'
+    label: سفارشی UI URL
+    help: 'اختیاری: نشانی URL رابط سفارشی افزودن میزبان برای این درایور.'
+    link: >-
+      برای اطلاعات بیشتر به <a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">PastureStack Web
+      Console</a> مراجعه کنید.
   checksum:
-    help: 'اختیاری: Verify that the downloaded driver matches the expected checksum.'
+    label: چک جمع
+    help: 'اختیاری: بررسی کنید درایور دانلودشده با جمع کنترل مورد انتظار مطابقت دارد.'
+modalEditSetting:
+  title: تنظیمات پیشرفته را ویرایش کنید
+  name:
+    label: نام
+  value:
+    label: ارزش
+  reset:
+    label: به حالت پیش فرض بازنشانی کنید
 modalEditSnapshot:
   edit: ویرایش Snapshot
   create: ساختن Snapshot
   nameLabel: نام Snapshot
+modalFeedback:
+  header: 'به {appName} خوش آمدید!'
+  subtitle: قبل از شروع، لطفا کمی از خودتان برایمان بگویید...
+  send: شروع کنید
+modalHostEvacuate:
+  header: آیا مطمئن هستید که می خواهید تخلیه شوید؟
+  helpText: این کار میزبان(ها) را غیرفعال می کند و همه کانتینرهای غیر زیرساختی را که روی آن اجرا می شوند حذف می کند.
+  protip: 'ProTip: برای دور زدن این تایید، کلید {key} را در حالی که روی توقف کلیک می‌کنید، نگه دارید.'
+  button: تخلیه کنید
 modalProcessError:
-  cause: "علت:"
+  header: اطلاعات استثنایی
+  cause: 'علت:'
+  none: N/A
+  stackTrace: 'ردیابی پشته:'
   close: بستن
+modalRollbackVolume:
+  title:
+    snapshot: بازگشت به یک عکس فوری
+    backup: بازگشت به پشتیبان
+modalShell:
+  title: 'پوسته: {instanceName}'
 modalWelcome:
-  header: به {appName} خوش آمدید!
+  header: 'به {appName} خوش آمدید!'
   closeModal: بستن
 newAliasService:
-  header: افزودن سرویس Alias
+  header: افزودن نام مستعار سرویس
 newBalancer:
+  header:
+    add: اضافه کردن بار متعادل کننده
+    edit: ویرایش متعادل‌کنندهٔ بار
+    upgrade: ارتقای متعادل‌کنندهٔ بار
   tabs:
-    labels: برچسب ها
+    ssl: SSL فسخ
+    stickiness: چسبندگی
+    custom: haproxy.cfg سفارشی
+    labels: برچسب‌ها
+    scheduling: برنامه ریزی
+  custom: >
+    پیکربندی اضافی <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a> را می توان در اینجا قرار داد و با پیکربندی ایجاد شده توسط {appName} ادغام خواهد شد.
+  config:
+    prompt: محتوای سفارشی haproxy.cfg
+  error:
+    noRules: یک یا چند قانون پورت را برای گوش دادن انتخاب کنید
+    noSourcePort: پورت منبع برای هر قانون مورد نیاز است
+    noRegion: منطقه برای هدف خدمات سفارشی مورد نیاز است
+    noEnvironment: محیط برای هدف خدمات سفارشی مورد نیاز است
+    missingEnvironment: محیط مورد نیاز است
+    invalidSourcePort: 'پورت منبع نامعتبر: ''{num}'''
+    invalidTargetPort: 'پورت هدف نامعتبر: ''{num}'''
+    invalidWeight: 'وزن نامعتبر: ''{num}'''
+    mixedPort: 'پورت {num} دارای قوانین متعدد با دسترسی/پروتکل های متناقض است'
+    noTarget: هدف در هر قانون مورد نیاز است
+    needsCertificate: گواهینامه لازم است زیرا قوانین پورت SSL/TLS وجود دارد
 newCatalog:
   version:
     prompt: انتخاب یک نسخه...
+    default: 'پیش فرض در آن زمان (در حال حاضر {version})'
   saveUpgrade: ارتقا
   saveNew: اجرا
   saveConfigure: تنظیم کردن
-  upgrade: "ارتقا:"
-  catalog: "کاتالوگ:"
-  category: "دسته بندی:"
-  support: "پشتیبانی:"
+  upgrade: 'ارتقا:'
+  catalog: 'کاتالوگ:'
+  category: 'دسته بندی:'
+  support: 'پشتیبانی:'
+  official: الگوی تایید شده
+  maintainedBy: توسط اعضای جامعه نگهداری می شود
+  maintainer: 'نگهدارنده:'
+  license: 'مجوز:'
+  url: 'پروژه URL:'
+  titleAdd: 'پشته {name} را اضافه کنید'
+  titleUpgrade: 'پشته {name} را ارتقا دهید'
+  titleConfigure: 'پشته {name} را پیکربندی کنید'
   templateVersion: نسخه Template
   selectVersionAdd: یک نسخه از template را برای deploy انتخاب کنید
   selectVersionUpgrade: یک نسخه از template را برای ارتقا انتخاب کنید
   selectVersionConfigure: یک نسخه از template را برای تنظیم کردن انتخاب کنید
-  startService: شروع سرویس ها بعد ایجاد
+  newStack: پشته جدید
+  config: گزینه های پیکربندی
+  unknownType: 'نوع سوال ناشناخته:'
+  startService: شروع سرویس‌ها بعد ایجاد
   preview: پیش نمایش
+  txt: answers.txt
   noConfig: این template تنظیماتی ندارد.
 newContainer:
   add:
-    container: افزودن Container
+    container: افزودن کانتینر
     vm: افزودن ماشین مجازی
     service: |
       افزودن {numServices, plural,
@@ -1548,7 +2952,7 @@ newContainer:
       other {Services}
       }
   upgrade:
-    container: ارتقای Container
+    container: ارتقای کانتینر
     vm: ارتقای ماشین مجازی
     service: |
       ارتقا {numServices, plural,
@@ -1559,8 +2963,14 @@ newContainer:
     disks: دیسک ها
     userData: داده های کاربر
     command: دستور
+    volumes: حجم ها
     networking: شبکه
-    labels: برچسب ها
+    security: امنیت / میزبان
+    healthCheck: بررسی سلامت
+    labels: برچسب‌ها
+    scheduling: برنامه ریزی
+    balancing: متعادل کردن
+    secrets: اسرار
   selectUpgrade: یک یا چند سرویس برای ارتقا انتخاب کنید.
   saveUpgrade: ارتقا
   saveNew: ساختن
@@ -1569,27 +2979,128 @@ newContainer:
     placeholder: مثال. myapp
   description:
     placeholder: مثال. My Application
-  addSidekickContainer: افزودن Sidekick Container
+  emptyPrimaryService: (سرویس اولیه)
+  emptySidekick: '(کمک شماره {num})'
+  addSidekickContainer: افزودن Sidekick کانتینر
   addSidekickVm: افزودن Sidekick VM
 newExternalService:
   header: افزودن سرویس خارجی
-  alert: 'توجه: This will only be used if the external service is a target of a load balancer.'
+  alert: 'توجه: این گزینه فقط زمانی استفاده می‌شود که سرویس خارجی هدف یک متعادل‌کننده بار باشد.'
+newReceiver:
+  title:
+    edit: ویرایش گیرنده
+    add: افزودن گیرنده
+  name:
+    placeholder: به عنوان مثال مقیاس-وب
+  driver:
+    label: مهربان
+  action:
+    label: اقدام
+    up: افزایش مقیاس
+    down: کاهش مقیاس
+  batchSize:
+    label: اندازه دسته را ارتقا دهید
+  deleteOption:
+    label: هنگام کاهش مقیاس، حذف کنید
+    mostRecent: جدیدترین میزبان ایجاد شده
+    leastRecent: قدیمی ترین میزبان
+  hostSelector:
+    label: انتخابگر میزبان
+    addActionLabel: افزودن برچسب انتخابگر
+    help:
+      up: >-
+        میزبان‌هایی با برچسب‌های منطبق به عنوان الگو برای استقرار جدید استفاده می شود {by, plural, =1 {میزبان} other
+        {میزبان‌ها}}.
+      down: میزبان‌هایی با برچسب‌های منطبق کاندیدای حذف در حین کاهش مقیاس خواهند بود.
+  image:
+    label: Docker نام تصویر
+  service:
+    label: سرویس هدف
+  serviceSelector:
+    label: انتخابگر خدمات
+    addActionLabel: افزودن برچسب انتخابگر
+    help: خدمات مطابق با برچسب داده شده ارتقا خواهند یافت
+  amount:
+    label: توسط
+  min:
+    label: حداقل مقیاس
+    placeholder: به عنوان مثال 1
+  max:
+    label: حداکثر مقیاس
+    placeholder: به عنوان مثال 20
+  payloadFormat:
+    label: قالب بارگذاری Webhook
+    alicloud: علی بابا ابر Docker هاب
+    dockerhub: Docker هاب
+    azure: Azure رجیستری کانتینر
+  addressType:
+    label: نوع آدرس
+    registry: عمومی
+    registry-vpc: VPC
+    registry-internal: کلاسیک
+  tag:
+    label: برچسب تصویر
+    placeholder: به عنوان مثال آخرین
+    help: فقط فشارهای رجیستری به تگ داده شده باعث ارتقای سرویس می شود.
+newSecret:
+  title:
+    edit: راز را ویرایش کنید
+    add: راز را اضافه کنید
+  name:
+    placeholder: به عنوان مثال api-token
+  description:
+    placeholder: به عنوان مثال رمز مخفی برای API
+  value:
+    label: ارزش مخفی
+    placeholder: ارزش مخفی
 pageFooter:
+  about: 'درباره {appName}'
   notARelease: (نسخه آزمایشی)
-  help: راهنمایی
-  documentation: مستند
-  faq: پرسش و پاسخ ه‍ا
+  help: راهنما
+  documentation: مستندات
+  faq: پرسش‌های متداول
   issues: گزارش مشکل
-  forums: تالار های گفتگو
   download:
     link: دانلود CLI
+    headerCli: PastureStack CLI
+    headerCompose: PastureStack Compose
+    mac: مک OS X
+    windows: Windows
+    linux: Linux
+    deprecated: منسوخ شده است
+pagination:
+  multi: |
+    {pages, plural, =0 {0 مورد} =1 {{count} {count, select, =1 {مورد} other {موارد}}} other {{from} - {to} از {count}}}
+pageHeaderEnvironment:
+  namespace: فضای نام
 projectRow:
   none: بدون توضیح
+  orchestration: ارکستراسیون
+projectUpgrade:
+  header: ارتقاء محیط
+  detail: '{appName} {appVersion} شامل تغییراتی است که نیاز به ارتقاء سرویس‌های سیستم موجود و کانتینرهای متعادل کننده بار دارد.'
+  notOwner: فقط یک مالک این محیط یا یک مدیر می تواند ارتقا را انجام دهد.
+  actionButton: اکنون ارتقا دهید
+  banner: ارتقاء محیط ...
 registryRow:
   address: آدرس
   email: ایمیل
   username: نام کاربری
   created: ساخته شد
+reservationParameters:
+  label: محدودیت منابع
+  localStorage:
+    labelText: محل ذخیره سازی
+    placeholder: 'پیش فرض: کل میزبان'
+    unit: MB
+  memory:
+    labelText: حافظه
+    placeholder: 'پیش فرض: کل میزبان'
+    unit: MB
+  milliCpu:
+    labelText: CPU
+    placeholder: 'پیش فرض: کل میزبان'
+    unit: mCPU
 saveCancel:
   saving: در حال ذخیره سازی...
   saved: ذخیره شد!
@@ -1598,49 +3109,76 @@ saveCancel:
   cancel: لغو
 schema:
   inputBoolean:
-    "y": "درست"
-    "n": "غلط"
+    y: درست
+    n: غلط
   inputCertificate:
     prompt: یک Certificate انتخاب کنید...
   inputEnum:
     option: یک گزینه انتخاب کنید...
   inputService:
     prompt: یک سرویس انتخاب کنید...
+    custom:
+      prompt: سفارشی...
+      placeholder: به عنوان مثال region1/environment1/stack1/service1
+  inputSecret:
+    prompt: راز را انتخاب کن...
 schedulingRuleRow:
-  theHost: هاست
+  theHost: میزبان
   must: باید
   should: باید
   shouldNot: نباید
   mustNot: نباید
   haveA: داشته باشد
   of: از
-  hostLabel: برچسب هاست
+  hostLabel: برچسب‌میزبان
   containerLabel: container با برچسب
   serviceName: سرویس با نام
   containerName: container با نام
 serviceLink:
   withAlias:
-    sameStack: "{service} به عنوان {alias}"
-    differentStack: "{stack}/{service} به عنوان {alias}"
+    sameStack: '{service} به عنوان {alias}'
+    differentStack: '{stack}/{service} به عنوان {alias}'
+  noAlias:
+    sameStack: '{service}'
+    differentStack: '{stack}/{service}'
 sidekickAddtlInfo:
   info: اطلاعات
   image: تصویر
+  entryPoint: نقطه ورود
   command: دستور
-  labels: برچسب ها
+  containers: کانتینرها
+  noContainers: بدون کانتینر
+  labels: برچسب‌ها
+  noLabels: بدون برچسب
 siteAccess:
   header: دسترسی سایت
+  helpText: 'پیکربندی کنید چه کسی باید اجازه ورود به سیستم و استفاده از {appName} را داشته باشد.'
+  unrestricted: 'هر معتبر {individuals} مجاز باشد'
+  restricted: 'اجازه دادن به اعضای Environments، به علاوه مجاز {individuals} و {collection}'
+  required: 'محدود کردن دسترسی فقط به مجاز {individuals} و {collection}'
+  listHeader: 'مجاز {individuals} و {collection}'
   noIdentity: هیچ یک
   users: کاربران
   groups: گروه ها
   organizations: سازمان ها
+snapshotTimeline:
+  noData: داده های Snapshot وجود ندارد
 stackSection:
+  toggleDetails: جزئیات پشته را تغییر دهید
   outputs: خروجی ها
   description: توضیح
   none: سرویسی وجود ندارد
+  tags: برچسب‌ها
+  container: |
+    {numContainers, plural, =1 {کانتینر} other {کانتینرها}}
+  service: |
+    {numServices, plural, =1 {خدمات} other {خدمات}}
+  sidekick: |
+    {numSidekicks, plural, =1 {+ 1 سایدکیک} other {+ # جانبازان}}
   add:
     service: افزودن سرویس
-    loadBalancer: افزودن Load Balancer
-    serviceAlias: افزودن سرویس Alias
+    loadBalancer: افزودن متعادل‌کنندهٔ بار
+    serviceAlias: افزودن نام مستعار سرویس
     externalService: افزودن سرویس خارجی
     virtualMachine: افزودن ماشین مجازی
   table:
@@ -1649,94 +3187,213 @@ stackSection:
       serviceName: نام سرویس
       kind: نوع
       details: جزئیات
+      containers: کانتینرها
       actions: اکشن ها
+  upgradeImage: ارتقا تصویر کانتینر
+snapshotSection:
+  none: پشتیبان گیری نشده است
+  multiple: 'چندگانه: {latestDate}'
 storagePoolSection:
   outputs: خروجی ها
+  readOnly: (فقط خواندنی)
   hosts:
-    header: میزبان ها
-    none: هاستی وجود ندارد
+    header: میزبان‌ها
+    none: میزبانی وجود ندارد
   volumes:
+    header: حجم ها
     add: افزودن Volume
+    none: بدون حجم
+  models:
+    table:
+      header:
+        volumeName: نام جلد
+        snapshotState: وضعیت اسنپ شات
+        snapshotName: نام عکس فوری
+        backedUp: پشتیبان گیری شد
+        mounts: 'پایه‌ها (کانتینر: مسیر)'
+svgServiceContainer:
+  sidekicks: سایدکیکس
 swarm:
   containerSection:
     state: وضعیت
-    name: Container نام
+    name: کانتینر نام
     image: تصویر
+    none: بدون کانتینر
   serviceSection:
     state: وضعیت
     name: نام سرویس
     ports: پورت ها
+    containers: کانتینرها
     none: سرویسی وجود ندارد
+swarmTab:
+  dashboard:
+    header: داشبورد
+    dashboard:
+      content: Portainer یک مدیریت سبک وزن UI است که به شما امکان می دهد به راحتی خوشه گروهی Docker خود را مدیریت کنید.
+      button: پورتینر UI
 telemetryOpt:
+  header: آمار
+  subtext: >
+    با فعال بودن این گزینه، این نصب می‌تواند اطلاعات ناشناس پیکربندی را برای بهبود {appName} جمع‌آوری کند.<br/>هیچ نام
+    یا آدرس مشخصی از منابع جمع‌آوری نمی‌شود و آمار حاصل در اختیار اشخاص ثالث قرار نمی‌گیرد.
   learnMore:
     label: اطلاعات بیشتر
-  label: همهow collection of anonymous statistics
+  label: اجازه جمع‌آوری آمار ناشناس
 tooltipLink:
   list: لیست
+  linkGraph: نمودار پیوند
+  composeYaml: Compose YAML
+tooltipWarning:
+  notConfigured: کنترل دسترسی پیکربندی نشده است
+  dismiss: رد کردن
 upgradeBtn:
+  version:
+    current: فعلی
   status:
-    none: 'هیچ یک'
+    none: هیچ یک
+    loading: در حال بررسی ارتقاء...
+    current: به روز
+    available: ارتقا در دسترس است
+    inprogress: ارتقا در حال انجام است
+    upgraded: 'ارتقا: پایان ارتقا'
+    notfound: نسخه قالب پیدا نشد
+    error: خطا در بررسی برای ارتقا
+    required: ارتقاء لازم است
 viewEditDescription:
   form:
     name:
       placeholder: مثال. lab
     description:
-      placeholder: مثال. Environment for developer experimentation
+      placeholder: 'برای مثال: محیط آزمایشی توسعه‌دهنده'
 viewEditProject:
+  nativeEngine: موتور بومی
   showEdit:
-    edit: "ویرایش محیط:"
+    edit: 'ویرایش محیط:'
     add: افزودن محیر
+    template: قالب محیطی
     accessControl: کنترل دسترسی
     noMembers: افزودن اعضایی که می توانند از این محیط استفاده کنند.
-  header: "محیط:"
+  networkPolicy:
+    label: خط مشی شبکه
+    description: کنترل کنید که چه کانتینرهایی مجاز به برقراری ارتباط با یکدیگر از طریق شبکه مدیریت شده هستند.
+    unsupported: >-
+      این محیط دارای قوانین خط مشی شبکه است که هنوز توسط UI پشتیبانی نمی شود.  لطفاً از API برای مدیریت خط مشی استفاده
+      کنید.
+    noManager: >-
+      خط‌مشی‌های شبکه فقط برای محیط‌هایی که از موتور ارکستراسیون PastureStack استفاده می‌کنند با الگوی زیرساخت مدیر خط‌مشی شبکه
+      مستقر شده است.
+    withinStack: درون پشته
+    withinService: داخل سرویس
+    withinLinked: بین خدمات مرتبط
+    default: همه چیز دیگر
+    allow: اجازه دهید
+    deny: تکذیب کنید
+  header: 'محیط:'
   description: توضیح
+  helpBlock: |
+    کنترل دسترسی فعال نیست.<br/>
+    هر کسی که به API/UI دسترسی داشته باشد به عنوان یک مدیر عمل می کند و می تواند از هر محیطی استفاده کند.
 vmConsole:
+  header: 'کنسول:'
+  protip: 'ProTip: هنگام باز کردن دسترسی پوسته برای راه‌اندازی یک پنجره جدید، کلید {key} را نگه دارید.'
   canvas: Canvas پشتیبانی نمی شود.
   footerActions:
+    buttonSend: Ctrl-Alt-Delete را ارسال کنید
     buttonCancel: بستن
+volumeRow:
+  mounts:
+    readOnly: (فقط خواندنی)
+waitOrchestration:
+  count: '({sub} از {count})'
 waitKubernetes:
-  addHost: 'حداقل یک هاست اضافه کنید'
-  activateHost: 'در انتظار فعال سازی هاست'
-  startServices: 'در حال شروع سرویس ها'
+  addHost: حداقل یک میزبان اضافه کنید
+  activateHost: در انتظار فعال سازی میزبان
+  createStack: ایجاد پشته سیستم Kubernetes
+  startServices: در حال شروع سرویس‌ها
+  waitApi: در انتظار Kubernetes API
 waitMesos:
-  addHost: 'حداقل سه هاست اضافه کنید'
-  activateHost: 'در انتظار فعال سازی هاست ها'
-  startServices: 'در حال شروع سرویس ها'
-  waitApi: 'در انتظار leading Mesos Master'
+  addHost: حداقل سه میزبان اضافه کنید
+  activateHost: در انتظار فعال سازی میزبان ها
+  createStack: ایجاد پشته سیستم Mesos
+  startServices: در حال شروع سرویس‌ها
+  waitApi: در انتظار leading Mesos Master
 waitSwarm:
-  addHost: 'حداقل یک هاست اضافه کنید'
-  startServices: 'در حال شروع سرویس ها'
+  addHost: حداقل یک میزبان اضافه کنید
+  activateHost: در حال انتظار برای یک میزبان فعال است
+  createStack: ایجاد پشته سیستم Swarm
+  startServices: در حال شروع سرویس‌ها
 containerChoices:
-  hostGroup: 'هاست: {name}'
-  unknownHost: 'هاست: ???'
+  hostGroup: 'میزبان: {name}'
+  hostGroupWithState: 'میزبان: {name} ({state})'
+  unknownHost: 'میزبان: ???'
+  containerOption: '{name}'
+  containerOptionWithState: '{name} ({state})'
 driver:
-  multiHostNames: "هاست ها <b>{first}</b> &mdash; <b>{last}</b> نامیده خواهند شد"
+  multiHostNames: 'میزبان ها <b>{first}</b> &mdash; <b>{last}</b> نامیده خواهند شد'
+allServices:
+  stackGroup: 'پشته: {name}'
+  noName: '(پشته: {id})'
 nav:
+  srToggleNav: ناوبری را تغییر دهید
+  srToggleDropdown: کشویی را تغییر دهید
   environment:
     label: محیط
-    all: همه محیط ها
-    your: محیط های شما
+    all: همه محیط‌ها
+    your: محیط‌های شما
     selected: محیط انتخاب شده
-    manage: مدیریت محیط ها
+    manage: مدیریت محیط‌ها
+    edit: 'ویرایش "{name}"'
+  namespace:
+    label: فضای نام
+    manage: مدیریت فضاهای نام
+  notReady: راه اندازی...
+  k8s:
+    tab: Kubernetes
+    cli: CLI
+    dashboard: داشبورد
+    system: پشته‌های زیرساخت
   swarm:
-    projects: پروژه ها
-    services: سرویس ها
+    tab: Swarm
+    cli: CLI
+    dashboard: پورتینر
+    system: زیرساخت
+  mesos:
+    tab: Mesos
+    web: نمای کلی
+    system: زیرساخت
   cattle:
+    tab: پشته‌ها
     all: همه
     user: کاربر
+    system: زیرساخت
   catalog:
     tab: کاتالوگ
     all: همه
     library: کتابخانه
+    community: جامعه
   infra:
-    hosts: میزبان ها
+    tab: زیرساخت
+    hosts: میزبان‌ها
+    containers: کانتینرها
     vms: ماشین های مجازی
+    storagePage: ذخیره سازی
+    backupTarget: اهداف پشتیبان
+    certificates: گواهینامه ها
+    registries: رجیستری ها
+    secrets: اسرار
   admin:
     tab: مدیر
+    audit: گزارش ممیزی
+    processes: فرآیندها
     accounts: حساب ها
     access: کنترل دسترسی
     machine: درایور های ماشین
     settings: تنظیمات
+    ha: در دسترس بودن بالا
+  api:
+    tab: API
+    keys: کلیدها
+    hooks: وب هوک ها
   user:
     label: 'منوی کاربر: {username}'
     logout: خروج
@@ -1747,33 +3404,78 @@ nav:
     themeAuto: خودکار
     themeDark: تیره
   noHosts:
-    link: "افزودن هاست"
+    prefix: >-
+      پیش از افزودن نخستین سرویس یا راه‌اندازی کانتینر، <a
+      href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">راهنمای سازگاری
+      Docker</a> را بررسی کنید:
+    link: افزودن میزبان
+    suffix: ''
+  noHostsWindows:
+    prefix: 'قبل از اضافه کردن اولین سرویس یا راه اندازی یک کانتینر، باید یک میزبان Windows اضافه کنید.  '
+    link: یک میزبان اضافه کنید
+    suffix: ''
 action:
   activate: فعال سازی
+  backup: عکس فوری پشتیبان
   deleteBackup: حذف Backup
   cancelUpgrade: لغو ارتقا
   cancelRollback: لغو Rollback
+  clone: کلون
+  console: کنسول را باز کنید
   deactivate: غیر فعال سازی
   edit: ویرایش
+  evacuate: تخلیه کنید
+  execute: شل را اجرا کنید
   exportConfig: خروجی گرفتن از تنظیمات
   finishUpgrade: پایان ارتقا
   logs: مشاهده لاگ ها
   machineConfig: کانفیگ ماشین
+  purge: پاکسازی
   remove: حذف
+  replay: پخش مجدد
+  restart: راه اندازی مجدد
+  restore: بازیابی کنید
+  retry: دوباره امتحان کنید
+  rollback: بازگشت به عقب
+  revertToSnapshot: ولوم را به Snapshot برگردانید
+  restoreFromBackup: بازیابی حجم از نسخه پشتیبان
   setDefault: انتخاب به عنوان پیش فرض
+  snapshot: عکس فوری
   start: شروع
-  startServices: شروع سرویس ها
+  startServices: شروع سرویس‌ها
   stop: توقف
-  stopServices: توقف سرویس ها
+  stopServices: توقف سرویس‌ها
+  switchNamespace: به این فضای نام جابجا شوید
   switchEnvironment: جابجایی به این محیط
   upgrade: ارتقا
+  upgradeOrEdit: ارتقا/ویرایش
   viewConfig: مشاهده تنظییمات
   viewGraph: مشاهده گراف
   viewInApi: viewGraph in API
   viewInstance: مشاهده Instance
+validation:
+  required: '"{key}" مورد نیاز است'
+  arrayLength:
+    exactly: '"{key}"باید حاوی {count, plural, =1 {# مورد} other {# مورد}}'
+    between: '"{key}"باید شامل بین باشد {min} و {max} {max, plural, =1 {مورد} other {موارد}}'
+    min: '"{key}«حداقل باید شامل شود {count} {count, plural, =1 {مورد} other {موارد}}'
+    max: '"{key}"حداکثر باید حاوی باشد {count} {count, plural, =1 {مورد} other {موارد}}'
+  stringLength:
+    exactly: '"{key}"باید باشد {count, plural, =1 {# شخصیت} other {# شخصیت}}'
+    between: '"{key}"باید بین {min} و {max} {max, plural, =1 {شخصیت} other {شخصیت ها}}'
+    min: '"{key}"حداقل باید باشد {count} {count, plural, =1 {شخصیت} other {شخصیت ها}}'
+    max: '"{key}"حداکثر باید باشد {count} {count, plural, =1 {شخصیت} other {شخصیت ها}}'
+  number:
+    exactly: '"{key}" باید دقیقا {val} باشد'
+    between: '"{key}" باید بین {min} و {max} باشد'
+    min: '"{key}" باید حداقل {val} باشد'
+    max: '"{key}" باید حداکثر {val} باشد'
+  chars: '"{key}" حاوی {count, plural, =1 {یک شخصیت نامعتبر} other {# نویسه نامعتبر}}: {chars}'
 model:
   account:
     kind:
+      registeredAgent: نماینده ثبت شده
+      agent: عامل
       service: سرویس
       user: کاربر
       admin: مدیر
@@ -1785,9 +3487,25 @@ model:
       group: گروه
       org: سازمان
       localUser: کاربر محلی
+      unknown: '{type}؟'
+  openldapconfig:
+    server:
+      label: نام میزبان یا آدرس IP
+    serviceAccountUsername:
+      label: نام کاربری حساب سرویس
+    serviceAccountPassword:
+      label: رمز عبور حساب خدمات
+    domain:
+      label: پایگاه جستجوی کاربر
+      placeholder: 'به عنوان مثال ou=کاربران,dc=mycompany,dc=com'
+      help: فقط کاربران زیر این پایه استفاده خواهند شد.
   projectMember:
     role:
       member: عضو
       owner: ماکل
       readonly: فقط قابل خواندن
       restricted: دسترسی قطع شده
+  scaleService:
+    min: حداقل مقیاس
+    max: حداکثر مقیاس
+    amount: توسط

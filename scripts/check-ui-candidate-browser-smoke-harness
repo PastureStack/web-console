@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import subprocess
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+shell_path = Path("scripts/smoke-ui-candidate-browser")
+js_path = Path("scripts/ui-candidate-browser-smoke.js")
+docs_path = Path("docs/modernization.md")
+
+for path in [shell_path, js_path]:
+    if not path.is_file():
+        fail("UI_BROWSER_SMOKE_FILE_MISSING", file=path)
+
+if shell_path.is_file():
+    stage_result = subprocess.run(
+        ["git", "ls-files", "--stage", "--", shell_path.as_posix()],
+        capture_output=True,
+        text=True,
+    )
+    if stage_result.returncode == 0:
+        if not stage_result.stdout.startswith("100755 "):
+            fail("UI_BROWSER_SMOKE_SCRIPT_NOT_EXECUTABLE", file=shell_path)
+    elif not shell_path.stat().st_mode & 0o111:
+        fail("UI_BROWSER_SMOKE_SCRIPT_NOT_EXECUTABLE", file=shell_path)
+    shell = shell_path.read_text(encoding="utf-8")
+    for marker in [
+        "PASTURESTACK_USER",
+        "PASTURESTACK_PASS",
+        "UI_CANDIDATE_TARBALL",
+        "PASTURESTACK_API_TARGET",
+        "--strip-components=1",
+        "require.resolve('playwright')",
+    ]:
+        if marker not in shell:
+            fail("UI_BROWSER_SMOKE_SHELL_MARKER_MISSING", marker=marker)
+
+if js_path.is_file():
+    js = js_path.read_text(encoding="utf-8")
+    for marker in [
+        "const headers = { ...req.headers };",
+        "server.on(\"upgrade\", proxyUpgrade)",
+        "net.connect",
+        "req.rawHeaders",
+        "wsUpgradeCount",
+        "credentials: \"same-origin\"",
+        "net::ERR_ABORTED",
+        "UI_SMOKE_ROUTES",
+        "UI_SMOKE_REQUIRE_HOSTS",
+        "UI_SMOKE_SERVE_ONLY",
+        "UI_SMOKE_BIND",
+        "ui-candidate-preview-ready",
+        "PASTURESTACK_PROJECT_ID",
+        "assertApiStoreContract",
+        "api-store-contract-smoke-ok",
+        "assertI18nHealth",
+        "i18n-smoke-ok",
+        "assertI18nFormatterContract",
+        "i18n-formatter-smoke-ok",
+        "service:intl",
+        "service:user-language",
+        "sideLoadLanguage(\"zh-hans\")",
+        "pagination.multi",
+        "translation not found",
+        "%MISSING%",
+        "Template version not found",
+        "Error check update",
+        "did not open a proxied WebSocket",
+    ]:
+        if marker not in js:
+            fail("UI_BROWSER_SMOKE_JS_MARKER_MISSING", marker=marker)
+    if "host: target.host" in js or "host: apiTarget" in js:
+        fail("UI_BROWSER_SMOKE_REWRITES_HOST_HEADER")
+
+combined = "\n".join(path.read_text(encoding="utf-8") for path in [p for p in [shell_path, js_path] if p.is_file()])
+for forbidden in ["10.0.0." + "125", "/home" + "/ubuntu", "Pass" + "word:", "RANCHER_" + "PASS=", "chen" + "21019:", "ey" + "J"]:
+    if forbidden in combined:
+        fail("UI_BROWSER_SMOKE_SECRET_OR_LAB_MARKER", marker=forbidden)
+
+docs = docs_path.read_text(encoding="utf-8") if docs_path.is_file() else ""
+for phrase in [
+    "No-Publish Candidate Browser Smoke Harness",
+    "preserve the browser-facing Host header",
+    "scripts/smoke-ui-candidate-browser",
+    "UI_SMOKE_SERVE_ONLY=1",
+]:
+    if phrase not in docs:
+        fail("UI_BROWSER_SMOKE_DOC_MISSING", phrase=phrase)
+
+ci = Path("scripts/ci").read_text(encoding="utf-8")
+if "./scripts/check-ui-candidate-browser-smoke-harness" not in ci:
+    fail("UI_BROWSER_SMOKE_CI_GATE_MISSING")
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print("ui-candidate-browser-smoke-harness-ok")
+print("failure_count=0")
+PY

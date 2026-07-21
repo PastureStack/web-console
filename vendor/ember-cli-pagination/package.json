@@ -1,0 +1,32 @@
+{
+  "name": "ember-cli-pagination",
+  "version": "2.2.4-rc16.0",
+  "description": "Addon for Ember CLI to do simple pagination. Compatible with the kaminari API in Rails",
+  "private": false,
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": "https://github.com/mharris717/ember-cli-pagination",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "rc16Maintenance": {
+    "source": "ember-cli-pagination@2.2.3",
+    "reason": "Remove stale addon development toolchain and align runtime addon transpilation with Rancher UI's Ember CLI Babel 8 path.",
+    "compatibility": "No source, component, template, helper, or runtime API behavior is changed."
+  },
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "ember-cli-babel": "8.3.1",
+    "ember-cli-version-checker": "2.2.0"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config"
+  }
+}
