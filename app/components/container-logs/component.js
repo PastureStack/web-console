@@ -2,7 +2,23 @@ import Ember from 'ember';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 import Util from 'ui/utils/util';
 import { alternateLabel } from 'ui/utils/platform';
-import AnsiUp from 'npm:ansi_up';
+import { formatDateTime } from 'ui/utils/date-time';
+
+function createAnsiUp() {
+  let AnsiUpModule = window.rc16AnsiUp || {};
+  let AnsiUp = AnsiUpModule.AnsiUp || window.AnsiUp;
+  let ansiUp = new AnsiUp();
+
+  // The log message is escaped before ANSI conversion. ansi_up 6 escapes by
+  // default, so disable that layer to avoid rendering &lt; as &amp;lt;.
+  if ( 'escape_html' in ansiUp ) {
+    ansiUp.escape_html = false;
+  }
+
+  return ansiUp;
+}
+
+var ansiUp = createAnsiUp();
 
 var typeClass = {
   0: 'log-combined',
@@ -11,6 +27,7 @@ var typeClass = {
 };
 
 export default Ember.Component.extend(ThrottledResize, {
+  intl: Ember.inject.service(),
   instance: null,
   alternateLabel: alternateLabel,
   showProtip: true,
@@ -107,19 +124,19 @@ export default Ember.Component.extend(ThrottledResize, {
         if ( match )
         {
           msg = line.substr(match[0].length);
-          var date = new Date(match[1]);
-          dateStr = '<span class="log-date">' + Util.escapeHtml(date.toLocaleDateString()) + ' ' + Util.escapeHtml(date.toLocaleTimeString()) + '</span>';
+          dateStr = '<span class="log-date">' + Util.escapeHtml(formatDateTime(match[1])) + '</span>';
         }
         else
         {
           msg = line;
-          dateStr = '<span class="log-date">Unknown Date</span>';
+          dateStr = '<span class="log-date">' +
+            Util.escapeHtml(this.get('intl').t('containerLogs.unknownDate')) + '</span>';
         }
 
         body.insertAdjacentHTML('beforeend',
           '<div class="log-msg '+ typeClass[type]  +'">' +
             dateStr +
-            AnsiUp.ansi_to_html(Util.escapeHtml(msg)) +
+            ansiUp.ansi_to_html(Util.escapeHtml(msg)) +
           '</div>'
         );
       });

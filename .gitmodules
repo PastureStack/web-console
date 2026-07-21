@@ -1,3 +1,0 @@
-[submodule "vendor/icons"]
-	path = vendor/icons
-	url = https://github.com/rancher/icons.git

@@ -1,0 +1,91 @@
+{{#if workspace.clientReady}}
+  {{#each workspace.visibleWindows as |entry|}}
+    {{console-workspace-window entry=entry}}
+  {{/each}}
+
+  {{#if workspace.menuOpen}}
+    <section class="console-workspace-menu" aria-label="{{t 'consoleWorkspace.dock.label'}}">
+    <header>
+      <strong>{{t 'consoleWorkspace.dock.sessions' count=workspace.sessionCount}}</strong>
+      <button type="button" class="btn btn-link" {{action "toggleMenu"}} aria-label="{{t 'generic.closeModal'}}">
+        <i class="icon icon-x" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="console-workspace-menu-list">
+      {{#each workspace.sessions as |entry|}}
+        <article class="console-workspace-menu-item">
+          <button type="button" class="console-workspace-session-main" {{action "open" entry}}>
+            {{#if entry.isLogs}}
+              <i class="icon icon-file" aria-hidden="true"></i>
+            {{else if entry.isVm}}
+              <i class="icon icon-vm" aria-hidden="true"></i>
+            {{else}}
+              <i class="icon icon-terminal" aria-hidden="true"></i>
+            {{/if}}
+            <span>
+              <strong>{{entry.resourceTitle}}</strong>
+              <small>
+                {{#if entry.isLogs}}
+                  {{t 'consoleWorkspace.session.logs'}}
+                {{else if entry.isVm}}
+                  {{t 'consoleWorkspace.session.vm'}}
+                {{else}}
+                  {{t 'consoleWorkspace.session.terminal'}}
+                {{/if}}
+                · {{t (concat-str 'consoleWorkspace.session.status.' entry.status character='')}}
+              </small>
+            </span>
+          </button>
+
+          {{#if (eq entry.status "ended")}}
+            <button type="button" class="btn btn-link text-muted" {{action "remove" entry}} title="{{t 'consoleWorkspace.session.removeHistory'}}">
+              <i class="icon icon-trash" aria-hidden="true"></i>
+            </button>
+          {{else if (not entry.isVm)}}
+            <button type="button" class="btn btn-link text-danger" {{action "terminate" entry}} title="{{t 'consoleWorkspace.window.terminate'}}">
+              <i class="icon icon-stop" aria-hidden="true"></i>
+            </button>
+          {{/if}}
+        </article>
+      {{else}}
+        <div class="console-workspace-empty">{{t 'consoleWorkspace.dock.empty'}}</div>
+      {{/each}}
+    </div>
+    </section>
+  {{/if}}
+
+  {{#if workspace.sessionCount}}
+    <nav class="console-workspace-dock" aria-label="{{t 'consoleWorkspace.dock.label'}}">
+    {{#each workspace.sessions as |entry|}}
+      {{#unless (eq entry.windowState "closed")}}
+        <button
+          type="button"
+          class="console-workspace-dock-item {{if (eq entry.windowState "open") 'active'}}"
+          {{action "open" entry}}
+          title="{{entry.resourceTitle}}"
+        >
+          {{#if entry.isLogs}}
+            <i class="icon icon-file" aria-hidden="true"></i>
+          {{else if entry.isVm}}
+            <i class="icon icon-vm" aria-hidden="true"></i>
+          {{else}}
+            <i class="icon icon-terminal" aria-hidden="true"></i>
+          {{/if}}
+          <span class="sr-only">{{entry.resourceTitle}}</span>
+        </button>
+      {{/unless}}
+    {{/each}}
+
+    <button
+      type="button"
+      class="console-workspace-dock-item console-workspace-dock-menu"
+      {{action "toggleMenu"}}
+      title="{{t 'consoleWorkspace.dock.sessions' count=workspace.sessionCount}}"
+    >
+      <i class="icon icon-thumbnails" aria-hidden="true"></i>
+      <span class="console-workspace-count">{{workspace.sessionCount}}</span>
+    </button>
+    </nav>
+  {{/if}}
+{{/if}}
