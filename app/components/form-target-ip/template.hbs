@@ -23,7 +23,7 @@
           {{#each targetIpArray as |tgt|}}
             <tr>
               <td>
-                {{input type="text" class="form-control input-sm target-ip" value=tgt.value placeholder="e.g. 192.168.2.24"}}
+                {{input type="text" class="form-control input-sm target-ip" value=tgt.value placeholder=(t 'formTarget.ipPlaceholder')}}
               </td>
               <td width="30" class="text-right">
                 <button class="btn btn-primary btn-sm" {{action "removeTargetIp" tgt}}><i class="icon icon-minus"/></button>
@@ -39,7 +39,7 @@
 {{#if (eq which "hostname")}}
   <div class="row">
     <div class="col-sm-12 col-md-8 col-md-offset-2">
-      {{input type="text" class="form-control input-sm target-hostname" value=userHostname placeholder="e.g. mysql.example.com"}}
+      {{input type="text" class="form-control input-sm target-hostname" value=userHostname placeholder=(t 'formTarget.hostnamePlaceholder')}}
     </div>
   </div>
 {{/if}}

@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+python3 - "$lock_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+lock_path = Path(sys.argv[1])
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+expected = "0.6.3"
+actual = package.get("devDependencies", {}).get("ember-load-initializers")
+if actual != expected:
+    fail("UI_EMBER_LOAD_INITIALIZERS_VERSION_DRIFT", actual=actual, expected=expected)
+
+if not lock_path.is_file():
+    fail("UI_EMBER_LOAD_INITIALIZERS_LOCK_MISSING", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {})
+    root = packages.get("", {})
+    root_actual = root.get("devDependencies", {}).get("ember-load-initializers")
+    resolved = packages.get("node_modules/ember-load-initializers", {})
+    resolved_version = resolved.get("version")
+    resolved_deps = resolved.get("dependencies", {})
+
+    if root_actual != expected:
+        fail("UI_EMBER_LOAD_INITIALIZERS_LOCK_ROOT_DRIFT", actual=root_actual, expected=expected)
+    if resolved_version != expected:
+        fail("UI_EMBER_LOAD_INITIALIZERS_LOCK_VERSION_DRIFT", actual=resolved_version, expected=expected)
+    if "ember-cli-babel" not in resolved_deps:
+        fail("UI_EMBER_LOAD_INITIALIZERS_BABEL_PREPROCESSOR_MISSING")
+    if "node_modules/ember-load-initializers/node_modules/ember-cli-babel" in packages:
+        fail("UI_EMBER_LOAD_INITIALIZERS_NESTED_BABEL_RETURNED")
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_EMBER_LOAD_INITIALIZERS_UPGRADE_OK version={expected} lockfile={lock_path}")
+print("The addon now owns an Ember Babel preprocessor declaration while remaining pinned to the Ember 2.x-era 0.6.x line; no UI artifact is published by this gate.")
+print("failure_count=0")
+PY

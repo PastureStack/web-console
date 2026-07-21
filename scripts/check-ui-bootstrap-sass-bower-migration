@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+pkg = json.loads(Path("package.json").read_text())
+bower = json.loads(Path("bower.json").read_text())
+lock = json.loads(Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json").read_text())
+vendor_package = json.loads(Path("vendor/bootstrap-sass/package.json").read_text())
+
+if "bootstrap-sass-official" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on bootstrap-sass-official")
+if "bootstrap-sass" in pkg.get("devDependencies", {}):
+    raise SystemExit("package.json must not depend on npm bootstrap-sass after vendoring")
+if "node_modules/bootstrap-sass" in lock.get("packages", {}):
+    raise SystemExit("lock baseline must not resolve npm bootstrap-sass after vendoring")
+if vendor_package.get("version") != "3.4.3":
+    raise SystemExit("vendor bootstrap-sass must track npm bootstrap-sass 3.4.3")
+if vendor_package.get("license") != "MIT":
+    raise SystemExit("vendor bootstrap-sass license metadata must remain MIT")
+PY_CHECK
+
+if grep -R "bower_components/bootstrap-sass-official\\|node_modules/bootstrap-sass" -n ember-cli-build.js app/styles package.json docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json 2>/dev/null; then
+  echo "Bootstrap Sass must be imported from vendored maintenance source, not Bower or node_modules" >&2
+  exit 1
+fi
+
+grep -q "vendor/bootstrap-sass/assets/javascripts/bootstrap.js" ember-cli-build.js
+grep -q "vendor/bootstrap-sass/assets/stylesheets/bootstrap" app/styles/app-light.scss
+grep -q "vendor/bootstrap-sass/assets/stylesheets/bootstrap" app/styles/app-dark.scss
+test -f vendor/bootstrap-sass/LICENSE
+test -f vendor/bootstrap-sass/UPSTREAM.md
+test -f vendor/bootstrap-sass/assets/javascripts/bootstrap.js
+test -f vendor/bootstrap-sass/assets/stylesheets/_bootstrap.scss
+test -f vendor/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss
+test -f vendor/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2
+grep -q "expectBootstrapSassAssets" scripts/node24-lock-smoke.js
+
+echo "ui-bootstrap-sass-vendor-maintenance-ok version=3.4.3"
