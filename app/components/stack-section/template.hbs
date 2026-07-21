@@ -7,7 +7,7 @@
     </div>
 
     <div class="header-left collapser">
-      <a {{action "toggleCollapse"}} class="btn btn-link"><i class="icon {{if collapsed 'icon-plus' 'icon-minus'}}" alt="Toggle stack details" title=""></i></a>
+      <a {{action "toggleCollapse"}} class="btn btn-link" aria-label="{{t 'stackSection.toggleDetails'}}"><i class="icon {{if collapsed 'icon-plus' 'icon-minus'}}" aria-hidden="true"></i></a>
     </div>
 
     <div class="header-left name {{if model.description 'with-description'}}">

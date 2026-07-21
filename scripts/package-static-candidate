@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 022
+
+if [[ $# -lt 1 || $# -gt 3 ]]; then
+  cat >&2 <<'USAGE'
+Usage: scripts/package-static-candidate VERSION [DIST_DIR] [OUT_TARBALL]
+
+Packages an already-built PastureStack Web Console dist directory into the legacy artifact
+layout expected by PastureStack Server:
+
+  VERSION/
+    VERSION.txt
+    index.html
+    assets/...
+
+The output is intentionally a candidate artifact. It does not publish or update
+the server Dockerfile.
+USAGE
+  exit 2
+fi
+
+version=$1
+dist_dir=${2:-dist}
+out_tar=${3:-build/ui/${version}.tar.gz}
+source_date_epoch=${SOURCE_DATE_EPOCH:-}
+
+if [[ -z "$source_date_epoch" ]] && command -v git >/dev/null 2>&1; then
+  source_date_epoch=$(git log -1 --format=%ct 2>/dev/null || true)
+fi
+
+case "$source_date_epoch" in
+  '' | *[!0-9]*)
+    echo "SOURCE_DATE_EPOCH_INVALID value=${source_date_epoch:-empty}" >&2
+    exit 1
+    ;;
+esac
+
+case "$version" in
+  *[!0-9.]* | .* | *..* | *.)
+    echo "INVALID_UI_VERSION version=$version" >&2
+    exit 1
+    ;;
+esac
+
+if [[ ! -f "$dist_dir/index.html" ]]; then
+  echo "DIST_INDEX_MISSING file=$dist_dir/index.html" >&2
+  exit 1
+fi
+
+if [[ ! -d "$dist_dir/assets" ]]; then
+  echo "DIST_ASSETS_MISSING dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+if ! find "$dist_dir/assets" -type f \( -name 'ui*.js' -o -name 'web-console*.js' \) | grep -q .; then
+  echo "DIST_UI_JS_MISSING dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' | grep -q .; then
+  echo "DIST_VENDOR_JS_MISSING dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+tmpdir=$(mktemp -d)
+out_tmp="${out_tar}.tmp.$$"
+cleanup() {
+  rm -rf "$tmpdir"
+  rm -f "$out_tmp"
+}
+trap cleanup EXIT
+
+root="$tmpdir/$version"
+mkdir -p "$root" "$(dirname "$out_tar")"
+cp -a "$dist_dir"/. "$root"/
+# Third-party Intl assets can include source maps even when Ember production
+# source maps are disabled. Candidate artifacts intentionally omit all maps.
+find "$root" -type f -name '*.map' -delete
+# `none` is a development-only pseudo-locale and is not offered by production.
+rm -f "$root/translations/none.json"
+printf '%s\n' "$version" > "$root/VERSION.txt"
+
+find "$root" -type d -exec chmod 0755 {} +
+find "$root" -type f -exec chmod 0644 {} +
+find "$root" -exec touch -h -d "@${source_date_epoch}" {} +
+
+tar --sort=name \
+  --mtime="@${source_date_epoch}" \
+  --owner=0 \
+  --group=0 \
+  --numeric-owner \
+  --format=gnu \
+  -C "$tmpdir" \
+  -cf - "$version" | gzip -n > "$out_tmp"
+mv "$out_tmp" "$out_tar"
+out_dir=$(dirname "$out_tar")
+out_name=$(basename "$out_tar")
+(
+  cd "$out_dir"
+  sha256sum "$out_name" > "${out_name}.sha256"
+)
+
+tar_list="$tmpdir/tar.list"
+tar -tzf "$out_tar" > "$tar_list"
+grep -qx "${version}/index.html" "$tar_list"
+grep -qx "${version}/VERSION.txt" "$tar_list"
+grep -Eq "^${version}/assets/(ui[^/]*|@pasturestack/web-console[^/]*)\\.js$" "$tar_list"
+grep -Eq "^${version}/assets/vendor.*\\.js$" "$tar_list"
+
+if grep -Eq '\.map$' "$tar_list"; then
+  echo "SOURCE_MAP_PRESENT tarball=$out_tar" >&2
+  exit 1
+fi
+
+if grep -Eq '/translations/none\.json$' "$tar_list"; then
+  echo "DEVELOPMENT_LOCALE_PRESENT tarball=$out_tar" >&2
+  exit 1
+fi
+
+echo "UI_STATIC_CANDIDATE_PACKAGED version=$version source_date_epoch=$source_date_epoch tarball=$out_tar"
+cat "${out_tar}.sha256"

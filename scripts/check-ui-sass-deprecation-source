@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+import sys
+
+roots = [
+    Path("app/styles"),
+    Path("vendor/bootswatch-cosmo"),
+    Path("vendor/bootstrap-sass/assets/stylesheets"),
+    Path("vendor/ember-power-select/app/styles"),
+]
+blocked_global_functions = re.compile(
+    r"(?<![\w.-])(?:lighten|darken|adjust-hue|transparentize|fade-in|fade-out|fadein|fadeout|opacify|mix|ceil|floor|percentage|red|green|blue|unitless)\s*\("
+)
+blocked_legacy_if = re.compile(r"(?<![\w.-])if\(\s*(?!sass\()")
+blocked_slash_division = re.compile(
+    r"(?:\([^)]*[$\w.)]\s*/\s*[$\w.(\d][^)]*\)|\$[\w-]+\s*/\s*[$\w.\d])"
+)
+blocked_alpha_percentage = re.compile(r"color\.adjust\([^;]*\$alpha:\s*[-+]?\d*\.?\d+%")
+
+failures = []
+
+for root in roots:
+    for path in sorted(root.rglob("*.scss")):
+        rel = path.as_posix()
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+            stripped = line.strip()
+            if (
+                not stripped
+                or stripped.startswith("//")
+                or stripped.startswith("*")
+                or stripped.startswith("/*")
+            ):
+                continue
+            if blocked_global_functions.search(line):
+                failures.append(("SASS_GLOBAL_BUILTIN_DEPRECATED", rel, number, stripped))
+            if blocked_legacy_if.search(line):
+                failures.append(("SASS_LEGACY_IF_DEPRECATED", rel, number, stripped))
+            if (
+                blocked_slash_division.search(line.split("//", 1)[0])
+                and "@import" not in line
+                and "meta.load-css(" not in line
+                and "url(" not in line
+                and "calc(" not in line
+                and "format(" not in line
+                and "device-pixel-ratio" not in line
+            ):
+                failures.append(("SASS_SLASH_DIVISION_DEPRECATED", rel, number, stripped))
+            if blocked_alpha_percentage.search(line):
+                failures.append(("SASS_ALPHA_PERCENTAGE_DEPRECATED", rel, number, stripped))
+
+if failures:
+    for code, rel, number, line in failures:
+        print(f"{code} file={rel}:{number} line={line}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_SASS_DEPRECATION_SOURCE_OK checked=app/styles,vendor/bootswatch-cosmo,vendor/bootstrap-sass/assets/stylesheets,vendor/ember-power-select/app/styles")
+print("Self-owned, Bootswatch, vendored Bootstrap Sass, and vendored Ember Power Select SCSS avoid removed color adjuster globals, channel globals, legacy if(), unitless(), alpha percentage adjustments, ceil/floor/percentage globals, and Sass slash division.")
+print("Sass @import entrypoint warnings remain tracked in docs/plan.md for a separate module-load migration.")
+print("failure_count=0")
+PY

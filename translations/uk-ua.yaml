@@ -1,6 +1,18 @@
----
-languageName: "Українська"
-languageContribute: "Допомога для перекладу Rancher"
+languageName: Українська (Україна)
+languageContribute: Допомога для перекладу PastureStack
+uiText:
+  process: процес
+  childExecution: Дочірнє виконання
+  webhookExperimental: 'Експериментально: у майбутніх випусках буде додано більше функцій вебхуку, а існуючі можливості можуть змінитися.'
+  certificateBits: біти
+  redirecting: 'Будь ласка, зачекайте, поки ми переспрямуємо вас назад на {appName}.'
+  secretsExperimental: 'Експериментально: підтримку Compose і CLI буде додано в майбутньому випуску.'
+  relationIn: 'в:'
+  relationOn: 'на:'
+  dockerComposeFile: docker-compose.yml
+  pastureStackCompose: PastureStack Compose
+branding:
+  recoveryNode: '{appName} вузол відновлення'
 generic:
   actions: Дії
   activate: Активувати
@@ -14,8 +26,11 @@ generic:
   disable: Вимкнути
   disabled: Відключений
   domainName: Доменне ім'я
+  edit: Редагувати
+  emptyString: ''
   enable: Увімкнути
   enabled: Включено
+  environment: Середовище
   expires: Закінчується
   healthy: Здоровий
   id: ID
@@ -23,10 +38,11 @@ generic:
   internal: Внутрішній
   ipAddress: IP адреса
   limit: Ліміт
-  loading: "Завантажується..."
-  missing: "*%MISSING% *"
+  loading: Завантажується...
+  missing: '*%ВІДСУТНЄ%*'
   moreActions: Додаткові дії
-  na: 'н/д'
+  noActionsAvailable: Немає доступних дій
+  na: н/д
   name: Ім'я
   none: Немає
   ports: Порти
@@ -36,6 +52,7 @@ generic:
   saved: Збережено
   saving: Збереження
   search: Пошук
+  selectActionBelow: Виберіть дію нижче
   state: Статус
   test: Тест
   testing: Тестування
@@ -44,8 +61,8 @@ generic:
   type: Тип
   unknown: Невідомо
   uuid: UUID
-  noo: false
-  yess: true
+  noo: немає
+  yess: так
 accountsPage:
   index:
     header: Облікові записи
@@ -64,22 +81,24 @@ accountsPage:
     form:
       username:
         labelText: Логін
-        placeholder: "напр. admin"
+        placeholder: напр. admin
       password:
         labelText: Пароль
       name:
         labelText: Ім'я
-        placeholder: "напр. Іван Гнатів"
+        placeholder: напр. Іван Гнатів
       type:
         labelText: Тип облікового запису
+        dropdownList: null
       description:
         labelText: Опис
-        placeholder: "напр. цей обліковий запис буде для Джона Сміта"
+        placeholder: напр. цей обліковий запис буде для Джона Сміта
 apiPage:
   header: API Ключі Середовища
   actionButton: Додати ключ API середовища
-  content: |
-    API ключі середовища прив'язані до конкретного Середовища (<code>{displayName}</code>), і можуть керувати лише ресурсами всередині нього. Інші користувачі з доступом до цього середовища теж можуть управляти цими ключами.
+  content: >
+    API ключі середовища прив'язані до конкретного Середовища (<code>{displayName}</code>), і можуть керувати лише
+    ресурсами всередині нього. Інші користувачі з доступом до цього середовища теж можуть управляти цими ключами.
   currentEndpoint: 'Точка входу (v2-бета):'
   legacyEndpoint: 'Точка входу (v1):'
   table:
@@ -97,24 +116,26 @@ apiPage:
     buttonText: Додати API ключ облікового запису
     content:
       paragraph1: API Ключі облікового запису прив'язані до Вашого акаунту
-      paragraph2: "і можуть створювати, видаляти і управляти всіма Середовищами, до яких у Вас є доступ."
+      paragraph2: 'і можуть створювати, видаляти і управляти всіма Середовищами, до яких у Вас є доступ.'
     table:
-      noData: "У вашого облікового запису поки немає API Ключів."
+      noData: У вашого облікового запису поки немає API Ключів.
 auditLogsPage:
   header: Журнал аудиту
   form:
     eventType:
       placeholder: Тип події
     resourceType:
-      placeholder: "Тип ресурсу:"
+      placeholder: 'Тип ресурсу:'
       dropdownPlaceholder: 'Виберіть тип ресурсу:'
+      dropdownList: null
     resourceId:
       placeholder: Id Ресурса
     requestIp:
       placeholder: IP Запиту
     authType:
-      placeholder: "Тип авторизації:"
+      placeholder: 'Тип авторизації:'
       dropdownPlaceholder: 'Виберіть Тип входу:'
+      dropdownList: null
     clearButtonText: Очистити фільтри
     searchButtonText: Пошук
   table:
@@ -122,9 +143,16 @@ auditLogsPage:
     eventType: Тип події
     description: Опис
     environment: Середовище
-    resourceTypeId: "Тип ресурсу: ID"
+    resourceTypeId: 'Тип ресурсу: ID'
     identity: Ідентичність
-    authIp: "IP Авторизації"
+    authIp: IP Авторизації
+  authTypes:
+    none: жодного
+    apiKey: API Ключ
+    headerAuth: Автентифікація заголовка
+    hostRegistration: Реєстрація хоста
+    tokenAccount: Маркер облікового запису
+    uiSession: UI Сесія
   first: Перша сторінка
   next: Наступна сторінка
 authPage:
@@ -132,7 +160,7 @@ authPage:
     header:
       title: Shibboleth авторизація
     enabled:
-      header: "{providerName} увімкнено"
+      header: '{providerName} увімкнено'
       required: |
         {appName} налаштований для забезпечення доступу: {orgs, plural,
         =0 {немає жодної організації}
@@ -153,24 +181,31 @@ authPage:
         =1 {і для # користувача}
         other {і для # користувачів}
         }.
-      unrestricted: "{appName} налаштована для надання доступу для будь-якого {providerName} користувача."
+      unrestricted: '{appName} налаштована для надання доступу для будь-якого {providerName} користувача.'
       authenticated:
         header:
           text: Авторизація
-          helpText: "Щоб переналаштувати Shibboleth інтеграцію - відключіть контроль доступу трохи нижче і налаштуйте його знову."
+          helpText: Щоб переналаштувати Shibboleth інтеграцію - відключіть контроль доступу трохи нижче і налаштуйте його знову.
       disableAccess:
-        header: "Зона Ризику&trade;"
-        warning: '<B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName} будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.'
-        confirmDisable: "Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу"
+        header: Зона Ризику&trade;
+        warning: >-
+          <B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName}
+          будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.
+        confirmDisable: 'Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу'
         disable: Вимкнути контроль доступу
       groupsField: 'Групи:'
       displayName: 'Ім''я користувача:'
       userName: 'Ім''я користувача:'
       userId: 'ID користувача:'
     disabled:
-      header: '1. Налаштуйте Shibboleth аккаунт'
-      label: "{providerName} не налаштований"
-      warning: "Система {appName} може бути налаштована на надання доступу набору користувачів і / або груп директорії {providerName}. Прямо зараз це не налаштоване, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний контроль над системою."
+      header: 1. Налаштуйте Shibboleth аккаунт
+      label: '{providerName} не налаштований'
+      warning: >-
+        Система {appName} може бути налаштована на надання доступу набору користувачів і / або груп директорії
+        {providerName}. Прямо зараз це не налаштоване, так що всі, хто можуть зайти на цю сторінку (або достукатися до
+        API) мають повний контроль над системою.
+      name:
+        labelText: Поле відображуваної назви
       username:
         labelText: Поле ім'я користувача
       uid:
@@ -178,7 +213,7 @@ authPage:
       groups:
         labelText: Групи полів
       testAuth:
-        header: '2. Протестуйте і включіть авторизацію'
+        header: 2. Протестуйте і включіть авторизацію
         subtext: 'Перевірте правильність налаштування програми, шляхом авторизації з них:'
         buttonText:
           pre: Авторизуватись з IDP
@@ -186,13 +221,20 @@ authPage:
     providerName:
       shibboleth: Shibboleth
   root:
-    header: Access Control
+    header: Контроль доступу
+    providers:
+      activeDirectory: Active Directory
+      azureAd: Azure AD
+      github: GitHub
+      local: Локальні рахунки
+      openldap: OpenLDAP
+      shibboleth: Shibboleth
   github:
     standard: GitHub
-    enterprise: GitHub Enterprise
+    enterprise: GitHub Підприємство
     header:
       enabled:
-        label: "{github} увімкнено"
+        label: '{github} увімкнено'
         required: |
           {appName} налаштований для забезпечення доступу: {orgs, plural,
           =0 {немає жодної організації}
@@ -213,29 +255,36 @@ authPage:
           =1 {і для # користувача}
           other {і для # користувачів}
           }.
-        unrestricted: "Система {appName} налаштована надавати доступ будь-якому користувачу {github}."
+        unrestricted: 'Система {appName} налаштована надавати доступ будь-якому користувачу {github}.'
       disabled:
         label: GitHub не настроєно
-        warning: "Система {appName} може бути налаштована на надання доступу до обраного набору користувачів GitHub та/або членам GitHub Організації. Прямо зараз це не налаштовано, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний контроль над системою."
+        warning: >-
+          Система {appName} може бути налаштована на надання доступу до обраного набору користувачів GitHub та/або
+          членам GitHub Організації. Прямо зараз це не налаштовано, так що всі, хто можуть зайти на цю сторінку (або
+          достукатися до API) мають повний контроль над системою.
     authenticated:
       header:
         text: Авторизація
-        enterpriseHostName: "Хост Підприємства:"
+        enterpriseHostName: 'Хост Підприємства:'
         clientId:
-          text: "ID Клієнта:"
-          helpText: "Щоб переналаштувати GitHub інтеграцію - відключіть контроль доступу трохи нижче і налаштуйте його знову."
+          text: 'ID Клієнта:'
+          helpText: Щоб переналаштувати GitHub інтеграцію - відключіть контроль доступу трохи нижче і налаштуйте його знову.
       disableAccess:
-        header: "Зона Ризику&trade;"
-        warning: '<B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName} будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.'
-        confirmDisable: "Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу"
+        header: Зона Ризику&trade;
+        warning: >-
+          <B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName}
+          будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.
+        confirmDisable: 'Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу'
         disable: Вимкнути контроль доступу
     notAuthenticated:
-      header: "1. Налаштуйте GitHub Додаток"
+      header: 1. Налаштуйте GitHub Додаток
       ul:
         li1:
-          text: 'Для звичайного (хмарного) GitHub, <a href="https://github.com/settings/developers" target="_blank"> натисніть тут </a>, щоб відкрити настройки Додатків в новій вкладці.'
+          text: >-
+            Для звичайного (хмарного) GitHub, <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer">
+            натисніть тут </a>, щоб відкрити настройки Додатків в новій вкладці.
           ul:
-            li1: "Для Github Enterprise, зайдіть в свій аккаунт. Натисніть \"Settings\", потім \"Applications\"."
+            li1: 'Для Github Enterprise, зайдіть в свій аккаунт. Натисніть "Settings", потім "Applications".'
         li2:
           text: 'Натисніть "Register new application" і заповніть форму:'
           ul:
@@ -246,7 +295,8 @@ authPage:
         li3:
           text: 'Натисніть "Register Application" '
       form:
-        subtext: 'Скопіюйте Client ID і Secret з верхнього правого кута сторінки Вашого новоствореного Додатку.'
+        header: '2. Налаштуйте {appName} на використання вашої програми для автентифікації'
+        subtext: Скопіюйте Client ID і Secret з верхнього правого кута сторінки Вашого новоствореного Додатку.
         clientId:
           labelText: ID Клієнта
         clientSecret:
@@ -257,29 +307,35 @@ authPage:
           labelText: Використовуйте захищене з'єднання
         enterpriseHost:
           labelText: Хост Підприємства
-          placeholder: 'напр. github.example.com'
+          placeholder: напр. github.example.com
     testAuth:
-      header: '3. Протестуйте і включіть авторизацію'
+      header: 3. Протестуйте і включіть авторизацію
       subtext: 'Переконайтеся, що ваш Додаток налаштовано правильно, протестувавши авторизацію з ним:'
       buttonText:
         pre: Авторизуватись з GitHub
         post: Чекаємо відповіді від GitHub
   azuread:
     header:
-      enabled: 'Azure AD Авторизація <b>включена</b>'
-      disabled: 'Azure AD Авторизація <b class="text-warning"> не налаштована</b>'
+      enabled: Azure AD Авторизація <b>включена</b>
+      disabled: Azure AD Авторизація <b class="text-warning"> не налаштована</b>
     subtext:
       enabled: 'Система {appName} налаштована надавати доступ до акаунтів з Azure AD'
-      disabled: 'Система {appName} може бути налаштована надавати доступ набору облікових записів, визначеним у Azure AD. Прямо зараз це не налаштовано, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний контроль над системою.'
+      disabled: >-
+        Система {appName} може бути налаштована надавати доступ набору облікових записів, визначеним у Azure AD. Прямо
+        зараз це не налаштовано, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний
+        контроль над системою.
     enabled:
-      header: 'Зона Ризику&trade;'
-      warning: '<B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName} будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.'
+      header: Зона Ризику&trade;
+      warning: >-
+        <B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName}
+        будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.
       reallyDisable: 'Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу'
       promptDisable: Вимкнути контроль доступу
     configure:
-      header: '1. Налаштуйте Azure AD аккаунт'
+      header: 1. Налаштуйте Azure AD аккаунт
       tenantId:
         label: ID Організації
+        placeholder: Довгий рядок UUID.
         help: Скопіюйте з порталу Azure AD
       clientId:
         label: ID Клієнта
@@ -289,78 +345,85 @@ authPage:
         placeholder: напр. youcompany.onmicrosoft.com
       adminAccountUsername:
         label: Ім'я користувача з правами адміністратора
-        placeholder: напр. rancher-admin
-        help: Користувач, який може зчитувати інформацію про інших користувачів
+        placeholder: напр. pasturesstack-admin
+        help: 'Користувач, який може зчитувати інформацію про інших користувачів'
       adminAccountPassword:
         label: Пароль Адміна
     test:
-      header: '2. Протестуйте і включіть авторизацію'
+      header: 2. Протестуйте і включіть авторизацію
       help: 'Перевірте, що все налаштовано правильно, протестувавши авторизацію з вашого профілю:'
       username:
         label: Логін
-        placeholder: 'напр. admin'
+        placeholder: напр. admin
       password:
         label: Логін пароль
       pre: Авторизуватись з Azure
       post: Чекаємо відповіді від Azure
   localAuth:
     header:
-      enabled: 'Вбудована Авторизація <b>включена</b>'
-      disabled: 'Вбудована Авторизація <b class="text-warning"> не налаштована</b>'
+      enabled: Вбудована Авторизація <b>включена</b>
+      disabled: Вбудована Авторизація <b class="text-warning"> не налаштована</b>
     subtext:
       enabled:
         text: 'Система {appName} налаштована надавати доступ до акаунтів зі своєї власної бази даних.'
         linkText: Керування обліковими записами
-      disabled: 'Система {appName} може бути налаштована надавати доступ набору облікових записів, визначеним у Azure AD. Прямо зараз це не налаштовано, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний контроль над системою.'
+      disabled: >-
+        Система {appName} може бути налаштована надавати доступ набору облікових записів, визначеним у Azure AD. Прямо
+        зараз це не налаштовано, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний
+        контроль над системою.
     accessEnabled:
-      header: 'Зона Ризику&trade;'
-      warning: '<B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName} будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.'
+      header: Зона Ризику&trade;
+      warning: >-
+        <B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName}
+        будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.
       buttonText:
         disable: 'Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу'
         prompt: Вимкнути контроль доступу
     accessDisabled:
-      header: '1. Налаштування користувача з правами адміністратора'
+      header: 1. Налаштування користувача з правами адміністратора
       helpText: 'Цей користувач буде адміном з повним доступом до Системи {appName}.'
       form:
         login:
           labelText: Логін
-          placeholder: 'напр. admin'
+          placeholder: напр. admin
         name:
           labelText: Повне ім'я
-          placeholder: 'напр. Іван Гнатів'
+          placeholder: напр. Іван Гнатів
         password:
           labelText: Пароль
         confirmPassword:
           labelText: Підтвердьте пароль
     accessControl:
-      header: '2. Увімкніть контроль доступу'
+      header: 2. Увімкніть контроль доступу
       helpText: 'Натисніть, щоб включити контроль доступу і увійти в систему.'
       buttonText:
         pre: Включити вбудовану Авторизація
-        post: 'Увімкнення...'
-  0:
-    header: Контроль доступу
+        post: Увімкнення...
 backupTargetsPage:
   header: Резервне копіювання
+  linkTo: Додати резервну ціль
   newTarget:
     hr: Опції NFS Конфігурації
+    header: Додати резервну ціль
   server:
     label: NFS Сервер
-    placeholder: 'напр. my-nfs-server.example.com'
+    placeholder: напр. my-nfs-server.example.com
   share:
-    placeholder: 'напр. /mnt/volume-backups'
+    label: NFS Поділитися
+    placeholder: напр. /mnt/volume-backups
   mountOptions:
     label: Додаткові параметри для NFS Mount
     placeholder: 'напр. nfsvers = 4, прото = udp'
 catalogPage:
   index:
     header: 'Каталог:'
+    manage: Керувати
     search:
       placeholder: Пошук...
-    category: "Категорія:"
+    category: 'Категорія:'
     certified:
       rancher:
-        rancher: Rancher Labs
+        rancher: оригінальні супроводжувачі вищезазначеного
         partner: Офіційний
       pl:
         rancher: Ядро
@@ -380,6 +443,7 @@ certificatesPage:
     cn: Доменне ім'я
     expiresDate: Закінчується
     noCn: Немає
+    otherNames: '{count, plural, =1 {# інше ім''я} other {# інших імен}}'
   detail:
     header: 'Сертифікат:'
     description: Опис
@@ -437,6 +501,7 @@ containersPage:
         command: Команда
       body:
         noData: У вас поки що немає контейнерів.
+        noMatch: Жоден контейнер не відповідає поточному пошуку
   new:
     form:
       name:
@@ -446,9 +511,10 @@ containersPage:
   containerPage:
     header: 'Контейнер:'
     subtext:
-      "on": true
+      on: на
       in: в
     infoMultiStats:
+      created: 'Створено:'
       tooltip:
         host: Скопіювати IP в буфер обміну
       host: 'Хост:'
@@ -497,90 +563,87 @@ containersPage:
           noContainers: У вас немає інших контейнерів
 containerSubpod:
   childContainers: Контейнери
-  childSidekicks: Sidekicks
+  childSidekicks: Помічники
 dockerCLI:
   header: Swarm CLI
 failWhalePage:
   header: Помилка
+  reloadButton: >
+    <a href="#" onclick="window.location.href = window.location.href; return false;">Перезавантажити</a> спробувати ще
+    раз або
   logoutButton: вийти з системи
 haPage:
   header: Висока доступність
   setup:
-    prefix: "Кілька серверних контейнерів можуть бути розгорнуті на різних хостах, так що {appName} продовжує працювати, навіть якщо один з хостів не доступний.  "
+    prefix: >-
+      Кілька серверних контейнерів можуть бути розгорнуті на різних хостах, так що {appName} продовжує працювати, навіть
+      якщо один з хостів не доступний.
     link: Документація
-    suffix: " для отримання інформації про встановлення та використання."
+    suffix: ' для отримання інформації про встановлення та використання.'
   table:
+    address: Оголошена адреса
     port: Порт
     heartbeat: Остання активність виявлена
     clustered: Кластерний
+helpBtn:
+  title: Перейти до документації
 helpPage:
   header: Корисні посилання і інформація
   banner: Анонси
-  releaseText: "Випущений:"
+  releaseText: 'Випущений:'
   environment:
     header: Що таке Середовище?
-    content: |
-      <p>{appName} підтримує груповання ресурсів в різних середовищах. Кожен з них отримує свій власний набір послуг і ресурсів, інфраструктури, а також знаходиться у власності одного або кількох GitHub користувачів, груп або організацій.</p><p>Наприклад, можна створити окремо "dev", "test", і "production" середовище, щоб тримати речі, обмежені один від одного, а також дати "Dev" доступ до всієї організації, а обмежити «production» середовище для меньшої команди.</p>
+    content: >
+      <p>{appName} підтримує груповання ресурсів в різних середовищах. Кожен з них отримує свій власний набір послуг і
+      ресурсів, інфраструктури, а також знаходиться у власності одного або кількох GitHub користувачів, груп або
+      організацій.</p><p>Наприклад, можна створити окремо "dev", "test", і "production" середовище, щоб тримати речі,
+      обмежені один від одного, а також дати "Dev" доступ до всієї організації, а обмежити «production» середовище для
+      меньшої команди.</p>
     manageLink: Управляти Середовищами
   host:
     header: Що таке хост?
-    content: |
-      Перед тим, як додати свій перший сервіс або запустити контейнер - було б здорово додати хоча б один Linux хост, який підтримує Docker версії {minVersion} і вище, і який може достукатися до сервера {appName} по HTTP. Система {appName} підтримує додавання хостів Linux у вигляді віртуальних машин з будь-яких публічних і приватних хмар, або навіть фізичних серверів.
+    content: >
+      Перед додаванням першого сервісу або запуском контейнера додайте принаймні один Linux-хост із сумісною версією Docker. Хост має підключатися до сервера {appName} через HTTP. {appName} підтримує віртуальні та фізичні Linux-хости в публічних і приватних хмарах, а також у bare-metal-середовищах.
     contentLink: Детальніше
     addHostLink: Додати хост
   stacks:
     header: Що таке стеки і сервіси?
     content:
-      paragraph1: |
-        Сервіс - це всього-на-всього група контейнерів, створена з одного і того ж образу Docker, яка вміє використовувати розподілені DNS Системи {appName} для знаходження сервісів. Сервіси можуть бути додані вручну або шляхом розгортання їх з Каталогу.
-      paragraph2: Сервіс також може використовуючи інших {appName} послуги, таких як балансування навантаження, контроль за станом здоров'я, оновлення та забезпечення високої доступності.
+      paragraph1: >
+        Сервіс - це всього-на-всього група контейнерів, створена з одного і того ж образу Docker, яка вміє
+        використовувати розподілені DNS Системи {appName} для знаходження сервісів. Сервіси можуть бути додані вручну
+        або шляхом розгортання їх з Каталогу.
+      paragraph2: >-
+        Сервіс також може використовуючи інших {appName} послуги, таких як балансування навантаження, контроль за станом
+        здоров'я, оновлення та забезпечення високої доступності.
       link: Детальніше
     addServiceLink: Управляти Сервісами
     addCatalogLink: Додати з каталогу
-    noHosts: Додайте хоча б один хост, щоб було, куди розгортати Сервіси.
+    noHosts: 'Додайте хоча б один хост, щоб було, куди розгортати Сервіси.'
     manageServiceLink: Управляти Сервісами
   issues:
     header:
       text: Проблеми та документація
-      tagline: Упс, знайшли помилку?
+      tagline: 'Упс, знайшли помилку?'
       fileBug: Повідомити про помилку
     content:
-      paragraph1: |
-        Система {appName} - платформа з відкритим вихідним кодом, спеціально створена для експлуатації контейнерів у промисловому середовищі. Контейнери Docker, набираючи все більшої популярності, висувають нові вимоги до інфраструктурних служб, таких як мережі, сховища, балансировщики навантаження, знаходження сервісів і управління ресурсами.
+      paragraph1: >
+        {appName} — платформа з відкритим кодом, що надає спеціалізовану інфраструктуру для запуску контейнерів у
+        робочому середовищі. Зі зростанням популярності контейнерів Docker підвищуються вимоги до мережевих служб,
+        сховищ, балансування навантаження, безпеки, виявлення сервісів і керування ресурсами.
       graphic1:
         text: Знайшли помилку?
-        link: Зареєструвати проблему на GitHub.
+        link: Повідомити про проблему на GitHub
       graphic2:
         text: Для отримання додаткової інформації
-        link: |
-          про використання Системи {appName} - <a href="{docsLink}" target="_blank">почитайте нашу документацію,</a>
-          <br/>або подивіться <a href="{companyLink}/learn/" target="_blank">інструкції, з чого почати.</a>
+        link: Документація
       graphic3:
         text: Потрібна допомога з виправлення неполадок?
         link: Загляньте в FAQ
-  forums:
-    header: Із Форумів
-    tagline: Приєднайтесь до обговорень
-    buttonText: На форумах
-    announcements:
-      header: Анонси
-      buttonText: Більше тем розділу Анонсів
-    general:
-      header: Загальні
-      buttonText: Більше Загальних тем
-    rancherOs:
-      header: RancherOS
-      buttonText: Більше тем про RancherOS
-    rancher:
-      header: Rancher
-      buttonText: Більше тем про Rancher
-    convoy:
-      header: Convoy
-      buttonText: Більше тем про Convoy
   commercial:
     header: Комерційна підтримка
     content: |
-      Наша компанія Rancher Labs надає послуги комерційної підтримки Системи {appName} найвищого класу, включаючи цілодобову службу підтримки і швидкі виправлення помилок. Крім того, ми вміємо впроваджувати, інтегрувати, проводимо консультації і просто допомагаємо компаніям, які вирішили впровадити Систему {appName} в промислових масштабах. Для отримання додаткової інформації про будь-якому наборі послуг - зв'яжіться з нашим відділом продажів за адресою електронної пошти <a href="mailto:sales@rancher.com"> sales@rancher.com </a>
+      PastureStack підтримується спільнотою і не претендує на комерційну підтримку.
 hostsPage:
   addContainer: Додати контейнер
   index:
@@ -590,9 +653,11 @@ hostsPage:
       listView: Список
       groupedView: Групи стеків і Sidekicks
     columns:
-      emptyMessage: Ні хостів, ні контейнери - поки немає.
+      emptyMessage: 'Ні хостів, ні контейнери - поки немає.'
     showSystem: Показати системні
   new:
+    customDriver: Спеціальний хост
+    otherDriver: Інший водій машини
     header:
       linkTo: 'Хости: '
       text: Додати хост
@@ -653,28 +718,51 @@ hostsPage:
           mounts: Змонтовані
         body:
           noData: На цьому хості поки немає дисків.
+iePage:
+  unsupported: Internet Explorer не підтримується.
 k8sTab:
   dashboard:
     header: Панель Керування Kubernetes
     dashboard:
       header: Панель управління
-      content: Панель управління Kubernetes - це веб-інтерфейс для Kubernetes кластерів. Це дозволяє користувачам керувати програмами, що працюють в кластері, вирішувати проблеми і управляти самим кластером.
+      content: >-
+        Панель управління Kubernetes - це веб-інтерфейс для Kubernetes кластерів. Це дозволяє користувачам керувати
+        програмами, що працюють в кластері, вирішувати проблеми і управляти самим кластером.
       button: Графічний Інтерфейс Kubernetes
   kubectl:
     header: Kubernetes CLI
     stepOne:
+      generateConfigText: >
+        Для використання <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">kubectl</a> (тільки v1.4+) на робочій станції натисніть
+        кнопку, щоб створити ключ API і файл конфігурації:
       generateButton: Створити конфігурацію
     stepTwo:
       progress: Створення...
+    stepThree:
+      helpText: |
+        Вставте це в <code>~/.kube/config</code>:
+      downloadText: |
+        Потім <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">завантажити</a> (якщо потрібно) і запустіть <code>kubectl</code>
+    shell:
+      helpText: |
+        Або скористайтеся цією зручною оболонкою для безпосереднього виконання <code>kubectl</code> команди:
 loginPage:
-  greeting: "Привіт! <br>Ласкаво просимо в {appName}"
-  githubMessage: "Система {appName} використовує GitHub для управління користувачами і командами. Натисніть на кнопку трохи нижче, щоб увійти в систему і надати нам права на читання базової інформації вашого облікового запису на GitHub."
+  greeting: 'Привіт! <br>Ласкаво просимо в {appName}'
+  githubMessage: >-
+    Система {appName} використовує GitHub для управління користувачами і командами. Натисніть на кнопку трохи нижче, щоб
+    увійти в систему і надати нам права на читання базової інформації вашого облікового запису на GitHub.
+  shibbolethMessage: >-
+    {appName} використовує Shibboleth для керування обліковими записами.  Натисніть кнопку нижче, щоб увійти до
+    налаштованого Shibboleth IDP.
   shibbolethError:
-    401: "Помилка Авторизації"
-    500: "Внутрішня помилка сервера"
+    '401': Помилка Авторизації
+    '403': Заборонено
+    '422': 'Сутність, що не підлягає обробці'
+    '500': Внутрішня помилка сервера
+    generic: 'Під час спроби входу сталася помилка ({errorCode}). Повторіть спробу.'
   error:
     authFailed: Неправильне ім'я користувача або пароль.
-    timedOut: Ваш сеанс закінчився, увійдіть знову для продовження.
+    timedOut: 'Ваш сеанс закінчився, увійдіть знову для продовження.'
 machinePage:
   header: Драйвера Машин
   inactive: Неактивний
@@ -683,7 +771,9 @@ machinePage:
   upgrading: Оновлюємо
   activating: Активація
   viewUi: Дивитися UI
-  subtext: "Тут можна завантажити додаткові драйвера <code> docker-machine </code>, і в подальшому використовувати на екрані Додавання Хоста."
+  subtext: >-
+    Тут можна завантажити додаткові драйвера <code> docker-machine </code>, і в подальшому використовувати на екрані
+    Додавання Хоста.
   add: Додати машинний драйвер
   builtin: Вбудований
   other: Інші
@@ -715,34 +805,40 @@ mesosPage:
     content: Управління Mesos з Mesos UI.
     button: Mesos UI
 notFoundPage:
-  header: "Сторінка, яку ви шукаєте, не існує!"
+  header: 'Сторінка, яку ви шукаєте, не існує!'
   linkTo: Повернутися на головну сторінку
 projectList:
   index:
     header: Середовище
     new: Додати середовище
-    subtext: |
-      <p>{appName} підтримує групування ресурсів в різних <b>середовищах</b>. Кожен з них отримує свій власний набір послуг і ресурсів інфраструктури, а також знаходиться у власності одного або кількох користувачів, або груп.</p>
-      <p>Наприклад, можна створити окремо &quot;dev&quot;, &quot;test&quot;, і &quot;production&quot; середовище, щоб тримати речі, обмежені один від одного, а також дати "Dev" доступ до всієї організації, а обмежити &quot;production&quot; середовище для меншої команди.</p>
-    alert: У Вас немає активних середовищ. Створіть або активуйте хоча б одне, інакше у нас з Вами нічого не вийде.
+    subtext: >
+      <p>{appName} підтримує групування ресурсів в різних <b>середовищах</b>. Кожен з них отримує свій власний набір
+      послуг і ресурсів інфраструктури, а також знаходиться у власності одного або кількох користувачів, або груп.</p>
+
+      <p>Наприклад, можна створити окремо &quot;dev&quot;, &quot;test&quot;, і &quot;production&quot; середовище, щоб
+      тримати речі, обмежені один від одного, а також дати "Dev" доступ до всієї організації, а обмежити
+      &quot;production&quot; середовище для меншої команди.</p>
+    alert: 'У Вас немає активних середовищ. Створіть або активуйте хоча б одне, інакше у нас з Вами нічого не вийде.'
     table:
       header:
         orchestration: Оркестрація
         projectTemplate: Шаблон
       body:
-        noData: "У вас поки немає Середовищ."
+        noData: У вас поки немає Середовищ.
   indexTemplate:
     header: Шаблони середовищ
     new: Додати шаблон
-    subtext: |
-      <p> Шаблон середовищ дозволяє користувачам визначати різні комбінації послуг інфраструктури для розгортання.
-      <p> Послуги інфраструктури включає в себе, але не обмежуючись контейнером оркестровки (тобто cattle, kubernetes, mesos, swarm та мережі) або Rancher послуги (тобто перевірка працездатності, dns, метадані, планування, виявлення та зберігання) </p>
+    subtext: >
+      <p>Шаблон середовища дозволяє користувачам вибирати служби інфраструктури для розгортання.</p>
+
+      <p>Послуги інфраструктури включають оркестровку контейнерів, мережу, перевірку працездатності, DNS, метадані,
+      планування, виявлення служб і зберігання.</p>
     table:
       header:
         stacks: Стеки
         isPublic: Публічний
       body:
-        noData: "У вас поки немає шаблонів середовищ"
+        noData: У вас поки немає шаблонів середовищ
 registriesPage:
   index:
     header: Реєстри
@@ -755,7 +851,7 @@ registriesPage:
         username: Ім'я кристувача
         created: Створено
       body:
-        noData: "У вас поки немає реєстрів"
+        noData: У вас поки немає реєстрів
   new:
     header: Додати реєстр
     form:
@@ -777,6 +873,7 @@ secretsPage:
     header: Таємні коди
     linkTo: Додати таємний код
     noData: У вас поки що немає таємних кодів
+    noMatch: Жоден секрет не відповідає поточному пошуку
 servicePage:
   header: 'Сервіс:'
   multistat:
@@ -813,6 +910,7 @@ servicePage:
     noData: Немає жодного з'єднання
   certsTab:
     default: Сертифікат за замовчуванням
+    additional: Додаткові SNI сертифікати
   new:
     form:
       name:
@@ -826,7 +924,7 @@ servicePage:
       description:
         placeholder: напр. Поточна версія програми MyApp
   newBalancer:
-    upgradeImage: "Система балансування навантажень буде оновлена з <code>{from}</code> до <code>{to}</code>."
+    upgradeImage: 'Система балансування навантажень буде оновлена з <code>{from}</code> до <code>{to}</code>.'
     form:
       name:
         placeholder: напр. сайт
@@ -847,12 +945,16 @@ servicePage:
         level: Рівень
         event: Подія
         description: Опис
+      body:
+        noData: Подій у журналі ще не було.
   type:
     service: Сервіс
+    scalinggroup: Група масштабування
     loadbalancerservice: Система балансування навантаження
     dnsservice: Сервіс Псевдонімів
     externalservice: Зовнішній
     kubernetesservice: K8s Сервіс
+    composeservice: Compose Служба
     networkdriverservice: Мережеваий сервіс
     storagedriverservice: Сервіс сховищ
 settingsPage:
@@ -860,11 +962,11 @@ settingsPage:
 stacksPage:
   header:
     all: Усі стеки
-    user: Стеки користувача
+    user: Стеки застосунків
     custom: '{name} стеки'
     tags: '"{tags}" Стеки'
     infra: Стеки інфраструктури
-  actionButton: Додати Стек
+  actionButton: Додати стек застосунку
   catalogButton: Додати з каталогу
   sort:
     label: Сортувати за
@@ -873,6 +975,8 @@ stacksPage:
   tags:
     all: Всі Теги
     one: 'Тег: {name}'
+  noInfra: Зараз у вас немає стеків інфраструктури
+  noMatch: Жоден стек не відповідає вибраному тегу
   new:
     header: Додати Стек
     composeLabel: 'Необов''язково: Імпорт Файла Compose'
@@ -885,13 +989,14 @@ stacksPage:
         label: 'Додатково: docker-compose.yml'
         placeholder: Зміст файла docker-compose.yml
       rancherCompose:
-        label: 'Додатково: rancher-compose.yml'
-        placeholder: Зміст файла rancher-compose.yml
+        label: 'Додатково: pasturestack-compose.yml'
+        placeholder: Вміст pasturestack-compose.yml
       startOnCreate:
         label: Запустити сервіс після створення
 storagePoolsPage:
   header: Драйвери зберігання даних
   volume: ID Диска
+  orphaned: Осиротіла резервна копія
   nav:
     pools: Пули
     backups: Резервні копії
@@ -920,6 +1025,7 @@ swarmPage:
         description:
           placeholder: напр. MyApp Project
         variables:
+          addActionLabel: Додайте заміну змінної
           keyLabel: Змінна
           keyPlaceholder: напр. FOO
           valuePlaceholder: напр. bar
@@ -942,23 +1048,35 @@ swarmPage:
         containers: Контейнери
       body:
         noData: У вас поки немає Сервісів.
+processExecutions:
+  collapseAll: Згорнути все
+  expandAll: Розгорнути все
+  resourceTypeId: Тип ресурсу／ID
 processesPage:
   header: Процеси
   tab:
     summary: Підсумок
     pools: Пули
     running: Працює
+    delayed: Затримується
     ready: Готовий
     completed: Нещодавно завершені
   summary:
+    noData: Наразі процеси не заплановані
     table:
       running: Працює
       ready: Готовий
+      delay: Затримується
   pools:
+    noData: Пулів не знайдено
+    noMatch: Жоден пул не відповідає поточному пошуку
     table:
       activeTasks: Активний
+      poolSize: Розмір басейну
       rejectedTasks: Відхилено
       completedTasks: Завершено
+      queueSize: Розмір черги
+      queueRemainingCapacity: Черга залишається
   list:
     table:
       resource: Ресурс
@@ -966,6 +1084,9 @@ processesPage:
       startTime: Час початку
       endTime: Час завершення
       runTime: Час виконання
+      runAfter: Біжи після
+    noData: 'Наразі немає процесів {which}'
+    noMatch: Жоден процес не відповідає поточному пошуку
 virtualMachinePage:
   header: 'Віртуальна машина:'
   multistat:
@@ -989,15 +1110,23 @@ waitingPage:
       =1 {Додавання вашого першого хоста}
       other {Додати хости}
       }
-    content: |
+    content: >
       Ви повинні додати принаймні, {expectHosts, plural,
+
       =1 {один хост Linux, який підтримує}
+
       =2 {2 Linux хоста,  які підтримують}
+
       =3 {3 Linux хоста,  які підтримують}
+
       =4 {4 Linux хоста,  які підтримують}
+
       other {# Linux хостів,  які підтримують}
+
       } Docker {minVersion} або вище і бути в змозі досягти через HTTP, сервер {appName}.<br/>
-      {appName} підтримує додавання хостів Linux у вигляді віртуальної або фізичній машині від будь-яких провайдерів, або фізичних серверів.
+
+      {appName} підтримує додавання хостів Linux у вигляді віртуальної або фізичній машині від будь-яких провайдерів,
+      або фізичних серверів.
     contentLink: Детальніше
     linkToHost: Додати хост
     setup:
@@ -1033,8 +1162,10 @@ ldap:
     openldap: OpenLDAP
     ad: Active Directory
   header:
+    editing:
+      label: Редагувати конфігурацію Active Directory.
     enabled:
-      label: "{providerName} увімкнено"
+      label: '{providerName} увімкнено'
       required: |
         {appName} налаштований для забезпечення доступу: {groups, plural,
         =0 {немає жодної групи}
@@ -1055,55 +1186,73 @@ ldap:
         =1 {і для # користувача}
         other {і для # користувачів}
         }.
-      unrestricted: "{appName} налаштована, щоб забезпечити доступ до будь-якого {providerName} користувача."
+      unrestricted: '{appName} налаштована, щоб забезпечити доступ до будь-якого {providerName} користувача.'
     disabled:
-      label: "{providerName} не налаштований"
-      warning: "Система {appName} може бути налаштована на надання доступу набору користувачів і / або груп директорії {providerName}. Прямо зараз це не налаштоване, так що всі, хто можуть зайти на цю сторінку (або достукатися до API) мають повний контроль над системою."
+      label: '{providerName} не налаштований'
+      warning: >-
+        Система {appName} може бути налаштована на надання доступу набору користувачів і / або груп директорії
+        {providerName}. Прямо зараз це не налаштоване, так що всі, хто можуть зайти на цю сторінку (або достукатися до
+        API) мають повний контроль над системою.
   accessEnabled:
     header: Авторизація
+    subtext: 'Щоб змінити конфігурацію сервера, натисніть кнопку редагування та перевірте нову конфігурацію перед збереженням.'
     general:
       header: Загальні
-      server: "Сервер:"
-      tls: "TLS:"
-      serviceAccount: "Сервіс Облікового запису:"
-      searchBase: "Базовий пошук:"
-      defaultDomain: "Домен за замовчуванням:"
+      server: 'Сервер:'
+      tls: 'TLS:'
+      serviceAccount: 'Сервіс Облікового запису:'
+      searchBase: 'Базовий пошук:'
+      defaultDomain: 'Домен за замовчуванням:'
+      timeout: 'Час очікування підключення:'
     users:
       header: Користувачі
-      objectClass: "Клас об'єкта:"
-      search: "Поле пошуку:"
+      objectClass: 'Клас об''єкта:'
+      login: 'Поле входу:'
+      name: 'Поле імені:'
+      search: 'Поле пошуку:'
+      enabled: 'Поле статусу:'
+      disabledBitMask: 'Вимкнено BitMask:'
     group:
       header: Група
-      objectClass: "Клас об'єкта:"
-      name: "Поле імені (Name Field):"
-      search: "Поле пошуку:"
+      objectClass: 'Клас об''єкта:'
+      name: 'Поле імені (Name Field):'
+      search: 'Поле пошуку:'
     disable:
-      header: "Зона Ризику&trade;"
-      warning: '<B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName} будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.'
+      header: Зона Ризику&trade;
+      warning: >-
+        <B class = "text-danger"> Увага: </ b> Відключення контролю доступу надасть повний доступ до Системи {appName}
+        будь-кому, хто може зайти на цю сторінку або достукатися до API. Ми попереджали.
       confirmDisable:
         pre: Вимкнути контроль доступу
-        post: "Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу"
+        post: 'Ви впевнені? Натисніть ще раз, щоб дійсно відключити контроль доступу'
   accessConfig:
-    header: "1. Налаштуйте {providerName} сервер"
-    hostName:
-      labelText: Ім'я хоста або IP-адреса
+    header: '1. Налаштуйте {providerName} сервер'
+    subtext1: >-
+      Введіть адресу, порт і протокол для підключення до вашого сервера {providerName}.  <code>389</code> є стандартним
+      портом для незахищених, <code>636</code> для TLS.
+    subtext2: >-
+      {appName} потребує облікового запису служби, який має доступ (лише для читання) до всіх доменів, які зможуть
+      входити, щоб ми могли визначити, до яких груп належить користувач, коли він робить запит за допомогою ключа API.
+    advanced:
+      open: Сховати додаткові
+      closed: Показати Додатково
+    timeout:
+      labelText: Час очікування підключення
+      unit: ms
     port:
       labelText: Порт
       checkbox: TLS
-    serviceUsername:
-      labelText: Ім'я користувача облікового запису служби
-    servicePassword:
-      labelText: Пароль сервісного облікового запису
-    searchBase:
-      helpText: "Використовуватимуться тільки користувачі і групи всередині бази."
-      labelText: Базовий пошук
-      placeholder: "напр. dc = mycompany, dc = com"
+    groupSearchBase:
+      labelText: База пошуку груп
+      placeholder: 'напр. ou=Групи,dc=моя компанія,dc=com'
+      helpText: 'Якщо встановлено, пошук груп здійснюватиметься лише за цією базою, а не за базою пошуку користувача.'
     defaultDomain:
-      helpText: "Ми будемо використовувати цей домен, якщо користувач не вкаже ніякого."
-      placeholder: "напр. mycompany"
+      helpText: 'Ми будемо використовувати цей домен, якщо користувач не вкаже ніякого.'
+      labelText: Домен входу за замовчуванням
+      placeholder: напр. mycompany
   customizeSchema:
-    header: "2. налаштувати схему"
-    helpText: "Якщо Ваша схема даних не відповідає стандартному формату Active Directory - вам сюди."
+    header: 2. налаштувати схему
+    helpText: Якщо Ваша схема даних не відповідає стандартному формату Active Directory - вам сюди.
     users:
       header: Користувачі
       objectClass:
@@ -1116,6 +1265,10 @@ ldap:
         labelText: Поле пошуку
       status:
         labelText: Поле статусу (Status Field)
+      disabledBitMask:
+        labelText: Бітова маска статусу вимкнено
+      userMemberAttribute:
+        labelText: Атрибут члена користувача
     groups:
       header: Групи
       objectClass:
@@ -1125,17 +1278,25 @@ ldap:
       search:
         labelText: Поле пошуку
       groupMemberUser:
+        labelText: Атрибут користувача члена групи
         placeholder: uid
+      groupMemberMapping:
+        labelText: Атрибут відображення учасників групи
+      groupDN:
+        labelText: Група DN Поле
+        placeholder: distinguishedName
   testAuth:
-    header: "3. Протестуйте і включіть авторизацію"
-    helpText: "Перевірте, що все налаштовано правильно, протестувавши авторизацію з вашого {providerName} профілю:"
+    header: 3. Протестуйте і включіть авторизацію
+    editingHeader: Перевірте та збережіть нову конфігурацію
+    helpText: 'Перевірте, що все налаштовано правильно, протестувавши авторизацію з вашого {providerName} профілю:'
     userName:
       labelText: Ім'я користувача
     password:
       labelText: Ваш Пароль
     authenticate:
       pre: Авторизація
-      post: "Тестування..."
+      post: Тестування...
+      test: Перевірте та збережіть
 servicePartial:
   noContainers:
     label: Ще немає контейнерів.
@@ -1160,24 +1321,33 @@ serviceInfoPartial:
   fqdn: 'FQDN (Повне доменне ім''я):'
 advancedSection:
   hrText: Додаткові параметри
+catalogBox:
+  sourcePrefix: в
 catalogSettings:
   header: Каталог
-  subtext: Каталоги містять шаблони, які дозволяють користувачам легко розгортати додатки, відповідаючи на декілька запитань
+  subtext: 'Каталоги містять шаблони, які дозволяють користувачам легко розгортати програми, відповівши на кілька запитань'
   certified:
     header:
-      rancher: "{appName}, сертифікована бібліотека"
+      rancher: '{appName}, сертифікована бібліотека'
       pl: Сертифікована бібліотека
     detail:
-      rancher: Шаблони, необхідні для основних Rancher функцій, таких як Kubernetes / Mesos / Swarm підтримки оркестровки. І підтримуються Rancher Labs.
+      rancher: >-
+        Шаблони сумісності підтримуються незалежною спільнотою PastureStack. Доступність і підтримка залежать від
+        шаблону.
+      pl: 'Підтримувані шаблони, необхідні для основних функцій, таких як підтримка Kubernetes/Mesos/Swarm.'
   community:
     header:
       rancher: Каталог Спільноти
       pl: Каталог Спільноти
     detail:
-      rancher: Шаблони створюються і підтримуються членами спільноти. Не сертифіковані Rancher Labs.
+      rancher: Шаблони, створені й підтримувані спільнотою. Їх не сертифіковано початковим постачальником.
       pl: Шаблони створюються і підтримуються членами спільноти.
   more:
     header: Інший
+    helpText: >-
+      Тут ви можете визначити власні джерела каталогу.  Кожен потребує унікального імені та URL. <code>git clone</code>
+      може впоратися (див <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a"
+      target="_blank" rel="noopener noreferrer">документи</a> для отримання додаткової інформації).
     addActionLabel: Додати каталог
     name:
       label: Ім'я
@@ -1185,18 +1355,27 @@ catalogSettings:
     url:
       label: URL-АДРЕСА
       placeholder: 'напр. https://github.com/mycompany/mycatalog.git'
+    kind:
+      label: Добрий
+      native: Рідна
+      helm: Helm
     branch:
       label: Гілка
-      placeholder: 'напр. master'
+      placeholder: напр. master
 confirmDelete:
   title: 'Ви впевнені, що бажаєте видалити'
-  environmentNote: 'Примітка: Всі ресурси всередині цього середовища будуть видалені, включаючи всі хости, створені за допомогою {appName}.'
+  environmentNote: >-
+    Примітка: Всі ресурси всередині цього середовища будуть видалені, включаючи всі хости, створені за допомогою
+    {appName}.
   protip: 'Порада: Утримуйте клавішу {key} при натисканні Delete, щоб обійти це підтвердження.'
   confirmAction: Видалити
   cancelAction: Відміна
+  largeDeleteText: '{key} і {othersCount} інші'
 containerLogs:
   title: 'Логи: {instanceName}'
-  onlyCombined: "<b>Примітка:</b> Для цього контейнера доступні комбіновані stdout/stderr журнали, тому що він був запущений з TTY (-t)."
+  onlyCombined: >-
+    <b>Примітка:</b> Для цього контейнера доступні комбіновані stdout/stderr журнали, тому що він був запущений з TTY
+    (-t).
   combined: Комбіновані
   stdout: Стандартний вивід
   stderr: Помилки
@@ -1204,6 +1383,7 @@ containerLogs:
   scrollTop: Прокрутити на початок
   scrollBottom: Прокрутити вниз
   clear: Очистити екран
+  unknownDate: Невідома дата
   status:
     initializing: Ініціалізація...
     connecting: З’єднання...
@@ -1224,8 +1404,10 @@ copyToClipboard:
   copied: Скопійовано!
 dangerZone:
   header: Додаткові налаштування
-  subtext: "Дійте обережно. Звичайним користувачам не потрібно буде змінити дані. Неправильні значення можуть зламати ваш {appName}. Налаштування, які були змінені, виділені жирним шрифтом."
-  showLabel: Я розумію, що я можу порушити працездатність, змінюючи додаткові налаштування.
+  subtext: >-
+    Дійте обережно. Звичайним користувачам не потрібно буде змінити дані. Неправильні значення можуть зламати ваш
+    {appName}. Налаштування, які були змінені, виділені жирним шрифтом.
+  showLabel: 'Я розумію, що я можу порушити працездатність, змінюючи додаткові налаштування.'
 devicePermissions:
   all: Всі
   none: Немає
@@ -1268,22 +1450,35 @@ editApiKey:
     label: Секретний ключ (пароль)
   name:
     placeholder: напр. App servers
-  saveWarning1: Збережіть ключі вище! Це єдиний раз, коли ви будете в змозі побачити Секретний ключ.
-  noteOptional: Ім'я та / або опис не є обов'язковими, це потрібно для того щоб допомогти вам згадати, для чого він використовується. Ви можете просто створити ключ, натиснувши кнопку Створити.
+  description:
+    placeholder: напр. Цей ключ використовується серверами програм для розгортання контейнерів
+  saveWarning1: 'Збережіть ключі вище! Це єдиний раз, коли ви будете в змозі побачити Секретний ключ.'
+  saveWarning2: 'Якщо ви його втратите, вам потрібно буде створити новий ключ API.'
+  noteOptional: >-
+    Ім'я та / або опис не є обов'язковими, це потрібно для того щоб допомогти вам згадати, для чого він
+    використовується. Ви можете просто створити ключ, натиснувши кнопку Створити.
 editBalancerService:
   title: Редагувати систему балансування навантаження
   haproxy:
     label: haproxy.cfg
+    help: |
+      Додатковий <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a>
+      конфігурацію можна розмістити тут і буде додано до конфігурації, згенерованої {appName}.
     global:
-      label: '<code>загальний</code> розділ'
+      label: <code>загальний</code> розділ
+      prompt: Спеціальні лінії глобального розділу
     defaults:
-      label: '<code>за замовчуванням</code> розділ'
+      label: <code>за замовчуванням</code> розділ
+      prompt: Спеціальні рядки розділу за умовчанням
 editCertificate:
   title: Редагувати сертифікат
   name:
     placeholder: напр. mydomain.com
   description:
     placeholder: напр. EV cert для mydomain.com
+  noteKeyWriteOnly: >-
+    Примітка. Закритий ключ навмисно порожній, оскільки це поле призначене лише для запису.  Вам потрібно буде знову
+    надати закритий ключ, щоб оновити сертифікат, навіть якщо він не змінився.
 editContainer:
   title:
     vm: Редагувати Віртуальну Машину
@@ -1302,22 +1497,34 @@ editHost:
   title: Редагувати хост
   hostname:
     label: Ім'я хосту
+    help: Як повідомляє хост операційна система.
   customName:
     label: Користувацьке ім'я
     placeholder: напр. dev1
+    help: 'Якщо поле залишити порожнім, ім’я хосту відображатиметься як ім’я.'
   description:
     label: Опис
+    placeholder: напр. Мій хост розвитку
   labels:
     label: Позначки
   ips:
+    label: Планувальник IPs
     valueLabel: IP адреса
     valuePlaceholder: напр. 1.2.3.4
     addActionLabel: Додати IP
+    help: 'Якщо передбачено, планувальник вибере та прив’яже опубліковані порти до однієї з наданих публічних адрес IP.'
+  requireAny:
+    label: Вимагати етикетку контейнера
+    help: >-
+      Якщо надано, контейнери повинні мати одну або кілька наведених міток, щоб мати право на планування на цьому хості.
+      Якщо значення порожнє, контейнер із відповідним ключем придатний незалежно від значення.
+    addActionLabel: Додайте обов’язкову мітку
 editProjectTemplate:
   title:
     add: Додати шаблон
     edit: 'Редагувати шаблон: {displayName}'
   orchestration: Оркестрація
+  builtinOrchestration: Вбудована оркестровка
   stackEdit: Редагувати конфігурацію
   stackRequired: Є обов'язковим
   access:
@@ -1326,7 +1533,8 @@ editProjectTemplate:
     public: 'Публічний: Доступний для всіх користувачів (тільки для адміністраторів)'
   error:
     conflict: Конфлікт
-    changing: "Включений в даний момент {tplCategory} стек \"{stackName}\" не підтримує {orchestration} оркестровку."
+    enabling: 'Вибрана версія стеку {tplCategory} "{stackName}" не підтримує {orchestration} Orchestration.'
+    changing: 'Включений в даний момент {tplCategory} стек "{stackName}" не підтримує {orchestration} оркестровку.'
 editRegistry:
   title: Редагування реєстру
   address:
@@ -1343,18 +1551,29 @@ editRegistry:
 editService:
   title: Редагувати сервіс
 editStack:
-  title: Редагувати стрек
+  title: Редагувати стек застосунку
   name:
-    label: Ім'я
+    label: Ім’я стека
     placeholder: напр. myapp
   description:
     label: Опис
     placeholder: напр. MyApp Stack
   group:
     label: Теги
-    placeholder: напр. frontend, production
+    placeholder: 'напр. frontend, production'
+    help: 'Список тегів, розділених комами.  Список стеків можна фільтрувати за окремими тегами.'
+envCatalog:
+  header: Керування каталогами
+  subtext: >-
+    Тут ви можете визначити власні джерела каталогу, які будуть доступні лише користувачам цього середовища.  Глобальні
+    каталоги доступні для всіх середовищ і можуть бути змінені лише адміністратором у налаштуваннях адміністратора.  Для
+    кожного каталогу потрібна унікальна назва та URL. <code>git clone</code> може впоратися (див <a
+    href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">документи</a> для отримання
+    додаткової інформації).
+  addActionLabel: Додати каталог
 stackHeader:
-  backLink: "Стек:"
+  backLink: 'Стек:'
+  outputs: Виходи
   add:
     service: Додати Сервіс
     balancer: Додати систему балансування навантаження
@@ -1376,6 +1595,15 @@ formBalancerRules:
     internal: Внутрішній
   protocol:
     label: Протокол
+  region:
+    label: Регіон
+    placeholder: напр. регіон1
+  environment:
+    label: Середовище
+    placeholder: напр. розвитку
+  weight:
+    label: вага
+    placeholder: напр. 1
   sourceIp:
     label: IP хоста
     placeholder: напр. 1.2.3.4
@@ -1404,8 +1632,14 @@ formBalancerRules:
     label: Селектор
     placeholder: напр. foo = бар
   help:
-    showBackendLink: "Показати користувальницький бекенд."
-    showIpLink: "Показати параметри IP-адреси хоста."
+    prefix: >-
+      Правила хоста та шляху зіставляються зверху вниз у показаному порядку.  За замовчуванням сервери будуть називатися
+      довільно;  щоб налаштувати згенеровані серверні модулі, введіть ім’я, а потім посилайтеся на нього в спеціальному
+      файлі haproxy.cfg.
+    showBackendLink: Показати користувальницький бекенд.
+    showIpLink: Показати параметри IP-адреси хоста.
+    showRegionLink: Показати параметри регіону.
+    suffix: ''
 formCommand:
   command:
     label: Команда
@@ -1421,23 +1655,26 @@ formCommand:
     placeholder: напр. apache
   console:
     label: Консоль
-    both: 'Інтерактивна та Телетайп <span class="text-muted"> (-i -t)</span>'
-    interactive: 'Інтерактивна <span class="text-muted">(-i)</span>'
-    terminal: 'Телетайп <span class="text-muted">(-t)</span>'
+    both: Інтерактивна та Телетайп <span class="text-muted"> (-i -t)</span>
+    interactive: Інтерактивна <span class="text-muted">(-i)</span>
+    terminal: Телетайп <span class="text-muted">(-t)</span>
     none: Немає
   autoRestart:
     label: Автоматичний перезапуск
     startOnceFalse: Завжди
     startOnceTrue: Ніколи (стартувати один раз)
-    "no": Ніколи
+    no: Ніколи
     onFailure: 'У разі невдачі <span class="text-muted">(non-0 exit code)</span>, завжди'
-    onFailureCondPrefix: У разі невдачі, до
+    onFailureCondPrefix: 'У разі невдачі, до'
     onFailureCondSuffix: |
       {limit, plural,
       =1 {разу}
       other {разів}
       }
     always: Завжди
+  drainTimeout:
+    label: Час очікування зливу
+    unit: ms
   environment:
     label: Середовище
     addAction: Додати змінну середовища
@@ -1465,9 +1702,12 @@ formDisks:
     placeholder: напр. data
   size:
     label: Розмір
+    rootDisk: Визначається корінним зображенням
   readIops:
+    label: Прочитайте Iops
     placeholder: напр. 1000
   writeIops:
+    label: Напишіть Iops
     placeholder: напр. 1000
   driver:
     label: Драйвер
@@ -1481,9 +1721,13 @@ formEngineOpts:
     label: Драйвер для зберігання даних
     placeholder: напр. overlay
   engineOpts:
+    label: Опції двигуна
+    addActionLabel: Додати опцію двигуна
     keyPlaceholder: напр. log-driver
     valuePlaceholder: напр. syslog
   engineLabels:
+    label: Маркування двигуна
+    addActionLabel: Додати етикетку двигуна
     keyLabel: Позначка
   engineEnv:
     label: Ядро Середовища
@@ -1492,21 +1736,30 @@ formEngineOpts:
     keyPlaceholder: напр. HTTP_PROXY
     valuePlaceholder: 'напр. http://your-proxy:8080'
   engineInsecureRegistry:
+    label: Незахищені реєстри
+    addActionLabel: Додайте незахищений реєстр
+    valueLabel: Домен реєстру
     valuePlaceholder: напр. registry.example.com
   engineRegistryMirror:
+    label: Дзеркала реєстру
+    addActionLabel: Додайте дзеркало реєстру
+    valueLabel: дзеркало URL
     valuePlaceholder: 'напр. https://my-mirror.example.com:5000'
 formHealthCheck:
+  windowsUnsupported: Підтримка перевірки працездатності наразі недоступна для Windows.
   label: Тип
   checkType:
     none: Немає
+    tcp: TCP Відкривається підключення
+    http: HTTP Відповідає 2xx/3xx
   request:
     label: HTTP-запиту
   method:
-    prompt: "Виберіть метод HTTP:"
+    prompt: 'Виберіть метод HTTP:'
   path:
     placeholder: Шлях запиту напр. /healthcheck
   version:
-    prompt: "Виберіть версію HTTP:"
+    prompt: 'Виберіть версію HTTP:'
   host:
     label: Заголовок хоста
     placeholder: напр. www.example.com
@@ -1535,7 +1788,7 @@ formHealthCheck:
     label: Коли Нездоровий
     none: Не вживати ніяких дій
     recreate: Повторне створення
-    recreateOnQuorumPrefix: Повторно створити, тільки тоді, коли принаймні
+    recreateOnQuorumPrefix: 'Повторно створити, тільки тоді, коли принаймні'
     recreateOnQuorumSuffix: |
       {quorum, plural,
       =1 {контейнер здоровий}
@@ -1546,7 +1799,7 @@ formKeyValue:
   key:
     label: Ключ
     placeholder: Ключ
-  separator: "="
+  separator: '='
   value:
     label: Значення
     placeholder: Значення
@@ -1554,10 +1807,10 @@ formKeyValue:
 formImage:
   label: Виберіть образ
   vm:
-    placeholder: наприклад rancher/vm-ubuntu
-    dropdownLabel: "{appName} образ"
+    placeholder: 'наприклад ubuntu:26.04'
+    dropdownLabel: '{appName} образ'
   container:
-    placeholder: "наприклад, ubuntu:trusty"
+    placeholder: 'наприклад, ubuntu:trusty'
   pullImage:
     label: Завжди отримувати новий образ перед створенням
 formNameDescription:
@@ -1582,19 +1835,20 @@ formNetwork:
     host: Хост
     managed: Керований
     nat: NAT
+    transparent: Прозорий
     none: Немає
   container:
     label: контейнер
   requestedIp:
     label: Призначити IP
     placeholder: напр. 10.42.2.24
-    help: Запит на певний IP 10.42.0.0/16 блок. Якщо IP вже використовується, то буде випадкове призначення.
+    help: 'Запит на певний IP 10.42.0.0/16 блок. Якщо IP вже використовується, то буде випадкове призначення.'
   retainIp:
     label: Зберегти IP
     reuse: Повторне використання IP-адреси при оновленні або заміні хворих екземплярів.
   dns:
     label: DNS
-    enable: Увімкнути виявлення служби DNS {appName}
+    enable: 'Увімкнути виявлення служби DNS {appName}'
   hostname:
     label: Ім'я хосту
     placeholder: напр. web
@@ -1619,15 +1873,23 @@ formPorts:
     placeholder: 'напр.1.2.3.4; За замовчуванням: будь-який'
   public:
     label: Публічний порт хоста
-    placeholder: "напр. 80"
+    placeholder: напр. 80
   private:
     label: Порт приватного контейнера
-    placeholder: "напр. 8080"
+    placeholder: напр. 8080
   protocol:
     label: Протокол
+  noPorts: Цей контейнер не має карт портів.
+  error:
+    privateRequired: Для кожного правила порту потрібен порт приватного контейнера.
+    publicRequired: 'Публічний порт хосту потрібен, якщо вказано хост IP.'
+    mixedIpPort: 'Порт {ip}:{port}/{proto} має більше одного зіставлення.'
+    mixedPort: 'Порт {port}/{proto} має більше одного зіставлення.'
+  showIpLink: Показати поле Host IP.
 formScale:
   label: Кількість
   global:
+    vm: Завжди запускайте один екземпляр цієї віртуальної машини на кожному хості
     container: Завжди запускати один контейнер на кожному хості
   regular:
     vm: |
@@ -1654,10 +1916,11 @@ formScheduling:
     containers: Запуск <b>всіх</b> контейнерів на конкретному хості
   runSpecific: Запуск на конкретному хості
   noRules: Ніяких правил для планування
+  autoRun: 'Автоматично запускати на кожному хості, що відповідає правилам планування:'
   autoPick:
-    vm: "Автоматично підібирати хости для віртуальної машини, підходящий правилам планування:"
-    container: "Автоматично підібирати хости для контейнера, підходящий правилам планування:"
-    host: "Автоматично підібирати хост, підходящий правилам планування:"
+    vm: 'Автоматично підібирати хости для віртуальної машини, підходящий правилам планування:'
+    container: 'Автоматично підібирати хости для контейнера, підходящий правилам планування:'
+    host: 'Автоматично підібирати хост, підходящий правилам планування:'
   addRule: Додати правило для планування
   condition: Стан
   field: Поле
@@ -1677,9 +1940,14 @@ formSecrets:
     placeholder: наприклад 0 (root)
   gid:
     label: Група ID
+    placeholder: напр. 0 (колесо)
   mode:
     label: Режим файлу
     placeholder: напр. 0444 (octal)
+  help:
+    prefix: 'Секрети будуть доступні в <code>/run/secrets/</code> всередині контейнера з вказаною назвою файлу.  '
+    showPermissionsLink: Налаштуйте право власності та дозволи на файл
+    suffix: ''
 formSecurity:
   key: Ключ
   value: Значення
@@ -1700,6 +1968,7 @@ formSecurity:
   swapLimit:
     label: Своп
     mb: MB
+    placeholder1: Потрібен ліміт пам'яті
     placeholder2: Необмежений
   cpuPinning:
     label: Кількість CPU
@@ -1709,10 +1978,14 @@ formSecurity:
     placeholder: напр. 1024
   capabilities:
     add: Додати
+    drop: Падіння
     label: Можливості
     helpBlock:
+      text: 'Можливості дозволяють забезпечити детальний контроль над привілеями суперкористувача, доступними для контейнера.'
       link: Додаткова інформація
   deviceBinding:
+    label: Прив'язка пристрою
+    addActionLabel: Додати прив'язку
     pathHost:
       label: Шлях у хості
       placeholder: напр. /dev/sdc
@@ -1732,10 +2005,14 @@ formSecurity:
   milliCpuReservation:
     label: розподіл mCPU
   isolation:
+    label: Ізоляція
     default: За замовчанням (контейнер)
     hyperv: HyperV (VM)
 formServiceLinks:
+  asName: як ім'я
   addAction: Сервіси З'єднань
+  noServices: 'Немає інших служб, на які можна посилатися.'
+  noLinks: Цей сервіс не має посилань на сервіси.
   service:
     label: Вкажіть сервіс
   name:
@@ -1749,18 +2026,40 @@ formSslTermination:
   certificate: Сертифікат*
   alternateCerts: Альтернативні сертифікати
   addAlternate: Додати альтернативний сертифікат
+  noCertificates: Немає сертифікатів для використання.
+  noAlternateCertificates: Інших сертифікатів для використання немає.
+  helpBlock: >
+    "Примітка. Деякі старі клієнти SSL/TLS не підтримують <a href="https://en.wikipedia.org/wiki/Server_Name_Indication"
+    target="_blank" rel="noopener noreferrer">Індикація імені сервера (SNI)</a>; цим клієнтам завжди буде запропоновано основний сертифікат.
+    Сучасним клієнтам буде запропоновано відповідний сертифікат зі списку альтернативних сертифікатів, якщо буде
+    знайдено збіг."
+  notNeeded: Немає налаштованих портів SSL/TLS.
 formStickiness:
+  stickiness: липкість
   none: Немає
   newCookie: Створити новий файл cookie
   cookieName: Ім'я файлу cookie
   mode: Режим
+  modeChoices:
+    rewrite: Перепишіть
+    insert: Вставка
+    prefix: Префікс
   domain: Домен
   options: Параметри
+  indirect: Непрямий
+  sendHeader: Надіслати заголовок без кешу
+  onPost: Встановлювати файли cookie лише на POST
+  noPorts: Немає налаштованих правил порту HTTP.
   placeholder:
     sticky: напр. sticky
     domain: напр. mydomain.com
 formTarget:
   target: Ціль
+  pointAddress: Вкажіть на IP адресу(и)
+  pointHostname: Наведіть курсор на ім’я хосту
+  addTarget: Додати ціль IP
+  ipPlaceholder: напр. 192.168.2.24
+  hostnamePlaceholder: напр. mysql.example.com
 formTargets:
   title: Цілі
   addAction: Додати Сервіс
@@ -1770,17 +2069,38 @@ formTargets:
   srcPort:
     label: Вихідний порт
     placeholder: напр. 80
+  value:
+    label: Цільова служба
   path:
     label: Шлях запиту
     placeholder: напр. /svc
   dstPort:
+    label: Цільовий порт
     placeholder: напр. 8080
+  advanced:
+    toggle: Показати розширені параметри маршрутизації
+    detail: 'Прямі запити до різних служб на основі порту, заголовка хосту або шляху запиту'
+    help1: >
+      Якщо вказано хост запиту та/або шлях, підключення до портів прослуховування HTTP спрямовуватимуться до відповідної
+      цілі на основі запиту.
+
+      Наприклад, ви можете використовувати це для надсилання трафіку для домену domain1.com до служби, відмінної від
+      домену domain2.com, або для домену domain3.com/admin до служби, відмінної від домену domain3.com.
+    help2: >
+      Запити на відповідність будуть надіслані до цільової служби на цільовому порту.
+
+      Якщо це значення не встановлено, для вихідного порту буде використано цільовий порт за замовчуванням.  Якщо це
+      також не встановлено, то вихідний порт.
+  noHostnames: (Не вдається збалансувати імена хостів)
+formUserData:
+  placeholder: напр. Інформація про конфігурацію для контейнера
+  isVmPlaceholder: напр. Інформація про конфігурацію віртуальної машини
 formUserLabels:
   addAction: Додати позначку
   key:
     label: Ключ
     placeholder: напр. foo
-  separator: "="
+  separator: '='
   value:
     label: Значення
     placeholder: напр. bar
@@ -1796,63 +2116,110 @@ formValueArray:
   addActionLabel: Додати значення
   valueLabel: Значення
   valuePlacholder: Значення
+  protip: 'ProTip: вставте один або кілька рядків значень у будь-яке поле для легкого масового введення.'
 formVirtualMachines:
   vcpus: vCPUs
   memory: Пам'ять
 formVolumes:
+  windowsUnsupported: Підтримка томів наразі недоступна для Windows.
+  pathPlaceholder: 'напр. [назва-тому: або /path/on/host:]/шлях/у/контейнері[:ro]'
   value:
     prompt: Виберіть контейнер...
   volumes: Диски
   volumesFrom: Диск від
   volumeDriver:
     label: Драйвер Диска
-    placeholder: 'напр. rancher-nfs'
+    placeholder: напр. pasturestack-nfs
+  noLaunchConfigs: 'У цій службі немає інших конфігурацій запуску, з якими можна ділитися томами.'
+  noHostContainers: Цей хост не має контейнерів для використання томів.
   onlySingleHost: Доступно тільки при додаванні контейнера до певного хосту.
   addActionLabel: Додати Диск
   errors:
-    invalidName: Імена дисків можуть містити тільки букви, цифри, знаки дефіса, підкреслення і точки (латиницею).
+    invalidName: 'Імена дисків можуть містити тільки букви, цифри, знаки дефіса, підкреслення і точки (латиницею).'
 heroAddService:
   infra:
     header: Додати Стеки інфраструктури
+    paragraph: >-
+      Стеки інфраструктури додають {appName} такі можливості, як нові механізми оркестровки, постачальники сховищ і
+      мереж.
   service:
-    header: Додайте свій перший Стек
-    paragraph1: |
-      Сервіс - це всього-на-всього група контейнерів, створена з одного і того ж образу Docker, яка вміє використовувати розподілені DNS Системи {appName} для знаходження сервісів. Сервіси можуть бути додані вручну або шляхом розгортання їх з Каталогу.
-    paragraph2: "Сервіс також може використовуючи інших {appName} послуги, таких як балансування навантаження, контроль за станом здоров'я, оновлення та забезпечення високої доступності."
+    header: Додати перший стек
+    paragraph1: >
+      Сервіс - це всього-на-всього група контейнерів, створена з одного і того ж образу Docker, яка вміє використовувати
+      розподілені DNS Системи {appName} для знаходження сервісів. Сервіси можуть бути додані вручну або шляхом
+      розгортання їх з Каталогу.
+    paragraph2: >-
+      Сервіс також може використовуючи інших {appName} послуги, таких як балансування навантаження, контроль за станом
+      здоров'я, оновлення та забезпечення високої доступності.
     contentLink: Детальніше
   addService: Додати сервіс
   addCatalog: Налаштувати
   linkToCatalog: Переглянути каталог
 hookPage:
+  receiver:
+    header: Ствольні гачки
+    buttonText: Додати приймача
+    content: 'Перехоплювачі дають вам URL, який можна вдарити, щоб викликати дію всередині {appName}.'
+    noData: Немає ствольних гачків.
   scaleService:
     label: Кількість серверів
-    detailPrefix: "Кількість {action} "
-    detailLink: "{displayService}"
+    detailPrefix: 'Кількість {action} '
+    detailLink: '{displayService}'
+    detailSuffix: 'від {amount}'
+  scaleHost:
+    label: Збільште кількість хостів
+    detail: 'Відповідність {labels} {action} на {amount}'
+  serviceUpgrade:
+    label: Оновіть послугу
+    detail: 'Відповідність {labels} коли <code>{tag}</code> зміни'
   fields:
     kind:
       label: Тип
     detail:
       label: Деталі
+    url:
+      label: Тригер URL
 hostSettings:
   header: Хост реєстрації URL
-  subtext: Якій URL слід використовувати для підключення до {appName} API?
+  subtext: 'Якій URL слід використовувати для підключення до {appName} API?'
   hostUrl:
-    local: "Адреса цього сайту:"
+    local: 'Адреса цього сайту:'
     new:
-      labelText: "Інша адреса:"
-      placeholder: "напр. http://example.com:8080"
+      labelText: 'Інша адреса:'
+      placeholder: 'напр. http://example.com:8080'
+  helpText:
+    static1: 'Не включати <code>/v1</code> або будь-який інший шлях, але якщо ви робите'
+    static2: 'перед {appName} обов’язково використовуйте <code>https://</code>.'
+    isRancher: Перегляньте вказівки щодо припинення TLS в документації сервера PastureStack.
+    sslTerm: SSL припинення
+  notPublic:
+    alert: >
+      Ви впевнені, що всі хости, які ви створите, зможуть отримати доступ? <code>{activeValue}</code> ?<br/>Це виглядає
+      як приватна IP або локальна мережа.
+  badTld:
+    alert: >
+      The <code>.local</code> Домен верхнього рівня зарезервовано RFC6762 для багатоадресної передачі DNS.
+      Використовувати це як реєстраційний URL не рекомендується та може спричинити проблеми з вирішенням DNS.  Виберіть
+      інше ім’я хосту або IP.
 hostPod:
   supportState:
     unsupported: Непідтримувана версія Docker
     untested: Неперевірена Docker версія
   groupedInstances:
+    namespace: 'Простір імен:'
     stack: 'Стек:'
     standalone: Автономні Контейнери
 identityBlock:
   loading: Завантажується...
+  systemService: Системний сервіс
 infoMultiStats:
   connecting: З’єднання...
-  utilizationStats: Статистика доступна тільки тоді, коли активний або запущений контейнер.
+  utilizationStats: 'Статистика доступна тільки тоді, коли активний або запущений контейнер.'
+  time:
+    now: Зараз
+    minutesSecondsAgo: '{minutes} хв, {seconds} с тому'
+    minutesAgo: '{count, plural, =1 {# хвилину тому} other {# хвилин тому}}'
+    secondsAgo: '{count, plural, =1 {# секунду тому} other {# секунд тому}}'
   cpuSection:
     labelText: Процесор
     system: Системний
@@ -1871,13 +2238,20 @@ infoMultiStats:
 inputCertificate:
   key:
     label: Приватний Ключ
+    placeholder: 'Вставте приватний ключ, починаючи з заголовка приватного ключа PEM RSA.'
   cert:
     label: Сертифікат
+    placeholder: 'Вставте основний сертифікат, починаючи з -----BEGIN CERTIFICATE-----'
+  certChain:
+    label: Сертифікати ланцюга
+    placeholder: 'необов''язковий; Вставте додаткові зв’язані сертифікати, починаючи з -----BEGIN CERTIFICATE-----'
   metaXML:
     label: Метадані XML
+    placeholder: Вставте метадані IDP XML
 inputIdentity:
   placeholder:
     github: Додати ім'я користувача або організації GitHub
+    generic: Додайте користувача або групу за іменем
   dropdownLabel:
     teams: Ваші команди і організації
     groups: Групи
@@ -1895,6 +2269,7 @@ k8s:
     noData: Немає контейнерів
   deploymentSection:
     name: Ім'я розгортання
+    generation: Покоління
     replicas: Репліки
     selectors: Селектори
     containers: Контейнери
@@ -1913,28 +2288,36 @@ k8s:
         hostIp: напр. 19.82.8.24
         hostPort: напр. 80
         containerPort: напр. 8080
+    noPorts: Цей контейнер не має карт портів.
   heroAddStack:
-    header: Додайте свій перший Стек
+    header: Додати перший стек
+    content: >
+      Стеки розгортаються з каталогу {appName} і зберігають упорядковану групу пов’язаних розгортань, контролерів
+      реплікації чи інших ресурсів.
     linkToCatalog: Додати з каталогу
   newOrEditResource:
-    edit: Редагувати {type}
-    add: Додати {type}
+    edit: 'Редагувати {type}'
+    add: 'Додати {type}'
+    placeholder: Визначення ресурсу YAML або JSON.
   podSection:
     name: Ім'я Pod
     status: Статус
     containers: Контейнери
     hostIp: IP хоста
-    podIp: Pod IP
+    podIp: Стручок IP
     noData: Немає Pods
   rcSection:
     name: RC ім'я
     replicas: Репліки
     selectors: Селектори
     containers: Контейнери
+    noData: Немає контролерів реплікації
   replicasetSection:
+    name: Назва набору реплік
     replicas: Репліки
     selectors: Селектори
     containers: Контейнери
+    noData: Немає наборів копій
   servicePorts:
     port: Порт
     containerPort: Порт Контейнера
@@ -1946,7 +2329,7 @@ k8s:
   serviceSection:
     name: Ім'я Сервісу
     clusterIp: Кластер IP
-    pods: Pods
+    pods: Стручки
     clusterPorts: Кластер портів
     nodePorts: Порти вузла
     selectors: Селектори
@@ -1962,6 +2345,7 @@ lbAddtlInfo:
   scale: Кількість
   global: Globl
   ports: Порти
+  noPorts: Немає загальнодоступних хост-портів
   targets: Цілі
   to: на
 labelsSection:
@@ -1971,6 +2355,9 @@ labelsSection:
   noData: Без позначкок
 loginShibboleth:
   buttonText: Авторизуватись з Shibboleth
+  logout: Вийти з постачальника посвідчень
+serviceLog:
+  running: Біг
 loginGithub:
   buttonText: Авторизуватись з GitHub
 loginUserPass:
@@ -1988,26 +2375,49 @@ machine:
     secretKey:
       label: Секретний ключ
       placeholder: Секретний ключ AWS
+      provided: За умови
     region:
       label: Регіон
+    accessKeyHelp: Вставте свою пару ключів AWS тут. Ми використовуватимемо цей ключ для створення ваших нових екземплярів.
     loginAction: 'Далі: Авторизуватись і вибрати мережу'
+    loadingAvailability: Завантаження зони доступності та інформації VPC з EC2...
+    vpcSection: Зона доступності & VPC
+    availabilityZone: Зона доступності
     subnet: VPC/підмережі
     securityGroupSelect: 'Далі: Виберіть групу безпеки'
+    loadingSecurity: Завантаження інформації про групу безпеки з EC2...
     securityGroupSection: Група безпеки
     securityGroup:
       label: Група безпеки
+      defaultExisting: 'Стандарт: використовувати існуючий <code>{groupName}</code> група'
+      defaultCreate: 'Стандартний: автоматично створювати a <code>{groupName}</code> група'
+      custom: 'Спеціальний: виберіть наявну групу'
+      updating: Оновлення групи безпеки...
+      creating: Створення групи безпеки...
     portHelp:
       link: Дізнатися більше
+      text: 'про порти, які будуть відкриті.'
     needs:
-      item2: Прослуховувати <code>UDP</code> порти <code>500</code> і <code>4500</code> <span class="text-muted">(для мережі IPsec)</span></li>
+      label: 'Щоб {appName} працював правильно, ваша група безпеки має дозволити трафік:'
+      item1: >-
+        Від сервера {appName} до <code>TCP</code> порт <code>22</code> <span class="text-muted">(SSH для встановлення та
+        налаштування Docker)</span>
+      item2: >-
+        Прослуховувати <code>UDP</code> порти <code>500</code> і <code>4500</code> <span class="text-muted">(для мережі
+        IPsec)</span></li>
+      item3: Ці правила будуть <b>ні</b> додаватися автоматично.
+    setInstanceAction: 'Далі: налаштувати параметри екземпляра'
     instanceSection: Інстанс
+    instanceOptionsSection: Параметри екземпляра
+    instanceType:
+      label: Тип екземпляра
     rootSize:
       label: Розмір кореневого диска
       unit: Гб
     ami:
       label: АМІ
       placeholder: Ubuntu АМІ
-      rancherList: Список RancherOS АМІ
+      compatibilityGuide: Інструкції щодо сумісності зображень Amazon EC2.
     sshUser:
       label: SSH користувач
       placeholder: напр. ubuntu
@@ -2015,26 +2425,49 @@ machine:
       label: IAM профіль
     privateIp:
       label: Приватний IP
+    onlyPrivate:
+      label: Використовуйте лише приватну адресу IP.
+    tags:
+      error: 'Теги не можуть містити коми. Будь ласка, виправте тег: {tag}'
+      label: EC2 Теги
+      addAction: Додати тег
+      keyLabel: Тег
+      keyPlaceholder: напр. FOO
+      valueLabel: Значення
+      valuePlaceholder: напр. бар
   driverAzure:
+    helpBlock: >-
+      Ви можете знайти інструкції щодо створення клієнта ID і секрету <a
+      href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank" rel="noopener noreferrer">тут</a>.
     accountAccessSection: Доступ до облікового запису
     placementSection: Розміщення
     networkSection: Мережа
     subscriptionId:
       label: Підписка ID
+      placeholder: Ваша Azure підписка ID
+    subscriptionCert:
+      label: Сертифікат підписки
+      placeholder: Ваш сертифікат підписки Azure.
     instanceSection: Інстанс
     image:
       label: Образ
-      placeholder: 'canonical:UbuntuServer:16.04.0-LTS:latest'
+      placeholder: 'канонічний:UbuntuServer:16.04.0-LTS:останній'
+    vmType:
+      label: VM Тип
     size:
       label: Розмір
     dockerPort:
       label: Docker порт
       placeholder: '2376'
+    publishSettingsFile:
+      label: Налаштування публікації
+      placeholder: Ваш файл налаштувань публікації
     environment:
       label: Середовище
+      placeholder: AzurePublicCloud
     resourceGroup:
       label: Група ресурсів
-      placeholder: 'docker-machine'
+      placeholder: docker-machine
     sshUser:
       label: SSH користувач
       placeholder: usr1
@@ -2045,46 +2478,91 @@ machine:
       placeholder: '[resourcegroup:] ім''я'
     subnet:
       label: Підмережа
-      placeholder: example-sub-name
+      placeholder: приклад-підназви
     subnetPrefix:
       label: Префікс підмережі
       placeholder: 128.42.0.0/21
+    availabilitySet:
+      label: Набір доступності
+      placeholder: доступність-набір-назва
     openPort:
       label: Відкритий порт
       placeholder: 'Розділений комами, напр. 80,443'
     privateIpAddress:
       label: Приватний IP
       placeholder: 127.0.0.1
+    usePrivateIp:
+      label: Використовуйте приватне IP для підключення
     staticPublicIp:
       label: Публічний IP
     noPublicIp:
       label: Немає публічного IP
     clientId:
       label: ID Клієнта
+      placeholder: Ваш клієнт ID
     clientSecret:
       label: Секрет Клієнта
+      placeholder: Секрет вашого клієнта
     regionSection: Регіон
     region:
       label: Регіон
   driverCustom:
-    step2: "Переконайтеся, що всі групи безпеки або міжмережеві екрани дозволяють трафік:"
-    step2li: Прослуховувати <code>UDP</code> порти <code>500</code> і <code>4500</code> <span class="text-muted">(для мережі IPsec)</span>
+    step1: >-
+      Запустіть машину Linux, встановіть <a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a>і перегляньте <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">вказівки щодо сумісності хоста</a> до реєстрації.
+    step2: 'Переконайтеся, що всі групи безпеки або міжмережеві екрани дозволяють трафік:'
+    step2li: >-
+      Прослуховувати <code>UDP</code> порти <code>500</code> і <code>4500</code> <span class="text-muted">(для мережі
+      IPsec)</span>
     step3: 'Додатково: Додати позначкоку на хості.'
-    step4: "Вкажіть публічний IP, який повинен бути зареєстрований для даного хоста. Якщо залишити порожнім, Rancher буде автоматично визначати IP для використання. Як правило, це працює для машин з унікальними публічними IP-адресами, але не буде працювати, якщо машина знаходиться за брандмауером / NAT або, якщо це та ж сама машина, на якому виконується <code> {rancherImage} </code> контейнер."
+    step4: >-
+      Укажіть загальнодоступний IP, щоб зареєструватися на цьому хості. Якщо залишити порожнім, PastureStack виявить
+      його автоматично. Встановіть його вручну, якщо хост знаходиться за брандмауером або NAT, або коли сервер керування
+      та агент спільно використовують той самий хост.
     agentIp:
       placeholder: напр. 1.2.3.4
-    step5Copy: Скопіюйте і виконайте наступну команду, щоб зареєструвати хост
+    step5Copy: 'Скопіюйте і виконайте наступну команду, щоб зареєструвати хост'
+    generating: Створення реєстрації URL...
     step5Close:
-      part1: Натисніть кнопку Закрити, нижче.  Новий хост повинен з'явитися в меню
+      part1: 'Натисніть кнопку Закрити, нижче.  Новий хост повинен з''явитися в меню'
       link: Хости
       part2: протягом однієї хвилини.
     close: Закрити
     windows:
       windowsHeader: Windows хост
       linuxHeader: Linux хост
-      step1: 'Запустити машину Windows Server 2016 і встановити останню версію <a href="https://msdn.microsoft.com/en-us/virtualization/windowscontainers/quick_start/quick_start_windows_server" target="_blank" rel="noreferrer nofollow">Docker</a> на ньому.'
-      step2: "Створити прозору мережу Docker:"
-      step3: Скопіюйте і виконайте наступну команду нижче в PowerShell, для запуску {appName} агента.
+      step1: >-
+        Запустіть машину Windows Server 2016, інсталюйте <a href="https://docs.docker.com/engine/install/"
+        target="_blank" rel="noopener noreferrer">Docker</a>і перегляньте <a
+        href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">вказівки щодо
+        сумісності хоста</a> до реєстрації.
+      step2: 'Створити прозору мережу Docker:'
+      step2Copy: docker network create -d transparent transparent
+      step3: 'Скопіюйте і виконайте наступну команду нижче в PowerShell, для запуску {appName} агента.'
+    windowsSteps:
+      step1: >-
+        Запустіть машину Windows Server 2016, інсталюйте <a href="https://docs.docker.com/engine/install/"
+        target="_blank" rel="noopener noreferrer">Docker</a>і перегляньте <a
+        href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">вказівки щодо
+        сумісності хоста</a> до реєстрації.
+      step2: 'Перевірте та встановіть функції RemoteAccess і маршрутизації в Windows:'
+      step2Copy: 'Get-WindowsFeature -Name "RemoteAccess","Routing" | Install-WindowsFeature'
+      step2Note: 'Примітка. Машину Windows потрібно буде перезавантажити, якщо програми були встановлені.'
+      step3: >-
+        Укажіть унікальну підмережу для хоста Windows. Щоб підтримувати накладену мережу в Windows, кожен хост у
+        середовищі повинен мати унікальну підмережу.
+      step4: >-
+        Укажіть маршрутизатор IP для підмережі хоста. Цей IP використовується для пересилання мережевого трафіку між
+        різними хостами.
+      routerIp:
+        placeholder: напр. 1.2.3.4
+      subnet:
+        placeholder: напр. 192.168.0.0/24
+      step5: >-
+        Укажіть загальнодоступний IP, щоб зареєструватися на цьому хості. Якщо залишити порожнім, PastureStack виявить
+        його автоматично. Встановіть його вручну, якщо хост знаходиться за брандмауером або NAT, або коли сервер
+        керування та агент спільно використовують той самий хост.
+      step6: 'Необов’язково: додайте мітки, які будуть застосовані до хосту.'
+      step7: 'Скопіюйте, вставте та виконайте наведену нижче команду в PowerShell, щоб запустити агент {appName}.'
   driverDigitalocean:
     sizeLabel: |
       {highMem, select, true {High Memory: } other {}}{memoryGb} Гб ОЗП, {disk} Гб Диск, {vcpus, plural,
@@ -2092,20 +2570,37 @@ machine:
       other {# vCPUs}
       }
     accountSection: Доступ до облікового запису
+    authAccountButton: 'Далі: Налаштувати Droplet'
+    accessToken:
+      label: Маркер доступу*
+      placeholder: Ваш маркер доступу DigitalOcean API.
+      help: |
+        Особистий маркер доступу з DigitalOcean
+        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank" rel="noopener noreferrer">Програми та API</a> екран
     instanceSection: Інстанс
     image:
       label: Образ
     sshUser:
       label: SSH користувач
-      placeholder: 'usr1'
+      placeholder: usr1
     size:
       label: Розмір
     regionSection: Регіон
     region:
       label: Регіон
     optionsSection: Параметри
+    backups:
+      label: Увімкнути резервне копіювання
     ipv6:
       label: Увімкнути IPv6
+    privateNetworking:
+      label: Увімкнути приватну мережу
+    monitoring:
+      label: Увімкнути моніторинг
+    tags:
+      addActionLabel: Додати тег Droplet
+      valueLabel: Теги
+      placeholder: напр. розробник
   driverExoscale:
     accountSection: Доступ до облікового запису
     apiKey:
@@ -2113,31 +2608,116 @@ machine:
       placeholder: Ваш ключ API Exoscale
     secretKey:
       label: Секретний ключ
+      placeholder: Ваш секретний ключ Exoscale.
+      provided: За умови
+    accountHelp: Вставте свою пару ключів Exoscale тут.  Ми використовуватимемо цей ключ для створення ваших нових екземплярів.
     loginAction: 'Далі: Авторизуватись і виберіть групу безпеки'
+    loadingSecurity: Завантаження інформації про групу безпеки з Exoscale...
     securityGroupSection: Група безпеки
     securityGroup:
       label: Група безпеки
+      defaultExisting: 'Стандарт: використовувати існуючий <code>{groupName}</code> група'
+      defaultCreate: 'Стандартний: автоматично створювати a <code>{groupName}</code> група'
+      custom: 'Спеціальний: виберіть наявну групу'
+      updating: Оновлення групи безпеки...
+      creating: Створення групи безпеки...
+    loadingZone: Завантаження інформації про зону з Exoscale...
+    zoneSection: зона
+    selectZoneAction: 'Далі: виберіть групу безпеки'
+    zone:
+      label: зона
     portHelp:
       link: Дізнатися більше
+      text: 'про порти, які будуть відкриті.'
     needs:
-      item2: Прослуховувати <code>UDP</code> порти <code>500</code> і <code>4500</code> <span class="text-muted">(для мережі IPsec)</span></li>
+      label: 'Щоб {appName} працював правильно, ваша група безпеки має дозволити трафік:'
+      item1: >-
+        Від сервера {appName} до <code>TCP</code> порт <code>22</code> <span class="text-muted">(SSH для встановлення та
+        налаштування Docker)</span>
+      item2: >-
+        Прослуховувати <code>UDP</code> порти <code>500</code> і <code>4500</code> <span class="text-muted">(для мережі
+        IPsec)</span></li>
+      item3: Ці правила будуть <b>ні</b> додаватися автоматично.
+    selectSecurityGroupAction: 'Далі: налаштувати параметри екземпляра'
+    loadingInstance: Отримання доступних налаштувань екземпляра...
     instanceSection: Інстанс
+    instanceProfile:
+      label: Профіль екземпляра
     diskSize:
       label: Розмір кореневого диска
     sshUser:
       label: SSH користувач
-      placeholder: 'usr1'
+      placeholder: usr1
+    template:
+      label: Шаблон
+  driverOtc:
+    access: Доступ до облікового запису
+    authorize: Авторизувати
+    next:
+      availability: 'Далі: Виберіть Доступність'
+      networks: 'Далі: Виберіть Підмережа'
+      instance: 'Далі: виберіть параметри екземпляра'
+    errors:
+      akId: Потрібен ключ доступу ID.
+      akS: Потрібен секретний ключ доступу
+      project: Потрібен проект ID.
+    loadingAvailability: Доступність завантаження та VPCs
+    loadingNetworks: Завантаження мереж
+    loadingFlavors: Завантаження параметрів екземпляра
+    provided:
+      password: Пароль надано
+    projectId: Проект ID
+    osUsername: OpenStack Ім’я користувача
+    osPassword: OpenStack Пароль
+    osUserDomainName: OpenStack Ім’я домену
+    osProjectName: OpenStack Назва проекту
+    accessKey: Ключ доступу ID
+    accessSecret: Доступ до секретного ключа
+    availableZone:
+      header: Доступність
+      label:
+        zone: зона
+        region: Регіон
+      dropdown:
+        zone: Виберіть зону
+    region: null
+    vpcAndSecurity:
+      header: Підмережа та групи безпеки
+      vpc: VPC
+      security: Група безпеки
+      subnet: Підмережа
+      dropdown:
+        vpc: Виберіть VPC
+        security: Виберіть групу безпеки
+        subnet: Виберіть підмережу
+    instance:
+      header: Екземпляр
+      options: Параметри екземпляра
+      flavorid: Смак ID
+      images: Зображення
+      sshUser: SSH Користувач
+      rootPassword: Пароль root
+      rootVolume: Розмір кореневого об'єму
+      rootVolumeType: Тип кореневого тому
+      size: Розмір пропускної здатності
+      dropdown:
+        flavorid: Виберіть смак
+        imageid: Виберіть зображення
+        type: Виберіть тип тому
   driverOther:
     driverSection: Драйвер
     driver:
       label: Драйвер
-    optionsSection: "Параметри {driverName}"
+    optionsSection: 'Параметри {driverName}'
   driverPacket:
     accountSection: Доступ до облікового запису
     projectId:
       label: Проект
+      placeholder: Ваш Packet проект ID
     apiKey:
       label: Ключ API
+      placeholder: Ваш ключ Packet API.
+    apiKeyHelp: 'З Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank" rel="noopener noreferrer">API Ключі</a> екран'
     instanceSection: Інстанс
     image:
       label: Образ
@@ -2154,6 +2734,7 @@ machine:
     apiKey:
       label: Ключ API
       placeholder: Ваш ключ RackSpace API
+    accountHelp: На екрані налаштувань облікового запису панелі керування RackSpace.
     regionSection: Регіон
     region:
       label: Регіон
@@ -2162,10 +2743,22 @@ machine:
       label: Формат
   driverUbiquity:
     accountSection: Доступ до облікового запису
+    clientId:
+      label: Торговий посередник ID
+      placeholder: Ваш хостинг Ubiquity API Реселлер ID
     apiUsername:
       label: Віддалений ID
+      placeholder: Ваш віддалений хостинг Ubiquity ID
     apiToken:
       label: Ключ доступу
+      placeholder: Ваш ключ доступу до хостингу Ubiquity
+      provided: За умови
+    accountHelp: >-
+      Ви можете знайти свої облікові дані Ubiquity Hosting API. <a
+      href="https://motion.ubiquityhosting.com/api">тут</a>. Немає облікового запису? Дізнайтеся більше про <a
+      href="http://www.ubiquityhosting.com/">Хостинг Ubiquity</a> сьогодні!
+    loginAction: 'Далі: автентифікація та створення нового екземпляра Cloud'
+    loadingInstance: Завантаження деталей створення хмарного екземпляра...
     instanceSection: Інстанс
     regionSection: Регіон
     region:
@@ -2196,6 +2789,7 @@ machine:
       unit: МБ
     boot2dockerUrl:
       label: OS ISO URL
+      placeholder: 'За замовчуванням: останній образ boot2docker'
     schedulingSection: Призначити
     dataCenter:
       label: Дата-центр
@@ -2203,25 +2797,63 @@ machine:
       label: Пул
     host:
       label: Хост
+      placeholder: 'Використовуйте ''/'', якщо використовуєте кластер'
     network:
       label: Мережа
+    dataStore:
+      label: Сховище даних
   driverAliyunecs:
+    accountSection: Розділ доступу до облікового запису
     accessKey:
       label: Ключ доступу *
+      placeholder: Ваш ключ доступу до облікового запису Aliyun.
+    accessKeySecret:
+      label: Доступ до секретного ключа*
+      placeholder: Секрет вашого ключа
+    apiEndpoint:
+      label: Кінцева точка API
+      placeholder: Приватна кінцева точка сервера Api Aliyun.
+    instanceSection: Розділ екземпляра
+    instanceDescription:
+      label: Опис екземпляра
+      placeholder: Опис екземпляра
+    instanceType:
+      label: Тип екземпляра
+      placeholder: Тип екземпляра
     systemImage:
       label: Образ системи
       placeholder: Образ системи
+    instanceTag:
+      label: Тег екземпляра
+      placeholder: Тег вашого екземпляра в Aliyun
     internetMaxBandwidth:
+      label: Максимальна пропускна здатність Інтернету
       placeholder: 1 до 100
     aliyunSLB:
       label: Aliyun SLB ID
       placeholder: Aliyun SLB ID
+    storageSection: Інформація про зберігання
+    ioOptimized:
+      label: Оптимізований ввід-вивід для зберігання примірників
+      placeholder: немає або оптимізовано
+    systemDiskCategory:
+      label: Категорія системного диска
+      placeholder: 'Коли сховище оптимізовано, ви можете ввести cloud_efficiency, cloud_ssd або ephemeral_ssd.'
+    dataDiskCategory:
+      label: Категорія диска даних
+      placeholder: 'Коли сховище оптимізовано, ви можете ввести cloud_efficiency, cloud_ssd або ephemeral_ssd.'
     dataDiskSize:
+      label: Розмір диска даних
       placeholder: Розмір диска
     region:
       label: Регіон
       placeholder: Регіон
+    zone:
+      label: Доступна зона
+      placeholder: Пустий для автоматичного вибору
+    networkSection: Розділ мережі
     routeCIDR:
+      label: Маршрут CIDR
       placeholder: напр. 192.168.1.0/24
     vpcId:
       label: Aliyun VPC ID
@@ -2232,30 +2864,50 @@ machine:
     privateIp:
       label: Приватний IP
       placeholder: Приватні IP в приватній мережі
+    privateAddressOnly:
+      label: Лише приватна адреса
+    securitySection: Розділ безпеки
     securityGroup:
       label: Група безпеки
       placeholder: Група безпеки
     sshPassword:
       label: SSH пароль
+      placeholder: 'Установити пароль для екземпляра SSH, пусто для автоматичного встановлення'
+    errors:
+      nameTooShort: Довжина імені має дорівнювати двом або більше.
+      nameNotValid: Ім’я недійсне відповідно до правила імені хоста Aliyun ECS.
+      nameTooLong: Довжина імені повинна бути менше тридцяти.
+      accessKeyRequired: Потрібен ключ доступу.
+      accessSecretRequired: Потрібен секрет доступу.
+      sshPasswordLengthNotValid: Довжина пароля SSH має бути від восьми до тридцяти.
+      sshPasswordInvalidCharacter: Пароль SSH містить недійсні символи.
+      sshPasswordFormatError: >-
+        Пароль SSH має містити принаймні три з чотирьох таких символів: великі літери, малі літери, цифри та спеціальні
+        символи.
+      nameNotValidForApp: 'Ім’я недійсне згідно з правилом імені хоста {appName}.'
 modalAboutComponent:
   component: Компонент
   version: Версія
-  cattle: Cattle
+  cattle: Orchestration Engine
   cli: CLI
   ui: Інтерфейс користувача
   compose: Compose
+  machineService: Host Provisioner
   close: Закрити
 modalAuditlogInfo:
   header: Додаткова інформація логів
+  request: 'Об''єкт запиту:'
+  response: 'Об''єкт відповіді:'
 modalContainerStop:
   uom: секунд
-  header: "Ви впевнені, що бажаєте зупинити"
+  header: 'Ви впевнені, що бажаєте зупинити'
+  helpText: 'Контейнер буде примусово припинено, якщо він не зупиниться сам до закінчення часу очікування'
   protip: 'Порада: Утримуйте клавішу {key} при натисканні Стоп, щоб обійти це підтвердження.'
   label: Час очікування
   placeholder: '10'
   button: Зупинити
 modalConfirmDeactivate:
-  header: Ви впевнені, що бажаєте
+  header: 'Ви впевнені, що бажаєте'
   protip: 'Порада: Утримуйте клавішу {key} при натисканні {isServiceButton}, щоб обійти це підтвердження.'
   cancel: Скасувати
   buttons:
@@ -2263,6 +2915,7 @@ modalConfirmDeactivate:
       message: деактивувати середовище
       button: Деактивувати
     environment:
+      message: припинити послуги для
       button: Зупинити сервіси
     default:
       message: деактивувати
@@ -2271,14 +2924,24 @@ modalEditBackup:
   edit: Редагувати резервну копію
   create: Створити резервну копію
   nameLabel: Назва резервної копії
+  backupTarget: Резервна мета
+  backupTargetPlaceholder: Виберіть ціль резервного копіювання...
 modalEditDriver:
   header:
     create: Додати машинний драйвер
     edit: Редагувати машинний драйвер
   url:
     label: Скачати URL
+    help: URL для завантаження двійкового 64-розрядного драйвера машини Linux.
+  uiUrl:
+    label: Спеціальний UI URL
+    help: 'Необов’язково: URL для завантаження для налаштованого екрана додавання хостів для цього драйвера.'
+    link: >-
+      див. <a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">PastureStack Web Console</a> для
+      отримання додаткової інформації.
   checksum:
     label: Контрольна сума
+    help: 'Додатково: переконайтеся, що завантажений драйвер відповідає очікуваній контрольній сумі.'
 modalEditSetting:
   title: Змінити додаткові настройки
   name:
@@ -2287,23 +2950,33 @@ modalEditSetting:
     label: Значення
   reset:
     label: Відновити Значення за Замовчуванням
+modalEditSnapshot:
+  edit: Редагувати знімок
+  create: Створити знімок
+  nameLabel: Назва знімка
 modalFeedback:
-  header: Ласкаво просимо в {appName}!
-  subtitle: "Перед тим, як приступити до роботи, розкажіть, будь ласка, трохи про себе..."
+  header: 'Ласкаво просимо в {appName}!'
+  subtitle: 'Перед тим, як приступити до роботи, розкажіть, будь ласка, трохи про себе...'
   send: Розпочати
+modalHostEvacuate:
+  header: 'Ви впевнені, що хочете евакуюватися?'
+  helpText: 'Це дезактивує хост(и) і видалить усі запущені на ньому контейнери, не пов’язані з інфраструктурою.'
+  protip: 'ProTip: утримуйте клавішу {key}, клацаючи зупинку, щоб пропустити це підтвердження.'
+  button: Евакуюйтеся
 modalProcessError:
   header: Інформація
-  cause: "Причина:"
+  cause: 'Причина:'
   none: Н/Д
+  stackTrace: 'Трасування стека:'
   close: Закрити
 modalRollbackVolume:
   title:
     snapshot: Відкат до знімка
     backup: Відкат до резервної копії
 modalShell:
-  title: 'Shell : {instanceName}'
+  title: "Shell\_: {instanceName}"
 modalWelcome:
-  header: Ласкаво просимо в {appName}!
+  header: 'Ласкаво просимо в {appName}!'
   closeModal: Зрозуміло
 newAliasService:
   header: Додати Сервіс Псевдонімів
@@ -2313,34 +2986,54 @@ newBalancer:
     edit: Редагувати систему балансування навантаження
     upgrade: Оновити систему балансування навантаження
   tabs:
+    ssl: SSL Припинення
+    stickiness: липкість
     custom: Користувальницькій haproxy.cfg
     labels: Позначки
     scheduling: Призначити
+  custom: >
+    Додатковий <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a> конфігурацію можна розмістити тут і буде об’єднано разом із конфігурацією, згенерованою
+    {appName}.
   config:
     prompt: Користувальницькій haproxy.cfg
   error:
+    noRules: Виберіть одне або кілька правил порту для прослуховування
+    noSourcePort: Для кожного правила необхідний порт джерела
+    noRegion: Регіон потрібен для користувацької цільової служби
+    noEnvironment: Середовище потрібне для спеціальної цільової служби
+    missingEnvironment: Потрібне середовище
     invalidSourcePort: 'Невірний Порт: ''{num}'''
+    invalidTargetPort: 'Недійсний цільовий порт: ''{num}'''
+    invalidWeight: 'Недійсна вага: ''{num}'''
+    mixedPort: 'Порт {num} має кілька правил із конфліктуючими доступами/протоколами'
+    noTarget: Ціль обов’язкова для кожного правила
+    needsCertificate: 'Потрібен сертифікат, оскільки існують правила порту SSL/TLS.'
 newCatalog:
   version:
     prompt: Вибрати версію...
+    default: 'Типове значення на той час (наразі {version})'
   saveUpgrade: Оновити
   saveNew: Запустити
   saveConfigure: Налаштувати
-  upgrade: "Оновити:"
-  catalog: "Каталог:"
-  category: "Категорія:"
-  support: "Підтримка:"
+  upgrade: 'Оновити:'
+  catalog: 'Каталог:'
+  category: 'Категорія:'
+  support: 'Підтримка:'
   official: Офіційно сертифікований
-  license: "Ліцензія:"
-  url: "Проект URL:"
-  titleAdd: "Додати Стек {name}"
-  titleUpgrade: "Оновити {name} стек"
+  maintainedBy: Підтримується учасниками спільноти
+  maintainer: 'Супроводжувач:'
+  license: 'Ліцензія:'
+  url: 'Проект URL:'
+  titleAdd: 'Додати Стек {name}'
+  titleUpgrade: 'Оновити {name} стек'
+  titleConfigure: 'Налаштувати стек {name}.'
   templateVersion: Версія шаблону
   selectVersionAdd: Виберіть версію шаблону для розгортання
   selectVersionUpgrade: Виберіть версію шаблону для оновлення до
   selectVersionConfigure: Виберіть версію шаблону для налаштування
   newStack: Новий стек
   config: Параметри конфігурації
+  unknownType: 'Нерозпізнаний тип запитання:'
   startService: Запустити сервіс після створення
   preview: Попередній перегляд
   txt: answers.txt
@@ -2380,6 +3073,7 @@ newContainer:
     scheduling: Планування
     balancing: Балансування
     secrets: Таємні коди
+  selectUpgrade: Виберіть одну або кілька служб для оновлення.
   saveUpgrade: Оновити
   saveNew: Створити
   removeSidekick: Видалити цей Sidekick
@@ -2387,54 +3081,110 @@ newContainer:
     placeholder: напр. myapp
   description:
     placeholder: напр. мій додаток
-  emptyPrimaryService: "(Основний сервіс)"
-  emptySidekick: "(Sidekick #{num})"
+  emptyPrimaryService: (Основний сервіс)
+  emptySidekick: '(Sidekick #{num})'
   addSidekickContainer: Додати Sidekick контейнер
   addSidekickVm: Додати Sidekick VM
 newExternalService:
   header: Додати зовнішній сервіс
+  alert: 'Примітка. Це використовуватиметься, лише якщо зовнішня служба є метою балансувальника навантаження.'
 newReceiver:
+  title:
+    edit: Редагувати приймача
+    add: Додати приймача
   name:
-    placeholder: "напр. scale-web"
+    placeholder: напр. scale-web
   driver:
     label: Тип
   action:
     label: Дія
+    up: Масштабування
+    down: Зменшити масштаб
+  batchSize:
+    label: Розмір партії оновлення
+  deleteOption:
+    label: При зменшенні масштабу видаліть
+    mostRecent: Останній створений хост
+    leastRecent: Найстарший господар
+  hostSelector:
+    label: Вибір хоста
+    addActionLabel: Додати мітку вибору
+    help:
+      up: >-
+        Хости з відповідними мітками використовуватимуться як шаблон для розгортання нового {by, plural, =1 {хост} other
+        {господарі}}.
+      down: Хости з відповідними мітками будуть кандидатами на видалення під час масштабування.
+  image:
+    label: Docker Назва зображення
+  service:
+    label: Цільова служба
+  serviceSelector:
+    label: Вибір послуг
+    addActionLabel: Додати мітку вибору
+    help: 'Послуги, які відповідають цій мітці, будуть оновлені'
+  amount:
+    label: за
   min:
     label: Мінімальна кількість
     placeholder: напр. 1
   max:
     label: Максимальна кількість
     placeholder: напр. 20
+  payloadFormat:
+    label: Формат корисного навантаження Webhook
+    alicloud: Хмарний центр Alibaba Docker.
+    dockerhub: Docker Концентратор
+    azure: Azure Реєстр контейнерів
+  addressType:
+    label: Тип адреси
+    registry: Громадський
+    registry-vpc: VPC
+    registry-internal: класичний
+  tag:
+    label: Тег зображення
+    placeholder: напр. останній
+    help: Лише натискання реєстру на вказаний тег призведе до оновлення служби.
 newSecret:
   title:
     edit: Редагувати таємний код
     add: Додати секрет
   name:
     placeholder: напр. api-token
+  description:
+    placeholder: напр. Секретний маркер для API
   value:
     label: Значення Таємного коду
     placeholder: Значення Таємного коду
 pageFooter:
+  about: 'Про {appName}'
   notARelease: (Це не реліз)
   help: Допомога
   documentation: Документація
-  faq: FAQ
-  issues: Зареєструвати проблему
-  forums: Форум
-  slack: Slack
+  faq: Поширені запитання
+  issues: Повідомити про проблему
   download:
     link: Скачати CLI
-    headerCli: Rancher CLI
-    headerCompose: Rancher Compose
+    headerCli: PastureStack CLI
+    headerCompose: PastureStack Compose
     mac: macOS
     windows: Windows
     linux: Linux
+    deprecated: Застаріле
+pagination:
+  multi: >
+    {pages, plural, =0 {0 предметів} =1 {{count} {count, select, =1 {Пункт} other {Предмети}}} other {{from} - {to} з
+    {count}}}
+pageHeaderEnvironment:
+  namespace: Простір імен
 projectRow:
   none: Без опису
   orchestration: Оркестрація
 projectUpgrade:
   header: Оновлення середовища
+  detail: >-
+    {appName} {appVersion} містить зміни, які потребують оновлення наявних системних служб і контейнерів балансувальника
+    навантаження.
+  notOwner: Лише власник цього середовища або адміністратор може виконати оновлення.
   actionButton: Оновити зараз
   banner: Оновлення середовища...
 registryRow:
@@ -2445,14 +3195,17 @@ registryRow:
 reservationParameters:
   label: Обмеження на ресурси
   localStorage:
-    labelText: 'Локальне сховище'
-    unit: 'МБ'
+    labelText: Локальне сховище
+    placeholder: 'За замовчуванням: весь хост'
+    unit: МБ
   memory:
-    labelText: 'Пам''ять'
-    unit: 'МБ'
+    labelText: Пам'ять
+    placeholder: 'За замовчуванням: весь хост'
+    unit: МБ
   milliCpu:
     labelText: ЦП
-    unit: 'mCPU'
+    placeholder: 'За замовчуванням: весь хост'
+    unit: mCPU
 saveCancel:
   saving: Збереження...
   saved: Збережено!
@@ -2460,17 +3213,25 @@ saveCancel:
   create: Створити
   cancel: Відміна
 schema:
+  inputBoolean:
+    y: правда
+    n: Неправда
   inputCertificate:
     prompt: Виберіть сертифікат...
   inputEnum:
     option: Виберіть варіант...
   inputService:
     prompt: Виберіть сервіс...
+    custom:
+      prompt: Спеціальний...
+      placeholder: напр. region1/environment1/stack1/service1
   inputSecret:
     prompt: Виберіть секрет...
 schedulingRuleRow:
   theHost: Хост
   must: повинен
+  should: повинен
+  shouldNot: не повинен
   mustNot: не повинен
   haveA: мати
   of: з
@@ -2480,11 +3241,11 @@ schedulingRuleRow:
   containerName: контейнер з ім'ям
 serviceLink:
   withAlias:
-    sameStack: "{service} як {alias}"
-    differentStack: "{stack}/{service} як {alias}"
+    sameStack: '{service} як {alias}'
+    differentStack: '{stack}/{service} як {alias}'
   noAlias:
-    sameStack: "{service}"
-    differentStack: "{stack}/{service}"
+    sameStack: '{service}'
+    differentStack: '{stack}/{service}'
 sidekickAddtlInfo:
   info: Інформація
   image: Образ
@@ -2496,6 +3257,11 @@ sidekickAddtlInfo:
   noLabels: Без позначкок
 siteAccess:
   header: Доступ до сайту
+  helpText: 'Налаштуйте, кому має бути дозволено вхід і використання {appName}.'
+  unrestricted: 'Дозволити будь-який дійсний {individuals}'
+  restricted: 'Дозволити членів середовищ, а також авторизовані {individuals} і {collection}'
+  required: 'Обмежити доступ лише до авторизованих {individuals} і {collection}'
+  listHeader: 'Авторизовані {individuals} і {collection}'
   noIdentity: Немає
   users: Користувачі
   groups: Групи
@@ -2503,6 +3269,8 @@ siteAccess:
 snapshotTimeline:
   noData: Немає Даних Знімка
 stackSection:
+  toggleDetails: Переключити деталі стека
+  outputs: Виходи
   description: Опис
   none: Немає сервісів
   tags: Теги
@@ -2543,9 +3311,11 @@ stackSection:
       actions: Дії
   upgradeImage: Оновити образ контейнера
 snapshotSection:
+  none: Без резервного копіювання
   multiple: 'Декілька: {latestDate}'
 storagePoolSection:
-  readOnly: "(лише для читання)"
+  outputs: Виходи
+  readOnly: (лише для читання)
   hosts:
     header: Хости
     none: Немає хостів
@@ -2556,12 +3326,13 @@ storagePoolSection:
   models:
     table:
       header:
-        volumeName: 'Ім''я Диска'
-        snapshotState: 'Стан Знімка'
-        snapshotName: 'Назва Знімка'
+        volumeName: Ім'я Диска
+        snapshotState: Стан Знімка
+        snapshotName: Назва Знімка
+        backedUp: Резервне копіювання
         mounts: 'Змонтовані (контейнер: шлях)'
 svgServiceContainer:
-  sidekicks: Sidekicks
+  sidekicks: Помічники
 swarm:
   containerSection:
     state: Статус
@@ -2574,10 +3345,17 @@ swarm:
     ports: Порти
     containers: Контейнери
     none: Немає сервісів
+swarmTab:
+  dashboard:
+    header: Приладова панель
+    dashboard:
+      content: 'Portainer — це легка програма для керування UI, яка дозволяє вам легко керувати своїм Docker ройовим кластером'
+      button: портейнер UI
 telemetryOpt:
   header: Статистика
-  subtext: |
-    Компанії Rancher Labs потрібно збирати анонімну інформацію про конфігурацію вашої установки для поліпшення роботи сервісу. <br/> Ваші дані не будуть передані третім особам, ніякі конкретні імена або адреси ресурсом не збираються.
+  subtext: >
+    Коли цей параметр увімкнено, встановлення може збирати анонімні відомості про конфігурацію, щоб покращувати
+    {appName}.<br/>Конкретні назви й адреси ресурсів не збираються, а підсумкова статистика не передається третім особам.
   learnMore:
     label: Детальніше
   label: Дозволити збір анонімної статистики
@@ -2590,75 +3368,96 @@ tooltipWarning:
   dismiss: Відхилити
 upgradeBtn:
   version:
-    current: 'Поточна версія'
+    current: Поточна версія
   status:
-    none: 'Немає'
-    loading: 'Перевірка оновлень...'
-    current: 'Немає оновлень'
-    available: 'Доступне оновлення'
-    inprogress: 'Виконується оновлення'
+    none: Немає
+    loading: Перевірка оновлень...
+    current: Немає оновлень
+    available: Доступне оновлення
+    inprogress: Виконується оновлення
     upgraded: 'Оновлене: Закінчіть оновлення'
-    notfound: 'Версію не знайдено'
-    error: 'Помилка перевірки оновлення'
-    required: 'Необхідні оновлення'
+    notfound: Версію не знайдено
+    error: Помилка перевірки оновлення
+    required: Необхідні оновлення
 viewEditDescription:
   form:
     name:
       placeholder: напр. lab
+    description:
+      placeholder: напр. Середовище для експериментів розробників
 viewEditProject:
+  nativeEngine: Рідний двигун
   showEdit:
-    edit: "Редагувати середовище:"
+    edit: 'Редагувати середовище:'
     add: Додати середовище
     template: Шаблон середовища
     accessControl: Контроль доступу
-    noMembers: Додайте одного або декілька учасників, які можуть використовувати це середовище.
+    noMembers: 'Додайте одного або декілька учасників, які можуть використовувати це середовище.'
   networkPolicy:
     label: Політика мережі
-    description: Ви можете контролювати, контейнери які можуть зв'язуватися один з одним через керовану мережу.
-    noManager: Мережеві політики доступні тільки для середовищ з використанням оркестровки Cattle з розгорнутим шаблоном інфраструктури Менеджера Мережевої Політики (Network Policy Manager).
+    description: 'Ви можете контролювати, контейнери які можуть зв''язуватися один з одним через керовану мережу.'
+    unsupported: >-
+      Це середовище має правила мережевої політики, які ще не підтримуються UI.  Для керування політикою використовуйте
+      API.
+    noManager: >-
+      Мережеві політики доступні тільки для середовищ з використанням рушія оркестрації PastureStack з розгорнутим шаблоном
+      інфраструктури Менеджера Мережевої Політики (Network Policy Manager).
+    withinStack: У стеку
+    withinService: В рамках служби
+    withinLinked: Між пов’язаними службами
+    default: Все інше
     allow: Дозволити
     deny: Заборонити
-  header: "Середовище:"
+  header: 'Середовище:'
   description: Опис
-  helpBlock: |
-    Контроль доступу не включений. <br/> 
-    Будь-яка людина, що має доступ до API або веб інтерфейсу, яка виступає в якості адміністратора, і буде в змозі використати будь-яке середовище.
+  helpBlock: >
+    Контроль доступу не включений. <br/>
+
+    Будь-яка людина, що має доступ до API або веб інтерфейсу, яка виступає в якості адміністратора, і буде в змозі
+    використати будь-яке середовище.
 vmConsole:
-  header: "Консоль:"
+  header: 'Консоль:'
   protip: 'Порада: для того щоб запустити у новому вікні shell, утримуйте клавішу {key}.'
-  canvas: Canvas, не підтримується.
+  canvas: 'Canvas, не підтримується.'
   footerActions:
     buttonSend: Відправити Ctrl-Alt-Delete
     buttonCancel: Закрити
 volumeRow:
   mounts:
-    readOnly: "(лише для читання)"
+    readOnly: (лише для читання)
+waitOrchestration:
+  count: '({sub} з {count})'
 waitKubernetes:
-  addHost: 'Додайте хоча б один хост'
-  activateHost: 'В очікуванні активності хоста'
-  createStack: 'Створення Kubernetes системних стеків'
-  startServices: 'Запускаємо сервіси'
-  waitApi: 'Очікування Kubernetes API'
+  addHost: Додайте хоча б один хост
+  activateHost: В очікуванні активності хоста
+  createStack: Створення Kubernetes системних стеків
+  startServices: Запускаємо сервіси
+  waitApi: Очікування Kubernetes API
 waitMesos:
-  addHost: 'Додайте принаймні три хости'
-  activateHost: 'В очікуванні активності хостів'
-  createStack: 'Створення Mesos системних стеків'
-  startServices: 'Запускаємо сервіси'
+  addHost: Додайте принаймні три хости
+  activateHost: В очікуванні активності хостів
+  createStack: Створення Mesos системних стеків
+  startServices: Запускаємо сервіси
+  waitApi: Очікування провідного Mesos Майстра
 waitSwarm:
-  addHost: 'Додайте хоча б один хост'
-  activateHost: 'В очікуванні активності хоста'
-  createStack: 'Створення Swarm системних стеків'
-  startServices: 'Запускаємо сервіси'
+  addHost: Додайте хоча б один хост
+  activateHost: В очікуванні активності хоста
+  createStack: Створення Swarm системних стеків
+  startServices: Запускаємо сервіси
 containerChoices:
   hostGroup: 'Хост: {name}'
   hostGroupWithState: 'Хост: {name} ({state})'
   unknownHost: 'Хост: ???'
-  containerOption: "{name}"
-  containerOptionWithState: "{name} ({state})"
+  containerOption: '{name}'
+  containerOptionWithState: '{name} ({state})'
+driver:
+  multiHostNames: 'Господарі будуть названі <b>{first}</b> — <b>{last}</b>'
 allServices:
   stackGroup: 'Стек: {name}'
   noName: '(Стек: {id})'
 nav:
+  srToggleNav: Перемкнути навігацію
+  srToggleDropdown: Перемкнути спадне меню
   environment:
     label: Середовище
     all: Всі середовища
@@ -2666,6 +3465,9 @@ nav:
     selected: Вибрані середовища
     manage: Управляти Середовищами
     edit: 'Редагувати "{name}"'
+  namespace:
+    label: Простір імен
+    manage: Керування просторами імен
   notReady: Налаштування...
   k8s:
     tab: Kubernetes
@@ -2674,9 +3476,8 @@ nav:
     system: Стеки інфраструктури
   swarm:
     tab: Swarm
-    projects: Проекти
-    services: Сервіси
     cli: CLI
+    dashboard: Портьєр
     system: Інфраструктура
   mesos:
     tab: Mesos
@@ -2725,11 +3526,19 @@ nav:
     themeAuto: Авто
     themeDark: Темна
   noHosts:
-    link: "Додати хост"
+    prefix: >-
+      Перш ніж додавати перший сервіс або запускати контейнер, ознайомтеся з <a
+      href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">настановами щодо
+      сумісності з Docker</a>:
+    link: Додати хост
+    suffix: ''
   noHostsWindows:
-    link: "Додати хост"
+    prefix: 'Перш ніж додавати свій перший сервіс або запускати контейнер, вам потрібно буде додати хост Windows.  '
+    link: Додати хост
+    suffix: ''
 action:
   activate: Активувати
+  backup: Знімок резервної копії
   deleteBackup: Видалити резервну копію
   cancelUpgrade: Скасувати оновлення
   cancelRollback: Скасувати Відкат
@@ -2737,6 +3546,7 @@ action:
   console: Відкрити консоль
   deactivate: Деактивувати
   edit: Редагувати
+  evacuate: Евакуюйтеся
   execute: Підключитися до Консолі
   exportConfig: Експорт конфігурації
   finishUpgrade: Закінчити оновлення
@@ -2749,7 +3559,7 @@ action:
   restore: Відновити
   retry: Повторити
   rollback: Відкат
-  revertToSnapshot: Відновити Диск, з знімка
+  revertToSnapshot: 'Відновити Диск, з знімка'
   restoreFromBackup: Відновити Диск з резервної копії
   setDefault: Зробити за замовчуванням
   snapshot: Снепшот
@@ -2757,6 +3567,7 @@ action:
   startServices: Запустити сервіси
   stop: Зупинити
   stopServices: Зупинити сервіси
+  switchNamespace: Перейти до цього простору імен
   switchEnvironment: Переключитися в це середовище
   upgrade: Оновити
   upgradeOrEdit: Оновити / змінити
@@ -2766,6 +3577,22 @@ action:
   viewInstance: Перегляд інстанса
 validation:
   required: '"{key}" необхідно'
+  arrayLength:
+    exactly: '"{key}" має містити {count, plural, =1 {# елемент} other {# предметів}}'
+    between: '"{key}" має містити між {min} і {max} {max, plural, =1 {пункт} other {елементи}}'
+    min: '"{key}" має містити принаймні {count} {count, plural, =1 {пункт} other {елементи}}'
+    max: '"{key}" має містити щонайбільше {count} {count, plural, =1 {пункт} other {елементи}}'
+  stringLength:
+    exactly: '"{key}"має бути {count, plural, =1 {# символ} other {# символ}}'
+    between: '"{key}" має бути між {min} і {max} {max, plural, =1 {характер} other {персонажів}}'
+    min: '"{key}"має бути принаймні {count} {count, plural, =1 {характер} other {персонажів}}'
+    max: '"{key}" має бути щонайбільше {count} {count, plural, =1 {характер} other {персонажів}}'
+  number:
+    exactly: '"{key}" має бути точно {val}'
+    between: '"{key}" має бути між {min} і {max}'
+    min: '"{key}" має бути принаймні {val}'
+    max: '"{key}" має бути не більше {val}'
+  chars: '"{key}" містить {count, plural, =1 {недійсний символ} other {# недійсний символ}}: {chars}'
 model:
   account:
     kind:
@@ -2782,7 +3609,18 @@ model:
       group: Група
       org: Організація
       localUser: Локальний користувач
-      unknown: "{type}?"
+      unknown: '{type}?'
+  openldapconfig:
+    server:
+      label: Ім’я хосту або адреса IP.
+    serviceAccountUsername:
+      label: Ім'я користувача облікового запису служби
+    serviceAccountPassword:
+      label: Пароль облікового запису служби
+    domain:
+      label: База пошуку користувачів
+      placeholder: 'напр. ou=Користувачі,dc=моя компанія,dc=com'
+      help: Використовуватимуться лише користувачі нижче цієї бази.
   projectMember:
     role:
       member: Учасник
@@ -2792,3 +3630,4 @@ model:
   scaleService:
     min: Мінімальна кількість
     max: Максимальна кількість
+    amount: за

@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { formatDurationSeconds } from 'ui/utils/date-time';
 
 export function runTime(params) {
   var s = moment(params[0]);
@@ -11,7 +12,7 @@ export function runTime(params) {
       time = Math.round(time);
     }
 
-    return `${time} sec`;
+    return formatDurationSeconds(time);
   }
   else
   {
