@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PYCHECK'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+dev_deps = package.get("devDependencies", {}) or {}
+if dev_deps.get("jquery.cookie") != "1.4.1":
+    fail("JQUERY_COOKIE_NPM_DEP_VERSION_UNEXPECTED", actual=dev_deps.get("jquery.cookie"), expected="1.4.1")
+if "jquery.cookie" in (bower.get("dependencies", {}) or {}):
+    fail("JQUERY_COOKIE_STILL_IN_BOWER_DEPENDENCIES")
+if "node_modules/jquery.cookie/jquery.cookie.js" not in build:
+    fail("JQUERY_COOKIE_NPM_IMPORT_MISSING")
+if "bower_components/jquery.cookie" in build:
+    fail("JQUERY_COOKIE_BOWER_IMPORT_STILL_PRESENT")
+
+packages = lock.get("packages", {}) or {}
+root_dev = (packages.get("", {}) or {}).get("devDependencies", {}) or {}
+if root_dev.get("jquery.cookie") != "1.4.1":
+    fail("JQUERY_COOKIE_LOCK_ROOT_VERSION_UNEXPECTED", actual=root_dev.get("jquery.cookie"), expected="1.4.1")
+jquery_cookie_pkg = packages.get("node_modules/jquery.cookie", {}) or {}
+if jquery_cookie_pkg.get("version") != "1.4.1":
+    fail("JQUERY_COOKIE_LOCK_PACKAGE_VERSION_UNEXPECTED", actual=jquery_cookie_pkg.get("version"), expected="1.4.1")
+
+modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in ["No-Publish Bower jquery.cookie Migration Candidate", "jquery.cookie@1.4.1", "node_modules/jquery.cookie/jquery.cookie.js"]:
+    if phrase not in modernization:
+        fail("JQUERY_COOKIE_MIGRATION_DOC_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_JQUERY_COOKIE_BOWER_MIGRATION_OK lock={lock_path}")
+print("failure_count=0")
+PYCHECK
