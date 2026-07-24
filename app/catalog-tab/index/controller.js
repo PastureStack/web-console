@@ -77,7 +77,10 @@ export default Ember.Controller.extend({
     }
 
     this.get('model.catalog').forEach((item) => {
-      if (item.name.toUpperCase().indexOf(search) >= 0 || item.description.toUpperCase().indexOf(search) >= 0) {
+      let name = item.get('localizedName') || '';
+      let description = item.get('localizedDescription') || '';
+
+      if (name.toUpperCase().indexOf(search) >= 0 || description.toUpperCase().indexOf(search) >= 0) {
         result.push(item);
       }
     });

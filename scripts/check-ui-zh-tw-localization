@@ -149,6 +149,8 @@ const requiredValues = {
   'stacksPage.header.infra': '基礎架構堆疊',
   'stacksPage.actionButton': '新增應用堆疊',
   'stacksPage.new.header': '新增應用堆疊',
+  'catalogPage.index.header': '應用程式商店：',
+  'catalogPage.index.search.placeholder': '搜尋…',
   'servicePage.type.service': '服務',
   'editStack.name.label': '堆疊名稱',
   'generic.noo': '否',

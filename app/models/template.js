@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
+import { localizedCatalogField } from 'ui/utils/localized-catalog-field';
 
 export default Resource.extend({
   projects: Ember.inject.service(),
@@ -88,6 +89,24 @@ export default Resource.extend({
   categoryLowerArray: function() {
     return this.get('categoryArray').map(x => (x||'').toLowerCase());
   }.property('categoryArray.[]'),
+
+  localizedName: Ember.computed('name', 'labels', 'intl._locale', function() {
+    return localizedCatalogField(
+      this.get('labels'),
+      this.get('intl._locale'),
+      'name',
+      this.get('name')
+    );
+  }),
+
+  localizedDescription: Ember.computed('description', 'labels', 'intl._locale', function() {
+    return localizedCatalogField(
+      this.get('labels'),
+      this.get('intl._locale'),
+      'description',
+      this.get('description')
+    );
+  }),
 
   supported: function() {
     let orch = this.get('projects.current.orchestration')||'cattle';

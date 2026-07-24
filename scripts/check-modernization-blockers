@@ -32,6 +32,8 @@ require_file bower.json
 require_file docs/modernization.md
 require_file ORIGIN.md
 require_file COMPATIBILITY.md
+require_file app/utils/localized-catalog-field.js
+require_file tests/unit/utils/localized-catalog-field-test.js
 
 version=$(python3 - <<'PY'
 import json
@@ -39,8 +41,8 @@ with open('package.json', encoding='utf-8') as f:
     print(json.load(f).get('version', ''))
 PY
 )
-if [[ "$version" != "1.6.56-pasturestack.4" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.4"
+if [[ "$version" != "1.6.56-pasturestack.5" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.5"
   failures=$((failures + 1))
 fi
 

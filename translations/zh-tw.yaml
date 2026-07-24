@@ -395,10 +395,10 @@ backupTargetsPage:
     placeholder: '例如：nfsvers=4,proto=udp'
 catalogPage:
   index:
-    header: 應用程式商店
+    header: 應用程式商店：
     manage: 管理
     search:
-      placeholder: 搜尋….
+      placeholder: 搜尋…
     category: 分類：
     certified:
       rancher:

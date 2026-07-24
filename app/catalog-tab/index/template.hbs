@@ -1,5 +1,5 @@
 <section class="header clearfix">
-  <h1>{{t 'catalogPage.index.header'}} <span class="text-capitalize">{{catalogId}}</span></h1>
+  <h1>{{t 'catalogPage.index.header'}} <span class="text-capitalize">{{if (eq catalogId "all") (t "nav.catalog.all") catalogId}}</span></h1>
 
   <div class="pull-right">
     <button type="button" class="btn btn-default btn-sm" disabled={{eq updating 'yes'}} {{action "update"}}>
@@ -19,11 +19,11 @@
   </div>
 
   <div class="btn-group pull-right r-ml10">
-    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t 'catalogPage.index.category'}} <span class="text-capitalize">{{category}}</span> <i class="icon icon-chevron-down"></i></button>
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t 'catalogPage.index.category'}} <span class="text-capitalize">{{if (eq category "all") (t "nav.catalog.all") category}}</span> <i class="icon icon-chevron-down"></i></button>
     <ul class="dropdown-menu dropdown-menu-right">
       {{#each categories as |opt|}}
         {{#if (eq opt "all")}}
-          <li class="text-capitalize {{if (eq category opt) 'active'}}">{{#link-to parentRoute (query-params category=opt)}}{{opt}}{{/link-to}}</li>
+          <li class="text-capitalize {{if (eq category opt) 'active'}}">{{#link-to parentRoute (query-params category=opt)}}{{t "nav.catalog.all"}}{{/link-to}}</li>
           <li class="divider"></li>
         {{else}}
           <li class="{{if (eq category opt) 'active'}}">

@@ -16,8 +16,10 @@ Simplified Chinese, and Traditional Chinese for Taiwan. Every selectable locale
 must satisfy the complete message contract and regional formatting gates
 documented in [Localization](docs/localization.md).
 
-No CI/CD, static artifact publication, release, deployment, or
-production-readiness claim is enabled.
+No automatic CI/CD, static artifact publication, deployment, or
+production-readiness claim is enabled. The manually dispatched validation
+workflow tests and builds the exact selected commit on a GitHub-hosted runner;
+it does not publish a release.
 
 ## Build and test
 
@@ -32,6 +34,12 @@ The packaging command uses the current Git commit timestamp by default, or an
 explicit `SOURCE_DATE_EPOCH`, and emits a deterministic tarball plus a portable
 SHA-256 file. It creates a candidate only; publishing remains a separate,
 reviewed release step.
+
+Catalog cards and launch pages read optional
+`io.pasturestack.catalog.name.<locale>` and
+`io.pasturestack.catalog.description.<locale>` labels. Unknown locales and
+third-party catalogs fall back to their canonical metadata instead of showing
+an empty string or an untranslated key.
 
 The repository includes explicit modernization gates because its historical frontend toolchain cannot be trusted without review. See [COMPATIBILITY.md](COMPATIBILITY.md), [SECURITY.md](SECURITY.md), and [ORIGIN.md](ORIGIN.md).
 

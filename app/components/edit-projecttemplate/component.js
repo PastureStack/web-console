@@ -236,7 +236,7 @@ export default Ember.Component.extend(NewOrEdit, {
     this.get('orchestrationIds').forEach((id) => {
       let tpl = (map[id]||{}).tpl;
       if ( tpl ) {
-        drivers.push({name: id, title: tpl.name, source: this.get('intl').t('catalogBox.sourcePrefix') + ' ' + ucFirst(tpl.catalogId), image: tpl.links.icon});
+        drivers.push({name: id, title: tpl.get('localizedName'), source: this.get('intl').t('catalogBox.sourcePrefix') + ' ' + ucFirst(tpl.catalogId), image: tpl.links.icon});
         seen[tpl.name] = (seen[tpl.name]||0)+1;
       }
     });
