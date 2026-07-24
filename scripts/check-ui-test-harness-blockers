@@ -51,8 +51,8 @@ if module_for_count != 0:
     fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
 if module_for_component_count != 0:
     fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
-if direct_qunit_import_count != 38:
-    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=38)
+if direct_qunit_import_count != 39:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=39)
 
 direct_qunit_tests = [
     Path("tests/unit/helpers/date-calendar-test.js"),
@@ -62,6 +62,7 @@ direct_qunit_tests = [
     Path("tests/unit/helpers/nl-to-br-test.js"),
     Path("tests/unit/helpers/upper-case-test.js"),
     Path("tests/unit/utils/util-test.js"),
+    Path("tests/unit/utils/localized-catalog-field-test.js"),
     Path("tests/unit/bulk-action-handler/service-test.js"),
     Path("tests/unit/routes/loading-test.js"),
     Path("tests/unit/routes/index-test.js"),
