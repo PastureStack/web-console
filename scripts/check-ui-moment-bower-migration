@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PYCHECK'
+import json
+import re
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+dev_deps = package.get("devDependencies", {}) or {}
+if dev_deps.get("moment") != "2.30.1":
+    fail("MOMENT_NPM_DEP_VERSION_UNEXPECTED", actual=dev_deps.get("moment"), expected="2.30.1")
+if "momentjs" in (bower.get("dependencies", {}) or {}):
+    fail("MOMENTJS_STILL_IN_BOWER_DEPENDENCIES")
+if "node_modules/moment/moment.js" not in build:
+    fail("MOMENT_NPM_IMPORT_MISSING")
+if "bower_components/momentjs" in build:
+    fail("MOMENT_BOWER_IMPORT_STILL_PRESENT")
+
+packages = lock.get("packages", {}) or {}
+root_dev = (packages.get("", {}) or {}).get("devDependencies", {}) or {}
+if root_dev.get("moment") != "2.30.1":
+    fail("MOMENT_LOCK_ROOT_VERSION_UNEXPECTED", actual=root_dev.get("moment"), expected="2.30.1")
+moment_pkg = packages.get("node_modules/moment", {}) or {}
+if moment_pkg.get("version") != "2.30.1":
+    fail("MOMENT_LOCK_PACKAGE_VERSION_UNEXPECTED", actual=moment_pkg.get("version"), expected="2.30.1")
+
+usage_count = 0
+for root in [Path("app"), Path("addon"), Path("tests")]:
+    if not root.exists():
+        continue
+    for path in root.rglob("*.js"):
+        usage_count += len(re.findall(r"\bmoment\(", path.read_text(encoding="utf-8")))
+if usage_count < 10:
+    fail("MOMENT_GLOBAL_USAGE_COUNT_TOO_LOW", actual=usage_count, minimum=10)
+
+modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in ["No-Publish Moment 2.30.1 Upgrade Candidate", "moment@2.30.1", "node_modules/moment/moment.js"]:
+    if phrase not in modernization:
+        fail("MOMENT_MIGRATION_DOC_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_MOMENT_BOWER_MIGRATION_OK moment_global_usages={usage_count} lock={lock_path}")
+print("failure_count=0")
+PYCHECK

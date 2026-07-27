@@ -1,0 +1,41 @@
+{
+  "name": "ember-rl-dropdown",
+  "version": "0.8.1-rc16.0",
+  "description": "Dropdown component and mixin for Ember.js",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": "https://github.com/rsschermer/ember-rl-dropdown",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "author": "",
+  "license": "MIT",
+  "rc16Maintenance": {
+    "source": "ember-rl-dropdown@0.8.0",
+    "reason": "Remove stale addon development toolchain and align runtime addon transpilation with Rancher UI's Ember CLI Babel 8 path.",
+    "compatibility": "No source, component, template, mixin, or runtime API behavior is changed."
+  },
+  "keywords": [
+    "ember-addon",
+    "mixin",
+    "component",
+    "dropdown",
+    "drop-down",
+    "drop",
+    "down"
+  ],
+  "dependencies": {
+    "ember-cli-babel": "8.3.1"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config",
+    "demoURL": "http://rsschermer.github.io/ember-rl-dropdown/"
+  },
+  "bugs": {
+    "url": "https://github.com/rsschermer/ember-rl-dropdown/issues"
+  },
+  "homepage": "https://github.com/rsschermer/ember-rl-dropdown"
+}

@@ -1,3 +1,6 @@
+$bold-weight: null !default;
+$screen-sm-max: null !default;
+
 .about {
   TD, TH {
     padding: 5px 10px;
@@ -9,9 +12,9 @@
   }
 
   .logo-text {
-    background-image: url(images/logos/text.svg);
-    background-size: 300px;
-    background-position: center 30px;
+    background-image: url(images/logos/pasturestack-wordmark.svg);
+    background-size: 360px;
+    background-position: center 18px;
     background-repeat: no-repeat;
     height: 110px;
   }
@@ -22,7 +25,7 @@
     -moz-animation: parachute-animation 20s cubic-bezier(0.05, -0.23, 0.13, 0.6) forwards;
     -ms-animation: parachute-animation 20s cubic-bezier(0.05, -0.23, 0.13, 0.6) forwards;
     animation: parachute-animation 20s cubic-bezier(0.05, -0.23, 0.13, 0.6) forwards;
-    background-image: url(images/logos/graphic.svg);
+    background-image: url(images/logos/pasturestack-mark.svg);
     background-repeat: no-repeat;
     position: relative;
     width: 74px;

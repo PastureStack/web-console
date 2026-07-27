@@ -1,0 +1,8 @@
+{
+  "name": "osenv",
+  "version": "0.2.0-rc16.0",
+  "private": true,
+  "description": "RC16 compatibility wrapper for osenv using maintained Node os/process APIs.",
+  "license": "ISC",
+  "main": "index.js"
+}
