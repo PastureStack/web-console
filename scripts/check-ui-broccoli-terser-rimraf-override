@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+override = (package.get("overrides", {}) or {}).get("broccoli-terser-sourcemap", {}) or {}
+if override.get("rimraf") != "6.1.3":
+    fail("BROCCOLI_TERSER_RIMRAF_OVERRIDE_UNEXPECTED", actual=override.get("rimraf"), expected="6.1.3")
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    plugin = packages.get("node_modules/broccoli-terser-sourcemap", {})
+    rimraf = packages.get("node_modules/broccoli-terser-sourcemap/node_modules/rimraf") or packages.get("node_modules/rimraf", {})
+    if plugin.get("version") != "4.1.1":
+        fail("BROCCOLI_TERSER_LOCK_VERSION_UNEXPECTED", actual=plugin.get("version"), expected="4.1.1")
+    if rimraf.get("version") != "6.1.3":
+        fail("BROCCOLI_TERSER_RIMRAF_LOCK_VERSION_UNEXPECTED", actual=rimraf.get("version"), expected="6.1.3")
+    for removed in [
+        "node_modules/broccoli-terser-sourcemap/node_modules/glob",
+        "node_modules/broccoli-terser-sourcemap/node_modules/inflight",
+    ]:
+        if removed in packages:
+            fail("BROCCOLI_TERSER_LEGACY_DEPENDENCY_REMAINS", package=removed, version=packages[removed].get("version"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(
+    "UI_BROCCOLI_TERSER_RIMRAF_OVERRIDE_OK "
+    f"broccoli-terser-sourcemap=4.1.1 rimraf=6.1.3 lockfile={lock_path} package_count={package_count}"
+)
+print("The no-publish terser build plugin path resolves maintained rimraf 6.1.3 and no longer carries nested legacy glob/inflight.")
+print("failure_count=0")
+PY

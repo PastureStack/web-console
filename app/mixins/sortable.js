@@ -12,6 +12,7 @@
  * @function arranged - returns the sorted data, you should use this as your data to display
  */
 import Ember from 'ember';
+import { naturalSort } from 'ui/utils/natural-sort';
 
 export default Ember.Mixin.create({
   sortableContent: Ember.computed.alias('model'),
@@ -58,23 +59,9 @@ export default Ember.Mixin.create({
   arranged: function(){
     var content = this.get('sortableContent')||[];
     var currentSort = this.get('currentSort');
-    var out;
-    if ( currentSort )
-    {
-      out = content.sortBy.apply(content, currentSort);
-    }
-    else
-    {
-      out = content.slice();
-    }
 
-    if ( this.get('descending') )
-    {
-      return out.reverse();
-    }
-    else
-    {
-      return out;
-    }
+    return naturalSort(content, currentSort || ['id'], {
+      descending: this.get('descending'),
+    });
   }.property('sortableContent.[]','currentSort','descending'),
 });

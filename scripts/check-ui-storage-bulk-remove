@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$repo_root"
+
+utility=app/utils/volume-bulk-remove.js
+controller=app/host/storage/controller.js
+page=app/host/storage/template.hbs
+component=app/components/confirm-remove-selected-volumes/component.js
+modal=app/components/confirm-remove-selected-volumes/template.hbs
+sortable_component=vendor/lacsso/addon/components/sortable-table.js
+sortable_template=vendor/lacsso/addon/templates/components/sortable-table.hbs
+styles=app/styles/components/_modals.scss
+test_file=tests/unit/utils/volume-bulk-remove-test.js
+documentation=docs/storage-bulk-remove.md
+
+required_files=(
+  "$utility"
+  "$controller"
+  "$page"
+  "$component"
+  "$modal"
+  "$sortable_component"
+  "$sortable_template"
+  "$styles"
+  "$test_file"
+  "$documentation"
+)
+
+for path in "${required_files[@]}"; do
+  if [[ ! -f "$path" ]]; then
+    echo "STORAGE_BULK_REMOVE_REQUIRED_FILE_MISSING file=$path" >&2
+    exit 1
+  fi
+done
+
+require_fixed() {
+  local file=$1
+  local marker=$2
+  local description=$3
+
+  if ! grep -F "$marker" "$file" >/dev/null; then
+    echo "STORAGE_BULK_REMOVE_MARKER_MISSING file=$file description=$description" >&2
+    exit 1
+  fi
+}
+
+require_fixed "$utility" "value(volume, 'state') === 'detached'" 'detached-state requirement'
+require_fixed "$utility" "!value(volume, 'removed')" 'removed-item exclusion'
+require_fixed "$utility" "!value(volume, 'instanceId')" 'instance attachment exclusion'
+require_fixed "$utility" "!hasActiveMount(volume)" 'active-mount exclusion'
+require_fixed "$utility" "!!actionLinks.remove" 'API remove-action requirement'
+require_fixed "$utility" "case 'active':" 'active-state filter'
+require_fixed "$utility" "case 'detached':" 'detached-state filter'
+require_fixed "$utility" "case 'removable':" 'removable-state filter'
+require_fixed "$controller" 'selectedVolumes' 'explicit operator selection'
+require_fixed "$controller" "return String(this.get('selectedVolumes.length') || 0)" 'visible zero selection count'
+require_fixed "$controller" "toggleModal('confirm-remove-selected-volumes'" 'selection confirmation dialog'
+require_fixed "$page" 'count=selectedVolumeCount' 'zero-safe localized selection count'
+require_fixed "$page" 'bulkActions=true' 'checkbox selection column'
+require_fixed "$page" 'selectionFilter=selectableVolume' 'non-removable row selection guard'
+require_fixed "$page" 'search=true' 'storage search'
+require_fixed "$page" 'paging=true' 'storage pagination'
+require_fixed "$page" 'storagePageSizes' '10, 25, 50, and All page sizes'
+require_fixed "$sortable_component" 'selectablePagedContent' 'page-scoped selectable rows'
+require_fixed "$sortable_component" 'selectionChanged' 'selection callback'
+require_fixed "$sortable_component" 'parsed === 0' 'All page-size sentinel'
+require_fixed "$sortable_template" "t 'pagination.all'" 'localized All option'
+require_fixed "$sortable_template" 'disabled=(not (array-includes selectablePagedContent content))' 'disabled active-row checkbox'
+require_fixed "$component" 'runWithConcurrency(volumes, 4' 'bounded request concurrency'
+require_fixed "$component" "doAction('remove', {}, {catchGrowl: false})" 'public resource action'
+require_fixed "$modal" 'bulkRemove.preview' 'selection preview'
+require_fixed "$modal" 'bulkRemove.progress' 'progress reporting'
+require_fixed "$modal" 'bulkRemove.failed' 'failure reporting'
+require_fixed "$test_file" 'it allows the operator to select any detached removable volume' 'operator-selection unit coverage'
+require_fixed "$test_file" 'it filters by visible state' 'state-filter unit coverage'
+require_fixed "$test_file" 'concurrency is bounded' 'concurrency unit coverage'
+
+if grep -RInE \
+  'TEST_MARKER|PROTECTED_MARKER|isUnusedTestVolume|classifyUnusedVolumes' \
+  "$utility" "$controller" "$page" "$test_file"; then
+  echo 'Storage bulk removal must not infer operator intent from item names.' >&2
+  exit 1
+fi
+
+for locale in en-us de-de fa-ir fil-ph fr-fr hu-hu ja-jp ko-kr pt-br ru-ru uk-ua zh-hans zh-tw; do
+  require_fixed "translations/${locale}.yaml" 'bulkRemove:' "bulk removal messages for ${locale}"
+  require_fixed "translations/${locale}.yaml" 'filters:' "storage filters for ${locale}"
+  require_fixed "translations/${locale}.yaml" '  all:' "All page-size label for ${locale}"
+done
+
+if grep -RInEi \
+  '@sha256|[A-Z]:\\Users\\|DELETE[[:space:]]+FROM' \
+  "${required_files[@]}"; then
+  echo 'Storage bulk removal source contains a digest, private workstation path, or direct database deletion.' >&2
+  exit 1
+fi
+
+if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] &&
+  grep -RInF -- "$PASTURESTACK_PRIVATE_MARKER" "${required_files[@]}"; then
+  echo 'Storage bulk removal source contains a configured private marker.' >&2
+  exit 1
+fi
+
+echo 'UI_STORAGE_BULK_REMOVE_OK selection=operator zero_count=visible filter=state+search paging=10,25,50,all select_all=current_page concurrency=4'

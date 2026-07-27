@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PYCHECK'
+import json
+import re
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+dev_deps = package.get("devDependencies", {}) or {}
+if dev_deps.get("async") != "3.2.6":
+    fail("ASYNC_NPM_DEP_VERSION_UNEXPECTED", actual=dev_deps.get("async"), expected="3.2.6")
+if "async" in (bower.get("dependencies", {}) or {}):
+    fail("ASYNC_STILL_IN_BOWER_DEPENDENCIES")
+if "node_modules/async/dist/async.js" not in build:
+    fail("ASYNC_NPM_IMPORT_MISSING")
+if "bower_components/async" in build:
+    fail("ASYNC_BOWER_IMPORT_STILL_PRESENT")
+
+packages = lock.get("packages", {}) or {}
+root_dev = (packages.get("", {}) or {}).get("devDependencies", {}) or {}
+if root_dev.get("async") != "3.2.6":
+    fail("ASYNC_LOCK_ROOT_VERSION_UNEXPECTED", actual=root_dev.get("async"), expected="3.2.6")
+async_pkg = packages.get("node_modules/async", {}) or {}
+if async_pkg.get("version") != "3.2.6":
+    fail("ASYNC_LOCK_PACKAGE_VERSION_UNEXPECTED", actual=async_pkg.get("version"), expected="3.2.6")
+
+usage_count = 0
+for path in Path("app").rglob("*.js"):
+    usage_count += len(re.findall(r"\basync\.", path.read_text(encoding="utf-8")))
+if usage_count < 6:
+    fail("ASYNC_GLOBAL_USAGE_COUNT_TOO_LOW", actual=usage_count, minimum=6)
+
+modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in ["No-Publish Async 3.2.6 Upgrade Candidate", "async@3.2.6", "node_modules/async/dist/async.js"]:
+    if phrase not in modernization:
+        fail("ASYNC_MIGRATION_DOC_MISSING", phrase=phrase)
+
+node24_smoke = Path("scripts/node24-lock-smoke.js").read_text(encoding="utf-8")
+for phrase in ["expectVersion(\"async\", \"3.2.6\")", "expectAsyncBrowserGlobal", "async-global-smoke-ok", "node_modules/async/dist/async.js"]:
+    if phrase not in node24_smoke:
+        fail("ASYNC_NODE24_LOCK_SMOKE_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_ASYNC_BOWER_MIGRATION_OK async_global_usages={usage_count} lock={lock_path}")
+print("failure_count=0")
+PYCHECK
