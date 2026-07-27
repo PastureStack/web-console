@@ -92,11 +92,11 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
     var active = this.get('project.projectTemplateId');
 
     var choices = this.get('projectTemplates').map((tpl) => {
-      return {id: tpl.id, name: tpl.name, image: tpl.get('orchestrationIcon')};
+      return {id: tpl.id, name: tpl.get('localizedName'), image: tpl.get('orchestrationIcon')};
     });
 
     if ( !choices.length ) {
-      choices.push({id: null, name: 'None', image: `${this.get('app.baseAssets')}assets/images/logos/provider-orchestration.svg`});
+      choices.push({id: null, name: 'None', image: `${this.get('app.baseAssets')}assets/images/logos/pasturestack-mark.svg`});
     }
 
     choices.forEach(function(driver) {

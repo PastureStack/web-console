@@ -1,28 +1,26 @@
-import {
-  moduleFor,
-  test
-} from 'ember-qunit';
+import { module, test } from 'qunit';
 
 import Ember from 'ember';
 import { initialize } from 'ui/initializers/extend-ember-input';
 
-var container, application;
-
-moduleFor('initializer:extend-ember-input', {
-  setup: function() {
-    Ember.run(function() {
-      container = new Ember.Container();
-      application = Ember.Application.create();
-      application.deferReadiness();
-    });
-  }
-});
+module('Initializer | extend ember input');
 
 // Replace this with your real tests.
-test('it works', function(assert) {
-  initialize(container, application);
+test('it adds safe style and autocapitalize support to input controls', function(assert) {
+  initialize();
+  let textField = Ember.TextField.create();
+  let textArea = Ember.TextArea.create();
+  let checkbox = Ember.Checkbox.create();
 
-  // you would normally confirm the results of the initializer here
-  assert.ok(true);
+  assert.ok(textField.get('attributeBindings').indexOf('autocapitalize') >= 0);
+  assert.equal(textField.get('autocapitalize'), 'none');
+  assert.ok(textField.get('attributeBindings').indexOf('_safeStyle:style') >= 0);
+  assert.ok(textArea.get('attributeBindings').indexOf('_safeStyle:style') >= 0);
+  assert.ok(checkbox.get('attributeBindings').indexOf('_safeStyle:style') >= 0);
+
+  Ember.run(() => {
+    textField.destroy();
+    textArea.destroy();
+    checkbox.destroy();
+  });
 });
-
