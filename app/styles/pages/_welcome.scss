@@ -1,3 +1,8 @@
+$border-radius-large: null !default;
+$brand-info: null !default;
+$page-header-border-color: null !default;
+$well-bg: null !default;
+
 SECTION.welcome {
   background-color: $well-bg ;
   border-radius: $border-radius-large;
@@ -23,7 +28,7 @@ SECTION.welcome {
 
 .modal-welcome {
   background-color: rgba($brand-info, .5);
-  background-image: url(images/logos/welcome-scene.png);
+  background-image: url(images/logos/pasturestack-welcome-scene.svg);
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
