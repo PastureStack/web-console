@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+import sys
+
+path = Path("config/environment.js")
+text = path.read_text(encoding="utf-8")
+test_index = Path("tests/index.html")
+test_index_text = test_index.read_text(encoding="utf-8")
+failures = []
+
+required = [
+    "rootURL: '/'",
+    "ENV.rootURL = '/'",
+    "ENV.rootURL = process.env.BASE_URL",
+    "ENV.APP.rootURL = ENV.rootURL",
+    "ENV.APP.baseURL = ENV.rootURL",
+]
+
+for snippet in required:
+    if snippet not in text:
+        failures.append(f"UI_ROOT_URL_SNIPPET_MISSING snippet={snippet!r}")
+
+blocked_patterns = [
+    (r"\bbaseURL\s*:", "UI_BASE_URL_CONFIG_KEY_RETURNED"),
+    (r"\bENV\.baseURL\b", "UI_ENV_BASE_URL_RETURNED"),
+    (r"ENV\.APP\.baseURL\s*=\s*ENV\.baseURL", "UI_APP_BASE_URL_LEGACY_ASSIGNMENT_RETURNED"),
+]
+
+for pattern, code in blocked_patterns:
+    if re.search(pattern, text):
+        failures.append(f"{code} file={path}")
+
+if '<base href="/">' not in test_index_text:
+    failures.append(f"UI_TEST_INDEX_BASE_TAG_MISSING file={test_index}")
+
+if failures:
+    for failure in failures:
+        print(failure)
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("UI_ROOT_URL_CONFIG_OK rootURL=true app_baseURL_compat=true test_base_href=true")
+print("Ember config now uses rootURL while ENV.APP.baseURL remains populated for protocol compatibility.")
+print("failure_count=0")
+PY

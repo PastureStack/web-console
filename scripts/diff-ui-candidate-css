@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat >&2 <<'USAGE'
+Usage: scripts/diff-ui-candidate-css BASE_TARBALL CANDIDATE_TARBALL
+
+Extracts two PastureStack Web Console candidate tarballs and fails if their generated CSS
+assets differ. This is intended for Sass module-load migrations where the
+source changes should be behavior-preserving.
+USAGE
+}
+
+if [[ $# -ne 2 ]]; then
+  usage
+  exit 2
+fi
+
+base_tar=$1
+candidate_tar=$2
+
+for file in "$base_tar" "$candidate_tar"; do
+  if [[ ! -f "$file" ]]; then
+    echo "UI_CSS_DIFF_TARBALL_MISSING file=$file" >&2
+    exit 1
+  fi
+done
+
+tmpdir=$(mktemp -d)
+cleanup() {
+  rm -rf "$tmpdir"
+}
+trap cleanup EXIT
+
+extract_ui() {
+  local tarball=$1
+  local out=$2
+  mkdir -p "$out"
+  tar -xzf "$tarball" -C "$out"
+
+  if [[ -d "$out/assets" ]]; then
+    printf '%s\n' "$out"
+    return 0
+  fi
+
+  local nested
+  nested=$(find "$out" -mindepth 1 -maxdepth 1 -type d | head -1)
+  if [[ -n "$nested" && -d "$nested/assets" ]]; then
+    printf '%s\n' "$nested"
+    return 0
+  fi
+
+  echo "UI_CSS_DIFF_ASSETS_DIR_MISSING tarball=$tarball" >&2
+  exit 1
+}
+
+base_root=$(extract_ui "$base_tar" "$tmpdir/base")
+candidate_root=$(extract_ui "$candidate_tar" "$tmpdir/candidate")
+
+css_assets=(
+  assets/vendor.css
+  assets/vendor.rtl.css
+  assets/ui.css
+  assets/ui.rtl.css
+  assets/ui-light.css
+  assets/ui-light.rtl.css
+  assets/ui-dark.css
+  assets/ui-dark.rtl.css
+)
+
+failures=0
+for rel in "${css_assets[@]}"; do
+  base_file="$base_root/$rel"
+  candidate_file="$candidate_root/$rel"
+  if [[ ! -f "$base_file" ]]; then
+    echo "UI_CSS_DIFF_BASE_CSS_MISSING file=$rel"
+    failures=$((failures + 1))
+    continue
+  fi
+  if [[ ! -f "$candidate_file" ]]; then
+    echo "UI_CSS_DIFF_CANDIDATE_CSS_MISSING file=$rel"
+    failures=$((failures + 1))
+    continue
+  fi
+  if ! cmp -s "$base_file" "$candidate_file"; then
+    diff_file="$tmpdir/${rel//\//_}.diff"
+    diff -u "$base_file" "$candidate_file" >"$diff_file" || true
+    echo "UI_CSS_DIFF_CHANGED file=$rel diff=$diff_file"
+    sed -n '1,80p' "$diff_file"
+    failures=$((failures + 1))
+  fi
+done
+
+if [[ "$failures" -ne 0 ]]; then
+  echo "failure_count=$failures"
+  exit 1
+fi
+
+echo "ui-candidate-css-diff-ok compared=${#css_assets[@]}"
+echo "failure_count=0"
