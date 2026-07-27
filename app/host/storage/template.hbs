@@ -1,3 +1,19 @@
+<div class="storage-cleanup-toolbar">
+  <button
+    type="button"
+    class="btn btn-danger btn-sm"
+    disabled={{unless hasCleanupCandidates true}}
+    {{action "promptCleanup"}}
+  >
+    <i class="icon icon-trash"></i>
+    {{#if hasCleanupCandidates}}
+      {{t 'hostsPage.hostPage.storageTab.cleanup.action' count=cleanupCandidates.length}}
+    {{else}}
+      {{t 'hostsPage.hostPage.storageTab.cleanup.none'}}
+    {{/if}}
+  </button>
+</div>
+
 <table class="grid fixed" style="margin-bottom: 0;">
   <thead>
     <tr>

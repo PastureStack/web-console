@@ -1,0 +1,68 @@
+<h3>{{t 'hostsPage.hostPage.storageTab.cleanup.title'}}</h3>
+
+<p>
+  {{t 'hostsPage.hostPage.storageTab.cleanup.summary' count=volumes.length}}
+</p>
+
+<div class="alert alert-warning">
+  {{t 'hostsPage.hostPage.storageTab.cleanup.scope'}}
+</div>
+
+{{#if protectedCount}}
+  <p class="text-muted">
+    {{t 'hostsPage.hostPage.storageTab.cleanup.protected' count=protectedCount}}
+  </p>
+{{/if}}
+
+{{#unless isComplete}}
+  <div class="unused-volume-cleanup-preview">
+    <strong>{{t 'hostsPage.hostPage.storageTab.cleanup.preview'}}</strong>
+    <ul>
+      {{#each previewVolumes as |volume|}}
+        <li>{{volume.displayName}}</li>
+      {{/each}}
+    </ul>
+    {{#if additionalCount}}
+      <div class="text-muted">
+        {{t 'hostsPage.hostPage.storageTab.cleanup.additional' count=additionalCount}}
+      </div>
+    {{/if}}
+  </div>
+{{/unless}}
+
+{{#if isRunning}}
+  <div class="unused-volume-cleanup-progress" role="status" aria-live="polite">
+    <i class="icon icon-spinner icon-spin"></i>
+    {{t 'hostsPage.hostPage.storageTab.cleanup.progress' completed=completedCount total=volumes.length}}
+  </div>
+{{else if isComplete}}
+  <div class="alert alert-success" role="status">
+    {{t 'hostsPage.hostPage.storageTab.cleanup.complete' success=successful.length total=volumes.length}}
+  </div>
+
+  {{#if hasFailures}}
+    <div class="alert alert-danger">
+      {{t 'hostsPage.hostPage.storageTab.cleanup.failed' count=failed.length}}
+      <ul>
+        {{#each failed as |item|}}
+          <li>{{item.name}}</li>
+        {{/each}}
+      </ul>
+    </div>
+  {{/if}}
+
+  <div class="footer-actions">
+    <button {{action "close"}} class="btn btn-primary">
+      {{t 'hostsPage.hostPage.storageTab.cleanup.close'}}
+    </button>
+  </div>
+{{else}}
+  <div class="footer-actions">
+    <button {{action "confirm"}} class="btn btn-danger">
+      {{t 'hostsPage.hostPage.storageTab.cleanup.confirm' count=volumes.length}}
+    </button>
+    <button {{action "cancel"}} class="btn btn-link">
+      {{t 'hostsPage.hostPage.storageTab.cleanup.cancel'}}
+    </button>
+  </div>
+{{/if}}

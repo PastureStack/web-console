@@ -1,0 +1,137 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$repo_root"
+
+required_files=(
+  app/components/console-workspace/component.js
+  app/components/console-workspace/template.hbs
+  app/components/console-workspace-window/component.js
+  app/components/console-workspace-window/template.hbs
+  app/components/workspace-terminal/component.js
+  app/components/workspace-terminal/template.hbs
+  app/components/workspace-logs/component.js
+  app/components/workspace-logs/template.hbs
+  app/services/console-workspace.js
+  app/utils/console-workspace.js
+  app/styles/components/_console-workspace.scss
+  tests/unit/components/workspace-terminal-test.js
+  tests/unit/components/workspace-logs-test.js
+  tests/unit/services/console-workspace-test.js
+  tests/unit/utils/console-workspace-test.js
+)
+
+for path in "${required_files[@]}"; do
+  test -f "$path"
+done
+
+grep -F '{{console-workspace}}' app/authenticated/template.hbs >/dev/null
+grep -F "openTerminal(this)" app/models/container.js >/dev/null
+grep -F "openLogs(this)" app/models/container.js >/dev/null
+grep -F "openVmConsole(this)" app/models/virtualmachine.js >/dev/null
+grep -F "consoleWorkspace').openTerminal" app/k8s-tab/kubectl/controller.js >/dev/null
+grep -F "consoleWorkspace').openTerminal" app/swarm-tab/console/controller.js >/dev/null
+grep -F "window.localStorage.setItem" app/services/console-workspace.js >/dev/null
+grep -F "window.sessionStorage.setItem" app/services/console-workspace.js >/dev/null
+grep -F "window.BroadcastChannel" app/services/console-workspace.js >/dev/null
+grep -F "pasturestack.consoleWorkspace.client.v1" app/utils/console-workspace.js >/dev/null
+grep -F "navigationType === 'reload'" app/services/console-workspace.js >/dev/null
+grep -F "type: 'client-probe'" app/services/console-workspace.js >/dev/null
+grep -F "type: 'client-present'" app/services/console-workspace.js >/dev/null
+grep -F "method: 'POST'" app/services/console-workspace.js >/dev/null
+grep -F "'X-PastureStack-Session-Secret'" app/services/console-workspace.js >/dev/null
+grep -F "'pasturestack-console-v1'" app/utils/console-workspace.js >/dev/null
+grep -F 'pasturestack-secret.' app/utils/console-workspace.js >/dev/null
+grep -F "type: 'claim'" app/components/workspace-terminal/component.js >/dev/null
+grep -F "type: 'resize'" app/components/workspace-terminal/component.js >/dev/null
+grep -F "console-workspace-resize-handle" \
+  app/components/console-workspace-window/template.hbs >/dev/null
+grep -F "console-workspace-dock" app/components/console-workspace/template.hbs >/dev/null
+grep -F "console-workspace-dock-scroll" app/components/console-workspace/template.hbs >/dev/null
+grep -F "console-workspace-confirm-backdrop" app/components/console-workspace/template.hbs >/dev/null
+grep -F "&:focus-visible {" app/styles/components/_console-workspace.scss >/dev/null
+grep -F "consoleWorkspace.context.title" app/components/console-workspace-window/component.js >/dev/null
+grep -F "environmentTitle" app/services/console-workspace.js >/dev/null
+grep -F "stackTitle" app/services/console-workspace.js >/dev/null
+grep -F "position: static" app/styles/components/_console-workspace.scss >/dev/null
+grep -F "wrap-lines" app/styles/components/_console-workspace.scss >/dev/null
+grep -F "scrollbar-color" app/styles/components/_console-workspace.scss >/dev/null
+grep -F "pasturestack.consoleWorkspace.logs.wrap.v1" app/components/workspace-logs/component.js >/dev/null
+grep -F "containerLogs.wrapLines" app/components/workspace-logs/template.hbs >/dev/null
+grep -F "consoleWorkspace:" translations/en-us.yaml >/dev/null
+grep -F "consoleWorkspace:" translations/zh-tw.yaml >/dev/null
+grep -F "工作階段" translations/zh-tw.yaml >/dev/null
+
+dock_active_style=$(
+  sed -n '/^  &\.active {$/,/^  }$/p' \
+    app/styles/components/_console-workspace.scss
+)
+for marker in \
+  'background: rgba(255, 255, 255, .1);' \
+  'box-shadow: none;' \
+  'transform: none;'; do
+  grep -F "$marker" <<<"$dock_active_style" >/dev/null
+done
+if grep -F '$primary' <<<"$dock_active_style"; then
+  echo 'The active workspace icon must not look permanently hovered' >&2
+  exit 1
+fi
+
+status_key_errors=$(
+  grep -RInF "{{t (concat-str 'consoleWorkspace.session.status.'" \
+    app/components/console-workspace/template.hbs \
+    app/components/workspace-terminal/template.hbs \
+    app/components/workspace-logs/template.hbs |
+  grep -vF "character=''" || true
+)
+if [[ -n "$status_key_errors" ]]; then
+  echo 'Console workspace status translation keys contain an implicit separator' >&2
+  echo "$status_key_errors" >&2
+  exit 1
+fi
+
+if grep -F 'window.open(' app/models/container.js app/models/virtualmachine.js; then
+  echo 'Legacy container actions still open unmanaged browser windows' >&2
+  exit 1
+fi
+
+if grep -E 'brokerUrl\([^)]*,|token=.*brokerUrl|target=.*brokerUrl' \
+  app/services/console-workspace.js \
+  app/components/workspace-terminal/component.js \
+  app/components/workspace-logs/component.js; then
+  echo 'An upstream access token or target may be entering a persistent WebSocket URL' >&2
+  exit 1
+fi
+
+if grep -F '?secret=' app/services/console-workspace.js app/utils/console-workspace.js; then
+  echo 'Console session secrets must not appear in WebSocket URLs' >&2
+  exit 1
+fi
+
+if grep -RInE '@sha256|C:\\Users\\' \
+  app/components/console-workspace \
+  app/components/console-workspace-window \
+  app/components/workspace-terminal \
+  app/components/workspace-logs \
+  app/services/console-workspace.js \
+  app/utils/console-workspace.js \
+  docs/console-workspace.md; then
+  echo 'Console workspace source contains a private workstation path or image digest coordinate' >&2
+  exit 1
+fi
+
+if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] && grep -RInF -- "$PASTURESTACK_PRIVATE_MARKER" \
+  app/components/console-workspace \
+  app/components/console-workspace-window \
+  app/components/workspace-terminal \
+  app/components/workspace-logs \
+  app/services/console-workspace.js \
+  app/utils/console-workspace.js \
+  docs/console-workspace.md; then
+  echo 'Console workspace source contains a configured private marker' >&2
+  exit 1
+fi
+
+printf 'UI_CONSOLE_WORKSPACE_OK version=%s persistence=%s cross_tab=%s\n' \
+  1.6.56-pasturestack.20 browser-session broker-broadcast

@@ -12,6 +12,7 @@ var Container = Instance.extend({
   primaryAssociatedIpAddress : null,
   projects                   : Ember.inject.service(),
   modalService: Ember.inject.service('modal'),
+  consoleWorkspace: Ember.inject.service('console-workspace'),
   // Container-specific
   type                       : 'container',
   imageUuid                  : null,
@@ -52,30 +53,19 @@ var Container = Instance.extend({
     },
 
     shell: function() {
-      this.get('modalService').toggleModal('modal-shell', {
-        model: this,
-        escToClose: false,
-      });
+      this.get('consoleWorkspace').openTerminal(this);
     },
 
     popoutShell: function() {
-      let proj = this.get('projects.current.id');
-      let id = this.get('id');
-      Ember.run.later(() => {
-        window.open(`//${window.location.host}/env/${proj}/infra/console?instanceId=${id}&isPopup=true`, '_blank', "toolbars=0,width=900,height=700,left=200,top=200");
-      });
+      this.get('consoleWorkspace').openTerminal(this, {forceNew: true});
     },
 
     popoutLogs: function() {
-      let proj = this.get('projects.current.id');
-      let id = this.get('id');
-      Ember.run.later(() => {
-        window.open(`//${window.location.host}/env/${proj}/infra/container-log?instanceId=${id}&isPopup=true`, '_blank', "toolbars=0,width=700,height=715,left=200,top=200");
-      });
+      this.get('consoleWorkspace').openLogs(this, {forceNew: true});
     },
 
     logs: function() {
-      this.get('modalService').toggleModal('modal-container-logs', this);
+      this.get('consoleWorkspace').openLogs(this);
     },
 
     edit: function() {

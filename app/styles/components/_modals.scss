@@ -1,5 +1,4 @@
 .protip {
-  @extend .text-muted;
   font-size: 12px;
   margin-bottom: 5px;
 }
@@ -11,4 +10,36 @@
 }
 .lacsso.modal-overlay.modal-open .modal-container.modal-logs {
     max-height: 100%;
+}
+
+.storage-cleanup-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.unused-volume-cleanup-modal {
+  .unused-volume-cleanup-preview {
+    background: rgba(0, 0, 0, .035);
+    border: 1px solid rgba(0, 0, 0, .08);
+    border-radius: 3px;
+    margin: 15px 0;
+    max-height: 260px;
+    overflow: auto;
+    padding: 12px 16px;
+
+    ul {
+      margin: 8px 0;
+      padding-left: 22px;
+    }
+  }
+
+  .unused-volume-cleanup-progress {
+    padding: 20px 0;
+    text-align: center;
+
+    .icon {
+      margin-right: 8px;
+    }
+  }
 }

@@ -81,8 +81,18 @@ export default Ember.Service.extend({
 
   tablePerPage: Ember.computed(`${C.PREFS.TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.TABLE_COUNT}`);
-    if ( !out ) {
+    if ( C.TABLES.PAGE_SIZES.indexOf(out) === -1 ) {
       out = C.TABLES.DEFAULT_COUNT;
+    }
+
+    return out;
+  }),
+
+  statsTablePerPage: Ember.computed(`${C.PREFS.STATS_TABLE_COUNT}`, function() {
+    let out = this.get(`${C.PREFS.STATS_TABLE_COUNT}`);
+
+    if ( C.TABLES.STATS_PAGE_SIZES.indexOf(out) === -1 ) {
+      out = C.TABLES.DEFAULT_STATS_COUNT;
     }
 
     return out;

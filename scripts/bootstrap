@@ -1,17 +1,11 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-# cd to app root
-CWD=$(dirname $0)
-if [[ `basename $(pwd)` = 'scripts' ]]; then
-  cd ../
-else
-  cd `dirname $CWD`
-fi
+cat >&2 <<'MSG'
+The historical legacy Web Console bootstrap path is disabled in the PastureStack migration source tree.
 
-curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-apt-get install -y nodejs phantomjs
-update-alternatives --install /usr/bin/node node /usr/bin/nodejs 10
-npm set cache /var/cache/npm
+Reason: it installed Node 6, PhantomJS, and global Bower. That toolchain is EOL and must not be used to produce maintained Web Console artifacts.
 
-npm install -g bower
+Next path: follow docs/modernization.md to replace node-sass/Bower first, then add a maintained Ubuntu 26.04 build container and browser/API regression tests before publishing a new UI artifact.
+MSG
+exit 2
