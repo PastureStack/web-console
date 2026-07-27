@@ -37,8 +37,8 @@ export default Ember.Component.extend({
   tooltipModel: null,
 
   init() {
-    window.spark = this;
     this._super();
+    this.set('gradientId', `${this.get('type') || 'metric'}-gradient-${Ember.guidFor(this)}`);
   },
 
   didInsertElement() {
@@ -87,7 +87,7 @@ export default Ember.Component.extend({
 
     var gradient = svg.append('svg:defs')
       .append("svg:linearGradient")
-      .attr('id', `${this.get('type')}-gradient`)
+      .attr('id', this.get('gradientId'))
       .attr('x1', '0%')
       .attr('y1', '0%')
       .attr('x2', '100%')
@@ -182,7 +182,7 @@ export default Ember.Component.extend({
       //console.log('update', data[data.length-2], data[data.length-1], x.domain(), x.range(), y.domain(), y.range());
       svg.selectAll('path')
         .data([data])
-        .style('fill', `url(${window.location.pathname}#${this.get('type')}-gradient)`)
+        .style('fill', `url(${window.location.pathname}#${this.get('gradientId')})`)
         .attr('d', line);
     }
   }.observes('data', 'data.[]'),

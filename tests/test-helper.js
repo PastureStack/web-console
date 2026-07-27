@@ -1,6 +1,5 @@
-import resolver from './helpers/resolver';
-import {
-  setResolver
-} from 'ember-qunit';
+import TestLoader from 'ember-cli-test-loader/test-support/index';
 
-setResolver(resolver);
+// Direct QUnit tests import the modules they exercise explicitly.
+// The old ember-qunit start path used to trigger ember-cli-test-loader.
+TestLoader.load();

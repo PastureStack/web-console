@@ -1,9 +1,13 @@
 import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
-import ShellQuote from 'npm:shell-quote';
+import ShellQuote from 'ui/utils/shell-quote';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { compare as compareVersion } from 'ui/utils/parse-version';
+import {
+  localizedCatalogQuestionField,
+  localizedCatalogReadme
+} from 'ui/utils/localized-catalog-field';
 
 export default Ember.Component.extend(NewOrEdit, {
   intl: Ember.inject.service(),
@@ -40,6 +44,7 @@ export default Ember.Component.extend(NewOrEdit, {
   questionsArray: null,
   selectedTemplateUrl: null,
   selectedTemplateModel: null,
+  catalogQuestionFallbacks: null,
   readmeContent: null,
 
   actions: {
@@ -64,6 +69,7 @@ export default Ember.Component.extend(NewOrEdit, {
   didReceiveAttrs: function() {
     this._super(...arguments);
     this.set('selectedTemplateModel', null);
+    this.set('catalogQuestionFallbacks', null);
 
     Ember.run.scheduleOnce('afterRender', () => {
       if ( this.get('selectedTemplateUrl') ) {
@@ -81,17 +87,74 @@ export default Ember.Component.extend(NewOrEdit, {
   },
 
   updateReadme: function() {
+    let requestSerial = (this.get('readmeRequestSerial') || 0) + 1;
     let model = this.get('selectedTemplateModel');
+    this.set('readmeRequestSerial', requestSerial);
     this.set('readmeContent', null);
+    this.set('loadingReadme', false);
+    if ( model ) {
+      let localizedReadme = localizedCatalogReadme(
+        model.get('files'),
+        this.get('intl._locale')
+      );
+
+      if ( localizedReadme ) {
+        this.set('readmeContent', localizedReadme);
+        this.set('loadingReadme', false);
+        return;
+      }
+    }
+
     if ( model && model.hasLink('readme') ) {
       this.set('loadingReadme', true);
       model.followLink('readme').then((response) => {
-        this.set('readmeContent', response);
+        if ( this.get('readmeRequestSerial') === requestSerial ) {
+          this.set('readmeContent', response);
+        }
       }).finally(() => {
-        this.set('loadingReadme', false);
+        if ( this.get('readmeRequestSerial') === requestSerial ) {
+          this.set('loadingReadme', false);
+        }
       });
     }
   },
+
+  localizeQuestions: function(response) {
+    let labels = response.get('labels') || {};
+    let locale = this.get('intl._locale');
+    let fallbacks = this.get('catalogQuestionFallbacks') || {};
+
+    (response.questions || []).forEach((item) => {
+      let fallback = fallbacks[item.variable] || {
+        label: item.label,
+        description: item.description
+      };
+
+      Ember.set(item, 'label', localizedCatalogQuestionField(
+        labels,
+        locale,
+        item.variable,
+        'label',
+        fallback.label
+      ));
+      Ember.set(item, 'description', localizedCatalogQuestionField(
+        labels,
+        locale,
+        item.variable,
+        'description',
+        fallback.description
+      ));
+    });
+  },
+
+  catalogLocaleChanged: function() {
+    let model = this.get('selectedTemplateModel');
+
+    if ( model ) {
+      this.localizeQuestions(model);
+      this.updateReadme();
+    }
+  }.observes('intl._locale'),
 
   showDescription: Ember.computed('loading', 'loadingReadme', function () {
     return (!this.get('loading') && !this.get('loadingReadme'));
@@ -149,7 +212,14 @@ export default Ember.Component.extend(NewOrEdit, {
 
       this.get('catalog').fetchByUrl(url).then((response) => {
         if (response.questions) {
+          let fallbacks = {};
+
           response.questions.forEach((item) => {
+            fallbacks[item.variable] = {
+              label: item.label,
+              description: item.description
+            };
+
             // This will be the component that is rendered to edit this answer
             item.inputComponent = 'schema/input-'+item.type;
 
@@ -169,6 +239,9 @@ export default Ember.Component.extend(NewOrEdit, {
               item.answer = item.default;
             }
           });
+
+          this.set('catalogQuestionFallbacks', fallbacks);
+          this.localizeQuestions(response);
         }
 
         this.set('selectedTemplateModel', response);

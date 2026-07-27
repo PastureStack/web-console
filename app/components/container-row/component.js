@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import C from 'ui/utils/constants';
+import { formatPercent, formatMib, formatKbps } from 'ui/utils/util';
 
 export default Ember.Component.extend({
   projects: Ember.inject.service(),
@@ -26,4 +27,20 @@ export default Ember.Component.extend({
       return 'container';
     }
   }.property('model.isVm'),
+
+  cpuRmsDisplay: Ember.computed('model.cpuRms', function() {
+    return formatPercent(this.get('model.cpuRms') || 0);
+  }),
+
+  memoryRmsDisplay: Ember.computed('model.memoryRms', function() {
+    return formatMib(this.get('model.memoryRms') || 0);
+  }),
+
+  networkRmsDisplay: Ember.computed('model.networkRms', function() {
+    return formatKbps(this.get('model.networkRms') || 0);
+  }),
+
+  storageRmsDisplay: Ember.computed('model.storageRms', function() {
+    return formatKbps(this.get('model.storageRms') || 0);
+  }),
 });

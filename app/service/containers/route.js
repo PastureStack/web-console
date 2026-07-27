@@ -12,17 +12,17 @@ export default Ember.Route.extend({
 
   setupController() {
     this._super.apply(this,arguments);
-    this.connectStats();
+    this.bindVisibilityHandler();
+
+    if ( !document.hidden ) {
+      this.connectStats();
+    }
   },
 
   connectStats() {
-    var stats = this.get('statsSocket');
-    if ( stats )
-    {
-      stats.close();
-    }
+    this.closeStatsSocket();
 
-    stats = MultiStatsSocket.create({
+    let stats = MultiStatsSocket.create({
       resource: this.modelFor('service').get('service'),
       linkName: 'containerStats',
     });
@@ -36,7 +36,36 @@ export default Ember.Route.extend({
     });
   },
 
+  bindVisibilityHandler() {
+    if ( this._visibilityHandler ) {
+      return;
+    }
+
+    this._visibilityHandler = () => {
+      if ( document.hidden ) {
+        this.closeStatsSocket();
+      } else {
+        this.connectStats();
+      }
+    };
+    document.addEventListener('visibilitychange', this._visibilityHandler);
+  },
+
+  closeStatsSocket() {
+    let stats = this.get('statsSocket');
+
+    if ( stats ) {
+      stats.close();
+      this.set('statsSocket', null);
+    }
+  },
+
   deactivate() {
-    this.get('statsSocket').close();
+    if ( this._visibilityHandler ) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler);
+      this._visibilityHandler = null;
+    }
+
+    this.closeStatsSocket();
   }
 });

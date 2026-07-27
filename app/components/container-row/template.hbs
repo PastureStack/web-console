@@ -25,48 +25,70 @@
   {{/tooltip-element~}}
 </td>
 {{#if showStats}}
-  <td data-title="{{t 'containersPage.table.stats'}}:" class="spark-td">
+  <td data-title="{{t 'containersPage.table.cpuRms'}}:" class="spark-td metric-cell metric-cpu">
     {{#if (and statsAvailable model.cpuSpark)}}
       {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkCPUModel tooltipTemplate='tooltip-static' tooltipFor="sparkCPU"}}
         {{spark-line
           data=model.cpuSpark
-          width=60 height=25 max=cpuMax
+          width=72 height=25 max=cpuMax
           prefix="containersPage.table.sparkPrefixCpu"
           formatter="percent"
           type="cpu"
           tooltipModel=(mut sparkCPUModel)
         }}
       {{/tooltip-element}}
+      <span class="metric-rms-value">{{cpuRmsDisplay}}</span>
+    {{else}}
+      <span class="text-muted">{{t 'generic.na'}}</span>
+    {{/if}}
+  </td>
+  <td data-title="{{t 'containersPage.table.memoryRms'}}:" class="spark-td metric-cell metric-memory">
+    {{#if (and statsAvailable model.memorySpark)}}
       {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkMemoryModel tooltipTemplate='tooltip-static' tooltipFor="sparkMemory"}}
         {{spark-line
           data=model.memorySpark
-          width=60 height=25 max=memoryMax
+          width=72 height=25 max=memoryMax
           prefix="containersPage.table.sparkPrefixMemory"
           formatter="mib"
           type="memory"
           tooltipModel=(mut sparkMemoryModel)
         }}
       {{/tooltip-element}}
+      <span class="metric-rms-value">{{memoryRmsDisplay}}</span>
+    {{else}}
+      <span class="text-muted">{{t 'generic.na'}}</span>
+    {{/if}}
+  </td>
+  <td data-title="{{t 'containersPage.table.networkRms'}}:" class="spark-td metric-cell metric-network">
+    {{#if (and statsAvailable model.networkSpark)}}
       {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkNetworkModel tooltipTemplate='tooltip-static' tooltipFor="sparkNetwork"}}
-      {{spark-line
-        data=model.networkSpark
-        width=60 height=25 max=networkMax
-        prefix="containersPage.table.sparkPrefixNetwork"
-        formatter="kbps"
-        type="network"
-        tooltipModel=(mut sparkNetworkModel)
-      }}
+        {{spark-line
+          data=model.networkSpark
+          width=72 height=25 max=networkMax
+          prefix="containersPage.table.sparkPrefixNetwork"
+          formatter="kbps"
+          type="network"
+          tooltipModel=(mut sparkNetworkModel)
+        }}
       {{/tooltip-element}}
+      <span class="metric-rms-value">{{networkRmsDisplay}}</span>
+    {{else}}
+      <span class="text-muted">{{t 'generic.na'}}</span>
+    {{/if}}
+  </td>
+  <td data-title="{{t 'containersPage.table.storageRms'}}:" class="spark-td metric-cell metric-storage">
+    {{#if (and statsAvailable model.storageSpark)}}
       {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkStorageModel tooltipTemplate='tooltip-static' tooltipFor="sparkStorage"}}
         {{spark-line
           data=model.storageSpark
-          width=60 height=25 max=storageMax
+          width=72 height=25 max=storageMax
           prefix="containersPage.table.sparkPrefixStorage"
           formatter="kbps"
           type="storage"
           tooltipModel=(mut sparkStorageModel)
         }}
       {{/tooltip-element}}
+      <span class="metric-rms-value">{{storageRmsDisplay}}</span>
     {{else}}
       <span class="text-muted">{{t 'generic.na'}}</span>
     {{/if}}
