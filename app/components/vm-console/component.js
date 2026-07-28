@@ -3,12 +3,14 @@ import parseUri from 'ui/utils/parse-uri';
 import Util from 'ui/utils/util';
 
 export default Ember.Component.extend({
+  classNames: ['vm-console'],
   instance : null,
 
   status   : 'Connecting...',
   rfb      : null,
   rfbState : null,
   showProtip: true,
+  embedded: false,
 
   actions: {
     outsideClick() {
@@ -50,7 +52,7 @@ export default Ember.Component.extend({
 
     var self = this;
     function updateState(rfb, state, oldstate, msg) {
-      if ( this.isDestroyed || this.isDestroying ) {
+      if ( self.isDestroyed || self.isDestroying || self.get('userClosed') ) {
         return;
       }
 
@@ -60,6 +62,7 @@ export default Ember.Component.extend({
       }
 
       self.set('rfbState', state);
+      self.sendAction('stateChanged', state, msg);
     }
 
     var rfb = new NoVNC.RFB({
@@ -89,8 +92,7 @@ export default Ember.Component.extend({
     if ( this.get('rfbState') === 'normal' )
     {
       var $body = this.$('.console-body');
-      var width = $('CANVAS').width() + parseInt($body.css('padding-left'),10) + parseInt($body.css('padding-right'),10);
-      console.log('set width', width);
+      var width = this.$('CANVAS').width() + parseInt($body.css('padding-left'),10) + parseInt($body.css('padding-right'),10);
       $body.width(width);
     }
   }.observes('rfbState'),

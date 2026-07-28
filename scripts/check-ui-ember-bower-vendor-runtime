@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+def sha256(path):
+    # Git may materialize tracked text with CRLF on Windows.  Hash the
+    # repository's canonical LF representation so the provenance gate is
+    # stable across supported development hosts.
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
+expected_hashes = {
+    "vendor/ember/ember.debug.js": "0a8f5cc16a333de3fa5e16bd9e486ff51c06eb7b93a0aa66a9e7aae474c921ff",
+    "vendor/ember/ember.prod.js": "fff6aba5ce16c30727482a76feb8d0b409fe95e37e0eb3b37cc3843bbc337599",
+    "vendor/ember/ember-template-compiler.js": "4e5340a5346b3db819732623ffa86eb40d4d3a65628fc4ad76e1a092c330af46",
+    "vendor/ember/ember-testing.js": "278a43217b3e3039c5d8c6513ec0dc973f4a47df105a50ac95e8495cc346cdab",
+    "vendor/jquery/jquery.js": "78a85aca2f0b110c29e0d2b137e09f0a1fb7a8e554b499f740d6744dc8962cfe",
+}
+
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+deps = bower.get("dependencies", {}) or {}
+if deps:
+    fail("BOWER_DEPENDENCIES_REMAIN", actual=",".join(sorted(deps)))
+
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+environment = Path("config/environment.js").read_text(encoding="utf-8")
+required_build_markers = [
+    "'jquery.js': 'vendor/jquery/jquery.js'",
+    "development: 'vendor/ember/ember.debug.js'",
+    "production: 'vendor/ember/ember.prod.js'",
+    "'vendor/ember/ember-testing.js'",
+    "app.import('vendor/ember/ember-module-shim.js')",
+    "'app-shims.js': null",
+    "'ember-resolver.js': null",
+]
+for marker in required_build_markers:
+    if marker not in build:
+        fail("EMBER_VENDORFILES_MARKER_MISSING", marker=marker)
+if "templateCompilerPath: 'vendor/ember/ember-template-compiler.js'" not in environment:
+    fail("EMBER_TEMPLATE_COMPILER_CONFIG_MISSING")
+if "bower_components/ember" in build or "bower_components/ember" in environment:
+    fail("ACTIVE_BOWER_EMBER_PATH_REMAINS")
+
+shim = Path("vendor/ember/ember-module-shim.js")
+if not shim.is_file():
+    fail("EMBER_MODULE_SHIM_MISSING", file=shim)
+else:
+    shim_text = shim.read_text(encoding="utf-8")
+    for marker in ["define('ember'", "exports.default = Ember"]:
+        if marker not in shim_text:
+            fail("EMBER_MODULE_SHIM_MARKER_MISSING", marker=marker)
+
+for path, expected in expected_hashes.items():
+    p = Path(path)
+    if not p.is_file():
+        fail("VENDORED_RUNTIME_FILE_MISSING", file=path)
+        continue
+    actual = sha256(p)
+    if actual != expected:
+        fail("VENDORED_RUNTIME_SHA256_DRIFT", file=path, actual=actual, expected=expected)
+
+compiler = Path("vendor/ember/ember-template-compiler.js")
+jquery = Path("vendor/jquery/jquery.js")
+if compiler.is_file() and "@version   2.9.1" not in compiler.read_text(encoding="utf-8", errors="replace"):
+    fail("EMBER_TEMPLATE_COMPILER_VERSION_HEADER_DRIFT")
+if jquery.is_file() and "jQuery JavaScript Library v3.7.1" not in jquery.read_text(encoding="utf-8", errors="replace"):
+    fail("JQUERY_VERSION_HEADER_DRIFT")
+
+docs = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in [
+    "No-Publish Ember Runtime Bower Removal",
+    "components/ember",
+    "jquery@3.7.1",
+    "ember-module-shim",
+    "not a framework upgrade",
+]:
+    if phrase not in docs:
+        fail("EMBER_BOWER_VENDOR_DOC_MISSING", phrase=phrase)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print("ui-ember-bower-vendor-runtime-ok ember=2.9.1 jquery=3.7.1 bower_dependencies=0")
+PY
