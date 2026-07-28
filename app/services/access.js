@@ -107,32 +107,16 @@ export default Ember.Service.extend({
     return rv;
   },
 
-  login(code) {
-    var session = this.get('session');
-
+  login(code, providerOverride) {
     return this.get('userStore').rawRequest({
       url: 'token',
       method: 'POST',
       data: {
         code: code,
-        authProvider: this.get('provider'),
+        authProvider: providerOverride || this.get('provider'),
       },
     }).then((xhr) => {
-      var auth = xhr.body;
-      var interesting = {};
-      C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
-        if ( typeof auth[key] !== 'undefined' )
-        {
-          interesting[key] = auth[key];
-        }
-      });
-
-      this.get('cookies').setWithOptions(C.COOKIE.TOKEN, auth['jwt'], {
-        path: '/',
-        secure: window.location.protocol === 'https:'
-      });
-
-      session.setProperties(interesting);
+      this.acceptLogin(xhr.body);
       return xhr;
     }).catch((res) => {
       let err;
@@ -143,6 +127,23 @@ export default Ember.Service.extend({
       }
       return Ember.RSVP.reject(err);
     });
+  },
+
+  acceptLogin(auth) {
+    var session = this.get('session');
+    var interesting = {};
+    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
+      if ( typeof auth[key] !== 'undefined' )
+      {
+        interesting[key] = auth[key];
+      }
+    });
+
+    this.get('cookies').setWithOptions(C.COOKIE.TOKEN, auth['jwt'], {
+      path: '/',
+      secure: window.location.protocol === 'https:'
+    });
+    session.setProperties(interesting);
   },
 
   clearToken() {
@@ -170,6 +171,36 @@ export default Ember.Service.extend({
     }
 
     this.get('cookies').remove(C.COOKIE.TOKEN);
+  },
+
+  suspendSession() {
+    let session = this.get('session');
+    let values = {};
+
+    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
+      values[key] = session.get(key);
+    });
+
+    let snapshot = {
+      token: this.get('cookies').get(C.COOKIE.TOKEN),
+      values: values,
+    };
+
+    this.clearSessionKeys();
+    return snapshot;
+  },
+
+  restoreSession(snapshot) {
+    snapshot = snapshot || {};
+    this.clearSessionKeys();
+    this.get('session').setProperties(snapshot.values || {});
+
+    if ( snapshot.token ) {
+      this.get('cookies').setWithOptions(C.COOKIE.TOKEN, snapshot.token, {
+        path: '/',
+        secure: window.location.protocol === 'https:'
+      });
+    }
   },
 
   isLoggedIn() {

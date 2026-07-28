@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+dev = package.get("devDependencies", {})
+overrides = package.get("overrides", {})
+expected_spec = "file:vendor/exists-sync-compat/exists-sync-1.0.0-rc16.0.tgz"
+if dev.get("exists-sync") != expected_spec:
+    fail("EXISTS_SYNC_COMPAT_DEV_DEP_UNEXPECTED", actual=dev.get("exists-sync"))
+if overrides.get("exists-sync") != "$exists-sync":
+    fail("EXISTS_SYNC_COMPAT_OVERRIDE_UNEXPECTED", actual=overrides.get("exists-sync"))
+
+wrapper_manifest = Path("vendor/exists-sync-compat/package.json")
+wrapper_index = Path("vendor/exists-sync-compat/index.js")
+wrapper_license = Path("vendor/exists-sync-compat/LICENSE")
+wrapper_tarball = Path("vendor/exists-sync-compat/exists-sync-1.0.0-rc16.0.tgz")
+for required in (wrapper_manifest, wrapper_index, wrapper_license, wrapper_tarball):
+    if not required.is_file():
+        fail("EXISTS_SYNC_COMPAT_FILE_MISSING", file=required)
+
+if wrapper_manifest.is_file():
+    wrapper = json.loads(wrapper_manifest.read_text(encoding="utf-8"))
+    if wrapper.get("name") != "exists-sync":
+        fail("EXISTS_SYNC_COMPAT_NAME_UNEXPECTED", actual=wrapper.get("name"))
+    if wrapper.get("version") != "1.0.0-rc16.0":
+        fail("EXISTS_SYNC_COMPAT_VERSION_UNEXPECTED", actual=wrapper.get("version"))
+    if wrapper.get("main") != "index.js":
+        fail("EXISTS_SYNC_COMPAT_MAIN_UNEXPECTED", actual=wrapper.get("main"))
+
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+root = packages.get("", {})
+if package.get("devDependencies", {}) != root.get("devDependencies", {}):
+    fail("EXISTS_SYNC_COMPAT_LOCK_ROOT_DEV_DEP_DRIFT")
+compat = packages.get("node_modules/exists-sync", {})
+if compat.get("version") != "1.0.0-rc16.0":
+    fail("EXISTS_SYNC_COMPAT_LOCK_VERSION_UNEXPECTED", actual=compat.get("version"))
+if compat.get("resolved") != expected_spec:
+    fail("EXISTS_SYNC_COMPAT_LOCK_RESOLUTION_UNEXPECTED", actual=compat.get("resolved"))
+
+old_exists = [
+    (path, meta.get("version"))
+    for path, meta in sorted(packages.items())
+    if path.startswith("node_modules/")
+    and path.endswith("node_modules/exists-sync")
+    and meta.get("version") != "1.0.0-rc16.0"
+]
+for path, version in old_exists:
+    fail("OLD_EXISTS_SYNC_REINTRODUCED", package=path, version=version)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+print(f"UI_EXISTS_SYNC_COMPAT_OK wrapper=vendor/exists-sync-compat version=1.0.0-rc16.0 lockfile={lock_path}")
+print("Old exists-sync 0.0.x paths are removed from the Node 24 lock baseline; runtime behavior is covered by the Node 24 smoke.")
+print("failure_count=0")
+PY

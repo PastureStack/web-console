@@ -1,11 +1,25 @@
-import { moduleFor, test } from 'ember-qunit';
+import { module, test } from 'qunit';
 
-moduleFor('route:container/labels', 'Unit | Route | container/labels', {
-  // Specify the other units that are required for this test.
-  // needs: ['controller:foo']
-});
+import Ember from 'ember';
+import ContainerLabelsRoute from 'ui/container/labels/route';
+
+module('Unit | Route | container/labels');
 
 test('it exists', function(assert) {
-  var route = this.subject();
+  var route = ContainerLabelsRoute.create();
   assert.ok(route);
+  Ember.run(() => route.destroy());
+});
+
+test('model returns the parent container model', function(assert) {
+  var container = { id: '1i1' };
+  var route = ContainerLabelsRoute.create({
+    modelFor(name) {
+      assert.equal(name, 'container');
+      return container;
+    },
+  });
+
+  assert.strictEqual(route.model(), container);
+  Ember.run(() => route.destroy());
 });
