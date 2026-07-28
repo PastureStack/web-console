@@ -7,6 +7,7 @@ export default Ember.Route.extend({
   github         : Ember.inject.service(),
   language       : Ember.inject.service('user-language'),
   modal          : Ember.inject.service(),
+  oidc           : Ember.inject.service(),
   settings       : Ember.inject.service(),
 
   previousParams : null,
@@ -15,6 +16,30 @@ export default Ember.Route.extend({
   loadingId      : 0,
   hideTimer      : null,
   previousLang   : null,
+
+  init() {
+    this._super(...arguments);
+    this.registerShortcuts();
+  },
+
+  willDestroy() {
+    this.unregisterShortcuts();
+    this._super(...arguments);
+  },
+
+  registerShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.register === 'function') {
+      manager.register(this, this.get('shortcuts'));
+    }
+  },
+
+  unregisterShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.unregister === 'function') {
+      manager.unregister(this);
+    }
+  },
 
   actions: {
     loading(transition) {
@@ -146,14 +171,16 @@ export default Ember.Route.extend({
   model(params, transition) {
     let github   = this.get('github');
     let stateMsg = 'Authorization state did not match, please try again.';
+    let isOidcCallback = transition.targetName === 'login.oidc-auth';
 
-    this.get('language').initLanguage();
+    let languagePromise = this.get('language').initLanguage();
 
     transition.finally(() => {
       this.controllerFor('application').setProperties({
         state: null,
         code: null,
         error_description: null,
+        oidcError: null,
         redirectTo: null,
       });
     });
@@ -169,7 +196,42 @@ export default Ember.Route.extend({
       this.controllerFor('application').set('isPopup', true);
     }
 
-    if ( params.isTest ) {
+    if ( isOidcCallback && (params.code || params.oidcError) ) {
+      if ( window.opener && !window.opener.closed && typeof window.opener.onOidcTest === 'function' ) {
+        window.opener.onOidcTest(params.oidcError, params.error_description, params.code, params.state);
+        transition.abort();
+        setTimeout(function() {
+          window.close();
+        }, 250);
+        return Ember.RSVP.reject('oidcTest');
+      }
+
+      let oidcCode;
+      try {
+        oidcCode = this.get('oidc').consumeAuthorization({
+          code: params.code,
+          error: params.oidcError,
+          errorDescription: params.error_description,
+          state: params.state,
+        });
+      } catch (err) {
+        transition.abort();
+        this.transitionTo('login', {queryParams: {errorMsg: err.message}});
+        return Ember.RSVP.reject(err);
+      }
+
+      return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
+        transition.abort();
+        if ( xhr.body && xhr.body.mfaRequired ) {
+          this.transitionTo('login');
+        } else {
+          this.finishLogin();
+        }
+      }).catch((err) => {
+        transition.abort();
+        this.transitionTo('login', {queryParams: {errorMsg: err.message}});
+      });
+    } else if ( !isOidcCallback && params.isTest ) {
       if ( github.stateMatches(params.state) ) {
         reply(params.error_description, params.code);
       } else {
@@ -180,16 +242,20 @@ export default Ember.Route.extend({
 
       return Ember.RSVP.reject('isTest');
 
-    } else if ( params.code ) {
+    } else if ( !isOidcCallback && params.code ) {
 
       if ( github.stateMatches(params.state) ) {
-        return this.get('access').login(params.code).then(() => {
+        return languagePromise.then(() => this.get('access').login(params.code)).then((xhr) => {
           // Abort the orignial transition that was coming in here since
           // we'll redirect the user manually in finishLogin
           // if we dont then model hook runs twice to finish the transition itself
           transition.abort();
           // Can't call this.send() here because the initial transition isn't done yet
-          this.finishLogin();
+          if ( xhr.body && xhr.body.mfaRequired ) {
+            this.transitionTo('login');
+          } else {
+            this.finishLogin();
+          }
         }).catch((err) => {
           transition.abort();
           this.transitionTo('login', {queryParams: { errorMsg: err.message}});
@@ -209,6 +275,8 @@ export default Ember.Route.extend({
         return Ember.RSVP.reject(obj);
       }
     }
+
+    return languagePromise;
 
     function reply(err,code) {
       try {

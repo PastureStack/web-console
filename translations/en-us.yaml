@@ -1,11 +1,27 @@
-languageName: "English"
-languageContribute: "Help Translate Rancher"
+languageName: "English (United States)"
+languageContribute: "Help Translate PastureStack"
+
+uiText:
+  process: Process
+  childExecution: Child execution
+  webhookExperimental: "Experimental: More webhook features will be added in future releases, and the existing capabilities may change."
+  certificateBits: bits
+  redirecting: "Please wait while we redirect you back to {appName}."
+  secretsExperimental: "Experimental: Compose and CLI support will be added in a future release."
+  relationIn: "In:"
+  relationOn: "On:"
+  dockerComposeFile: docker-compose.yml
+  pastureStackCompose: PastureStack Compose
+
+branding:
+  recoveryNode: "{appName} recovery node"
 
 ##############################
 # Really generic things used in multiple places (use sparingly)
 ##############################
 generic:
   actions: Actions
+  columns: Columns
   activate: Activate
   any: Any
   as: As
@@ -32,6 +48,7 @@ generic:
   loading: "Loading..."
   missing: "*%MISSING%*"
   moreActions: More Actions
+  noActionsAvailable: No actions available
   na: 'n/a'
   name: Name
   none: None
@@ -42,6 +59,7 @@ generic:
   saved: Saved
   saving: Saving
   search: Search
+  selectActionBelow: Select an action below
   state: State
   test: Test
   testing: Testing
@@ -142,10 +160,247 @@ auditLogsPage:
     resourceTypeId: "Resource Type:ID"
     identity: Identity
     authIp: "Auth & IP"
+  authTypes:
+    none: None
+    apiKey: API Key
+    headerAuth: Header Authentication
+    hostRegistration: Host Registration
+    tokenAccount: Account Token
+    uiSession: UI Session
   first: First Page
   next: Next Page
 
 authPage:
+  mfa:
+    navigation: Multi-factor authentication
+    header: Multi-factor authentication
+    account: Account
+    managedAccountWarning: You are managing another account. Register factors only on that account holder's trusted device; security changes revoke that account's active sessions.
+    sessionRevoked: Active sessions for this account were revoked as part of the security change. Sign in again to continue.
+    signInAgain: Sign in again
+    summary:
+      totp: Authenticator apps
+      passkeys: Passkeys
+      recoveryCodes: Recovery codes
+      policy: Enrollment policy
+      required: Required
+      optional: Optional
+    recoveryCodes:
+      header: Recovery codes
+      oneTimeHelp: Save these single-use codes now. They cannot be displayed again.
+      copy: Copy codes
+      saved: I saved the codes
+      help: Recovery codes provide emergency access when another registered factor is unavailable.
+      regenerate: Generate new recovery codes
+      confirm: Existing recovery codes will stop working. Generate a new set?
+    factor:
+      header: Registered authentication factors
+      type: Type
+      label: Name
+      created: Registered
+      lastUsed: Last used
+      none: No authentication factors are registered for this account.
+      types:
+        totp: Authenticator app
+        passkey: Passkey
+      confirmRevoke: 'Remove "{label}"?'
+      confirmRevokeAll: Remove every authentication factor and recovery method from this account?
+    totp:
+      header: Authenticator app
+      scanHelp: Scan the setup URI with an authenticator app, or enter the secret manually, then verify a current 6-digit code.
+      defaultLabel: Authenticator app
+      code: 6-digit code
+      confirm: Verify and register
+      help: Register an RFC 6238-compatible app such as Google Authenticator or Microsoft Authenticator.
+      add: Register authenticator app
+      openAuthenticator: Open in authenticator app
+    passkey:
+      header: Passkeys
+      help: Register Windows Hello, a phone, or a hardware security key. A passkey requires HTTPS, except on localhost.
+      defaultLabel: Passkey
+      add: Register passkey
+      notConfigured: Configure an HTTPS origin and relying-party ID before registering passkeys.
+    email:
+      header: Email account recovery
+      help: A verified email address can recover an account, but is not accepted as a multi-factor authentication factor.
+      verified: 'Verified recovery address: {email}'
+      revoke: Remove recovery email
+      sent: 'A 6-digit verification code was sent to {email}.'
+      code: 6-digit verification code
+      confirm: Verify address
+      placeholder: name@example.com
+      verify: Send verification code
+      confirmRevoke: Remove the verified recovery email address?
+    settings:
+      header: Authentication policy and system settings
+      enforcement: Enrollment requirement
+      optional: Optional for all accounts
+      requiredAdmins: Required for system administrators
+      requiredAll: Required for all interactive accounts
+      passkeyLimit: Passkeys allowed per account
+      issuer: Authenticator issuer name
+      webAuthn: Passkey settings
+      rpName: Relying-party display name
+      rpId: Relying-party ID
+      rpIdPlaceholder: console.example.com
+      origin: Exact console origin
+      originPlaceholder: https://console.example.com
+      webAuthnHelp: The relying-party ID must match the console host and cannot be a public suffix. Use an exact HTTPS origin in production; plain HTTP is allowed only on localhost.
+      smtp: SMTP and email recovery
+      smtpEnabled: Enable SMTP delivery and email account recovery
+      smtpHost: SMTP server
+      smtpPort: Port
+      smtpUsername: Username
+      smtpPassword: Password
+      smtpClearPassword: Remove the saved SMTP password
+      smtpFrom: Sender address
+      startTls: Upgrade the connection with STARTTLS
+      implicitTls: Use implicit TLS
+      codeTtl: Code lifetime in seconds
+      testRecipient: Test recipient
+      saveAndTest: Save and send test email
+    danger:
+      header: Remove all recovery access
+      help: This removes every authenticator app, passkey, recovery code, and verified recovery email from the selected account.
+      revokeAll: Remove all factors and recovery methods
+    error:
+      generic: The multi-factor authentication request could not be completed.
+      secureContext: Passkeys require HTTPS, except when using localhost.
+  oidc:
+    defaultProviderName: OpenID Connect
+    status:
+      enabled: "{providerName} is enabled"
+      disabled: OpenID Connect is not configured
+      enabledHelp: "{appName} uses {providerName} for sign-in. The access list currently contains {users} users and {groups} groups."
+      disabledHelp: "{appName} can use any standards-compliant OpenID Connect provider for sign-in."
+    registration:
+      header: 1. Register an OpenID Connect client
+      help: Register this installation as a confidential web client with your identity provider. Use the exact redirect URI shown below.
+      callbackUrl:
+        label: Redirect URI
+        help: The external platform URL must be stable and use HTTPS in production.
+    form:
+      header: 2. Configure the OpenID Connect provider
+      help: Provider endpoints and signing keys are obtained from the discovery document. Authorization, token, and JWKS endpoints cannot be overridden here.
+      displayName:
+        label: Provider display name
+        placeholder: Company single sign-on
+        help: This name is shown on the sign-in page. It does not change the protocol.
+      wellKnownUrl:
+        label: Discovery document URL
+        placeholder: https://id.example.com/.well-known/openid-configuration
+        help: The full URL ending in .well-known/openid-configuration.
+      clientId:
+        label: Client ID
+      clientSecret:
+        label: Client secret
+        help: The secret is encrypted at rest when the provider is enabled and is never shown again.
+        unchanged: Saved secret remains unchanged
+      scopes:
+        label: Scopes
+        placeholder: openid profile email
+        help: Space-separated scopes. The required openid scope cannot be removed.
+      pkce:
+        label: Use PKCE with the S256 method
+        help: Recommended for modern providers. Disable only when a trusted legacy provider does not support PKCE.
+      advanced:
+        show: Show advanced claim and certificate settings
+        hide: Hide advanced settings
+      claims:
+        header: Claim mapping
+        help: Map standard or custom ID token claims without tying the platform to a specific identity provider.
+      subjectClaim:
+        label: Stable subject claim
+        value: sub
+        help: OIDC requires sub. It is combined with the issuer to form the platform identity and cannot be changed.
+      usernameClaim:
+        label: Username claim
+        placeholder: preferred_username
+      displayNameClaim:
+        label: Display name claim
+        placeholder: name
+      emailClaim:
+        label: Email claim
+        placeholder: email
+      groupsClaim:
+        label: Groups claim
+        placeholder: groups
+        help: Optional. Leave blank when the provider does not include groups in the ID token.
+      certificateAuthority:
+        label: Trusted CA certificate
+        placeholder: '-----BEGIN CERTIFICATE-----'
+        help: Optional PEM certificate for a privately issued provider certificate. TLS verification is never disabled.
+      save: Validate configuration
+    validation:
+      displayName: Provider display name is required.
+      wellKnownUrl: Discovery document URL is required.
+      invalidUrl: Discovery document URL is invalid.
+      https: Discovery must use HTTPS except for local development.
+      clientId: Client ID is required.
+      clientSecret: Client secret is required.
+      openidScope: Scopes must include openid.
+      userIdentity: The identity provider did not return a usable user identity.
+    test:
+      header: 3. Test and enable authentication
+      help: "Test a real sign-in through {providerName}. This does not change the active authentication method."
+      action: "Test sign-in with {providerName}"
+      waiting: Waiting for the identity provider
+      success: "The test sign-in for {identity} through {providerName} succeeded."
+      activateHelp: "To prevent authorization-code reuse, enabling {providerName} requests one fresh sign-in and then creates the normal platform session."
+      again: Test again
+      activateAction: "Enable {providerName} and sign in"
+      activating: Enabling and signing in
+      activationRolledBack: "The final sign-in failed ({error}). The previous authentication configuration was restored; the existing administrator session was kept."
+      activationRollbackFailed: "The final sign-in failed ({activationError}), and automatic recovery also failed ({rollbackError}). Keep this page open and use the existing administrator session to disable OIDC."
+    identity:
+      header: Link the verified identity to a platform account
+      help: Accounts hold permissions; login identities only prove who is signing in. Username and email are never used for automatic matching.
+      verifiedLogin: Verified login
+      subject: Stable OIDC subject
+      currentMatch: Current account link
+      noMatch: Not linked to a platform account
+      inactiveMatch: 'The linked account "{account}" is disabled. Restore it to keep the account and all of its existing permissions.'
+      restore: Restore this account
+      restoring: Restoring account
+      strategyLabel: Identity assignment
+      useExisting: Keep the existing account link
+      reassign: Reassign this identity
+      targetAccount: Target platform account
+      targetHelp: The target keeps its platform account and permissions. Passwords, API keys, sessions, and personal credentials are never copied.
+      transferPermissions: Copy the old account's direct environment roles and system-administrator role
+      transferHelp: Roles are merged without reducing any permission already held by the target.
+      oldAccountDisposition: After reassignment, handle the old account as
+      confirmationHeader: Confirm the account and permission change
+      confirmationSummary: 'Move this verified identity from "{source}" to "{target}" using the permission and old-account choices above.'
+      confirm: Confirm this exact change
+      confirmed: This exact account and permission change is confirmed.
+      disposition:
+        keep: Keep the old account active
+        disable: Disable the old account and revoke its sessions
+        discard: Remove its direct permissions, disable it, and revoke its sessions
+      securityNotice: Security stays enabled throughout the switch. A two-minute, single-use recovery ticket restores the previous provider if the final sign-in fails.
+      managementSecurityNotice: The signed identity proof is single-use. The platform applies only the explicit account and permission choices shown above; username and email are never matching keys.
+      activeAdminRequired: Select an active system-administrator account before continuing.
+      activeAccountRequired: Select an active platform account before continuing.
+      managementHeader: Sign-in identity assignments
+      managementHelp: Verify the external identity again before linking it to a different platform account or moving its direct permissions.
+      managementAction: Verify an identity to manage its assignment
+      managementSuccess: The identity assignment and selected permission changes were applied.
+      apply: Apply identity assignment
+      applying: Applying identity assignment
+      missingProof: The provider did not return a signed identity proof. Run the test again after updating the authentication service.
+      missingSwitchTicket: The platform did not return a provider-switch recovery ticket.
+    summary:
+      header: OpenID Connect configuration
+    switch:
+      header: Change the primary sign-in provider
+      help: Restore local accounts only after verifying an existing local system administrator. Access control is never turned off during this change.
+      local: Switch safely to local accounts
+    disable:
+      header: "Danger Zone&trade;"
+      warning: '<b class="text-danger">Caution:</b> Disabling access control gives complete control of {appName} to anyone who can reach this page or the API.'
+      confirm: Are you sure? Click again to disable access control
+      action: Disable access control
   shibboleth:
     header:
       title: Shibboleth Authentication
@@ -209,6 +464,14 @@ authPage:
       shibboleth: Shibboleth
   root:
     header: Access Control
+    providers:
+      activeDirectory: Active Directory
+      azureAd: Azure AD
+      github: GitHub
+      local: Local accounts
+      oidc: OpenID Connect
+      openldap: OpenLDAP
+      shibboleth: Shibboleth
   github:
     standard: GitHub
     enterprise: GitHub Enterprise
@@ -256,7 +519,7 @@ authPage:
       header: "1. Setup a GitHub Application"
       ul:
         li1:
-          text: 'For standard GitHub, <a href="https://github.com/settings/developers" target="_blank">click here</a> to go applications settings in a new window.'
+          text: 'For standard GitHub, <a href="https://github.com/settings/developers" target="_blank" rel="noopener noreferrer">click here</a> to go applications settings in a new window.'
           ul:
             li1: "For Github Enterprise, login to your account.  Click on Settings, then Applications."
         li2:
@@ -315,7 +578,7 @@ authPage:
         placeholder: e.g. youcompany.onmicrosoft.com
       adminAccountUsername:
         label: Admin Account Username
-        placeholder: e.g. rancher-admin
+        placeholder: e.g. pasturestack-admin
         help: A user that can read information about other users
       adminAccountPassword:
         label: Admin Account Password
@@ -335,11 +598,25 @@ authPage:
     header:
       enabled: 'Local Authentication is <b>enabled</b>'
       disabled: 'Local Authentication is <b class="text-warning">not configured</b>'
+      recovery: 'Local accounts are available for <b>administrator recovery</b>'
     subtext:
       enabled:
         text: '{appName} is configured to allow access to accounts in its local database.'
         linkText: Manage Accounts
       disabled: '{appName} can be configured to restrict access to a set of accounts defined in the {appName} database.  This is not currently set up, so anybody that reach this page (or the API) has full control over the system.'
+      recovery: 'Another sign-in provider is active. An existing local system administrator can securely restore local sign-in here.'
+    active:
+      header: Authentication provider
+      help: Access control is enabled with local accounts. To change providers, configure and test the replacement before activation.
+      configureOidc: Configure OpenID Connect
+    switch:
+      header: Restore local accounts as the primary sign-in provider
+      help: Verify an existing active local system administrator. New accounts cannot be created through this recovery flow.
+      security: Access control remains enabled. A short-lived, single-use ticket establishes the verified local administrator session after the provider changes.
+      action: Verify and switch to local accounts
+      switching: Verifying and switching
+      validation: Enter an existing local administrator username and password.
+      missingTicket: The platform did not return a provider-switch ticket.
     accessEnabled:
       header: 'Danger Zone&trade;'
       warning: '<b class="text-danger">Caution:</b> Disabling access control will give complete control over {appName} to anyone that can reach this page or the API.'
@@ -392,11 +669,13 @@ catalogPage:
     category: "Category:"
     certified:
       rancher:
-        rancher: Rancher Labs
+        rancher: the original upstream maintainers
         partner: Official
       pl:
         rancher: Core
         partner: Official
+    origin:
+      upstreamFirstParty: PastureStack
     noData:
       singular: There are no compatible templates.
       plural: There are no compatible templates in this catalog.
@@ -414,6 +693,7 @@ certificatesPage:
     cn: Domain Name
     expiresDate: Expires
     noCn: None
+    otherNames: "{count, plural, =1 {# other name} other {# other names}}"
   detail:
     header: 'Certificate:'
     description: Description
@@ -451,8 +731,12 @@ containersPage:
     ipAddress: IP Address
     primaryHost: Primary Host
     primaryHostUnknown: Unknown
-    image: Image
+    image: Container Image
     stats: Stats
+    cpuRms: CPU
+    memoryRms: RAM
+    networkRms: Network
+    storageRms: Storage
     sparkPrefixCpu: "CPU: "
     sparkPrefixMemory: "Memory: "
     sparkPrefixNetwork: "Network: "
@@ -552,14 +836,17 @@ failWhalePage:
 haPage:
   header: High Availability
   setup:
-    prefix: "Multiple server containers can be deployed on different hosts so that {appName} keeps running even if one of the hosts fail.  "
-    link: See documentation
-    suffix: " for information on setup and usage."
+    prefix: Deploy multiple server containers on different hosts so {appName} remains available if one host fails. For setup and usage details, see
+    link: high-availability documentation
+    suffix: .
   table:
     address: Advertised  Address
     port: Port
     heartbeat: Last Seen
     clustered: Clustered
+
+helpBtn:
+  title: Go to documentation
 
 helpPage:
   header: Helpful links & Information
@@ -574,8 +861,7 @@ helpPage:
   host:
     header: What is a host?
     content: |
-      Before adding your first service or launching a container, you must add at least a single Linux host that supports Docker {minVersion} or higher and be able to reach the {appName} server via HTTP. {appName} supports adding Linux hosts in the form of a virtual or physical
-          machine from any public cloud providers, privately hosted clouds, or even bare metal servers.
+      Before adding your first service or launching a container, add at least one Linux host running a compatible Docker version. The host must be able to reach the {appName} server over HTTP. {appName} supports virtual and physical Linux hosts in public clouds, private clouds, and bare-metal environments.
     contentLink: Learn More
     addHostLink: Add Host
   stacks:
@@ -603,35 +889,14 @@ helpPage:
         link: File an issue on GitHub.
       graphic2:
         text: For more information
-        link: |
-          <a href="{docsLink}" target="_blank">about using {appName} Visit our docs.</a>
-          <br/>or <a href="{companyLink}/learn/" target="_blank">check out our getting started documentation.</a>
+        link: Documentation
       graphic3:
         text: Need help troubleshooting?
         link: Check out our FAQs
-  forums:
-    header: From the Forums
-    tagline: Join the conversation
-    buttonText: On the forums
-    announcements:
-      header: Announcements
-      buttonText: View More Annoucement Topics
-    general:
-      header: General
-      buttonText: View More General Topics
-    rancherOs:
-      header: RancherOS
-      buttonText: View More RancherOS Topics
-    rancher:
-      header: Rancher
-      buttonText: View More Rancher Topics
-    convoy:
-      header: Convoy
-      buttonText: View More Convoy Topics
   commercial:
     header: Commercial Support
     content: |
-      At Rancher Labs we provide commercial, enterprise-grade support for {appName}, including an available 24x7 support team, and priority bug fixes.  In addition we provide implementation, integration and consulting services for organizations looking to implement and scale {appName}.  For more information on any of these services, please email our sales team: <a href="mailto:sales@rancher.com">sales@rancher.com</a>
+      PastureStack is community-maintained and does not claim to provide commercial support.
 
 hostsPage:
   addContainer: Add Container
@@ -645,6 +910,8 @@ hostsPage:
       emptyMessage: No hosts or containers yet.
     showSystem: Show System
   new:
+    customDriver: Custom host
+    otherDriver: Other machine driver
     header:
       linkTo: "Hosts: "
       text: Add Host
@@ -684,7 +951,7 @@ hostsPage:
           state: State
           name: Name
           ip: IP Address
-          image: Image (Command)
+          image: Image
           stats: Stats
         body:
           noData: This host does not have any containers yet
@@ -698,6 +965,26 @@ hostsPage:
         body:
           noData: This host does not have any ports
     storageTab:
+      filters:
+        label: Filter
+        all: All
+        active: Active
+        detached: Detached
+      bulkRemove:
+        selected: '{count} selected'
+        action: 'Remove Selected ({count})'
+        title: 'Remove Selected Storage Items'
+        summary: 'You selected {count} storage items.'
+        warning: 'Only the checked items will be removed. Review the names carefully; this action cannot be undone.'
+        selectableHint: 'Only detached items with no active mount and an available remove action can be selected.'
+        preview: 'Items to remove'
+        additional: 'And {count} more.'
+        progress: 'Removing {completed} / {total}…'
+        complete: 'Removed {success} / {total} items.'
+        failed: '{count} items could not be removed:'
+        confirm: 'Remove {count} Items'
+        cancel: 'Cancel'
+        close: 'Close'
       table:
         header:
           state: State
@@ -705,6 +992,10 @@ hostsPage:
           mounts: Mounts
         body:
           noData: This host does not have any volumes
+          noMatch: No storage items match the current filters
+
+iePage:
+  unsupported: Internet Explorer is not supported.
 
 k8sTab:
   dashboard:
@@ -717,7 +1008,7 @@ k8sTab:
     header: Kubernetes CLI
     stepOne:
       generateConfigText: |
-        To use <a href="{downloadUrl}" target="_blank">kubectl</a> (v1.4+ only) on your workstation, click the button to generate an API key and config file:
+        To use <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">kubectl</a> (v1.4+ only) on your workstation, click the button to generate an API key and config file:
       generateButton: Generate Config
     stepTwo:
       progress: Generating...
@@ -725,7 +1016,7 @@ k8sTab:
       helpText: |
         Put this into <code>~/.kube/config</code>:
       downloadText: |
-        Then <a href="{downloadUrl}" target="_blank">download</a> (if needed) and run <code>kubectl</code>
+        Then <a href="{downloadUrl}" target="_blank" rel="noopener noreferrer">download</a> (if needed) and run <code>kubectl</code>
     shell:
       helpText: |
         Or use this handy shell to directly execute <code>kubectl</code> commands:
@@ -733,6 +1024,48 @@ k8sTab:
 loginPage:
   greeting: "Howdy!<br>Welcome to {appName}"
   githubMessage: "{appName} uses GitHub to manage accounts and teams.  Click the button below to log in and give us read-only access to your basic GitHub account information."
+  oidcMessage: "{appName} uses {providerName} for single sign-on. Continue to the configured identity provider to sign in."
+  localRecovery:
+    header: Local administrator recovery
+    help: Use this only when the external identity provider is unavailable. Only an active system administrator can sign in here.
+    action: Sign in with a local administrator account
+    back: Return to single sign-on
+  mfa:
+    header: Verify your identity
+    enrollmentRequired: Your account must register multi-factor authentication before a session can be created.
+    methods:
+      totp: Authenticator app
+      totpEnrollment: Set up authenticator app
+      webauthn: Passkey
+      recoveryCode: Recovery code
+      emailRecovery: Recover by email
+    totp:
+      enrollHelp: Add the setup URI to an authenticator app, or enter the secret manually, then enter its current 6-digit code.
+      secret: Setup secret
+      code: 6-digit code
+      placeholder: '000000'
+    verify: Verify
+    passkey:
+      help: Use a registered passkey from Windows Hello, your phone, or a hardware security key.
+      action: Use a passkey
+    recoveryCode:
+      help: Enter one unused recovery code.
+      placeholder: Recovery code
+    emailRecovery:
+      warning: Email recovery resets registered factors and active sessions. Email is not used as a multi-factor authentication factor.
+      destination: 'Send a recovery code to {email}'
+      placeholder: 6-digit recovery code
+      complete: Recover account
+      send: Send recovery code
+    cancel: Cancel sign-in
+    recoveryCodes:
+      header: Save your recovery codes
+      help: Store these single-use codes in a safe place. They cannot be displayed again.
+      copy: Copy codes
+      saved: I saved the codes
+    error:
+      invalid: Verification failed. Check the value and try again.
+      secureContext: Passkeys require HTTPS, except when using localhost.
   shibbolethMessage: "{appName} uses Shibboleth to manage accounts.  Click the button below to log in to the configured Shibboleth IDP."
   shibbolethError:
     401: "Unauthorized"
@@ -815,8 +1148,8 @@ projectList:
     header: Environment Templates
     new: Add Template
     subtext: |
-      <p>An environment template allows users to define a different combination of infrastructure services to be deployed.
-      <p>The infrastructure services includes but not limited to container orchestration (i.e. cattle, kubernetes, mesos, swarm, networking) or rancher services (i.e healthcheck, dns, metadata, scheduling, service discovery and storage)</p>
+      <p>An environment template lets users choose the infrastructure services to deploy.</p>
+      <p>Infrastructure services include container orchestration, networking, health checks, DNS, metadata, scheduling, service discovery, and storage.</p>
     table:
       header:
         stacks: Stacks
@@ -978,8 +1311,8 @@ stacksPage:
         label: "Optional: docker-compose.yml"
         placeholder: Contents of docker-compose.yml
       rancherCompose:
-        label: "Optional: rancher-compose.yml"
-        placeholder: Contents of rancher-compose.yml
+        label: "Optional: pasturestack-compose.yml"
+        placeholder: Contents of pasturestack-compose.yml
       startOnCreate:
         label: Start services after creating
 
@@ -1039,6 +1372,11 @@ swarmPage:
         containers: Containers
       body:
         noData: You do not have any Services yet.
+
+processExecutions:
+  collapseAll: Collapse all
+  expandAll: Expand all
+  resourceTypeId: Resource Type／ID
 
 processesPage:
   header: Processes
@@ -1308,6 +1646,9 @@ advancedSection:
   hrText: Advanced Options
 
 
+catalogBox:
+  sourcePrefix: in
+
 catalogSettings:
   header: Catalog
   subtext: Catalogs contain templates that allow users to easily deploy applications by answering a few questions
@@ -1316,18 +1657,18 @@ catalogSettings:
       rancher: "{appName} Certified Library"
       pl: Certified Library
     detail:
-      rancher: Templates required for core Rancher features such as Kubernetes/Mesos/Swarm orchestration support.  Maintained and supported by Rancher Labs.
-      pl: Officially maintained templates required for core features such as Kubernetes/Mesos/Swarm support.
+      rancher: Compatibility templates maintained by the independent PastureStack community. Availability and support vary by template.
+      pl: Maintained templates required for core features such as Kubernetes/Mesos/Swarm support.
   community:
     header:
       rancher: Community Contributed
       pl: Community Contributed
     detail:
-      rancher: Templates created and maintained by community members.  Not certified by Rancher Labs.
+      rancher: Templates created and maintained by community members.  Not certified by the original vendor.
       pl: Templates created and maintained by community members.
   more:
     header: Custom
-    helpText: You can define your own custom catalog sources here.  Each one needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank">docs</a> for more info).
+    helpText: You can define your own custom catalog sources here.  Each one needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">docs</a> for more info).
     addActionLabel: Add Catalog
     name:
       label: Name
@@ -1361,6 +1702,8 @@ containerLogs:
   scrollTop: Scroll to Top
   scrollBottom: Scroll to Bottom
   clear: Clear Screen
+  wrapLines: Wrap lines
+  unknownDate: Unknown date
   status:
     initializing: Initializing...
     connecting: Connecting...
@@ -1444,7 +1787,7 @@ editBalancerService:
   haproxy:
     label: haproxy.cfg
     help: |
-      Additional <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank">haproxy.cfg</a>
+      Additional <a href="http://cbonte.github.io/haproxy-dconv/configuration-1.5.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a>
       configuration can be put here and will be appended to the configuration generated by {appName}.
     global:
       label: '<code>global</code> section'
@@ -1499,7 +1842,7 @@ editHost:
     help:  If provided, the scheduler will select and bind published ports to one of the given public IP addresses.
   requireAny:
     label: Require Container Label
-    help: If provided, containers must have one or more of the given labels in order to be eligible for scheduling onto this host.  If the value is left empty, a container with a matching key is eligible regardless of value.  <code>io.rancher.container.system</code> is required to allow system containers on to the host.
+    help: If provided, containers must have one or more of the given labels to be eligible for scheduling onto this host. If the value is empty, a container with a matching key is eligible regardless of value.
     addActionLabel: Add Required Label
 
 editProjectTemplate:
@@ -1507,6 +1850,7 @@ editProjectTemplate:
     add: Add Template
     edit: "Edit Template: {displayName}"
   orchestration: Orchestration
+  builtinOrchestration: Built-in orchestration
   stackEdit: Edit Config
   stackRequired: Required
   access:
@@ -1550,7 +1894,7 @@ editStack:
 
 envCatalog:
   header: Manage Catalogs
-  subtext: You can define your own custom catalog sources here, which will be available only to users of this environment.  Global catalogs are available to all environments and can only be modified in Admin Settings by an administrator.  Each catalog needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank">docs</a> for more info).
+  subtext: You can define your own custom catalog sources here, which will be available only to users of this environment.  Global catalogs are available to all environments and can only be modified in Admin Settings by an administrator.  Each catalog needs a unique name and a URL that <code>git clone</code> can handle (see <a href="https://git-scm.com/docs/git-clone#_git_urls_a_id_urls_a" target="_blank" rel="noopener noreferrer">docs</a> for more info).
   addActionLabel: Add Catalog
 
 stackHeader:
@@ -1732,6 +2076,7 @@ formEngineOpts:
     valuePlaceholder: e.g. https://my-mirror.example.com:5000
 
 formHealthCheck:
+  windowsUnsupported: Health check support is not currently available for Windows.
   label: Type
   checkType:
     none: None
@@ -1794,7 +2139,7 @@ formKeyValue:
 formImage:
   label: Select Image
   vm:
-    placeholder: e.g. rancher/vm-ubuntu
+    placeholder: e.g. ubuntu:26.04
     dropdownLabel: "{appName} Images"
   container:
     placeholder: "e.g. ubuntu:trusty"
@@ -2019,7 +2364,7 @@ formSslTermination:
   noCertificates: There are no certificates to use.
   noAlternateCertificates: There are no other certificates to use.
   helpBlock: |
-    "Note: Some older SSL/TLS clients do not support <a href="https://en.wikipedia.org/wiki/Server_Name_Indication" target="_blank">Server Name Indication (SNI)</a>; these clients will always be offered the main Certificate  Modern clients will be offered an appropriate certificate from the Alternate Certificates list if a match is found."
+    "Note: Some older SSL/TLS clients do not support <a href="https://en.wikipedia.org/wiki/Server_Name_Indication" target="_blank" rel="noopener noreferrer">Server Name Indication (SNI)</a>; these clients will always be offered the main Certificate  Modern clients will be offered an appropriate certificate from the Alternate Certificates list if a match is found."
   notNeeded: There are no SSL/TLS ports configured.
 
 formStickiness:
@@ -2028,6 +2373,10 @@ formStickiness:
   newCookie: Create new cookie
   cookieName: Cookie Name
   mode: Mode
+  modeChoices:
+    rewrite: Rewrite
+    insert: Insert
+    prefix: Prefix
   domain: Domain
   options: Options
   indirect: Indirect
@@ -2044,6 +2393,8 @@ formTarget:
   pointAddress: Point to IP Address(es)
   pointHostname: Point to a Hostname
   addTarget: Add Target IP
+  ipPlaceholder: e.g. 192.168.2.24
+  hostnamePlaceholder: e.g. mysql.example.com
 
 formTargets:
   title: Targets
@@ -2106,13 +2457,15 @@ formVirtualMachines:
   memory: Memory
 
 formVolumes:
+  windowsUnsupported: Volume support is not currently available for Windows.
+  pathPlaceholder: "e.g. [volume-name: or /path/on/host:]/path/in/container[:ro]"
   value:
     prompt: Select a Container...
   volumes: Volumes
   volumesFrom: Volumes From
   volumeDriver:
     label: Volume Driver
-    placeholder: 'e.g. rancher-nfs'
+    placeholder: 'e.g. pasturestack-nfs'
   noLaunchConfigs: There are no other launch configs in this service to share volumes with.
   noHostContainers: This host has no containers to use the volumes from.
   onlySingleHost: Only available when adding a container to a particular host.
@@ -2172,7 +2525,7 @@ hostSettings:
   helpText:
     static1: "Don't include <code>/v1</code> or any other path, but if you are doing"
     static2: "in front of {appName}, be sure to use <code>https://</code>."
-    isRancher: '<a href="{docsBase}/installing-rancher/installing-server/basic-ssl-config/" target="_blank">SSL termination</a>'
+    isRancher: Review TLS termination guidance in the PastureStack Server documentation.
     sslTerm: SSL termination
   notPublic:
     alert: |
@@ -2192,10 +2545,16 @@ hostPod:
 
 identityBlock:
   loading: Loading...
+  systemService: System Service
 
 infoMultiStats:
   connecting: Connecting...
   utilizationStats: Utilization stats are only available while active/running.
+  time:
+    now: Now
+    minutesSecondsAgo: "{minutes} min, {seconds} sec ago"
+    minutesAgo: "{count, plural, =1 {# minute ago} other {# minutes ago}}"
+    secondsAgo: "{count, plural, =1 {# second ago} other {# seconds ago}}"
   cpuSection:
     labelText: CPU
     system: System
@@ -2215,7 +2574,7 @@ infoMultiStats:
 inputCertificate:
   key:
     label: Private Key
-    placeholder: "Paste in the private key, starting with -----BEGIN RSA PRIVATE KEY-----"
+    placeholder: "Paste in the private key, starting with PEM RSA private key header"
   cert:
     label: Certificate
     placeholder: "Paste in the primary certificate, starting with -----BEGIN CERTIFICATE-----"
@@ -2338,6 +2697,23 @@ labelsSection:
 
 loginShibboleth:
   buttonText: Authenticate with Shibboleth
+  logout: Log out from the identity provider
+
+loginOidc:
+  buttonText: "Sign in with {providerName}"
+  completing: Completing OpenID Connect sign-in…
+  error:
+    cancelled: Sign-in was cancelled before the identity provider responded.
+    expired: The sign-in request expired. Please try again.
+    generic: OpenID Connect sign-in failed.
+    missingCode: The identity provider did not return an authorization code.
+    missingRedirect: The identity provider redirect URL is unavailable.
+    missingTransaction: The sign-in request could not be found. Please start again from the sign-in page.
+    popupBlocked: The sign-in window was blocked by the browser.
+    stateMismatch: The sign-in response did not match the request. Please try again.
+
+serviceLog:
+  running: Running
 
 loginGithub:
   buttonText: Authenticate with GitHub
@@ -2363,7 +2739,7 @@ machine:
       label: Region
     accessKeyHelp: "Paste in your AWS key pair here. We'll use this key to create your new Instances."
     loginAction: "Next: Authenticate & select a network"
-    loadingAvailability: Loading Availablility Zone and VPC info from EC2...
+    loadingAvailability: Loading Availability Zone and VPC information from EC2...
     vpcSection: Availability Zone & VPC
     availabilityZone: Availability Zone
     subnet: VPC/Subnet
@@ -2396,7 +2772,7 @@ machine:
     ami:
       label: AMI
       placeholder: An Ubuntu AMI
-      rancherList: RancherOS AMI List
+      compatibilityGuide: Amazon EC2 image compatibility guidance
     sshUser:
       label: SSH User
       placeholder: e.g. ubuntu
@@ -2416,7 +2792,7 @@ machine:
       valuePlaceholder: e.g. bar
 
   driverAzure:
-    helpBlock: 'You can find instructions on how to create a Client ID and Secret <a href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank">here</a>.'
+    helpBlock: 'You can find instructions on how to create a Client ID and Secret <a href="https://www.packer.io/docs/builders/azure-setup.html" target="_blank" rel="noopener noreferrer">here</a>.'
     accountAccessSection: Account Access
     placementSection: Placement
     networkSection: Network
@@ -2486,11 +2862,11 @@ machine:
       label: Region
 
   driverCustom:
-    step1: Start up a Linux machine somewhere and install a <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank">supported version</a> of <a href="http://www.docker.com/" target="_blank" rel="noreferrer nofollow">Docker</a> on it.
+    step1: Start a Linux machine, install <a href="https://www.docker.com/" target="_blank" rel="noopener noreferrer">Docker</a>, and review the <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">host compatibility guidance</a> before registration.
     step2: "Make sure any security groups or firewalls allow traffic:"
     step2li: From and To all other hosts on <code>UDP</code> ports <code>500</code> and <code>4500</code> <span class="text-muted">(for IPsec networking)</span>
     step3: "Optional: Add labels to be applied to the host."
-    step4: "Specify the public IP that should be registered for this host.  If left empty, Rancher will auto-detect the IP to use.  This generally works for machines with unique public IPs, but will not work if the machine is behind a firewall/NAT or if it is the same machine that is running the <code>{rancherImage}</code> container."
+    step4: "Specify the public IP to register for this host. If left empty, PastureStack will detect it automatically. Set it manually when the host is behind a firewall or NAT, or when the control server and agent share the same host."
     agentIp:
         placeholder: e.g. 1.2.3.4
     step5Copy: Copy, paste, and run the command below to register the host with
@@ -2503,12 +2879,12 @@ machine:
     windows:
       windowsHeader: Windows Host
       linuxHeader: Linux Host
-      step1: Start up a Windows Server 2016 machine somewhere and install the latest version of <a href="https://msdn.microsoft.com/en-us/virtualization/windowscontainers/quick_start/quick_start_windows_server" target="_blank" rel="noreferrer nofollow">Docker</a> on it.
+      step1: Start a Windows Server 2016 machine, install <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer">Docker</a>, and review the <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">host compatibility guidance</a> before registration.
       step2: "Create a transparent Docker Network:"
       step2Copy: docker network create -d transparent transparent
       step3: Copy, paste, and run the command below in PowerShell to start the {appName} agent.
     windowsSteps:
-      step1: Start up a Windows Server 2016 machine somewhere and install a <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank">supported version</a> of <a href="https://docs.docker.com/engine/installation/windows/docker-ee/" target="_blank" rel="noreferrer nofollow">Docker</a> on it.
+      step1: Start a Windows Server 2016 machine, install <a href="https://docs.docker.com/engine/install/" target="_blank" rel="noopener noreferrer">Docker</a>, and review the <a href="{docsBase}/hosts/#supported-docker-versions" target="_blank" rel="noopener noreferrer">host compatibility guidance</a> before registration.
       step2: "Check and install RemoteAccess and Routing in Windows features:"
       step2Copy: Get-WindowsFeature -Name "RemoteAccess","Routing" | Install-WindowsFeature
       step2Note: "Note: Windows machine will need to be rebooted if the applications were installed."
@@ -2518,7 +2894,7 @@ machine:
           placeholder: e.g. 1.2.3.4
       subnet:
           placeholder: e.g. 192.168.0.0/24
-      step5: "Specify the public IP that should be registered for this host.  If left empty, Rancher will auto-detect the IP to use.  This generally works for machines with unique public IPs, but will not work if the machine is behind a firewall/NAT or if it is the same machine that is running the <code>{rancherImage}</code> container."
+      step5: "Specify the public IP to register for this host. If left empty, PastureStack will detect it automatically. Set it manually when the host is behind a firewall or NAT, or when the control server and agent share the same host."
       step6: "Optional: Add labels to be applied to the host."
       step7: Copy, paste, and run the command below in PowerShell to start the {appName} agent.
 
@@ -2535,7 +2911,7 @@ machine:
       placeholder: Your DigitalOcean API access token
       help: |
         A Personal Access Token from the DigitalOcean
-        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank">Apps & API</a> screen
+        <a href="https://cloud.digitalocean.com/settings/applications" target="_blank" rel="noopener noreferrer">Apps & API</a> screen
     instanceSection: Instance
     image:
       label: Image
@@ -2676,7 +3052,7 @@ machine:
     apiKey:
       label: API Key
       placeholder: Your Packet API key
-    apiKeyHelp: From the Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank">API Keys</a> screen
+    apiKeyHelp: From the Packet <a href="https://app.packet.net/portal#/api-keys" target="_blank" rel="noopener noreferrer">API Keys</a> screen
     instanceSection: Instance
     image:
       label: Image
@@ -2848,11 +3224,11 @@ machine:
 modalAboutComponent:
   component: Component
   version: Version
-  cattle: Cattle
+  cattle: Orchestration Engine
   cli: CLI
   ui: User Interface
   compose: Compose
-  machineService: Machine Service
+  machineService: Host Provisioner
   close: Close
 
 modalAuditlogInfo:
@@ -2901,7 +3277,7 @@ modalEditDriver:
   uiUrl:
     label: Custom UI URL
     help: "Optional: The URL to load for customized Add Hosts screen for this driver."
-    link: See <a href="https://github.com/rancher/ui-driver-skel" target="_blank">ui-driver-skel</a> for more info.
+    link: See <a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">PastureStack Web Console</a> for more info.
   checksum:
     label: Checksum
     help: "Optional: Verify that the downloaded driver matches the expected checksum."
@@ -2965,7 +3341,7 @@ newBalancer:
     labels: Labels
     scheduling: Scheduling
   custom: |
-    Additional <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="nofollow noopener">haproxy.cfg</a> configuration can be put here and will be merged together with the configuration generated by {appName}.
+    Additional <a href="https://cbonte.github.io/haproxy-dconv/1.6/configuration.html" target="_blank" rel="noopener noreferrer">haproxy.cfg</a> configuration can be put here and will be merged together with the configuration generated by {appName}.
   config:
     prompt: Custom haproxy.cfg content
   error:
@@ -2992,8 +3368,12 @@ newCatalog:
   catalog: "Catalog:"
   category: "Category:"
   support: "Support:"
-  official: Officially Certified
+  official: Validated Template
   maintainedBy: Maintained by community members
+  origin: "Origin:"
+  upstreamFirstParty: Upstream first-party template
+  currentMaintenance: "Current maintenance:"
+  communityMaintained: Maintained by the PastureStack community
   maintainer: "Maintainer:"
   license: "License:"
   url: "Project URL:"
@@ -3127,23 +3507,24 @@ newSecret:
     placeholder: The secret value
 
 pageFooter:
+  about: "About {appName}"
   notARelease: (Not a Release)
   help: Help
   documentation: Documentation
   faq: FAQs
   issues: File an Issue
-  forums: Forums
-  slack: Slack
   download:
     link: Download CLI
-    headerCli: Rancher CLI
-    headerCompose: Rancher Compose
+    headerCli: PastureStack CLI
+    headerCompose: PastureStack Compose
     mac: Mac OS X
     windows: Windows
     linux: Linux
     deprecated: Deprecated
 
 pagination:
+  rowsPerPage: Rows per page
+  all: All
   multi: |
     {pages, plural,
     =0 {0 Items}
@@ -3255,6 +3636,7 @@ snapshotTimeline:
   noData: No Snapshot Data
 
 stackSection:
+  toggleDetails: Toggle stack details
   outputs: Outputs
   description: Description
   none: No Services
@@ -3340,7 +3722,7 @@ swarmTab:
 telemetryOpt:
   header: Statistics
   subtext: |
-    Rancher Labs would like to collect anonymous information about the configuration of your installation to help make {appName} better.<br/>Your data will not be shared with anyone else, and no specific resource names or addresses are collected.
+    When this option is enabled, the installation can collect anonymous configuration information to help improve {appName}.<br/>No specific resource names or addresses are collected, and the resulting statistics are not shared with third parties.
   learnMore:
     label: Learn More
   label: Allow collection of anonymous statistics
@@ -3376,6 +3758,7 @@ viewEditDescription:
       placeholder: e.g. Environment for developer experimentation
 
 viewEditProject:
+  nativeEngine: Native Engine
   showEdit:
     edit: "Edit Environment:"
     add: Add Environment
@@ -3386,7 +3769,7 @@ viewEditProject:
     label: Network Policy
     description: Control what containers are allowed to communicate with each other over the Managed Network.
     unsupported: This environment has network policy rules which are not yet supported by the UI.  Please use the API to manage the policy.
-    noManager: Network Policies are available only for environments using Cattle Orchestration with the Network Policy Manager infrastructure template deployed.
+    noManager: Network Policies are available only for environments using the PastureStack orchestration engine with the Network Policy Manager infrastructure template deployed.
     withinStack: Within Stack
     withinService: Within Service
     withinLinked: Between Linked Services
@@ -3529,11 +3912,11 @@ nav:
     themeAuto: Auto
     themeDark: Dark
   noHosts:
-    prefix: "Before adding your first service or launching a container, you'll need to add a Linux host with a <a href=\"{docsBase}/hosts/#supported-docker-versions\" target=\"_blank\">supported version</a> of Docker.  "
+    prefix: "Before adding your first service or launching a container, review the <a href=\"{docsBase}/hosts/#supported-docker-versions\" target=\"_blank\" rel=\"noopener noreferrer\">Docker compatibility guidance</a> first:"
     link: "Add a host"
     suffix: ""
   noHostsWindows:
-    prefix: "Before adding your first service or launching a container, you'll need to add a Windows host.  "
+    prefix: "Before adding your first service or launching a container, complete this step first:"
     link: "Add a host"
     suffix: ""
 
@@ -3643,3 +4026,43 @@ model:
     min: Minimum Scale
     max: Maximum Scale
     amount: By
+
+consoleWorkspace:
+  dock:
+    label: Console workspace
+    sessions: 'Sessions ({count})'
+    empty: No terminal or log sessions yet.
+  context:
+    title: '[{environment}][{stack}] {resource}'
+    noStack: Unassigned stack
+  session:
+    terminal: Terminal
+    logs: Logs
+    vm: Virtual machine console
+    status:
+      new: Ready to start
+      initializing: Initializing
+      connecting: Connecting
+      connected: Connected
+      disconnected: Disconnected
+      closing: Ending
+      ended: Ended
+      error: Error
+    confirmTerminateTitle: End session?
+    confirmTerminate: The running command will stop immediately, and retained output will no longer be available. Do you want to continue?
+    removeHistory: Remove from session history
+    loadError: The resource for this session could not be loaded.
+    controller: This browser tab has input control.
+    takeControl: Take input control
+  window:
+    terminate: End session
+    minimize: Minimize
+    restore: Restore
+    maximize: Maximize
+    close: Close window
+    resize: Resize window
+    reconnect: Reconnect
+  launch:
+    description: Terminal sessions open in movable windows and remain available after refreshing or closing the browser.
+    button: Open terminal
+    newButton: Open new session
