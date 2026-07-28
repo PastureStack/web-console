@@ -1,4 +1,17 @@
-$container-height: 300px;
+@use "app/styles/helpers/mixins" as *;
+
+$accent-one: null !default;
+$blueTwo: null !default;
+$greenTwo: null !default;
+$greenTwoDark: null !default;
+$icon-pasture-stack: null !default;
+$lightTeal: null !default;
+$lightTealDark: null !default;
+$primary: null !default;
+$primaryDark: null !default;
+$table-bg-accent: null !default;
+
+$container-height: 330px;
 $container-width: 250px;
 $play-button-height-width: 60px;
 $font-size: 12px;
@@ -39,7 +52,10 @@ $lines-to-show: 4;
   }
 
   .itemwrap {
-    max-height: 119px;
+    // Traditional Chinese card titles commonly occupy two lines.  Keep
+    // enough room for the title, divider, and all four description lines so
+    // localized text is not hidden behind the fixed footer.
+    max-height: 145px;
     overflow: hidden;
   }
 
@@ -132,7 +148,7 @@ $lines-to-show: 4;
     box-sizing:border-box;
   }
 
-  .badge-rancher {
+  .badge-pasturestack {
     position: absolute;
     z-index: 1;
     background: $primary;
@@ -166,16 +182,16 @@ $lines-to-show: 4;
     }
   }
 
-  .badge-rancher-logo {
-    @extend .badge-rancher;
+  .badge-pasturestack-logo {
+    @extend .badge-pasturestack;
 
     STRONG {
       padding-left: 30px;
       position: relative;
 
       &:after {
-        content: $icon-rancher-cow;
-        font-family: 'rancher-icons';
+        content: $icon-pasture-stack;
+        font-family: 'pasturestack-icons';
         font-size: 24px;
         font-weight: normal;
         position: absolute;
@@ -186,7 +202,7 @@ $lines-to-show: 4;
   }
 
   .badge-partner {
-    @extend .badge-rancher;
+    @extend .badge-pasturestack;
     background-color: $greenTwo;
     color: black;
 
@@ -201,7 +217,7 @@ $lines-to-show: 4;
   }
 
   .badge-thirdparty {
-    @extend .badge-rancher;
+    @extend .badge-pasturestack;
     background-color: $lightTeal;
     color: black;
 

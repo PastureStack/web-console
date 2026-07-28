@@ -1,4 +1,3 @@
-/*jshint node:true*/
 
 // Override translation-reducer to not tell us about missing 'none' keys
 var TranslationReducer = require('ember-intl/lib/broccoli/translation-reducer');
@@ -27,12 +26,22 @@ function propKeys(object) {
 TranslationReducer.prototype.findMissingKeys = function(target, defaultTranslationKeys, locale) {
   var targetProps = propKeys(target);
   var log = this.options.log;
+  var inheritedPrefixes = [
+    'authPage.oidc.',
+    'authPage.root.providers.oidc',
+    'loginOidc.',
+    'loginPage.oidcMessage'
+  ];
 
   var total = defaultTranslationKeys.length;
   var missing = {};
 
   defaultTranslationKeys.forEach(function (property) {
-    if (targetProps.indexOf(property) === -1 && locale !== 'none') {
+    var inherited = inheritedPrefixes.some(function(prefix) {
+      return property.indexOf(prefix) === 0;
+    });
+
+    if (targetProps.indexOf(property) === -1 && locale !== 'none' && !inherited) {
       missing[locale] = (missing[locale]||0) + 1;
       //log(property + '\' missing from ' + locale);
     }

@@ -12,8 +12,13 @@
         <br/>
       {{/if}}
 
-     {{#if isShibboleth}}
+      {{#if isShibboleth}}
         <p>{{t 'loginPage.shibbolethMessage' appName=settings.appName}}</p>
+        <br/>
+      {{/if}}
+
+      {{#if isOidc}}
+        <p>{{t 'loginPage.oidcMessage' appName=settings.appName providerName=oidcProviderName}}</p>
         <br/>
       {{/if}}
 
@@ -30,7 +35,9 @@
       {{#if isShibboleth}}
         {{login-shibboleth action="started" waiting=waiting}}
       {{/if}}
-      <span style="color: white">{{access.provider}}</span>
+      {{#if isOidc}}
+        {{login-oidc action="started" errorAction="oidcError" waiting=waiting providerName=oidcProviderName}}
+      {{/if}}
     </section>
   </div>
 </div>
