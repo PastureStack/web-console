@@ -1,8 +1,8 @@
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 import Ember from 'ember';
-import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
+import { displayOrchestrationName } from 'ui/utils/orchestration-name';
 import { denormalizeId } from 'ember-api-store/utils/denormalize';
 
 var Project = Resource.extend(PolledResource, {
@@ -10,6 +10,7 @@ var Project = Resource.extend(PolledResource, {
   prefs: Ember.inject.service(),
   projects: Ember.inject.service(),
   settings: Ember.inject.service(),
+  intl: Ember.inject.service(),
   modalService: Ember.inject.service('modal'),
 
   projectTemplate: denormalizeId('projectTemplateId'),
@@ -125,8 +126,14 @@ var Project = Resource.extend(PolledResource, {
   }.property('state','isDefault'),
 
   displayOrchestration: function() {
-    return Util.ucFirst(this.get('orchestration'));
-  }.property('orchestration'),
+    let orchestration = this.get('orchestration');
+
+    if (String(orchestration || '').toLowerCase() === 'cattle') {
+      return this.get('intl').t('modalAboutComponent.cattle');
+    }
+
+    return displayOrchestrationName(orchestration);
+  }.property('orchestration', 'intl._locale'),
 
   combinedState: function() {
     var project = this.get('state');

@@ -46,9 +46,9 @@ var C = {
 
   CATALOG: {
     LIBRARY_KEY: 'library',
-    LIBRARY_VALUE: 'https://git.rancher.io/rancher-catalog.git',
+    LIBRARY_VALUE: 'https://github.com/PastureStack/catalog-templates.git',
     COMMUNITY_KEY: 'community',
-    COMMUNITY_VALUE: 'https://git.rancher.io/community-catalog.git',
+    COMMUNITY_VALUE: '',
     DEFAULT_BRANCH: 'master',
     LIBRARY_BRANCH: '${RELEASE}',
   },
@@ -56,7 +56,7 @@ var C = {
   COOKIE: {
     TOKEN: 'token',
     PL: 'PL',
-    PL_RANCHER_VALUE: 'rancher',
+    PL_RANCHER_VALUE: 'pasturestack',
     CSRF: 'CSRF',
     LANG: 'LANG',
   },
@@ -96,7 +96,7 @@ var C = {
       KIND_NOT_ORCHESTRATION,
     ],
     SYSTEM_CATEGORIES: [
-      'Rancher services'
+      'Platform services'
     ],
     CATALOG_DEFAULT_GROUP: 'library',
   },
@@ -200,6 +200,10 @@ var C = {
     SORT_STACKS_BY  : 'sortStacksBy',
     THEME           : 'theme',
     TABLE_COUNT     : 'tableCount',
+    STATS_TABLE_COUNT: 'statsTableCount',
+    STORAGE_TABLE_COUNT: 'storageTableCount',
+    HOST_CONTAINER_COLUMNS: 'hostContainerColumnsV2',
+    SERVICE_CONTAINER_COLUMNS: 'serviceContainerColumnsV2',
     LANGUAGE        : 'language',
     I_HATE_SPINNERS : 'ihatespinners',
     FEEDBACK        : 'feedback',
@@ -213,7 +217,12 @@ var C = {
   },
 
   TABLES: {
-    DEFAULT_COUNT: 50
+    DEFAULT_COUNT: 50,
+    DEFAULT_STATS_COUNT: 10,
+    DEFAULT_STORAGE_COUNT: 25,
+    PAGE_SIZES: [10, 25, 50, 100],
+    STATS_PAGE_SIZES: [10, 25, 50],
+    STORAGE_PAGE_SIZES: [10, 25, 50, 0],
 
   },
 
@@ -235,6 +244,8 @@ var C = {
     TYPE_LDAP_GROUP:      'ldap_group',
     TYPE_OPENLDAP_USER:   'openldap_user',
     TYPE_OPENLDAP_GROUP:  'openldap_group',
+    TYPE_OIDC_USER:       'oidc_user',
+    TYPE_OIDC_GROUP:      'oidc_group',
     TYPE_SHIBBOLETH_USER:       'shibboleth_user',
     TYPE_SHIBBOLETH_GROUP:      'shibboleth_group',
 
@@ -275,6 +286,7 @@ var C = {
   TABSESSION: {
     PROJECT: 'projectId',
     NAMESPACE: 'namespaceId',
+    OIDC_TRANSACTION: 'oidcAuthorizationTransaction',
   },
 
   SETTING: {
@@ -318,20 +330,18 @@ var C = {
   },
 
   AUTH_TYPES: {
-    AdminAuth: 'None',
-    BasicAuth: 'API Key',
-    HeaderAuth: 'HeaderAuth',
-    RegistrationToken: 'Host Registration',
-    TokenAccount: 'TokenAccount',
-    TokenAuth: 'UI Session'
+    AdminAuth: 'auditLogsPage.authTypes.none',
+    BasicAuth: 'auditLogsPage.authTypes.apiKey',
+    HeaderAuth: 'auditLogsPage.authTypes.headerAuth',
+    RegistrationToken: 'auditLogsPage.authTypes.hostRegistration',
+    TokenAccount: 'auditLogsPage.authTypes.tokenAccount',
+    TokenAuth: 'auditLogsPage.authTypes.uiSession'
   },
 
   EXT_REFERENCES: {
-    FORUM: 'https://forums.rancher.com',
-    COMPANY: 'http://rancher.com',
-    GITHUB: 'https://github.com/rancher/rancher',
-    DOCS: 'http://docs.rancher.com/rancher',
-    SLACK: 'https://slack.rancher.io',
+    COMPANY: 'https://github.com/PastureStack',
+    GITHUB: 'https://github.com/PastureStack/web-console',
+    DOCS: 'https://github.com/PastureStack/server/tree/main/docs',
   },
 
   K8S: {

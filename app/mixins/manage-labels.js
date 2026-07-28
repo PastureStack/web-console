@@ -202,7 +202,7 @@ export default Ember.Mixin.create({
     let lcKey = (key||'').toLowerCase();
     let type  = 'user';
 
-    // Rancher keys are always lowercase
+    // Compatibility keys are always lowercase
     if ( lcKey.indexOf(C.LABEL.AFFINITY_PREFIX) === 0 )
     {
       type = 'affinity';

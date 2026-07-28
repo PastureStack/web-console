@@ -6,7 +6,7 @@
   {{/power-select}}
 
   {{#if model.vm.primaryHost}}
-    <strong class="r-mr5 r-ml5">on {{#link-to "host" model.vm.primaryHost.id}}{{model.vm.primaryHost.displayName}}{{/link-to}}</strong>
+    <strong class="r-mr5 r-ml5">{{t 'uiText.relationOn'}} {{#link-to "host" model.vm.primaryHost.id}}{{model.vm.primaryHost.displayName}}{{/link-to}}</strong>
   {{/if}}
   <div class="pull-right">
     {{action-menu model=model.vm size="sm" classNames="r-ml5 pull-right"}}
@@ -29,7 +29,7 @@
         {{#if model.vm.primaryHost}}
           {{#link-to "host" model.vm.primaryHost.id}}{{model.vm.primaryHost.displayName}}{{/link-to}}
         {{else}}
-          <span class="text-muted">Unknown</span>
+          <span class="text-muted">{{t 'generic.unknown'}}</span>
         {{/if}}
       </div>
 

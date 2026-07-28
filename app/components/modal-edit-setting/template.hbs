@@ -17,10 +17,10 @@
         {{input-integer value=value class="form-control"}}
       {{else if (eq model.kind 'boolean')}}
         <div class="radio">
-          <label>{{radio-button selection=value value="true"}} True</label>
+          <label>{{radio-button selection=value value="true"}} {{t 'schema.inputBoolean.y'}}</label>
         </div>
         <div class="radio">
-          <label>{{radio-button selection=value value="false"}} False</label>
+          <label>{{radio-button selection=value value="false"}} {{t 'schema.inputBoolean.n'}}</label>
         </div>
       {{else if (eq model.kind 'enum')}}
         <select class="form-control" onchange={{action (mut value) value="target.value"}}>

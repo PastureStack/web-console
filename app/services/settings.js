@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import C from 'ui/utils/constants';
 import { minorVersion } from 'ui/utils/parse-version';
+import { displayOrchestrationName } from 'ui/utils/orchestration-name';
 
 export function normalizeName(str) {
   return str.replace(/\./g, C.SETTING.DOT_CHAR).toLowerCase();
@@ -8,6 +9,12 @@ export function normalizeName(str) {
 
 export function denormalizeName(str) {
   return str.replace(new RegExp('['+C.SETTING.DOT_CHAR+']','g'),'.').toLowerCase();
+}
+
+export function resolveAppName(whiteLabel, defaultName, useDefaultBrand) {
+  let value = (whiteLabel || '').trim();
+
+  return !value || useDefaultBrand ? defaultName : value;
 }
 
 export default Ember.Service.extend(Ember.Evented, {
@@ -134,9 +141,9 @@ export default Ember.Service.extend(Ember.Evented, {
 
   issueUrl: function() {
     var str = '*Describe your issue here*\n\n\n---\n| Useful | Info |\n| :-- | :-- |\n' +
-      `|Versions|Rancher \`${this.get('rancherVersion')||'-'}\` ` +
-        `Cattle: \`${this.get('cattleVersion')||'-'}\` ` +
-        `UI: \`${this.get('uiVersion')||'--'}\` |\n`;
+      `|Versions|PastureStack \`${this.get('rancherVersion')||'-'}\` ` +
+        `Orchestration Engine: \`${this.get('cattleVersion')||'-'}\` ` +
+        `Web Console: \`${this.get('uiVersion')||'--'}\` |\n`;
 
       if ( this.get('access.enabled') )
       {
@@ -147,12 +154,12 @@ export default Ember.Service.extend(Ember.Evented, {
         str += '|Access|`Disabled`|\n';
       }
 
-      str += `|Orchestration|\`${this.get('projects.current.displayOrchestration')}\`|\n`;
+      str += `|Orchestration|\`${displayOrchestrationName(this.get('projects.current.orchestration'))}\`|\n`;
       str += `|Route|\`${this.get('app.currentRouteName')}\`|\n`;
 
     var url = C.EXT_REFERENCES.GITHUB + '/issues/new?body=' + encodeURIComponent(str);
     return url;
-  }.property('app.currentRouteName','access.{provider,admin}','cattleVersion','rancherVersion','uiVersion','projects.current.displayOrchestration'),
+  }.property('app.currentRouteName','access.{provider,admin}','cattleVersion','rancherVersion','uiVersion','projects.current.orchestration'),
 
   rancherImage: Ember.computed.alias(`asMap.${C.SETTING.IMAGE_RANCHER}.value`),
   rancherVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_RANCHER}.value`),
@@ -167,22 +174,16 @@ export default Ember.Service.extend(Ember.Evented, {
   }.property(`cookies.${C.COOKIE.PL}`),
 
   isRancher: function() {
-    return this.get('_plValue').toUpperCase() === C.COOKIE.PL_RANCHER_VALUE.toUpperCase();
+    let value = this.get('_plValue').toLowerCase();
+    return !value || value === C.COOKIE.PL_RANCHER_VALUE.toLowerCase() || value === 'rancher' || value === 'pasturestack';
   }.property('_plValue'),
 
   isOSS: function() {
-    return this.get('rancherImage') === 'rancher/server';
+    return ['ghcr.io/pasturestack/server','pasturestack/server','rancher/server'].includes(this.get('rancherImage'));
   }.property('rancherImage'),
 
   appName: function() {
-    if ( this.get('isRancher') )
-    {
-      return this.get('app.appName'); // Rancher
-    }
-    else
-    {
-      return this.get('_plValue');
-    }
+    return resolveAppName(this.get('_plValue'), this.get('app.appName'), this.get('isRancher'));
   }.property('isRancher','_plValue'),
 
   minDockerVersion: Ember.computed.alias(`asMap.${C.SETTING.MIN_DOCKER}.value`),
@@ -198,17 +199,6 @@ export default Ember.Service.extend(Ember.Evented, {
   }.property('rancherVersion'),
 
   docsBase: function() {
-    let full = this.get('rancherVersion');
-    let version = 'latest';
-    if ( full ) {
-      version = minorVersion(full);
-    }
-
-    let lang = ((this.get('intl._locale')||[])[0]||'').replace(/-.*$/,'');
-    if ( !lang || lang === 'none' || C.LANGUAGE.DOCS.indexOf(lang) === -1 ) {
-      lang = 'en';
-    }
-
-    return `${C.EXT_REFERENCES.DOCS}/${version}/${lang}`;
-  }.property('intl._locale','minorVersion')
+    return C.EXT_REFERENCES.DOCS;
+  }.property()
 });
