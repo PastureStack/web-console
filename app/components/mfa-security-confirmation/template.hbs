@@ -1,0 +1,53 @@
+<h2>{{t 'authPage.mfa.securityConfirmation.header'}}</h2>
+<p>{{t 'authPage.mfa.securityConfirmation.help'}}</p>
+
+{{#if errorMessage}}
+  <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
+{{/if}}
+
+{{#if challenge}}
+  {{#if hasUnavailablePasskeyMethod}}
+    <div class="alert alert-info" role="status">
+      {{t 'authPage.mfa.securityConfirmation.secureContextRequired'}}
+    </div>
+  {{/if}}
+
+  {{#if (gt availableMethods.length 1)}}
+    <div class="btn-group btn-group-justified r-mb15" role="group">
+      {{#each availableMethods as |availableMethod|}}
+        <a href="#" role="button"
+           class="btn {{if (eq method availableMethod) 'btn-primary' 'btn-default'}}"
+           {{action "selectMethod" availableMethod}}>
+          {{t (concat 'loginPage.mfa.methods.' availableMethod)}}
+        </a>
+      {{/each}}
+    </div>
+  {{/if}}
+
+  {{#if isTotp}}
+    <label for="mfa-security-code">{{t 'loginPage.mfa.totp.code'}}</label>
+    {{input id="mfa-security-code" value=verificationCode
+            class="form-control input-lg text-center" maxlength="6"
+            inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"}}
+  {{else if isRecoveryCode}}
+    <label for="mfa-security-recovery-code">{{t 'loginPage.mfa.recoveryCode.placeholder'}}</label>
+    {{input id="mfa-security-recovery-code" value=recoveryCode
+            class="form-control input-lg text-center" autocomplete="one-time-code"}}
+  {{else if isPasskey}}
+    <p>{{t 'loginPage.mfa.passkey.help'}}</p>
+  {{/if}}
+{{else}}
+  <p role="status"><i class="icon icon-spinner icon-spin"></i> {{t 'generic.loading'}}</p>
+{{/if}}
+
+<div class="footer-actions">
+  <button type="button" class="btn btn-primary" disabled={{confirmDisabled}}
+          {{action "confirm"}}>
+    {{#if waiting}}<i class="icon icon-spinner icon-spin"></i>{{/if}}
+    {{t 'authPage.mfa.securityConfirmation.confirm'}}
+  </button>
+  <button type="button" class="btn btn-link" disabled={{waiting}}
+          {{action "cancelConfirmation"}}>
+    {{t 'generic.cancel'}}
+  </button>
+</div>

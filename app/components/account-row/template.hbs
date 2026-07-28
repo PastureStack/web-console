@@ -28,5 +28,12 @@
   </td>
 {{/if}}
 <td data-title="{{t 'generic.actions'}}:" class="actions">
+  {{#link-to "admin-tab.auth.mfa" (query-params accountId=model.id)
+      classNames="btn btn-xs btn-default account-row-manage-mfa"
+      data-testid="account-row-manage-mfa"
+      title=(t 'authPage.mfa.manageAccount' account=model.displayName)}}
+    <i class="icon icon-shield"></i>
+    <span class="sr-only">{{t 'authPage.mfa.manageAccount' account=model.displayName}}</span>
+  {{/link-to}}
   {{action-menu model=model}}
 </td>

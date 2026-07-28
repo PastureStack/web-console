@@ -1,0 +1,13 @@
+<section class="header clearfix">
+  <h1>{{t 'authPage.mfa.selfService.header'}}</h1>
+  <p class="help-block">{{t 'authPage.mfa.selfService.help'}}</p>
+</section>
+
+{{top-errors errors=errors}}
+
+<section class="well" data-testid="mfa-self-service-summary">
+  <h2>{{session.user}}</h2>
+  {{partial "mfa-status-summary"}}
+</section>
+
+{{partial "mfa-self-service"}}

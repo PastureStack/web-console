@@ -1,3 +1,10 @@
+$accent-two: null !default;
+$brand-info: null !default;
+$link-color: null !default;
+$screen-xs-max: null !default;
+$table-border-color: null !default;
+$well-bg: null !default;
+
 /*0-694*/
 @media (max-width: $screen-xs-max) {
   HEADER #navbar LI {

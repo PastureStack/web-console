@@ -21,15 +21,23 @@
     </li>
   {{/if}}
 
-  {{#if isLocalAuth}}
+  {{#if accessEnabled}}
     <li role="presentation" class="dropdown-header">
       {{t 'nav.user.yourAccount'}}
     </li>
 
     <li role="presentation">
-      <a {{action "changePassword"}} role="menuitem">{{t 'nav.user.changePassword'}}</a>
+      {{#link-to "account-security" role="menuitem" classNames="user-security"}}
+        <i class="icon icon-shield"></i>
+        {{t 'authPage.mfa.selfService.navigation'}}
+      {{/link-to}}
     </li>
 
+    {{#if isLocalAuth}}
+    <li role="presentation">
+      <a {{action "changePassword"}} role="menuitem">{{t 'nav.user.changePassword'}}</a>
+    </li>
+    {{/if}}
   {{/if}}
 
   <li class="dropdown-header">{{t 'nav.user.theme'}}</li>

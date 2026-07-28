@@ -9,13 +9,15 @@ export default Ember.Route.extend({
   },
 
   afterModel() {
-    this.setupSocketConnection();
+    this.bindVisibilityHandler();
+
+    if ( !document.hidden ) {
+      this.setupSocketConnection();
+    }
   },
 
   setupSocketConnection: function() {
-    if (this.get('statsSocket')) {
-      this.deactivate();
-    }
+    this.closeStatsSocket();
 
     let stats = MultiStatsSocket.create({
       resource: this.modelFor('host').get('host'),
@@ -35,7 +37,36 @@ export default Ember.Route.extend({
 
   },
 
+  bindVisibilityHandler() {
+    if ( this._visibilityHandler ) {
+      return;
+    }
+
+    this._visibilityHandler = () => {
+      if ( document.hidden ) {
+        this.closeStatsSocket();
+      } else {
+        this.setupSocketConnection();
+      }
+    };
+    document.addEventListener('visibilitychange', this._visibilityHandler);
+  },
+
+  closeStatsSocket() {
+    let stats = this.get('statsSocket');
+
+    if ( stats ) {
+      stats.close();
+      this.set('statsSocket', null);
+    }
+  },
+
   deactivate() {
-    this.get('statsSocket').close();
+    if ( this._visibilityHandler ) {
+      document.removeEventListener('visibilitychange', this._visibilityHandler);
+      this._visibilityHandler = null;
+    }
+
+    this.closeStatsSocket();
   }
 });
