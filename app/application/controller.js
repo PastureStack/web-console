@@ -4,7 +4,7 @@ export default Ember.Controller.extend({
   settings: Ember.inject.service(),
 
   // GitHub auth params
-  queryParams     : ['error_description','state','code','isTest', 'isPopup','redirectTo'],
+  queryParams     : ['error_description','state','code','isTest', 'isPopup','redirectTo', {oidcError: 'error'}],
 
   resourceActions : Ember.inject.service('resource-actions'),
   tooltipService  : Ember.inject.service('tooltip'),
@@ -14,6 +14,7 @@ export default Ember.Controller.extend({
 
   error             : null,
   error_description : null,
+  oidcError          : null,
   state             : null,
   code              : null,
   isTest            : null,

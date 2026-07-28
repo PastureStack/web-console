@@ -10,12 +10,17 @@ export default Ember.Controller.extend({
   isActiveDirectory : Ember.computed.equal('access.provider', 'ldapconfig'),
   isOpenLdap        : Ember.computed.equal('access.provider', 'openldapconfig'),
   isLocal           : Ember.computed.equal('access.provider', 'localauthconfig'),
+  isOidc            : Ember.computed.equal('access.provider', 'oidcconfig'),
   isAzureAd         : Ember.computed.equal('access.provider', 'azureadconfig'),
   isShibboleth      : Ember.computed.equal('access.provider', 'shibbolethconfig'),
 
   timedOut          : false,
   waiting           : false,
   errorMsg          : null,
+
+  oidcProviderName: function() {
+    return this.get('access.token.providerDisplayName') || this.get('intl').t('authPage.oidc.defaultProviderName');
+  }.property('access.token.providerDisplayName', 'intl._locale'),
 
   actions: {
     started() {
@@ -44,6 +49,13 @@ export default Ember.Controller.extend({
           this.set('waiting',false);
         });
       }, 10);
+    },
+
+    oidcError(err) {
+      this.setProperties({
+        waiting: false,
+        errorMsg: err && err.message ? err.message : this.get('intl').t('loginOidc.error.generic'),
+      });
     }
   },
 
