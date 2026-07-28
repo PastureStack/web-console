@@ -1,0 +1,129 @@
+<div class="well well-sm r-mt15">
+  <h4>{{t 'authPage.oidc.identity.header'}}</h4>
+  <p class="help-block">{{t 'authPage.oidc.identity.help'}}</p>
+
+  <dl class="dl-horizontal">
+    <dt>{{t 'authPage.oidc.identity.verifiedLogin'}}</dt>
+    <dd>{{testedIdentityName}}</dd>
+    <dt>{{t 'authPage.oidc.identity.subject'}}</dt>
+    <dd><code>{{testedIdentity.externalId}}</code></dd>
+    <dt>{{t 'authPage.oidc.identity.currentMatch'}}</dt>
+    <dd>
+      {{#if matchedAccount}}
+        {{matchedAccount.name}} ({{matchedAccount.id}})
+        {{badge-state model=matchedAccount}}
+      {{else}}
+        {{t 'authPage.oidc.identity.noMatch'}}
+      {{/if}}
+    </dd>
+  </dl>
+
+  {{#if canRestoreMatchedAccount}}
+    <div class="alert alert-warning">
+      <p>
+        <i class="icon icon-alert"></i>
+        {{t 'authPage.oidc.identity.inactiveMatch'
+          account=(if matchedAccount.name matchedAccount.name matchedAccount.id)}}
+      </p>
+      <button type="button" class="btn btn-warning"
+              disabled={{restoringIdentityAccount}} {{action "restoreMatchedAccount"}}>
+        {{#if restoringIdentityAccount}}
+          <i class="icon icon-spinner icon-spin"></i>
+          {{t 'authPage.oidc.identity.restoring'}}
+        {{else}}
+          <i class="icon icon-play"></i>
+          {{t 'authPage.oidc.identity.restore'}}
+        {{/if}}
+      </button>
+    </div>
+  {{/if}}
+
+  {{#if identityMatchAccountId}}
+    <div class="btn-group r-mb15" role="group" aria-label="{{t 'authPage.oidc.identity.strategyLabel'}}">
+      <button type="button"
+        class="btn {{if (eq identityStrategy 'useExisting') 'btn-primary' 'btn-default'}}"
+        {{action "chooseIdentityStrategy" "useExisting"}}>
+        {{t 'authPage.oidc.identity.useExisting'}}
+      </button>
+      <button type="button"
+        class="btn {{if (eq identityStrategy 'reassign') 'btn-primary' 'btn-default'}}"
+        {{action "chooseIdentityStrategy" "reassign"}}>
+        {{t 'authPage.oidc.identity.reassign'}}
+      </button>
+    </div>
+  {{/if}}
+
+  {{#unless (eq identityStrategy 'useExisting')}}
+    <div class="form-group">
+      <label>{{t 'authPage.oidc.identity.targetAccount'}}</label>
+      {{new-select
+        classNames="form-control"
+        content=identityTargetChoices
+        optionLabelPath="label"
+        optionValuePath="value"
+        value=selectedTargetAccountId
+      }}
+      <p class="help-block">{{t 'authPage.oidc.identity.targetHelp'}}</p>
+    </div>
+  {{/unless}}
+
+  {{#unless targetAccountReady}}
+    <div class="alert alert-warning">
+      <i class="icon icon-alert"></i>
+      {{#if oidcEnabled}}
+        {{t 'authPage.oidc.identity.activeAccountRequired'}}
+      {{else}}
+        {{t 'authPage.oidc.identity.activeAdminRequired'}}
+      {{/if}}
+    </div>
+  {{/unless}}
+
+  {{#if hasIdentityConflict}}
+    <div class="checkbox">
+      <label>
+        {{input type="checkbox" checked=transferPermissions}}
+        {{t 'authPage.oidc.identity.transferPermissions'}}
+      </label>
+      <p class="help-block">{{t 'authPage.oidc.identity.transferHelp'}}</p>
+    </div>
+    <div class="form-group">
+      <label>{{t 'authPage.oidc.identity.oldAccountDisposition'}}</label>
+      {{new-select
+        classNames="form-control"
+        content=oldAccountDispositionChoices
+        localizedLabel=true
+        value=oldAccountDisposition
+      }}
+    </div>
+    <div class="alert alert-warning">
+      <p>
+        <strong>{{t 'authPage.oidc.identity.confirmationHeader'}}</strong>
+      </p>
+      <p>
+        {{t 'authPage.oidc.identity.confirmationSummary'
+          source=(if matchedAccount.name matchedAccount.name matchedAccount.id)
+          target=(if selectedTargetAccount.name selectedTargetAccount.name selectedTargetAccount.id)}}
+      </p>
+      {{#if identityChangeConfirmed}}
+        <span class="text-success">
+          <i class="icon icon-check"></i>
+          {{t 'authPage.oidc.identity.confirmed'}}
+        </span>
+      {{else}}
+        <button type="button" class="btn btn-warning" {{action "confirmIdentityDecision"}}>
+          <i class="icon icon-shield"></i>
+          {{t 'authPage.oidc.identity.confirm'}}
+        </button>
+      {{/if}}
+    </div>
+  {{/if}}
+
+  <div class="alert alert-info r-mb0">
+    <i class="icon icon-shield"></i>
+    {{#if oidcEnabled}}
+      {{t 'authPage.oidc.identity.managementSecurityNotice'}}
+    {{else}}
+      {{t 'authPage.oidc.identity.securityNotice'}}
+    {{/if}}
+  </div>
+</div>

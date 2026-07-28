@@ -1,0 +1,7 @@
+{
+  "name": "inflight",
+  "version": "1.1.0-rc16.0",
+  "description": "RC16 compatibility implementation of the deprecated inflight API for legacy glob consumers.",
+  "main": "inflight.js",
+  "license": "ISC"
+}

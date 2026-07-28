@@ -20,13 +20,13 @@
 
 <section class="well">
   <p>{{format-html-message 'k8sTab.kubectl.shell.helpText'}}</p>
-
-  {{container-shell
-      classNames="inline-block full-width"
-      command=model.command
-      instance=model.instance
-      cols=120
-      rows=30
-      showProtip=false
-  }}
+  <p class="text-muted">{{t 'consoleWorkspace.launch.description'}}</p>
+  <button type="button" class="btn btn-primary" {{action "openTerminal" false}}>
+    <i class="icon icon-terminal" aria-hidden="true"></i>
+    {{t 'consoleWorkspace.launch.button'}}
+  </button>
+  <button type="button" class="btn btn-default" {{action "openTerminal" true}}>
+    <i class="icon icon-plus" aria-hidden="true"></i>
+    {{t 'consoleWorkspace.launch.newButton'}}
+  </button>
 </section>

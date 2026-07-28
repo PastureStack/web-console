@@ -107,15 +107,7 @@ export default Ember.Route.extend(Subscribe, PromiseToCb, {
     {
       let form = this.get(`settings.${C.SETTING.FEEDBACK_FORM}`);
 
-     //Show the telemetry opt-in
-      let opt = this.get(`settings.${C.SETTING.TELEMETRY}`);
-      if ( this.get('access.admin') && (!opt || opt === 'prompt') )
-      {
-        Ember.run.scheduleOnce('afterRender', this, function() {
-          this.get('modalService').toggleModal('modal-welcome');
-        });
-      }
-      else if ( form && !this.get(`prefs.${C.PREFS.FEEDBACK}`) )
+      if ( form && !this.get(`prefs.${C.PREFS.FEEDBACK}`) )
       {
         Ember.run.scheduleOnce('afterRender', this, function() {
           this.get('modalService').toggleModal('modal-feedback');

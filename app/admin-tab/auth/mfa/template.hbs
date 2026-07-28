@@ -1,0 +1,156 @@
+<section class="header clearfix">
+  <h1>{{t 'authPage.mfa.header'}}</h1>
+  <div class="right-buttons">
+    {{#link-to "account-security" classNames="btn btn-default"}}
+      <i class="icon icon-user"></i>
+      {{t 'authPage.mfa.selfService.manageMine'}}
+    {{/link-to}}
+  </div>
+</section>
+
+{{top-errors errors=errors}}
+
+<section class="well" data-testid="mfa-system-settings">
+  <h2>{{t 'authPage.mfa.settings.header'}}</h2>
+  <p class="help-block">{{t 'authPage.mfa.settings.scopeHelp'}}</p>
+  <div class="row">
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.enforcement'}}</label>
+      {{new-select classNames="form-control"
+        content=enforcementChoices
+        localizedLabel=true
+        optionValuePath="value"
+        value=settingsForm.enforcement}}
+    </div>
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.passkeyLimit'}}</label>
+      {{input type="number" min="1" max="20" value=settingsForm.passkeyLimit class="form-control"}}
+    </div>
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.issuer'}}</label>
+      {{input value=settingsForm.issuer class="form-control"}}
+    </div>
+  </div>
+
+  <h3>{{t 'authPage.mfa.settings.webAuthn'}}</h3>
+  <div class="row">
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.rpName'}}</label>
+      {{input value=settingsForm.relyingPartyName class="form-control"}}
+    </div>
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.rpId'}}</label>
+      {{input value=settingsForm.relyingPartyId class="form-control"
+              placeholder=(t 'authPage.mfa.settings.rpIdPlaceholder')}}
+    </div>
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.origin'}}</label>
+      {{input value=settingsForm.origin class="form-control"
+              placeholder=(t 'authPage.mfa.settings.originPlaceholder')}}
+    </div>
+  </div>
+  <p class="help-block">{{t 'authPage.mfa.settings.webAuthnHelp'}}</p>
+
+  <h3>{{t 'authPage.mfa.settings.smtp'}}</h3>
+  <p class="help-block">{{t 'authPage.mfa.settings.smtpHelp'}}</p>
+  <div class="checkbox">
+    <label>{{input type="checkbox" checked=settingsForm.smtpEnabled}} {{t 'authPage.mfa.settings.smtpEnabled'}}</label>
+  </div>
+  <div class="row">
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.smtpHost'}}</label>
+      {{input value=settingsForm.smtpHost class="form-control"}}
+    </div>
+    <div class="col-md-2 form-group">
+      <label>{{t 'authPage.mfa.settings.smtpPort'}}</label>
+      {{input type="number" min="1" max="65535" value=settingsForm.smtpPort class="form-control"}}
+    </div>
+    <div class="col-md-3 form-group">
+      <label>{{t 'authPage.mfa.settings.smtpUsername'}}</label>
+      {{input value=settingsForm.smtpUsername class="form-control" autocomplete="off"}}
+    </div>
+    <div class="col-md-3 form-group">
+      <label>{{t 'authPage.mfa.settings.smtpPassword'}}</label>
+      {{input type="password" value=settingsForm.smtpPassword class="form-control"
+              autocomplete="new-password"}}
+      {{#if settingsForm.smtpPasswordConfigured}}
+        <div class="checkbox">
+          <label>
+            {{input type="checkbox" checked=settingsForm.smtpClearPassword}}
+            {{t 'authPage.mfa.settings.smtpClearPassword'}}
+          </label>
+        </div>
+      {{/if}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.smtpFrom'}}</label>
+      {{input type="email" value=settingsForm.smtpFrom class="form-control"}}
+    </div>
+    <div class="col-md-4">
+      <div class="checkbox">
+        <label>{{input type="checkbox" checked=settingsForm.smtpStartTls}} {{t 'authPage.mfa.settings.startTls'}}</label>
+      </div>
+      <div class="checkbox">
+        <label>{{input type="checkbox" checked=settingsForm.smtpSsl}} {{t 'authPage.mfa.settings.implicitTls'}}</label>
+      </div>
+    </div>
+    <div class="col-md-4 form-group">
+      <label>{{t 'authPage.mfa.settings.codeTtl'}}</label>
+      {{input type="number" min="60" max="600" value=settingsForm.emailCodeTtlSeconds class="form-control"}}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6 form-group">
+      <label>{{t 'authPage.mfa.settings.testRecipient'}}</label>
+      {{input type="email" value=testRecipient class="form-control"}}
+    </div>
+    <div class="col-md-6 r-pt25">
+      <button type="button" class="btn btn-default" disabled={{busy}}
+              {{action "saveSettings" true}}>
+        {{t 'authPage.mfa.settings.saveAndTest'}}
+      </button>
+    </div>
+  </div>
+  <button type="button" class="btn btn-primary" disabled={{busy}}
+          {{action "saveSettings" false}}>
+    {{#if busy}}<i class="icon icon-spinner icon-spin"></i>{{/if}}
+    {{t 'generic.save'}}
+  </button>
+</section>
+
+<section class="header clearfix" data-testid="mfa-account-management-heading">
+  <h2>{{t 'authPage.mfa.accountManagement.header'}}</h2>
+  <p class="help-block">{{t 'authPage.mfa.accountManagement.help'}}</p>
+</section>
+
+<section class="well" data-testid="mfa-account-management">
+  <div class="row">
+    <div class="col-md-4">
+      <label>{{t 'authPage.mfa.account'}}</label>
+      {{new-select
+        classNames="form-control"
+        content=accountChoices
+        optionLabelPath="label"
+        optionValuePath="value"
+        value=selectedAccountId
+        action=(action "selectAccount")
+      }}
+    </div>
+    <div class="col-md-8">
+      {{partial "mfa-status-summary"}}
+    </div>
+  </div>
+</section>
+
+{{partial "mfa-self-service"}}
+
+<section class="well danger-zone">
+  <h2>{{t 'authPage.mfa.danger.header'}}</h2>
+  <p>{{t 'authPage.mfa.danger.help'}}</p>
+  <button type="button" class="btn btn-danger" disabled={{busy}}
+          {{action "revokeAllFactors"}}>
+    {{t 'authPage.mfa.danger.revokeAll'}}
+  </button>
+</section>

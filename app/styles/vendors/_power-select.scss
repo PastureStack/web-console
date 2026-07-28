@@ -1,3 +1,15 @@
+$accent-two: null !default;
+$bottom-row: null !default;
+$dropdown-border: null !default;
+$input-bg: null !default;
+$line-height-small: null !default;
+$link-color: null !default;
+$padding-small-horizontal: null !default;
+$padding-small-vertical: null !default;
+$table-bg-accent: null !default;
+$table-bg-hover: null !default;
+$text-color: null !default;
+
 .header {
   .ember-power-select-trigger {
     max-width: calc(100% - 175px);
@@ -41,7 +53,7 @@
     width: 12px;
     line-height: 26px;
     content: "\e907";
-    font-family: "rancher-icons";
+    font-family: "pasturestack-icons";
     position: absolute;
     right: 6px;
     top: 0;
