@@ -577,7 +577,7 @@ function expectOsenvCompat() {
   if (!bowerConfig || typeof bowerConfig.read !== "function") {
     fail("bower-config require smoke failed after osenv compatibility wrapper");
   }
-  const parsed = npa("lodash@3.10.1");
+  const parsed = npa("lodash@4.18.1");
   if (!parsed || parsed.name !== "lodash") {
     fail("npm-package-arg parse smoke failed after osenv compatibility wrapper");
   }
@@ -1017,7 +1017,7 @@ function expectBrowserifyReplacementVendorGlobals() {
   const expected = {
     "vendor/ansi-up/ansi-up-global.js": "a50281fdb1fbe71cf638f09e897d4f5b153a418f731be2db410c796982f75682",
     "vendor/semver/semver-global.js": "d3c2df6e4e516f21e66e52675f1baf85ba753842fb3f603827f8815ecbc41e9b",
-    "vendor/shell-quote/shell-quote-global.js": "941759fa71f209b85008a63dc15551cb0dc39c84110da86418c807e86fbf0411",
+    "vendor/shell-quote/shell-quote-global.js": "cdfa04900aae1f1cf27d3c06e6658534eebf74c48edb11dec3b83f9b7dbd4fa8",
   };
   const sandbox = { window: {}, self: {}, exports: undefined, module: undefined, define: undefined };
   sandbox.global = sandbox;
@@ -1047,7 +1047,7 @@ function expectBrowserifyReplacementVendorGlobals() {
   if (!ansiHtml.includes("red") || ansiHtml.includes("&amp;lt;")) {
     fail(`vendored ansi_up smoke failed: ${ansiHtml}`);
   }
-  console.log("browserify-replacement-vendor-smoke-ok semver=5.7.2 shell-quote=1.8.3 ansi_up=6.0.6");
+  console.log("browserify-replacement-vendor-smoke-ok semver=5.7.2 shell-quote=1.10.0 ansi_up=6.0.6");
 }
 
 function expectCommonmarkBrowserGlobal(file) {
@@ -1361,7 +1361,7 @@ function expectNoVNCVendorGlobal() {
 
 
 
-function expectDagreGraphlibVendorGlobals() {
+function expectDagreGraphlibBrowserGlobals() {
   const sandbox = { console, window: {}, self: {}, exports: undefined, module: undefined, define: undefined };
   sandbox.window = sandbox;
   sandbox.self = sandbox;
@@ -1369,20 +1369,20 @@ function expectDagreGraphlibVendorGlobals() {
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
   for (const file of [
-    "node_modules/lodash/index.js",
-    "vendor/graphlib/graphlib.core.js",
-    "vendor/dagre/dagre.core.js",
+    "node_modules/lodash/lodash.js",
+    "node_modules/graphlib/dist/graphlib.core.js",
+    "node_modules/dagre/dist/dagre.core.js",
   ]) {
     vm.runInContext(fs.readFileSync(file, "utf8"), sandbox, { filename: file });
   }
-  if (!sandbox._ || sandbox._.VERSION !== "3.10.1") {
+  if (!sandbox._ || sandbox._.VERSION !== "4.18.1") {
     fail("dagre/graphlib smoke lost lodash global");
   }
   if (!sandbox.graphlib || typeof sandbox.graphlib.Graph !== "function") {
-    fail("graphlib vendor browser global smoke failed");
+    fail("graphlib browser global smoke failed");
   }
   if (!sandbox.dagre || typeof sandbox.dagre.layout !== "function") {
-    fail("dagre vendor browser global smoke failed");
+    fail("dagre browser global smoke failed");
   }
   const graph = new sandbox.graphlib.Graph({ multigraph: true, compound: true }).setGraph({
     rankdir: "TB",
@@ -1400,7 +1400,29 @@ function expectDagreGraphlibVendorGlobals() {
   if (!a || !b || typeof a.x !== "number" || typeof a.y !== "number" || typeof b.x !== "number" || typeof b.y !== "number") {
     fail("dagre layout smoke failed");
   }
-  console.log(`dagre-graphlib-vendor-global-smoke-ok dagre=v0.7.1 graphlib=v1.0.7 layout=ok ax=${a.x} bx=${b.x}`);
+  if (sandbox.dagre.version !== "0.8.5" || sandbox.graphlib.version !== "2.1.8") {
+    fail(`dagre/graphlib version mismatch dagre=${sandbox.dagre.version} graphlib=${sandbox.graphlib.version}`);
+  }
+
+  for (const file of [
+    "node_modules/d3/d3.js",
+    "vendor/dagre-d3/dagre-d3.core.js",
+  ]) {
+    vm.runInContext(fs.readFileSync(file, "utf8"), sandbox, { filename: file });
+  }
+  if (!sandbox.dagreD3 || sandbox.dagreD3.version !== "0.4.11-pre") {
+    fail("dagre-d3 browser global smoke failed");
+  }
+  const renderGraph = new sandbox.dagreD3.graphlib.Graph().setGraph({ rankdir: "TB" });
+  renderGraph.setDefaultEdgeLabel(() => ({}));
+  renderGraph.setNode("service-a", { width: 40, height: 20 });
+  renderGraph.setNode("service-b", { width: 40, height: 20 });
+  renderGraph.setEdge("service-a", "service-b", {});
+  sandbox.dagreD3.dagre.layout(renderGraph);
+  if (typeof renderGraph.node("service-a").x !== "number" || typeof renderGraph.node("service-b").y !== "number") {
+    fail("dagre-d3 stack graph layout smoke failed");
+  }
+  console.log(`dagre-graphlib-browser-global-smoke-ok dagre=${sandbox.dagre.version} graphlib=${sandbox.graphlib.version} layout=ok ax=${a.x} bx=${b.x}`);
 }
 
 function expectBootstrapMultiselectVendorGlobal() {
@@ -1601,12 +1623,16 @@ expectPackageJsonVersion("uuid", "11.1.1");
 expectVersion("testem", "3.20.0");
 expectVersion("socket.io", "4.8.3");
 expectVersion("socket.io-client", "4.8.3");
+expectVersion("websocket-driver", "0.7.5");
 expectPackageJsonVersion("jgrowl", "1.4.2");
 expectPackageJsonVersion("identicon.js", "2.3.3");
 expectPackageJsonVersion("md5-jkmyers", "0.0.1");
 expectVersion("async", "3.2.6");
 expectVersion("prismjs", "1.30.0");
-expectVersion("lodash", "3.10.1");
+expectVersion("lodash", "4.18.1");
+expectVersion("shell-quote", "1.10.0");
+expectVersion("dagre", "0.8.5");
+expectVersion("graphlib", "2.1.8");
 expectVersion("commonmark", "0.31.2");
 expectVersion("c3", "0.4.24");
 expectVersion("d3", "3.5.17");
@@ -1678,7 +1704,7 @@ function runSocketSmoke(label, transport) {
   expectBootstrapSassAssets();
   expectEmberPowerSelectSassAssets();
   expectBootstrapMultiselectVendorGlobal();
-  expectDagreGraphlibVendorGlobals();
+  expectDagreGraphlibBrowserGlobals();
   expectEmberJQueryVendorRuntime();
   expectBrowserifyReplacementVendorGlobals();
   expectJGrowlBrowserGlobal("node_modules/jgrowl/jquery.jgrowl.js");
@@ -1687,7 +1713,7 @@ function runSocketSmoke(label, transport) {
   await expectAsyncBrowserGlobal("node_modules/async/dist/async.js");
   expectMomentRuntime();
   expectQrCodeGeneratorRuntime();
-  expectBrowserGlobalBundle("node_modules/lodash/index.js", "_", "3.10.1");
+  expectBrowserGlobalBundle("node_modules/lodash/lodash.js", "_", "4.18.1");
   expectCommonmarkBrowserGlobal("node_modules/commonmark/dist/commonmark.js");
   expectC3D3BrowserGlobals();
   expectModernGlobDevServerPath();
