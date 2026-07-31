@@ -1,12 +1,15 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { computed, observer } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ContainerChoices from 'ui/mixins/container-choices';
 import ManageLabels from 'ui/mixins/manage-labels';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(ManageLabels, ContainerChoices,{
-  intl:                Ember.inject.service(),
-  projects:            Ember.inject.service(),
-  settings:            Ember.inject.service(),
+export default Component.extend(ManageLabels, ContainerChoices,{
+  intl:                service(),
+  projects:            service(),
+  settings:            service(),
 
   //Inputs
   instance:            null,
@@ -50,7 +53,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     },
   },
 
-  disableRetainIp: Ember.computed('isUpgrade', 'service.retainIp', 'retainWasSetOnInit', function() {
+  disableRetainIp: computed('isUpgrade', 'service.retainIp', 'retainWasSetOnInit', function() {
     let isUpgrade = this.get('isUpgrade');
     let wasSet = this.get('retainWasSetOnInit');
     if ( isUpgrade && wasSet ) {
@@ -68,7 +71,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
   // Network
   // ----------------------------------
   networkChoices: null,
-  isContainerNetwork: Ember.computed.equal('instance.networkMode','container'),
+  isContainerNetwork: equal('instance.networkMode','container'),
   initNetwork: function() {
     var isService = this.get('isService')||false;
     var mode = this.get('instance.networkMode');
@@ -99,15 +102,15 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     this.set('networkChoices', out);
   },
 
-  networkModeChanged: function() {
+  networkModeChanged: observer('instance.networkMode', function() {
     if ( this.get('instance.networkMode') !== 'container' )
     {
       this.set('instance.networkContainerId', null);
     }
-  }.observes('instance.networkMode'),
+  }),
 
-  isManagedNetwork: Ember.computed.equal('instance.networkMode','managed'),
-  isHostNetwork: Ember.computed.equal('instance.networkMode','host'),
+  isManagedNetwork: equal('instance.networkMode','managed'),
+  isHostNetwork: equal('instance.networkMode','host'),
 
   // ----------------------------------
   // Requested IP
@@ -125,7 +128,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     }
   },
 
-  requestedIpDidChange: function() {
+  requestedIpDidChange: observer('requestedIp', 'isManagedNetwork', function() {
     var val = this.get('requestedIp');
     if ( val && val.length && this.get('isManagedNetwork') )
     {
@@ -135,7 +138,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     {
       this.removeLabel(C.LABEL.REQUESTED_IP);
     }
-  }.observes('requestedIp','isManagedNetwork'),
+  }),
 
   // ----------------------------------
   // Hostname
@@ -167,7 +170,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     }
   },
 
-  hostnameDidChange: function() {
+  hostnameDidChange: observer('hostname', 'instance.hostname', function() {
     var val = this.get('hostname');
     if ( val === 'override' )
     {
@@ -183,7 +186,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     {
       this.removeLabel(C.LABEL.HOSTNAME_OVERRIDE);
     }
-  }.observes('hostname','instance.hostname'),
+  }),
 
   // ----------------------------------
   // DNS Discovery
@@ -194,7 +197,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     this.set('dnsDiscovery', on);
   },
 
-  dnsDiscoveryDidChange: function() {
+  dnsDiscoveryDidChange: observer('dnsDiscovery', 'isHostNetwork', function() {
     var on = this.get('dnsDiscovery') && this.get('isHostNetwork');
     if ( on )
     {
@@ -205,7 +208,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
       this.removeLabel(C.LABEL.DNS);
       this.set('dnsDiscovery', false);
     }
-  }.observes('dnsDiscovery','isHostNetwork'),
+  }),
 
   // ----------------------------------
   // DNS Resolver
@@ -224,7 +227,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     }));
   },
 
-  dnsDidChange: function() {
+  dnsDidChange: observer('dnsResolverArray.@each.value', function() {
     var out = this.get('instance.dns');
     out.beginPropertyChanges();
     out.clear();
@@ -235,7 +238,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
       }
     });
     out.endPropertyChanges();
-  }.observes('dnsResolverArray.@each.value'),
+  }),
 
   // ----------------------------------
   // DNS Search
@@ -253,7 +256,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
       return {value: entry};
     }));
   },
-  dnsSearchDidChange: function() {
+  dnsSearchDidChange: observer('dnsSearchArray.@each.value', function() {
     var out = this.get('instance.dnsSearch');
     out.beginPropertyChanges();
     out.clear();
@@ -264,5 +267,5 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
       }
     });
     out.endPropertyChanges();
-  }.observes('dnsSearchArray.@each.value'),
+  }),
 });

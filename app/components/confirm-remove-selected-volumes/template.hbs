@@ -1,44 +1,44 @@
 <h3>{{t 'hostsPage.hostPage.storageTab.bulkRemove.title'}}</h3>
 
 <p>
-  {{t 'hostsPage.hostPage.storageTab.bulkRemove.summary' count=volumes.length}}
+  {{t 'hostsPage.hostPage.storageTab.bulkRemove.summary' count=this.volumes.length}}
 </p>
 
 <div class="alert alert-warning">
   {{t 'hostsPage.hostPage.storageTab.bulkRemove.warning'}}
 </div>
 
-{{#unless isComplete}}
+{{#unless this.isComplete}}
   <div class="volume-bulk-remove-preview">
     <strong>{{t 'hostsPage.hostPage.storageTab.bulkRemove.preview'}}</strong>
     <ul>
-      {{#each previewVolumes as |volume|}}
+      {{#each this.previewVolumes as |volume|}}
         <li>{{volume.displayName}}</li>
       {{/each}}
     </ul>
-    {{#if additionalCount}}
+    {{#if this.additionalCount}}
       <div class="text-muted">
-        {{t 'hostsPage.hostPage.storageTab.bulkRemove.additional' count=additionalCount}}
+        {{t 'hostsPage.hostPage.storageTab.bulkRemove.additional' count=this.additionalCount}}
       </div>
     {{/if}}
   </div>
 {{/unless}}
 
-{{#if isRunning}}
+{{#if this.isRunning}}
   <div class="volume-bulk-remove-progress" role="status" aria-live="polite">
     <i class="icon icon-spinner icon-spin"></i>
-    {{t 'hostsPage.hostPage.storageTab.bulkRemove.progress' completed=completedCount total=volumes.length}}
+    {{t 'hostsPage.hostPage.storageTab.bulkRemove.progress' completed=this.completedCount total=this.volumes.length}}
   </div>
-{{else if isComplete}}
+{{else if this.isComplete}}
   <div class="alert alert-success" role="status">
-    {{t 'hostsPage.hostPage.storageTab.bulkRemove.complete' success=successful.length total=volumes.length}}
+    {{t 'hostsPage.hostPage.storageTab.bulkRemove.complete' success=this.successful.length total=this.volumes.length}}
   </div>
 
-  {{#if hasFailures}}
+  {{#if this.hasFailures}}
     <div class="alert alert-danger">
-      {{t 'hostsPage.hostPage.storageTab.bulkRemove.failed' count=failed.length}}
+      {{t 'hostsPage.hostPage.storageTab.bulkRemove.failed' count=this.failed.length}}
       <ul>
-        {{#each failed as |item|}}
+        {{#each this.failed as |item|}}
           <li>{{item.name}}</li>
         {{/each}}
       </ul>
@@ -53,7 +53,7 @@
 {{else}}
   <div class="footer-actions">
     <button {{action "confirm"}} class="btn btn-danger">
-      {{t 'hostsPage.hostPage.storageTab.bulkRemove.confirm' count=volumes.length}}
+      {{t 'hostsPage.hostPage.storageTab.bulkRemove.confirm' count=this.volumes.length}}
     </button>
     <button {{action "cancel"}} class="btn btn-link">
       {{t 'hostsPage.hostPage.storageTab.bulkRemove.cancel'}}

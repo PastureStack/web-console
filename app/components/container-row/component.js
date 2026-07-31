@@ -1,10 +1,16 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
-import { formatPercent, formatMib, formatKbps } from 'ui/utils/util';
+import {
+  formatPercent,
+  formatMib,
+  formatKbps
+} from 'ui/utils/util';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
-  session:  Ember.inject.service(),
+export default Component.extend({
+  projects: service(),
+  session:  service(),
 
   model: null,
   showCommand: 'column', // 'no', 'column', or 'inline'
@@ -27,31 +33,31 @@ export default Ember.Component.extend({
   showActionsColumn: true,
   tagName: '',
 
-  statsAvailable: function() {
+  statsAvailable: computed('model.{state,healthState}', function() {
     return C.ACTIVEISH_STATES.indexOf(this.get('model.state')) >= 0 && this.get('model.healthState') !== 'started-once';
-  }.property('model.{state,healthState}'),
+  }),
 
-  detailRoute: function() {
+  detailRoute: computed('model.isVm', function() {
     if ( this.get('model.isVm') ) {
       return 'virtualmachine';
     } else {
       return 'container';
     }
-  }.property('model.isVm'),
+  }),
 
-  cpuRmsDisplay: Ember.computed('model.cpuRms', function() {
+  cpuRmsDisplay: computed('model.cpuRms', function() {
     return formatPercent(this.get('model.cpuRms') || 0);
   }),
 
-  memoryRmsDisplay: Ember.computed('model.memoryRms', function() {
+  memoryRmsDisplay: computed('model.memoryRms', function() {
     return formatMib(this.get('model.memoryRms') || 0);
   }),
 
-  networkRmsDisplay: Ember.computed('model.networkRms', function() {
+  networkRmsDisplay: computed('model.networkRms', function() {
     return formatKbps(this.get('model.networkRms') || 0);
   }),
 
-  storageRmsDisplay: Ember.computed('model.storageRms', function() {
+  storageRmsDisplay: computed('model.storageRms', function() {
     return formatKbps(this.get('model.storageRms') || 0);
   }),
 });

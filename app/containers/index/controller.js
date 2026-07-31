@@ -1,15 +1,17 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend({
-  bulkActionHandler: Ember.inject.service(),
+export default Controller.extend({
+  bulkActionHandler: service(),
   bulkActionsList: C.BULK_ACTIONS,
   sortBy: 'name',
-  prefs: Ember.inject.service(),
+  prefs: service(),
 
   queryParams: ['sortBy'],
 
-  showSystem: Ember.computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
+  showSystem: computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
     get() {
       return this.get(`prefs.${C.PREFS.SHOW_SYSTEM}`) !== false;
     },
@@ -20,7 +22,7 @@ export default Ember.Controller.extend({
     }
   }),
 
-  show: Ember.computed('showSystem', function() {
+  show: computed('showSystem', function() {
     return this.get('showSystem') === false ? 'standard' : 'all';
   }),
 
@@ -78,21 +80,21 @@ export default Ember.Controller.extend({
   // showChanged should be an observer rather then init to correctly set the showSystem checkbox
   // if showSystem is set on init show does not contain the correct qp as the router has not set it
   // so the checkbox never gets set
-  showChanged: function() {
+  showChanged: observer('show', function() {
     this.set('showSystem', this.get('show') === 'all');
-  }.observes('show'),
+  }),
 
-  showSystemChanged: function() {
+  showSystemChanged: observer('showSystem', function() {
     this.set('show', (this.get('showSystem') ? 'all' : 'standard'));
-  }.observes('showSystem'),
+  }),
 
-  filtered: function() {
+  filtered: computed('model.@each.system', 'showSystem', function() {
     let all = this.get('model');
     if ( this.get('showSystem') ) {
       return all;
     } else {
       return all.filterBy('isSystem', false);
     }
-  }.property('model.@each.system','showSystem'),
+  }),
 
 });

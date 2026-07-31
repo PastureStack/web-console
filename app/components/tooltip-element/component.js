@@ -1,10 +1,14 @@
-import Ember from 'ember';
+import { later, cancel } from '@ember/runloop';
+import $ from 'jquery';
+import { observer } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
 const DELAY = 100;
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNameBindings : ['inlineBlock:inline-block','clip:clip'],
-  tooltipService   : Ember.inject.service('tooltip'),
+  tooltipService   : service('tooltip'),
   inlineBlock      : true,
   clip             : false,
   model            : null,
@@ -15,14 +19,14 @@ export default Ember.Component.extend({
 
   showTimer        : null,
 
-  textChanged: Ember.observer('textChangedEvent', function() {
+  textChanged: observer('textChangedEvent', function() {
     this.show(this.get('textChangedEvent'));
   }),
 
   mouseEnter(evt) {
     if ( !this.get('tooltipService.requireClick') )
       {
-        let tgt = Ember.$(evt.currentTarget);
+        let tgt = $(evt.currentTarget);
 
         if (this.get('tooltipService.tooltipOpts')) {
           this.set('tooltipService.tooltipOpts', null);
@@ -31,7 +35,7 @@ export default Ember.Component.extend({
         // Wait for a little bit of time so that the mouse can pass through
         // another tooltip-element on the way to the dropdown trigger of a
         // tooltip-action-menu without changing the tooltip.
-        this.set('showTimer', Ember.run.later(() => {
+        this.set('showTimer', later(() => {
           this.show(tgt);
         }, DELAY));
       }
@@ -67,7 +71,7 @@ export default Ember.Component.extend({
   mouseLeave: function() {
     if (!this.get('tooltipService.openedViaContextClick')) {
       if ( this.get('showTimer') ) {
-        Ember.run.cancel(this.get('showTimer'));
+        cancel(this.get('showTimer'));
       }
       else {
         this.get('tooltipService').leave();
@@ -75,7 +79,7 @@ export default Ember.Component.extend({
     }
   },
 
-  modelObserver: Ember.observer('model', 'textChangedEvent', function() {
+  modelObserver: observer('model', 'textChangedEvent', function() {
     let opts = this.get('tooltipService.tooltipOpts');
     if ((opts) && this.get('tooltipFor') === opts.tooltipFor ) {
       this.set('tooltipService.tooltipOpts.model', this.get('model'));

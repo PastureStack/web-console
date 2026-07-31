@@ -1,9 +1,11 @@
 import Resource from 'ember-api-store/models/resource';
 
+import { computed } from '@ember/object';
+
 var LaunchConfig = Resource.extend({
-  displayImage: function() {
+  displayImage: computed('imageUuid', function() {
     return (this.get('imageUuid')||'').replace(/^docker:/,'');
-  }.property('imageUuid'),
+  }),
 });
 
 export default LaunchConfig;

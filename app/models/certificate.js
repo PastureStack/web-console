@@ -1,14 +1,16 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 
+import { computed } from '@ember/object';
+
 export default Resource.extend({
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
   actions: {
     edit: function() {
       this.get('modalService').toggleModal('edit-certificate', this);
     },
   },
-  availableActions: function() {
+  availableActions: computed('actionLinks.{remove,restore,purge,update}', function() {
     var a = this.get('actionLinks');
     if ( !a )
     {
@@ -26,31 +28,31 @@ export default Resource.extend({
     ];
 
     return choices;
-  }.property('actionLinks.{remove,restore,purge,update}'),
-  issuedDate: function() {
+  }),
+  issuedDate: computed('issuedAt', function() {
     return new Date(this.get('issuedAt'));
-  }.property('issuedAt'),
+  }),
 
-  expiresDate: function() {
+  expiresDate: computed('expiresAt', function() {
     return new Date(this.get('expiresAt'));
-  }.property('expiresAt'),
+  }),
 
-  expiresSoon: function() {
+  expiresSoon: computed('expiresDate', function() {
     var diff = (this.get('expiresDate')).getTime() - (new Date()).getTime();
     var days = diff/(86400*1000);
     return days <= 8;
-  }.property('expiresDate'),
+  }),
 
-  displayIssuer: function() {
+  displayIssuer: computed('issuer', function() {
     return (this.get('issuer')||'').split(/,/)[0].replace(/^CN=/i,'');
-  }.property('issuer'),
+  }),
 
-  isValid: function() {
+  isValid: computed('expiresDate', 'issuedDate', function() {
     var now = new Date();
     return this.get('expiresDate') > now && this.get('issuedDate') < now;
-  }.property('expiresDate','issuedDate'),
+  }),
 
-  displaySans: function() {
+  displaySans: computed('CN', 'subjectAlternativeNames.[]', function() {
     // subjectAlternativeNames can be null:
     return (this.get('subjectAlternativeNames')||[])
       .slice()
@@ -58,9 +60,9 @@ export default Resource.extend({
       .filter((san) => {
         return (san+'').indexOf('@') === -1;
       });
-  }.property('CN','subjectAlternativeNames.[]'),
+  }),
 
-  countableSans: function() {
+  countableSans: computed('displaySans.[]', 'CN', function() {
     var sans = this.get('displaySans').slice();
     if ( this.get('CN') )
     {
@@ -74,9 +76,9 @@ export default Resource.extend({
     });
 
     return this.get('displaySans').slice().removeObjects(commonBases);
-  }.property('displaySans.[]','CN'),
+  }),
 
-  displayDetailedName: function() {
+  displayDetailedName: computed('id', 'name', 'CN', 'countableSans.length', function() {
     var name = (this.get('name') || '('+this.get('id')+')');
     var str = name;
     var cn = this.get('CN');
@@ -102,5 +104,5 @@ export default Resource.extend({
     }
 
     return str;
-  }.property('id','name','CN','countableSans.length')
+  })
 });

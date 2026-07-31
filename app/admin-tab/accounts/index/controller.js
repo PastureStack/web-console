@@ -1,13 +1,17 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 import FilterState from 'ui/mixins/filter-state';
 
+import { computed } from '@ember/object';
+
 const showKinds = ['user','admin'];
 
-export default Ember.Controller.extend(FilterState, Sortable, {
-  access: Ember.inject.service(),
+export default Controller.extend(FilterState, Sortable, {
+  access: service(),
 
-  sortableContent: Ember.computed.alias('filteredByKind'),
+  sortableContent: alias('filteredByKind'),
   sortBy: 'name',
   sorts: {
     state:    ['stateSort','name','id'],
@@ -19,14 +23,14 @@ export default Ember.Controller.extend(FilterState, Sortable, {
     command:  ['command','name','id'],
   },
 
-  filteredByKind: function() {
+  filteredByKind: computed('filtered.@each.kind', function() {
     return this.get('filtered').filter((row) => {
       var kind = (row.get('kind')||'').toLowerCase();
       return showKinds.indexOf(kind) !== -1;
     });
-  }.property('filtered.@each.kind'),
+  }),
 
-  isLocal: function() {
+  isLocal: computed('access.provider', function() {
     return this.get('access.provider') === 'localauthconfig';
-  }.property('access.provider'),
+  }),
 });

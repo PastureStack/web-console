@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Service from '@ember/service';
 import BrowserStore from 'ui/utils/browser-storage';
 
-export default Ember.Service.extend(BrowserStore, {
+export default Service.extend(BrowserStore, {
   backing: window.sessionStorage,
 });

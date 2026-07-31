@@ -1,11 +1,15 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(ManageLabels, {
-  settings      : Ember.inject.service(),
-  projects      : Ember.inject.service(),
+import { on } from '@ember/object/evented';
+import { computed } from '@ember/object';
+
+export default Component.extend(ManageLabels, {
+  settings      : service(),
+  projects      : service(),
   cattleAgentIp : null,
   model         : null,
   subnet        : null,
@@ -54,7 +58,7 @@ export default Ember.Component.extend(ManageLabels, {
     }
   },
 
-  bootstrap: function() {
+  bootstrap: on('init', function() {
     if (this.get('clonedModel')) {
       this.set('model', this.get('clonedModel'));
     } else {
@@ -74,9 +78,9 @@ export default Ember.Component.extend(ManageLabels, {
         }
       });
     }
-  }.on('init'),
+  }),
 
-  registrationCommand: function() {
+  registrationCommand: computed('model.command', 'model.labels', 'cattleAgentIp', function() {
     let cmd      = this.get('model.command');
     let cattleIp = this.get('cattleAgentIp');
     let lookFor  = 'docker run';
@@ -104,9 +108,9 @@ export default Ember.Component.extend(ManageLabels, {
     }
 
     return cmd;
-  }.property('model.command','model.labels', 'cattleAgentIp'),
+  }),
 
-  registrationCommandWindows: function() {
+  registrationCommandWindows: computed('model.command', 'model.labels', 'cattleAgentIp', function() {
     let url = this.get('model.registrationUrl');
     let cattleIp = this.get('cattleAgentIp');
     let env = Util.addQueryParams('', this.get('model.labels')||{});
@@ -123,6 +127,6 @@ export default Ember.Component.extend(ManageLabels, {
     cmd2 = `$obj=$(${cmd2})`;
     let cmd3 = `$obj |& "C:\\Program Files\\rancher\\startup.ps1"`;
     return cmd1 + "\n" + cmd2 + "\n" + cmd3;
-  }.property('model.command','model.labels', 'cattleAgentIp'),
+  }),
 
 });

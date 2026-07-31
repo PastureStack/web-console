@@ -1,9 +1,9 @@
 <section class="well">
   <h2>
-    <b class="text-warning">{{t 'authPage.shibboleth.disabled.label' providerName=(t providerName)}}</b>
+    <b class="text-warning">{{t 'authPage.shibboleth.disabled.label' providerName=(t this.providerName)}}</b>
   </h2>
   <div>
-    {{t 'authPage.shibboleth.disabled.warning' appName=settings.appName providerName=(t providerName)}}
+    {{t 'authPage.shibboleth.disabled.warning' appName=this.settings.appName providerName=(t this.providerName)}}
   </div>
 
 
@@ -15,25 +15,25 @@
     <div class="col-md-6">
       <div class="form-group">
         <label>{{t 'authPage.shibboleth.disabled.name.labelText'}}*</label>
-        {{input type="text" value=config.displayNameField classNames="form-control"}}
+        {{input type="text" value=this.config.displayNameField classNames="form-control"}}
       </div>
     </div>
     <div class="col-md-6">
       <div class="form-group">
         <label>{{t 'authPage.shibboleth.disabled.username.labelText'}}*</label>
-        {{input type="text" value=config.userNameField classNames="form-control"}}
+        {{input type="text" value=this.config.userNameField classNames="form-control"}}
       </div>
     </div>
     <div class="col-md-6">
       <div class="form-group">
         <label>{{t 'authPage.shibboleth.disabled.uid.labelText'}}*</label>
-        {{input type="text" value=config.uidField classNames="form-control"}}
+        {{input type="text" value=this.config.uidField classNames="form-control"}}
       </div>
     </div>
     <div class="col-md-6">
       <div class="form-group">
         <label>{{t 'authPage.shibboleth.disabled.groups.labelText'}}*</label>
-        {{input type="text" value=config.groupsField classNames="form-control"}}
+        {{input type="text" value=this.config.groupsField classNames="form-control"}}
       </div>
     </div>
   </div>
@@ -42,7 +42,7 @@
       <div class="form-group">
         <label class="r-pt5">{{t 'inputCertificate.key.label'}}*</label>
         {{input-text-file
-          value=config.spKey
+          value=this.config.spKey
           accept="text/*, .pem, .pkey, .key"
           minHeight=60
           placeholder="inputCertificate.key.placeholder"
@@ -54,7 +54,7 @@
         <label class="r-pt5">{{t 'inputCertificate.cert.label'}}*</label>
         {{input-text-file
           accept="text/*, .pem, .crt"
-          value=config.spCert
+          value=this.config.spCert
           minHeight=60
           placeholder="inputCertificate.cert.placeholder"
         }}
@@ -65,7 +65,7 @@
         <label class="r-pt5">{{t 'inputCertificate.metaXML.label'}}*</label>
         {{input-text-file
           accept="text/xml"
-          value=config.idpMetadataContent
+          value=this.config.idpMetadataContent
           minHeight=60
           placeholder="inputCertificate.metaXML.placeholder"
         }}
@@ -75,9 +75,9 @@
       <div class="form-group">
         <label>&nbsp;</label>
         <button class="btn btn-primary" style="display: block;margin: 0 auto;" {{action "save"}}>
-          {{#if saving}}
+          {{#if this.saving}}
             <i class="icon icon-spinner icon-spin"></i> {{t 'generic.saving'}}
-          {{else if saved}}
+          {{else if this.saved}}
             {{t 'generic.saved'}}
           {{else}}
             {{t 'generic.save'}}
@@ -90,14 +90,14 @@
 <section class="well">
   <h3>{{t 'authPage.shibboleth.disabled.testAuth.header'}}</h3>
   <hr/>
-  {{top-errors errors=errors}}
+  {{top-errors errors=this.errors}}
   <div class="row">
     <div class="col-md-6">
       <p>{{t 'authPage.github.testAuth.subtext'}}</p>
     </div>
     <div class="col-md-6">
-      <button class="btn btn-primary" {{action "authTest"}} disabled={{disableAuth}}>
-        {{#if testing}}
+      <button class="btn btn-primary" {{action "authTest"}} disabled={{this.disableAuth}}>
+        {{#if this.testing}}
           <i class="icon icon-spinner icon-spin"></i> {{t 'generic.testing'}}
         {{else}}
           {{t 'generic.test'}}

@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import { isSafari } from 'ui/utils/platform';
 
-export default Ember.Component.extend({
+import { computed } from '@ember/object';
+
+export default Component.extend({
   value        : null,
   placeholder  : "",
   accept       : "text/*",
@@ -48,11 +50,11 @@ export default Ember.Component.extend({
     }
   },
 
-  actualAccept: function() {
+  actualAccept: computed('accept', function() {
     if ( isSafari ) {
       return '';
     } else {
       return this.get('accept');
     }
-  }.property('accept'),
+  }),
 });

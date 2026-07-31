@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { computed, observer } from '@ember/object';
+import { scheduleOnce } from '@ember/runloop';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(ManageLabels, {
+export default Component.extend(ManageLabels, {
   // Inputs
   // Global scale scheduling
   isGlobal: false,
@@ -56,7 +58,7 @@ export default Ember.Component.extend(ManageLabels, {
         isRequestedHost: false,
         requestedHostId: null,
       });
-      Ember.run.scheduleOnce('afterRender', () => {
+      scheduleOnce('afterRender', () => {
         this.sendAction('setGlobal', true);
         this.sendAction('setRequestedHost', null);
       });
@@ -68,7 +70,7 @@ export default Ember.Component.extend(ManageLabels, {
         requestedHostId: this.get('initialHostId'),
       });
 
-      Ember.run.scheduleOnce('afterRender', () => {
+      scheduleOnce('afterRender', () => {
         this.sendAction('setGlobal', false);
         this.sendAction('setRequestedHost', this.get('requestedHostId'));
       });
@@ -79,14 +81,14 @@ export default Ember.Component.extend(ManageLabels, {
     this.sendAction('setLabels', labels);
   },
 
-  globalDidChange: function() {
+  globalDidChange: observer('isGlobal', function() {
     if ( this.get('isGlobal') )
     {
       this.set('isRequestedHost',false);
     }
-  }.observes('isGlobal'),
+  }),
 
-  isRequestedHostDidChange: function() {
+  isRequestedHostDidChange: observer('isRequestedHost', function() {
     if ( this.get('isRequestedHost') )
     {
       var hostId = this.get('requestedHostId') || this.get('hostChoices.firstObject.id');
@@ -96,9 +98,9 @@ export default Ember.Component.extend(ManageLabels, {
     {
       this.set('requestedHostId', null);
     }
-  }.observes('isRequestedHost'),
+  }),
 
-  requestedHostIdDidChange: function() {
+  requestedHostIdDidChange: observer('requestedHostId', function() {
     var hostId = this.get('requestedHostId');
 
     if ( hostId )
@@ -108,13 +110,13 @@ export default Ember.Component.extend(ManageLabels, {
     }
 
     this.sendAction('setRequestedHost', hostId);
-  }.observes('requestedHostId'),
+  }),
 
-  selectedChoice: Ember.computed('allHosts.@each.{id,name,state}', function() {
+  selectedChoice: computed('allHosts.@each.{id,name,state}', function() {
     return this.get('hostChoices').findBy('id', this.get('initialHostId'));
   }),
 
-  hostChoices: function() {
+  hostChoices: computed('allHosts.@each.{id,name,state}', function() {
     var list = this.get('allHosts').map((host) => {
       var hostLabel = host.get('displayName');
       if ( host.get('state') !== 'active' )
@@ -129,6 +131,6 @@ export default Ember.Component.extend(ManageLabels, {
     });
 
     return list.sortBy('name','id');
-  }.property('allHosts.@each.{id,name,state}'),
+  }),
 
 });

@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  k8s: Ember.inject.service(),
+import { computed } from '@ember/object';
+
+export default Component.extend({
+  projects: service(),
+  settings: service(),
+  k8s: service(),
 
   hosts: null,
 
@@ -11,13 +14,13 @@ export default Ember.Component.extend({
     this.set('hosts', this.get('store').all('host'));
   },
 
-  expectHosts: function() {
+  expectHosts: computed('projects.current.orchestration', function() {
     return ( this.get('projects.current.orchestration') === 'mesos' ? 3 : 1);
-  }.property('projects.current.orchestration'),
+  }),
 
-  hasHosts: function() {
+  hasHosts: computed('hosts.length', function() {
     return this.get('hosts.length') >= this.get('expectHosts');
-  }.property('hosts.length'),
+  }),
 
   actions: {
     kubernetesReady() {

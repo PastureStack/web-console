@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import HostsNewRoute, { proxifyUrl } from 'ui/hosts/new/route';
 
 module('Unit | Route | hosts/new');
@@ -8,7 +8,7 @@ module('Unit | Route | hosts/new');
 test('it exists', function(assert) {
   var route = HostsNewRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('resetController clears host navigation query params on existing route', function(assert) {
@@ -26,7 +26,7 @@ test('resetController clears host navigation query params on existing route', fu
   };
 
   route.resetController(controller, true);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('proxifyUrl keeps local URLs and proxies remote driver UI URLs', function(assert) {
@@ -76,6 +76,6 @@ test('getHost clones a host and carries over the driver config', function(assert
   return route.getHost('1h1').then((result) => {
     assert.strictEqual(result, clonedHost);
     assert.deepEqual(copiedConfig, { region: 'us-east-1', type: 'amazonec2Config' });
-    Ember.run(() => route.destroy());
+    run(() => route.destroy());
   });
 });

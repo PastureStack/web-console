@@ -1,5 +1,5 @@
-import Ember from 'ember';
-export default Ember.Route.extend({
+import Route from '@ember/routing/route';
+export default Route.extend({
   actions: {
     didTransition: function() {
       // No community forum is operated by PastureStack. Avoid contacting the

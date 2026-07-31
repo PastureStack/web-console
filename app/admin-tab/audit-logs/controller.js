@@ -1,15 +1,20 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import { alias } from '@ember/object/computed';
+import Controller, { inject as controller } from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend(Sortable, {
-  application       : Ember.inject.controller(),
+import { observer, computed } from '@ember/object';
+import { on } from '@ember/object/evented';
+
+export default Controller.extend(Sortable, {
+  application       : controller(),
   queryParams       : ['sortBy', 'sortOrder', 'eventType', 'resourceType', 'resourceId', 'clientIp', 'authType'],
 
-  sortableContent   : Ember.computed.alias('model.auditLog'),
+  sortableContent   : alias('model.auditLog'),
   resourceTypeAndId : null,
-  modalService      : Ember.inject.service('modal'),
-  intl              : Ember.inject.service(),
+  modalService      : service('modal'),
+  intl              : service(),
 
   actions: {
     updateResourceType: function(type) {
@@ -104,7 +109,7 @@ export default Ember.Controller.extend(Sortable, {
     runtime                   : null,
   },
 
-  setup: function() {
+  setup: observer('intl._locale', on('init', function() {
     var out = [];
 
     Object.keys(C.AUTH_TYPES).forEach((key) => {
@@ -116,9 +121,9 @@ export default Ember.Controller.extend(Sortable, {
     });
 
     this.set('authTypes', out);
-  }.on('init').observes('intl._locale'),
+  })),
 
-  setSortOrderObserver: function() {
+  setSortOrderObserver: observer('descending', function() {
     var out = 'asc';
 
     if (this.get('descending')) {
@@ -128,17 +133,17 @@ export default Ember.Controller.extend(Sortable, {
     this.set('sortOrder', out);
     this.send('logsSorted');
 
-  }.observes('descending'),
+  }),
 
-  resourceIdReady: function() {
+  resourceIdReady: computed('filters.resourceType', function() {
     if (this.get('filters.resourceType')) {
       return false;
     } else {
       return true;
     }
-  }.property('filters.resourceType'),
+  }),
 
-  showPagination: function() {
+  showPagination: computed('model.auditLog.pagination', function() {
     var pagination = this.get('model.auditLog.pagination');
 
     if (pagination.next) {
@@ -146,7 +151,7 @@ export default Ember.Controller.extend(Sortable, {
     } else {
       return false;
     }
-  }.property('model.auditLog.pagination'),
+  }),
 
   // implemented here cause we're using sortable kinda but not really. Basically want the
   // actions but not the implmentation

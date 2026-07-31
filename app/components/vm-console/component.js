@@ -1,8 +1,11 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import Component from '@ember/component';
 import parseUri from 'ui/utils/parse-uri';
 import Util from 'ui/utils/util';
 
-export default Ember.Component.extend({
+import { observer, computed } from '@ember/object';
+
+export default Component.extend({
   classNames: ['vm-console'],
   instance : null,
 
@@ -28,7 +31,7 @@ export default Ember.Component.extend({
 
   didInsertElement() {
     this._super();
-    Ember.run.next(this, 'exec');
+    next(this, 'exec');
   },
 
   willDestroyElement() {
@@ -83,7 +86,7 @@ export default Ember.Component.extend({
     this.set('rfb', rfb);
   },
 
-  rfbStateChanged: function() {
+  rfbStateChanged: observer('rfbState', function() {
     if ( this.get('rfbState') === 'disconnected' && !this.get('userClosed') )
     {
       this.send('cancel');
@@ -95,7 +98,7 @@ export default Ember.Component.extend({
       var width = this.$('CANVAS').width() + parseInt($body.css('padding-left'),10) + parseInt($body.css('padding-right'),10);
       $body.width(width);
     }
-  }.observes('rfbState'),
+  }),
 
   disconnect() {
     this.set('status','Closed');
@@ -109,8 +112,8 @@ export default Ember.Component.extend({
     }
   },
 
-  ctrlAltDeleteDisabled: function() {
+  ctrlAltDeleteDisabled: computed('rfbState', function() {
     return this.get('rfbState') !== 'normal';
-  }.property('rfbState'),
+  }),
 
 });

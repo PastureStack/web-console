@@ -1,30 +1,32 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 import { denormalizeId } from 'ember-api-store/utils/denormalize';
 
+import { computed } from '@ember/object';
+
 var Receiver = Resource.extend(PolledResource, {
-  regularStore: Ember.inject.service('store'),
-  intl: Ember.inject.service(),
+  regularStore: service('store'),
+  intl: service(),
 
   service: denormalizeId('opt.serviceId','service','regularStore'),
 
-  displayKind: function() {
+  displayKind: computed('driver', 'intl._locale', function() {
     return this.get('intl').t('hookPage.' + this.get('driver') + '.label');
-  }.property('driver','intl._locale'),
+  }),
 
-  opt: function() {
+  opt: computed('driver', 'scaleServiceConfig', function() {
     return this.get(this.get('driver')+'Config');
-  }.property('driver','scaleServiceConfig'),
+  }),
 
-  displayService: function() {
+  displayService: computed('opt.serviceId', function() {
     let service = this.get('regularStore').getById('service', this.get('opt.serviceId'));
     if ( service ) {
       return service.get('displayStack') +'/'+ service.get('displayName');
     } else {
       return '?';
     }
-  }.property('opt.serviceId'),
+  }),
 
   actions: {
     edit() {
@@ -36,7 +38,7 @@ var Receiver = Resource.extend(PolledResource, {
     },
   },
 
-  availableActions: function() {
+  availableActions: computed('actionLinks.{update,remove}', function() {
     var choices = [
       { label: 'action.remove',         icon: 'icon icon-trash',            action: 'promptDelete',   enabled: true, altAction: 'delete'},
       { divider: true },
@@ -46,11 +48,11 @@ var Receiver = Resource.extend(PolledResource, {
     ];
 
     return choices;
-  }.property('actionLinks.{update,remove}'),
+  }),
 
-  needsPolling: function() {
+  needsPolling: computed('state', function() {
     return ['requested','activating','removing'].includes(this.get('state'));
-  }.property('state'),
+  }),
 });
 
 Receiver.reopenClass({

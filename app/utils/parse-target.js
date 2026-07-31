@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import EmberObject, { get } from '@ember/object';
 
 // New Format: [hostname][:srcPort][/path][=dstPort]
 // Older format: dstPort:[hostname][/path]
@@ -55,7 +55,7 @@ export function parseTarget(str) {
     return null;
   }
 
-  return Ember.Object.create({
+  return EmberObject.create({
     hostname: hostname,
     srcPort: srcPort,
     dstPort: dstPort,
@@ -64,10 +64,10 @@ export function parseTarget(str) {
 }
 
 export function stringifyTarget(tgt) {
-  var srcPort = Ember.get(tgt,'srcPort');
-  var dstPort = Ember.get(tgt,'dstPort');
-  var hostname = Ember.get(tgt,'hostname');
-  var path = Ember.get(tgt,'path');
+  var srcPort = get(tgt,'srcPort');
+  var dstPort = get(tgt,'dstPort');
+  var hostname = get(tgt,'hostname');
+  var path = get(tgt,'path');
 
   // New Format: [hostname][:srcPort][/path][=dstPort]
   if ( hostname || path || dstPort )

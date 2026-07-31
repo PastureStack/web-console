@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import { reject, resolve } from 'rsvp';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  'tab-session': Ember.inject.service('tab-session'),
-  store: Ember.inject.service(),
+import { computed } from '@ember/object';
+
+export default Service.extend({
+  'tab-session': service('tab-session'),
+  store: service(),
 
   publicUrl: function() {
     return this.get('store').find('service').then((services) => {
@@ -16,14 +19,14 @@ export default Ember.Service.extend({
         }
       }
 
-      return Ember.RSVP.reject('No mesos-master endpoint found');
+      return reject('No mesos-master endpoint found');
     });
   },
 
-  masterUrl: function() {
+  masterUrl: computed('app.mesosEndpoint', `tab-session.${C.TABSESSION.PROJECT}`, function() {
     let projectId = this.get(`tab-session.${C.TABSESSION.PROJECT}`);
     return this.get('app.mesosEndpoint').replace('%PROJECTID%', projectId);
-  }.property('app.mesosEndpoint',`tab-session.${C.TABSESSION.PROJECT}`),
+  }),
 
   isReady: function() {
     return this.get('store').find('stack').then((stacks) => {
@@ -35,13 +38,13 @@ export default Ember.Service.extend({
         }).then(() => {
           return true;
         }).catch(() => {
-          return Ember.RSVP.resolve(false);
+          return resolve(false);
         });
       }
 
       return false;
     }).catch(() => {
-      return Ember.RSVP.resolve(false);
+      return resolve(false);
     });
   },
 

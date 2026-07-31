@@ -1,10 +1,13 @@
-import Ember from 'ember';
+import EmberObject, { get } from '@ember/object';
+import { all } from 'rsvp';
+import { next } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: Ember.computed.alias('modalService.modalOpts'),
+  originalModel: alias('modalService.modalOpts'),
   editing: true,
   isService: false,
   isSidekick: false,
@@ -13,8 +16,8 @@ export default ModalBase.extend(NewOrEdit, {
 
   model: null,
 
-  primaryResource: Ember.computed.alias('model.instance'),
-  launchConfig: Ember.computed.alias('model.instance'),
+  primaryResource: alias('model.instance'),
+  launchConfig: alias('model.instance'),
   portsArray: null,
 
   linksArray: null,
@@ -35,18 +38,18 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   didInsertElement: function() {
-    Ember.run.next(this, 'loadDependencies');
+    next(this, 'loadDependencies');
   },
 
   loadDependencies: function() {
     var instance = this.get('originalModel');
 
-    return Ember.RSVP.all([
+    return all([
       instance.followLink('ports'),
       instance.followLink('instanceLinks'),
       this.get('store').findAll('host'), // Need inactive ones in case a link points to an inactive host
     ]).then((results) => {
-      var model = Ember.Object.create({
+      var model = EmberObject.create({
         instance: instance.clone(),
         ports: results[0],
         instanceLinks: results[1],
@@ -62,7 +65,7 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   didSave: function() {
-    return Ember.RSVP.all([
+    return all([
       this.savePorts(),
       this.saveLinks(),
     ]);
@@ -78,7 +81,7 @@ export default ModalBase.extend(NewOrEdit, {
       }
 
       var obj = port.obj;
-      if ( neu !== Ember.get(obj,'publicPort') )
+      if ( neu !== get(obj,'publicPort') )
       {
         //console.log('Changing port',obj.serialize(),'to',neu);
         obj.set('publicPort', neu);
@@ -86,7 +89,7 @@ export default ModalBase.extend(NewOrEdit, {
       }
     });
 
-    return Ember.RSVP.all(promises);
+    return all(promises);
   },
 
   saveLinks: function() {
@@ -94,7 +97,7 @@ export default ModalBase.extend(NewOrEdit, {
     this.get('linksArray').forEach(function(link) {
       var neu = link.targetInstanceId;
       var obj = link.obj;
-      if ( neu !== Ember.get(obj,'targetInstanceId') )
+      if ( neu !== get(obj,'targetInstanceId') )
       {
         //console.log('Changing link',obj.serialize(),'to',neu);
         obj.set('targetInstanceId', neu);
@@ -102,7 +105,7 @@ export default ModalBase.extend(NewOrEdit, {
       }
     });
 
-    return Ember.RSVP.all(promises);
+    return all(promises);
   },
 
   doneSaving: function() {

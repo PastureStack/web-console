@@ -1,17 +1,19 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
 
-export default Resource.extend({
-  projects: Ember.inject.service(),
+import { computed } from '@ember/object';
 
-  headers: function() {
+export default Resource.extend({
+  projects: service(),
+
+  headers: computed('project.current.id', function() {
     return {
       [C.HEADER.PROJECT_ID]: this.get('projects.current.id')
     };
-  }.property('project.current.id'),
+  }),
 
-  filesAsArray: function() {
+  filesAsArray: computed('files', function() {
     var obj = (this.get('files')||{});
     var out = [];
 
@@ -20,7 +22,7 @@ export default Resource.extend({
     });
 
     return out;
-  }.property('files'),
+  }),
 
   supportsOrchestration(orch) {
     orch = orch.replace(/.*\*/,'');

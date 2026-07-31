@@ -1,7 +1,7 @@
-{{#if isSupported}}
-  {{#tooltip-element type="tooltip-basic" model=(t model.tooltipText) tooltipTemplate='tooltip-static' class="copy-button-container" textChangedEvent=textChangedEvent baseClass="copy-clipboard" isCopyTo=true  tooltipFor="copyToClipboard"}}
-    {{#copy-button class=buttonClasses clipboardTarget=target clipboardText=clipboardText success='alertSuccess'}}
-      <i class="icon icon-copy"></i>{{#if buttonText}} {{t buttonText}}{{/if}}
+{{#if this.isSupported}}
+  {{#tooltip-element type="tooltip-basic" model=(t this.model.tooltipText) tooltipTemplate='tooltip-static' class="copy-button-container" textChangedEvent=this.textChangedEvent baseClass="copy-clipboard" isCopyTo=true tooltipFor="copyToClipboard"}}
+    {{#copy-button class=this.buttonClasses clipboardTarget=this.target clipboardText=this.clipboardText success='alertSuccess'}}
+      <i class="icon icon-copy"></i>{{#if this.buttonText}} {{t this.buttonText}}{{/if}}
     {{/copy-button}}
   {{/tooltip-element}}
 {{/if}}

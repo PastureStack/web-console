@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import SelectTab from 'ui/mixins/select-tab';
 import { debouncedObserver } from 'ui/utils/debounce';
@@ -6,8 +8,10 @@ import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { flattenLabelArrays } from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(NewOrEdit, SelectTab, {
-  intl                      : Ember.inject.service(),
+import { computed } from '@ember/object';
+
+export default Component.extend(NewOrEdit, SelectTab, {
+  intl                      : service(),
 
   isStandalone              : true,
   isService                 : false,
@@ -69,7 +73,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
       }));
 
       // Wait for it to be added to the DOM...
-      Ember.run.next(() => {
+      next(() => {
         this.send('selectLaunchConfig', ary.get('length')-1);
       });
     },
@@ -85,7 +89,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
         idx = ary.get('length')-1;
       }
 
-      Ember.run.next(() => {
+      next(() => {
         this.send('selectLaunchConfig', idx);
       });
     },
@@ -150,11 +154,11 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     this.$("INPUT[type='text']")[0].focus();
   },
 
-  hasSidekicks: function() {
+  hasSidekicks: computed('service.secondaryLaunchConfigs.length', function() {
     return this.get('service.secondaryLaunchConfigs.length') > 0;
-  }.property('service.secondaryLaunchConfigs.length'),
+  }),
 
-  activeLaunchConfig: function() {
+  activeLaunchConfig: computed('launchConfigIndex', function() {
     var idx = this.get('launchConfigIndex');
     if( idx === -1 )
     {
@@ -164,77 +168,88 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     {
       return this.get('service.secondaryLaunchConfigs').objectAt(idx);
     }
-  }.property('launchConfigIndex'),
+  }),
 
-  launchConfigChoices: function() {
-    var isUpgrade = this.get('isUpgrade');
-    let intl = this.get('intl');
+  launchConfigChoices: computed(
+    'service.name',
+    'service.secondaryLaunchConfigs.@each.name',
+    'intl._locale',
+    function() {
+      var isUpgrade = this.get('isUpgrade');
+      let intl = this.get('intl');
 
-    // Enabled is only for upgrade, and isn't maintained if the names change, but they can't on upgrade.
-    var out = [
-      {
-        index: -1,
-        name: this.get('service.name') || intl.t('newContainer.emptyPrimaryService'),
-        enabled: true
-      }
-    ];
+      // Enabled is only for upgrade, and isn't maintained if the names change, but they can't on upgrade.
+      var out = [
+        {
+          index: -1,
+          name: this.get('service.name') || intl.t('newContainer.emptyPrimaryService'),
+          enabled: true
+        }
+      ];
 
-    (this.get('service.secondaryLaunchConfigs')||[]).forEach((item, index) => {
-      out.push({
-        index: index,
-        name: item.get('name') || intl.t('newContainer.emptySidekick', {num: index+1}),
-        enabled: !isUpgrade
+      (this.get('service.secondaryLaunchConfigs')||[]).forEach((item, index) => {
+        out.push({
+          index: index,
+          name: item.get('name') || intl.t('newContainer.emptySidekick', {num: index+1}),
+          enabled: !isUpgrade
+        });
       });
-    });
 
-    return out;
-  }.property('service.name','service.secondaryLaunchConfigs.@each.name','intl._locale'),
+      return out;
+    }
+  ),
 
-  noLaunchConfigsEnabled: function() {
+  noLaunchConfigsEnabled: computed('launchConfigChoices.@each.enabled', function() {
     return this.get('launchConfigChoices').filterBy('enabled',true).get('length') === 0;
-  }.property('launchConfigChoices.@each.enabled'),
+  }),
 
-  activeLabel: function() {
-    var idx = this.get('launchConfigIndex');
-    var str = '';
+  activeLabel: computed(
+    'service.name',
+    'activeLaunchConfig.name',
+    'launchConfigIndex',
+    'hasSidekicks',
+    function() {
+      var idx = this.get('launchConfigIndex');
+      var str = '';
 
-    if ( this.get('hasSidekicks') )
-    {
+      if ( this.get('hasSidekicks') )
+      {
+        if ( idx === -1 )
+        {
+          str = 'Primary Service: ';
+        }
+        else
+        {
+          str += 'Sidekick Service: ';
+        }
+      }
+
       if ( idx === -1 )
       {
-        str = 'Primary Service: ';
+        if ( this.get('service.name') )
+        {
+          str += this.get('service.name');
+        }
+        else
+        {
+          str += '(No name)';
+        }
       }
       else
       {
-        str += 'Sidekick Service: ';
+        if ( this.get('activeLaunchConfig.name') )
+        {
+          str += this.get('activeLaunchConfig.name');
+        }
+        else
+        {
+          str += '(Sidekick #' + (idx+1) + ')';
+        }
       }
-    }
 
-    if ( idx === -1 )
-    {
-      if ( this.get('service.name') )
-      {
-        str += this.get('service.name');
-      }
-      else
-      {
-        str += '(No name)';
-      }
+      return str;
     }
-    else
-    {
-      if ( this.get('activeLaunchConfig.name') )
-      {
-        str += this.get('activeLaunchConfig.name');
-      }
-      else
-      {
-        str += '(Sidekick #' + (idx+1) + ')';
-      }
-    }
-
-    return str;
-  }.property('service.name','activeLaunchConfig.name','launchConfigIndex','hasSidekicks'),
+  ),
 
   // ----------------------------------
   // Labels
@@ -274,13 +289,13 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
   // ----------------------------------
   // Disks
   // ----------------------------------
-  storageDriverChoices: function() {
+  storageDriverChoices: computed('allStoragePools.@each.driverName', function() {
     return (this.get('allStoragePools')||[])
             .map((pool) => { return pool.get('driverName'); })
             .filter((name) => { return C.VM_CAPABLE_STORAGE_DRIVERS.indexOf(name) >= 0; })
             .uniq()
             .sort();
-  }.property('allStoragePools.@each.driverName'),
+  }),
 
   // ----------------------------------
   // Save
@@ -390,23 +405,30 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     this.sendAction('done');
   },
 
-  headerLabel: function() {
-    let k = 'newContainer.';
-    k += (this.get('isUpgrade') ? 'upgrade' : 'add') + '.';
-    if ( this.get('isService') ) {
-      k += 'service';
-    } else if ( this.get('isVm') ) {
-      k += 'vm';
-    } else {
-      k += 'container';
+  headerLabel: computed(
+    'intl._locale',
+    'isUpgrade',
+    'isService',
+    'isVm',
+    'service.secondaryLaunchConfigs.length',
+    function() {
+      let k = 'newContainer.';
+      k += (this.get('isUpgrade') ? 'upgrade' : 'add') + '.';
+      if ( this.get('isService') ) {
+        k += 'service';
+      } else if ( this.get('isVm') ) {
+        k += 'vm';
+      } else {
+        k += 'container';
+      }
+
+      let count = this.get('service.secondaryLaunchConfigs.length') + 1;
+
+      return this.get('intl').t(k, {numServices: count});
     }
+  ),
 
-    let count = this.get('service.secondaryLaunchConfigs.length') + 1;
-
-    return this.get('intl').t(k, {numServices: count});
-  }.property('intl._locale','isUpgrade','isService','isVm','service.secondaryLaunchConfigs.length'),
-
-  supportsSecrets: function() {
+  supportsSecrets: computed(function() {
     return !!this.get('store').getById('schema','secret');
-  }.property(),
+  }),
 });

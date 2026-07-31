@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { Promise } from 'rsvp';
 
 let nextId = 1;
 
@@ -9,7 +9,7 @@ export function loadScript(url, id) {
     nextId++;
   }
 
-  return new Ember.RSVP.Promise(function(resolve,reject) {
+  return new Promise(function(resolve,reject) {
     let script     = document.createElement('script');
     script.onload  = resolve;
     script.onerror = reject;

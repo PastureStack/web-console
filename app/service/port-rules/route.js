@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function() {
     let service = this.modelFor('service').get('service');
     if ( service.get('type').toLowerCase() !== 'loadbalancerservice' ) {

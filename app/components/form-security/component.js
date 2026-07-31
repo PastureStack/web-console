@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import { isEmpty } from '@ember/utils';
+import { observer, computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
+export default Component.extend({
+  projects: service(),
 
   // Inputs
   instance: null,
@@ -102,7 +105,7 @@ export default Ember.Component.extend({
 
   },
 
-  memoryReservationChanged: Ember.observer('memoryReservationMb', function() {
+  memoryReservationChanged: observer('memoryReservationMb', function() {
     var mem = this.get('memoryReservationMb');
 
     if ( isNaN(mem) || mem <= 0) {
@@ -113,7 +116,7 @@ export default Ember.Component.extend({
     }
   }),
 
-  memoryDidChange: function() {
+  memoryDidChange: observer('memoryMb', 'swapMb', function() {
     // The actual parameter we're interested in is 'memory', in bytes.
     var mem = parseInt(this.get('memoryMb'),10);
     if ( isNaN(mem) || mem <= 0)
@@ -142,7 +145,7 @@ export default Ember.Component.extend({
         this.set('instance.memorySwap', (mem+swap) * 1048576);
       }
     }
-  }.observes('memoryMb','swapMb'),
+  }),
 
   // ----------------------------------
   // PID Mode
@@ -151,9 +154,9 @@ export default Ember.Component.extend({
   initPidMode: function() {
     this.set('pidHost', this.get('instance.pidMode') === 'host');
   },
-  pidModeDidChange: function() {
+  pidModeDidChange: observer('pidHost', function() {
     this.set('instance.pidMode', this.get('pidHost') ? 'host' : null);
-  }.observes('pidHost'),
+  }),
 
   // ----------------------------------
   // Devices
@@ -172,7 +175,7 @@ export default Ember.Component.extend({
       return {host: parts[0], container: parts[1], permissions: parts[2]};
     }));
   },
-  devicesDidChange: function() {
+  devicesDidChange: observer('devicesArray.@each.{host,container,permissions}', function() {
     var out = this.get('instance.devices');
     out.beginPropertyChanges();
     out.clear();
@@ -183,7 +186,7 @@ export default Ember.Component.extend({
       }
     });
     out.endPropertyChanges();
-  }.observes('devicesArray.@each.{host,container,permissions}'),
+  }),
 
   initMultiselect: function() {
     var view = this;
@@ -257,7 +260,7 @@ export default Ember.Component.extend({
     this.$('.select-cap-drop').multiselect(opts);
   },
 
-  privilegedDidChange: function() {
+  privilegedDidChange: observer('instance.privileged', function() {
     var add = this.$('.select-cap-add');
     var drop = this.$('.select-cap-drop');
     if ( add && drop )
@@ -273,7 +276,7 @@ export default Ember.Component.extend({
         drop.multiselect('enable');
       }
     }
-  }.observes('instance.privileged'),
+  }),
 
   initLogging: function() {
     if (!this.get('instance.logConfig') ) {
@@ -302,14 +305,14 @@ export default Ember.Component.extend({
     'syslog',
   ],
 
-  hasLogConfig: Ember.computed('instance.logConfig.config', function() {
-    return Ember.isEmpty(this.get('instance.logConfig.config'));
+  hasLogConfig: computed('instance.logConfig.config', function() {
+    return isEmpty(this.get('instance.logConfig.config'));
   }),
 
-  isolationChoices: function() {
+  isolationChoices: computed(function() {
     return [
       {label: 'formSecurity.isolation.default', value: 'default'},
       {label: 'formSecurity.isolation.hyperv', value: 'hyperv'},
     ];
-  }.property(),
+  }),
 });

@@ -108,7 +108,7 @@ the filtered page, and item names never silently determine operator intent.
 - **No-Publish Ember QUnit Helper Removal:** keep `ember-cli-qunit`, `ember-qunit`, and their obsolete helper layer out of the dependency graph.
 - **No-Publish Testem Browser Runtime Modernization:** use headless Chromium instead of the removed PhantomJS runtime.
 
-The direct test migration removes `moduleFor` and `moduleForComponent` usage. The compatible compiler remains pinned at `vendor/ember/ember-template-compiler.js`; its provenance and license must continue to be audited with the other vendored assets.
+The direct test migration removes `moduleFor` and `moduleForComponent` usage. Template compilation now resolves from `ember-source/ember-template-compiler/index.js`; historical compiler files remain provenance-only and are not imported by the active build.
 
 ## Browser Dependency Compatibility
 
@@ -117,8 +117,8 @@ These no-publish candidates replace Bower delivery paths with pinned npm or revi
 - **No-Publish Async 3.2.6 Upgrade Candidate:** `async@3.2.6` is imported from `node_modules/async/dist/async.js`.
 - **No-Publish CommonMark 0.31.2 Upgrade Candidate:** `commonmark@0.31.2` is imported from `node_modules/commonmark/dist/commonmark.js`.
 - **No-Publish Bower jquery.cookie Migration Candidate:** `jquery.cookie@1.4.1` is imported from `node_modules/jquery.cookie/jquery.cookie.js`.
-- **No-Publish Bower jGrowl Migration Candidate:** `jgrowl@1.4.2` is imported from `node_modules/jgrowl/jquery.jgrowl.js`.
-- **No-Publish Bower lodash Migration Candidate:** `lodash@3.10.1` is imported from `node_modules/lodash/index.js`.
+- **No-Publish Bower jGrowl Migration Candidate:** `jgrowl@1.5.1` is imported from `node_modules/jgrowl/jquery.jgrowl.js`.
+- **No-Publish Bower lodash Migration Candidate:** `lodash@4.18.1` is imported from `node_modules/lodash/lodash.js`.
 - **No-Publish Bower md5/identicon Migration Candidate:** `identicon.js@2.3.3` and `md5-jkmyers@0.0.1` replace the Bower inputs; the browser bundle comes from `node_modules/identicon.js/identicon.js`.
 - **No-Publish Moment 2.30.1 Upgrade Candidate:** `moment@2.30.1` is imported from `node_modules/moment/moment.js`.
 - **No-Publish Bower c3/d3 Migration Candidate:** `c3@0.4.24` and `d3@3.5.17` retain the compatible chart API through `node_modules/c3/c3.js` and `node_modules/d3/d3.js`.
@@ -127,4 +127,4 @@ These no-publish candidates replace Bower delivery paths with pinned npm or revi
   `qrcode-generator@2.0.4` browser bundle. Authenticator provisioning data is
   encoded locally and is not sent to a third-party rendering service.
 
-The **No-Publish Ember Runtime Bower Removal** retains the compatible runtime under `components/ember`, uses `jquery@3.7.1`, and provides an audited `ember-module-shim`; this is not a framework upgrade. The **No-Publish ember-browserify Removal** replaces `npm:` pseudo-imports and `ember-browserify` with native `sourceType: module` imports, `ember-cli-terser`, and the maintained `intl-format-cache/memoizer` path.
+The **Active Ember 7 Runtime** resolves `ember-source@7.1.0` and `@ember/jquery@2.0.0` from npm. Historical vendored runtime files are retained as provenance-only evidence and are not imported by the active build. The **No-Publish ember-browserify Removal** replaces `npm:` pseudo-imports and `ember-browserify` with native `sourceType: module` imports, `ember-cli-terser`, and the maintained `intl-format-cache/memoizer` path.

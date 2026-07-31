@@ -20,26 +20,26 @@ def fail(code, **fields):
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 dev = package.get("devDependencies", {})
 overrides = package.get("overrides", {})
-if dev.get("ember-cli") != "2.18.2":
-    fail("EMBER_CLI_DECLARATION_UNEXPECTED", actual=dev.get("ember-cli"), expected="2.18.2")
+if dev.get("ember-cli") != "7.1.0":
+    fail("EMBER_CLI_DECLARATION_UNEXPECTED", actual=dev.get("ember-cli"), expected="7.1.0")
 if dev.get("socket.io-client") != "4.8.3":
     fail("SOCKET_IO_CLIENT_DECLARATION_UNEXPECTED", actual=dev.get("socket.io-client"), expected="4.8.3")
 if overrides.get("testem") != "3.20.0":
     fail("TESTEM_OVERRIDE_UNEXPECTED", actual=overrides.get("testem"), expected="3.20.0")
 
-lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock_path = Path("package-lock.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     packages = lock.get("packages", {})
     expected = {
-        "node_modules/ember-cli": "2.18.2",
+        "node_modules/ember-cli": "7.1.0",
         "node_modules/testem": "3.20.0",
         "node_modules/socket.io": "4.8.3",
         "node_modules/socket.io-client": "4.8.3",
-        "node_modules/engine.io": "6.6.7",
-        "node_modules/ws": "8.18.3",
+        "node_modules/engine.io": "6.6.9",
+        "node_modules/ws": "8.21.1",
     }
     for path, version in expected.items():
         actual = packages.get(path, {}).get("version")
@@ -56,7 +56,7 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_EMBER_CLI_TESTEM_UPGRADE_OK ember-cli=2.18.2 testem=3.20.0 socket.io=4.8.3 ws=8.18.3 lockfile={lock_path} package_count={package_count}")
+print(f"UI_EMBER_CLI_TESTEM_UPGRADE_OK ember-cli=7.1.0 testem=3.20.0 socket.io=4.8.3 ws=8.21.1 lockfile={lock_path} package_count={package_count}")
 print("This is a no-publish build/test dependency step; broader UI audit and deprecated add-on blockers remain compatibility-gated.")
 print("failure_count=0")
 PY

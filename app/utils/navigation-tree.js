@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
 import C from 'ui/utils/constants';
 import { tagChoices } from 'ui/models/stack';
 import { uniqKeys } from 'ui/utils/util';
@@ -347,6 +347,22 @@ const navTree = [
   },
 ];
 
+function cloneTreeValue(value) {
+  if (isArray(value)) {
+    return value.map(cloneTreeValue);
+  }
+
+  if (value && typeof value === 'object') {
+    return Object.keys(value).reduce((out, key) => {
+      out[key] = cloneTreeValue(value[key]);
+      return out;
+    }, {});
+  }
+
+  // Functions are intentional navigation callbacks and must keep identity.
+  return value;
+}
+
 export function addItem(opt) {
   navTree.pushObject(opt);
 }
@@ -356,7 +372,7 @@ export function removeId(id) {
   {
     if ( navTree[i].id === id ) {
       navTree.removeAt(i);
-    } else if ( navTree[i].submenu && Ember.isArray(navTree[i].submenu) ) {
+    } else if ( navTree[i].submenu && isArray(navTree[i].submenu) ) {
       let sub = navTree[i].submenu;
       for ( var j = sub.length-1 ; j >= 0 ; j-- )
       {
@@ -369,7 +385,7 @@ export function removeId(id) {
 }
 
 export function get() {
-  return Ember.copy(navTree,true);
+  return cloneTreeValue(navTree);
 }
 
 function getStacksSubtree() {

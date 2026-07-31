@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import { get, computed, observer } from '@ember/object';
 
-const { computed, get/*, set*/ } = Ember;
-
-export default Ember.Component.extend({
-  intl:       Ember.inject.service(),
+export default Component.extend({
+  intl:       service(),
 
   rSelected:  false,
   wSelected:  false,
@@ -71,8 +72,8 @@ export default Ember.Component.extend({
 
   }),
 
-  rebuild: function() {
-    Ember.run.next(() => {
+  rebuild: observer('intl._locale', function() {
+    next(() => {
       if (get(this, 'editing')) {
         this.$('SELECT').multiselect('setOptions', {
           nonSelectedText: get(this, 'intl').t('devicePermissions.none'),
@@ -81,5 +82,5 @@ export default Ember.Component.extend({
         this.$('SELECT').multiselect('rebuild');
       }
     });
-  }.observes('intl._locale'),
+  }),
 });

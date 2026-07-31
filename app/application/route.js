@@ -1,14 +1,19 @@
-import Ember from 'ember';
+import RSVP, { reject } from 'rsvp';
+import { cancel, next } from '@ember/runloop';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 
-export default Ember.Route.extend({
-  access         : Ember.inject.service(),
-  cookies        : Ember.inject.service(),
-  github         : Ember.inject.service(),
-  language       : Ember.inject.service('user-language'),
-  modal          : Ember.inject.service(),
-  oidc           : Ember.inject.service(),
-  settings       : Ember.inject.service(),
+import { observer } from '@ember/object';
+
+export default Route.extend({
+  access         : service(),
+  cookies        : service(),
+  github         : service(),
+  language       : service('user-language'),
+  modal          : service(),
+  oidc           : service(),
+  settings       : service(),
 
   previousParams : null,
   previousRoute  : null,
@@ -45,7 +50,7 @@ export default Ember.Route.extend({
     loading(transition) {
       this.incrementProperty('loadingId');
       let id = this.get('loadingId');
-      Ember.run.cancel(this.get('hideTimer'));
+      cancel(this.get('hideTimer'));
 
       //console.log('Loading', id);
       if ( !this.get('loadingShown') ) {
@@ -70,7 +75,7 @@ export default Ember.Route.extend({
         if ( this.get('loadingId') === id ) {
           if ( transition.isAborted ) {
             //console.log('Loading aborted', id, this.get('loadingId'));
-            this.set('hideTimer', Ember.run.next(hide));
+            this.set('hideTimer', next(hide));
           } else {
             //console.log('Loading finished', id, this.get('loadingId'));
             hide();
@@ -203,7 +208,7 @@ export default Ember.Route.extend({
         setTimeout(function() {
           window.close();
         }, 250);
-        return Ember.RSVP.reject('oidcTest');
+        return reject('oidcTest');
       }
 
       let oidcCode;
@@ -217,7 +222,7 @@ export default Ember.Route.extend({
       } catch (err) {
         transition.abort();
         this.transitionTo('login', {queryParams: {errorMsg: err.message}});
-        return Ember.RSVP.reject(err);
+        return reject(err);
       }
 
       return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
@@ -240,7 +245,7 @@ export default Ember.Route.extend({
 
       transition.abort();
 
-      return Ember.RSVP.reject('isTest');
+      return reject('isTest');
 
     } else if ( !isOidcCallback && params.code ) {
 
@@ -272,7 +277,7 @@ export default Ember.Route.extend({
 
         this.controllerFor('application').set('error', obj);
 
-        return Ember.RSVP.reject(obj);
+        return reject(obj);
       }
     }
 
@@ -284,16 +289,16 @@ export default Ember.Route.extend({
         setTimeout(function() {
           window.close();
         },250);
-        return new Ember.RSVP.promise();
+        return new RSVP.promise();
       } catch(e) {
         window.close();
       }
     }
   },
 
-  updateWindowTitle: function() {
+  updateWindowTitle: observer('settings.appName', function() {
     document.title = this.get('settings.appName');
-  }.observes('settings.appName'),
+  }),
 
   beforeModel() {
     this.updateWindowTitle();

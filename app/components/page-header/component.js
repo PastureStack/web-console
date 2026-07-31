@@ -1,7 +1,12 @@
-import Ember from 'ember';
+import { once } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
-import {get as getTree} from 'ui/utils/navigation-tree';
+import { get as getTree } from 'ui/utils/navigation-tree';
 import HoverDropdown from 'ui/mixins/hover-dropdowns';
+
+import { observer, computed } from '@ember/object';
 
 function fnOrValue(val, ctx) {
   if ( typeof val === 'function' )
@@ -15,26 +20,26 @@ function fnOrValue(val, ctx) {
 }
 
 
-export default Ember.Component.extend(HoverDropdown, {
+export default Component.extend(HoverDropdown, {
   // Inputs
   hasCattleSystem      : null,
   currentPath          : null,
 
   // Injections
-  projects             : Ember.inject.service(),
-  project              : Ember.computed.alias('projects.current'),
-  projectId            : Ember.computed.alias(`tab-session.${C.TABSESSION.PROJECT}`),
-  catalog              : Ember.inject.service(),
-  settings             : Ember.inject.service(),
-  access               : Ember.inject.service(),
-  prefs                : Ember.inject.service(),
-  isAdmin              : Ember.computed.alias('access.admin'),
-  hasVm                : Ember.computed.alias('project.virtualMachine'),
-  hasSwarm             : Ember.computed.alias('projects.orchestrationState.hasSwarm'),
-  hasKubernetes        : Ember.computed.alias('projects.orchestrationState.hasKubernetes'),
-  hasMesos             : Ember.computed.alias('projects.orchestrationState.hasMesos'),
-  swarmReady           : Ember.computed.alias('projects.orchestrationState.swarmReady'),
-  mesosReady           : Ember.computed.alias('projects.orchestrationState.mesosReady'),
+  projects             : service(),
+  project              : alias('projects.current'),
+  projectId            : alias(`tab-session.${C.TABSESSION.PROJECT}`),
+  catalog              : service(),
+  settings             : service(),
+  access               : service(),
+  prefs                : service(),
+  isAdmin              : alias('access.admin'),
+  hasVm                : alias('project.virtualMachine'),
+  hasSwarm             : alias('projects.orchestrationState.hasSwarm'),
+  hasKubernetes        : alias('projects.orchestrationState.hasKubernetes'),
+  hasMesos             : alias('projects.orchestrationState.hasMesos'),
+  swarmReady           : alias('projects.orchestrationState.swarmReady'),
+  mesosReady           : alias('projects.orchestrationState.mesosReady'),
   stacks               : null,
   services             : null,
 
@@ -124,7 +129,7 @@ export default Ember.Component.extend(HoverDropdown, {
     this.set('navTree', out);
   },
 
-  serviceAppChanged: function() {
+  serviceAppChanged: observer('services.@each.serviceApp', function() {
     let services = this.get('services') || [];
     let newServices = services.find((ele) => {
       let serviceApp = ele.get('serviceApp');
@@ -136,13 +141,11 @@ export default Ember.Component.extend(HoverDropdown, {
     });
 
     if ( newServices ) {
-      Ember.run.once(this, 'updateNavTree');
+      once(this, 'updateNavTree');
     }
-  }.observes('services.@each.serviceApp'),
+  }),
 
-  shouldUpdateNavTree: function() {
-    Ember.run.once(this, 'updateNavTree');
-  }.observes(
+  shouldUpdateNavTree: observer(
     'projectId',
     'projects.orchestrationState',
     'project.virtualMachine',
@@ -151,21 +154,28 @@ export default Ember.Component.extend(HoverDropdown, {
     `settings.${C.SETTING.CATALOG_URL}`,
     `prefs.${C.PREFS.ACCESS_WARNING}`,
     'access.enabled',
-    'isAdmin'
+    'isAdmin',
+    function() {
+      once(this, 'updateNavTree');
+    }
   ),
 
   // Utilities you can use in the condition() function to decide if an item is shown or hidden,
   // beyond things listed in "Inputs"
-  hasProject: function() {
+  hasProject: computed('project', function() {
     return !!this.get('project');
-  }.property('project'),
+  }),
 
-  canEdit: function() {
+  canEdit: computed('project.actionLinks.{update,setmembers}', function() {
     return !!this.get('project.actionLinks.update') || !!this.get('project.actionLinks.setmembers');
-  }.property('project.actionLinks.{update,setmembers}'),
+  }),
 
-  kubernetesReady: function() {
-    return this.get('hasKubernetes') &&
-    this.get('projects.orchestrationState.kubernetesReady');
-  }.property('hasKubernetes','projects.orchestrationState.kubernetesReady'),
+  kubernetesReady: computed(
+    'hasKubernetes',
+    'projects.orchestrationState.kubernetesReady',
+    function() {
+      return this.get('hasKubernetes') &&
+      this.get('projects.orchestrationState.kubernetesReady');
+    }
+  ),
 });

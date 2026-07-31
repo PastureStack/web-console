@@ -1,6 +1,9 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed, observer } from '@ember/object';
+
+export default Component.extend({
   editing: null,
   createLabel:  'saveCancel.create',
   editLabel:    'saveCancel.edit',
@@ -32,7 +35,7 @@ export default Ember.Component.extend({
     }
   },
 
-  btnLabel: function() {
+  btnLabel: computed('saved', 'editing', function() {
     if ( this.get('saved') ) {
       return this.get('savedLabel');
     } else if ( this.get('editing') ) {
@@ -40,17 +43,17 @@ export default Ember.Component.extend({
     } else {
       return this.get('createLabel');
     }
-  }.property('saved','editing'),
+  }),
 
-  savedChanged: function() {
+  savedChanged: observer('saved', function() {
     if ( this.get('saved') )
     {
-      Ember.run.later(this, () => {
+      later(this, () => {
         if ( this._state !== 'destroying' )
         {
           this.set('saved', false);
         }
       }, 5000);
     }
-  }.observes('saved'),
+  }),
 });

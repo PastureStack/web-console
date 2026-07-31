@@ -1,21 +1,25 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed } from '@ember/object';
+
+export default Component.extend({
   currentPath : null,
   canEdit     : null,
 
   tagName     : '',
 
-  projects    : Ember.inject.service(),
-  project     : Ember.computed.alias('projects.current'),
+  projects    : service(),
+  project     : alias('projects.current'),
 
-  projectChoices: function() {
+  projectChoices: computed('projects.active.@each.{id,displayName,state}', function() {
     return this.get('projects.active').sortBy('name','id');
-  }.property('projects.active.@each.{id,displayName,state}'),
+  }),
 
-  projectIsMissing: function() {
+  projectIsMissing: computed('project.id', 'projectChoices.@each.id', function() {
     return this.get('projectChoices').filterBy('id', this.get('project.id')).get('length') === 0;
-  }.property('project.id','projectChoices.@each.id'),
+  }),
 
   actions: {
     switchProject(id) {

@@ -8,7 +8,7 @@
     </tr>
   </thead>
   <tbody>
-    {{#each model.ports as |port|}}
+    {{#each this.model.ports as |port|}}
       <tr>
         <td data-title="{{t 'containersPage.containerPage.portsTab.table.header.ip'}}:">
           {{#if port.displayPublicIp}}

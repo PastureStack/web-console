@@ -1,6 +1,11 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
-import { PacketFacilities, PacketOs, PacketPlans} from 'ui/utils/packet-choices';
+import {
+  PacketFacilities,
+  PacketOs,
+  PacketPlans
+} from 'ui/utils/packet-choices';
 
 
 let osChoices = PacketOs.map(function(os) {
@@ -15,9 +20,9 @@ let planChoices = PacketPlans.filter(function(plan) {
   return plan;
 });
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName      : 'packet',
-  packetConfig    : Ember.computed.alias('model.packetConfig'),
+  packetConfig    : alias('model.packetConfig'),
 
   facilityChoices : PacketFacilities,
   planChoices     : planChoices,

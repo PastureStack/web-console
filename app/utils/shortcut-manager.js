@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import $ from 'jquery';
+import EmberObject from '@ember/object';
 
 function isEditableTarget(target) {
   if (!target) {
@@ -36,18 +38,18 @@ function shortcutMatches(shortcut, event) {
     event.metaKey === wanted.meta;
 }
 
-export default Ember.Object.extend({
+export default EmberObject.extend({
   enabled: true,
 
   init() {
     this._super(...arguments);
     this.bindings = [];
     this._handler = (event) => this.handleKeyDown(event);
-    Ember.$(document).on('keydown.pasturestack-shortcuts', this._handler);
+    $(document).on('keydown.pasturestack-shortcuts', this._handler);
   },
 
   willDestroy() {
-    Ember.$(document).off('keydown.pasturestack-shortcuts', this._handler);
+    $(document).off('keydown.pasturestack-shortcuts', this._handler);
     this._super(...arguments);
   },
 
@@ -98,7 +100,7 @@ export default Ember.Object.extend({
   },
 
   triggerAction(context, action) {
-    Ember.run(() => {
+    run(() => {
       if (typeof action === 'function') {
         action.call(context);
       } else if (context && typeof context.send === 'function') {

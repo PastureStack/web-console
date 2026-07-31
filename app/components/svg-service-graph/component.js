@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   services: null,
 
   tagName: 'svg',
@@ -17,7 +18,7 @@ export default Ember.Component.extend({
     },
   },
 
-  nodes: Ember.computed('services.[]', function() {
+  nodes: computed('services.[]', function() {
     return this.get('services').map((service, index) => {
       return {
         x: 100 + 300*(index%3),
@@ -31,7 +32,7 @@ export default Ember.Component.extend({
     });
   }),
 
-  paths: Ember.computed('services.[]', function() {
+  paths: computed('services.[]', function() {
     return this.get('services').map(() => {
       return {
         m: [100, 150],

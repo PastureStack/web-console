@@ -41,7 +41,7 @@ if "AnsiUp.ansi_to_html(Util.escapeHtml(msg))" in component:
 if "ansiUp.ansi_to_html(msg)" in component:
     fail("ANSI_UP_UNESCAPED_LOG_CALL_PRESENT")
 
-lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock_path = Path("package-lock.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:

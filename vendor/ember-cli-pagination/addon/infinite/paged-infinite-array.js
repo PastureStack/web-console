@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { A } from '@ember/array';
+import { computed } from '@ember/object';
+import ArrayProxy from '@ember/array/proxy';
 import PagedArray from 'ember-cli-pagination/local/paged-array';
 // import PagedRemoteArray from 'ember-cli-pagination/remote/paged-remote-array';
 
@@ -37,15 +39,15 @@ var pushPromiseObjects = function(base,promise) {
   return promise;
 };
 
-var InfiniteBase = Ember.ArrayProxy.extend({
+var InfiniteBase = ArrayProxy.extend({
   page: 1,
 
-  arrangedContent: Ember.computed('content.[]',function() {
+  arrangedContent: computed('content.[]',function() {
     return this.get('content');
   }),
 
   init: function() {
-    this.set('content',Ember.A([]));
+    this.set('content',A([]));
     this.addRecordsForPage(1);
   },
 
@@ -79,7 +81,7 @@ var c = InfiniteBase.extend({
 
 c.reopenClass({
   createFromUnpaged: function(ops) {
-    var unpaged = Ember.A(ops.all);
+    var unpaged = A(ops.all);
     var perPage = ops.perPage || 10;
     var paged = PagedArray.create({perPage: perPage, content: unpaged});
     return this.create({all: paged});

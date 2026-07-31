@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 import C from 'ui/utils/constants';
@@ -38,9 +39,9 @@ export function tagChoices(all) {
 
 var Stack = Resource.extend({
   type: 'stack',
-  k8s: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
-  projectsService: Ember.inject.service('projects'),
+  k8s: service(),
+  modalService: service('modal'),
+  projectsService: service('projects'),
 
   services: denormalizeIdArray('serviceIds'),
 
@@ -119,41 +120,47 @@ var Stack = Resource.extend({
     },
   },
 
-  availableActions: function() {
-    var a = this.get('actionLinks');
+  availableActions: computed(
+    'actionLinks.{remove,purge,exportconfig,finishupgrade,cancelupgrade,rollback,cancelrollback,update}',
+    'canActivate',
+    'canDeactivate',
+    'externalIdInfo.kind',
+    function() {
+      var a = this.get('actionLinks');
 
-    if ( this.get('externalIdInfo.kind') === C.EXTERNAL_ID.KIND_KUBERNETES )
-    {
-      return [];
+      if ( this.get('externalIdInfo.kind') === C.EXTERNAL_ID.KIND_KUBERNETES )
+      {
+        return [];
+      }
+
+
+      var out = [
+        { label: 'action.finishUpgrade',  icon: 'icon icon-success',        action: 'finishUpgrade',    enabled: !!a.finishupgrade },
+        { label: 'action.rollback',       icon: 'icon icon-history',        action: 'rollback',         enabled: !!a.rollback },
+        { label: 'action.cancelUpgrade',  icon: 'icon icon-life-ring',      action: 'cancelUpgrade',    enabled: !!a.cancelupgrade },
+        { label: 'action.cancelRollback', icon: 'icon icon-life-ring',      action: 'cancelRollback',   enabled: !!a.cancelrollback },
+        { label: 'action.startServices',  icon: 'icon icon-play',           action: 'activateServices', enabled: this.get('canActivate') },
+        { label: 'action.stopServices',   icon: 'icon icon-stop',           action: 'promptStop',       enabled: this.get('canDeactivate'), altAction: 'deactivateServices' },
+        { divider: true },
+        { label: 'action.viewGraph',      icon: 'icon icon-share',          action: 'viewGraph',        enabled: true },
+        { label: 'action.viewConfig',     icon: 'icon icon-files',          action: 'viewCode',         enabled: !!a.exportconfig },
+        { label: 'action.exportConfig',   icon: 'icon icon-download',       action: 'exportConfig',     enabled: !!a.exportconfig },
+        { divider: true },
+        { label: 'action.remove',         icon: 'icon icon-trash',          action: 'promptDelete',     enabled: !!a.remove,                altAction: 'delete'},
+        { label: 'action.viewInApi',      icon: 'icon icon-external-link',  action: 'goToApi',          enabled: true },
+        { divider: true },
+        { label: 'action.edit',           icon: 'icon icon-edit',           action: 'edit',             enabled: !!a.update },
+      ];
+
+      return out;
     }
+  ),
 
-
-    var out = [
-      { label: 'action.finishUpgrade',  icon: 'icon icon-success',        action: 'finishUpgrade',    enabled: !!a.finishupgrade },
-      { label: 'action.rollback',       icon: 'icon icon-history',        action: 'rollback',         enabled: !!a.rollback },
-      { label: 'action.cancelUpgrade',  icon: 'icon icon-life-ring',      action: 'cancelUpgrade',    enabled: !!a.cancelupgrade },
-      { label: 'action.cancelRollback', icon: 'icon icon-life-ring',      action: 'cancelRollback',   enabled: !!a.cancelrollback },
-      { label: 'action.startServices',  icon: 'icon icon-play',           action: 'activateServices', enabled: this.get('canActivate') },
-      { label: 'action.stopServices',   icon: 'icon icon-stop',           action: 'promptStop',       enabled: this.get('canDeactivate'), altAction: 'deactivateServices' },
-      { divider: true },
-      { label: 'action.viewGraph',      icon: 'icon icon-share',          action: 'viewGraph',        enabled: true },
-      { label: 'action.viewConfig',     icon: 'icon icon-files',          action: 'viewCode',         enabled: !!a.exportconfig },
-      { label: 'action.exportConfig',   icon: 'icon icon-download',       action: 'exportConfig',     enabled: !!a.exportconfig },
-      { divider: true },
-      { label: 'action.remove',         icon: 'icon icon-trash',          action: 'promptDelete',     enabled: !!a.remove,                altAction: 'delete'},
-      { label: 'action.viewInApi',      icon: 'icon icon-external-link',  action: 'goToApi',          enabled: true },
-      { divider: true },
-      { label: 'action.edit',           icon: 'icon icon-edit',           action: 'edit',             enabled: !!a.update },
-    ];
-
-    return out;
-  }.property('actionLinks.{remove,purge,exportconfig,finishupgrade,cancelupgrade,rollback,cancelrollback,update}','canActivate','canDeactivate','externalIdInfo.kind'),
-
-  canViewConfig: function() {
+  canViewConfig: computed('actionLinks.exportconfig', function() {
     return !!this.get('actionLinks.exportconfig');
-  }.property('actionLinks.exportconfig'),
+  }),
 
-  combinedState: function() {
+  combinedState: computed('state', 'healthState', function() {
     var stack = this.get('state');
     var health = this.get('healthState');
     if ( ['active','updating-active'].indexOf(stack) === -1 )
@@ -170,9 +177,9 @@ var Stack = Resource.extend({
     {
       return health;
     }
-  }.property('state', 'healthState'),
+  }),
 
-  canActivate: function() {
+  canActivate: computed('services.@each.state', 'actionLinks.activateservices', function() {
     if ( !this.hasAction('activateservices') )
     {
       return false;
@@ -185,9 +192,9 @@ var Stack = Resource.extend({
     }
 
     return this.get('services').filterBy('actionLinks.activate').get('length') > 0;
-  }.property('services.@each.state','actionLinks.activateservices'),
+  }),
 
-  canDeactivate: function() {
+  canDeactivate: computed('services.@each.state', 'actionLinks.deactivateservices', function() {
     if ( !this.hasAction('deactivateservices') )
     {
       return false;
@@ -200,14 +207,14 @@ var Stack = Resource.extend({
     }
 
     return this.get('services').filterBy('actionLinks.deactivate').get('length') > 0;
-  }.property('services.@each.state','actionLinks.deactivateservices'),
+  }),
 
 
-  externalIdInfo: function() {
+  externalIdInfo: computed('externalId', function() {
     return parseExternalId(this.get('externalId'));
-  }.property('externalId'),
+  }),
 
-  grouping: function() {
+  grouping: computed('externalIdInfo.kind', 'group', 'system', function() {
     var kind = this.get('externalIdInfo.kind');
 
     if ( kind === C.EXTERNAL_ID.KIND_KUBERNETES || kind === C.EXTERNAL_ID.KIND_LEGACY_KUBERNETES )
@@ -222,9 +229,9 @@ var Stack = Resource.extend({
     {
       return C.EXTERNAL_ID.KIND_USER;
     }
-  }.property('externalIdInfo.kind','group','system'),
+  }),
 
-  tags: Ember.computed('group', {
+  tags: computed('group', {
     get() {
       return tagsToArray(this.get('group'));
     },

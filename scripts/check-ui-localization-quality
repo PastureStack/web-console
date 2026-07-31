@@ -667,7 +667,7 @@ const amazonDriverSource = fs.readFileSync(
 if (/github\.com\/rancher|ami\.rancherList|settings\.isRancher/iu.test(amazonDriverSource)) {
   failures.push('obsolete_reference=amazon_image_guidance');
 }
-if (!amazonDriverSource.includes('{{settings.docsBase}}/hosts/#amazon-ec2-image-requirements')) {
+if (!amazonDriverSource.includes('{{this.settings.docsBase}}/hosts/#amazon-ec2-image-requirements')) {
   failures.push('missing_help_link=amazon_image_guidance');
 }
 
@@ -677,19 +677,11 @@ if (!constantsSource.includes("GITHUB: 'https://github.com/PastureStack/web-cons
 if (!fs.existsSync(issueTemplatePath) || !fs.existsSync(issueConfigPath)) {
   failures.push('missing_issue_reporting_contract');
 }
-['fil-PH', 'ja-JP', 'ko-KR'].forEach((locale) => {
-  const localeDataPath = path.join(
-    repoRoot, 'node_modules', 'intl', 'locale-data', 'jsonp', `${locale}.js`
-  );
-  if (!fs.existsSync(localeDataPath)) {
-    failures.push(`missing_intl_locale_data=${locale}`);
-  }
-});
 if (fs.existsSync(path.join(repoRoot, 'public', 'assets', 'images', 'wechat-qr-code.jpg'))) {
   failures.push('obsolete_community_asset=wechat_qr');
 }
 ['/hosts/', '/services/', '/faqs/'].forEach((suffix) => {
-  if (!helpSource.includes(`{{docsLink}}${suffix}`)) {
+  if (!helpSource.includes(`{{this.docsLink}}${suffix}`)) {
     failures.push(`missing_help_link=${suffix}`);
   }
 });
@@ -699,7 +691,7 @@ if (!helpSource.includes('rel="noopener noreferrer"')) {
 if (/\bcol-sm-\s/u.test(helpSource)) {
   failures.push('invalid_responsive_grid_class=help');
 }
-if (!/minVersion=settings\.minDockerVersion\}\}\s*\r?\n\s*<a/u.test(pageHeaderSource)) {
+if (!/minVersion=this\.settings\.minDockerVersion\}\}\s*\r?\n\s*<a/u.test(pageHeaderSource)) {
   failures.push('missing_link_separator=no_hosts_banner');
 }
 
@@ -737,8 +729,8 @@ const catalogDisplayNameSource = fs.readFileSync(
   path.join(repoRoot, 'app', 'utils', 'catalog-display-name.js'),
   'utf8'
 );
-if (!catalogBoxSource.includes('{{model.catalogDisplayName}}') ||
-    catalogBoxSource.includes('{{model.localizedName}}')) {
+if (!catalogBoxSource.includes('{{this.model.catalogDisplayName}}') ||
+    catalogBoxSource.includes('{{this.model.localizedName}}')) {
   failures.push('catalog_card_repeats_brand_prefix');
 }
 if (!catalogDisplayNameSource.includes('PastureStack') ||

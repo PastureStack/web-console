@@ -1,9 +1,27 @@
 /* jshint node: true */
 'use strict';
 var merge = require('merge');
+var templateCompilationPlugin = require.resolve('babel-plugin-ember-template-compilation');
+var templateCompiler = require.resolve('ember-source/ember-template-compiler/index.js');
 
 module.exports = {
   name: 'lacsso',
+  options: {
+    babel: {
+      plugins: [[
+        templateCompilationPlugin,
+        {
+          compilerPath: templateCompiler,
+          enableLegacyModules: [
+            'ember-cli-htmlbars',
+            'ember-cli-htmlbars-inline-precompile',
+            'htmlbars-inline-precompile'
+          ]
+        },
+        'lacsso-template-compilation'
+      ]]
+    }
+  },
   included: function(app) {
     this._super.included(app);
 

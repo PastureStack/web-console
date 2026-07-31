@@ -1,16 +1,19 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import Controller from '@ember/controller';
 import Console from 'ui/mixins/console';
 
-export default Ember.Controller.extend(Console, {
+import { on } from '@ember/object/evented';
 
-  bootstrap: function() {
-    let body        = Ember.$('body');
-    let application = Ember.$('#application');
+export default Controller.extend(Console, {
+
+  bootstrap: on('init', function() {
+    let body        = $('body');
+    let application = $('#application');
 
     body.css('overflow', 'hidden');
 
     application.css('padding-bottom', '0');
 
-  }.on('init'),
+  }),
 
 });

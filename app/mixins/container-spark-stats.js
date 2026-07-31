@@ -1,4 +1,8 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
+import { later, cancel } from '@ember/runloop';
+import { A } from '@ember/array';
+import { alias } from '@ember/object/computed';
+import Mixin from '@ember/object/mixin';
 import RollingRms, { DEFAULT_WINDOW_SIZE } from 'ui/utils/rolling-rms';
 
 const SORT_REFRESH_INTERVAL = 10000;
@@ -40,8 +44,8 @@ function instanceStatsIds(instance) {
   });
 }
 
-export default Ember.Mixin.create({
-  sparkInstances: Ember.computed.alias('model.instances'),
+export default Mixin.create({
+  sparkInstances: alias('model.instances'),
 
   cpuMax: 0,
   memoryMax: 0,
@@ -130,7 +134,7 @@ export default Ember.Mixin.create({
 
         if ( isVisible && stateId ) {
           if ( !instance.get(property) ) {
-            instance.set(property, Ember.A(this._statsById[stateId][key].toArray(true)));
+            instance.set(property, A(this._statsById[stateId][key].toArray(true)));
           }
         } else if ( instance.get(property) ) {
           instance.set(property, null);
@@ -146,7 +150,7 @@ export default Ember.Mixin.create({
     let row = instance.get(property);
 
     if ( !row ) {
-      instance.set(property, Ember.A(window.toArray(true)));
+      instance.set(property, A(window.toArray(true)));
       return;
     }
 
@@ -166,7 +170,7 @@ export default Ember.Mixin.create({
       return;
     }
 
-    this._statsSortTimer = Ember.run.later(this, function() {
+    this._statsSortTimer = later(this, function() {
       this._statsSortTimer = null;
 
       if ( !this.get('isDestroyed') && !this.get('isDestroying') ) {
@@ -180,8 +184,8 @@ export default Ember.Mixin.create({
   },
 
   // for 1.2+
-  instancesByExternalId: Ember.computed('sparkInstances.@each.{id,externalId}', function() {
-    let output = Ember.Object.create();
+  instancesByExternalId: computed('sparkInstances.@each.{id,externalId}', function() {
+    let output = EmberObject.create();
 
     (this.get('sparkInstances') || []).forEach((instance) => {
       let id = instance.get('externalId');
@@ -195,8 +199,8 @@ export default Ember.Mixin.create({
   }),
 
   // for 1.1
-  instancesById: Ember.computed('sparkInstances.@each.id', function() {
-    let output = Ember.Object.create();
+  instancesById: computed('sparkInstances.@each.id', function() {
+    let output = EmberObject.create();
 
     (this.get('sparkInstances') || []).forEach((instance) => {
       let id = instance.get('id');
@@ -211,7 +215,7 @@ export default Ember.Mixin.create({
 
   willDestroy() {
     if ( this._statsSortTimer ) {
-      Ember.run.cancel(this._statsSortTimer);
+      cancel(this._statsSortTimer);
       this._statsSortTimer = null;
     }
 

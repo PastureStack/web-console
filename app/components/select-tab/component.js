@@ -1,12 +1,13 @@
-import Ember from 'ember';
+import { scheduleOnce } from '@ember/runloop';
+import Component from '@ember/component';
 import SelectTab from 'ui/mixins/select-tab';
 
-export default Ember.Component.extend(SelectTab, {
+export default Component.extend(SelectTab, {
   tagName    : 'section',
   initialTab : '',
   init: function() {
     this._super(...arguments);
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       this.send('selectTab', this.get('initialTab'));
     });
   }

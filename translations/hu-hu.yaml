@@ -230,6 +230,7 @@ authPage:
       wellKnownUrl: A felderítési dokumentum URL-je kötelező.
       invalidUrl: A felderítési dokumentum URL-je érvénytelen.
       https: Helyi fejlesztés kivételével a felderítéshez HTTPS szükséges.
+      externalPlatformUrl: Az OpenID Connect beállítása előtt adjon meg HTTPS-t használó tartománynevet a platform külső URL-jeként. IP-cím és titkosítatlan HTTP URL nem használható átirányítási URI-ként.
       clientId: A kliensazonosító kötelező.
       clientSecret: A kliens titkos kulcsa kötelező.
       openidScope: A hatókörök között szerepelnie kell az openid értéknek.

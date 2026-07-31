@@ -227,6 +227,7 @@ authPage:
       wellKnownUrl: A URL do documento de descoberta é obrigatória.
       invalidUrl: A URL do documento de descoberta é inválida.
       https: A descoberta deve usar HTTPS, exceto no desenvolvimento local.
+      externalPlatformUrl: Antes de configurar o OpenID Connect, defina a URL externa da plataforma como um nome de domínio HTTPS. Endereços IP e URLs HTTP sem criptografia não podem ser usados como URI de redirecionamento.
       clientId: O ID do cliente é obrigatório.
       clientSecret: O segredo do cliente é obrigatório.
       openidScope: Os escopos devem incluir openid.

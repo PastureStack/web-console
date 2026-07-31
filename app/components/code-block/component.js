@@ -1,6 +1,8 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed, observer } from '@ember/object';
+
+export default Component.extend({
   language: 'javascript',
   code: '',
   hide: false,
@@ -10,21 +12,21 @@ export default Ember.Component.extend({
   classNames: ['line-numbers'],
   classNameBindings: ['languageClass','hide:hide','constrained:constrained'],
 
-  languageClass: function() {
+  languageClass: computed('language', function() {
     var lang = this.get('language');
     if ( lang )
     {
       return 'language-'+lang;
     }
-  }.property('language'),
+  }),
 
   didReceiveAttrs() {
     this.highlightedChanged();
   },
 
   highlighted: null,
-  highlightedChanged: function() {
+  highlightedChanged: observer('language', 'code', function() {
     var lang = this.get('language');
     this.set('highlighted', Prism.highlight(this.get('code')||'', Prism.languages[lang], lang));
-  }.observes('language','code'),
+  }),
 });

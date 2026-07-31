@@ -4,30 +4,30 @@
 
   <dl class="dl-horizontal">
     <dt>{{t 'authPage.oidc.identity.verifiedLogin'}}</dt>
-    <dd>{{testedIdentityName}}</dd>
+    <dd>{{this.testedIdentityName}}</dd>
     <dt>{{t 'authPage.oidc.identity.subject'}}</dt>
-    <dd><code>{{testedIdentity.externalId}}</code></dd>
+    <dd><code>{{this.testedIdentity.externalId}}</code></dd>
     <dt>{{t 'authPage.oidc.identity.currentMatch'}}</dt>
     <dd>
-      {{#if matchedAccount}}
-        {{matchedAccount.name}} ({{matchedAccount.id}})
-        {{badge-state model=matchedAccount}}
+      {{#if this.matchedAccount}}
+        {{this.matchedAccount.name}} ({{this.matchedAccount.id}})
+        {{badge-state model=this.matchedAccount}}
       {{else}}
         {{t 'authPage.oidc.identity.noMatch'}}
       {{/if}}
     </dd>
   </dl>
 
-  {{#if canRestoreMatchedAccount}}
+  {{#if this.canRestoreMatchedAccount}}
     <div class="alert alert-warning">
       <p>
         <i class="icon icon-alert"></i>
         {{t 'authPage.oidc.identity.inactiveMatch'
-          account=(if matchedAccount.name matchedAccount.name matchedAccount.id)}}
+          account=(if this.matchedAccount.name this.matchedAccount.name this.matchedAccount.id)}}
       </p>
       <button type="button" class="btn btn-warning"
-              disabled={{restoringIdentityAccount}} {{action "restoreMatchedAccount"}}>
-        {{#if restoringIdentityAccount}}
+              disabled={{this.restoringIdentityAccount}} {{action "restoreMatchedAccount"}}>
+        {{#if this.restoringIdentityAccount}}
           <i class="icon icon-spinner icon-spin"></i>
           {{t 'authPage.oidc.identity.restoring'}}
         {{else}}
@@ -38,39 +38,39 @@
     </div>
   {{/if}}
 
-  {{#if identityMatchAccountId}}
+  {{#if this.identityMatchAccountId}}
     <div class="btn-group r-mb15" role="group" aria-label="{{t 'authPage.oidc.identity.strategyLabel'}}">
       <button type="button"
-        class="btn {{if (eq identityStrategy 'useExisting') 'btn-primary' 'btn-default'}}"
+        class="btn {{if (eq this.identityStrategy 'useExisting') 'btn-primary' 'btn-default'}}"
         {{action "chooseIdentityStrategy" "useExisting"}}>
         {{t 'authPage.oidc.identity.useExisting'}}
       </button>
       <button type="button"
-        class="btn {{if (eq identityStrategy 'reassign') 'btn-primary' 'btn-default'}}"
+        class="btn {{if (eq this.identityStrategy 'reassign') 'btn-primary' 'btn-default'}}"
         {{action "chooseIdentityStrategy" "reassign"}}>
         {{t 'authPage.oidc.identity.reassign'}}
       </button>
     </div>
   {{/if}}
 
-  {{#unless (eq identityStrategy 'useExisting')}}
+  {{#unless (eq this.identityStrategy 'useExisting')}}
     <div class="form-group">
       <label>{{t 'authPage.oidc.identity.targetAccount'}}</label>
       {{new-select
         classNames="form-control"
-        content=identityTargetChoices
+        content=this.identityTargetChoices
         optionLabelPath="label"
         optionValuePath="value"
-        value=selectedTargetAccountId
+        value=this.selectedTargetAccountId
       }}
       <p class="help-block">{{t 'authPage.oidc.identity.targetHelp'}}</p>
     </div>
   {{/unless}}
 
-  {{#unless targetAccountReady}}
+  {{#unless this.targetAccountReady}}
     <div class="alert alert-warning">
       <i class="icon icon-alert"></i>
-      {{#if oidcEnabled}}
+      {{#if this.oidcEnabled}}
         {{t 'authPage.oidc.identity.activeAccountRequired'}}
       {{else}}
         {{t 'authPage.oidc.identity.activeAdminRequired'}}
@@ -78,10 +78,10 @@
     </div>
   {{/unless}}
 
-  {{#if hasIdentityConflict}}
+  {{#if this.hasIdentityConflict}}
     <div class="checkbox">
       <label>
-        {{input type="checkbox" checked=transferPermissions}}
+        {{input type="checkbox" checked=this.transferPermissions}}
         {{t 'authPage.oidc.identity.transferPermissions'}}
       </label>
       <p class="help-block">{{t 'authPage.oidc.identity.transferHelp'}}</p>
@@ -90,9 +90,9 @@
       <label>{{t 'authPage.oidc.identity.oldAccountDisposition'}}</label>
       {{new-select
         classNames="form-control"
-        content=oldAccountDispositionChoices
+        content=this.oldAccountDispositionChoices
         localizedLabel=true
-        value=oldAccountDisposition
+        value=this.oldAccountDisposition
       }}
     </div>
     <div class="alert alert-warning">
@@ -101,10 +101,10 @@
       </p>
       <p>
         {{t 'authPage.oidc.identity.confirmationSummary'
-          source=(if matchedAccount.name matchedAccount.name matchedAccount.id)
-          target=(if selectedTargetAccount.name selectedTargetAccount.name selectedTargetAccount.id)}}
+          source=(if this.matchedAccount.name this.matchedAccount.name this.matchedAccount.id)
+          target=(if this.selectedTargetAccount.name this.selectedTargetAccount.name this.selectedTargetAccount.id)}}
       </p>
-      {{#if identityChangeConfirmed}}
+      {{#if this.identityChangeConfirmed}}
         <span class="text-success">
           <i class="icon icon-check"></i>
           {{t 'authPage.oidc.identity.confirmed'}}
@@ -120,7 +120,7 @@
 
   <div class="alert alert-info r-mb0">
     <i class="icon icon-shield"></i>
-    {{#if oidcEnabled}}
+    {{#if this.oidcEnabled}}
       {{t 'authPage.oidc.identity.managementSecurityNotice'}}
     {{else}}
       {{t 'authPage.oidc.identity.securityNotice'}}

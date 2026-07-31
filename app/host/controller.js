@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Controller, { inject as controller } from '@ember/controller';
 
-export default Ember.Controller.extend({
-  application: Ember.inject.controller(),
-  host: Ember.computed.alias('model.host'),
+export default Controller.extend({
+  application: controller(),
+  host: alias('model.host'),
 
   actions: {
     changeHost(host) {

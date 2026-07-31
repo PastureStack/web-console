@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { resolve, hash } from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 
 const DEFAULTS = {
   displayName: 'OpenID Connect',
@@ -10,9 +12,9 @@ const DEFAULTS = {
   usePkce: true,
 };
 
-export default Ember.Route.extend({
-  access: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Route.extend({
+  access: service(),
+  userStore: service('user-store'),
 
   model: function() {
     let configPromise = this.get('authStore').find('config', null, {forceReload: true}).then((config) => {
@@ -39,14 +41,14 @@ export default Ember.Route.extend({
       return config;
     });
 
-    let localRecoveryPromise = Ember.RSVP.resolve(null);
+    let localRecoveryPromise = resolve(null);
     if ( this.get('access.enabled') && this.get('access.provider') === 'localauthconfig' ) {
       localRecoveryPromise = this.get('userStore').find('localauthconfig', null, {forceReload: true}).then((collection) => {
         return collection.get('firstObject');
       });
     }
 
-    return Ember.RSVP.hash({
+    return hash({
       accounts: this.get('userStore').find('account', null, {
         filter: {'kind_ne': ['service', 'agent', 'project']},
         forceReload: true,

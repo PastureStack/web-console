@@ -1,10 +1,13 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { debouncedObserver } from 'ui/utils/debounce';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
-  swarm       : Ember.inject.service(),
+import { observer } from '@ember/object';
+
+export default Component.extend({
+  swarm       : service(),
 
   currentStep : 0,
   subStep     : 0,
@@ -77,10 +80,10 @@ export default Ember.Component.extend({
     this.set('currentStep', 4);
   }),
 
-  stepChanged: function(){
+  stepChanged: observer('currentStep', 'steps.length', function(){
     if ( this.get('currentStep') >= this.get('steps.length') )
     {
       this.sendAction('ready');
     }
-  }.observes('currentStep','steps.length'),
+  }),
 });

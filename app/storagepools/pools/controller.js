@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  usefulPools: function() {
+import { computed } from '@ember/object';
+
+export default Controller.extend({
+  usefulPools: computed('model.all.@each.driverName', function() {
     return this.get('model.all').filter((pool) => {
       return !!pool.get('driverName');
     });
-  }.property('model.all.@each.driverName'),
+  }),
 });

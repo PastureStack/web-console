@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { normalizeName } from 'ui/services/settings';
 
 const ALLOWED = {
@@ -36,9 +38,9 @@ const ALLOWED = {
   'upgrade.manager': {description: 'Automatic upgrades of infrastructure stacks', kind: 'enum', options: ['all','mandatory','none']},
 };
 
-export default Ember.Component.extend({
-  settings: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
+export default Component.extend({
+  settings: service(),
+  modalService: service('modal'),
 
   loading: false,
   show: false,
@@ -59,7 +61,7 @@ export default Ember.Component.extend({
       let obj =  this.get('settings').findByName(key);
       let details = ALLOWED[key];
 
-      this.get('modalService').toggleModal('modal-edit-setting', Ember.Object.create({
+      this.get('modalService').toggleModal('modal-edit-setting', EmberObject.create({
         key: key,
         description: details.description,
         kind: details.kind,
@@ -70,14 +72,14 @@ export default Ember.Component.extend({
     }
   },
 
-  current: function() {
+  current: computed('settings.all.@each.{name,source}', function() {
     let all = this.get('settings.asMap');
 
     return Object.keys(ALLOWED).map((key) => {
       let obj = all[normalizeName(key)];
       let details = ALLOWED[key];
 
-      let out =  Ember.Object.create({
+      let out =  EmberObject.create({
         key: key,
         obj: obj,
       });
@@ -88,5 +90,5 @@ export default Ember.Component.extend({
 
       return out;
     });
-  }.property('settings.all.@each.{name,source}'),
+  }),
 });

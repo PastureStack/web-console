@@ -1,6 +1,8 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed } from '@ember/object';
+
+export default Component.extend({
   tagName: 'input',
   type: 'radio',
   disabled: false,
@@ -10,7 +12,7 @@ export default Ember.Component.extend({
     this.set('selection', this.get('value'));
   },
 
-  checked : function() {
+  checked : computed('value', 'selection', function() {
     return this.get('value') === this.get('selection');
-  }.property('value','selection')
+  })
 });

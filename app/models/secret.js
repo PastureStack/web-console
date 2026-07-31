@@ -1,15 +1,17 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 
+import { computed } from '@ember/object';
+
 export default Resource.extend({
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
   actions: {
     edit: function() {
       this.get('modalService').toggleModal('edit-secret', this);
     },
   },
 
-  availableActions: function() {
+  availableActions: computed('actionLinks.{remove,update}', function() {
     var a = this.get('actionLinks');
     if ( !a )
     {
@@ -25,5 +27,5 @@ export default Resource.extend({
     ];
 
     return choices;
-  }.property('actionLinks.{remove,update}'),
+  }),
 });

@@ -1,30 +1,37 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { htmlSafe } from '@ember/template';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { clampWorkspaceGeometry } from 'ui/utils/console-workspace';
 
-export default Ember.Component.extend({
+import { computed } from '@ember/object';
+
+export default Component.extend({
   classNames: ['console-workspace-window'],
   attributeBindings: ['style', 'role', 'ariaLabel:aria-label'],
   role: 'dialog',
-  workspace: Ember.inject.service('console-workspace'),
-  intl: Ember.inject.service(),
+  workspace: service('console-workspace'),
+  intl: service(),
   entry: null,
   instanceLoaded: false,
   loadError: null,
 
-  ariaLabel: Ember.computed.alias('windowTitle'),
+  ariaLabel: alias('windowTitle'),
 
-  windowTitle: function() {
-    return this.get('intl').t('consoleWorkspace.context.title', {
-      environment: this.get('entry.environmentTitle'),
-      stack: this.get('entry.stackTitle') || this.get('intl').t('consoleWorkspace.context.noStack'),
-      resource: this.get('entry.resourceTitle'),
-    });
-  }.property(
+  windowTitle: computed(
     'entry.{environmentTitle,stackTitle,resourceTitle}',
-    'intl._locale'
+    'intl._locale',
+    function() {
+      return this.get('intl').t('consoleWorkspace.context.title', {
+        environment: this.get('entry.environmentTitle'),
+        stack: this.get('entry.stackTitle') || this.get('intl').t('consoleWorkspace.context.noStack'),
+        resource: this.get('entry.resourceTitle'),
+      });
+    }
   ),
 
-  style: function() {
+  style: computed('entry.{x,y,width,height,z}', function() {
     let entry = this.get('entry');
     let value = [
       'position:fixed',
@@ -34,8 +41,8 @@ export default Ember.Component.extend({
       `height:${Math.round(entry.get('height') || 480)}px`,
       `z-index:${entry.get('z') || 1000}`,
     ].join(';');
-    return Ember.String.htmlSafe(value);
-  }.property('entry.{x,y,width,height,z}'),
+    return htmlSafe(value);
+  }),
 
   didInsertElement() {
     this._super(...arguments);
@@ -77,7 +84,7 @@ export default Ember.Component.extend({
     },
 
     titlebarDoubleClick(event) {
-      if (!Ember.$(event.target).closest('button').length) {
+      if (!$(event.target).closest('button').length) {
         this.get('workspace').toggleMaximize(this.get('entry'));
       }
     },
@@ -99,7 +106,7 @@ export default Ember.Component.extend({
     },
 
     startDrag(event) {
-      if (Ember.$(event.target).closest('button').length) {
+      if ($(event.target).closest('button').length) {
         return;
       }
       event.preventDefault();
@@ -136,10 +143,10 @@ export default Ember.Component.extend({
 
     let namespace = `.consoleWorkspaceWindow-${entry.get('sessionId')}`;
     this._pointerNamespace = namespace;
-    Ember.$(document)
+    $(document)
       .on(`mousemove${namespace}`, (moveEvent) => this.trackPointer(moveEvent))
       .on(`mouseup${namespace}`, () => this.finishPointerTracking());
-    Ember.$('body').addClass('console-workspace-pointer-active');
+    $('body').addClass('console-workspace-pointer-active');
   },
 
   trackPointer(event) {
@@ -170,23 +177,23 @@ export default Ember.Component.extend({
     geometry = clampWorkspaceGeometry(geometry, window.innerWidth, window.innerHeight);
     this.get('entry').setProperties(geometry);
     if (state.mode === 'resize') {
-      Ember.$(window).trigger('resize');
+      $(window).trigger('resize');
     }
   },
 
   finishPointerTracking() {
     if (this._pointerState) {
       this.get('workspace').saveLayouts();
-      Ember.$(window).trigger('resize');
+      $(window).trigger('resize');
     }
     this.stopPointerTracking();
   },
 
   stopPointerTracking() {
     if (this._pointerNamespace) {
-      Ember.$(document).off(this._pointerNamespace);
+      $(document).off(this._pointerNamespace);
     }
-    Ember.$('body').removeClass('console-workspace-pointer-active');
+    $('body').removeClass('console-workspace-pointer-active');
     this._pointerNamespace = null;
     this._pointerState = null;
   },

@@ -1,12 +1,15 @@
-import Ember from 'ember';
+import { alias, equal } from '@ember/object/computed';
+import Controller from '@ember/controller';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-export default Ember.Controller.extend(NewOrEdit, {
+import { computed } from '@ember/object';
+
+export default Controller.extend(NewOrEdit, {
   editing: false,
-  primaryResource: Ember.computed.alias('model.registry'),
+  primaryResource: alias('model.registry'),
 
   activeDriver: null,
-  isCustom: Ember.computed.equal('activeDriver','custom'),
+  isCustom: equal('activeDriver','custom'),
 
   actions: {
     selectDriver: function(name) {
@@ -20,7 +23,7 @@ export default Ember.Controller.extend(NewOrEdit, {
     },
   },
 
-  drivers: function() {
+  drivers: computed('activeDriver', function() {
     var drivers = [
       {name: 'dockerhub', label: 'DockerHub',  css: 'dockerhub', value: 'index.docker.io' },
       {name: 'quay',      label: 'Quay.io',    css: 'quay',      value: 'quay.io',        },
@@ -33,7 +36,7 @@ export default Ember.Controller.extend(NewOrEdit, {
     });
 
     return drivers;
-  }.property('activeDriver'),
+  }),
 
   cleanAddress: function() {
     let cur = this.get('model.registry.serverAddress')||'';

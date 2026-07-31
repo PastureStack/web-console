@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  settings: Ember.inject.service(),
-  intl: Ember.inject.service(),
+export default Component.extend({
+  settings: service(),
+  intl: service(),
 
-  title: Ember.computed('intl._locale', function() {
+  title: computed('intl._locale', function() {
     return this.get('intl').t('helpBtn.title');
   }),
   link: '',
@@ -14,8 +16,8 @@ export default Ember.Component.extend({
   attributeBindings: ['title','href', 'target'],
   classNames: ['small'],
 
-  href: function() {
+  href: computed('link', function() {
     return this.get('settings.docsBase') + this.get('link');
-  }.property('link')
+  })
 
 });

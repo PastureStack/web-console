@@ -1,12 +1,14 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { run } from '@ember/runloop';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  userStore: Ember.inject.service('user-store'),
+export default Service.extend({
+  userStore: service('user-store'),
 
-  unremoved: function() {
+  unremoved: computed('userStore.generation', function() {
     return this.get('userStore').all('userpreference');
-  }.property('userStore.generation'),
+  }),
 
   findByName: function(key) {
     return this.get('unremoved').filterBy('name',key)[0];
@@ -60,7 +62,7 @@ export default Ember.Service.extend({
     if ( !obj.get('id') || obj.get('value') !== neu ) {
       obj.set('value', neu);
       obj.save().then(() => {
-        Ember.run(() => {
+        run(() => {
           this.notifyPropertyChange(key);
         });
       });
@@ -79,7 +81,7 @@ export default Ember.Service.extend({
     this.endPropertyChanges();
   },
 
-  tablePerPage: Ember.computed(`${C.PREFS.TABLE_COUNT}`, function() {
+  tablePerPage: computed(`${C.PREFS.TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.TABLE_COUNT}`);
     if ( C.TABLES.PAGE_SIZES.indexOf(out) === -1 ) {
       out = C.TABLES.DEFAULT_COUNT;
@@ -88,7 +90,7 @@ export default Ember.Service.extend({
     return out;
   }),
 
-  statsTablePerPage: Ember.computed(`${C.PREFS.STATS_TABLE_COUNT}`, function() {
+  statsTablePerPage: computed(`${C.PREFS.STATS_TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.STATS_TABLE_COUNT}`);
 
     if ( C.TABLES.STATS_PAGE_SIZES.indexOf(out) === -1 ) {
@@ -98,7 +100,7 @@ export default Ember.Service.extend({
     return out;
   }),
 
-  storageTablePerPage: Ember.computed(`${C.PREFS.STORAGE_TABLE_COUNT}`, function() {
+  storageTablePerPage: computed(`${C.PREFS.STORAGE_TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.STORAGE_TABLE_COUNT}`);
 
     if ( C.TABLES.STORAGE_PAGE_SIZES.indexOf(out) === -1 ) {

@@ -1,6 +1,10 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 import { validateHostname } from 'ui/utils/validate-dns';
+
+import { observer } from '@ember/object';
 
 let ioOptimized=[
   {
@@ -510,17 +514,17 @@ let isOptimizedinstanceType=[
   },
 ];
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName       : 'aliyunecs',
-  aliyunecsConfig      : Ember.computed.alias('model.aliyunecsConfig'),
+  aliyunecsConfig      : alias('model.aliyunecsConfig'),
   ioOptimized : ioOptimized,
   instanceType: instanceType,
   dataDiskCategory: dataDiskCategory,
   systemDiskCategory: systemDiskCategory,
   regions: regions,
-  intl: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  ioOptimizedObserves: function(){
+  intl: service(),
+  settings: service(),
+  ioOptimizedObserves: observer('aliyunecsConfig.ioOptimized', function(){
     if (this.get('aliyunecsConfig.ioOptimized')==='none'){
       this.set('instanceType',notOptimizedinstanceType);
       this.set('dataDiskCategory',[{value:"cloud"}]);
@@ -531,7 +535,7 @@ export default Ember.Component.extend(Driver, {
       this.set('dataDiskCategory',optimizedDiskCategory);
       this.set('systemDiskCategory',optimizedDiskCategory);
     }
-  }.observes('aliyunecsConfig.ioOptimized'),
+  }),
   bootstrap: function() {
     let config = this.get('store').createRecord({
       type                  : 'aliyunecsConfig',

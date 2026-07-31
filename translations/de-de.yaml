@@ -230,6 +230,7 @@ authPage:
       wellKnownUrl: Die URL des Discovery-Dokuments ist erforderlich.
       invalidUrl: Die URL des Discovery-Dokuments ist ungültig.
       https: Außer für lokale Entwicklung muss Discovery HTTPS verwenden.
+      externalPlatformUrl: Legen Sie vor der OpenID-Connect-Konfiguration eine externe Plattform-URL mit HTTPS-Domänennamen fest. IP-Adressen und unverschlüsselte HTTP-URLs sind als Umleitungs-URI nicht zulässig.
       clientId: Die Client-ID ist erforderlich.
       clientSecret: Das Client-Geheimnis ist erforderlich.
       openidScope: Die Gültigkeitsbereiche müssen openid enthalten.

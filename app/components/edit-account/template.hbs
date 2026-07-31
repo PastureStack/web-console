@@ -7,17 +7,17 @@
       <label class="form-control-static">{{t 'editAccount.form.name.label'}}</label>
     </div>
     <div class="col-sm-12 col-md-7">
-      {{#if isAdmin}}
-        {{input type="text" value=model.account.name classNames="form-control" placeholder=(t 'editAccount.form.name.placeholder')}}
+      {{#if this.isAdmin}}
+        {{input type="text" value=this.model.account.name classNames="form-control" placeholder=(t 'editAccount.form.name.placeholder')}}
       {{else}}
         <div class="form-control-static">
-          {{model.account.name}}
+          {{this.model.account.name}}
         </div>
       {{/if}}
     </div>
   </div>
 
-  {{#if isAdmin}}
+  {{#if this.isAdmin}}
     <div class="row form-group">
       <div class="col-sm-12 col-md-3 form-label">
         <label class="form-control-static">{{t 'editAccount.form.kind.label'}}</label>
@@ -25,44 +25,44 @@
       <div class="col-sm-12 col-md-7">
         {{new-select
           classNames="form-control"
-          content=accountTypeChoices
-          value=model.account.kind
+          content=this.accountTypeChoices
+          value=this.model.account.kind
           localizedLabel=true
         }}
       </div>
     </div>
   {{/if}}
 
-  {{#if isAdmin}}
+  {{#if this.isAdmin}}
     <div class="row form-group">
       <div class="col-sm-12 col-md-3 form-label">
         <label for="description">{{t 'editAccount.form.description.label'}}</label>
       </div>
       <div class="col-sm-12 col-md-7">
-        {{textarea value=model.account.description classNames="form-control no-resize" rows="2" placeholder=(t 'editAccount.form.description.placeholder')}}
+        {{textarea value=this.model.account.description classNames="form-control no-resize" rows="2" placeholder=(t 'editAccount.form.description.placeholder')}}
       </div>
     </div>
   {{/if}}
 
-  {{#if isLocalAuth}}
+  {{#if this.isLocalAuth}}
     <div class="row form-group">
       <div class="col-sm-12 col-md-3 form-label">
         <label class="form-control-static">{{t 'editAccount.form.publicValue.label'}}</label>
       </div>
       <div class="col-sm-12 col-md-7">
         <div class="form-control-static">
-          {{model.credential.publicValue}}
+          {{this.model.credential.publicValue}}
         </div>
       </div>
     </div>
 
-    {{#if needOld}}
+    {{#if this.needOld}}
       <div class="row form-group">
         <div class="col-sm-12 col-md-3 form-label">
           <label class="form-control-static">{{t 'editAccount.form.oldPassword.label'}}</label>
         </div>
         <div class="col-sm-12 col-md-7">
-          {{input type="password" value=oldPassword classNames="form-control"}}
+          {{input type="password" value=this.oldPassword classNames="form-control"}}
         </div>
       </div>
     {{/if}}
@@ -72,18 +72,18 @@
         <label class="form-control-static">{{t 'editAccount.form.newPassword.label'}}</label>
       </div>
       <div class="col-sm-12 col-md-7">
-        {{schema/input-password value=newPassword generated="generated"}}
-        <div class="help-block">{{validateDescription}}</div>
+        {{schema/input-password value=this.newPassword generated="generated"}}
+        <div class="help-block">{{this.validateDescription}}</div>
       </div>
     </div>
 
-    {{#liquid-if showConfirm}}
+    {{#liquid-if this.showConfirm}}
       <div class="row form-group">
         <div class="col-sm-12 col-md-3 form-label">
           <label class="form-control-static">{{t 'editAccount.form.confirmPassword.label'}}</label>
         </div>
         <div class="col-sm-12 col-md-7">
-          {{input type="password" value=newPassword2 classNames="form-control"}}
+          {{input type="password" value=this.newPassword2 classNames="form-control"}}
         </div>
       </div>
     {{/liquid-if}}
@@ -93,8 +93,8 @@
         <label class="form-control-static">{{t 'editAccount.form.identity.label'}}</label>
       </div>
       <div class="col-sm-12 col-md-7">
-        {{#if (and model.account.externalId model.account.externalIdType)}}
-          {{identity-block externalIdType=model.account.externalIdType externalId=model.account.externalId}}
+        {{#if (and this.model.account.externalId this.model.account.externalIdType)}}
+          {{identity-block externalIdType=this.model.account.externalIdType externalId=this.model.account.externalId}}
         {{else}}
           <div class="form-control-static text-muted">
             {{t 'generic.none'}}
@@ -105,5 +105,5 @@
   {{/if}}
 </section>
 
-{{top-errors errors=errors}}
-{{save-cancel editing=editing save="save" cancel="cancel"}}
+{{top-errors errors=this.errors}}
+{{save-cancel editing=this.editing save="save" cancel="cancel"}}

@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model() {
     return this.get('store').findAll('container').then((containers) => {
       let inst = containers.filter((c) => {
@@ -10,7 +11,7 @@ export default Ember.Route.extend({
 
       if ( inst )
       {
-        return Ember.Object.create({
+        return EmberObject.create({
           command: ['/bin/bash','-l','-c','echo "# Run docker commands inside here\n# e.g. docker service ls\n"; TERM=xterm-256color /bin/bash'],
           instance: inst,
         });

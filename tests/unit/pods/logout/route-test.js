@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import LogoutRoute from 'ui/logout/route';
 
 module('Unit | Route | logout');
@@ -8,7 +8,7 @@ module('Unit | Route | logout');
 test('it exists', function(assert) {
   var route = LogoutRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('beforeModel sends logout to transition', function(assert) {
@@ -20,5 +20,5 @@ test('beforeModel sends logout to transition', function(assert) {
       assert.equal(name, 'logout');
     },
   });
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });

@@ -1,10 +1,13 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import { alias } from '@ember/object/computed';
+import Controller from '@ember/controller';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend(NewOrEdit, {
-  primaryResource: Ember.computed.alias('model.account'),
-  settings: Ember.inject.service(),
+export default Controller.extend(NewOrEdit, {
+  primaryResource: alias('model.account'),
+  settings: service(),
 
   actions: {
     cancel() {
@@ -12,7 +15,7 @@ export default Ember.Controller.extend(NewOrEdit, {
     },
   },
 
-  validateDescription: Ember.computed(function() {
+  validateDescription: computed(function() {
     return this.get('settings').get(C.SETTING.AUTH_LOCAL_VALIDATE_DESC) || null;
   }),
 

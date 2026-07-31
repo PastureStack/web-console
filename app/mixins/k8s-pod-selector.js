@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
-  k8s: Ember.inject.service(),
+import { computed } from '@ember/object';
 
-  selectorsAsArray: function() {
+export default Mixin.create({
+  k8s: service(),
+
+  selectorsAsArray: computed('spec.selector', function() {
     var out = [];
     var sel = this.get('spec.selector');
     if ( typeof sel === 'string' )
@@ -32,7 +35,7 @@ export default Ember.Mixin.create({
     }
 
     return out;
-  }.property('spec.selector'),
+  }),
 
   _selected(field,method) {
     var selectors = this.get('selectorsAsArray');
@@ -57,11 +60,21 @@ export default Ember.Mixin.create({
     return matching;
   },
 
-  selectedPods: function() {
-    return this._selected('k8s.pods','hasLabel');
-  }.property('selectorsAsArray.@each.{label,value}','k8s.pods.[]','k8s.namespace.id'),
+  selectedPods: computed(
+    'selectorsAsArray.@each.{label,value}',
+    'k8s.pods.[]',
+    'k8s.namespace.id',
+    function() {
+      return this._selected('k8s.pods','hasLabel');
+    }
+  ),
 
-  selectedReplicaSets: function() {
-    return this._selected('k8s.replicasets','hasLabel');
-  }.property('selectorsAsArray.@each.{label,value}','k8s.replicasets.[]','k8s.namespace.id'),
+  selectedReplicaSets: computed(
+    'selectorsAsArray.@each.{label,value}',
+    'k8s.replicasets.[]',
+    'k8s.namespace.id',
+    function() {
+      return this._selected('k8s.replicasets','hasLabel');
+    }
+  ),
 });

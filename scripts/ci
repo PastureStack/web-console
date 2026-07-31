@@ -70,12 +70,10 @@ node ./scripts/check-ui-localization-quality
 ./scripts/check-ui-yamljs-glob-override
 ./scripts/check-ui-glob-cjs-default-compat
 ./scripts/check-ui-ember-api-store-fetch-upgrade
-./scripts/check-ui-core-js-compat
 ./scripts/check-ui-deprecated-warning-backlog
 ./scripts/check-ui-mkdirp-override
 ./scripts/check-ui-exists-sync-compat
 ./scripts/check-ui-inflight-compat
-./scripts/check-ui-osenv-compat
 ./scripts/check-ui-sort-package-json-compat
 ./scripts/check-ui-source-map-url-compat
 ./scripts/check-ui-intl-messageformat-parser-compat

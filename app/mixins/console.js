@@ -1,16 +1,20 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { inject as controller } from '@ember/controller';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
-  application : Ember.inject.controller(),
+import { on } from '@ember/object/evented';
+
+export default Mixin.create({
+  application : controller(),
   queryParams : ['instanceId'],
   instanceId  : null,
   model       : null,
 
-  bootstrap: function() {
+  bootstrap: on('init', function() {
     if (this.get('application.isPopup')) {
-      Ember.$('body').css('overflow', 'hidden');
+      $('body').css('overflow', 'hidden');
     }
-  }.on('init'),
+  }),
 
   actions: {
     cancel: function() {

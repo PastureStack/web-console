@@ -1,19 +1,21 @@
-import Ember from 'ember';
+import { LinkComponent } from '@ember/legacy-built-in-components';
+
+import { on } from '@ember/object/evented';
 
 export function initialize(/*application */) {
-  Ember.LinkComponent.reopen({
+  LinkComponent.reopen({
     attributeBindings: ['tooltip', 'data-placement'],
 
     // Set activeParent=true on a {{link-to}} to automatically propagate the active
     // class to the parent element (like <li>{{link-to}}</li>)
     activeParent: false,
 
-    addActiveObserver: function() {
+    addActiveObserver: on('didInsertElement', function() {
       if ( this.get('activeParent') ) {
         this.addObserver('active', this, 'activeChanged');
         this.activeChanged();
       }
-    }.on('didInsertElement'),
+    }),
 
     activeChanged() {
       if ( this.isDestroyed || this.isDestroying ) {

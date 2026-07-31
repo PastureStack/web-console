@@ -1,35 +1,49 @@
-import Ember from 'ember';
+import { makeArray } from '@ember/array';
 import missingMessage from 'ui/utils/intl/missing-message';
-const { get, makeArray } = Ember;
+import C from 'ui/utils/constants';
 
 export function initialize(instance) {
   var intl = instance.lookup('service:intl');
 
+  // ember-intl 7 no longer seeds a default locale.  Templates can render
+  // while the language JSON is still loading, so establish a safe locale
+  // before the first translation lookup.
+  intl.setLocale(C.LANGUAGE.DEFAULT);
+  intl.setOnMissingTranslation(missingMessage);
   intl.reopen({
-    // calling findTranslationByKey with a null key explodes, make it return something
-    _findTranslationByKey: intl.findTranslationByKey,
     findTranslationByKey(key, locales) {
-      locales = makeArray(locales || get(this, '_locale'));
+      locales = makeArray(locales || this._locale || this.primaryLocale || 'unknown');
 
       if (locales[0] === 'none') {
         return missingMessage(key, locales);
-      } else if ( key ) {
-        return this._findTranslationByKey(...arguments);
-      }else {
-        return this._findTranslationByKey('generic.missing', locales);
       }
+
+      key = key || 'generic.missing';
+      for (let locale of locales) {
+        let translation = this.getTranslation(key, locale);
+        if (translation !== undefined) {
+          return translation;
+        }
+      }
+
+      return missingMessage(key, locales);
     },
 
-    tHtml(key, ...args) {
-      const [ options ] = args;
-      const translation = this.findTranslationByKey(key, options && options.locale);
-      return this.formatHtmlMessage(translation, ...args);
+    formatHtmlMessage(message, options = {}) {
+      return this.formatMessage(message, {
+        ...options,
+        htmlSafe: true,
+      });
+    },
+
+    tHtml(key, options = {}) {
+      const translation = this.findTranslationByKey(key, options.locale);
+      return this.formatHtmlMessage(translation, options);
     }
   });
 }
 
 export default {
   name: 'intl',
-  after: 'ember-intl',
   initialize: initialize
 };

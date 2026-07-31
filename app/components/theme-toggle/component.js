@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
-  prefs     : Ember.inject.service(),
-  userTheme : Ember.inject.service('user-theme'),
+export default Component.extend({
+  prefs     : service(),
+  userTheme : service('user-theme'),
 
   classNames : ['btn-group', 'btn-group-sm'],
 
-  theme: Ember.computed(`prefs.${C.PREFS.THEME}`, function() {
+  theme: computed(`prefs.${C.PREFS.THEME}`, function() {
     return this.get(`prefs.${C.PREFS.THEME}`);
   }),
 

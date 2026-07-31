@@ -1,20 +1,20 @@
 <section class="header clearfix">
   <h1>{{#link-to "certificates"}}{{t 'certificatesPage.detail.header'}}{{/link-to}}</h1>
 
-  {{#power-select options=model.allCertificates selected=model.certificate onchange=(action "changeCertificate") searchField="displayName" as |obj|}}
+  {{#power-select options=this.model.allCertificates selected=this.model.certificate onchange=(action "changeCertificate") searchField="displayName" as |obj|}}
     <span class="clip">
       {{select-dot model=obj}}
     </span>
   {{/power-select}}
 
-  {{action-menu model=model.certificate size="sm"}}
+  {{action-menu model=this.model.certificate size="sm"}}
 </section>
 
-{{#if model.certificate.description}}
+{{#if this.model.certificate.description}}
   <section>
     <div class="well description">
       <label>{{t 'certificatesPage.detail.description'}}</label>
-      <p>{{model.certificate.description}}</p>
+      <p>{{this.model.certificate.description}}</p>
     </div>
   </section>
 {{/if}}
@@ -30,30 +30,30 @@
               <ul class="list-lines">
                 <li>
                   <label>{{t 'certificatesPage.detail.info.valid'}}</label>
-                  {{date-calendar model.certificate.issuedAt}} ({{date-from-now model.certificate.issuedDate}})
+                  {{date-calendar this.model.certificate.issuedAt}} ({{date-from-now this.model.certificate.issuedDate}})
                 </li>
                 <li>
                   <label>{{t 'certificatesPage.detail.info.expires'}}</label>
-                  <span class="{{if model.certificate.expiresSoon "text-bold text-danger"}}">
-                    {{date-calendar model.certificate.expiresAt}}
-                    ({{date-from-now model.certificate.expiresDate}})
+                  <span class="{{if this.model.certificate.expiresSoon "text-bold text-danger"}}">
+                    {{date-calendar this.model.certificate.expiresAt}}
+                    ({{date-from-now this.model.certificate.expiresDate}})
                   </span>
                 </li>
                 <li class="force-wrap">
                   <label>{{t 'certificatesPage.detail.info.algorithm'}}</label>
-                  {{model.certificate.algorithm}}{{#if model.certificate.keySize}} - {{model.certificate.keySize}} {{t 'uiText.certificateBits'}}{{/if}}
+                  {{this.model.certificate.algorithm}}{{#if this.model.certificate.keySize}} - {{this.model.certificate.keySize}} {{t 'uiText.certificateBits'}}{{/if}}
                 </li>
                 <li class="force-wrap">
                   <label>{{t 'certificatesPage.detail.info.issuer'}}</label>
-                  {{model.certificate.displayIssuer}}
+                  {{this.model.certificate.displayIssuer}}
                 </li>
                 <li class="force-wrap">
                   <label>{{t 'certificatesPage.detail.info.serialNumber'}}</label>
-                  {{model.certificate.serialNumber}}
+                  {{this.model.certificate.serialNumber}}
                 </li>
                 <li>
                   <label>{{t 'certificatesPage.detail.info.version'}}</label>
-                  {{model.certificate.version}}
+                  {{this.model.certificate.version}}
                 </li>
               </ul>
             </div>
@@ -66,9 +66,9 @@
             <label class="section">{{t 'certificatesPage.detail.domainNames.labelText'}}</label>
             <div>
               <ul class="list-unstyled">
-                {{#if model.certificate.CN}}
-                  <li><a href="https://{{model.certificate.CN}}" target="_blank">{{model.certificate.CN}}</a> (CN)</li>
-                  {{#each model.certificate.displaySans as |san|}}
+                {{#if this.model.certificate.CN}}
+                  <li><a href="https://{{this.model.certificate.CN}}" target="_blank">{{this.model.certificate.CN}}</a> (CN)</li>
+                  {{#each this.model.certificate.displaySans as |san|}}
                     <li><a href="https://{{san}}" target="_blank">{{san}}</a></li>
                   {{/each}}
                 {{else}}

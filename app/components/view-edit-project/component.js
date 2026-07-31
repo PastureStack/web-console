@@ -1,14 +1,19 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import { sortInsensitiveBy } from 'ui/utils/sort';
 
-export default Ember.Component.extend(NewOrEdit, Sortable, {
-  projects: Ember.inject.service(),
-  access: Ember.inject.service(),
-  growl: Ember.inject.service(),
-  accessEnabled: Ember.computed.alias('access.enabled'),
+import { computed } from '@ember/object';
+
+export default Component.extend(NewOrEdit, Sortable, {
+  projects: service(),
+  access: service(),
+  growl: service(),
+  accessEnabled: alias('access.enabled'),
   queryParams: ['editing'],
 
   project: null,
@@ -18,8 +23,8 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
   editing: false,
   tab: 'access',
 
-  primaryResource: Ember.computed.alias('project'),
-  sortableContent: Ember.computed.alias('project.projectMembers'),
+  primaryResource: alias('project'),
+  sortableContent: alias('project.projectMembers'),
   sortBy: 'name',
   sorts: {
     name:   ['name', 'externalId'],
@@ -75,20 +80,20 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
     }
   },
 
-  projectBase: function() {
+  projectBase: computed('project.id', function() {
     return this.get('app.projectEndpoint').replace(this.get('app.projectToken'), this.get('project.id'));
-  }.property('project.id'),
+  }),
 
-  roleOptions: function() {
+  roleOptions: computed(function() {
     return (this.get('userStore').getById('schema','projectmember').get('resourceFields.role.options')||[]).map((role) => {
       return {
         label: 'model.projectMember.role.'+role,
         value: role
       };
     });
-  }.property(),
+  }),
 
-  templateChoices: function() {
+  templateChoices: computed('project.projectTemplateId', 'projectTemplates.@each.name', function() {
     var active = this.get('project.projectTemplateId');
 
     var choices = this.get('projectTemplates').map((tpl) => {
@@ -104,39 +109,39 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
     });
 
     return sortInsensitiveBy(choices,'name');
-  }.property('project.projectTemplateId','projectTemplates.@each.name'),
+  }),
 
-  selectedProjectTemplate: function() {
+  selectedProjectTemplate: computed('project.projectTemplateId', function() {
     return this.get('projectTemplates').findBy('id', this.get('project.projectTemplateId'));
-  }.property('project.projectTemplateId'),
+  }),
 
-  hasOwner: function() {
+  hasOwner: computed('project.projectMembers.@each.role', function() {
     return this.get('project.projectMembers').filterBy('role', C.PROJECT.ROLE_OWNER).get('length') > 0;
-  }.property('project.projectMembers.@each.role'),
+  }),
 
-  npWithinStack: function() {
+  npWithinStack: computed('network.policy.@each.within', function() {
     return this.get('network.policy').findBy('within','stack');
-  }.property('network.policy.@each.within'),
+  }),
 
-  npWithinService: function() {
+  npWithinService: computed('network.policy.@each.within', function() {
     return this.get('network.policy').findBy('within','service');
-  }.property('network.policy.@each.within'),
+  }),
 
-  npWithinLinked: function() {
+  npWithinLinked: computed('network.policy.@each.within', function() {
     return this.get('network.policy').findBy('within','linked');
-  }.property('network.policy.@each.within'),
+  }),
 
-  missingManager: function() {
+  missingManager: computed('policyManager', function() {
     return !this.get('policyManager');
-  }.property('policyManager'),
+  }),
 
-  canEditProject: function() {
+  canEditProject: computed('project.actionLinks.update', function() {
     return !this.get('project.id') || !!this.get('project.actionLinks.update');
-  }.property('project.actionLinks.update'),
+  }),
 
-  hasUnsupportedPolicy: function() {
+  hasUnsupportedPolicy: computed('network.policy.@each.within', function() {
     return this.get('network.policy').filter((x) => { return !!!(x.get('within')); }).length > 0;
-  }.property('network.policy.@each.within'),
+  }),
 
   validate() {
     this._super();
@@ -171,12 +176,12 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
     if ( this.get('canEditProject') ) {
       return this._super(...arguments);
     } else {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
   },
 
   didSave() {
-    let setMembers = Ember.RSVP.resolve();
+    let setMembers = resolve();
     if ( this.get('editing') )
     {
       if ( this.get('access.enabled') )

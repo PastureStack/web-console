@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import Mixin from '@ember/object/mixin';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-export default Ember.Mixin.create({
+import { computed, observer } from '@ember/object';
+
+export default Mixin.create({
   reservedKeys: ['delayTimer','pollTimer'],
 
   replaceWith: function() {
@@ -32,10 +34,10 @@ export default Ember.Mixin.create({
     this.set('pollTimer', null);
   },
 
-  needsPolling: function() {
+  needsPolling: computed('transitioning', 'state', function() {
     return ( this.get('transitioning') === 'yes' ) ||
            ( this.get('state') === 'requested' );
-  }.property('transitioning','state'),
+  }),
 
   remove: function() {
     return this._super().finally(() => {
@@ -43,7 +45,7 @@ export default Ember.Mixin.create({
     });
   },
 
-  transitioningChanged: function() {
+  transitioningChanged: observer('transitioning', function() {
     var delay = this.constructor.pollTransitioningDelay;
     var interval = this.constructor.pollTransitioningInterval;
 
@@ -70,11 +72,11 @@ export default Ember.Mixin.create({
     this.set('delayTimer', setTimeout(function() {
       this.transitioningPoll();
     }.bind(this), Util.timerFuzz(delay)));
-  }.observes('transitioning'),
+  }),
 
-  reloadOpts: function() {
+  reloadOpts: computed(function() {
     return null;
-  }.property(),
+  }),
 
   transitioningPoll: function() {
     this.clearPoll();
@@ -121,7 +123,7 @@ export default Ember.Mixin.create({
     });
   },
 
-  stateChanged: function() {
+  stateChanged: observer('state', function() {
     // Get rid of things that are removed
     if ( C.REMOVEDISH_STATES.includes(this.state) ) {
       try {
@@ -131,5 +133,5 @@ export default Ember.Mixin.create({
       } catch (e) {
       }
     }
-  }.observes('state'),
+  }),
 });

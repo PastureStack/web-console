@@ -1,5 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
+
+import { computed, observer } from '@ember/object';
 
 function isPublic(name) {
   if ((name || '').trim().replace(/^https?:\/\//, '').match(/^(localhost|192\.168\.|172\.1[6789]\.|172\.2[0123456789]\.|172\.3[01]\.|10\.)/)) {
@@ -9,9 +12,9 @@ function isPublic(name) {
   return true;
 }
 
-export default Ember.Component.extend({
-  endpoint      : Ember.inject.service(),
-  settings      : Ember.inject.service(),
+export default Component.extend({
+  endpoint      : service(),
+  settings      : service(),
 
   customRadio   : null,
   customValue   : '',
@@ -79,19 +82,19 @@ export default Ember.Component.extend({
     });
   },
 
-  looksPublic: function() {
+  looksPublic: computed('activeValue', function() {
     return isPublic(this.get('activeValue'));
-  }.property('activeValue'),
+  }),
 
-  activeValue: function() {
+  activeValue: computed('customRadio', 'customValue', 'thisPage', function() {
     if (this.get('customRadio') === 'yes') {
       return this.get('customValue').trim();
     } else {
       return this.get('thisPage');
     }
-  }.property('customRadio','customValue','thisPage'),
+  }),
 
-  customValueDidChange: function() {
+  customValueDidChange: observer('customValue', function() {
     let val = (this.get('customValue') || '').trim();
     let idx = val.indexOf('/', 8); // 8 is enough for "https://"
     if (idx !== -1) {
@@ -103,6 +106,6 @@ export default Ember.Component.extend({
     if (val) {
       this.set('cusomRadio', 'yes');
     }
-  }.observes('customValue'),
+  }),
 
 });

@@ -1,12 +1,16 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Tooltip from 'ui/mixins/tooltip';
 import StrippedName from 'ui/mixins/stripped-name';
 
-export default Ember.Component.extend(Tooltip, StrippedName, {
-  resourceActions:  Ember.inject.service('resource-actions'),
+import { observer } from '@ember/object';
+
+export default Component.extend(Tooltip, StrippedName, {
+  resourceActions:  service('resource-actions'),
   needs:            ['application'],
-  model:            Ember.computed.alias('tooltipService.tooltipOpts.model'),
-  actionsOpen:      Ember.computed.alias('resourceActions.open'),
+  model:            alias('tooltipService.tooltipOpts.model'),
+  actionsOpen:      alias('resourceActions.open'),
   inTooltip:        false,
   layoutName:       'tooltip-action-menu',
 
@@ -38,12 +42,12 @@ export default Ember.Component.extend(Tooltip, StrippedName, {
     }
   },
 
-  openChanged: function() {
+  openChanged: observer('actionsOpen', function() {
     this.set('tooltipService.requireClick', this.get('actionsOpen'));
     if ( !this.get('actionsOpen') && !this.get('inTooltip') )
     {
       this.get('tooltipService').leave();
     }
-  }.observes('actionsOpen'),
+  }),
 
 });

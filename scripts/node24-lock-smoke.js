@@ -86,7 +86,8 @@ function expectModernGlobDevServerPath() {
     fail("glob modern sync API is missing");
   }
   const matches = globSync("vendor/**/*.js", { cwd: process.cwd() });
-  if (!Array.isArray(matches) || !matches.includes("vendor/novnc.js")) {
+  const normalizedMatches = Array.isArray(matches) ? matches.map((entry) => entry.replaceAll("\\", "/")) : [];
+  if (!normalizedMatches.includes("vendor/novnc.js")) {
     fail("glob modern sync smoke did not find vendored UI files");
   }
   console.log("glob-dev-server-smoke-ok version=13.0.6");
@@ -237,32 +238,6 @@ function expectSyncDiskCacheRimrafOverride() {
   console.log("sync-disk-cache-rimraf-smoke-ok rimraf=6.1.3");
 }
 
-function expectTempRimrafOverride() {
-  const temp = require("temp");
-  const tempDir = path.dirname(require.resolve("temp/package.json"));
-  const rimrafPath = require.resolve("rimraf", { paths: [tempDir] });
-  const rimrafInfo = packageInfoFromResolved(rimrafPath, "temp rimraf");
-  if (rimrafInfo.version !== "6.1.3") {
-    fail(`temp rimraf version ${rimrafInfo.version} != 6.1.3`);
-  }
-  if (typeof (require(rimrafPath).sync || require(rimrafPath).rimrafSync) !== "function") {
-    fail("temp rimraf sync API missing");
-  }
-
-  temp.track();
-  const dir = temp.mkdirSync("rc16-temp-rimraf-smoke");
-  const file = path.join(dir, "probe.txt");
-  fs.writeFileSync(file, "ok");
-  if (!fs.existsSync(file)) {
-    fail("temp mkdir/write smoke failed");
-  }
-  temp.cleanupSync();
-  if (fs.existsSync(dir)) {
-    fail("temp cleanupSync did not remove tracked directory");
-  }
-  console.log("temp-rimraf-smoke-ok rimraf=6.1.3");
-}
-
 function expectBroccoliTerserRimrafOverride() {
   const terserPlugin = require("broccoli-terser-sourcemap");
   const terserDir = path.dirname(require.resolve("broccoli-terser-sourcemap/package.json"));
@@ -387,11 +362,11 @@ function expectYamljsGlobOverride() {
 async function expectMkdirpOverride() {
   expectPackageJsonVersion("mkdirp", "0.5.6");
 
-  const ownerDir = path.join(process.cwd(), "node_modules", "broccoli-templater", "node_modules", "broccoli-filter");
+  const ownerDir = path.dirname(require.resolve("broccoli-filter/package.json"));
   const mkdirpPath = require.resolve("mkdirp", { paths: [ownerDir] });
   const mkdirpInfo = packageInfoFromResolved(mkdirpPath, "mkdirp");
   if (mkdirpInfo.version !== "0.5.6") {
-    fail(`broccoli-templater broccoli-filter mkdirp resolved ${mkdirpInfo.version} instead of 0.5.6`);
+    fail(`broccoli-filter mkdirp resolved ${mkdirpInfo.version} instead of 0.5.6`);
   }
 
   const mkdirp = require(mkdirpPath);
@@ -456,7 +431,6 @@ function expectExistsSyncCompat() {
   }
 
   require("ember-cli");
-  require("ember-intl");
   console.log("exists-sync-compat-smoke-ok wrapper=1.0.0-rc16.0");
 }
 
@@ -518,7 +492,7 @@ async function expectInflightCompat() {
     try {
       fs.mkdirSync(path.join(dir, "nested"));
       fs.writeFileSync(path.join(dir, "nested", "fixture.js"), "module.exports = true;\n");
-      const syncHits = oldGlob.sync("**/*.js", { cwd: dir }).sort();
+      const syncHits = oldGlob.sync("**/*.js", { cwd: dir }).map((entry) => entry.replaceAll("\\", "/")).sort();
       if (JSON.stringify(syncHits) !== JSON.stringify(["nested/fixture.js"])) {
         reject(new Error(`legacy glob sync mismatch after inflight wrapper: ${JSON.stringify(syncHits)}`));
         return;
@@ -529,7 +503,7 @@ async function expectInflightCompat() {
             reject(err);
             return;
           }
-          asyncHits = asyncHits.sort();
+          asyncHits = asyncHits.map((entry) => entry.replaceAll("\\", "/")).sort();
           if (JSON.stringify(asyncHits) !== JSON.stringify(["nested/fixture.js"])) {
             reject(new Error(`legacy glob async mismatch after inflight wrapper: ${JSON.stringify(asyncHits)}`));
             return;
@@ -546,42 +520,6 @@ async function expectInflightCompat() {
   });
 
   console.log("inflight-compat-smoke-ok wrapper=1.1.0-rc16.0");
-}
-
-function expectOsenvCompat() {
-  expectVersion("osenv", "0.2.0-rc16.0");
-
-  const osenv = require("osenv");
-  for (const name of ["user", "prompt", "hostname", "tmpdir", "home", "path", "editor", "shell"]) {
-    if (typeof osenv[name] !== "function") {
-      fail(`osenv compatibility wrapper missing ${name} function`);
-    }
-  }
-  if (!Array.isArray(osenv.path())) {
-    fail("osenv compatibility wrapper path() did not return an array");
-  }
-  if (!osenv.tmpdir() || !osenv.home()) {
-    fail("osenv compatibility wrapper tmpdir/home returned empty values");
-  }
-  osenv.home((err, home) => {
-    if (err) {
-      throw err;
-    }
-    if (home !== osenv.home()) {
-      throw new Error("osenv compatibility wrapper callback value mismatch");
-    }
-  });
-
-  const bowerConfig = require("bower-config");
-  const npa = require("npm-package-arg");
-  if (!bowerConfig || typeof bowerConfig.read !== "function") {
-    fail("bower-config require smoke failed after osenv compatibility wrapper");
-  }
-  const parsed = npa("lodash@3.10.1");
-  if (!parsed || parsed.name !== "lodash") {
-    fail("npm-package-arg parse smoke failed after osenv compatibility wrapper");
-  }
-  console.log("osenv-compat-smoke-ok wrapper=0.2.0-rc16.0");
 }
 
 function expectSourceMapUrlCompat() {
@@ -651,10 +589,10 @@ function expectSortPackageJsonCompat() {
   if (!emberCli) {
     fail("ember-cli require smoke failed after sort-package-json compatibility wrapper");
   }
-  const emberBin = path.join(process.cwd(), "node_modules", ".bin", "ember");
+  const emberBin = path.join(process.cwd(), "node_modules", "ember-cli", "bin", "ember");
   const addonWorkDir = fs.mkdtempSync(path.join(os.tmpdir(), "rc16-sort-addon-smoke-"));
   try {
-    childProcess.execFileSync(emberBin, [
+    childProcess.execFileSync(process.execPath, [emberBin,
       "addon",
       "rc16-sort-compat-smoke",
       "--skip-npm",
@@ -683,7 +621,7 @@ function expectLodashTemplateCompat() {
   expectVersion("lodash.template", "4.18.1-rc16.0");
   expectVersion("lodash-real", "4.17.21");
 
-  for (const owner of ["broccoli-templater", "ember-cli", "sourcemap-validator"]) {
+  for (const owner of ["broccoli-templater"]) {
     const ownerDir = path.dirname(require.resolve(`${owner}/package.json`));
     const resolvedPath = require.resolve("lodash.template", { paths: [ownerDir] });
     const info = packageInfoFromResolved(resolvedPath, `${owner} lodash.template`);
@@ -747,16 +685,6 @@ function expectIntlRelativeFormatCompat() {
     fail(`intl-relativeformat resolvedOptions changed: ${JSON.stringify(options)}`);
   }
 
-  for (const owner of ["ember-intl", "ember-intl-relativeformat"]) {
-    const ownerDir = path.dirname(require.resolve(`${owner}/package.json`));
-    const resolvedPath = require.resolve("intl-relativeformat", { paths: [ownerDir] });
-    const info = packageInfoFromResolved(resolvedPath, `${owner} intl-relativeformat`);
-    if (info.version !== "1.3.1-rc16.0") {
-      fail(`${owner} intl-relativeformat version ${info.version} != 1.3.1-rc16.0`);
-    }
-  }
-
-  require("ember-intl");
   console.log("intl-relativeformat-compat-smoke-ok wrapper=1.3.1-rc16.0 native-intl-relative-time-format");
 }
 
@@ -799,13 +727,6 @@ function expectIntlMessageformatParserCompat() {
     fail("intl-messageformat-parser syntax error shape changed");
   }
 
-  const ownerDir = path.dirname(require.resolve("intl-messageformat/package.json"));
-  const ownerParserPath = require.resolve("intl-messageformat-parser", { paths: [ownerDir] });
-  const ownerParserInfo = packageInfoFromResolved(ownerParserPath, "intl-messageformat intl-messageformat-parser");
-  if (ownerParserInfo.version !== "1.8.2-rc16.0") {
-    fail(`intl-messageformat parser version ${ownerParserInfo.version} != 1.8.2-rc16.0`);
-  }
-
   const intlMessageformatModule = require("intl-messageformat");
   const IntlMessageFormat = intlMessageformatModule.default || intlMessageformatModule.IntlMessageFormat || intlMessageformatModule;
   const formatted = new IntlMessageFormat("{count, plural, one {# item} other {# items}}", "en").format({ count: 2 });
@@ -816,71 +737,21 @@ function expectIntlMessageformatParserCompat() {
   console.log("intl-messageformat-parser-compat-smoke-ok wrapper=1.8.2-rc16.0 legacy-message-format-pattern");
 }
 
-function expectCoreJsCompat() {
-  expectVersion("core-js", "2.6.13-rc16.0");
-  expectVersion("core-js-pure", "3.49.0");
-
-  const assign = require("core-js/library/fn/object/assign");
-  const keys = require("core-js/library/fn/object/keys");
-  const arrayFrom = require("core-js/library/fn/array/from");
-  const promise = require("core-js/library/fn/promise");
-  const symbol = require("core-js/library/fn/symbol");
-  const stringify = require("core-js/library/fn/json/stringify");
-  const globalObject = require("core-js/library/fn/system/global");
-
-  if (assign({ a: 1 }, { b: 2 }).b !== 2) {
-    fail("core-js compat object/assign changed");
-  }
-  if (keys({ a: 1, b: 2 }).join(",") !== "a,b") {
-    fail("core-js compat object/keys changed");
-  }
-  if (arrayFrom(new Set(["a", "b"])).join(",") !== "a,b") {
-    fail("core-js compat array/from changed");
-  }
-  if (typeof promise.resolve !== "function") {
-    fail("core-js compat promise export changed");
-  }
-  if (typeof symbol !== "function") {
-    fail("core-js compat symbol export changed");
-  }
-  if (stringify({ ok: true }) !== "{\"ok\":true}") {
-    fail("core-js compat json/stringify changed");
-  }
-  if (!globalObject || !globalObject.Math) {
-    fail("core-js compat system/global changed");
-  }
-
-  const runtimeAssign = require("babel-runtime/core-js/object/assign");
-  const runtimeStringify = require("babel-runtime/core-js/json/stringify");
-  if (!runtimeAssign || runtimeAssign.default({ c: 1 }).c !== 1) {
-    fail("babel-runtime core-js object/assign bridge changed");
-  }
-  if (!runtimeStringify || runtimeStringify.default({ ok: true }) !== "{\"ok\":true}") {
-    fail("babel-runtime core-js json/stringify bridge changed");
-  }
-
-  require("babel-register");
-  console.log("core-js-compat-smoke-ok wrapper=2.6.13-rc16.0 core-js-pure=3.49.0");
-}
-
 function expectEmberApiStoreFetchUpgrade() {
-  expectPackageJsonVersion("ember-api-store", "2.3.5");
-  expectPackageJsonVersion("ember-fetch", "3.4.5");
-  expectPackageJsonVersion("broccoli-file-creator", "1.2.0");
+  expectPackageJsonVersion("ember-api-store", "2.8.5");
+  expectPackageJsonVersion("ember-fetch", "8.1.2");
+  expectPackageJsonVersion("broccoli-file-creator", "2.1.1");
   expectMissing("ember-network");
-  expectMissing("ember-auto-import");
-  expectMissing("babel-eslint");
-  expectMissing("eslint");
 
   const apiStoreDir = path.dirname(require.resolve("ember-api-store/package.json"));
   const apiStoreInfo = packageJsonInfo("ember-api-store");
   if (apiStoreInfo.dependencies["ember-network"]) {
     fail("ember-api-store still depends on deprecated ember-network");
   }
-  if (apiStoreInfo.dependencies["ember-fetch"] !== "^3.4.0") {
+  if (apiStoreInfo.dependencies["ember-fetch"] !== "^5.1.1") {
     fail(`ember-api-store ember-fetch dependency changed to ${apiStoreInfo.dependencies["ember-fetch"]}`);
   }
-  if (apiStoreInfo.dependencies["broccoli-file-creator"] !== "^1.1.1") {
+  if (apiStoreInfo.dependencies["broccoli-file-creator"] !== "^2.1.1") {
     fail(`ember-api-store broccoli-file-creator dependency changed to ${apiStoreInfo.dependencies["broccoli-file-creator"]}`);
   }
 
@@ -898,7 +769,35 @@ function expectEmberApiStoreFetchUpgrade() {
     }
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.3.5 ember-fetch=3.4.5 broccoli-file-creator=1.2.0");
+  const fetchAddonSource = fs.readFileSync(path.join(process.cwd(), "node_modules", "ember-fetch", "index.js"), "utf8");
+  if (fetchAddonSource.includes("define('fetch', ['exports', 'ember']")) {
+    fail("ember-fetch still imports the removed Ember aggregate module");
+  }
+  if (!fetchAddonSource.includes("var Ember = originalGlobal.Ember || {};")) {
+    fail("ember-fetch Ember 7 compatibility guard is missing");
+  }
+  const buildSource = fs.readFileSync(path.join(process.cwd(), "ember-cli-build.js"), "utf8");
+  if (!buildSource.includes("preferNative: true") || !buildSource.includes("nativePromise: true")) {
+    fail("ember-fetch native browser configuration is missing");
+  }
+
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 ember-fetch=8.1.2 broccoli-file-creator=2.1.1");
+}
+
+function expectApplicationGlobalInitializer() {
+  expectMissing("ember-export-application-global");
+  const initializerPath = path.join(process.cwd(), "app", "initializers", "export-application-global.js");
+  const initializerSource = fs.readFileSync(initializerPath, "utf8");
+  if (!initializerSource.includes("window[globalName] = application") || !initializerSource.includes("application.reopen")) {
+    fail("modern application global initializer is incomplete");
+  }
+
+  const lookupPath = path.join(process.cwd(), "app", "instance-initializers", "lookup.js");
+  const lookupSource = fs.readFileSync(lookupPath, "utf8");
+  if (!lookupSource.includes("applicationInstance.lookup") || lookupSource.includes("export-application-global")) {
+    fail("lookup instance initializer has an invalid application-initializer dependency");
+  }
+  console.log("application-global-initializer-smoke-ok");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {
@@ -991,7 +890,7 @@ function expectVendoredFileSha256(file, expected) {
   }
 }
 
-function expectEmberJQueryVendorRuntime() {
+function expectHistoricalEmberJQueryProvenance() {
   const expected = {
     "vendor/ember/ember.debug.js": "0a8f5cc16a333de3fa5e16bd9e486ff51c06eb7b93a0aa66a9e7aae474c921ff",
     "vendor/ember/ember.prod.js": "fff6aba5ce16c30727482a76feb8d0b409fe95e37e0eb3b37cc3843bbc337599",
@@ -1010,7 +909,7 @@ function expectEmberJQueryVendorRuntime() {
   if (!jquery.includes("jQuery JavaScript Library v3.7.1")) {
     fail("vendored jQuery version header changed");
   }
-  console.log("ember-jquery-vendor-runtime-smoke-ok ember=2.9.1 jquery=3.7.1");
+  console.log("historical-ember-jquery-provenance-smoke-ok inactive_ember=2.9.1 inactive_jquery=3.7.1");
 }
 
 function expectBrowserifyReplacementVendorGlobals() {
@@ -1361,7 +1260,7 @@ function expectNoVNCVendorGlobal() {
 
 
 
-function expectDagreGraphlibVendorGlobals() {
+function expectDagreGraphlibBrowserGlobals() {
   const sandbox = { console, window: {}, self: {}, exports: undefined, module: undefined, define: undefined };
   sandbox.window = sandbox;
   sandbox.self = sandbox;
@@ -1369,20 +1268,20 @@ function expectDagreGraphlibVendorGlobals() {
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
   for (const file of [
-    "node_modules/lodash/index.js",
-    "vendor/graphlib/graphlib.core.js",
-    "vendor/dagre/dagre.core.js",
+    "node_modules/lodash/lodash.js",
+    "node_modules/graphlib/dist/graphlib.core.js",
+    "node_modules/dagre/dist/dagre.core.js",
   ]) {
     vm.runInContext(fs.readFileSync(file, "utf8"), sandbox, { filename: file });
   }
-  if (!sandbox._ || sandbox._.VERSION !== "3.10.1") {
+  if (!sandbox._ || sandbox._.VERSION !== "4.18.1") {
     fail("dagre/graphlib smoke lost lodash global");
   }
   if (!sandbox.graphlib || typeof sandbox.graphlib.Graph !== "function") {
-    fail("graphlib vendor browser global smoke failed");
+    fail("graphlib browser global smoke failed");
   }
   if (!sandbox.dagre || typeof sandbox.dagre.layout !== "function") {
-    fail("dagre vendor browser global smoke failed");
+    fail("dagre browser global smoke failed");
   }
   const graph = new sandbox.graphlib.Graph({ multigraph: true, compound: true }).setGraph({
     rankdir: "TB",
@@ -1400,7 +1299,29 @@ function expectDagreGraphlibVendorGlobals() {
   if (!a || !b || typeof a.x !== "number" || typeof a.y !== "number" || typeof b.x !== "number" || typeof b.y !== "number") {
     fail("dagre layout smoke failed");
   }
-  console.log(`dagre-graphlib-vendor-global-smoke-ok dagre=v0.7.1 graphlib=v1.0.7 layout=ok ax=${a.x} bx=${b.x}`);
+  if (sandbox.dagre.version !== "0.8.5" || sandbox.graphlib.version !== "2.1.8") {
+    fail(`dagre/graphlib version mismatch dagre=${sandbox.dagre.version} graphlib=${sandbox.graphlib.version}`);
+  }
+
+  for (const file of [
+    "node_modules/d3/d3.js",
+    "vendor/dagre-d3/dagre-d3.core.js",
+  ]) {
+    vm.runInContext(fs.readFileSync(file, "utf8"), sandbox, { filename: file });
+  }
+  if (!sandbox.dagreD3 || sandbox.dagreD3.version !== "0.4.11-pre") {
+    fail("dagre-d3 browser global smoke failed");
+  }
+  const renderGraph = new sandbox.dagreD3.graphlib.Graph().setGraph({ rankdir: "TB" });
+  renderGraph.setDefaultEdgeLabel(() => ({}));
+  renderGraph.setNode("service-a", { width: 40, height: 20 });
+  renderGraph.setNode("service-b", { width: 40, height: 20 });
+  renderGraph.setEdge("service-a", "service-b", {});
+  sandbox.dagreD3.dagre.layout(renderGraph);
+  if (typeof renderGraph.node("service-a").x !== "number" || typeof renderGraph.node("service-b").y !== "number") {
+    fail("dagre-d3 stack graph layout smoke failed");
+  }
+  console.log(`dagre-graphlib-browser-global-smoke-ok dagre=${sandbox.dagre.version} graphlib=${sandbox.graphlib.version} layout=ok ax=${a.x} bx=${b.x}`);
 }
 
 function expectBootstrapMultiselectVendorGlobal() {
@@ -1536,17 +1457,10 @@ function expectPrismBrowserGlobals() {
 
 const sass = require("sass");
 const ansiUpModule = require("ansi_up");
-const serialize = require("serialize-javascript");
-const CleanCSS = require("clean-css");
-const CleanCSSPromise = require("clean-css-promise");
 const xterm = require("@xterm/xterm");
 const fit = require("@xterm/addon-fit");
 if (!sass.info || !sass.info.includes("dart-sass")) {
   fail("Dart Sass smoke failed");
-}
-const cleanCssResult = new CleanCSS({}).minify(".a { color: red; }");
-if (!cleanCssResult || cleanCssResult.styles !== ".a{color:red}") {
-  fail(`clean-css minify changed: ${cleanCssResult && cleanCssResult.styles}`);
 }
 if (!xterm.Terminal || !fit.FitAddon) {
   fail("@xterm smoke failed");
@@ -1563,50 +1477,29 @@ if (!ansiHtml.includes("&lt;x&gt;")) {
 if (ansiHtml.includes("&amp;lt;")) {
   fail(`ansi_up double escaped log text: ${ansiHtml}`);
 }
-const serialized = serialize({ html: "</script><x>", re: /abc/gi });
-if (typeof serialize !== "function") {
-  fail("serialize-javascript is not a CommonJS function export");
-}
-if (!serialized.includes("\\u003C\\u002Fscript\\u003E")) {
-  fail(`serialize-javascript script escaping changed: ${serialized}`);
-}
-if (!serialized.includes('new RegExp("abc", "gi")')) {
-  fail(`serialize-javascript RegExp serialization changed: ${serialized}`);
-}
-
-function runCleanCSSPromiseSmoke() {
-  return Promise.resolve(new CleanCSSPromise({}).minify(".a { color: red; }")).then((result) => {
-    if (!result || result.styles !== ".a{color:red}") {
-      fail(`clean-css-promise minify changed: ${result && result.styles}`);
-    }
-    console.log("clean-css-promise-smoke-ok");
-  });
-}
-
 expectMissing("dompurify");
 expectMissing("xmldom");
 expectVersion("xmlhttprequest-ssl", "4.0.0");
-expectVersion("ember-cli", "2.18.2");
-expectVersion("ember-resolver", "2.1.1");
+expectVersion("ember-cli", "7.1.0");
+expectPackageJsonVersion("ember-resolver", "13.2.0");
 expectVersion("ember-cli-babel", "8.3.1");
+expectPackageJsonVersion("ember-modifier", "4.3.0");
 expectMissing("ember-cli-htmlbars-inline-precompile");
 expectPackageJsonVersion("lacsso", "0.0.60-rc16.0");
 expectPackageJsonVersion("ember-cli-pagination", "2.2.4-rc16.0");
 expectPackageJsonVersion("ember-rl-dropdown", "0.8.1-rc16.0");
 expectVersion("ansi_up", "6.0.6");
-expectVersion("serialize-javascript", "7.0.5");
-expectVersion("clean-css", "5.3.3");
 expectVersion("raw-body", "2.5.3");
 expectPackageJsonVersion("uuid", "11.1.1");
 expectVersion("testem", "3.20.0");
 expectVersion("socket.io", "4.8.3");
 expectVersion("socket.io-client", "4.8.3");
-expectPackageJsonVersion("jgrowl", "1.4.2");
+expectPackageJsonVersion("jgrowl", "1.5.1");
 expectPackageJsonVersion("identicon.js", "2.3.3");
 expectPackageJsonVersion("md5-jkmyers", "0.0.1");
 expectVersion("async", "3.2.6");
 expectVersion("prismjs", "1.30.0");
-expectVersion("lodash", "3.10.1");
+expectVersion("lodash", "4.18.1");
 expectVersion("commonmark", "0.31.2");
 expectVersion("c3", "0.4.24");
 expectVersion("d3", "3.5.17");
@@ -1615,7 +1508,7 @@ expectVersion("yamljs", "0.3.0");
 expectMissing("request");
 expectMissing("forever-agent");
 expectMissing("jsdom");
-expectVersion("ws", "8.18.3");
+expectVersion("ws", "8.21.1");
 
 require("ember-cli");
 require("testem");
@@ -1671,15 +1564,14 @@ function runSocketSmoke(label, transport) {
 }
 
 (async () => {
-  await runCleanCSSPromiseSmoke();
   expectShortcutManagerSemantics();
   expectPositionCalculatorVendorGlobal();
   expectNoVNCVendorGlobal();
   expectBootstrapSassAssets();
   expectEmberPowerSelectSassAssets();
   expectBootstrapMultiselectVendorGlobal();
-  expectDagreGraphlibVendorGlobals();
-  expectEmberJQueryVendorRuntime();
+  expectDagreGraphlibBrowserGlobals();
+  expectHistoricalEmberJQueryProvenance();
   expectBrowserifyReplacementVendorGlobals();
   expectJGrowlBrowserGlobal("node_modules/jgrowl/jquery.jgrowl.js");
   expectMd5IdenticonBrowserGlobals();
@@ -1687,7 +1579,7 @@ function runSocketSmoke(label, transport) {
   await expectAsyncBrowserGlobal("node_modules/async/dist/async.js");
   expectMomentRuntime();
   expectQrCodeGeneratorRuntime();
-  expectBrowserGlobalBundle("node_modules/lodash/index.js", "_", "3.10.1");
+  expectBrowserGlobalBundle("node_modules/lodash/lodash.js", "_", "4.18.1");
   expectCommonmarkBrowserGlobal("node_modules/commonmark/dist/commonmark.js");
   expectC3D3BrowserGlobals();
   expectModernGlobDevServerPath();
@@ -1696,7 +1588,6 @@ function runSocketSmoke(label, transport) {
   await expectSaneWatcherOverride();
   expectQuickTempRimrafOverride();
   expectSyncDiskCacheRimrafOverride();
-  expectTempRimrafOverride();
   expectBroccoliTerserRimrafOverride();
   expectEmberCliBabelRimrafOverride();
   await expectRimrafCallbackCompat();
@@ -1704,14 +1595,13 @@ function runSocketSmoke(label, transport) {
   await expectMkdirpOverride();
   expectExistsSyncCompat();
   await expectInflightCompat();
-  expectOsenvCompat();
   expectSourceMapUrlCompat();
   expectSortPackageJsonCompat();
   expectLodashTemplateCompat();
   expectIntlRelativeFormatCompat();
   expectIntlMessageformatParserCompat();
-  expectCoreJsCompat();
   expectEmberApiStoreFetchUpgrade();
+  expectApplicationGlobalInitializer();
   await runSocketSmoke("websocket", "websocket");
   await runSocketSmoke("polling", "polling");
   console.log("node24-lock-baseline-smoke-ok");

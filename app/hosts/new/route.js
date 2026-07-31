@@ -1,7 +1,16 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import {
+  resolve,
+  all,
+  hash,
+  Promise,
+  reject
+} from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
+import { getOwner } from '@ember/application';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
-const { getOwner } = Ember;
 
 export function proxifyUrl(url, proxyBase) {
   let parsed = Util.parseUrl(url);
@@ -16,10 +25,10 @@ export function proxifyUrl(url, proxyBase) {
   }
 }
 
-export default Ember.Route.extend({
-  access         : Ember.inject.service(),
-  projects       : Ember.inject.service(),
-  settings       : Ember.inject.service(),
+export default Route.extend({
+  access         : service(),
+  projects       : service(),
+  settings       : service(),
   backTo         : null,
 
   defaultDriver: 'custom',
@@ -88,11 +97,11 @@ export default Ember.Route.extend({
         promises.push(us.find('schema', schemaName).then(() => {
           drivers.push(driver);
         }).catch(() => {
-          return Ember.RSVP.resolve();
+          return resolve();
         }));
       });
 
-      return Ember.RSVP.all(promises);
+      return all(promises);
     }).then(() => {
       this.set('machineDrivers', drivers);
     });
@@ -119,10 +128,10 @@ export default Ember.Route.extend({
         return !!settings.get(C.SETTING.API_HOST);
       });
     } else {
-      promises.apiHostSet = Ember.RSVP.resolve(true);
+      promises.apiHostSet = resolve(true);
     }
 
-    return Ember.RSVP.hash(promises).then((hash) => {
+    return hash(promises).then((hash) => {
       hash.availableDrivers = this.get('machineDrivers');
       if ( this.get('projects.current.isWindows') ) {
         hash.availableDrivers = [];
@@ -149,14 +158,14 @@ export default Ember.Route.extend({
       }
       else
       {
-        return Ember.Object.create(hash);
+        return EmberObject.create(hash);
       }
     });
   },
 
   // Loads the custom UI CSS/JS for drivers that have a uiUrl,
   loadCustomUi() {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       let completed = 0, expected = 0;
       let timer = null;
 
@@ -219,7 +228,7 @@ export default Ember.Route.extend({
       }
       return hostOut;
     }).catch(() => {
-      return Ember.RSVP.reject({type: 'error', message: 'Failed to retrieve cloned model'}) ;
+      return reject({type: 'error', message: 'Failed to retrieve cloned model'});
     });
   },
 });

@@ -1,8 +1,11 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { hash } from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
-  session: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Route.extend({
+  session: service(),
+  userStore: service('user-store'),
 
   queryParams: {
     accountId: {
@@ -13,7 +16,7 @@ export default Ember.Route.extend({
 
   model(params) {
     let accountId = params.accountId || this.get('session.accountId');
-    return Ember.RSVP.hash({
+    return hash({
       selectedAccountId: accountId,
       accounts: this.get('userStore').find('account', null, {
         filter: {'kind_ne': ['service', 'agent', 'project']},
@@ -40,7 +43,7 @@ export default Ember.Route.extend({
       model.status.get('firstObject')
     );
     controller.setProperties({
-      settingsForm: Ember.Object.create(settings ? settings.serialize() : {}),
+      settingsForm: EmberObject.create(settings ? settings.serialize() : {}),
       testRecipient: '',
     });
   },

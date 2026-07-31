@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { hash } from 'rsvp';
+import { computed, observer } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 import fetch from 'ember-api-store/utils/fetch';
 import Util from 'ui/utils/util';
@@ -21,18 +24,18 @@ const VALID_IMAGES = [
 //  'ubuntu-16-10-x64'
 ];
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName:          'digitalocean',
   regionChoices:       null,
   model:               null,
-  digitaloceanConfig:  Ember.computed.alias('model.digitaloceanConfig'),
+  digitaloceanConfig:  alias('model.digitaloceanConfig'),
   step1:               true,
   sizeChoices:         null,
   imageChoices:        null,
   gettingData:         false,
   tags:                null,
 
-  filteredSizeChoices: Ember.computed('digitaloceanConfig.region', function(){
+  filteredSizeChoices: computed('digitaloceanConfig.region', function(){
     let region = this.get('regionChoices').findBy('slug', this.get('digitaloceanConfig.region'));
     let sizes = this.get('sizeChoices');
     let out = sizes.filter((size) => {
@@ -52,7 +55,7 @@ export default Ember.Component.extend(Driver, {
 
       this.set('gettingData', true);
 
-      Ember.RSVP.hash(promises).then((hash) => {
+      hash(promises).then((hash) => {
 
         let filteredRegions = hash.regions.regions.filter(function(region) {
           return region.available && (region.features.indexOf('metadata') >= 0);
@@ -115,7 +118,7 @@ export default Ember.Component.extend(Driver, {
     }));
   },
 
-  tagsDidChange: Ember.observer('tags', function() {
+  tagsDidChange: observer('tags', function() {
     this.set('digitaloceanConfig.tags', this.get('tags').join(','));
   }),
 

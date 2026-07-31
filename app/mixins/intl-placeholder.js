@@ -1,11 +1,14 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
-  intl: Ember.inject.service(),
+import { computed } from '@ember/object';
+
+export default Mixin.create({
+  intl: service(),
 
   attributeBindings: ['i18nPlaceholder:placeholder'],
 
-  i18nPlaceholder: function() {
+  i18nPlaceholder: computed('placeholder', 'intl._locale', function() {
     return this.get('intl').t(this.get('placeholder'));
-  }.property('placeholder','intl._locale'),
+  }),
 });

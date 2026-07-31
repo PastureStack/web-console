@@ -226,6 +226,7 @@ authPage:
       wellKnownUrl: 请输入发现文档网址。
       invalidUrl: 发现文档网址格式不正确。
       https: 除本地开发环境外，发现文档必须使用 HTTPS。
+      externalPlatformUrl: 配置 OpenID Connect 前，请先将平台外部网址设置为 HTTPS 域名；重定向 URI 不能使用 IP 地址或未加密的 HTTP 网址。
       clientId: 请输入客户端 ID。
       clientSecret: 请输入客户端密钥。
       openidScope: 授权范围必须包含 openid。

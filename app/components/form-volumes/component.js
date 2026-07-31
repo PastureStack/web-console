@@ -1,8 +1,13 @@
-import Ember from 'ember';
+import { isEmpty } from '@ember/utils';
+import { once } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
-  projects: Ember.inject.service(),
+import { observer, computed } from '@ember/object';
+
+export default Component.extend({
+  intl: service(),
+  projects: service(),
 
   // Inputs
   instance            : null,
@@ -25,7 +30,7 @@ export default Ember.Component.extend({
 
   initVolumesFromLaunchConfig() {
     var dv = this.get('instance.dataVolumesFromLaunchConfigs');
-    Ember.run.once(this,'initChoices', dv);
+    once(this,'initChoices', dv);
   },
 
   initChoices: function(initEnabled=[]) {
@@ -101,14 +106,19 @@ export default Ember.Component.extend({
     this.set('volumesFromLaunchConfigChoices', out);
   },
 
-  shouldUpdateChoices: function() {
-    Ember.run.once(this,'updateChoices');
-  }.observes('primaryService.name','primaryService.secondaryLaunchConfigs.@each.name','launchConfigIndex'),
+  shouldUpdateChoices: observer(
+    'primaryService.name',
+    'primaryService.secondaryLaunchConfigs.@each.name',
+    'launchConfigIndex',
+    function() {
+      once(this,'updateChoices');
+    }
+  ),
 
-  volumesFromLaunchConfigChanged: function() {
+  volumesFromLaunchConfigChanged: observer('volumesFromLaunchConfigChoices.@each.enabled', function() {
     var out = this.get('volumesFromLaunchConfigChoices').filterBy('enabled', true).filterBy('name').map((choice) => { return choice.name; });
     this.set('instance.dataVolumesFromLaunchConfigs', out);
-  }.observes('volumesFromLaunchConfigChoices.@each.enabled'),
+  }),
 
   actions: {
     addVolume: function() {
@@ -150,7 +160,7 @@ export default Ember.Component.extend({
     }));
   },
 
-  volumesDidChange: function() {
+  volumesDidChange: observer('volumesArray.@each.value', function() {
     var out = this.get('instance.dataVolumes');
     out.beginPropertyChanges();
     out.clear();
@@ -161,12 +171,12 @@ export default Ember.Component.extend({
       }
     });
     out.endPropertyChanges();
-  }.observes('volumesArray.@each.value'),
+  }),
 
   // ----------------------------------
   // Volumes From
   // ----------------------------------
-  hostContainerChoices: function() {
+  hostContainerChoices: computed('instance.requestedHostId', 'allHosts.@each.instances', function() {
     var list = [];
 
     this.get('allHosts').filter((host) => {
@@ -187,7 +197,7 @@ export default Ember.Component.extend({
     });
 
     return list.sortBy('group','name','id');
-  }.property('instance.requestedHostId','allHosts.@each.instances'),
+  }),
 
   volumesFromArray: null,
   initVolumesFrom: function() {
@@ -203,7 +213,7 @@ export default Ember.Component.extend({
     }));
   },
 
-  volumesFromDidChange: function() {
+  volumesFromDidChange: observer('volumesFromArray.@each.value', function() {
     var out = this.get('instance.dataVolumesFrom');
     out.beginPropertyChanges();
     out.clear();
@@ -214,15 +224,15 @@ export default Ember.Component.extend({
       }
     });
     out.endPropertyChanges();
-  }.observes('volumesFromArray.@each.value'),
+  }),
 
-  validate: function() {
+  validate: observer('volumesArray.@each.value', 'instance.volumeDriver', function() {
     var errors = [];
     var volumeDriver = this.get('instance.volumeDriver');
 
     this.get('volumesArray').forEach((row) => {
       let val = row.value;
-      if ( val.substr(0,1) === '/' || !Ember.isEmpty(volumeDriver)) {
+      if ( val.substr(0,1) === '/' || !isEmpty(volumeDriver)) {
         return;
       }
 
@@ -233,5 +243,5 @@ export default Ember.Component.extend({
     });
 
     this.set('errors', errors.uniq());
-  }.observes('volumesArray.@each.value', 'instance.volumeDriver'),
+  }),
 });

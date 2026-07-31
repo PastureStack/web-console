@@ -1,14 +1,14 @@
-import Ember from 'ember';
+import { Checkbox, TextArea, TextField } from '@ember/legacy-built-in-components';
 import SafeStyle from 'ui/mixins/safe-style';
 
 export function initialize(/*application */) {
   // Allow style to be bound on inputs
-  Ember.TextField.reopen(SafeStyle);
-  Ember.TextArea.reopen(SafeStyle);
-  Ember.Checkbox.reopen(SafeStyle);
+  TextField.reopen(SafeStyle);
+  TextArea.reopen(SafeStyle);
+  Checkbox.reopen(SafeStyle);
 
   // Disable iOS auto-capitalization
-  Ember.TextField.reopen({
+  TextField.reopen({
     attributeBindings: ['autocapitalize'],
     autocapitalize: 'none',
   });

@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 
-export default Ember.Component.extend(Driver, {
+import { computed, observer } from '@ember/object';
+
+export default Component.extend(Driver, {
   // Set by Driver
   driverName         : 'other',
   driver             : null,
@@ -37,15 +39,15 @@ export default Ember.Component.extend(Driver, {
     });
   },
 
-  fieldNames: function() {
+  fieldNames: computed('otherDriver', 'model', function() {
     let driver = this.get('otherDriver');
 
     if ( driver ) {
       return Object.keys(this.get('userStore').getById('schema', driver.toLowerCase()).get('resourceFields'));
     }
-  }.property('otherDriver', 'model'),
+  }),
 
-  driverChanged: function() {
+  driverChanged: observer('otherDriver', 'model', function() {
     let driver  = this.get('otherDriver');
     let host = this.get('model');
 
@@ -59,16 +61,16 @@ export default Ember.Component.extend(Driver, {
     else {
       this.set('otherDriver', this.get('otherChoices.firstObject.value'));
     }
-  }.observes('otherDriver','model'),
+  }),
 
-  otherChoices: function() {
+  otherChoices: computed('availableDrivers.@each.{hasUi,name}', function() {
     let out = [];
     this.get('availableDrivers').filterBy('hasUi',false).forEach((driver) => {
       out.push({label: driver.name, value: driver.name+'Config'});
     });
 
     return out;
-  }.property('availableDrivers.@each.{hasUi,name}'),
+  }),
 
   willSave() {
     // Null out all the drivers that aren't the active one, because the API only accepts one.

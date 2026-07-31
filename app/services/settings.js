@@ -1,7 +1,13 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { Promise } from 'rsvp';
+import { isArray } from '@ember/array';
+import Evented from '@ember/object/evented';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 import { minorVersion } from 'ui/utils/parse-version';
 import { displayOrchestrationName } from 'ui/utils/orchestration-name';
+
+import { observer, computed } from '@ember/object';
 
 export function normalizeName(str) {
   return str.replace(/\./g, C.SETTING.DOT_CHAR).toLowerCase();
@@ -17,12 +23,12 @@ export function resolveAppName(whiteLabel, defaultName, useDefaultBrand) {
   return !value || useDefaultBrand ? defaultName : value;
 }
 
-export default Ember.Service.extend(Ember.Evented, {
-  access: Ember.inject.service(),
-  cookies: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Service.extend(Evented, {
+  access: service(),
+  cookies: service(),
+  projects: service(),
+  intl: service(),
+  userStore: service('user-store'),
 
   all: null,
   promiseCount: 0,
@@ -85,12 +91,12 @@ export default Ember.Service.extend(Ember.Evented, {
     return value;
   },
 
-  promiseCountObserver: function() {
+  promiseCountObserver: observer('promiseCount', function() {
 
     if (this.get('promiseCount') <= 0) {
       this.trigger('settingsPromisesResolved');
     }
-  }.observes('promiseCount'),
+  }),
 
   findByName(name) {
     return this.get('asMap')[normalizeName(name)];
@@ -101,13 +107,13 @@ export default Ember.Service.extend(Ember.Evented, {
   },
 
   load(names) {
-    if ( !Ember.isArray(names) ) {
+    if ( !isArray(names) ) {
       names = [names];
     }
 
     var userStore = this.get('userStore');
 
-    var promise = new Ember.RSVP.Promise((resolve, reject) => {
+    var promise = new Promise((resolve, reject) => {
       async.eachLimit(names, 3, function(name, cb) {
         userStore
           .find('setting', denormalizeName(name))
@@ -125,7 +131,7 @@ export default Ember.Service.extend(Ember.Evented, {
     return promise;
   },
 
-  asMap: function() {
+  asMap: computed('all.@each.{name,value}', function() {
     var out = {};
     (this.get('all')||[]).forEach((setting) => {
       var name = normalizeName(setting.get('name'));
@@ -133,62 +139,70 @@ export default Ember.Service.extend(Ember.Evented, {
     });
 
     return out;
-  }.property('all.@each.{name,value}'),
+  }),
 
-  uiVersion: function() {
+  uiVersion: computed('app.version', function() {
     return 'v' + this.get('app.version');
-  }.property('app.version'),
+  }),
 
-  issueUrl: function() {
-    var str = '*Describe your issue here*\n\n\n---\n| Useful | Info |\n| :-- | :-- |\n' +
-      `|Versions|PastureStack \`${this.get('rancherVersion')||'-'}\` ` +
-        `Orchestration Engine: \`${this.get('cattleVersion')||'-'}\` ` +
-        `Web Console: \`${this.get('uiVersion')||'--'}\` |\n`;
+  issueUrl: computed(
+    'app.currentRouteName',
+    'access.{provider,admin}',
+    'cattleVersion',
+    'rancherVersion',
+    'uiVersion',
+    'projects.current.orchestration',
+    function() {
+      var str = '*Describe your issue here*\n\n\n---\n| Useful | Info |\n| :-- | :-- |\n' +
+        `|Versions|PastureStack \`${this.get('rancherVersion')||'-'}\` ` +
+          `Orchestration Engine: \`${this.get('cattleVersion')||'-'}\` ` +
+          `Web Console: \`${this.get('uiVersion')||'--'}\` |\n`;
 
-      if ( this.get('access.enabled') )
-      {
-        str += `|Access|\`${this.get('access.provider').replace(/config/,'')}\` ${this.get('access.admin') ? '\`admin\`' : ''}|\n`;
-      }
-      else
-      {
-        str += '|Access|`Disabled`|\n';
-      }
+        if ( this.get('access.enabled') )
+        {
+          str += `|Access|\`${this.get('access.provider').replace(/config/,'')}\` ${this.get('access.admin') ? '\`admin\`' : ''}|\n`;
+        }
+        else
+        {
+          str += '|Access|`Disabled`|\n';
+        }
 
-      str += `|Orchestration|\`${displayOrchestrationName(this.get('projects.current.orchestration'))}\`|\n`;
-      str += `|Route|\`${this.get('app.currentRouteName')}\`|\n`;
+        str += `|Orchestration|\`${displayOrchestrationName(this.get('projects.current.orchestration'))}\`|\n`;
+        str += `|Route|\`${this.get('app.currentRouteName')}\`|\n`;
 
-    var url = C.EXT_REFERENCES.GITHUB + '/issues/new?body=' + encodeURIComponent(str);
-    return url;
-  }.property('app.currentRouteName','access.{provider,admin}','cattleVersion','rancherVersion','uiVersion','projects.current.orchestration'),
+      var url = C.EXT_REFERENCES.GITHUB + '/issues/new?body=' + encodeURIComponent(str);
+      return url;
+    }
+  ),
 
-  rancherImage: Ember.computed.alias(`asMap.${C.SETTING.IMAGE_RANCHER}.value`),
-  rancherVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_RANCHER}.value`),
-  composeVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_COMPOSE}.value`),
-  cattleVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_CATTLE}.value`),
-  cliVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_CLI}.value`),
-  dockerMachineVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_MACHINE}.value`),
-  goMachineVersion: Ember.computed.alias(`asMap.${C.SETTING.VERSION_GMS}.value`),
+  rancherImage: alias(`asMap.${C.SETTING.IMAGE_RANCHER}.value`),
+  rancherVersion: alias(`asMap.${C.SETTING.VERSION_RANCHER}.value`),
+  composeVersion: alias(`asMap.${C.SETTING.VERSION_COMPOSE}.value`),
+  cattleVersion: alias(`asMap.${C.SETTING.VERSION_CATTLE}.value`),
+  cliVersion: alias(`asMap.${C.SETTING.VERSION_CLI}.value`),
+  dockerMachineVersion: alias(`asMap.${C.SETTING.VERSION_MACHINE}.value`),
+  goMachineVersion: alias(`asMap.${C.SETTING.VERSION_GMS}.value`),
 
-  _plValue: function() {
+  _plValue: computed(`cookies.${C.COOKIE.PL}`, function() {
     return this.get(`cookies.${C.COOKIE.PL}`) || '';
-  }.property(`cookies.${C.COOKIE.PL}`),
+  }),
 
-  isRancher: function() {
+  isRancher: computed('_plValue', function() {
     let value = this.get('_plValue').toLowerCase();
     return !value || value === C.COOKIE.PL_RANCHER_VALUE.toLowerCase() || value === 'rancher' || value === 'pasturestack';
-  }.property('_plValue'),
+  }),
 
-  isOSS: function() {
+  isOSS: computed('rancherImage', function() {
     return ['ghcr.io/pasturestack/server','pasturestack/server','rancher/server'].includes(this.get('rancherImage'));
-  }.property('rancherImage'),
+  }),
 
-  appName: function() {
+  appName: computed('isRancher', '_plValue', function() {
     return resolveAppName(this.get('_plValue'), this.get('app.appName'), this.get('isRancher'));
-  }.property('isRancher','_plValue'),
+  }),
 
-  minDockerVersion: Ember.computed.alias(`asMap.${C.SETTING.MIN_DOCKER}.value`),
+  minDockerVersion: alias(`asMap.${C.SETTING.MIN_DOCKER}.value`),
 
-  minorVersion: function() {
+  minorVersion: computed('rancherVersion', function() {
     let version = this.get('rancherVersion');
     if ( !version )
     {
@@ -196,9 +210,9 @@ export default Ember.Service.extend(Ember.Evented, {
     }
 
     return minorVersion(version);
-  }.property('rancherVersion'),
+  }),
 
-  docsBase: function() {
+  docsBase: computed(function() {
     return C.EXT_REFERENCES.DOCS;
-  }.property()
+  })
 });

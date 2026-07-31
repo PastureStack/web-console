@@ -1,9 +1,18 @@
-import Ember from "ember";
-
-const { getOwner } = Ember;
+import Route from '@ember/routing/route';
+import { getOwner } from '@ember/application';
+import { service } from '@ember/service';
 
 export function initialize(/*application */) {
-  Ember.Route.reopen({
+  Route.reopen({
+    routerService: service('router'),
+
+    transitionTo() {
+      return this.get('routerService').transitionTo(...arguments);
+    },
+
+    replaceWith() {
+      return this.get('routerService').replaceWith(...arguments);
+    },
 
     // Remember the current route (into the application route's previousRoute/Params properties)
     beforeModel: function() {
@@ -13,7 +22,7 @@ export function initialize(/*application */) {
 
     rememberPrevious: function() {
       var appRoute = getOwner(this).lookup('route:application');
-      var infos = this.router.router.currentHandlerInfos;
+      var infos = this._router._routerMicrolib.currentRouteInfos;
       if ( infos && infos.length )
       {
         var params = [];
@@ -21,11 +30,12 @@ export function initialize(/*application */) {
         for ( var i = 0 ; i < infos.length ; i++ )
         {
           info = infos[i];
-          if ( info._names && info._names.length )
+          var names = info.paramNames || info._names || [];
+          if ( names.length )
           {
-            for ( var j = 0 ; j < info._names.length ; j++ )
+            for ( var j = 0 ; j < names.length ; j++ )
             {
-              params.push(info.params[ info._names[j] ]);
+              params.push(info.params[names[j]]);
             }
           }
         }
@@ -63,7 +73,7 @@ export function initialize(/*application */) {
     },
 
     goToParent: function() {
-      var infos = this.router.router.currentHandlerInfos;
+      var infos = this._router._routerMicrolib.currentRouteInfos;
 
       var args = [];
       var info;
@@ -77,11 +87,12 @@ export function initialize(/*application */) {
       {
         info = infos[i];
 
-        if ( info._names && info._names.length )
+        var names = info.paramNames || info._names || [];
+        if ( names.length )
         {
-          for ( var j = 0 ; j < info._names.length ; j++ )
+          for ( var j = 0 ; j < names.length ; j++ )
           {
-            args.push(info.params[ info._names[j] ]);
+            args.push(info.params[names[j]]);
           }
         }
       }

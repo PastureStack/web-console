@@ -1,13 +1,14 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
+import Controller from '@ember/controller';
 import MfaAccountManager from 'ui/mixins/mfa-account-manager';
 
-export default Ember.Controller.extend(MfaAccountManager, {
+export default Controller.extend(MfaAccountManager, {
   queryParams: ['accountId'],
   accountId: null,
   settingsForm: null,
   testRecipient: '',
 
-  accountChoices: function() {
+  accountChoices: computed('model.accounts.@each.{name,kind,state}', function() {
     return (this.get('model.accounts') || []).filter((account) => {
       return ['service', 'agent', 'project'].indexOf(account.get('kind')) < 0 &&
         account.get('state') === 'active';
@@ -17,7 +18,7 @@ export default Ember.Controller.extend(MfaAccountManager, {
         value: account.get('id'),
       };
     });
-  }.property('model.accounts.@each.{name,kind,state}'),
+  }),
 
   enforcementChoices: [
     {label: 'authPage.mfa.settings.optional', value: 'optional'},
@@ -92,7 +93,7 @@ export default Ember.Controller.extend(MfaAccountManager, {
   reloadSettings() {
     return this.get('userStore').find('mfaSettings', null, {forceReload: true}).then((items) => {
       let settings = items.get('firstObject');
-      this.set('settingsForm', Ember.Object.create(settings ? settings.serialize() : {}));
+      this.set('settingsForm', EmberObject.create(settings ? settings.serialize() : {}));
     });
   },
 });

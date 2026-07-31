@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import StrippedName from 'ui/mixins/stripped-name';
 
-export default Ember.Component.extend(StrippedName, {
+import { computed } from '@ember/object';
+
+export default Component.extend(StrippedName, {
   model: null,
   children: null,
   groupHasChildren: false,
@@ -10,11 +12,11 @@ export default Ember.Component.extend(StrippedName, {
   classNames: ['subpod','instance'],
   classNameBindings: ['model.isManaged:managed'],
 
-  stateBackground: function() {
+  stateBackground: computed('model.stateColor', function() {
     return 'bg-'+this.get('model.stateColor').substr(5);
-  }.property('model.stateColor'),
+  }),
 
-  isKubernetes: function() {
+  isKubernetes: computed('model.labels', function() {
     return !!this.get('model.labels')[C.LABEL.K8S_POD_NAME];
-  }.property('model.labels'),
+  }),
 });

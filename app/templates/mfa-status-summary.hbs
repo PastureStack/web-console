@@ -1,18 +1,18 @@
 <div class="row text-center mfa-status-summary">
   <div class="col-xs-3">
-    <strong>{{status.totpCount}}</strong><br>
+    <strong>{{this.status.totpCount}}</strong><br>
     <span class="text-muted">{{t 'authPage.mfa.summary.totp'}}</span>
   </div>
   <div class="col-xs-3">
-    <strong>{{status.passkeyCount}} / {{status.passkeyLimit}}</strong><br>
+    <strong>{{this.status.passkeyCount}} / {{this.status.passkeyLimit}}</strong><br>
     <span class="text-muted">{{t 'authPage.mfa.summary.passkeys'}}</span>
   </div>
   <div class="col-xs-3">
-    <strong>{{status.recoveryCodesRemaining}}</strong><br>
+    <strong>{{this.status.recoveryCodesRemaining}}</strong><br>
     <span class="text-muted">{{t 'authPage.mfa.summary.recoveryCodes'}}</span>
   </div>
   <div class="col-xs-3">
-    <strong>{{if status.enrollmentRequired (t 'authPage.mfa.summary.required') (t 'authPage.mfa.summary.optional')}}</strong><br>
+    <strong>{{if this.status.enrollmentRequired (t 'authPage.mfa.summary.required') (t 'authPage.mfa.summary.optional')}}</strong><br>
     <span class="text-muted">{{t 'authPage.mfa.summary.policy'}}</span>
   </div>
 </div>

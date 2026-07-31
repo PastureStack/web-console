@@ -51,7 +51,7 @@ module.exports = function(environment) {
     environment: environment,
     exportApplicationGlobal: true,
     rootURL: '/',
-    locationType: 'auto',
+    locationType: 'history',
     EmberENV: {
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
@@ -65,10 +65,6 @@ module.exports = function(environment) {
 
     minifyJS: {
         enabled: false
-    },
-
-    'ember-cli-htmlbars': {
-      templateCompilerPath: 'vendor/ember/ember-template-compiler.js'
     },
 
     contentSecurityPolicy: {

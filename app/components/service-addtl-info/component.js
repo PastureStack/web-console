@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 import C from 'ui/utils/constants';
 
 
-export default Ember.Component.extend(ManageLabels, {
+import { computed, observer } from '@ember/object';
+
+
+export default Component.extend(ManageLabels, {
   service: null,
   show: false,
   activeTab: '',
@@ -26,11 +29,11 @@ export default Ember.Component.extend(ManageLabels, {
     this.serviceChanged();
   },
 
-  stateBackground: function() {
+  stateBackground: computed('service.stateColor', function() {
     return this.get('service.stateColor').replace("text-", "bg-");
-  }.property('service.stateColor'),
+  }),
 
-  showChanged: function() {
+  showChanged: observer('show', function() {
     if (this.get('show'))
     {
       $('.stacks-wrap').addClass('summary-shown');
@@ -53,11 +56,11 @@ export default Ember.Component.extend(ManageLabels, {
         service: null,
       });
     }
-  }.observes('show'),
+  }),
 
   primaryContainers: null,
   sidekicks: null,
-  serviceChanged: function() {
+  serviceChanged: observer('service.instances.@each.{state,labels}', function() {
     if ( !this.get('service') )
     {
       return;
@@ -110,5 +113,5 @@ export default Ember.Component.extend(ManageLabels, {
       primaryContainers: primary,
       sidekicks: sidekicks,
     });
-  }.observes('service.instances.@each.{state,labels}'),
+  }),
 });

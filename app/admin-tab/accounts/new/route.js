@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function() {
     var account = this.get('userStore').createRecord({type: 'account', kind: 'user'});
     var credential = this.get('userStore').createRecord({type: 'password'});
 
-    return Ember.Object.create({
+    return EmberObject.create({
       account: account,
       credential: credential
     });

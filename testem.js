@@ -4,28 +4,26 @@ var config = {
   "test_page": "tests/index.html?hidepassed",
   "disable_watching": true,
   "launch_in_ci": [
-    "Chrome"
+    "Headless Chrome"
   ],
   "launch_in_dev": [
-    "Chrome"
+    "Headless Chrome"
   ],
   "browser_args": {
-    "Chrome": [
-      "--headless=new",
-      "--disable-gpu",
+    "Headless Chrome": [
       "--disable-extensions",
       "--disable-component-extensions-with-background-pages",
       "--disable-background-networking",
       "--no-sandbox",
       "--disable-dev-shm-usage",
-      "--remote-debugging-port=0"
+      "--do-not-de-elevate"
     ]
   }
 };
 
 if (process.env.CHROME_BIN) {
   config.browser_paths = {
-    "Chrome": process.env.CHROME_BIN
+    "Headless Chrome": process.env.CHROME_BIN
   };
 }
 

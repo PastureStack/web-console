@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { hash, reject } from 'rsvp';
+import { alias, equal, gte } from '@ember/object/computed';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName         : 'ubiquity',
-  ubiquityConfig     : Ember.computed.alias('model.ubiquityConfig'),
+  ubiquityConfig     : alias('model.ubiquityConfig'),
   ubiquityHostingApi : 'api.ubiquityhosting.com/v25/api.php',
 
   allZones           : null,
@@ -12,9 +14,9 @@ export default Ember.Component.extend(Driver, {
   allFlavors         : null,
 
   step               : 1,
-  isStep1            : Ember.computed.equal('step',1),
-  isStep2            : Ember.computed.equal('step',2),
-  isGteStep3         : Ember.computed.gte('step',3),
+  isStep1            : equal('step',1),
+  isStep2            : equal('step',2),
+  isGteStep3         : gte('step',3),
 
   bootstrap: function() {
     let store = this.get('store');
@@ -49,7 +51,7 @@ export default Ember.Component.extend(Driver, {
       this.set('ubiquityConfig.apiUsername', (this.get('ubiquityConfig.apiUsername')||'').trim());
       this.set('ubiquityConfig.apiToken', (this.get('ubiquityConfig.apiToken')||'').trim());
 
-      Ember.RSVP.hash({
+      hash({
         zones: this.getZones(),
         flavors: this.getFlavors(),
       }).then((hash) => {
@@ -151,7 +153,7 @@ export default Ember.Component.extend(Driver, {
       params: params
     }, true).then((res) => {
       if ((res || '') === '') {
-        return Ember.RSVP.reject('Authentication Failed: Please check the access credentials and that the server is in the list of authorized IP addresses in the Ubiquity console');
+        return reject('Authentication Failed: Please check the access credentials and that the server is in the list of authorized IP addresses in the Ubiquity console');
       } else {
         return res;
       }

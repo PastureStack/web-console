@@ -1,16 +1,18 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed } from '@ember/object';
+
+export default Component.extend({
 
   markdown: null,
 
   cmReader: new commonmark.Parser(),
   cmWriter: new commonmark.HtmlRenderer(),
 
-  parsedMarkdown: function() {
+  parsedMarkdown: computed('markdown', function() {
 
       var parsed = this.cmReader.parse(this.get('markdown'));
 
       return this.cmWriter.render(parsed);
-  }.property('markdown')
+  })
 });

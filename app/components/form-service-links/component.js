@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import EmberObject, { observer } from '@ember/object';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   // Inputs
   service           : null,
   withAlias         : true,
@@ -29,7 +30,7 @@ export default Ember.Component.extend({
       var name = obj.get('name');
       var service = obj.get('service');
 
-      out.push(Ember.Object.create({
+      out.push(EmberObject.create({
         name: (name === service.get('name') ? '' : name),
         obj: service,
         customMode: service.get('arbitraryString'),
@@ -45,13 +46,16 @@ export default Ember.Component.extend({
     this.set('hasRegion', regions.get('length') > 0);
   },
 
-  serviceLinksArrayDidChange: function() {
-    this.sendAction('changed', this.get('serviceLinksArray'));
-  }.observes('serviceLinksArray.@each.{name,serviceId,customMode,service}'),
+  serviceLinksArrayDidChange: observer(
+    'serviceLinksArray.@each.{name,serviceId,customMode,service}',
+    function() {
+      this.sendAction('changed', this.get('serviceLinksArray'));
+    }
+  ),
 
   actions: {
     addServiceLink: function() {
-      this.get('serviceLinksArray').pushObject(Ember.Object.create({name: '', serviceId: null}));
+      this.get('serviceLinksArray').pushObject(EmberObject.create({name: '', serviceId: null}));
     },
     removeServiceLink: function(obj) {
       this.get('serviceLinksArray').removeObject(obj);

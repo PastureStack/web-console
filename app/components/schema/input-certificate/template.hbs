@@ -1,12 +1,12 @@
-{{#if loading}}
+{{#if this.loading}}
   <i class="icon icon-spinner icon-spin"></i> {{t 'generic.loading'}}
 {{else}}
   {{new-select
     classNames="form-control"
-    content=choices
+    content=this.choices
     prompt="schema.inputCertificate.prompt"
     optionLabelPath="displayDetailedName"
     optionValuePath="name"
-    value=value
+    value=this.value
   }}
 {{/if}}

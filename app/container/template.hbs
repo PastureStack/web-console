@@ -1,14 +1,14 @@
 <section class="header clearfix">
   <h1>{{#link-to "containers"}}{{t 'containersPage.containerPage.header'}}{{/link-to}}</h1>
-  {{#power-select options=model.primaryHost.arrangedInstances selected=model onchange=(action "changeContainer") searchField="displayName" as |obj|}}
+  {{#power-select options=this.model.primaryHost.arrangedInstances selected=this.model onchange=(action "changeContainer") searchField="displayName" as |obj|}}
     <span class="clip r-mr15">
       {{select-dot model=obj}}
     </span>
   {{/power-select}}
 
   <div class="pull-right">
-    {{action-menu model=model  classNames="r-ml5 pull-right" size="sm"}}
-    {{header-state model=model classNames="pull-right"}}
+    {{action-menu model=this.model  classNames="r-ml5 pull-right"  size="sm"}}
+    {{header-state model=this.model classNames="pull-right"}}
   </div>
 
 </section>
@@ -16,61 +16,61 @@
 <section>
   <div class="row">
     <div class="col-md-3 r-mb15">
-      {{#if model.description}}
+      {{#if this.model.description}}
         <div>
           <label class="block">{{t 'containersPage.containerPage.infoMultiStats.description'}}</label>
-          <div>{{model.description}}</div>
+          <div>{{this.model.description}}</div>
         </div>
 
         <hr>
       {{/if}}
 
-      {{#if model.primaryService}}
+      {{#if this.model.primaryService}}
           <label class="block">{{t 'containersPage.containerPage.infoMultiStats.stack'}}</label>
 
-          <div>{{#link-to "stack" model.primaryService.stackId}}{{model.primaryService.stack.displayName}}{{/link-to}}/{{#link-to "service" model.primaryService.stackId model.primaryService.id}}{{model.primaryService.displayName}}{{/link-to}}</div>
+          <div>{{#link-to "stack" this.model.primaryService.stackId}}{{this.model.primaryService.stack.displayName}}{{/link-to}}/{{#link-to "service" this.model.primaryService.stackId this.model.primaryService.id}}{{this.model.primaryService.displayName}}{{/link-to}}</div>
         <hr>
       {{/if}}
 
       <div>
         <label class="block">{{t 'containersPage.containerPage.infoMultiStats.host'}}</label>
-        {{#if model.primaryHost}}
-          {{#link-to "host" model.primaryHost.id}}{{model.primaryHost.displayName}}{{/link-to}}
-          {{copy-to-clipboard clipboardText=model.primaryHost.displayIp tooltipText=(t 'containersPage.containerPage.infoMultiStats.tooltip.host') size="small"}}
+        {{#if this.model.primaryHost}}
+          {{#link-to "host" this.model.primaryHost.id}}{{this.model.primaryHost.displayName}}{{/link-to}}
+          {{copy-to-clipboard clipboardText=this.model.primaryHost.displayIp tooltipText=(t 'containersPage.containerPage.infoMultiStats.tooltip.host') size="small"}}
         {{else}}
           <span class="text-muted">{{t 'generic.none'}}</span>
         {{/if}}
       </div>
 
-      {{#if model.memoryReservation}}
+      {{#if this.model.memoryReservation}}
         <hr/>
         <div>
           <label class="block">{{t 'containersPage.containerPage.infoMultiStats.memoryReservation.labelText'}}</label>
-          {{model.memoryReservationBlurb}}
+          {{this.model.memoryReservationBlurb}}
         </div>
 
       {{/if}}
 
-      {{#if model.milliCpuReservation}}
+      {{#if this.model.milliCpuReservation}}
         <hr/>
         <div>
           <label class="block">{{t 'containersPage.containerPage.infoMultiStats.milliCpuReservation.labelText'}}</label>
-          {{model.milliCpuReservation}}
+          {{this.model.milliCpuReservation}}
         </div>
       {{/if}}
       <hr>
 
       <div>
         <label class="block">{{t 'containersPage.containerPage.infoMultiStats.ip'}}</label>
-        {{copy-ip ip=model.displayIp showCopy=true}}
+        {{copy-ip ip=this.model.displayIp showCopy=true}}
       </div>
 
       <hr>
 
       <div>
         <label class="block">{{t 'containersPage.containerPage.infoMultiStats.docker'}}</label>
-        {{#if model.displayExternalId}}
-          {{model.displayExternalId}} {{copy-to-clipboard clipboardText=model.externalId size='small'}}
+        {{#if this.model.displayExternalId}}
+          {{this.model.displayExternalId}} {{copy-to-clipboard clipboardText=this.model.externalId size='small'}}
         {{else}}
           <span class="text-muted">{{t 'generic.none'}}</span>
         {{/if}}
@@ -81,7 +81,7 @@
       <div>
         <label class="block">{{t 'containersPage.containerPage.infoMultiStats.image'}}</label>
         <span class="force-wrap">
-          {{model.displayImage}} {{copy-to-clipboard clipboardText=model.displayImage size='small'}}
+          {{this.model.displayImage}} {{copy-to-clipboard clipboardText=this.model.displayImage size='small'}}
         </span>
       </div>
 
@@ -90,15 +90,15 @@
       <div>
         <label class="block">{{t 'containersPage.containerPage.infoMultiStats.created'}}</label>
         <span class="force-wrap">
-          {{#tooltip-element inlineBlock=true type="tooltip-basic" tooltipTemplate="tooltip-static" model=(date-str model.created) tagName="span"}}
-            {{date-from-now model.created}}
+          {{#tooltip-element inlineBlock=true type="tooltip-basic" tooltipTemplate="tooltip-static" model=(date-str this.model.created) tagName="span"}}
+            {{date-from-now this.model.created}}
           {{/tooltip-element~}}
         </span>
       </div>
     </div>
     <div class="col-md-9">
       <div class="row">
-        {{info-multi-stats model=model linkName="containerStats" single=true}}
+        {{info-multi-stats model=this.model linkName="containerStats" single=true}}
       </div>
       <div class="row r-p15">
         <ul class="nav nav-tabs nav-tabs-well shadowed">

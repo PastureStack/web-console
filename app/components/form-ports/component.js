@@ -1,13 +1,17 @@
-import Ember from 'ember';
+import { next, scheduleOnce } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { parsePortSpec } from 'ui/utils/parse-port';
+
+import { observer } from '@ember/object';
 
 const protocolOptions = [
   {label: 'TCP', value: 'tcp'},
   {label: 'UDP', value: 'udp'}
 ];
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
+export default Component.extend({
+  intl: service(),
 
   // The initial ports to show, as an array of objects
   initialPorts    : null,
@@ -39,7 +43,7 @@ export default Ember.Component.extend({
 
           if ( value.bindAddress )
           {
-            Ember.run.next(() => { this.send('showIp'); });
+            next(() => { this.send('showIp'); });
           }
 
           out.push({
@@ -58,7 +62,7 @@ export default Ember.Component.extend({
 
           if ( parsed.hostIp )
           {
-            Ember.run.next(() => { this.send('showIp'); });
+            next(() => { this.send('showIp'); });
           }
 
           out.push({
@@ -76,7 +80,7 @@ export default Ember.Component.extend({
       });
     }
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       this.set('portsArray', out);
       this.portsArrayDidChange();
     });
@@ -96,7 +100,7 @@ export default Ember.Component.extend({
     },
   },
 
-  portsArrayDidChange: function() {
+  portsArrayDidChange: observer('portsArray.@each.{bindAddress,public,private,protocol}', function() {
     var out = [];
     this.get('portsArray').forEach(function(row) {
       if ( !row.protocol ) {
@@ -139,9 +143,9 @@ export default Ember.Component.extend({
     this.set('portsAsStrArray', out);
     this.sendAction('changed', this.get('portsArray'));
     this.sendAction('changedStr', this.get('portsAsStrArray'));
-  }.observes('portsArray.@each.{bindAddress,public,private,protocol}'),
+  }),
 
-  validate: function() {
+  validate: observer('portsArray.@each.{bindAddress,public,private,protocol}', function() {
     var errors = [];
     let seen = {};
 
@@ -169,5 +173,5 @@ export default Ember.Component.extend({
     });
 
     this.set('errors', errors.uniq());
-  }.observes('portsArray.@each.{bindAddress,public,private,protocol}'),
+  }),
 });

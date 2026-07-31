@@ -1,24 +1,35 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import Service, { service } from '@ember/service';
 import ApiError from 'ember-api-store/models/error';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  'tab-session': Ember.inject.service(),
-  store: Ember.inject.service('store'),
+import { computed } from '@ember/object';
 
-  kubernetesEndpoint: function() {
-    return this.get('app.kubernetesEndpoint').replace(this.get('app.projectToken'), this.get(`tab-session.${C.TABSESSION.PROJECT}`));
-  }.property(`tab-session.${C.TABSESSION.PROJECT}`,'app.kubernetesEndpoint'),
+export default Service.extend({
+  'tab-session': service(),
+  store: service('store'),
 
-  kubectlEndpoint: function() {
+  kubernetesEndpoint: computed(
+    `tab-session.${C.TABSESSION.PROJECT}`,
+    'app.kubernetesEndpoint',
+    function() {
+      return this.get('app.kubernetesEndpoint').replace(this.get('app.projectToken'), this.get(`tab-session.${C.TABSESSION.PROJECT}`));
+    }
+  ),
+
+  kubectlEndpoint: computed(`tab-session.${C.TABSESSION.PROJECT}`, 'app.kubectlEndpoint', function() {
     return this.get('app.kubectlEndpoint').replace(this.get('app.projectToken'), this.get(`tab-session.${C.TABSESSION.PROJECT}`));
-  }.property(`tab-session.${C.TABSESSION.PROJECT}`,'app.kubectlEndpoint'),
+  }),
 
-  kubernetesDashboard: function() {
-    return this.get('app.kubernetesDashboard').replace(this.get('app.projectToken'), this.get(`tab-session.${C.TABSESSION.PROJECT}`));
-  }.property(`tab-session.${C.TABSESSION.PROJECT}`,'app.kubernetesDashboard'),
+  kubernetesDashboard: computed(
+    `tab-session.${C.TABSESSION.PROJECT}`,
+    'app.kubernetesDashboard',
+    function() {
+      return this.get('app.kubernetesDashboard').replace(this.get('app.projectToken'), this.get(`tab-session.${C.TABSESSION.PROJECT}`));
+    }
+  ),
 
-  supportsAuth: function() {
+  supportsAuth: computed('version.{minor,major}', function() {
     let v = this.get('version');
     if ( v && v['major'] )
     {
@@ -26,7 +37,7 @@ export default Ember.Service.extend({
       let minor = parseInt(v['minor'],10);
       return (major > 1) || (major === 1 && minor >= 6);
     }
-  }.property('version.{minor,major}'),
+  }),
 
   isReady() {
     let store = this.get('store');
@@ -46,7 +57,7 @@ export default Ember.Service.extend({
 
       return false;
     }).catch(() => {
-      return Ember.RSVP.resolve(false);
+      return resolve(false);
     });
   },
 

@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { all } from 'rsvp';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function() {
     var host = this.modelFor('host').get('host');
     var store = this.get('store');
 
-    return Ember.RSVP.all([
+    return all([
       store.findAll('service'),
       store.findAll('instance'),
     ]).then(() => {

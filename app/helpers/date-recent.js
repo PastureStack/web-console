@@ -1,5 +1,8 @@
-import Ember from 'ember';
-import { formatDateTime, isTraditionalChinese } from 'ui/utils/date-time';
+import { helper as buildHelper } from '@ember/component/helper';
+import {
+  formatDateTime,
+  isTraditionalChinese
+} from 'ui/utils/date-time';
 
 export function dateCalendar(params) {
   let date = moment(params[0]);
@@ -18,4 +21,4 @@ export function dateCalendar(params) {
   }
 }
 
-export default Ember.Helper.helper(dateCalendar);
+export default buildHelper(dateCalendar);

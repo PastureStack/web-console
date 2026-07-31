@@ -50,6 +50,10 @@ require_no_pattern 'rancher/dind|deb\.nodesource\.com/setup_6|setup_6\.x|phantom
   'EOL or unreviewed upstream artifact build dependency in executable UI entrypoints' \
   scripts/bootstrap scripts/build scripts/build-static scripts/ci scripts/update-dependencies
 
+require_no_pattern '\{\{this\.[a-z0-9]+(-[a-z0-9]+)+\}\}' \
+  'zero-argument component invocation incorrectly rewritten as a property lookup' \
+  app vendor/lacsso
+
 if [[ $failures -ne 0 ]]; then
   echo "failure_count=$failures"
   exit 1

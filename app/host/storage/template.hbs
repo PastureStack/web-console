@@ -2,24 +2,24 @@
   <label class="storage-state-filter">
     <span>{{t 'hostsPage.hostPage.storageTab.filters.label'}}</span>
     <select class="input-sm" onchange={{action "changeStorageFilter" value="target.value"}}>
-      <option value="all" selected={{eq storageFilter "all"}}>{{t 'hostsPage.hostPage.storageTab.filters.all'}}</option>
-      <option value="active" selected={{eq storageFilter "active"}}>{{t 'hostsPage.hostPage.storageTab.filters.active'}}</option>
-      <option value="detached" selected={{eq storageFilter "detached"}}>{{t 'hostsPage.hostPage.storageTab.filters.detached'}}</option>
+      <option value="all" selected={{eq this.storageFilter "all"}}>{{t 'hostsPage.hostPage.storageTab.filters.all'}}</option>
+      <option value="active" selected={{eq this.storageFilter "active"}}>{{t 'hostsPage.hostPage.storageTab.filters.active'}}</option>
+      <option value="detached" selected={{eq this.storageFilter "detached"}}>{{t 'hostsPage.hostPage.storageTab.filters.detached'}}</option>
     </select>
   </label>
 
   <span class="storage-selection-count" aria-live="polite">
-    {{t 'hostsPage.hostPage.storageTab.bulkRemove.selected' count=selectedVolumeCount}}
+    {{t 'hostsPage.hostPage.storageTab.bulkRemove.selected' count=this.selectedVolumeCount}}
   </span>
 
   <button
     type="button"
     class="btn btn-danger btn-sm"
-    disabled={{unless hasSelectedVolumes true}}
+    disabled={{unless this.hasSelectedVolumes true}}
     {{action "promptRemoveSelected"}}
   >
     <i class="icon icon-trash"></i>
-    {{t 'hostsPage.hostPage.storageTab.bulkRemove.action' count=selectedVolumeCount}}
+    {{t 'hostsPage.hostPage.storageTab.bulkRemove.action' count=this.selectedVolumeCount}}
   </button>
 
   <span class="storage-selection-hint text-muted">
@@ -29,18 +29,18 @@
 
 {{#sortable-table
   classNames="lacsso grid sortable-table storage-table table-fit-content"
-  body=filteredVolumes
-  sortBy=sortBy
+  body=this.filteredVolumes
+  sortBy=this.sortBy
   bulkActions=true
   bulkActionMenu=false
-  selectionFilter=selectableVolume
+  selectionFilter=this.selectableVolume
   selectionChanged=(action "selectionChanged")
   search=true
   paging=true
-  perPage=prefs.storageTablePerPage
-  pageSizeOptions=storagePageSizes
-  perPagePreference=storageTablePreferenceKey
-  headers=headers as |volume kind|}}
+  perPage=this.prefs.storageTablePerPage
+  pageSizeOptions=this.storagePageSizes
+  perPagePreference=this.storageTablePreferenceKey
+  headers=this.headers as |volume kind|}}
   {{#if (eq kind "row")}}
     {{volume-row model=volume}}
   {{else if (eq kind "nomatch")}}

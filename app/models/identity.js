@@ -1,15 +1,18 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
 
+import { computed } from '@ember/object';
+
 var Identity = Resource.extend({
-  intl: Ember.inject.service(),
+  intl: service(),
 
-  isUser: Ember.computed.equal('externalIdType', C.PROJECT.TYPE_USER),
-  isTeam: Ember.computed.equal('externalIdType', C.PROJECT.TYPE_TEAM),
-  isOrg: Ember.computed.equal('externalIdType', C.PROJECT.TYPE_ORG),
+  isUser: equal('externalIdType', C.PROJECT.TYPE_USER),
+  isTeam: equal('externalIdType', C.PROJECT.TYPE_TEAM),
+  isOrg: equal('externalIdType', C.PROJECT.TYPE_ORG),
 
-  avatarSrc: function() {
+  avatarSrc: computed('isGithub', 'externalId', 'profilePicture', function() {
     if ( this.get('isGithub') && this.get('profilePicture') )
     {
       return this.get('profilePicture');
@@ -18,22 +21,22 @@ var Identity = Resource.extend({
     {
       return 'data:image/png;base64,' + new Identicon(md5(this.get('externalId')||'Unknown'), 80, 0.01).toString();
     }
-  }.property('isGithub','externalId','profilePicture'),
+  }),
 
-  isGithub: function() {
+  isGithub: computed('externalIdType', function() {
     return [
       C.PROJECT.TYPE_GITHUB_ORG,
       C.PROJECT.TYPE_GITHUB_TEAM,
       C.PROJECT.TYPE_GITHUB_USER
     ].indexOf(this.get('externalIdType')) >= 0;
-  }.property('externalIdType'),
+  }),
 
-  isMyRancher: function() {
+  isMyRancher: computed('{externalId,externalIdType}', function() {
     return this.get('externalIdType') === C.PROJECT.TYPE_RANCHER &&
       this.get('externalId') === this.get('session').get(C.SESSION.ACCOUNT_ID);
-  }.property('{externalId,externalIdType}'),
+  }),
 
-  logicalType: function() {
+  logicalType: computed('externalIdType', function() {
     switch ( this.get('externalIdType') )
     {
       case C.PROJECT.TYPE_RANCHER:
@@ -56,9 +59,9 @@ var Identity = Resource.extend({
       case C.PROJECT.TYPE_SHIBBOLETH_GROUP:
         return C.PROJECT.ORG;
     }
-  }.property('externalIdType'),
+  }),
 
-  logicalTypeSort: function() {
+  logicalTypeSort: computed('logicalType', function() {
     switch (this.get('logicalType') )
     {
       case C.PROJECT.ORG: return 1;
@@ -66,9 +69,9 @@ var Identity = Resource.extend({
       case C.PROJECT.PERSON: return 3;
       default: return 4;
     }
-  }.property('logicalType'),
+  }),
 
-  displayType: function() {
+  displayType: computed('externalIdType', 'intl._locale', function() {
     let key = 'model.identity.displayType.unknown';
     let type = this.get('externalIdType');
     switch ( type )
@@ -100,7 +103,7 @@ var Identity = Resource.extend({
     }
 
     return this.get('intl').t(key, {type: type});
-  }.property('externalIdType','intl._locale'),
+  }),
 });
 
 export default Identity;

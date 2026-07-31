@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { reject, Promise, hash, resolve } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 import {
   isAvailable as isWebAuthnAvailable,
   register as registerPasskey,
@@ -6,12 +9,14 @@ import {
 import { totpProvisioningQr } from 'ui/utils/totp-qr';
 import { localizedMfaError, mfaErrorCode } from 'ui/utils/mfa-error';
 
-export default Ember.Mixin.create({
-  access: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
-  session: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+import { computed } from '@ember/object';
+
+export default Mixin.create({
+  access: service(),
+  intl: service(),
+  modalService: service('modal'),
+  session: service(),
+  userStore: service('user-store'),
 
   busy: false,
   errors: null,
@@ -28,32 +33,32 @@ export default Ember.Mixin.create({
   recoveryEmailCode: '',
   reauthenticationRequired: false,
 
-  recoveryCodesText: function() {
+  recoveryCodesText: computed('recoveryCodes.[]', function() {
     return (this.get('recoveryCodes') || []).join('\n');
-  }.property('recoveryCodes.[]'),
+  }),
 
-  isCurrentAccount: function() {
+  isCurrentAccount: computed('selectedAccountId', 'session.accountId', function() {
     return this.get('selectedAccountId') === this.get('session.accountId');
-  }.property('selectedAccountId', 'session.accountId'),
+  }),
 
-  webAuthnPolicyConfigured: Ember.computed.alias('status.webAuthnConfigured'),
+  webAuthnPolicyConfigured: alias('status.webAuthnConfigured'),
 
-  webAuthnEnvironmentSupported: function() {
+  webAuthnEnvironmentSupported: computed('status.webAuthnConfigured', function() {
     return isWebAuthnAvailable();
-  }.property('status.webAuthnConfigured'),
+  }),
 
-  webAuthnReady: function() {
+  webAuthnReady: computed('webAuthnPolicyConfigured', 'webAuthnEnvironmentSupported', function() {
     return this.get('webAuthnPolicyConfigured') && this.get('webAuthnEnvironmentSupported');
-  }.property('webAuthnPolicyConfigured', 'webAuthnEnvironmentSupported'),
+  }),
 
-  totpQrSvg: function() {
+  totpQrSvg: computed('totpEnrollment.totpProvisioningUri', 'intl._locale', function() {
     let uri = this.get('totpEnrollment.totpProvisioningUri');
     if ( !uri ) {
       return null;
     }
 
     return totpProvisioningQr(uri, this.get('intl').t('authPage.mfa.totp.qrAlt'));
-  }.property('totpEnrollment.totpProvisioningUri', 'intl._locale'),
+  }),
 
   actions: {
     beginTotp() {
@@ -222,10 +227,10 @@ export default Ember.Mixin.create({
   withSecurityConfirmation(executor) {
     return executor(null).catch((err) => {
       if ( mfaErrorCode(err) !== 'MfaReauthenticationRequired' ) {
-        return Ember.RSVP.reject(err);
+        return reject(err);
       }
 
-      return new Ember.RSVP.Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         this.get('modalService').toggleModal('mfa-security-confirmation', {
           closeWithOutsideClick: false,
           escToClose: false,
@@ -240,7 +245,7 @@ export default Ember.Mixin.create({
 
   reloadAccount() {
     let accountId = this.get('selectedAccountId');
-    return Ember.RSVP.hash({
+    return hash({
       factors: this.get('userStore').find('mfaFactor', null, {
         filter: {accountId: accountId}, forceReload: true,
       }),
@@ -258,7 +263,7 @@ export default Ember.Mixin.create({
   afterSessionRevocation() {
     if ( this.get('isCurrentAccount') ) {
       this.set('reauthenticationRequired', true);
-      return Ember.RSVP.resolve();
+      return resolve();
     }
     return this.reloadAccount();
   },

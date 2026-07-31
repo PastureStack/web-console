@@ -1,15 +1,18 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed } from '@ember/object';
+
+export default Component.extend({
   classNames: ['project-upgrade'],
 
-  access: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
+  access: service(),
+  projects: service(),
+  settings: service(),
 
-  canUpgrade: function() {
+  canUpgrade: computed('projects.current.id', function() {
     return this.get('access').isOwner();
-  }.property('projects.current.id'),
+  }),
 
   actions: {
     upgrade() {

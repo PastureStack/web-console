@@ -1,13 +1,14 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Mixin from '@ember/object/mixin';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
 
-export default Ember.Mixin.create(NewOrEdit, {
+export default Mixin.create(NewOrEdit, {
   service         : null,
   existing        : null,
   targetResources : null,
   targetsArray    : null,
-  primaryResource : Ember.computed.alias('service'),
+  primaryResource : alias('service'),
 
   init() {
     this._super(...arguments);

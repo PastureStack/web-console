@@ -1,4 +1,8 @@
-import Ember from 'ember';
+import { get, computed } from '@ember/object';
+import { resolve, reject } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 import Errors from 'ui/utils/errors';
 import { denormalizeName } from 'ui/services/settings';
@@ -8,6 +12,44 @@ const LOCAL_RECOVERY_ERRORS = {
   InvalidLocalAdministrator: 'authPage.oidc.localRecovery.errors.invalidAdministrator',
   LocalAdministratorMfaRequired: 'authPage.oidc.localRecovery.errors.mfaRequired',
 };
+
+function normalizedHostname(hostname) {
+  return String(hostname || '').trim().toLowerCase().replace(/^\[|\]$/g, '');
+}
+
+function isLoopbackHostname(hostname) {
+  return ['localhost', '127.0.0.1', '::1'].indexOf(normalizedHostname(hostname)) >= 0;
+}
+
+function isIpHostname(hostname) {
+  let value = normalizedHostname(hostname);
+
+  if ( value.indexOf(':') >= 0 ) {
+    return true;
+  }
+
+  let octets = value.split('.');
+  return octets.length === 4 && octets.every((octet) => {
+    return /^\d{1,3}$/.test(octet) && parseInt(octet, 10) <= 255;
+  });
+}
+
+function isSecureDnsOrigin(origin) {
+  try {
+    let parsed = new URL(origin);
+    return parsed.protocol === 'https:' &&
+      !!parsed.hostname &&
+      !isIpHostname(parsed.hostname) &&
+      !parsed.username &&
+      !parsed.password;
+  } catch (e) {
+    return false;
+  }
+}
+
+function findAccountById(accounts, id) {
+  return (accounts || []).find((account) => get(account, 'id') === id);
+}
 
 function apiErrorCode(err) {
   if ( !err ) {
@@ -27,15 +69,15 @@ function apiErrorCode(err) {
       (err.xhr.responseJSON.code || err.xhr.responseJSON.type));
 }
 
-export default Ember.Controller.extend({
-  access: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  oidc: Ember.inject.service(),
-  session: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Controller.extend({
+  access: service(),
+  intl: service(),
+  oidc: service(),
+  session: service(),
+  settings: service(),
+  userStore: service('user-store'),
 
-  config: Ember.computed.alias('model.oidcConfig'),
+  config: alias('model.oidcConfig'),
   advancedOpen: false,
   errors: null,
   activating: false,
@@ -64,19 +106,19 @@ export default Ember.Controller.extend({
   preparedToken: null,
   transferPermissions: true,
 
-  providerDisplayName: function() {
+  providerDisplayName: computed('config.displayName', 'intl._locale', function() {
     let name = (this.get('config.displayName') || '').trim();
     return name || this.get('intl').t('authPage.oidc.defaultProviderName');
-  }.property('config.displayName', 'intl._locale'),
+  }),
 
-  oidcEnabled: function() {
+  oidcEnabled: computed('access.enabled', 'access.provider', function() {
     return this.get('access.enabled') && this.get('access.provider') === 'oidcconfig';
-  }.property('access.enabled', 'access.provider'),
+  }),
 
-  callbackUrl: function() {
+  callbackUrl: computed(`settings.${C.SETTING.API_HOST}`, function() {
     let base = this.get('settings').get(C.SETTING.API_HOST) || window.location.origin;
     return `${base.replace(/\/+$/, '')}/login/oidc-auth`;
-  }.property(`settings.${C.SETTING.API_HOST}`),
+  }),
 
   platformOrigin: function() {
     return window.location.origin;
@@ -87,17 +129,23 @@ export default Ember.Controller.extend({
   },
 
   ensureApiHost: function() {
-    let configured = this.get('settings').get(C.SETTING.API_HOST);
-    let origin = this.platformOrigin();
+    let configured = (this.get('settings').get(C.SETTING.API_HOST) || '').trim();
+    let origin = (this.platformOrigin() || '').trim();
 
-    if ( configured || this.platformHostname() === 'localhost' ) {
-      return Ember.RSVP.resolve(configured || origin);
+    if ( configured || isLoopbackHostname(this.platformHostname()) ) {
+      return resolve(configured || origin);
     }
 
     return this.get('userStore').find('setting', denormalizeName(C.SETTING.API_HOST)).then((setting) => {
-      let current = setting.get('value');
+      let current = (setting.get('value') || '').trim();
       if ( current ) {
         return current;
+      }
+
+      if ( !isSecureDnsOrigin(origin) ) {
+        return reject(new Error(
+          this.get('intl').t('authPage.oidc.validation.externalPlatformUrl')
+        ));
       }
 
       setting.set('value', origin);
@@ -105,32 +153,19 @@ export default Ember.Controller.extend({
     });
   },
 
-  numUsers: function() {
-    return (this.get('model.allowedIdentities') || []).filterBy('externalIdType', C.PROJECT.TYPE_OIDC_USER).get('length');
-  }.property('model.allowedIdentities.@each.externalIdType'),
+  numUsers: computed('model.allowedIdentities.@each.externalIdType', function() {
+    return (this.get('model.allowedIdentities') || []).filter((identity) => {
+      return get(identity, 'externalIdType') === C.PROJECT.TYPE_OIDC_USER;
+    }).length;
+  }),
 
-  numGroups: function() {
-    return (this.get('model.allowedIdentities') || []).filterBy('externalIdType', C.PROJECT.TYPE_OIDC_GROUP).get('length');
-  }.property('model.allowedIdentities.@each.externalIdType'),
+  numGroups: computed('model.allowedIdentities.@each.externalIdType', function() {
+    return (this.get('model.allowedIdentities') || []).filter((identity) => {
+      return get(identity, 'externalIdType') === C.PROJECT.TYPE_OIDC_GROUP;
+    }).length;
+  }),
 
-  currentFingerprint: function() {
-    let config = this.get('config');
-
-    return JSON.stringify([
-      config.get('displayName') || '',
-      config.get('wellKnownUrl') || '',
-      config.get('clientId') || '',
-      config.get('clientSecret') || '',
-      !!config.get('clientSecretSet'),
-      config.get('scopes') || '',
-      !!config.get('usePkce'),
-      config.get('usernameClaim') || '',
-      config.get('displayNameClaim') || '',
-      config.get('emailClaim') || '',
-      config.get('groupsClaim') || '',
-      config.get('certificateAuthority') || '',
-    ]);
-  }.property(
+  currentFingerprint: computed(
     'config.displayName',
     'config.wellKnownUrl',
     'config.clientId',
@@ -142,26 +177,44 @@ export default Ember.Controller.extend({
     'config.displayNameClaim',
     'config.emailClaim',
     'config.groupsClaim',
-    'config.certificateAuthority'
+    'config.certificateAuthority',
+    function() {
+      let config = this.get('config');
+
+      return JSON.stringify([
+        config.get('displayName') || '',
+        config.get('wellKnownUrl') || '',
+        config.get('clientId') || '',
+        config.get('clientSecret') || '',
+        !!config.get('clientSecretSet'),
+        config.get('scopes') || '',
+        !!config.get('usePkce'),
+        config.get('usernameClaim') || '',
+        config.get('displayNameClaim') || '',
+        config.get('emailClaim') || '',
+        config.get('groupsClaim') || '',
+        config.get('certificateAuthority') || '',
+      ]);
+    }
   ),
 
-  testDisabled: function() {
-    return !this.get('saved') ||
-      this.get('preparedFingerprint') !== this.get('currentFingerprint') ||
-      this.get('saving') ||
-      this.get('testing') ||
-      this.get('activating');
-  }.property('saved', 'preparedFingerprint', 'currentFingerprint', 'saving', 'testing', 'activating'),
+  testDisabled: computed(
+    'saved',
+    'preparedFingerprint',
+    'currentFingerprint',
+    'saving',
+    'testing',
+    'activating',
+    function() {
+      return !this.get('saved') ||
+        this.get('preparedFingerprint') !== this.get('currentFingerprint') ||
+        this.get('saving') ||
+        this.get('testing') ||
+        this.get('activating');
+    }
+  ),
 
-  activateDisabled: function() {
-    return !this.get('testedIdentity') ||
-      !this.get('mappingReady') ||
-      !this.get('localRecoveryCredentialsReady') ||
-      this.get('testedFingerprint') !== this.get('currentFingerprint') ||
-      this.get('saving') ||
-      this.get('testing') ||
-      this.get('activating');
-  }.property(
+  activateDisabled: computed(
     'testedIdentity',
     'mappingReady',
     'localRecoveryCredentialsReady',
@@ -169,52 +222,71 @@ export default Ember.Controller.extend({
     'currentFingerprint',
     'saving',
     'testing',
-    'activating'
+    'activating',
+    function() {
+      return !this.get('testedIdentity') ||
+        !this.get('mappingReady') ||
+        !this.get('localRecoveryCredentialsReady') ||
+        this.get('testedFingerprint') !== this.get('currentFingerprint') ||
+        this.get('saving') ||
+        this.get('testing') ||
+        this.get('activating');
+    }
   ),
 
-  localRecoveryCredentialsReady: function() {
+  localRecoveryCredentialsReady: computed('localRecoveryUsername', 'localRecoveryPassword', function() {
     return !!(this.get('localRecoveryUsername') || '').trim() &&
       !!(this.get('localRecoveryPassword') || '').trim();
-  }.property('localRecoveryUsername', 'localRecoveryPassword'),
+  }),
 
-  testedIdentityName: function() {
-    let identity = this.get('testedIdentity') || {};
-    return identity.name || identity.login || identity.externalId || '';
-  }.property('testedIdentity.name', 'testedIdentity.login', 'testedIdentity.externalId'),
+  testedIdentityName: computed(
+    'testedIdentity.name',
+    'testedIdentity.login',
+    'testedIdentity.externalId',
+    function() {
+      let identity = this.get('testedIdentity') || {};
+      return identity.name || identity.login || identity.externalId || '';
+    }
+  ),
 
-  activeAdminAccounts: function() {
+  activeAdminAccounts: computed('accounts.@each.{kind,state}', function() {
     return (this.get('accounts') || []).filter((account) => {
       return account.get('kind') === 'admin' &&
         ['active', 'activating', 'updating-active'].indexOf(account.get('state')) >= 0;
     });
-  }.property('accounts.@each.{kind,state}'),
+  }),
 
-  adminAccountChoices: function() {
+  adminAccountChoices: computed('activeAdminAccounts.@each.{id,name}', function() {
     return (this.get('activeAdminAccounts') || []).map((account) => {
       return {
         label: `${account.get('name') || account.get('id')} (${account.get('id')})`,
         value: account.get('id'),
       };
     });
-  }.property('activeAdminAccounts.@each.{id,name}'),
+  }),
 
-  activeHumanAccounts: function() {
+  activeHumanAccounts: computed('accounts.@each.{kind,state}', function() {
     return (this.get('accounts') || []).filter((account) => {
       return ['service', 'agent', 'project'].indexOf(account.get('kind')) < 0 &&
         ['active', 'activating', 'updating-active'].indexOf(account.get('state')) >= 0;
     });
-  }.property('accounts.@each.{kind,state}'),
+  }),
 
-  identityTargetChoices: function() {
-    let accounts = this.get('oidcEnabled') ?
-      this.get('activeHumanAccounts') : this.get('activeAdminAccounts');
-    return (accounts || []).map((account) => {
-      return {
-        label: `${account.get('name') || account.get('id')} (${account.get('id')})`,
-        value: account.get('id'),
-      };
-    });
-  }.property('oidcEnabled', 'activeHumanAccounts.@each.{id,name}', 'activeAdminAccounts.@each.{id,name}'),
+  identityTargetChoices: computed(
+    'oidcEnabled',
+    'activeHumanAccounts.@each.{id,name}',
+    'activeAdminAccounts.@each.{id,name}',
+    function() {
+      let accounts = this.get('oidcEnabled') ?
+        this.get('activeHumanAccounts') : this.get('activeAdminAccounts');
+      return (accounts || []).map((account) => {
+        return {
+          label: `${account.get('name') || account.get('id')} (${account.get('id')})`,
+          value: account.get('id'),
+        };
+      });
+    }
+  ),
 
   oldAccountDispositionChoices: [
     {label: 'authPage.oidc.identity.disposition.keep', value: 'keep'},
@@ -222,72 +294,90 @@ export default Ember.Controller.extend({
     {label: 'authPage.oidc.identity.disposition.discard', value: 'discardPermissions'},
   ],
 
-  currentAccountId: Ember.computed.alias('session.accountId'),
+  currentAccountId: alias('session.accountId'),
 
-  matchedAccount: function() {
-    return (this.get('accounts') || []).findBy('id', this.get('identityMatchAccountId'));
-  }.property('identityMatchAccountId', 'accounts.@each.id'),
+  matchedAccount: computed('identityMatchAccountId', 'accounts.@each.id', function() {
+    return findAccountById(this.get('accounts'), this.get('identityMatchAccountId'));
+  }),
 
-  selectedTargetAccount: function() {
-    return (this.get('accounts') || []).findBy('id', this.get('selectedTargetAccountId'));
-  }.property('selectedTargetAccountId', 'accounts.@each.id'),
+  selectedTargetAccount: computed('selectedTargetAccountId', 'accounts.@each.id', function() {
+    return findAccountById(this.get('accounts'), this.get('selectedTargetAccountId'));
+  }),
 
-  hasIdentityConflict: function() {
+  hasIdentityConflict: computed('identityMatchAccountId', 'selectedTargetAccountId', function() {
     let matched = this.get('identityMatchAccountId');
     return !!matched && matched !== this.get('selectedTargetAccountId');
-  }.property('identityMatchAccountId', 'selectedTargetAccountId'),
+  }),
 
-  matchedAccountIsActive: function() {
+  matchedAccountIsActive: computed('matchedAccount.state', function() {
     let account = this.get('matchedAccount');
     return !!account &&
       ['active', 'activating', 'updating-active'].indexOf(account.get('state')) >= 0;
-  }.property('matchedAccount.state'),
+  }),
 
-  canRestoreMatchedAccount: function() {
+  canRestoreMatchedAccount: computed('matchedAccount', 'matchedAccountIsActive', function() {
     return !!this.get('matchedAccount') && !this.get('matchedAccountIsActive');
-  }.property('matchedAccount', 'matchedAccountIsActive'),
+  }),
 
-  targetAccountReady: function() {
-    if ( !this.get('testedIdentityProof') || !this.get('selectedTargetAccountId') ) {
-      return false;
+  targetAccountReady: computed(
+    'testedIdentityProof',
+    'selectedTargetAccountId',
+    'selectedTargetAccount.{kind,state}',
+    'identityStrategy',
+    'identityMatchAccountId',
+    'oidcEnabled',
+    function() {
+      if ( !this.get('testedIdentityProof') || !this.get('selectedTargetAccountId') ) {
+        return false;
+      }
+      let target = this.get('selectedTargetAccount');
+      let targetIsActive = target &&
+        ['active', 'activating', 'updating-active'].indexOf(target.get('state')) >= 0;
+      if ( !targetIsActive || (!this.get('oidcEnabled') && target.get('kind') !== 'admin') ) {
+        return false;
+      }
+      if ( this.get('identityStrategy') === 'useExisting' ) {
+        return !!this.get('identityMatchAccountId') &&
+          this.get('identityMatchAccountId') === this.get('selectedTargetAccountId');
+      }
+      return true;
     }
-    let target = this.get('selectedTargetAccount');
-    let targetIsActive = target &&
-      ['active', 'activating', 'updating-active'].indexOf(target.get('state')) >= 0;
-    if ( !targetIsActive || (!this.get('oidcEnabled') && target.get('kind') !== 'admin') ) {
-      return false;
+  ),
+
+  identityDecisionFingerprint: computed(
+    'identityMatchAccountId',
+    'selectedTargetAccountId',
+    'identityStrategy',
+    'transferPermissions',
+    'oldAccountDisposition',
+    function() {
+      return JSON.stringify([
+        this.get('identityMatchAccountId') || '',
+        this.get('selectedTargetAccountId') || '',
+        this.get('identityStrategy') || '',
+        !!this.get('transferPermissions'),
+        this.get('oldAccountDisposition') || 'keep',
+      ]);
     }
-    if ( this.get('identityStrategy') === 'useExisting' ) {
-      return !!this.get('identityMatchAccountId') &&
-        this.get('identityMatchAccountId') === this.get('selectedTargetAccountId');
+  ),
+
+  identityChangeConfirmed: computed(
+    'hasIdentityConflict',
+    'identityConfirmationFingerprint',
+    'identityDecisionFingerprint',
+    function() {
+      return !this.get('hasIdentityConflict') ||
+        this.get('identityConfirmationFingerprint') === this.get('identityDecisionFingerprint');
     }
-    return true;
-  }.property('testedIdentityProof', 'selectedTargetAccountId', 'selectedTargetAccount.{kind,state}',
-    'identityStrategy', 'identityMatchAccountId', 'oidcEnabled'),
+  ),
 
-  identityDecisionFingerprint: function() {
-    return JSON.stringify([
-      this.get('identityMatchAccountId') || '',
-      this.get('selectedTargetAccountId') || '',
-      this.get('identityStrategy') || '',
-      !!this.get('transferPermissions'),
-      this.get('oldAccountDisposition') || 'keep',
-    ]);
-  }.property('identityMatchAccountId', 'selectedTargetAccountId', 'identityStrategy',
-    'transferPermissions', 'oldAccountDisposition'),
-
-  identityChangeConfirmed: function() {
-    return !this.get('hasIdentityConflict') ||
-      this.get('identityConfirmationFingerprint') === this.get('identityDecisionFingerprint');
-  }.property('hasIdentityConflict', 'identityConfirmationFingerprint', 'identityDecisionFingerprint'),
-
-  mappingReady: function() {
+  mappingReady: computed('targetAccountReady', 'identityChangeConfirmed', function() {
     return this.get('targetAccountReady') && this.get('identityChangeConfirmed');
-  }.property('targetAccountReady', 'identityChangeConfirmed'),
+  }),
 
-  identityApplyDisabled: function() {
+  identityApplyDisabled: computed('mappingReady', 'testing', 'applyingIdentity', function() {
     return !this.get('mappingReady') || this.get('testing') || this.get('applyingIdentity');
-  }.property('mappingReady', 'testing', 'applyingIdentity'),
+  }),
 
   validate: function() {
     let config = this.get('config');
@@ -373,7 +463,7 @@ export default Ember.Controller.extend({
     if ( provider === 'localauthconfig' ) {
       let localRecoveryModel = this.get('recoveryLocalModel');
       if ( !localRecoveryModel ) {
-        return Ember.RSVP.reject(new Error('The local authentication recovery configuration is unavailable'));
+        return reject(new Error('The local authentication recovery configuration is unavailable'));
       }
 
       let local = localRecoveryModel.clone();
@@ -404,9 +494,9 @@ export default Ember.Controller.extend({
       operation: 'inspect',
       identityProof: identityProof,
     }).then((result) => {
-      let matchedAccountId = Ember.get(result, 'matchedAccountId') || null;
+      let matchedAccountId = get(result, 'matchedAccountId') || null;
       let currentAccountId = this.get('currentAccountId');
-      let matchedAccount = (this.get('accounts') || []).findBy('id', matchedAccountId);
+      let matchedAccount = findAccountById(this.get('accounts'), matchedAccountId);
       let useMatched = !!matchedAccountId;
 
       this.setProperties({
@@ -459,7 +549,7 @@ export default Ember.Controller.extend({
 
   prepareIdentitySwitch: function() {
     return this.assignVerifiedIdentity(true).then((result) => {
-      let code = Ember.get(result, 'providerSwitchCode');
+      let code = get(result, 'providerSwitchCode');
       if ( !code ) {
         throw new Error(this.get('intl').t('authPage.oidc.identity.missingSwitchTicket'));
       }
@@ -469,7 +559,7 @@ export default Ember.Controller.extend({
 
   cancelIdentitySwitch: function(providerSwitchCode) {
     if ( !providerSwitchCode ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
     return this.identityOperation({
       operation: 'cancelSwitch',
@@ -543,7 +633,7 @@ export default Ember.Controller.extend({
   restoreMatchedIdentityAccount: function() {
     let matchedAccountId = this.get('identityMatchAccountId');
     if ( !matchedAccountId || !this.get('canRestoreMatchedAccount') ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     this.setProperties({

@@ -10,12 +10,10 @@ import sys
 from pathlib import Path
 
 failures = 0
-expected = ">=24"
+expected = ">=24 <25"
 files = [
     Path("package.json"),
-    Path("docs/baselines/package.node-sass-baseline.json"),
-    Path("docs/baselines/npm-package-lock.node24-ignore-scripts.json"),
-    Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"),
+    Path("package-lock.json"),
 ]
 
 
@@ -54,7 +52,7 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print("UI_NODE24_ENGINE_BASELINE_OK node_engine=>=24")
+print("UI_NODE24_ENGINE_BASELINE_OK node_engine=>=24<25")
 if transitive_legacy:
     print("known_transitive_legacy_node_engine_markers=" + ",".join(transitive_legacy))
 print("The active UI maintenance source and lock baseline roots no longer advertise Node 0.12 compatibility; transitive legacy package metadata remains a documented no-publish blocker.")

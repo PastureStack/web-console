@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import { and } from '@ember/object/computed';
+import Mixin from '@ember/object/mixin';
 import C from 'ui/utils/constants';
 
-export default Ember.Mixin.create({
+import { computed } from '@ember/object';
+
+export default Mixin.create({
   stripProject: true,
-  prefixLength: function() {
+  prefixLength: computed('name', function() {
     var name = this.get('model.displayName');
     var stackName = (this.get('model.labels')||{})[C.LABEL.STACK_NAME];
     if ( stackName && name.indexOf(stackName) === 0 )
@@ -12,10 +15,10 @@ export default Ember.Mixin.create({
     }
 
     return 0;
-  }.property('name'),
-  showEllipsis: Ember.computed.and('stripProject','prefixLength'),
+  }),
+  showEllipsis: and('stripProject','prefixLength'),
 
-  displayName: function() {
+  displayName: computed('stripProject', 'prefixLength', 'model.displayName', function() {
     var name = this.get('model.displayName')||'';
     if ( this.get('stripProject') )
     {
@@ -26,5 +29,5 @@ export default Ember.Mixin.create({
     {
       return name;
     }
-  }.property('stripProject','prefixLength','model.displayName'),
+  }),
 });

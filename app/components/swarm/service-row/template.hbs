@@ -1,29 +1,29 @@
 <tr>
   <td class="force-wrap" data-title="{{t 'swarm.serviceSection.state'}}:">
-    {{badge-state model=model}}
+    {{badge-state model=this.model}}
   </td>
   <td class="force-wrap" data-title="{{t 'swarm.serviceSection.name'}}:">
-    <a href="#" {{action "toggleExpand"}}><i class="icon {{if expanded 'icon-minus-square' 'icon-plus-square'}}"/></a>
-    {{#link-to "service" model.stackId model.id}}{{model.displayName}}{{/link-to}}
+    <a href="#" {{action "toggleExpand"}}><i class="icon {{if this.expanded 'icon-minus-square' 'icon-plus-square'}}" /></a>
+    {{#link-to "service" this.model.stackId this.model.id}}{{this.model.displayName}}{{/link-to}}
   </td>
   <td class="force-wrap service-detail" data-title="{{t 'swarm.serviceSection.ports'}}:">
-    {{model.displayPorts}}
+    {{this.model.displayPorts}}
   </td>
   <td class="force-wrap" data-title="{{t 'swarm.serviceSection.containers'}}:">
-    {{#if model.instances.length}}
-      {{model.instances.length}}
+    {{#if this.model.instances.length}}
+      {{this.model.instances.length}}
     {{else}}
       <span class="text-muted">{{t 'generic.none'}}</span>
     {{/if}}
   </td>
   <td class="actions" data-title="{{t 'generic.actions'}}:">
-    {{action-menu model=model}}
+    {{action-menu model=this.model}}
   </td>
 </tr>
-{{#if expanded}}
+{{#if this.expanded}}
   <tr class="nohover">
     <td colspan="5" class="subtable">
-      {{swarm/container-section model=model.instances}}
+      {{swarm/container-section model=this.model.instances}}
     </td>
   </tr>
 {{/if}}

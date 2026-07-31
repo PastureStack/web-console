@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Controller, { inject as controller } from '@ember/controller';
 
-export default Ember.Controller.extend({
-  service: Ember.computed.alias('model.service'),
-  stack: Ember.computed.alias('model.stack'),
-  application: Ember.inject.controller(),
+export default Controller.extend({
+  service: alias('model.service'),
+  stack: alias('model.stack'),
+  application: controller(),
 
   actions: {
     changeService(service) {

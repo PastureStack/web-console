@@ -1,6 +1,12 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { next, later, cancel } from '@ember/runloop';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Util from 'ui/utils/util';
 import { formatDateTime } from 'ui/utils/date-time';
+
+import { observer } from '@ember/object';
 
 const LOG_WRAP_STORAGE_KEY = 'pasturestack.consoleWorkspace.logs.wrap.v1';
 
@@ -49,10 +55,10 @@ function saveLogWrapPreference(value, storage = window.localStorage) {
   }
 }
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['workspace-logs'],
-  workspace: Ember.inject.service('console-workspace'),
-  intl: Ember.inject.service(),
+  workspace: service('console-workspace'),
+  intl: service(),
   entry: null,
   instance: null,
   status: 'connecting',
@@ -63,9 +69,9 @@ export default Ember.Component.extend({
   reconnectAttempts: 0,
   userClosed: false,
   which: 'combined',
-  isCombined: Ember.computed.equal('which', 'combined'),
-  isStdOut: Ember.computed.equal('which', 'stdout'),
-  isStdErr: Ember.computed.equal('which', 'stderr'),
+  isCombined: equal('which', 'combined'),
+  isStdOut: equal('which', 'stdout'),
+  isStdErr: equal('which', 'stderr'),
   stdErrVisible: true,
   stdOutVisible: true,
   wrapLines: false,
@@ -75,7 +81,7 @@ export default Ember.Component.extend({
     this._ansiUp = createAnsiUp();
     this._wrapPreferenceLoaded = true;
     this.set('wrapLines', readLogWrapPreference());
-    Ember.run.next(this, () => {
+    next(this, () => {
       let shouldCreate = !this.get('entry.brokerReady') && this.get('entry.status') !== 'ended';
       this.connect(shouldCreate);
     });
@@ -86,18 +92,18 @@ export default Ember.Component.extend({
     this._super(...arguments);
   },
 
-  wrapLinesChanged: function() {
+  wrapLinesChanged: observer('wrapLines', function() {
     if (!this._wrapPreferenceLoaded) {
       return;
     }
     saveLogWrapPreference(this.get('wrapLines'));
-    Ember.run.next(this, () => {
+    next(this, () => {
       let body = this.$('.workspace-log-body')[0];
       if (body && this.get('wrapLines')) {
         body.scrollLeft = 0;
       }
     });
-  }.observes('wrapLines'),
+  }),
 
   actions: {
     clear() {
@@ -121,7 +127,7 @@ export default Ember.Component.extend({
         stdErrVisible: which === 'combined' || which === 'stderr',
         stdOutVisible: which === 'combined' || which === 'stdout',
       });
-      Ember.run.next(this, () => this.send('scrollToBottom'));
+      next(this, () => this.send('scrollToBottom'));
     },
 
     reconnect() {
@@ -280,7 +286,7 @@ export default Ember.Component.extend({
     if (!body) {
       return;
     }
-    let $body = Ember.$(body);
+    let $body = $(body);
     let shouldFollow = ($body.scrollTop() + $body.outerHeight() + 10) >= body.scrollHeight;
     let parsed = parseLogPayload(payload);
 
@@ -305,7 +311,7 @@ export default Ember.Component.extend({
     });
 
     if (shouldFollow) {
-      Ember.run.next(this, () => this.send('scrollToBottom'));
+      next(this, () => this.send('scrollToBottom'));
     }
   },
 
@@ -313,7 +319,7 @@ export default Ember.Component.extend({
     this.cancelReconnect();
     let attempt = this.incrementProperty('reconnectAttempts');
     let delay = Math.min(10000, 500 * Math.pow(2, Math.min(attempt, 5)));
-    this._reconnectTimer = Ember.run.later(this, () => {
+    this._reconnectTimer = later(this, () => {
       this.set('createAttempted', false);
       this.connect(false);
     }, delay);
@@ -321,7 +327,7 @@ export default Ember.Component.extend({
 
   cancelReconnect() {
     if (this._reconnectTimer) {
-      Ember.run.cancel(this._reconnectTimer);
+      cancel(this._reconnectTimer);
       this._reconnectTimer = null;
     }
   },

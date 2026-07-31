@@ -1,12 +1,12 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
 import ModalBase from 'lacsso/components/modal-base';
 import NewServiceAlias from 'ui/mixins/new-service-alias';
 
 export default ModalBase.extend(NewServiceAlias, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel  : Ember.computed.alias('modalService.modalOpts'),
+  originalModel  : alias('modalService.modalOpts'),
   editing: true,
-  existing: Ember.computed.alias('originalModel'),
+  existing: alias('originalModel'),
 
 
   actions: {

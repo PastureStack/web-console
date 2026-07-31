@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import { formatDurationSeconds } from 'ui/utils/date-time';
 
 var ServiceLog = Resource.extend({
-  intl: Ember.inject.service(),
+  intl: service(),
   actions: {
     goToInstance() {
       let id = this.get('instanceId');
@@ -20,7 +22,7 @@ var ServiceLog = Resource.extend({
     }
   },
 
-  availableActions: function() {
+  availableActions: computed('instanceId', function() {
     let choices = [
       {label: 'action.viewInstance', icon: 'icon icon-container', action: 'goToInstance', enabled: !!this.get('instanceId') },
       { divider: true },
@@ -28,9 +30,9 @@ var ServiceLog = Resource.extend({
     ];
 
     return choices;
-  }.property('instanceId'),
+  }),
 
-  runTime: Ember.computed('created', 'endTime', 'intl._locale', function(){
+  runTime: computed('created', 'endTime', 'intl._locale', function(){
     if ( this.get('endTime') ) {
       let sec =  moment(this.get('endTime')).diff(this.get('created'), 'seconds');
       if (sec > 0) {
@@ -41,9 +43,9 @@ var ServiceLog = Resource.extend({
     }
   }),
 
-  isError: Ember.computed.equal('level','error'),
+  isError: equal('level','error'),
 
-  displayState: Ember.computed('level', function() {
+  displayState: computed('level', function() {
     return this.get('level').toUpperCase();
   }),
 });

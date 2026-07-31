@@ -1,10 +1,13 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { later } from '@ember/runloop';
+import $ from 'jquery';
+import Component from '@ember/component';
 import { isSafari } from 'ui/utils/platform';
 
 const DELAY = 1000;
 const DEFAULT_TEXT = 'copyToClipboard.tooltip';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName          : 'div',
   classNames       : ['copy-button-container', 'inline-block'],
 
@@ -24,12 +27,12 @@ export default Ember.Component.extend({
   },
 
   click: function(evt) {
-    this.set('textChangedEvent', Ember.$(evt.currentTarget));
+    this.set('textChangedEvent', $(evt.currentTarget));
   },
 
-  isSupported: function() {
+  isSupported: computed('clipboardText', function() {
     return this.get('clipboardText.length') && (!isSafari || document.queryCommandSupported('copy'));
-  }.property('clipboardText'),
+  }),
 
   actions: {
     alertSuccess: function() {
@@ -37,14 +40,14 @@ export default Ember.Component.extend({
       let orig = this.get('model.tooltipText');
       this.set('model', new Object({tooltipText: 'copyToClipboard.copied'}));
 
-      Ember.run.later(() =>{
+      later(() =>{
         this.set('status', null);
         this.set('model', new Object({tooltipText: orig}));
       }, DELAY);
     },
   },
 
-  buttonClasses: Ember.computed('status', function() {
+  buttonClasses: computed('status', function() {
     let status = this.get('status');
     let out = '';
 

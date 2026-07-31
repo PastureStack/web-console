@@ -1,15 +1,20 @@
-import Ember from 'ember';
+import EmberObject, { get, computed } from '@ember/object';
+import { alias, notEmpty } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import { uniqKeys, ucFirst } from 'ui/utils/util';
 import { isAlternate } from 'ui/utils/platform';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(NewOrEdit, {
-  access: Ember.inject.service(),
-  growl: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  userStore: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
+import { on } from '@ember/object/evented';
+
+export default Component.extend(NewOrEdit, {
+  access: service(),
+  growl: service(),
+  intl: service(),
+  userStore: service(),
+  modalService: service('modal'),
 
   projectTemplate: null,
   catalogInfo: null,
@@ -17,14 +22,14 @@ export default Ember.Component.extend(NewOrEdit, {
   stacksMap: null,
   orchestrationIds: null,
   activeOrchestration: null,
-  primaryResource: Ember.computed.alias('projectTemplate'),
-  editing: Ember.computed.notEmpty('projectTemplate.id'),
+  primaryResource: alias('projectTemplate'),
+  editing: notEmpty('projectTemplate.id'),
 
-  onInit: function() {
+  onInit: on('init', function() {
     this.initMap();
     this.initOrchestration();
     this.updateSupported();
-  }.on('init'),
+  }),
 
   actions: {
     selectOrchestration(id) {
@@ -149,7 +154,7 @@ export default Ember.Component.extend(NewOrEdit, {
       let required = categories.includes('framework');
 
       if ( cur ) {
-        map[tplId] = Ember.Object.create({
+        map[tplId] = EmberObject.create({
           required: required,
           enabled: true,
           compatible: null,
@@ -157,7 +162,7 @@ export default Ember.Component.extend(NewOrEdit, {
           stack: cur.clone(),
         });
       } else {
-        map[tplId] = Ember.Object.create({
+        map[tplId] = EmberObject.create({
           required: false,
           enabled: false,
           tpl: tpl,
@@ -181,7 +186,7 @@ export default Ember.Component.extend(NewOrEdit, {
 
     var orch = 'cattle';
     this.get('orchestrationIds').forEach((key) => {
-      if ( map[key] && Ember.get(map[key],'enabled') ) {
+      if ( map[key] && get(map[key],'enabled') ) {
         orch = key;
       }
     });
@@ -208,7 +213,7 @@ export default Ember.Component.extend(NewOrEdit, {
     });
   },
 
-  categories: function() {
+  categories: computed('catalogInfo.catalog.@each.categoryArray', function() {
     let out = [];
     this.get('catalogInfo.catalog').forEach((obj) => { out.pushObjects(obj.get('categoryArray')); });
     out = uniqKeys(out);
@@ -221,10 +226,10 @@ export default Ember.Component.extend(NewOrEdit, {
       out.push('Framework');
     }
     return out;
-  }.property('catalogInfo.catalog.@each.categoryArray'),
+  }),
 
   showOrchestrationOrigin: false,
-  orchestrationChoices: function() {
+  orchestrationChoices: computed('activeOrchestration', 'intl._locale', function() {
     var active = this.get('activeOrchestration');
 
     var drivers = [
@@ -249,7 +254,7 @@ export default Ember.Component.extend(NewOrEdit, {
     this.set('showOrchestrationOrigin', multiple);
 
     return drivers;
-  }.property('activeOrchestration','intl._locale'),
+  }),
 
   willSave() {
     let intl = this.get('intl');

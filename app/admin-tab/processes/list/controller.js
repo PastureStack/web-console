@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  prefs: Ember.inject.service(),
+import { computed } from '@ember/object';
+
+export default Controller.extend({
+  prefs: service(),
 
   queryParams: ['which','sortBy','descending'],
   which: 'running',
@@ -16,7 +19,7 @@ export default Ember.Controller.extend({
     }
   },
 
-  headers: function() {
+  headers: computed('which', function() {
     let which = this.get('which');
     let out = [
       {
@@ -89,5 +92,5 @@ export default Ember.Controller.extend({
     });
 
     return out;
-  }.property('which'),
+  }),
 });

@@ -26,7 +26,7 @@ if overrides.get("xmlhttprequest-ssl") != "4.0.0":
 if "ws" in overrides:
     fail("WS_OVERRIDE_BLOCKED", reason="ws_8_breaks_socketio_1_6_websocket_smoke")
 
-lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock_path = Path("package-lock.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:

@@ -1,21 +1,23 @@
-import Ember from 'ember';
+import { htmlSafe } from '@ember/template';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
 import { localizedCatalogField } from 'ui/utils/localized-catalog-field';
 import { catalogDisplayName } from 'ui/utils/catalog-display-name';
 
 export default Resource.extend({
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  intl: Ember.inject.service(),
+  projects: service(),
+  settings: service(),
+  intl: service(),
 
-  headers: function() {
+  headers: computed('project.current.id', function() {
     return {
       [C.HEADER.PROJECT_ID]: this.get('projects.current.id')
     };
-  }.property('project.current.id'),
+  }),
 
-  cleanProjectUrl: Ember.computed('links.project', function() {
+  cleanProjectUrl: computed('links.project', function() {
     let projectUrl = this.get('links.project');
     let pattern = new RegExp('^([a-z]+://|//)', 'i');
 
@@ -25,10 +27,10 @@ export default Resource.extend({
       }
     }
 
-    return Ember.String.htmlSafe(projectUrl);
+    return htmlSafe(projectUrl);
   }),
 
-  defaultName: Ember.computed('id','templateBase', function() {
+  defaultName: computed('id','templateBase', function() {
     var name = this.get('id');
     var base = this.get('templateBase');
 
@@ -52,7 +54,7 @@ export default Resource.extend({
     return name;
   }),
 
-  machineHasIcon: Ember.computed('templateBase', function(){
+  machineHasIcon: computed('templateBase', function(){
     if (this.get('templateBase') === 'machine') {
       if (this.get('links.icon')) {
         return this.get('links.icon');
@@ -73,7 +75,7 @@ export default Resource.extend({
     return list.length === 0 || list.includes(orch);
   },
 
-  categoryArray: function() {
+  categoryArray: computed('category', 'categories.[]', function() {
     let out = this.get('categories');
     if ( !out || !out.length ) {
       let single = this.get('category');
@@ -85,13 +87,13 @@ export default Resource.extend({
     }
 
     return out;
-  }.property('category','categories.[]'),
+  }),
 
-  categoryLowerArray: function() {
+  categoryLowerArray: computed('categoryArray.[]', function() {
     return this.get('categoryArray').map(x => (x||'').toLowerCase());
-  }.property('categoryArray.[]'),
+  }),
 
-  localizedName: Ember.computed('name', 'labels', 'intl._locale', function() {
+  localizedName: computed('name', 'labels', 'intl._locale', function() {
     return localizedCatalogField(
       this.get('labels'),
       this.get('intl._locale'),
@@ -100,11 +102,11 @@ export default Resource.extend({
     );
   }),
 
-  catalogDisplayName: Ember.computed('localizedName', function() {
+  catalogDisplayName: computed('localizedName', function() {
     return catalogDisplayName(this.get('localizedName'));
   }),
 
-  localizedDescription: Ember.computed('description', 'labels', 'intl._locale', function() {
+  localizedDescription: computed('description', 'labels', 'intl._locale', function() {
     return localizedCatalogField(
       this.get('labels'),
       this.get('intl._locale'),
@@ -113,13 +115,13 @@ export default Resource.extend({
     );
   }),
 
-  isUpstreamFirstParty: Ember.computed('labels', function() {
+  isUpstreamFirstParty: computed('labels', function() {
     let labels = this.get('labels') || {};
 
     return labels['io.pasturestack.catalog.origin'] === 'upstream-first-party';
   }),
 
-  catalogBrandBadge: Ember.computed(
+  catalogBrandBadge: computed(
     'isUpstreamFirstParty',
     function() {
       if ( this.get('isUpstreamFirstParty') ) {
@@ -130,17 +132,17 @@ export default Resource.extend({
     }
   ),
 
-  supported: function() {
+  supported: computed('labels', 'projects.current.orchestration', function() {
     let orch = this.get('projects.current.orchestration')||'cattle';
     if ( this.get('categoryLowerArray').includes('orchestration') ) {
       return orch === 'cattle';
     } else {
       return this.supportsOrchestration(orch);
     }
-  }.property('labels','projects.current.orchestration'),
+  }),
 
 
-  certifiedType: function() {
+  certifiedType: computed('catalogId', 'labels', function() {
     let str = null;
     let labels = this.get('labels');
     if ( labels && labels[C.LABEL.CERTIFIED] ) {
@@ -154,18 +156,18 @@ export default Resource.extend({
     } else {
       return 'thirdparty';
     }
-  }.property('catalogId', 'labels'),
+  }),
 
-  certifiedClass: function() {
+  certifiedClass: computed('certifiedType', function() {
     let type = this.get('certifiedType');
     if ( type === 'rancher' && this.get('settings.isRancher') ) {
       return 'badge-pasturestack-logo';
     } else {
       return 'badge-' + type;
     }
-  }.property('certifiedType'),
+  }),
 
-  certified: function() {
+  certified: computed('certifiedType', 'catalogId', 'labels', function() {
     let out = null;
     let labels = this.get('labels');
     if ( labels && labels[C.LABEL.CERTIFIED] ) {
@@ -194,7 +196,7 @@ export default Resource.extend({
 
     // For custom strings, use what they said.
     return out;
-  }.property('certifiedType','catalogId','labels'),
+  }),
 });
 
 function normalize(str) {

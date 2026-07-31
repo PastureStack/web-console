@@ -1,12 +1,13 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
 
   path: null,
 
   tagName: 'g',
 
-  draw: Ember.computed('path', function() {
+  draw: computed('path', function() {
     var out;
     var paths = this.get('path');
 
@@ -16,8 +17,8 @@ export default Ember.Component.extend({
     });
     return out;
   }),
-  markerPath: function() {
+  markerPath: computed(function() {
     /** Markers require the full path in a SPA to work correctly */
     return window.location.pathname;
-  }.property(),
+  }),
 });

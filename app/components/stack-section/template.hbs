@@ -1,32 +1,32 @@
-{{#unless single}}
+{{#unless this.single}}
   <div class="clearfix well r-p0 r-m0">
-    <div class="stack-state pull-left {{model.stateBackground}}">
-      {{#tooltip-element type="tooltip-basic" model=model.displayState tooltipTemplate='tooltip-static' aria-describedby="tooltip-base" tooltipFor="stackSection"}}
-        <i class="{{model.stateIcon}}" aria-label="{{model.displayState}}"></i>
+    <div class="stack-state pull-left {{this.model.stateBackground}}">
+      {{#tooltip-element type="tooltip-basic" model=this.model.displayState tooltipTemplate='tooltip-static' aria-describedby="tooltip-base" tooltipFor="stackSection"}}
+        <i class="{{this.model.stateIcon}}" aria-label="{{this.model.displayState}}"></i>
       {{/tooltip-element}}
     </div>
 
     <div class="header-left collapser">
-      <a {{action "toggleCollapse"}} class="btn btn-link" aria-label="{{t 'stackSection.toggleDetails'}}"><i class="icon {{if collapsed 'icon-plus' 'icon-minus'}}" aria-hidden="true"></i></a>
+      <a {{action "toggleCollapse"}} class="btn btn-link" aria-label="{{t 'stackSection.toggleDetails'}}"><i class="icon {{if this.collapsed 'icon-plus' 'icon-minus'}}" aria-hidden="true"></i></a>
     </div>
 
-    <div class="header-left name {{if model.description 'with-description'}}">
+    <div class="header-left name {{if this.model.description 'with-description'}}">
       <h4 class="divider clip stack-link">
-        {{#link-to "stack" model.id}}{{model.name}}{{/link-to}}
+        {{#link-to "stack" this.model.id}}{{this.model.name}}{{/link-to}}
       </h4>
-      {{#if model.description}}
-        <div class="text-muted clip">{{model.description}}</div>
+      {{#if this.model.description}}
+        <div class="text-muted clip">{{this.model.description}}</div>
       {{/if}}
     </div>
 
-    {{#if outputs.length}}
+    {{#if this.outputs.length}}
       <div class="header-left">
         <div class="btn-group r-ml10">
           <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{t 'stackSection.outputs'}} <i class="icon icon-chevron-down"></i>
           </button>
           <ul class="dropdown-menu dropdown-menu-right" role="dropdown">
-            {{#each outputs as |obj|}}
+            {{#each this.outputs as |obj|}}
               <li><a href="{{obj.value}}" target="_blank">{{obj.key}}</a></li>
             {{/each}}
           </ul>
@@ -35,37 +35,37 @@
     {{/if}}
 
     <div class="header-right right-divider stack-actions wide">
-      {{action-menu model=model}}
+      {{action-menu model=this.model}}
     </div>
 
     <div class="header-right right-divider count">
-      <p>{{instanceCount}}</p>
-      <label>{{t 'stackSection.container' numContainers=instanceCount}}</label>
+      <p>{{this.instanceCount}}</p>
+      <label>{{t 'stackSection.container' numContainers=this.instanceCount}}</label>
     </div>
 
     <div class="header-right right-divider count">
-      <p>{{model.services.length}}</p>
-      <label>{{t 'stackSection.service' numServices=instanceCount}}</label>
+      <p>{{this.model.services.length}}</p>
+      <label>{{t 'stackSection.service' numServices=this.instanceCount}}</label>
     </div>
 
     <div class="header-right right-divider stack-template">
-      {{upgrade-btn model=model}}
-      {{#if showAddService}}
+      {{upgrade-btn model=this.model}}
+      {{#if this.showAddService}}
         <div class="btn-group">
-          {{#link-to "service.new" (query-params stackId=model.id) classNames="btn btn-default btn-sm"}}{{t 'stackSection.add.service'}}{{/link-to}}
+          {{#link-to "service.new" (query-params stackId=this.model.id) classNames="btn btn-default btn-sm"}}{{t 'stackSection.add.service'}}{{/link-to}}
 
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
               <i class="icon icon-fw icon-chevron-down"></i>
               <span class="sr-only">{{t 'nav.srToggleDropdown'}}</span>
             </button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-              {{#unless projects.current.isWindows}}
-              <li>{{#link-to "service.new-balancer" (query-params stackId=model.id)}}{{t 'stackSection.add.loadBalancer'}}{{/link-to}}</li>
+              {{#unless this.projects.current.isWindows}}
+              <li>{{#link-to "service.new-balancer" (query-params stackId=this.model.id)}}{{t 'stackSection.add.loadBalancer'}}{{/link-to}}</li>
               {{/unless}}
-              <li>{{#link-to "service.new-alias" (query-params stackId=model.id)}}{{t 'stackSection.add.serviceAlias'}}{{/link-to}}</li>
-              <li>{{#link-to "service.new-external" (query-params stackId=model.id)}}{{t 'stackSection.add.externalService'}}{{/link-to}}</li>
-              {{#if (and hasVm (not projects.current.isWindows))}}
-                <li>{{#link-to "service.new-virtualmachine" (query-params stackId=model.id)}}{{t 'stackSection.add.virtualMachine'}}{{/link-to}}</li>
+              <li>{{#link-to "service.new-alias" (query-params stackId=this.model.id)}}{{t 'stackSection.add.serviceAlias'}}{{/link-to}}</li>
+              <li>{{#link-to "service.new-external" (query-params stackId=this.model.id)}}{{t 'stackSection.add.externalService'}}{{/link-to}}</li>
+              {{#if (and this.hasVm (not this.projects.current.isWindows))}}
+                <li>{{#link-to "service.new-virtualmachine" (query-params stackId=this.model.id)}}{{t 'stackSection.add.virtualMachine'}}{{/link-to}}</li>
               {{/if}}
             </ul>
 
@@ -75,18 +75,18 @@
   </div>
 {{/unless}}
 
-{{#liquid-if (not collapsed)}}
-  <div class="stack-body {{if single 'single-body'}}">
-    {{#if single}}
-      {{#if model.description}}
+{{#liquid-if (not this.collapsed)}}
+  <div class="stack-body {{if this.single 'single-body'}}">
+    {{#if this.single}}
+      {{#if this.model.description}}
       <div class="r-p20 pull-left">
-          <label>{{t 'generic.description'}}:&nbsp;</label>{{model.description}}
+          <label>{{t 'generic.description'}}:&nbsp;</label>{{this.model.description}}
         </div>
       {{/if}}
-      {{#if model.tags}}
+      {{#if this.model.tags}}
       <div class="r-p20 pull-right">
         <label>{{t 'stackSection.tags'}}:&nbsp;</label>
-          {{#each model.tags as |tag|}}
+          {{#each this.model.tags as |tag|}}
             
             {{#link-to "stacks" (query-params tags=tag)}}<span class="badge">{{tag}}</span>{{/link-to}}
             
@@ -94,10 +94,10 @@
         </div>
       {{/if}}
     {{/if}}
-    {{#if sortedServices.length}}
+    {{#if this.sortedServices.length}}
       <table class="grid fixed sized" style="margin-bottom: 0">
         <tbody>
-          {{#each sortedServices as |service|}}
+          {{#each this.sortedServices as |service|}}
             <tr>
               <td data-title="{{t 'stackSection.table.dataTitle.state'}}:" class="state r-pl10">
                 {{badge-state model=service}}

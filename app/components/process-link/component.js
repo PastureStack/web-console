@@ -1,19 +1,22 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+
+import { computed } from '@ember/object';
 
 const IN_APP = ['container', 'instance', 'stack', 'host', 'service'];
 
-export default Ember.Component.extend({
+export default Component.extend({
   model: null,
 
   tagName: '',
-  endpoint: Ember.inject.service(),
-  growl: Ember.inject.service(),
+  endpoint: service(),
+  growl: service(),
 
-  inApp: function() {
+  inApp: computed('model.resourceType', function() {
     return IN_APP.indexOf(this.get('model.resourceType')) >= 0;
-  }.property('model.resourceType'),
+  }),
 
-  resourceLink: function() {
+  resourceLink: computed('model.{resourceType,resourceId}', 'model.links.self', function() {
     if ( this.get('model').hasLink('resource') )
     {
       return this.get('model').linkFor('resource');
@@ -29,7 +32,7 @@ export default Ember.Component.extend({
       url += this.get('model.resourceType') + '/' + this.get('model.resourceId');
       return url;
     }
-  }.property('model.{resourceType,resourceId}','model.links.self'),
+  }),
 
   actions: {
     showInApp() {

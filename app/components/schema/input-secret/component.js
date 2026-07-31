@@ -1,6 +1,9 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed, observer } from '@ember/object';
+
+export default Component.extend({
   selected: null,  // Selected secret ID
   selectClass: 'form-control',
   exclude: null,  // ID or array of IDs to exclude from list
@@ -32,12 +35,12 @@ export default Ember.Component.extend({
     }
   },
 
-  filtered: function() {
+  filtered: computed('allSecrets.[]', 'exclude.[]', function() {
     let list = this.get('allSecrets');
 
     let exclude = this.get('exclude');
     if ( exclude ) {
-      if ( !Ember.isArray(exclude) ) {
+      if ( !isArray(exclude) ) {
         exclude = [exclude];
       }
 
@@ -45,9 +48,9 @@ export default Ember.Component.extend({
     }
 
     return list.sortBy('name','id');
-  }.property('allSecrets.[]','exclude.[]'),
+  }),
 
-  selectedChanged: function() {
+  selectedChanged: observer('selected', function() {
     let id = this.get('selected');
     let str = null;
 
@@ -59,5 +62,5 @@ export default Ember.Component.extend({
     }
 
     this.set('value', str);
-  }.observes('selected'),
+  }),
 });

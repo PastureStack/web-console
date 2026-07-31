@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import { cancel, later } from '@ember/runloop';
+import EmberObject from '@ember/object';
+import Route from '@ember/routing/route';
 
 const INTERVALCOUNT = 15000;
 
-export default Ember.Route.extend({
+export default Route.extend({
   queryParams: {
     sortBy: {
       refreshModel: true
@@ -66,7 +68,7 @@ export default Ember.Route.extend({
     return this.get('userStore').find('auditLog', null, this.parseFilters(params)).then((response) => {
       var resourceTypes = this.get('userStore').all('schema').filterBy('links.collection').map((x) => { return x.get('_id'); });
 
-      return Ember.Object.create({
+      return EmberObject.create({
         auditLog: response,
         resourceTypes: resourceTypes
       });
@@ -79,9 +81,9 @@ export default Ember.Route.extend({
   },
 
   scheduleLogUpdate() {
-    Ember.run.cancel(this.get('timer'));
+    cancel(this.get('timer'));
 
-    this.set('timer', Ember.run.later(() => {
+    this.set('timer', later(() => {
       var params = this.paramsFor('admin-tab.audit-logs');
 
       this.get('userStore').find('auditLog', null, this.parseFilters(params)).then((response) => {
@@ -99,7 +101,7 @@ export default Ember.Route.extend({
   },
 
   cancelLogUpdate() {
-    Ember.run.cancel(this.get('timer'));
+    cancel(this.get('timer'));
     this.set('timer', null);
   },
 

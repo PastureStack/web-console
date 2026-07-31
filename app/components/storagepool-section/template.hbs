@@ -1,12 +1,12 @@
-<div class="clearfix {{if single model.stateBackground}} {{if single 'single'}}">
+<div class="clearfix {{if this.single this.model.stateBackground}}{{if this.single 'single'}}">
   <div class="header-left collapser"></div>
 
   <div class="header-left">
-    {{#unless single}}
-      <div class="pull-left">{{badge-state model=model}}</div>
+    {{#unless this.single}}
+      <div class="pull-left">{{badge-state model=this.model}}</div>
     {{/unless}}
     <h4>
-      <span class="divider clip">{{model.name}}</span>
+      <span class="divider clip">{{this.model.name}}</span>
       {{!-- when storage pools details ready --}}
       {{!-- {{#if single}} --}}
         {{!-- <span class="divider clip">{{model.name}}</span> --}}
@@ -17,8 +17,8 @@
   </div>
 
   <div class="header-right right-divider stack-actions" style="width: auto">
-    {{#unless single}}
-      {{#link-to "storagepools.new-volume" (query-params driverName=model.driverName) classNames="btn btn-primary btn-sm"}}{{t 'storagePoolSection.volumes.add'}}{{/link-to}}
+    {{#unless this.single}}
+      {{#link-to "storagepools.new-volume" (query-params driverName=this.model.driverName) classNames="btn btn-primary btn-sm"}}{{t 'storagePoolSection.volumes.add'}}{{/link-to}}
     {{/unless}}
   </div>
 </div>
@@ -29,14 +29,14 @@
   <div class="subsection gutter col-xs-12 col-md-3 col-full-height">
     <h6>{{t 'storagePoolSection.hosts.header'}}</h6>
     <div class="clearfix r-p10 hosts">
-      {{#each hostsByName as |host|}}
+      {{#each this.hostsByName as |host|}}
         <div class="r-m10"><i class="icon {{host.stateIcon}} {{host.stateBackground}}"></i> {{#link-to "host" host.id}}{{host.displayName}}{{/link-to}}</div>
       {{else}}
         <div class="text-center text-muted">{{t 'storagePoolSection.hosts.none'}}</div>
       {{/each}}
     </div>
   </div>
-  {{#if model.volumes.length}}
+  {{#if this.model.volumes.length}}
     <div class="subsection gutter col-xs-12 col-md-9 col-full-height">
       <h6>{{t 'storagePoolSection.volumes.header'}}</h6>
       <table class="grid" style="margin-bottom: 0">
@@ -49,7 +49,7 @@
           </tr>
         </thead>
         <tbody>
-          {{#each arranged as |vol|}}
+          {{#each this.arranged as |vol|}}
             <tr>
               <td class="state">
                 {{badge-state model=vol}}

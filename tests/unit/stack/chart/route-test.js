@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import StackChartRoute from 'ui/stack/chart/route';
 
 module('Unit | Route | stack/chart');
@@ -8,7 +8,7 @@ module('Unit | Route | stack/chart');
 test('it exists', function(assert) {
   var route = StackChartRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('model returns the parent stack model', function(assert) {
@@ -26,5 +26,5 @@ test('model returns the parent stack model', function(assert) {
   });
 
   assert.strictEqual(route.model(), stack);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });

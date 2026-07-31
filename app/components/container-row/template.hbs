@@ -1,123 +1,131 @@
-{{#if showStateColumn}}
+{{#if this.showStateColumn}}
   <td data-title="{{t 'generic.state'}}:" class="state">
-    {{badge-state model=model}}
+    {{badge-state model=this.model}}
   </td>
 {{/if}}
-{{#if showNameColumn}}
+{{#if this.showNameColumn}}
   <td data-title="{{t 'generic.name'}}:" class="clip">
-    <a href="{{href-to detailRoute model.id}}">{{model.displayName}}</a>
+    <a href="{{href-to this.detailRoute this.model.id}}">{{this.model.displayName}}</a>
   </td>
 {{/if}}
-{{#if showStats}}
-  {{#if showCpuColumn}}
+{{#if this.showStats}}
+  {{#if this.showCpuColumn}}
     <td data-title="{{t 'containersPage.table.cpuRms'}}:" class="spark-td metric-cell metric-cpu">
-      {{#if (and statsAvailable model.cpuSpark)}}
-        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkCPUModel tooltipTemplate='tooltip-static' tooltipFor="sparkCPU"}}
+      {{#if (and this.statsAvailable this.model.cpuSpark)}}
+        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=this.sparkCPUModel tooltipTemplate='tooltip-static' tooltipFor="sparkCPU"}}
           {{spark-line
-            data=model.cpuSpark
-            width=72 height=25 max=cpuMax
+            data=this.model.cpuSpark
+            width=72
+            height=25
+            max=this.cpuMax
             prefix="containersPage.table.sparkPrefixCpu"
             formatter="percent"
             type="cpu"
-            tooltipModel=(mut sparkCPUModel)
+            tooltipModel=(mut this.sparkCPUModel)
           }}
         {{/tooltip-element}}
-        <span class="metric-rms-value">{{cpuRmsDisplay}}</span>
+        <span class="metric-rms-value">{{this.cpuRmsDisplay}}</span>
       {{else}}
         <span class="text-muted">{{t 'generic.na'}}</span>
       {{/if}}
     </td>
   {{/if}}
-  {{#if showRamColumn}}
+  {{#if this.showRamColumn}}
     <td data-title="{{t 'containersPage.table.memoryRms'}}:" class="spark-td metric-cell metric-memory">
-      {{#if (and statsAvailable model.memorySpark)}}
-        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkMemoryModel tooltipTemplate='tooltip-static' tooltipFor="sparkMemory"}}
+      {{#if (and this.statsAvailable this.model.memorySpark)}}
+        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=this.sparkMemoryModel tooltipTemplate='tooltip-static' tooltipFor="sparkMemory"}}
           {{spark-line
-            data=model.memorySpark
-            width=72 height=25 max=memoryMax
+            data=this.model.memorySpark
+            width=72
+            height=25
+            max=this.memoryMax
             prefix="containersPage.table.sparkPrefixMemory"
             formatter="mib"
             type="memory"
-            tooltipModel=(mut sparkMemoryModel)
+            tooltipModel=(mut this.sparkMemoryModel)
           }}
         {{/tooltip-element}}
-        <span class="metric-rms-value">{{memoryRmsDisplay}}</span>
+        <span class="metric-rms-value">{{this.memoryRmsDisplay}}</span>
       {{else}}
         <span class="text-muted">{{t 'generic.na'}}</span>
       {{/if}}
     </td>
   {{/if}}
-  {{#if showNetworkColumn}}
+  {{#if this.showNetworkColumn}}
     <td data-title="{{t 'containersPage.table.networkRms'}}:" class="spark-td metric-cell metric-network">
-      {{#if (and statsAvailable model.networkSpark)}}
-        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkNetworkModel tooltipTemplate='tooltip-static' tooltipFor="sparkNetwork"}}
+      {{#if (and this.statsAvailable this.model.networkSpark)}}
+        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=this.sparkNetworkModel tooltipTemplate='tooltip-static' tooltipFor="sparkNetwork"}}
           {{spark-line
-            data=model.networkSpark
-            width=72 height=25 max=networkMax
+            data=this.model.networkSpark
+            width=72
+            height=25
+            max=this.networkMax
             prefix="containersPage.table.sparkPrefixNetwork"
             formatter="kbps"
             type="network"
-            tooltipModel=(mut sparkNetworkModel)
+            tooltipModel=(mut this.sparkNetworkModel)
           }}
         {{/tooltip-element}}
-        <span class="metric-rms-value">{{networkRmsDisplay}}</span>
+        <span class="metric-rms-value">{{this.networkRmsDisplay}}</span>
       {{else}}
         <span class="text-muted">{{t 'generic.na'}}</span>
       {{/if}}
     </td>
   {{/if}}
-  {{#if showStorageColumn}}
+  {{#if this.showStorageColumn}}
     <td data-title="{{t 'containersPage.table.storageRms'}}:" class="spark-td metric-cell metric-storage">
-      {{#if (and statsAvailable model.storageSpark)}}
-        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=sparkStorageModel tooltipTemplate='tooltip-static' tooltipFor="sparkStorage"}}
+      {{#if (and this.statsAvailable this.model.storageSpark)}}
+        {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-basic" model=this.sparkStorageModel tooltipTemplate='tooltip-static' tooltipFor="sparkStorage"}}
           {{spark-line
-            data=model.storageSpark
-            width=72 height=25 max=storageMax
+            data=this.model.storageSpark
+            width=72
+            height=25
+            max=this.storageMax
             prefix="containersPage.table.sparkPrefixStorage"
             formatter="kbps"
             type="storage"
-            tooltipModel=(mut sparkStorageModel)
+            tooltipModel=(mut this.sparkStorageModel)
           }}
         {{/tooltip-element}}
-        <span class="metric-rms-value">{{storageRmsDisplay}}</span>
+        <span class="metric-rms-value">{{this.storageRmsDisplay}}</span>
       {{else}}
         <span class="text-muted">{{t 'generic.na'}}</span>
       {{/if}}
     </td>
   {{/if}}
 {{/if}}
-{{#if showImageColumn}}
+{{#if this.showImageColumn}}
   <td data-title="{{t 'containersPage.table.image'}}:" class="clip">
-    {{#tooltip-element inlineBlock=true type="tooltip-basic" tooltipTemplate="tooltip-static" model=model.displayImage tagName="span"}}
-      {{model.displayImage}}
+    {{#tooltip-element inlineBlock=true type="tooltip-basic" tooltipTemplate="tooltip-static" model=this.model.displayImage tagName="span"}}
+      {{this.model.displayImage}}
     {{/tooltip-element~}}
   </td>
 {{/if}}
-{{#if showIpColumn}}
+{{#if this.showIpColumn}}
   <td data-title="{{t 'containersPage.table.ipAddress'}}:">
-    {{format-ip model.displayIp}}
+    {{format-ip this.model.displayIp}}
   </td>
 {{/if}}
-{{#if (and showHost showHostColumn)}}
+{{#if (and this.showHost this.showHostColumn)}}
   <td data-title="{{t 'containersPage.table.primaryHost'}}:" class="clip">
-    {{#if model.primaryHost}}
-      <a href="{{href-to "host" model.primaryHost.id}}">{{model.primaryHost.displayName}}</a>
+    {{#if this.model.primaryHost}}
+      <a href="{{href-to "host" this.model.primaryHost.id}}">{{this.model.primaryHost.displayName}}</a>
     {{else}}
       <span class="text-muted">{{t 'containersPage.table.primaryHostUnknown'}}</span>
     {{/if}}
   </td>
 {{/if}}
-{{#if (and (eq showCommand "column") showCommandColumn)}}
+{{#if (and (eq this.showCommand "column") this.showCommandColumn)}}
   <td data-title="{{t 'containersPage.table.command'}}:" class="clip">
-    {{#if model.command}}
-      {{model.command}}
+    {{#if this.model.command}}
+      {{this.model.command}}
     {{else}}
       <span class="text-muted">{{t 'containersPage.table.noCommand'}}</span>
     {{/if}}
   </td>
 {{/if}}
-{{#if (and showActions showActionsColumn)}}
+{{#if (and this.showActions this.showActionsColumn)}}
   <td data-title="{{t 'generic.actions'}}:" class="actions">
-    {{action-menu model=model showPrimary=showPrimaryActions}}
+    {{action-menu model=this.model showPrimary=this.showPrimaryActions}}
   </td>
 {{/if}}

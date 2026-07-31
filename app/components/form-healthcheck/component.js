@@ -1,5 +1,9 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { parseRequestLine } from 'ui/utils/parse-healthcheck';
+
+import { observer } from '@ember/object';
 
 const NONE = 'none';
 const TCP = 'tcp';
@@ -21,8 +25,8 @@ const METHOD_CHOICES = ['OPTIONS','GET','HEAD','POST','PUT','DELETE','TRACE','CO
 const HTTP_1_0 = 'HTTP/1.0';
 const HTTP_1_1 = 'HTTP/1.1';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
+export default Component.extend({
+  projects: service(),
 
   // Inputs
   healthCheck: null,
@@ -41,7 +45,7 @@ export default Ember.Component.extend({
   uriVersion: null,
   checkType: null,
   uriHost: null,
-  showUriHost: Ember.computed.equal('uriVersion', HTTP_1_1),
+  showUriHost: equal('uriVersion', HTTP_1_1),
 
   strategy: null,
   quorum: null,
@@ -104,7 +108,7 @@ export default Ember.Component.extend({
     this.validate();
   },
 
-  uriDidChange: function() {
+  uriDidChange: observer('checkType', 'uriMethod', 'uriPath', 'uriVersion', 'uriHost', function() {
     var checkType = this.get('checkType');
     var method = (this.get('uriMethod')||'').trim();
     var path = (this.get('uriPath')||'').trim();
@@ -147,9 +151,9 @@ export default Ember.Component.extend({
         this.set('healthCheck.requestLine', '');
       }
     }
-  }.observes('checkType','uriMethod','uriPath','uriVersion','uriHost'),
+  }),
 
-  strategyDidChange: function() {
+  strategyDidChange: observer('strategy', 'quorum', function() {
     var strategy = this.get('strategy');
     var hc = this.get('healthCheck');
 
@@ -169,13 +173,13 @@ export default Ember.Component.extend({
         'recreateOnQuorumStrategyConfig': null,
       });
     }
-  }.observes('strategy','quorum'),
+  }),
 
-  quorumDidChange: function() {
+  quorumDidChange: observer('quorum', function() {
     this.set('strategy', 'recreateOnQuorum');
-  }.observes('quorum'),
+  }),
 
-  validate: function() {
+  validate: observer('checkType', 'healthCheck.port', 'healthCheck.requestLine', function() {
     var errors = [];
 
     if ( this.get('checkType') !== NONE )
@@ -192,5 +196,5 @@ export default Ember.Component.extend({
     }
 
     this.set('errors', errors);
-  }.observes('checkType','healthCheck.port','healthCheck.requestLine'),
+  }),
 });

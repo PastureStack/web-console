@@ -1,13 +1,17 @@
-import Ember from 'ember';
+import EmberObject, { computed, observer } from '@ember/object';
+import { once, later } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 import { denormalizeName } from 'ui/services/settings';
 
-export default Ember.Controller.extend({
-  github                  : Ember.inject.service(),
-  endpoint                : Ember.inject.service(),
-  access                  : Ember.inject.service(),
-  settings                : Ember.inject.service(),
-  githubConfig            : Ember.computed.alias('model.githubConfig'),
+export default Controller.extend({
+  github                  : service(),
+  endpoint                : service(),
+  access                  : service(),
+  settings                : service(),
+  githubConfig            : alias('model.githubConfig'),
 
   confirmDisable          : false,
   errors                  : null,
@@ -18,45 +22,59 @@ export default Ember.Controller.extend({
   haveToken               : false,
 
   organizations           : null,
-  scheme                  : Ember.computed.alias('githubConfig.scheme'),
+  scheme                  : alias('githubConfig.scheme'),
   isEnterprise: false,
   secure : true,
 
-  createDisabled: function() {
-    if (!this.get('haveToken')) {
-      return true;
-    }
-    if ( this.get('isEnterprise') && !this.get('githubConfig.hostname') )
-    {
-      return true;
-    }
+  createDisabled: computed(
+    'githubConfig.{clientId,clientSecret,hostname}',
+    'testing',
+    'isEnterprise',
+    'haveToken',
+    function() {
+      if (!this.get('haveToken')) {
+        return true;
+      }
+      if ( this.get('isEnterprise') && !this.get('githubConfig.hostname') )
+      {
+        return true;
+      }
 
-    if ( this.get('testing') )
-    {
-      return true;
+      if ( this.get('testing') )
+      {
+        return true;
+      }
+
     }
+  ),
 
-  }.property('githubConfig.{clientId,clientSecret,hostname}','testing','isEnterprise', 'haveToken'),
-
-  providerName: function() {
+  providerName: computed('githubConfig.hostname', function() {
     if ( !!this.get('githubConfig.hostname') ) {
       return 'authPage.github.enterprise';
     } else {
       return 'authPage.github.standard';
     }
-  }.property('githubConfig.hostname'),
+  }),
 
-  numUsers: function() {
-    return this.get('model.allowedIdentities').filterBy('externalIdType',C.PROJECT.TYPE_GITHUB_USER).get('length');
-  }.property('model.allowedIdentities.@each.externalIdType','wasRestricted'),
+  numUsers: computed(
+    'model.allowedIdentities.@each.externalIdType',
+    'wasRestricted',
+    function() {
+      return this.get('model.allowedIdentities').filterBy('externalIdType',C.PROJECT.TYPE_GITHUB_USER).get('length');
+    }
+  ),
 
-  numOrgs: function() {
-    return this.get('model.allowedIdentities').filterBy('externalIdType',C.PROJECT.TYPE_GITHUB_ORG).get('length');
-  }.property('model.allowedIdentities.@each.externalIdType','wasRestricted'),
+  numOrgs: computed(
+    'model.allowedIdentities.@each.externalIdType',
+    'wasRestricted',
+    function() {
+      return this.get('model.allowedIdentities').filterBy('externalIdType',C.PROJECT.TYPE_GITHUB_ORG).get('length');
+    }
+  ),
 
-  destinationUrl: function() {
+  destinationUrl: computed(function() {
     return window.location.origin+'/';
-  }.property(),
+  }),
 
   updateEnterprise: function() {
     if ( this.get('isEnterprise') ) {
@@ -79,9 +97,9 @@ export default Ember.Controller.extend({
     this.set('scheme', this.get('secure') ? 'https://' : 'http://');
   },
 
-  enterpriseDidChange: function() {
-    Ember.run.once(this,'updateEnterprise');
-  }.observes('isEnterprise','githubConfig.hostname','secure'),
+  enterpriseDidChange: observer('isEnterprise', 'githubConfig.hostname', 'secure', function() {
+    once(this,'updateEnterprise');
+  }),
 
   protocolChoices: [
     {label: 'https:// -- Requires a cert from a public CA', value: 'https://'},
@@ -93,7 +111,7 @@ export default Ember.Controller.extend({
       this.send('clearError');
       this.set('saving', true);
 
-      let githubConfig = Ember.Object.create(this.get('githubConfig'));
+      let githubConfig = EmberObject.create(this.get('githubConfig'));
       githubConfig.setProperties({
         'clientId'          : (githubConfig.get('clientId')||'').trim(),
         'clientSecret'      : (githubConfig.get('clientSecret')||'').trim(),
@@ -219,7 +237,7 @@ export default Ember.Controller.extend({
 
     promptDisable: function() {
       this.set('confirmDisable', true);
-      Ember.run.later(this, function() {
+      later(this, function() {
         this.set('confirmDisable', false);
       }, 10000);
     },

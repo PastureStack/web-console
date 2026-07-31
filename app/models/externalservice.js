@@ -1,20 +1,21 @@
 import Service from 'ui/models/service';
-import Ember from 'ember';
+import { htmlSafe } from '@ember/template';
+import { escapeHtml } from 'ui/utils/util';
 
-const esc = Ember.Handlebars.Utils.escapeExpression;
+import { computed } from '@ember/object';
 
 var ExternalService = Service.extend({
   type: 'externalService',
 
-  healthState: function() {
+  healthState: computed(function() {
     return 'healthy';
-  }.property(),
+  }),
 
-  displayDetail: function() {
+  displayDetail: computed('hostname', 'externalIpAddresses.[]', function() {
     var out = '';
     if ( this.get('hostname') )
     {
-      out = esc(this.get('hostname'));
+      out = escapeHtml(this.get('hostname'));
     }
     else
     {
@@ -22,7 +23,7 @@ var ExternalService = Service.extend({
       var num = ips.get('length');
       for ( var i = 0 ; i < 3 && i < num ; i++ )
       {
-        out += '<span>'+ (i === 0 ? '' : ', ') + esc(ips.objectAt(i)) + '</span>';
+        out += '<span>'+ (i === 0 ? '' : ', ') + escapeHtml(ips.objectAt(i)) + '</span>';
       }
 
       if ( num > 3 )
@@ -32,9 +33,9 @@ var ExternalService = Service.extend({
     }
 
     if ( out ) {
-      return ('<span class="text-muted">To: </span>' + out).htmlSafe();
+      return htmlSafe('<span class="text-muted">To: </span>' + out);
     }
-  }.property('hostname','externalIpAddresses.[]'),
+  }),
 });
 
 export default ExternalService;

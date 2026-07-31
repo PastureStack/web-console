@@ -1,5 +1,9 @@
-import Ember from 'ember';
-import { parsePortSpec, stringifyPortSpec, parseIpPort } from 'ui/utils/parse-port';
+import { get } from '@ember/object';
+import {
+  parsePortSpec,
+  stringifyPortSpec,
+  parseIpPort
+} from 'ui/utils/parse-port';
 import { module, test } from 'qunit';
 
 module('Unit | Utils | parse-port');
@@ -28,7 +32,7 @@ data.forEach(function(obj) {
     test('it can parse spec: ' + obj.str, function(assert) {
       var expected = obj.parsed;
       Object.keys(expected).forEach((key) => {
-        assert.strictEqual(Ember.get(actual,key), Ember.get(expected, key), key + ' parses correctly');
+        assert.strictEqual(get(actual,key), get(expected, key), key + ' parses correctly');
       });
     });
 
@@ -79,7 +83,7 @@ data.forEach(function(obj) {
     else
     {
       Object.keys(expected).forEach((key) => {
-        assert.strictEqual(Ember.get(actual,key), Ember.get(expected, key), key + ' parses correctly');
+        assert.strictEqual(get(actual,key), get(expected, key), key + ' parses correctly');
       });
     }
   });

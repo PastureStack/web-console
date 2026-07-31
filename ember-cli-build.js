@@ -27,19 +27,9 @@ module.exports = function(defaults) {
     name: 'ui',
     storeConfigInMeta: false,
     inlineContent: inline,
-    vendorFiles: {
-      'jquery.js': 'vendor/jquery/jquery.js',
-      'ember.js': {
-        development: 'vendor/ember/ember.debug.js',
-        production: 'vendor/ember/ember.prod.js',
-      },
-      'ember-testing.js': [
-        'vendor/ember/ember-testing.js',
-        { type: 'test' },
-      ],
-      'app-shims.js': null,
-      'ember-resolver.js': null,
-    },
+    // Ember 7 is a v2 addon and supplies its runtime modules directly.  Do not
+    // configure legacy vendorFiles paths; the historical runtime remains
+    // source evidence only and is never imported into the maintained build.
     sassOptions: {
       implementation: dartSass
     },
@@ -56,6 +46,12 @@ module.exports = function(defaults) {
       'lacsso': {
         import: ['lacsso.css']
       }
+    },
+    'ember-fetch': {
+      // Every supported browser provides Fetch and native Promises. Keep the
+      // compatibility module, but do not ship a second network stack.
+      preferNative: true,
+      nativePromise: true
     },
 
 
@@ -100,7 +96,6 @@ module.exports = function(defaults) {
   app.import('node_modules/qunit/qunit/qunit.css', { type: 'test' });
   app.import('node_modules/qunit/qunit/qunit.js', { type: 'test' });
   app.import('vendor/qunit-module-shim.js', { type: 'test' });
-  app.import('vendor/ember/ember-module-shim.js');
   app.import('vendor/intl-format-cache/memoizer-shim.js');
   app.import('node_modules/@xterm/xterm/css/xterm.css');
   app.import('node_modules/@xterm/xterm/lib/xterm.js');
@@ -119,10 +114,9 @@ module.exports = function(defaults) {
   app.import('node_modules/prismjs/prism.js');
   app.import('node_modules/prismjs/components/prism-yaml.js');
   app.import('node_modules/prismjs/components/prism-bash.js');
-  app.import('node_modules/lodash/index.js');
-  app.import('vendor/graphlib/graphlib.core.js');
-  app.import('vendor/dagre/dagre.core.js');
-  // dagre-d3 is not part of the current PastureStack Web Console vendor bundle.
+  app.import('node_modules/lodash/lodash.js');
+  app.import('node_modules/graphlib/dist/graphlib.core.js');
+  app.import('node_modules/dagre/dist/dagre.core.js');
   app.import('node_modules/async/dist/async.js');
   app.import('vendor/position-calculator.js');
   app.import('vendor/aws-sdk-ec2.js');

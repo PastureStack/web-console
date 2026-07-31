@@ -1,13 +1,13 @@
 <section class="header clearfix">
   <h1>
     {{#link-to "admin-tab.processes.list"}}{{t 'uiText.process'}}:{{/link-to}}
-    {{model.processInstance.id}}
+    {{this.model.processInstance.id}}
   </h1>
 </section>
 
-{{#each model.processExecutions as |process|}}
+{{#each this.model.processExecutions as |process|}}
   <section class="well">
     <h4>{{t 'uiText.childExecution'}}: {{process.id}}</h4>
-    {{process-executions execution=process.log.executions apiView=model.processExecutions.links.self}}
+    {{process-executions execution=process.log.executions apiView=this.model.processExecutions.links.self}}
   </section>
 {{/each}}

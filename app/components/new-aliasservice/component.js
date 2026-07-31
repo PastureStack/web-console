@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import NewServiceAlias from 'ui/mixins/new-service-alias';
 
-export default Ember.Component.extend(NewOrEdit, NewServiceAlias, {
+export default Component.extend(NewOrEdit, NewServiceAlias, {
 
   actions: {
     done() {

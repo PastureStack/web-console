@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import { once } from '@ember/runloop';
+import { computed, observer } from '@ember/object';
+import Component from '@ember/component';
 import UpgradeComponent from 'ui/mixins/upgrade-component';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 
 const CURRENT    = 'current',
       AVAILABLE  = 'available';
 
-export default Ember.Component.extend(UpgradeComponent, {
+export default Component.extend(UpgradeComponent, {
   // See mixin for other inputs
   currentId: null,
 
@@ -23,7 +25,7 @@ export default Ember.Component.extend(UpgradeComponent, {
   },
 
   // @TODO hacky hacky mchackerson...
-  currentVersion: Ember.computed('allVersions','currentId', function() {
+  currentVersion: computed('allVersions','currentId', function() {
     let parsed = parseExternalId(this.get('currentId'));
 
     let versions = this.get('allVersions');
@@ -36,11 +38,11 @@ export default Ember.Component.extend(UpgradeComponent, {
     }
   }),
 
-  currentVersionChanged: function() {
-    Ember.run.once(this, 'updateStatus');
-  }.observes('currentId'),
+  currentVersionChanged: observer('currentId', function() {
+    once(this, 'updateStatus');
+  }),
 
-  showDropdown: Ember.computed('upgradeStatus', function() {
+  showDropdown: computed('upgradeStatus', function() {
     return [AVAILABLE,CURRENT].indexOf(this.get('upgradeStatus')) >= 0;
   }),
 });

@@ -1,8 +1,11 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(ManageLabels, {
+import { observer, computed } from '@ember/object';
+
+export default Component.extend(ManageLabels, {
   // Inputs
   instance: null,
   errors: null,
@@ -11,7 +14,7 @@ export default Ember.Component.extend(ManageLabels, {
   editing: true,
   classNameBindings: ['editing:component-editing:component-static'],
 
-  intl: Ember.inject.service(),
+  intl: service(),
 
   init() {
     this._super(...arguments);
@@ -66,13 +69,13 @@ export default Ember.Component.extend(ManageLabels, {
     this.terminalDidChange();
   },
 
-  terminalDidChange: function() {
+  terminalDidChange: observer('terminal.type', function() {
     var val = this.get('terminal.type');
     var stdinOpen = ( val === 'interactive' || val === 'both' );
     var tty = (val === 'terminal' || val === 'both');
     this.set('instance.tty', tty);
     this.set('instance.stdinOpen', stdinOpen);
-  }.observes('terminal.type'),
+  }),
 
   // ----------------------------------
   // Start Once
@@ -83,7 +86,7 @@ export default Ember.Component.extend(ManageLabels, {
     this.set('startOnce', startOnce);
   },
 
-  startOnceDidChange: function() {
+  startOnceDidChange: observer('startOnce', function() {
     if ( this.get('startOnce') )
     {
       this.setLabel(C.LABEL.START_ONCE, 'true');
@@ -92,7 +95,7 @@ export default Ember.Component.extend(ManageLabels, {
     {
       this.removeLabel(C.LABEL.START_ONCE);
     }
-  }.observes('startOnce'),
+  }),
 
 
   // ----------------------------------
@@ -118,7 +121,7 @@ export default Ember.Component.extend(ManageLabels, {
     }
   },
 
-  restartDidChange: function() {
+  restartDidChange: observer('restart', 'restartLimit', function() {
     var policy = {};
     var name = this.get('restart');
     var limit = parseInt(this.get('restartLimit'),10);
@@ -134,13 +137,13 @@ export default Ember.Component.extend(ManageLabels, {
 
     policy.name = name;
     this.set('instance.restartPolicy', policy);
-  }.observes('restart','restartLimit'),
+  }),
 
-  restartLimitDidChange: function() {
+  restartLimitDidChange: observer('restartLimit', function() {
     this.set('restart', 'on-failure-cond');
-  }.observes('restartLimit'),
+  }),
 
-  showDrainTimeout: function() {
+  showDrainTimeout: computed('isService', 'isSidekick', function() {
     return this.get('isService') && !this.get('isSidekick');
-  }.property('isService', 'isSidekick')
+  })
 });

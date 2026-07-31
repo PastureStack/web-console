@@ -1,12 +1,14 @@
-import Ember from 'ember';
+import { observer } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Component.extend(ManageLabels, Sortable, {
+export default Component.extend(ManageLabels, Sortable, {
   model           : null,
 
-  labelSource     : Ember.computed.alias('model.labels'),
-  sortableContent : Ember.computed.alias('labelArray'),
+  labelSource     : alias('model.labels'),
+  sortableContent : alias('labelArray'),
   sortBy          : 'kind',
   showKind        : true,
   descending      : true,
@@ -17,7 +19,7 @@ export default Ember.Component.extend(ManageLabels, Sortable, {
     value : ['value','key'],
   },
 
-  labelsObserver: Ember.observer('model.labels', function () {
+  labelsObserver: observer('model.labels', function () {
     this.initLabels(this.get('labelSource'));
   }),
 

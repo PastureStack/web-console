@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import { hash } from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 
-export default Ember.Route.extend({
-  projects: Ember.inject.service(),
+export default Route.extend({
+  projects: service(),
 
   model: function() {
-    return Ember.RSVP.hash({
+    return hash({
       stacks: this.get('store').findAll('stack'),
     });
   },

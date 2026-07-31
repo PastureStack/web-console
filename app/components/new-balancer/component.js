@@ -1,10 +1,14 @@
-import Ember from 'ember';
+import EmberObject, { computed, observer } from '@ember/object';
+import { once } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(NewOrEdit, {
-  intl                      : Ember.inject.service(),
-  settings                  : Ember.inject.service(),
+export default Component.extend(NewOrEdit, {
+  intl                      : service(),
+  settings                  : service(),
 
   service                   : null,
   editing                   : null,
@@ -23,8 +27,8 @@ export default Ember.Component.extend(NewOrEdit, {
   schedulingErrors          : null,
   scaleErrors               : null,
 
-  primaryResource           : Ember.computed.alias('service'),
-  launchConfig              : Ember.computed.alias('service.launchConfig'),
+  primaryResource           : alias('service'),
+  launchConfig              : alias('service.launchConfig'),
 
   init() {
     this._super(...arguments);
@@ -59,18 +63,25 @@ export default Ember.Component.extend(NewOrEdit, {
     },
   },
 
-  headerLabel: function() {
-    let k;
-    if ( this.get('needsUpgrade') ) {
-      k = 'newBalancer.header.upgrade';
-    } else if ( this.get('existing') ) {
-      k = 'newBalancer.header.edit';
-    } else {
-      k = 'newBalancer.header.add';
-    }
+  headerLabel: computed(
+    'intl._locale',
+    'needsUpgrade',
+    'isService',
+    'isVm',
+    'service.secondaryLaunchConfigs.length',
+    function() {
+      let k;
+      if ( this.get('needsUpgrade') ) {
+        k = 'newBalancer.header.upgrade';
+      } else if ( this.get('existing') ) {
+        k = 'newBalancer.header.edit';
+      } else {
+        k = 'newBalancer.header.add';
+      }
 
-    return this.get('intl').t(k);
-  }.property('intl._locale','needsUpgrade','isService','isVm','service.secondaryLaunchConfigs.length'),
+      return this.get('intl').t(k);
+    }
+  ),
 
   // ----------------------------------
   // Ports
@@ -115,9 +126,12 @@ export default Ember.Component.extend(NewOrEdit, {
     });
   },
 
-  shouldUpdatePorts: function() {
-    Ember.run.once(this,'updatePorts');
-  }.observes('service.lbConfig.portRules.@each.{sourceIp,sourcePort,access,protocol}'),
+  shouldUpdatePorts: observer(
+    'service.lbConfig.portRules.@each.{sourceIp,sourcePort,access,protocol}',
+    function() {
+      once(this,'updatePorts');
+    }
+  ),
 
 
   validateRules() {
@@ -213,7 +227,7 @@ export default Ember.Component.extend(NewOrEdit, {
     this.set('ruleErrors', errors);
   },
 
-  needsUpgrade: function() {
+  needsUpgrade: computed('editing', 'upgradeImage', 'service.launchConfig.labels', function() {
     function arrayToStr(map) {
       map = map || {};
       let out = [];
@@ -253,23 +267,23 @@ export default Ember.Component.extend(NewOrEdit, {
     let old = removeKeys(this.get('existing.launchConfig.labels'),C.LABELS_TO_IGNORE);
     let neu = removeKeys(this.get('service.launchConfig.labels'),C.LABELS_TO_IGNORE);
     return arrayToStr(old) !== arrayToStr(neu);
-  }.property(
-    'editing',
-    'upgradeImage',
-    'service.launchConfig.labels'
-  ),
+  }),
 
-  upgradeInfo: function() {
-    let from = (this.get('existing.launchConfig.imageUuid')||'').replace(/^docker:/,'');
-    let to = (this.get('service.launchConfig.imageUuid')||'').replace(/^docker:/,'');
+  upgradeInfo: computed(
+    'existing.launchConfig.imageUuid',
+    'service.launchConfig.imageUuid',
+    function() {
+      let from = (this.get('existing.launchConfig.imageUuid')||'').replace(/^docker:/,'');
+      let to = (this.get('service.launchConfig.imageUuid')||'').replace(/^docker:/,'');
 
-    if ( this.get('upgradeImage')+'' === 'true' ) {
-      return Ember.Object.create({
-        from: from,
-        to: to,
-      });
+      if ( this.get('upgradeImage')+'' === 'true' ) {
+        return EmberObject.create({
+          from: from,
+          to: to,
+        });
+      }
     }
-  }.property('existing.launchConfig.imageUuid','service.launchConfig.imageUuid'),
+  ),
 
   // ----------------------------------
   // Labels
@@ -279,12 +293,13 @@ export default Ember.Component.extend(NewOrEdit, {
   schedulingLabels: null,
   labelsReady: false,
 
-  labelsChanged: function() {
-    Ember.run.once(this,'mergeLabels');
-  }.observes(
+  labelsChanged: observer(
     'userLabels.@each.{key,value}',
     'scaleLabels.@each.{key,value}',
-    'schedulingLabels.@each.{key,value}'
+    'schedulingLabels.@each.{key,value}',
+    function() {
+      once(this,'mergeLabels');
+    }
   ),
 
   mergeLabels() {
@@ -306,9 +321,9 @@ export default Ember.Component.extend(NewOrEdit, {
     this.set('labelsReady', user && scale && scheduling);
   },
 
-  editLabel: function() {
+  editLabel: computed('needsUpgrade', function() {
     return (this.get('needsUpgrade') ? 'action.upgrade' : 'action.edit');
-  }.property('needsUpgrade'),
+  }),
 
   // ----------------------------------
   // Save

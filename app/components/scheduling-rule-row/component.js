@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { setProperties, computed, observer } from '@ember/object';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
 function splitEquals(str) {
@@ -34,7 +35,7 @@ function normalizedLabels(objects) {
   return out;
 }
 
-export default Ember.Component.extend({
+export default Component.extend({
   rule: null,
   instance: null,
 
@@ -118,7 +119,7 @@ export default Ember.Component.extend({
     }
   },
 
-  valuesChanged: function() {
+  valuesChanged: observer('kind', 'suffix', 'userKey', 'userValue', function() {
     var key = '';
     var value = null;
 
@@ -159,13 +160,13 @@ export default Ember.Component.extend({
 
     key += this.get('suffix');
 
-    Ember.setProperties(this.get('rule'),{
+    setProperties(this.get('rule'),{
       key: key,
       value: value
     });
-  }.observes('kind','suffix','userKey','userValue'),
+  }),
 
-  isGlobalChanged: function() {
+  isGlobalChanged: observer('isGlobal', function() {
     if ( this.get('isGlobal') )
     {
       var kindChoices = this.get('schedulingRuleKindChoices').map((choice) => { return choice.value; });
@@ -180,15 +181,15 @@ export default Ember.Component.extend({
       // 'Should' isn't allowed in global
       this.set('suffix', this.get('suffix').replace(/_soft/,''));
     }
-  }.observes('isGlobal'),
+  }),
 
-  getSuffixLabel: Ember.computed('suffix', function() {
+  getSuffixLabel: computed('suffix', function() {
     let label = this.get('schedulingRuleSuffixChoices').findBy('value', this.get('suffix')).label;
     label = label.split('.');
     return label[label.length -1];
   }),
 
-  schedulingRuleSuffixChoices: function() {
+  schedulingRuleSuffixChoices: computed('isGlobal', function() {
     var out = [
       {label: 'schedulingRuleRow.must', value: ''},
     ];
@@ -203,9 +204,9 @@ export default Ember.Component.extend({
 
     out.push({label: 'schedulingRuleRow.mustNot', value: '_ne'});
     return out;
-  }.property('isGlobal'),
+  }),
 
-  schedulingRuleKindChoices: function() {
+  schedulingRuleKindChoices: computed('isGlobal', function() {
     var out = [
       {label: 'schedulingRuleRow.hostLabel', value: 'host_label'},
     ];
@@ -220,22 +221,22 @@ export default Ember.Component.extend({
     }
 
     return out;
-  }.property('isGlobal'),
+  }),
 
-  normalizedHostLabels: function() {
+  normalizedHostLabels: computed('allHosts.@each.labels', function() {
     return normalizedLabels(this.get('allHosts'));
-  }.property('allHosts.@each.labels'),
+  }),
 
-  hostLabelKeyChoices: function() {
+  hostLabelKeyChoices: computed('normalizedHostLabels', function() {
     return Object.keys(this.get('normalizedHostLabels')).sort().uniq();
-  }.property('normalizedHostLabels'),
+  }),
 
-  hostLabelValueChoices: function() {
+  hostLabelValueChoices: computed('userKey', 'normalizedHostLabels', function() {
     var key = this.get('userKey').toLowerCase();
     return ((this.get('normalizedHostLabels')[key])||[]).sort().uniq();
-  }.property('userKey','normalizedHostLabels'),
+  }),
 
-  allContainers: function() {
+  allContainers: computed('allHosts.@each.instances', function() {
     var out = [];
     this.get('allHosts').map((host) => {
       var containers = (host.get('instances')||[]).filter(function(instance) {
@@ -247,22 +248,22 @@ export default Ember.Component.extend({
     });
 
     return out.sortBy('name','id').uniq();
-  }.property('allHosts.@each.instances'),
+  }),
 
-  normalizedContainerLabels: function() {
+  normalizedContainerLabels: computed('allHosts.@each.labels', function() {
     return normalizedLabels(this.get('allContainers'));
-  }.property('allHosts.@each.labels'),
+  }),
 
-  containerLabelKeyChoices: function() {
+  containerLabelKeyChoices: computed('normalizedContainerLabels', function() {
     return Object.keys(this.get('normalizedContainerLabels')).sort().uniq();
-  }.property('normalizedContainerLabels'),
+  }),
 
-  containerLabelValueChoices: function() {
+  containerLabelValueChoices: computed('userKey', 'normalizedContainerLabels', function() {
     var key = this.get('userKey').toLowerCase();
     return ((this.get('normalizedContainerLabels')[key])||[]).sort().uniq();
-  }.property('userKey','normalizedContainerLabels'),
+  }),
 
-  containerValueChoices: function() {
+  containerValueChoices: computed('allContainers.@each.name', function() {
     var out = [];
     this.get('allContainers').forEach((container) => {
       var name = container.get('name');
@@ -273,9 +274,9 @@ export default Ember.Component.extend({
     });
 
     return out.map((key) => { return (key||'').toLowerCase(); }).sort().uniq();
-  }.property('allContainers.@each.name'),
+  }),
 
-  serviceValueChoices: function() {
+  serviceValueChoices: computed('allContainers.@each.labels', function() {
     var out = [];
     this.get('allContainers').forEach((container) => {
       var label = (container.get('labels')||{})[C.LABEL.SERVICE_NAME];
@@ -286,5 +287,5 @@ export default Ember.Component.extend({
     });
 
     return out.map((key) => { return (key||'').toLowerCase(); }).sort().uniq();
-  }.property('allContainers.@each.labels'),
+  }),
 });

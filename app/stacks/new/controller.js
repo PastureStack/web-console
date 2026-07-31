@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import C from 'ui/utils/constants';
-import {tagChoices, tagsToArray} from 'ui/models/stack';
+import { tagChoices, tagsToArray } from 'ui/models/stack';
 
-export default Ember.Controller.extend(NewOrEdit, {
+import { computed } from '@ember/object';
+
+export default Controller.extend(NewOrEdit, {
   queryParams: ['githubRepo','githubBranch','composeFiles','system'],
   githubRepo: null,
   githubBranch: null,
@@ -27,9 +29,9 @@ export default Ember.Controller.extend(NewOrEdit, {
     },
   },
 
-  groupChoices: function() {
+  groupChoices: computed('allStacks.@each.grouping', function() {
     return tagChoices(this.get('allStacks')).sort();
-  }.property('allStacks.@each.grouping'),
+  }),
 
   willSave: function() {
     let out = this._super(...arguments);

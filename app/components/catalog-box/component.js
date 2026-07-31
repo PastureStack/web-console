@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  settings: Ember.inject.service(),
+export default Component.extend({
+  settings: service(),
 
   classNames: ['catalog-box'],
   classNameBindings: ['active::inactive'],

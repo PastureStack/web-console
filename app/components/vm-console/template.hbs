@@ -1,8 +1,8 @@
-{{#unless embedded}}
-  <h2><i class="icon icon-terminal"></i> {{t 'vmConsole.header'}} {{instance.displayName}}</h2>
-  {{#if showProtip}}
+{{#unless this.embedded}}
+  <h2><i class="icon icon-terminal"></i> {{t 'vmConsole.header'}} {{this.instance.displayName}}</h2>
+  {{#if this.showProtip}}
     <div class="text-muted r-mt5 r-mb10" style="font-size: 12px;">
-      {{t 'vmConsole.protip' key=alternateLabel}}
+      {{t 'vmConsole.protip' key=this.alternateLabel}}
     </div>
   {{/if}}
 {{/unless}}
@@ -15,9 +15,9 @@
 </div>
 
 <div class="footer-actions">
-  <button {{action "ctrlAltDelete"}} class="btn btn-default" disabled={{ctrlAltDeleteDisabled}}>{{t 'vmConsole.footerActions.buttonSend'}}</button>
-  {{#unless embedded}}
+  <button {{action "ctrlAltDelete"}} class="btn btn-default" disabled={{this.ctrlAltDeleteDisabled}}>{{t 'vmConsole.footerActions.buttonSend'}}</button>
+  {{#unless this.embedded}}
     <button {{action "cancel"}} class="btn btn-primary">{{t 'vmConsole.footerActions.buttonCancel'}}</button>
   {{/unless}}
-  <div class="console-status text-muted">{{status}}</div>
+  <div class="console-status text-muted">{{this.status}}</div>
 </div>

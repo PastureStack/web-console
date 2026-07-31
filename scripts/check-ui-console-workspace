@@ -64,8 +64,8 @@ grep -F "consoleWorkspace:" translations/zh-tw.yaml >/dev/null
 grep -F "工作階段" translations/zh-tw.yaml >/dev/null
 
 dock_active_style=$(
-  sed -n '/^  &\.active {$/,/^  }$/p' \
-    app/styles/components/_console-workspace.scss
+  tr -d '\r' < app/styles/components/_console-workspace.scss |
+    sed -n '/^  &\.active {$/,/^  }$/p'
 )
 for marker in \
   'background: rgba(255, 255, 255, .1);' \

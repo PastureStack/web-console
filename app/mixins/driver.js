@@ -1,12 +1,17 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { Promise } from 'rsvp';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 import Util from 'ui/utils/util';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ManageLabels from 'ui/mixins/manage-labels';
 import { addAction } from 'ui/utils/add-view-action';
 
-export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
-  intl          : Ember.inject.service(),
-  settings      : Ember.inject.service(),
+import { computed, observer } from '@ember/object';
+
+export default Mixin.create(NewOrEdit, ManageLabels, {
+  intl          : service(),
+  settings      : service(),
   createDelayMs : 0,
   showEngineUrl : true,
 
@@ -52,7 +57,7 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
     }
   },
 
-  nameParts: function() {
+  nameParts: computed('prefix', 'count', function() {
     let input = this.get('prefix')||'';
     let count = this.get('count');
     let match = input.match(/^(.*?)([0-9]+)$/);
@@ -88,9 +93,9 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
       start: start,
       end: end
     };
-  }.property('prefix','count'),
+  }),
 
-  nameCountLabel: function() {
+  nameCountLabel: computed('nameParts', 'intl._locale', function() {
     let parts = this.get('nameParts');
     if ( typeof parts.name !== 'undefined' || !parts.prefix )
     {
@@ -101,9 +106,9 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
     let first = parts.prefix + Util.strPad(parts.start, parts.minLength, '0');
     let last = parts.prefix + Util.strPad(parts.end, parts.minLength, '0');
     return this.get('intl').tHtml('driver.multiHostNames',{first: first, last: last});
-  }.property('nameParts','intl._locale'),
+  }),
 
-  nameDidChange: function() {
+  nameDidChange: observer('nameParts', function() {
     let parts = this.get('nameParts');
     let nameField = 'hostname';
     if (this.get('primaryResource.type') === 'machine') {
@@ -118,7 +123,7 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
       let first = parts.prefix + Util.strPad(parts.start, parts.minLength, '0');
       this.set(`primaryResource.${nameField}`, first);
     }
-  }.observes('nameParts'),
+  }),
 
   willSave() {
     this.set('multiTemplate', this.get('primaryResource').clone());
@@ -143,7 +148,7 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
       let parts = this.get('nameParts');
       let tpl = this.get('multiTemplate');
       let delay = this.get('createDelayMs');
-      var promise = new Ember.RSVP.Promise(function(resolve,reject) {
+      var promise = new Promise(function(resolve,reject) {
         let hosts = [];
         for ( let i = parts.start + 1 ; i <= parts.end ; i++ )
         {
@@ -179,7 +184,7 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
 
   didInsertElement() {
     this._super();
-    Ember.run.next(() => {
+    next(() => {
       try {
         let input = this.$('INPUT')[0];
         if ( input )

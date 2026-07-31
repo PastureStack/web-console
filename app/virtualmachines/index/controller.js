@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Controller.extend(Sortable, {
+export default Controller.extend(Sortable, {
   sortBy: 'name',
   sorts: {
     state:    ['stateSort','name','id'],

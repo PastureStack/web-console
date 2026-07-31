@@ -1,5 +1,5 @@
 import { module, test } from 'qunit';
-import {validateHostname} from "ui/utils/validate-dns";
+import { validateHostname } from "ui/utils/validate-dns";
 
 module('Unit | Utils | validate-dns');
 

@@ -1,6 +1,9 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { observer } from '@ember/object';
+
+export default Component.extend({
   service: null,
   containers: null,
   listenersArray: null,
@@ -16,11 +19,11 @@ export default Ember.Component.extend({
     }
   },
 
-  serviceObserver: function() {
+  serviceObserver: observer('service', function() {
     this.bootstrap();
-  }.observes('service'),
+  }),
 
-  targets: Ember.computed.alias('service.lbConfig.portRules'),
+  targets: alias('service.lbConfig.portRules'),
 
   bootstrap: function() {
     this.get('store').findAll('certificate').then((result) => {

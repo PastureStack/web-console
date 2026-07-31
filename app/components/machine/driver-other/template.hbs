@@ -14,30 +14,30 @@
       <div class="col-md-8">
         {{new-select
           classNames="form-control"
-          content=otherChoices
-          value=otherDriver
+          content=this.otherChoices
+          value=this.otherDriver
         }}
       </div>
     </div>
 
     <div class="over-hr r-mt20 r-mb20">
-      <span>{{t 'machine.driverOther.optionsSection' driverName=(str-replace driver match="Config" with="")}}</span>
+      <span>{{t 'machine.driverOther.optionsSection' driverName=(str-replace this.driver match="Config" with="")}}</span>
     </div>
 
-    {{#each fieldNames as |fieldName|}}
+    {{#each this.fieldNames as |fieldName|}}
       {{api-field
-        resource=driverOpts
-        resourceType=otherDriver
+        resource=this.driverOpts
+        resourceType=this.otherDriver
         field=fieldName
-        value=(get driverOpts fieldName)
-        schemas=schemas
-        typeDocs=typeDocumentations
+        value=(get this.driverOpts fieldName)
+        schemas=this.schemas
+        typeDocs=this.typeDocumentations
       }}
     {{/each}}
 
     {{partial "host/add-options"}}
   </div>
 
-  {{top-errors errors=errors}}
+  {{top-errors errors=this.errors}}
   {{save-cancel save="save" cancel="cancel"}}
 </section>

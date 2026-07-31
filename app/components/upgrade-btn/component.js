@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import UpgradeComponent from 'ui/mixins/upgrade-component';
 
-export default Ember.Component.extend(UpgradeComponent, {
+export default Component.extend(UpgradeComponent, {
   tagName             : 'button',
   classNames          : ['btn','btn-sm'],
   classNameBindings   : ['color'],

@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
-  projects: Ember.inject.service(),
+export default Route.extend({
+  projects: service(),
 
   beforeModel() {
     this._super(...arguments);

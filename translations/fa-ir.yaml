@@ -227,6 +227,7 @@ authPage:
       wellKnownUrl: نشانی سند کشف الزامی است.
       invalidUrl: نشانی سند کشف معتبر نیست.
       https: به‌جز توسعه محلی، کشف باید از HTTPS استفاده کند.
+      externalPlatformUrl: پیش از پیکربندی OpenID Connect، نشانی بیرونی پلتفرم را روی یک نام دامنه HTTPS تنظیم کنید. نشانی IP و HTTP رمزنگاری‌نشده نمی‌توانند URI بازگشت باشند.
       clientId: شناسه کلاینت الزامی است.
       clientSecret: راز کلاینت الزامی است.
       openidScope: دامنه‌ها باید شامل openid باشند.

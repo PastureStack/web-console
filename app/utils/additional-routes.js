@@ -1,4 +1,3 @@
-import Ember from 'ember';
 var list = {};
 
 /* Usage: In your Addon:
@@ -67,28 +66,4 @@ export function clearRoutes() {
   //console.log('clearRoutes()');
   list = null;
 }
-
-// Monkey patch route() so that additional routes can be added by an addon
-Ember.RouterDSL.prototype._route = Ember.RouterDSL.prototype.route;
-Ember.RouterDSL.prototype.route = function( name, options, callback ) {
-  if (arguments.length === 1) {
-    options = {};
-  }
-  else if (arguments.length === 2 && typeof options === 'function') {
-    callback = options;
-    options = {};
-  }
-
-  var key = `${this.parent}.${name}`;
-
-  // Add all the standard routes to the aditional routes table
-  addRoutes(callback, key);
-
-  // Create a new DSL fn that contains both the stadnard and addon routes
-  let newCallback = applyRoutes(key);
-
-  // Call the original route() with the new DSL Fn
-  this._route(name, options, newCallback);
-};
-// End: Monkey patch
 

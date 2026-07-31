@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { alias, equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 import Util from 'ui/utils/util';
 import { alternateLabel } from 'ui/utils/platform';
@@ -26,8 +29,8 @@ var typeClass = {
   2: 'log-stderr',
 };
 
-export default Ember.Component.extend(ThrottledResize, {
-  intl: Ember.inject.service(),
+export default Component.extend(ThrottledResize, {
+  intl: service(),
   instance: null,
   alternateLabel: alternateLabel,
   showProtip: true,
@@ -37,11 +40,11 @@ export default Ember.Component.extend(ThrottledResize, {
 
   logHeight: 300,
 
-  onlyCombinedLog: Ember.computed.alias('instance.tty'),
+  onlyCombinedLog: alias('instance.tty'),
   which: 'combined',
-  isCombined: Ember.computed.equal('which','combined'),
-  isStdOut: Ember.computed.equal('which','stdout'),
-  isStdErr: Ember.computed.equal('which','stderr'),
+  isCombined: equal('which','combined'),
+  isStdOut: equal('which','stdout'),
+  isStdErr: equal('which','stderr'),
 
   stdErrVisible: true,
   stdOutVisible: true,
@@ -72,7 +75,7 @@ export default Ember.Component.extend(ThrottledResize, {
       this.set('which',which);
       this.set('stdErrVisible', (which === 'combined' || which === 'stderr') );
       this.set('stdOutVisible', (which === 'combined' || which === 'stdout') );
-      Ember.run.next(this, function() {
+      next(this, function() {
         this.send('scrollToBottom');
       });
     },
@@ -80,7 +83,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
   didInsertElement: function() {
     this._super();
-    Ember.run.next(this, 'exec');
+    next(this, 'exec');
   },
 
   exec: function() {
@@ -143,7 +146,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
       if ( isFollow )
       {
-        Ember.run.next(() => {
+        next(() => {
           this.send('scrollToBottom');
         });
       }

@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import LoginRoute from 'ui/login/index/route';
 
 module('Unit | Route | login/index');
@@ -8,7 +8,7 @@ module('Unit | Route | login/index');
 test('it exists', function(assert) {
   var route = LoginRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('activate and deactivate toggle farm body class', function(assert) {
@@ -21,5 +21,5 @@ test('activate and deactivate toggle farm body class', function(assert) {
 
   route.deactivate();
   assert.notOk(body.hasClass('farm'));
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });

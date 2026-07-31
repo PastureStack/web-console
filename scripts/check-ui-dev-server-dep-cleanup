@@ -36,7 +36,7 @@ for phrase in ["var glob       = require('glob');", "glob.globSync || glob.sync"
     if phrase not in server_source:
         fail("MODERN_GLOB_SERVER_COMPAT_MISSING", phrase=phrase)
 
-lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock_path = Path("package-lock.json")
 if not lock_path.is_file():
     fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
 else:

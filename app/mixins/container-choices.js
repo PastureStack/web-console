@@ -1,18 +1,21 @@
-import Ember from 'ember';
+import { get, computed } from '@ember/object';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
-  intl: Ember.inject.service(),
+export default Mixin.create({
+  intl: service(),
   // linksArray, allHosts, instance should be set
 
-  isManagedNetwork: Ember.computed.equal('instance.networkMode','managed'),
+  isManagedNetwork: equal('instance.networkMode','managed'),
 
-  containerChoices: function() {
+  containerChoices: computed('allHosts.@each.instances', 'intl._locale', function() {
     var list = [];
     var id = this.get('id');
     var intl = this.get('intl');
 
     var expectContainerIds = (this.get('linksArray')||[]).map(function(obj) {
-      return Ember.get(obj,'targetInstanceId');
+      return get(obj,'targetInstanceId');
     });
 
     this.get('allHosts').map((host) => {
@@ -70,9 +73,9 @@ export default Ember.Mixin.create({
     }
 
     return list.sortBy('group','name','id');
-  }.property('allHosts.@each.instances','intl._locale'),
+  }),
 
-  containersOnRequestedHost: function() {
+  containersOnRequestedHost: computed('containerChoices.@each.hostId', 'instance.requestedHostId', function() {
     var requestedHostId = this.get('instance.requestedHostId');
     var all = this.get('containerChoices');
 
@@ -84,20 +87,26 @@ export default Ember.Mixin.create({
     {
       return all;
     }
-  }.property('containerChoices.@each.hostId','instance.requestedHostId'),
+  }),
 
-  containersOnRequestedHostIfUnmanaged: function() {
-    var requestedHostId = this.get('instance.requestedHostId');
-    var all = this.get('containerChoices');
-    var isManagedNetwork = this.get('isManagedNetwork');
+  containersOnRequestedHostIfUnmanaged: computed(
+    'containerChoices.@each.hostId',
+    'instance.requestedHostId',
+    'isManagedNetwork',
+    'intl._locale',
+    function() {
+      var requestedHostId = this.get('instance.requestedHostId');
+      var all = this.get('containerChoices');
+      var isManagedNetwork = this.get('isManagedNetwork');
 
-    if ( requestedHostId && !isManagedNetwork )
-    {
-      return all.filterBy('hostId', requestedHostId);
+      if ( requestedHostId && !isManagedNetwork )
+      {
+        return all.filterBy('hostId', requestedHostId);
+      }
+      else
+      {
+        return all;
+      }
     }
-    else
-    {
-      return all;
-    }
-  }.property('containerChoices.@each.hostId','instance.requestedHostId','isManagedNetwork','intl._locale'),
+  ),
 });

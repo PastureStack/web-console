@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import { alias } from '@ember/object/computed';
 import { alternateLabel } from 'ui/utils/platform';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal', 'modal-logs'],
-  originalModel  : Ember.computed.alias('modalService.modalOpts.originalModel'),
-  action         : Ember.computed.alias('modalService.modalOpts.action'),
+  originalModel  : alias('modalService.modalOpts.originalModel'),
+  action         : alias('modalService.modalOpts.action'),
   alternateLabel : alternateLabel,
-  intl           : Ember.inject.service(),
+  intl           : service(),
 
   actions: {
 
@@ -25,7 +27,7 @@ export default ModalBase.extend({
     }, 500);
   },
 
-  isService: Ember.computed('originalModel.type','intl._locale', function() {
+  isService: computed('originalModel.type','intl._locale', function() {
     let type = this.get('originalModel.type');
     let out  = {};
     let intl = this.get('intl');

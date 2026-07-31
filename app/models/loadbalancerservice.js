@@ -1,10 +1,12 @@
+import { service } from '@ember/service';
 import Service from 'ui/models/service';
-import Ember from 'ember';
+import { htmlSafe } from '@ember/template';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { parsePortSpec } from 'ui/utils/parse-port';
+import { escapeHtml } from 'ui/utils/util';
 
-const esc = Ember.Handlebars.Utils.escapeExpression;
+import { computed } from '@ember/object';
 
 function portToStr(spec) {
   var parts = parsePortSpec(spec,'http');
@@ -19,8 +21,8 @@ function specToPort(spec) {
 var LoadBalancerService = Service.extend({
   type: 'loadBalancerService',
 
-  intl: Ember.inject.service(),
-  settings: Ember.inject.service(),
+  intl: service(),
+  settings: service(),
 
   initPorts() {
     let rules = this.get('lbConfig.portRules')||[];
@@ -46,89 +48,104 @@ var LoadBalancerService = Service.extend({
     });
   },
 
-  sslPorts: function() {
+  sslPorts: computed(`lbConfig.portRules.@each.{isTls,sourcePort}`, function() {
     let out = (this.get('lbConfig.portRules')||[]).filterBy('isTls',true).map((x) => x.get('sourcePort')).uniq();
     return out;
-  }.property(`lbConfig.portRules.@each.{isTls,sourcePort}`),
+  }),
 
-  endpointsByPort: function() {
+  endpointsByPort: computed('endpointsMap', function() {
     var sslPorts = this.get('sslPorts');
 
     return this._super().map((obj) => {
       obj.ssl = sslPorts.indexOf(obj.port) >= 0;
       return obj;
     });
-  }.property('endpointsMap'),
+  }),
 
-  displayPorts: function() {
-    var sslPorts = this.get('sslPorts');
+  displayPorts: computed(
+    'launchConfig.ports.[]',
+    'launchConfig.expose.[]',
+    'endpointsMap',
+    'intl._locale',
+    function() {
+      var sslPorts = this.get('sslPorts');
 
-    var internal = '';
-    (this.get('launchConfig.expose')||[]).forEach((portSpec, idx) => {
-      internal += '<span>' + (idx === 0 ? '' : ', ') + esc(portToStr(portSpec)) + '</span>';
-    });
+      var internal = '';
+      (this.get('launchConfig.expose')||[]).forEach((portSpec, idx) => {
+        internal += '<span>' + (idx === 0 ? '' : ', ') + escapeHtml(portToStr(portSpec)) + '</span>';
+      });
 
-    var pub = '';
-    var fqdn = this.get('fqdn');
-    let ports = (this.get('launchConfig.ports')||[]);
-    ports.forEach((portSpec, idx) => {
-      var portNum = specToPort(portSpec);
-      var endpoints = this.get('endpointsMap')[portNum];
-      if ( endpoints )
-      {
-        var url = Util.constructUrl((sslPorts.indexOf(portNum) >= 0), fqdn||endpoints[0], portNum);
-        pub += '<span>' +
-        '<a href="'+ url +'" target="_blank">' +
-        esc(portToStr(portSpec)) +
-        '</a>' + (idx+1 === ports.length ? '' : ', ') +
-        '</span>';
-      }
-      else
-      {
-        pub += '<span>' + (idx === 0 ? '' : ', ') + esc(portToStr(portSpec)) + '</span>';
-      }
-    });
-
-    let intl = this.get('intl');
-    let portsTranslation = intl.t('generic.ports');
-    let internalTranslation = intl.t('generic.internal');
-
-    var out = (pub      ? ' <label>'+portsTranslation+': </label>'   + pub : '') +
-              (internal ? '<label>'+internalTranslation+': </label>' + internal : '');
-
-    return out.htmlSafe();
-  }.property('launchConfig.ports.[]','launchConfig.expose.[]','endpointsMap', 'intl._locale'),
-
-  displayDetail: function() {
-    var services = (this.get('lbConfig.portRules')||[]).map((rule) => {
-      if ( rule.get('selector') ) {
-        return rule.get('selector');
-      } else {
-
-        let out = '';
-        if ( rule.get('service.stackId') !== this.get('stackId') ) {
-          out += esc(rule.get('service.displayStack'))+'/';
+      var pub = '';
+      var fqdn = this.get('fqdn');
+      let ports = (this.get('launchConfig.ports')||[]);
+      ports.forEach((portSpec, idx) => {
+        var portNum = specToPort(portSpec);
+        var endpoints = this.get('endpointsMap')[portNum];
+        if ( endpoints )
+        {
+          var url = Util.constructUrl((sslPorts.indexOf(portNum) >= 0), fqdn||endpoints[0], portNum);
+          pub += '<span>' +
+          '<a href="'+ url +'" target="_blank">' +
+          escapeHtml(portToStr(portSpec)) +
+          '</a>' + (idx+1 === ports.length ? '' : ', ') +
+          '</span>';
         }
+        else
+        {
+          pub += '<span>' + (idx === 0 ? '' : ', ') + escapeHtml(portToStr(portSpec)) + '</span>';
+        }
+      });
 
-        return out + esc(rule.get('service.displayName'));
-      }
-    }).uniq();
+      let intl = this.get('intl');
+      let portsTranslation = intl.t('generic.ports');
+      let internalTranslation = intl.t('generic.internal');
 
-    services.sort();
+      var out = (pub      ? ' <label>'+portsTranslation+': </label>'   + pub : '') +
+                (internal ? '<label>'+internalTranslation+': </label>' + internal : '');
 
-    let str = '<span>' + services.join('</span><span>') + '</span>';
+      return htmlSafe(out);
+    }
+  ),
 
-    let intl = this.get('intl');
-    var out = '<label>'+ intl.t('generic.to')+': </label>' + str;
+  displayDetail: computed(
+    'lbConfig.portRules.@each.{service,selector}',
+    'intl._locale',
+    function() {
+      var services = (this.get('lbConfig.portRules')||[]).map((rule) => {
+        if ( rule.get('selector') ) {
+          return rule.get('selector');
+        } else {
 
-    return out.htmlSafe();
-  }.property('lbConfig.portRules.@each.{service,selector}', 'intl._locale'),
+          let out = '';
+          if ( rule.get('service.stackId') !== this.get('stackId') ) {
+            out += escapeHtml(rule.get('service.displayStack'))+'/';
+          }
 
-  imageUpgradeAvailable: function() {
-    let cur = (this.get('launchConfig.imageUuid')||'').replace(/^docker:/,'');
-    let available = this.get(`settings.${C.SETTING.BALANCER_IMAGE}`);
-    return cur.indexOf(available) === -1 && !!this.get('actionLinks.upgrade');
-  }.property('launchConfig.imageUuid',`settings.${C.SETTING.BALANCER_IMAGE}`,'actionLinks.upgrade'),
+          return out + escapeHtml(rule.get('service.displayName'));
+        }
+      }).uniq();
+
+      services.sort();
+
+      let str = '<span>' + services.join('</span><span>') + '</span>';
+
+      let intl = this.get('intl');
+      var out = '<label>'+ intl.t('generic.to')+': </label>' + str;
+
+      return htmlSafe(out);
+    }
+  ),
+
+  imageUpgradeAvailable: computed(
+    'launchConfig.imageUuid',
+    `settings.${C.SETTING.BALANCER_IMAGE}`,
+    'actionLinks.upgrade',
+    function() {
+      let cur = (this.get('launchConfig.imageUuid')||'').replace(/^docker:/,'');
+      let available = this.get(`settings.${C.SETTING.BALANCER_IMAGE}`);
+      return cur.indexOf(available) === -1 && !!this.get('actionLinks.upgrade');
+    }
+  ),
 });
 
 export default LoadBalancerService;

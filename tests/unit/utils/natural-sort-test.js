@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import { naturalCompare, naturalSort } from 'ui/utils/natural-sort';
 
@@ -12,18 +12,18 @@ test('it compares names, addresses, and versions naturally', function(assert) {
 
 test('it supports nested fields, descriptor direction, and stable ties', function(assert) {
   let items = [
-    Ember.Object.create({id: '2', host: Ember.Object.create({name: 'node-10'}), score: 4}),
-    Ember.Object.create({id: '1', host: Ember.Object.create({name: 'node-2'}), score: 4}),
-    Ember.Object.create({id: '3', host: Ember.Object.create({name: 'node-1'}), score: 7}),
+    EmberObject.create({id: '2', host: EmberObject.create({name: 'node-10'}), score: 4}),
+    EmberObject.create({id: '1', host: EmberObject.create({name: 'node-2'}), score: 4}),
+    EmberObject.create({id: '3', host: EmberObject.create({name: 'node-1'}), score: 7}),
   ];
 
   assert.deepEqual(
-    naturalSort(items, ['host.name']).mapBy('id'),
+    naturalSort(items, ['host.name']).map((item) => item.get('id')),
     ['3', '1', '2'],
     'reads nested properties'
   );
   assert.deepEqual(
-    naturalSort(items, ['score:desc']).mapBy('id'),
+    naturalSort(items, ['score:desc']).map((item) => item.get('id')),
     ['3', '2', '1'],
     'honours an explicit descending descriptor and preserves equal input order'
   );
@@ -31,8 +31,8 @@ test('it supports nested fields, descriptor direction, and stable ties', functio
 
 test('it applies hysteresis to live metric ordering', function(assert) {
   let items = [
-    Ember.Object.create({id: 'a', cpuRms: 100}),
-    Ember.Object.create({id: 'b', cpuRms: 103}),
+    EmberObject.create({id: 'a', cpuRms: 100}),
+    EmberObject.create({id: 'b', cpuRms: 103}),
   ];
 
   assert.deepEqual(
@@ -40,7 +40,7 @@ test('it applies hysteresis to live metric ordering', function(assert) {
       descending: true,
       hysteresis: 0.05,
       previousOrder: ['a', 'b'],
-    }).mapBy('id'),
+    }).map((item) => item.get('id')),
     ['a', 'b'],
     'near-equal values retain the prior rank'
   );
@@ -52,7 +52,7 @@ test('it applies hysteresis to live metric ordering', function(assert) {
       descending: true,
       hysteresis: 0.05,
       previousOrder: ['a', 'b'],
-    }).mapBy('id'),
+    }).map((item) => item.get('id')),
     ['b', 'a'],
     'a meaningful difference changes the rank'
   );

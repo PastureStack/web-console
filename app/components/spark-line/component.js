@@ -1,8 +1,14 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { htmlSafe } from '@ember/template';
+import { guidFor } from '@ember/object/internals';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import {
   formatPercent, formatMib, formatKbps
 }
 from 'ui/utils/util';
+
+import { observer, computed } from '@ember/object';
 
 const formatters = {
   value: (value) => {
@@ -13,12 +19,12 @@ const formatters = {
   kbps: formatKbps
 };
 
-export default Ember.Component.extend({
+export default Component.extend({
   attributeBindings: ['cssSize:style', 'tooltip'],
   tagName       : 'span',
   classNames    : ['spark-line'],
 
-  intl          : Ember.inject.service(),
+  intl          : service(),
   data          : null,
   width         : null,
   height        : 20,
@@ -38,7 +44,7 @@ export default Ember.Component.extend({
 
   init() {
     this._super();
-    this.set('gradientId', `${this.get('type') || 'metric'}-gradient-${Ember.guidFor(this)}`);
+    this.set('gradientId', `${this.get('type') || 'metric'}-gradient-${guidFor(this)}`);
   },
 
   didInsertElement() {
@@ -46,9 +52,9 @@ export default Ember.Component.extend({
     this.createIfReady();
   },
 
-  hasData: function() {
+  hasData: observer('data.length', function() {
     this.createIfReady();
-  }.observes('data.length'),
+  }),
 
   createIfReady() {
     if ( this.get('data.length') > 0 && !this.get('svg') && this.get('element') ) {
@@ -56,18 +62,18 @@ export default Ember.Component.extend({
     }
   },
 
-  cssSize: function() {
-    return new Ember.String.htmlSafe('width: ' + this.get('width') + 'px; height: ' + this.get('height') + 'px');
-  }.property('width', 'height'),
+  cssSize: computed('width', 'height', function() {
+    return new htmlSafe('width: ' + this.get('width') + 'px; height: ' + this.get('height') + 'px');
+  }),
 
-  lastValue: function() {
+  lastValue: computed('data.[]', function() {
     var data = this.get('data');
     if (data && data.get('length')) {
       return data.objectAt(data.get('length') - 1);
     }
-  }.property('data.[]'),
+  }),
 
-  tooltip: function() {
+  tooltip: computed('prefix', 'lastValue', 'formatter', function() {
     let prefix     = this.get('prefix');
     let prefixI18n = null;
     let out        = null;
@@ -79,10 +85,10 @@ export default Ember.Component.extend({
       out = ` ${formatters[this.get('formatter')](this.get('lastValue'))}`;
     }
 
-    Ember.run.next(() => {
+    next(() => {
       this.set('tooltipModel', out);
     });
-  }.property('prefix', 'lastValue', 'formatter'),
+  }),
 
   create() {
     var svg = d3.select(this.$()[0])
@@ -156,7 +162,7 @@ export default Ember.Component.extend({
     return out;
   },
 
-  updateLine: function() {
+  updateLine: observer('interpolation', function() {
     var line = this.get('line');
     var interp = this.get('interpolation');
 
@@ -164,9 +170,9 @@ export default Ember.Component.extend({
       line.interpolate(interp);
     }
 
-  }.observes('interpolation'),
+  }),
 
-  update: function() {
+  update: observer('data', 'data.[]', function() {
     var svg = this.get('svg');
     var data = (this.get('data') || []).slice();
     var x = this.get('x');
@@ -191,5 +197,5 @@ export default Ember.Component.extend({
         .style('fill', `url(${window.location.pathname}#${this.get('gradientId')})`)
         .attr('d', line);
     }
-  }.observes('data', 'data.[]'),
+  }),
 });

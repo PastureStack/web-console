@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import ContainerRoute from 'ui/container/route';
 
 module('Unit | Route | container');
@@ -8,7 +8,7 @@ module('Unit | Route | container');
 test('it exists', function(assert) {
   var route = ContainerRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('model loads the requested container', function(assert) {
@@ -26,5 +26,5 @@ test('model loads the requested container', function(assert) {
   });
 
   assert.strictEqual(route.model({ container_id: '1i1' }), container);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });

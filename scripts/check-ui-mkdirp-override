@@ -18,7 +18,7 @@ def fail(code, **fields):
     print(f"{code} {details}".rstrip())
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
-lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock_path = Path("package-lock.json")
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
 
@@ -28,8 +28,8 @@ override = (
     .get("broccoli-filter", {})
     .get("mkdirp")
 )
-if override != "0.5.6":
-    fail("MKDIRP_OVERRIDE_UNEXPECTED", actual=override)
+if override is not None:
+    fail("OBSOLETE_MKDIRP_OVERRIDE_PRESENT", actual=override)
 
 old_path = "node_modules/broccoli-templater/node_modules/broccoli-filter/node_modules/mkdirp"
 if old_path in packages:
@@ -52,7 +52,7 @@ for path, version in old_mkdirp:
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
-print(f"UI_MKDIRP_OVERRIDE_OK mkdirp=0.5.6 lockfile={lock_path}")
-print("The only deprecated mkdirp 0.3.x path is removed; broccoli-templater's legacy broccoli-filter resolves the already-present mkdirp 0.5.6 callback/sync API.")
+print(f"UI_MKDIRP_COMPAT_OK mkdirp=0.5.6 obsolete_override=absent lockfile={lock_path}")
+print("The deprecated mkdirp 0.3.x path is absent; the remaining development-only callback API resolves to 0.5.6 without a forced override.")
 print("failure_count=0")
 PY

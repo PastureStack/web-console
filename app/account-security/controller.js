@@ -1,5 +1,5 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
 import MfaAccountManager from 'ui/mixins/mfa-account-manager';
 
-export default Ember.Controller.extend(MfaAccountManager, {
+export default Controller.extend(MfaAccountManager, {
 });

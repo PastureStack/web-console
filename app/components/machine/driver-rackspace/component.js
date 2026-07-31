@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 import Flavors from 'ui/utils/rackspace-choices';
 
@@ -37,9 +38,9 @@ flavorChoices.sort(function(a,b) {
   }
 });
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName      : 'rackspace',
-  rackspaceConfig : Ember.computed.alias('model.rackspaceConfig'),
+  rackspaceConfig : alias('model.rackspaceConfig'),
   flavorChoices   : flavorChoices,
   regionChoices   : [
     {label: 'Dallas (DFW)', value: 'DFW'},

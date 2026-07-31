@@ -1,5 +1,5 @@
-{{#liquid-if lbConfig.needsCertificate}}
-  {{#if allCertificates.length}}
+{{#liquid-if this.lbConfig.needsCertificate}}
+  {{#if this.allCertificates.length}}
     <div class="row form-group">
       <div class="col-sm-12 col-md-2 form-label">
         <label class="form-control-static">{{t 'formSslTermination.certificate'}}</label>
@@ -8,10 +8,10 @@
         {{new-select
           classNames="form-control"
           prompt="formSslTermination.defaultCertificate.prompt"
-          content=allCertificates
+          content=this.allCertificates
           optionLabelPath="displayDetailedName"
           optionValuePath="id"
-          value=lbConfig.defaultCertificateId
+          value=this.lbConfig.defaultCertificateId
         }}
       </div>
     </div>
@@ -25,7 +25,7 @@
           <thead>
             <tr>
               <td>
-                {{#if alternateCertificates.length}}
+                {{#if this.alternateCertificates.length}}
                   <button class="btn-circle-text" {{action "addAlternate"}}><i class="icon icon-plus-circle"/> <span>{{t 'formSslTermination.addAlternate'}}</span></button>
                 {{else}}
                   <span class="text-muted form-control-static">{{t 'formSslTermination.noAlternateCertificates'}}</span>
@@ -35,20 +35,20 @@
             </tr>
           </thead>
           <tbody>
-            {{#each alternates as |alt|}}
+            {{#each this.alternates as |alt|}}
               <tr>
                 <td>
                   {{new-select
                     classNames="form-control"
                     prompt="formSslTermination.alternateCertificate.prompt"
-                    content=alternateCertificates
+                    content=this.alternateCertificates
                     optionLabelPath="displayDetailedName"
                     optionValuePath="id"
                     value=alt.value
                   }}
                 </td>
                 <td class="text-right">
-                  {{#unless link.existing}}
+                  {{#unless this.link.existing}}
                     <button class="btn btn-primary btn-sm" {{action "removeAlternate" alt}}><i class="icon icon-minus"/></button>
                   {{/unless}}
                 </td>

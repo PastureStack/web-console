@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 
+import { computed } from '@ember/object';
+
 var Account = Resource.extend(PolledResource, {
   type: 'account',
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   reservedKeys: ['_allPasswords'],
 
@@ -22,32 +24,35 @@ var Account = Resource.extend(PolledResource, {
     },
   },
 
-  availableActions: function() {
-    var a = this.get('actionLinks');
+  availableActions: computed(
+    'actionLinks.{update,activate,deactivate,restore,remove,purge}',
+    function() {
+      var a = this.get('actionLinks');
 
-    return [
-      { label: 'action.activate',   icon: 'icon icon-play',         action: 'activate',     enabled: !!a.activate },
-      { label: 'action.deactivate', icon: 'icon icon-pause',        action: 'deactivate',   enabled: !!a.deactivate },
-      { label: 'action.remove',     icon: 'icon icon-trash',        action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
-      { divider: true },
-      { label: 'action.purge',      icon: '',                       action: 'purge',        enabled: !!a.purge },
-      { label: 'action.restore',    icon: '',                       action: 'restore',      enabled: !!a.restore },
-      { divider: true },
-      { label: 'action.edit',       icon: 'icon icon-edit',         action: 'edit',         enabled: !!a.update },
-      { label: 'action.viewInApi',  icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
-    ];
-  }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}'),
+      return [
+        { label: 'action.activate',   icon: 'icon icon-play',         action: 'activate',     enabled: !!a.activate },
+        { label: 'action.deactivate', icon: 'icon icon-pause',        action: 'deactivate',   enabled: !!a.deactivate },
+        { label: 'action.remove',     icon: 'icon icon-trash',        action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
+        { divider: true },
+        { label: 'action.purge',      icon: '',                       action: 'purge',        enabled: !!a.purge },
+        { label: 'action.restore',    icon: '',                       action: 'restore',      enabled: !!a.restore },
+        { divider: true },
+        { label: 'action.edit',       icon: 'icon icon-edit',         action: 'edit',         enabled: !!a.update },
+        { label: 'action.viewInApi',  icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
+      ];
+    }
+  ),
 
-  username: function() {
+  username: computed('passwordCredential.publicValue', function() {
     return this.get('passwordCredential.publicValue');
-  }.property('passwordCredential.publicValue'),
+  }),
 
-  passwordCredential: function() {
+  passwordCredential: computed('passwords.@each.kind', function() {
     return (this.get('passwords')||[]).objectAt(0);
-  }.property('passwords.@each.kind'),
+  }),
 
   _allPasswords: null,
-  passwords: function() {
+  passwords: computed('_allPasswords.@each.accountId', 'id', function() {
     let all = this.get('_allPasswords');
     if ( !all ) {
       all = this.get('store').all('password');
@@ -55,7 +60,7 @@ var Account = Resource.extend(PolledResource, {
     }
 
     return all.filterBy('accountId', this.get('id'));
-  }.property('_allPasswords.@each.accountId','id'),
+  }),
 });
 
 Account.reopenClass({

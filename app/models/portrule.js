@@ -1,6 +1,9 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
 import Resource from 'ember-api-store/models/resource';
 import { denormalizeId } from 'ember-api-store/utils/denormalize';
+
+import { computed, observer } from '@ember/object';
 
 function setTlsPort() {
   if ( this.get('targetPort') ) {
@@ -28,35 +31,35 @@ let PortRule = Resource.extend({
 
   service: denormalizeId('serviceId'),
 
-  isTls: function() {
+  isTls: computed('protocol', function() {
     return ['tls','https','sni'].includes(this.get('protocol'));
-  }.property('protocol'),
+  }),
 
-  needsCertificate: function() {
+  needsCertificate: computed('protocol', function() {
     return ['tls','https'].includes(this.get('protocol'));
-  }.property('protocol'),
+  }),
 
-  canHostname: function() {
+  canHostname: computed('protocol', function() {
     return ['http','https','sni'].includes(this.get('protocol'));
-  }.property('protocol'),
+  }),
 
-  canPath: function() {
+  canPath: computed('protocol', function() {
     return ['http','https'].includes(this.get('protocol'));
-  }.property('protocol'),
+  }),
 
-  canSticky: Ember.computed.alias('canPath'),
+  canSticky: alias('canPath'),
 
-  ipProtocol: function() {
+  ipProtocol: computed('protocol', function() {
     if ( this.get('protocol') === 'udp' ) {
       return 'udp';
     } else {
       return 'tcp';
     }
-  }.property('protocol'),
+  }),
 
-  autoSetPort: function() {
-    Ember.run.later(this, setTlsPort, 500);
-  }.observes('protocol','sourcePort'),
+  autoSetPort: observer('protocol', 'sourcePort', function() {
+    later(this, setTlsPort, 500);
+  }),
 });
 
 export default PortRule;

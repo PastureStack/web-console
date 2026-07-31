@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Controller from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Controller.extend(Sortable, {
-  sortableContent   : Ember.computed.alias('model.all'),
+export default Controller.extend(Sortable, {
+  sortableContent   : alias('model.all'),
   sortBy: 'name',
   sorts: {
     state        : ['stateSort','name','id'],

@@ -1,5 +1,7 @@
 import Resource from 'ember-api-store/models/resource';
-import { denormalizeId} from 'ember-api-store/utils/denormalize';
+import { denormalizeId } from 'ember-api-store/utils/denormalize';
+
+import { computed } from '@ember/object';
 
 var Backup = Resource.extend({
   type: 'backup',
@@ -14,19 +16,25 @@ var Backup = Resource.extend({
     },
   },
 
-  availableActions: function() {
-    let a = this.get('actionLinks');
-    var volA = this.get('volume.actionLinks');
+  availableActions: computed(
+    'actionLinks.remove',
+    'volume.actionLinks.restorefrombackup',
+    'state',
+    'volume.state',
+    function() {
+      let a = this.get('actionLinks');
+      var volA = this.get('volume.actionLinks');
 
-    let created = this.get('state') === 'created';
+      let created = this.get('state') === 'created';
 
-    return [
-      { label: 'action.remove',    icon: 'icon icon-trash',        action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
-      { label: 'action.restoreFromBackup', icon: 'icon icon-history', action: 'restoreFromBackup', enabled: created && volA && !!volA.restorefrombackup },
-      { divider: true },
-      { label: 'action.viewInApi', icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
-    ];
-  }.property('actionLinks.remove','volume.actionLinks.restorefrombackup','state','volume.state'),
+      return [
+        { label: 'action.remove',    icon: 'icon icon-trash',        action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
+        { label: 'action.restoreFromBackup', icon: 'icon icon-history', action: 'restoreFromBackup', enabled: created && volA && !!volA.restorefrombackup },
+        { divider: true },
+        { label: 'action.viewInApi', icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
+      ];
+    }
+  ),
 
 });
 

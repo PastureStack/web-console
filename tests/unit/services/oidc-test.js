@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import { run } from '@ember/runloop';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import OidcService from 'ui/services/oidc';
 import C from 'ui/utils/constants';
@@ -6,11 +8,11 @@ import C from 'ui/utils/constants';
 module('Unit | Service | oidc');
 
 function createService(transaction) {
-  let tabSession = Ember.Object.create();
+  let tabSession = EmberObject.create();
   tabSession.set(C.TABSESSION.OIDC_TRANSACTION, transaction);
 
   return OidcService.create({
-    intl: Ember.Object.create({
+    intl: EmberObject.create({
       t(key) {
         return key;
       },
@@ -39,7 +41,7 @@ test('exchanges a single-use state for an opaque authorization payload', functio
   });
   assert.strictEqual(service.get('tab-session').get(C.TABSESSION.OIDC_TRANSACTION), undefined, 'transaction is consumed');
 
-  Ember.run(() => service.destroy());
+  run(() => service.destroy());
 });
 
 test('rejects a mismatched state and still consumes the transaction', function(assert) {
@@ -57,18 +59,18 @@ test('rejects a mismatched state and still consumes the transaction', function(a
   }, /loginOidc\.error\.stateMismatch/);
   assert.strictEqual(service.get('tab-session').get(C.TABSESSION.OIDC_TRANSACTION), undefined, 'failed transaction cannot be replayed');
 
-  Ember.run(() => service.destroy());
+  run(() => service.destroy());
 });
 
 test('prepares a provider without saving the active authentication configuration', function(assert) {
   let service = createService();
-  let config = Ember.Object.create({provider: 'oidcconfig'});
+  let config = EmberObject.create({provider: 'oidcconfig'});
   let request;
 
-  service.set('authStore', Ember.Object.create({
+  service.set('authStore', EmberObject.create({
     rawRequest(options) {
       request = options;
-      return Ember.RSVP.resolve({
+      return resolve({
         body: {
           provider: 'oidc',
           redirectUrl: 'https://identity.example/authorize',
@@ -82,24 +84,24 @@ test('prepares a provider without saving the active authentication configuration
     assert.strictEqual(request.method, 'POST');
     assert.strictEqual(request.data, config, 'the unsaved candidate is validated in place');
     assert.strictEqual(result.provider, 'oidc');
-    Ember.run(() => service.destroy());
+    run(() => service.destroy());
   });
 });
 
 test('tests the candidate provider with a serialized configuration', function(assert) {
   let service = createService();
   let serialized = {provider: 'oidcconfig', enabled: false};
-  let config = Ember.Object.create({
+  let config = EmberObject.create({
     serialize() {
       return serialized;
     },
   });
   let request;
 
-  service.set('authStore', Ember.Object.create({
+  service.set('authStore', EmberObject.create({
     rawRequest(options) {
       request = options;
-      return Ember.RSVP.resolve({body: {identities: [{externalIdType: 'oidc_user'}]}});
+      return resolve({body: {identities: [{externalIdType: 'oidc_user'}]}});
     },
   }));
 
@@ -110,6 +112,6 @@ test('tests the candidate provider with a serialized configuration', function(as
     assert.strictEqual(request.data.code, 'opaque-authorization-response');
     assert.strictEqual(result.jwt, undefined, 'provider tests do not create a browser session');
     assert.strictEqual(result.identities[0].externalIdType, 'oidc_user');
-    Ember.run(() => service.destroy());
+    run(() => service.destroy());
   });
 });

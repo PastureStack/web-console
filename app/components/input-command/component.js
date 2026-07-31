@@ -1,5 +1,8 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
+import { TextField } from '@ember/legacy-built-in-components';
 import ShellQuote from 'ui/utils/shell-quote';
+
+import { observer } from '@ember/object';
 
 export const OPS = ['||','&&',';;','|&','&',';','(',')','|','<','>'];
 export function reop(xs) {
@@ -34,14 +37,14 @@ export function unparse(xs) {
 }
 
 
-export default Ember.TextField.extend({
+export default TextField.extend({
   type: 'text',
 
   init() {
     this._super(...arguments);
 
     let initial = this.get('initialValue')||'';
-    if ( Ember.isArray(initial) )
+    if ( isArray(initial) )
     {
       this.set('value', unparse(reop(initial)));
     }
@@ -51,7 +54,7 @@ export default Ember.TextField.extend({
     }
   },
 
-  valueChanged: function() {
+  valueChanged: observer('value', function() {
     let out = ShellQuote.parse(this.get('value')||'').map(function(piece) {
       if ( typeof piece === 'object' && piece )
       {
@@ -80,5 +83,5 @@ export default Ember.TextField.extend({
     {
       this.sendAction('changed', null);
     }
-  }.observes('value'),
+  }),
 });

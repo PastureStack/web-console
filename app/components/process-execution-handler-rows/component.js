@@ -1,11 +1,15 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+import { computed, observer } from '@ember/object';
+import { on } from '@ember/object/evented';
+
+export default Component.extend({
   tagName              : '',
   expanded             : false,
   depth                : 0,
   expandAll : false,
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   actions: {
     expand: function() {
@@ -25,19 +29,19 @@ export default Ember.Component.extend({
     }
   },
 
-  checkExecutions: function() {
+  checkExecutions: computed(function() {
     if (this.get('execution').children.length > 0) {
       return true;
     } else {
       return false;
     }
-  }.property(),
+  }),
 
-  expandChildren: function() {
+  expandChildren: on('init', observer('expandAll', function() {
     if (this.get('expandAll')) {
       this.set('expanded', true);
     } else {
       this.set('expanded', false);
     }
-  }.observes('expandAll').on('init')
+  }))
 });

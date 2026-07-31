@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { helper as buildHelper } from '@ember/component/helper';
+import { htmlSafe } from '@ember/template';
 import { formatDurationSeconds } from 'ui/utils/date-time';
 
 export function runTime(params) {
@@ -16,8 +17,8 @@ export function runTime(params) {
   }
   else
   {
-    return '<span class="text-muted">-</span>'.htmlSafe();
+    return htmlSafe('<span class="text-muted">-</span>');
   }
 }
 
-export default Ember.Helper.helper(runTime);
+export default buildHelper(runTime);
