@@ -53,6 +53,17 @@ module.exports = function(defaults) {
       preferNative: true,
       nativePromise: true
     },
+    autoImport: {
+      webpack: {
+        optimization: {
+          // ember-auto-import stages generated entry modules in a temporary
+          // directory. Webpack's hashed module IDs therefore change between
+          // otherwise identical clean builds. Natural IDs are assigned from
+          // the stable module graph and keep release artifacts reproducible.
+          moduleIds: 'natural'
+        }
+      }
+    },
 
 
     fingerprint: {
