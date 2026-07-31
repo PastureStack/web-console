@@ -53,6 +53,19 @@ if [[ ! -d "$dist_dir/assets" ]]; then
   exit 1
 fi
 
+for stylesheet in \
+  vendor.css \
+  vendor.rtl.css \
+  ui-light.css \
+  ui-light.rtl.css \
+  ui-dark.css \
+  ui-dark.rtl.css; do
+  if [[ ! -s "$dist_dir/assets/$stylesheet" ]]; then
+    echo "DIST_STYLESHEET_MISSING_OR_EMPTY file=$dist_dir/assets/$stylesheet" >&2
+    exit 1
+  fi
+done
+
 if ! find "$dist_dir/assets" -type f \( -name 'ui*.js' -o -name 'web-console*.js' \) | grep -q .; then
   echo "DIST_UI_JS_MISSING dir=$dist_dir/assets" >&2
   exit 1

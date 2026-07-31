@@ -24,6 +24,15 @@ HTML
 printf 'vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
 printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
 printf 'source map\n' >"$tmpdir/dist/assets/ui-test.js.map"
+for stylesheet in \
+  vendor.css \
+  vendor.rtl.css \
+  ui-light.css \
+  ui-light.rtl.css \
+  ui-dark.css \
+  ui-dark.rtl.css; do
+  printf '.fixture { display: block; }\n' >"$tmpdir/dist/assets/$stylesheet"
+done
 node scripts/check-ui-production-translations --materialize "$tmpdir/dist"
 printf '{}\n' >"$tmpdir/dist/translations/none.json"
 

@@ -5,6 +5,10 @@ var env      = EmberApp.env();
 var dartSass = require('sass');
 var buildTranslationTrees = require('./lib/production-translations').buildTranslationTrees;
 
+var themeOutputPaths = {
+  'app-light': '/assets/ui-light.css',
+  'app-dark': '/assets/ui-dark.css'
+};
 
 module.exports = function(defaults) {
   // Pull in a few useful environment settings for index.html to use
@@ -36,11 +40,7 @@ module.exports = function(defaults) {
     },
     outputPaths: {
       app: {
-        js: '/assets/ui.js',
-        css: {
-          'app-light': '/assets/ui-light.css',
-          'app-dark': '/assets/ui-dark.css'
-        }
+        js: '/assets/ui.js'
       }
     },
     nodeAssets: {
@@ -90,6 +90,13 @@ module.exports = function(defaults) {
       extensions: ['js']
     },
   });
+
+  // Ember CLI 7 normalizes app CSS output paths after reading the build
+  // options, which otherwise silently replaces the two runtime themes with an
+  // empty ui.css compiled from app.scss. Keep both the public option and the
+  // already-created default packager on the same explicit theme contract.
+  app.options.outputPaths.app.css = themeOutputPaths;
+  app._defaultPackager.distPaths.appCssFile = themeOutputPaths;
 
   // Use `app.import` to add additional libraries to the generated
   // output files.

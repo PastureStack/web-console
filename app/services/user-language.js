@@ -2,7 +2,7 @@ import { resolve } from 'rsvp';
 import { alias } from '@ember/object/computed';
 import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
-import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
+import fetch from 'ember-api-store/utils/fetch';
 import { loadScript } from 'ui/utils/load-script';
 
 import { on } from '@ember/object/evented';
@@ -32,6 +32,7 @@ export default Service.extend({
   cookies       : service(),
   userTheme     : service('user-theme'),
   loadedLocales : null,
+  translationFetcher: fetch,
 
   bootstrap: on('init', function() {
     this.set('loadedLocales', []);
@@ -144,11 +145,21 @@ export default Service.extend({
       return resolve();
     }
 
-    return ajaxPromise({
-      url: `${this.get('app.baseAssets')}translations/${language}.json?${application.version}`,
+    let url = `${this.get('app.baseAssets')}translations/${language}.json?${application.version}`;
+    let translationFetcher = this.get('translationFetcher');
+
+    return translationFetcher(url, {
       method: 'GET',
-      dataType: 'json',
+      headers: {
+        Accept: 'application/json',
+      },
     }).then((resp) => {
+      let translations = resp.body;
+
+      if ( !translations || typeof translations !== 'object' || Array.isArray(translations) ) {
+        throw new Error(`Invalid translation response for ${language}`);
+      }
+
       let polyfillPromise;
       if ( this.get('app.needIntlPolyfill') ) {
         polyfillPromise = loadScript(`${this.get('app.baseAssets')}assets/intl/locales/${language.toLowerCase()}.js?${application.version}`);
@@ -157,7 +168,7 @@ export default Service.extend({
       }
 
       return polyfillPromise.then(() => {
-        return this.get('intl').addTranslations(language, resp.xhr.responseJSON);
+        return this.get('intl').addTranslations(language, translations);
       }).then(() => {
         if ( !loadedLocales.includes(language) ) {
           loadedLocales.push(language);

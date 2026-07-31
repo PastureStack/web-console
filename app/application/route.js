@@ -1,5 +1,5 @@
 import RSVP, { reject } from 'rsvp';
-import { cancel, next } from '@ember/runloop';
+import { cancel, next, scheduleOnce } from '@ember/runloop';
 import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
@@ -47,6 +47,14 @@ export default Route.extend({
   },
 
   actions: {
+    didTransition() {
+      // Fast route models can complete without entering Ember's loading
+      // substate. The initial overlay is rendered visible, so always reconcile
+      // it after a successful transition.
+      scheduleOnce('afterRender', this, this.hideLoadingOverlay);
+      return true;
+    },
+
     loading(transition) {
       this.incrementProperty('loadingId');
       let id = this.get('loadingId');
@@ -153,6 +161,13 @@ export default Route.extend({
         svc.sideLoadLanguage('none');
       }
     }
+  },
+
+  hideLoadingOverlay() {
+    cancel(this.get('hideTimer'));
+    this.set('loadingShown', false);
+    $('#loading-overlay').stop(true, true).hide();
+    $('#loading-underlay').stop(true, true).hide();
   },
 
   shortcuts: {

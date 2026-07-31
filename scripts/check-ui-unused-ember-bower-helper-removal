@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY_CHECK'
 import json
+import re
 from pathlib import Path
 
 removed = ["ember-cli-shims", "ember-qunit-notifications", "ember-resolver"]
@@ -22,7 +23,7 @@ if lock.get("packages", {}).get("node_modules/ember-resolver", {}).get("version"
     raise SystemExit("current lock must resolve npm ember-resolver 13.2.0")
 
 resolver = Path("app/resolver.js").read_text()
-if "import Resolver from 'ember-resolver';" not in resolver:
+if not re.search(r"import\s+(?:Resolver|EmberResolver)\s+from\s+['\"]ember-resolver['\"];", resolver):
     raise SystemExit("app/resolver.js must import npm ember-resolver")
 PY_CHECK
 

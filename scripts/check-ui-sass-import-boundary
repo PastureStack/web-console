@@ -26,7 +26,6 @@ load_css_expected = [
     "app/styles/vendors/liquidfire-tweak",
     "app/styles/vendors/copy-to-clipboard",
     "app/styles/vendors/prism-theme",
-    "vendor/ember-power-select/app/styles/ember-power-select",
     "app/styles/vendors/power-select",
     "app/styles/vendors/bootstrap-tweak",
     "app/styles/layout/header",
@@ -323,7 +322,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=51 use_per_entrypoint=7")
+print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=50 use_per_entrypoint=7")
 print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
 print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
 print(f"bootstrap_config_keys={len(bootstrap_config_expected)} bootstrap_default_only_keys={len(bootstrap_default_only_variables)}")

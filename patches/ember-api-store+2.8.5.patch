@@ -109,11 +109,12 @@ diff --git a/node_modules/ember-api-store/addon/mixins/type.js b/node_modules/em
 index 721f184..d10c1ca 100644
 --- a/node_modules/ember-api-store/addon/mixins/type.js
 +++ b/node_modules/ember-api-store/addon/mixins/type.js
-@@ -1,11 +1,13 @@
+@@ -1,11 +1,14 @@
 -import Ember from 'ember';
 -import { get } from '@ember/object';
 +import Mixin from '@ember/object/mixin';
-+import { beginPropertyChanges, computed, endPropertyChanges, get } from '@ember/object';
++import { computed, get } from '@ember/object';
++import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 +import { isArray } from '@ember/array';
 +import { reject } from 'rsvp';
  import Serializable from './serializable';
@@ -295,7 +296,7 @@ diff --git a/node_modules/ember-api-store/addon/services/store.js b/node_modules
 index 7e80cdf..22e33a4 100644
 --- a/node_modules/ember-api-store/addon/services/store.js
 +++ b/node_modules/ember-api-store/addon/services/store.js
-@@ -1,28 +1,20 @@
+@@ -1,28 +1,21 @@
 -import Ember from 'ember';
 +import Service, { service } from '@ember/service';
 +import ArrayProxy from '@ember/array/proxy';
@@ -309,7 +310,8 @@ index 7e80cdf..22e33a4 100644
 -import { get, set } from '@ember/object';
 -import { reject } from 'rsvp';
 -import { inject as service } from '@ember/service';
-+import { beginPropertyChanges, computed, endPropertyChanges, get, getProperties, set } from '@ember/object';
++import { computed, get, getProperties, set } from '@ember/object';
++import { beginPropertyChanges, endPropertyChanges } from '@ember/-internals/metal';
 +import { defer, reject, resolve } from 'rsvp';
  import { isArray } from '@ember/array';
  import { parse as setCookieParser } from 'set-cookie-parser';

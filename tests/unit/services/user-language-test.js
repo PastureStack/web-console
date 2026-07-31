@@ -65,3 +65,42 @@ test('it loads English as a fallback before a selected translation', function(as
     done();
   });
 });
+
+test('it loads and registers a translation through the Fetch response body', function(assert) {
+  let translations = {
+    generic: {
+      save: '儲存',
+    },
+  };
+  let registered;
+  let requested;
+  let service = UserLanguageService.create({
+    app: EmberObject.create({
+      baseAssets: '/',
+      needIntlPolyfill: false,
+      version: 'test-version',
+    }),
+    intl: EmberObject.create({
+      addTranslations(language, body) {
+        registered = { language, body };
+      },
+    }),
+    translationFetcher(url, options) {
+      requested = { url, options };
+      return resolve({ body: translations });
+    },
+  });
+
+  return service.loadLanguageFile('zh-tw').then(() => {
+    assert.equal(requested.url, '/translations/zh-tw.json?test-version');
+    assert.equal(requested.options.method, 'GET');
+    assert.equal(requested.options.headers.Accept, 'application/json');
+    assert.deepEqual(registered, {
+      language: 'zh-tw',
+      body: translations,
+    });
+    assert.deepEqual(service.get('loadedLocales'), ['zh-tw']);
+  }).finally(() => {
+    run(() => service.destroy());
+  });
+});
