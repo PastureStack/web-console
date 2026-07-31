@@ -39,6 +39,12 @@ removed component action and array API, then pass real credential login,
 failed-login, authenticated navigation, and representative resource workflows
 in an isolated server before release.
 
+`v1.6.56-pasturestack.35` keeps that compatible runtime and redesigns the
+authentication shell without changing provider or token behavior. It adds a
+responsive local, OpenID Connect, SAML, MFA, and recovery layout; a
+reduced-motion animated gradient; new PastureStack-owned authentication and
+favicon assets; and a root favicon response so the login console remains clean.
+
 Production candidate packages omit JavaScript and third-party Intl source maps.
 They also omit the development-only `none` pseudo-locale. Development and test
 builds retain application source maps and the pseudo-locale for local diagnostics.

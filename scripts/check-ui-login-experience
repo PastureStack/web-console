@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+from pathlib import Path
+
+failures = []
+
+
+def require(path, marker):
+    text = Path(path).read_text(encoding="utf-8")
+    if marker not in text:
+        failures.append(f"UI_LOGIN_MARKER_MISSING file={path} marker={marker}")
+    return text
+
+
+template = require("app/login/index/template.hbs", 'class="login-shell"')
+for marker in [
+    'class="farm-box login login-card',
+    'class="login-hero top-colors"',
+    'class="login-brand-mark"',
+    'class="login-language-row"',
+    'class="login-auth-region"',
+    'class="login-provider-message"',
+]:
+    if marker not in template:
+        failures.append(f"UI_LOGIN_TEMPLATE_STRUCTURE_MISSING marker={marker}")
+
+for forbidden in ['style="max-width:', 'class="r-pb0"']:
+    if forbidden in template:
+        failures.append(f"UI_LOGIN_LEGACY_LAYOUT_PRESENT marker={forbidden}")
+
+credentials = require("app/components/login-user-pass/template.hbs", 'autocomplete="username"')
+for marker in ['autocomplete="current-password"', 'class="btn btn-primary btn-block"', 'data-testid="login-submit"']:
+    if marker not in credentials:
+        failures.append(f"UI_LOGIN_CREDENTIAL_FORM_MARKER_MISSING marker={marker}")
+
+oidc = require("app/components/login-oidc/template.hbs", 'data-testid="login-oidc-form"')
+if 'class="btn btn-primary btn-block"' not in oidc:
+    failures.append("UI_LOGIN_OIDC_BUTTON_NOT_FULL_WIDTH")
+
+styles = require("app/styles/components/_login.scss", '@keyframes pasturestack-login-gradient')
+for marker in [
+    '.login-shell',
+    '.login.login-card--wide',
+    '.login .login-submit-row',
+    '.login .login-provider-message',
+    '@media (max-width: 520px)',
+    '@media (prefers-reduced-motion: reduce)',
+    '@media (forced-colors: active)',
+    'pasturestack-login-mark.svg',
+]:
+    if marker not in styles:
+        failures.append(f"UI_LOGIN_RESPONSIVE_STYLE_MISSING marker={marker}")
+
+index = require("app/index.html", 'href="{{content-for \'baseAssets\'}}favicon.ico"')
+for marker in ['pasturestack-favicon.svg', 'name="theme-color"']:
+    if marker not in index:
+        failures.append(f"UI_LOGIN_HEAD_MARKER_MISSING marker={marker}")
+
+for path in [
+    Path("public/assets/images/logos/pasturestack-login-mark.svg"),
+    Path("public/assets/images/logos/pasturestack-favicon.svg"),
+    Path("public/favicon.ico"),
+    Path("docs/login-experience.md"),
+]:
+    if not path.is_file() or path.stat().st_size == 0:
+        failures.append(f"UI_LOGIN_ASSET_MISSING file={path}")
+
+ico = Path("public/favicon.ico").read_bytes() if Path("public/favicon.ico").is_file() else b""
+if len(ico) < 30 or ico[:4] != b"\x00\x00\x01\x00" or ico[22:26] != b"\x89PNG":
+    failures.append("UI_LOGIN_FAVICON_INVALID")
+
+production_locales = sorted(path for path in Path("translations").glob("*.yaml") if path.name != "none.yaml")
+if len(production_locales) != 13:
+    failures.append(f"UI_LOGIN_LOCALE_COUNT_INVALID count={len(production_locales)}")
+for path in production_locales:
+    text = path.read_text(encoding="utf-8")
+    for marker in ["loginPage:", "loginUserPass:"]:
+        if marker not in text:
+            failures.append(f"UI_LOGIN_LOCALE_MARKER_MISSING file={path} marker={marker}")
+
+docs = require("docs/login-experience.md", "Authentication layout contract")
+for marker in ["local credentials", "OpenID Connect", "reduced motion", "favicon.ico"]:
+    if marker not in docs:
+        failures.append(f"UI_LOGIN_DOC_MARKER_MISSING marker={marker}")
+
+combined_brand_assets = "\n".join(
+    Path(path).read_text(encoding="utf-8")
+    for path in [
+        "public/assets/images/logos/pasturestack-login-mark.svg",
+        "public/assets/images/logos/pasturestack-favicon.svg",
+    ]
+)
+for forbidden in ["ranch" + "er", "cattle", "cow"]:
+    if forbidden.lower() in combined_brand_assets.lower():
+        failures.append(f"UI_LOGIN_BRAND_ASSET_FORBIDDEN_MARKER marker={forbidden}")
+
+if failures:
+    print("\n".join(failures))
+    print(f"failure_count={len(failures)}")
+    raise SystemExit(1)
+
+print("ui-login-experience-ok")
+print("failure_count=0")
+PY

@@ -6,6 +6,7 @@ Active PastureStack assets:
 
 - `pasturestack-mark.svg` — primary full-color mark
 - `pasturestack-mark-light.svg` — mark for dark navigation surfaces
+- `pasturestack-login-mark.svg` — transparent full-color mark for the authentication experience
 - `pasturestack-wordmark.svg` — about-screen wordmark
 - `pasturestack-favicon.svg` — browser favicon
 - `pasturestack-welcome-scene.svg` — welcome illustration

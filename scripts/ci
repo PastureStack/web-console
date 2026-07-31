@@ -14,6 +14,7 @@ node ./scripts/check-ui-localization-quality
 ./scripts/check-ui-resizable-table-columns
 ./scripts/check-ui-storage-bulk-remove
 ./scripts/check-ui-console-workspace
+./scripts/check-ui-login-experience
 ./scripts/check-ui-oidc-api-host
 ./scripts/check-ui-oidc-safe-activation
 ./scripts/check-dependency-baseline

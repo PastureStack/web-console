@@ -855,7 +855,7 @@ async function main() {
     await assertPasskeyLogin(page);
 
     await page.screenshot({ path: path.join(outDir, "ui-candidate-browser-smoke-final.png"), fullPage: true });
-    const filteredFailures = failedRequests.filter((line) => !line.includes("favicon") && !line.includes("net::ERR_ABORTED"));
+    const filteredFailures = failedRequests.filter((line) => !line.includes("net::ERR_ABORTED"));
     if (pageErrors.length) throw new Error(`page errors: ${pageErrors.join(" | ")}`);
     if (filteredFailures.length) throw new Error(`request failures: ${filteredFailures.join(" | ")}`);
     console.log(`ui-candidate-browser-smoke-ok routes=${routes.join(",")} wsUpgrades=${wsUpgradeCount}`);

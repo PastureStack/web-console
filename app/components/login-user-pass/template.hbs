@@ -1,25 +1,28 @@
-<form {{action "authenticate" on="submit"}} class="text-left">
+<form {{action "authenticate" on="submit"}} class="text-left login-credentials-form" data-testid="login-credentials-form">
   <div class="form-group">
-    <label>{{t 'loginUserPass.userLabel'}}</label>
+    <label for="login-username">{{t 'loginUserPass.userLabel'}}</label>
     <div>
-      {{input type="text" class="form-control login-user" value=username placeholder=(t 'loginUserPass.userPlaceholder')}}
+      {{input id="login-username" type="text" class="form-control login-user" value=username
+              autocomplete="username" autocapitalize="none" spellcheck="false"
+              placeholder=(t 'loginUserPass.userPlaceholder')}}
     </div>
   </div>
 
-  <div class="form-group r-pb30">
-    <label>{{t 'loginUserPass.passwordLabel'}}</label>
+  <div class="form-group">
+    <label for="login-password">{{t 'loginUserPass.passwordLabel'}}</label>
     <div>
-      {{input type="password" class="form-control login-pass" value=password}}
+      {{input id="login-password" type="password" class="form-control login-pass" value=password
+              autocomplete="current-password"}}
     </div>
   </div>
 
-  <p class="text-center">
-    <button disabled={{waiting}} class="btn btn-primary" {{action "authenticate"}}>
+  <div class="login-submit-row">
+    <button type="submit" disabled={{waiting}} class="btn btn-primary btn-block" data-testid="login-submit">
       {{#if waiting}}
         <i class="icon icon-spinner icon-spin"></i> {{t 'loginUserPass.loggingInLabel'}}
       {{else}}
         {{t 'loginUserPass.loginLabel'}}
       {{/if}}
     </button>
-  </p>
+  </div>
 </form>

@@ -1,12 +1,21 @@
-<div style="max-width: 360px; margin: 100px auto 0 auto;">
-  <div class="farm-box login top-colors">
-    <h1>
-      {{format-html-message 'loginPage.greeting' appName=settings.appName}}
-      <div class="logo"></div>
-    </h1>
-    <section class="r-pb0">
-      {{language-dropdown login=true class='r-mt10 r-mb10'}}
-      <br/>
+<main class="login-shell" data-testid="login-shell">
+  <div class="login-backdrop" aria-hidden="true">
+    <span class="login-orb login-orb-one"></span>
+    <span class="login-orb login-orb-two"></span>
+    <span class="login-orb login-orb-three"></span>
+  </div>
+  <div class="farm-box login login-card {{if (or isMfaPending hasNewRecoveryCodes) 'login-card--wide'}}">
+    <header class="login-hero top-colors">
+      <div class="login-brand-mark" aria-hidden="true">
+        <span class="logo"></span>
+      </div>
+      <h1>{{format-html-message 'loginPage.greeting' appName=settings.appName}}</h1>
+    </header>
+    <section class="login-panel">
+      <div class="login-language-row">
+        {{language-dropdown login=true}}
+      </div>
+      <div class="login-auth-region">
       {{#if hasNewRecoveryCodes}}
         <div class="alert alert-warning" role="alert">
           <strong>{{t 'loginPage.mfa.recoveryCodes.header'}}</strong>
@@ -176,18 +185,15 @@
           <p class="r-mb0">{{t 'loginPage.localRecovery.help'}}</p>
         </div>
       {{else if isGithub}}
-        <p>{{t 'loginPage.githubMessage' appName=settings.appName}}</p>
-        <br/>
+        <p class="login-provider-message">{{t 'loginPage.githubMessage' appName=settings.appName}}</p>
       {{/if}}
 
       {{#if isShibboleth}}
-        <p>{{t 'loginPage.shibbolethMessage' appName=settings.appName}}</p>
-        <br/>
+        <p class="login-provider-message">{{t 'loginPage.shibbolethMessage' appName=settings.appName}}</p>
       {{/if}}
 
       {{#if isOidc}}
-        <p>{{t 'loginPage.oidcMessage' appName=settings.appName providerName=oidcProviderName}}</p>
-        <br/>
+        <p class="login-provider-message">{{t 'loginPage.oidcMessage' appName=settings.appName providerName=oidcProviderName}}</p>
       {{/if}}
 
       {{#if infoMsg}}
@@ -210,7 +216,7 @@
       {{/unless}}
 
       {{#if canLocalRecovery}}
-        <p class="text-center r-mt15">
+        <p class="text-center login-recovery-actions">
           {{#if useLocalRecovery}}
             <button type="button" class="btn btn-link" {{action "usePrimaryLogin"}}>
               <i class="icon icon-chevron-left"></i>
@@ -225,6 +231,7 @@
         </p>
       {{/if}}
       {{/if}}
+      </div>
     </section>
   </div>
-</div>
+</main>
