@@ -11,6 +11,7 @@ fi
 ./scripts/check-modernization-blockers
 node ./scripts/check-ui-zh-tw-localization
 node ./scripts/check-ui-localization-quality
+node ./scripts/check-ui-production-translations --source
 ./scripts/check-ui-resizable-table-columns
 ./scripts/check-ui-storage-bulk-remove
 ./scripts/check-ui-console-workspace

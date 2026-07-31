@@ -63,6 +63,8 @@ if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' | grep -q .;
   exit 1
 fi
 
+node scripts/check-ui-production-translations --dist "$dist_dir" --allow-none
+
 tmpdir=$(mktemp -d)
 out_tmp="${out_tar}.tmp.$$"
 cleanup() {

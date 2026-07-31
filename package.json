@@ -41,6 +41,7 @@
     "ansi_up": "6.0.6",
     "async": "3.2.6",
     "broccoli-asset-rev": "3.0.0",
+    "broccoli-file-creator": "2.1.1",
     "c3": "0.4.24",
     "commonmark": "0.31.2",
     "d3": "3.5.17",

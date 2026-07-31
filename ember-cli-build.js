@@ -3,6 +3,7 @@ var EmberApp = require('ember-cli/lib/broccoli/ember-app');
 var util     = require('util');
 var env      = EmberApp.env();
 var dartSass = require('sass');
+var buildTranslationTrees = require('./lib/production-translations').buildTranslationTrees;
 
 
 module.exports = function(defaults) {
@@ -194,5 +195,10 @@ module.exports = function(defaults) {
     destDir: 'assets/fonts'
   });
 
-  return app.toTree();
+  // ember-intl 8 is a runtime-only v2 addon and no longer turns the legacy
+  // YAML catalog into public JSON files. Keep the established lazy-loading
+  // contract by generating canonical, alphabetically ordered JSON assets.
+  var translationTrees = buildTranslationTrees(__dirname, env);
+
+  return app.toTree(translationTrees);
 };

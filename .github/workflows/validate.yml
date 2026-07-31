@@ -72,6 +72,7 @@ jobs:
             output=$1
             rm -rf dist
             ./node_modules/.bin/ember build --environment production
+            node scripts/check-ui-production-translations --dist dist
             bash scripts/package-static-candidate \
               "$UI_COMPATIBILITY_VERSION" \
               dist \

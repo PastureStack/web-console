@@ -16,7 +16,6 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$tmpdir/dist/assets"
-mkdir -p "$tmpdir/dist/translations"
 cat >"$tmpdir/dist/index.html" <<'HTML'
 <!doctype html>
 <script src="assets/vendor-test.js"></script>
@@ -25,7 +24,7 @@ HTML
 printf 'vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
 printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
 printf 'source map\n' >"$tmpdir/dist/assets/ui-test.js.map"
-printf '{}\n' >"$tmpdir/dist/translations/en-us.json"
+node scripts/check-ui-production-translations --materialize "$tmpdir/dist"
 printf '{}\n' >"$tmpdir/dist/translations/none.json"
 
 out="$tmpdir/9.9.9.tar.gz"
