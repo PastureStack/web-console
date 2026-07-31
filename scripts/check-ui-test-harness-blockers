@@ -184,10 +184,13 @@ else:
         "node:24-bookworm",
         "PASTURESTACK_UI_TESTEM_LAUNCHER",
         "npm ci --ignore-scripts --no-audit --no-fund",
+        "./node_modules/.bin/patch-package",
         "./node_modules/.bin/ember test",
     ]:
         if phrase not in gate_text:
             fail("BROWSER_EMBER_TEST_GATE_MARKER_MISSING", phrase=phrase)
+    if "cp docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json package-lock.json" in gate_text:
+        fail("BROWSER_EMBER_TEST_REPLACES_RELEASE_LOCK")
 
 lacsso_index = Path("vendor/lacsso/index.js").read_text(encoding="utf-8")
 for phrase in [

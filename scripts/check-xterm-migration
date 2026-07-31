@@ -22,7 +22,7 @@ def fail(code, **fields):
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 dev = package.get("devDependencies", {})
 deps = package.get("dependencies", {})
-lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock_path = Path("package-lock.json")
 component_path = Path("app/components/container-shell/component.js")
 build_path = Path("ember-cli-build.js")
 old_fit_path = Path("app/utils/xterm-fit-addon.js")
@@ -90,6 +90,6 @@ if failures:
 
 print(f"UI_XTERM_MIGRATION_OK xterm=6.0.0 addon_fit=0.11.0 lockfile={lock_path} package_count={package_count}")
 print("Legacy xterm package, private rowContainer fit logic, and old terminal data/dispose APIs are absent from the candidate source path.")
-print("This is a no-publish UI source step; shell/noVNC/browser regression is still required before publishing a rebuilt UI artifact.")
+print("Shell, noVNC, and browser regression are still required before publishing a rebuilt UI artifact.")
 print("failure_count=0")
 PY

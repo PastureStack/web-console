@@ -31,7 +31,12 @@ docker run --rm \
     tmpdir=$(mktemp -d)
     cp package.json "$tmpdir/package.json"
     cp package-lock.json "$tmpdir/package-lock.json"
+    cp ember-cli-build.js "$tmpdir/ember-cli-build.js"
     cp scripts/node24-lock-smoke.js "$tmpdir/node24-lock-smoke.js"
+    cp -a patches "$tmpdir/patches"
+    mkdir -p "$tmpdir/app/initializers" "$tmpdir/app/instance-initializers"
+    cp app/initializers/export-application-global.js "$tmpdir/app/initializers/export-application-global.js"
+    cp app/instance-initializers/lookup.js "$tmpdir/app/instance-initializers/lookup.js"
     mkdir -p "$tmpdir/public/licenses"
     cp public/licenses/qrcode-generator-MIT.txt "$tmpdir/public/licenses/qrcode-generator-MIT.txt"
     mkdir -p "$tmpdir/vendor"
@@ -40,6 +45,8 @@ docker run --rm \
     mkdir -p "$tmpdir/vendor/bootstrap-multiselect"
     cp vendor/bootstrap-multiselect/bootstrap-multiselect.js "$tmpdir/vendor/bootstrap-multiselect/bootstrap-multiselect.js"
     cp vendor/bootstrap-multiselect/bootstrap-multiselect.css "$tmpdir/vendor/bootstrap-multiselect/bootstrap-multiselect.css"
+    mkdir -p "$tmpdir/vendor/dagre-d3"
+    cp vendor/dagre-d3/dagre-d3.core.js "$tmpdir/vendor/dagre-d3/dagre-d3.core.js"
     mkdir -p "$tmpdir/vendor/bootstrap-sass"
     cp -a vendor/bootstrap-sass/package.json vendor/bootstrap-sass/LICENSE vendor/bootstrap-sass/UPSTREAM.md vendor/bootstrap-sass/assets "$tmpdir/vendor/bootstrap-sass/"
     mkdir -p "$tmpdir/vendor/ember-power-select"
@@ -68,6 +75,7 @@ docker run --rm \
     cp -a vendor/source-map-url-compat "$tmpdir/vendor/source-map-url-compat"
     cd "$tmpdir"
     npm ci --ignore-scripts --no-audit --no-fund
+    ./node_modules/.bin/patch-package
     ./node_modules/.bin/ember --version
     ./node_modules/.bin/testem --version
     node node24-lock-smoke.js

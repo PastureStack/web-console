@@ -32,7 +32,6 @@ docker run --rm \
 
     cp -a /src/. "$tmpdir/"
     cd "$tmpdir"
-    cp docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json package-lock.json
 
     node <<'"'"'NODE'"'"'
 const fs = require("fs");
@@ -52,10 +51,11 @@ fs.writeFileSync(path, JSON.stringify(data, null, 2) + "\n");
 NODE
 
     npm ci --ignore-scripts --no-audit --no-fund
+    ./node_modules/.bin/patch-package
     if [[ "$PASTURESTACK_UI_TESTEM_LAUNCHER" = "chromium" ]]; then
       export CHROME_BIN="${CHROME_BIN:-/usr/bin/chromium}"
     fi
-    ./node_modules/.bin/ember test
+    ./node_modules/.bin/ember test --ssl=false --host 127.0.0.1 --config-file testem.js
   '
 
 echo "UI_BROWSER_EMBER_TEST_OK image=$node_image launcher=$launcher"
