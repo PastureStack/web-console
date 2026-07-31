@@ -1,19 +1,12 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
+export default Ember.Controller.extend({
+  projects: Ember.inject.service(),
+  consoleWorkspace: Ember.inject.service('console-workspace'),
 
-export default Controller.extend({
-  projects: service(),
-  consoleWorkspace: service('console-workspace'),
-
-  available: computed(
-    'model.instance.actionLinks.execute',
-    'projects.orchestrationState.swarmReady',
-    function() {
-      return this.get('projects.orchestrationState.swarmReady') && this.get('model.instance').hasAction('execute');
-    }
-  ),
+  available: function() {
+    return this.get('projects.orchestrationState.swarmReady') && this.get('model.instance').hasAction('execute');
+  }.property('model.instance.actionLinks.execute','projects.orchestrationState.swarmReady'),
 
   actions: {
     openTerminal(forceNew) {

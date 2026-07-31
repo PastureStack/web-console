@@ -1,9 +1,6 @@
-import { alias, equal, gte } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Driver from 'ui/mixins/driver';
 import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
-
-import { on } from '@ember/object/evented';
 
 let RANCHER_GROUP         = 'rancher-machine';
 let RANCHER_INGRESS_RULES = [
@@ -39,10 +36,10 @@ let RANCHER_INGRESS_RULES = [
   }
 ];
 
-export default Component.extend(Driver, {
+export default Ember.Component.extend(Driver, {
   driverName               : 'exoscale',
   model                    : null,
-  exoscaleConfig           : alias('model.exoscaleConfig'),
+  exoscaleConfig           : Ember.computed.alias('model.exoscaleConfig'),
 
   allInstanceProfiles      : null,
   allTemplates             : null,
@@ -56,24 +53,24 @@ export default Component.extend(Driver, {
   defaultSecurityGroup     : null,
   defaultSecurityGroupName : RANCHER_GROUP,
   whichSecurityGroup       : 'default',
-  isCustomSecurityGroup    : equal('whichSecurityGroup','custom'),
+  isCustomSecurityGroup    : Ember.computed.equal('whichSecurityGroup','custom'),
   exoscaleApi              : 'api.exoscale.ch/compute',
 
   step                     : 1,
-  isStep1                  : equal('step',1),
-  isStep2                  : equal('step',2),
-  isStep3                  : equal('step',3),
-  isStep4                  : equal('step',4),
-  isStep5                  : equal('step',5),
-  isStep6                  : equal('step',6),
-  isStep7                  : equal('step',7),
-  isStep8                  : equal('step',8),
-  isGteStep3               : gte('step',3),
-  isGteStep4               : gte('step',4),
-  isGteStep5               : gte('step',5),
-  isGteStep6               : gte('step',6),
-  isGteStep7               : gte('step',7),
-  isGteStep8               : gte('step',8),
+  isStep1                  : Ember.computed.equal('step',1),
+  isStep2                  : Ember.computed.equal('step',2),
+  isStep3                  : Ember.computed.equal('step',3),
+  isStep4                  : Ember.computed.equal('step',4),
+  isStep5                  : Ember.computed.equal('step',5),
+  isStep6                  : Ember.computed.equal('step',6),
+  isStep7                  : Ember.computed.equal('step',7),
+  isStep8                  : Ember.computed.equal('step',8),
+  isGteStep3               : Ember.computed.gte('step',3),
+  isGteStep4               : Ember.computed.gte('step',4),
+  isGteStep5               : Ember.computed.gte('step',5),
+  isGteStep6               : Ember.computed.gte('step',6),
+  isGteStep7               : Ember.computed.gte('step',7),
+  isGteStep8               : Ember.computed.gte('step',8),
 
   bootstrap: function() {
     let config = this.get('store').createRecord({
@@ -92,7 +89,7 @@ export default Component.extend(Driver, {
     }));
   },
 
-  afterInit: on('init', function() {
+  afterInit: function() {
     this._super();
 
     let cur = this.get('exoscaleConfig.securityGroup');
@@ -107,7 +104,7 @@ export default Component.extend(Driver, {
         selectedSecurityGroup: cur
       });
     }
-  }),
+  }.on('init'),
 
   willDestroyElement() {
     this.set('errors', null);

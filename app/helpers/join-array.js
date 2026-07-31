@@ -1,6 +1,6 @@
-import Helper from '@ember/component/helper';
+import Ember from 'ember';
 
-export default Helper.extend({
+export default Ember.Helper.extend({
   compute(params, options) {
     let separator = options.separator || ', ';
     return params[0].join(separator);

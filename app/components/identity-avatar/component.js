@@ -1,7 +1,6 @@
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   identity: null,
   link: true,
   size: 35,
@@ -9,6 +8,6 @@ export default Component.extend({
   classNames: ['gh-avatar'],
   attributeBindings: ['aria-label:identity.name'],
 
-  avatarSrc: alias('identity.avatarSrc'),
-  url: alias('identity.profileUrl'),
+  avatarSrc: Ember.computed.alias('identity.avatarSrc'),
+  url: Ember.computed.alias('identity.profileUrl'),
 });

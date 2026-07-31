@@ -1,4 +1,4 @@
-{{#if this.settings.isRancher}}
+{{#if settings.isRancher}}
   <div class="logo-text">
     <div class="parachute"></div>
   </div>
@@ -10,43 +10,43 @@
     <th class="col-md-6 hidden-xs hidden-sm" style="border-bottom: 1px solid #eff2f6;">{{t 'modalAboutComponent.version'}}</th>
   </tr>
 
-  {{#if this.settings.rancherVersion}}
+  {{#if settings.rancherVersion}}
     <tr>
-      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/server" target="_blank" rel="noopener noreferrer">{{this.settings.appName}}</a></td>
-      <td data-title="{{t 'modalAboutComponent.version'}}">{{this.settings.rancherVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/server" target="_blank" rel="noopener noreferrer">{{settings.appName}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.rancherVersion}}</td>
     </tr>
   {{/if}}
-  {{#if this.settings.cattleVersion}}
+  {{#if settings.cattleVersion}}
     <tr>
       <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/orchestration-engine" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.cattle'}}</a></td>
-      <td data-title="{{t 'modalAboutComponent.version'}}">{{this.settings.cattleVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.cattleVersion}}</td>
     </tr>
   {{/if}}
-  {{#if this.settings.uiVersion}}
+  {{#if settings.uiVersion}}
     <tr>
       <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/web-console" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.ui'}}</a></td>
-      <td data-title="{{t 'modalAboutComponent.version'}}">{{this.settings.uiVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.uiVersion}}</td>
     </tr>
   {{/if}}
-  {{#if this.settings.cliVersion}}
+  {{#if settings.cliVersion}}
     <tr>
-      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/cli" target="_blank" rel="noopener noreferrer">{{this.settings.appName}} {{t 'modalAboutComponent.cli'}}</a></td>
-      <td data-title="{{t 'modalAboutComponent.version'}}">{{this.settings.cliVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/cli" target="_blank" rel="noopener noreferrer">{{settings.appName}} {{t 'modalAboutComponent.cli'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.cliVersion}}</td>
     </tr>
   {{/if}}
-  {{#if this.settings.composeVersion}}
+  {{#if settings.composeVersion}}
     <tr>
-      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/compose-cli" target="_blank" rel="noopener noreferrer">{{this.settings.appName}} {{t 'modalAboutComponent.compose'}}</a></td>
-      <td data-title="{{t 'modalAboutComponent.version'}}">{{this.settings.composeVersion}}</td>
+      <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/compose-cli" target="_blank" rel="noopener noreferrer">{{settings.appName}} {{t 'modalAboutComponent.compose'}}</a></td>
+      <td data-title="{{t 'modalAboutComponent.version'}}">{{settings.composeVersion}}</td>
     </tr>
   {{/if}}
-  {{#if this.settings.goMachineVersion}}
+  {{#if settings.goMachineVersion}}
     <tr>
       <td data-title="{{t 'modalAboutComponent.component'}}"><a href="https://github.com/PastureStack/host-provisioner" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.machineService'}}</a></td>
       <td data-title="{{t 'modalAboutComponent.version'}}">
-        {{this.settings.goMachineVersion}}
-        {{#if this.settings.dockerMachineVersion}}
-          (<a href="https://github.com/docker/machine" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.dockerMachine'}}</a> {{this.settings.dockerMachineVersion}})
+        {{settings.goMachineVersion}}
+        {{#if settings.dockerMachineVersion}}
+          (<a href="https://github.com/docker/machine" target="_blank" rel="noopener noreferrer">{{t 'modalAboutComponent.dockerMachine'}}</a> {{settings.dockerMachineVersion}})
         {{/if}}
       </td>
     </tr>

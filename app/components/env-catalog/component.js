@@ -1,13 +1,9 @@
-import { allSettled, Promise } from 'rsvp';
-import { next, later } from '@ember/runloop';
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 
-export default Component.extend({
-  catalog:     service(),
+export default Ember.Component.extend({
+  catalog:     Ember.inject.service(),
   project:     null,
   catalogs:    null,
   ary:         null,
@@ -40,7 +36,7 @@ export default Component.extend({
 
   actions: {
     add() {
-      let obj = EmberObject.create({
+      let obj = Ember.Object.create({
         name: '',
         branch: C.CATALOG.DEFAULT_BRANCH,
         url: '',
@@ -50,7 +46,7 @@ export default Component.extend({
 
       this.get('ary').pushObject(obj);
 
-      next(() => {
+      Ember.run.next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }
@@ -105,10 +101,10 @@ export default Component.extend({
           }
         });
 
-        allSettled(changes).then(() => {
-          return new Promise((resolve) => { setTimeout(resolve, 1); }).then(() => {
+        Ember.RSVP.allSettled(changes).then(() => {
+          return new Ember.RSVP.Promise((resolve) => { setTimeout(resolve, 1); }).then(() => {
             return this.get('catalog').refresh().finally(() => {
-              later(() => {
+              Ember.run.later(() => {
                 // @TODO ugh...
                 window.l('route:catalog-tab').send('refresh');
                 this.sendAction('cancel');

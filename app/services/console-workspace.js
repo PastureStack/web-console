@@ -1,10 +1,4 @@
-import $ from 'jquery';
-import { resolve, all } from 'rsvp';
-import EmberObject, { observer, computed } from '@ember/object';
-import { alias } from '@ember/object/computed';
-import { cancel, later, next } from '@ember/runloop';
-import { A } from '@ember/array';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import {
   brokerWebSocketProtocols,
@@ -110,10 +104,10 @@ function sessionContext(instance, project, projectId) {
   };
 }
 
-export default Service.extend({
-  session: service(),
-  projects: service(),
-  store: service(),
+export default Ember.Service.extend({
+  session: Ember.inject.service(),
+  projects: Ember.inject.service(),
+  store: Ember.inject.service(),
 
   sessions: null,
   accountId: null,
@@ -128,7 +122,7 @@ export default Service.extend({
 
   init() {
     this._super(...arguments);
-    this.set('sessions', A());
+    this.set('sessions', Ember.A());
     let storedClientId = storedWorkspaceClientId(window.sessionStorage);
     this.setProperties({
       clientId: workspaceClientId(window.sessionStorage),
@@ -188,7 +182,7 @@ export default Service.extend({
       channel.close();
     }
     if (this._clientProbeTimer) {
-      cancel(this._clientProbeTimer);
+      Ember.run.cancel(this._clientProbeTimer);
       this._clientProbeTimer = null;
     }
     this._super(...arguments);
@@ -221,7 +215,7 @@ export default Service.extend({
       clientId: this.get('clientId'),
       nonce,
     });
-    this._clientProbeTimer = later(this, () => {
+    this._clientProbeTimer = Ember.run.later(this, () => {
       if (this.get('clientConflict')) {
         this.set('clientId', workspaceClientId(window.sessionStorage, true));
       }
@@ -234,32 +228,32 @@ export default Service.extend({
     }, 100);
   },
 
-  accountChanged: observer(`session.${C.SESSION.ACCOUNT_ID}`, function() {
+  accountChanged: function() {
     let accountId = this.get(`session.${C.SESSION.ACCOUNT_ID}`);
     if (accountId && accountId !== this.get('accountId')) {
       this.set('accountId', accountId);
       this.reloadSessions();
     }
-  }),
+  }.observes(`session.${C.SESSION.ACCOUNT_ID}`),
 
   activate() {
     this.accountChanged();
     this.reloadSessions();
   },
 
-  openWindows: computed('sessions.@each.windowState', function() {
+  openWindows: function() {
     return this.get('sessions').filter((entry) => entry.get('windowState') !== 'closed');
-  }),
+  }.property('sessions.@each.windowState'),
 
-  minimizedWindows: computed('sessions.@each.windowState', function() {
+  minimizedWindows: function() {
     return this.get('sessions').filterBy('windowState', 'minimized');
-  }),
+  }.property('sessions.@each.windowState'),
 
-  visibleWindows: computed('sessions.@each.windowState', function() {
+  visibleWindows: function() {
     return this.get('sessions').filterBy('windowState', 'open');
-  }),
+  }.property('sessions.@each.windowState'),
 
-  sessionCount: alias('sessions.length'),
+  sessionCount: Ember.computed.alias('sessions.length'),
 
   openTerminal(instance, options = {}) {
     return this.openSession('terminal', instance, options);
@@ -298,7 +292,7 @@ export default Service.extend({
 
     let now = new Date().toISOString();
     let context = sessionContext(instance, this.projectForId(projectId), projectId);
-    let entry = this.decorateEntry(EmberObject.create({
+    let entry = this.decorateEntry(Ember.Object.create({
       sessionId: workspaceSessionId(),
       secret: workspaceSecret(),
       kind,
@@ -366,7 +360,7 @@ export default Service.extend({
     let instance = entry.get('instance');
     if (instance) {
       this.updateEntryContext(entry, instance);
-      return resolve(instance);
+      return Ember.RSVP.resolve(instance);
     }
 
     let type = entry.get('instanceType') || 'container';
@@ -477,7 +471,7 @@ export default Service.extend({
       });
     }
     this.saveLayouts();
-    next(() => $(window).trigger('resize'));
+    Ember.run.next(() => Ember.$(window).trigger('resize'));
   },
 
   clampOpenWindows() {
@@ -527,7 +521,7 @@ export default Service.extend({
     };
     let url = `/v1/exec/sessions/${encodeURIComponent(entry.get('sessionId'))}`;
 
-    return $.ajax({
+    return Ember.$.ajax({
       url,
       method: 'POST',
       contentType: 'application/json',
@@ -546,13 +540,13 @@ export default Service.extend({
     if (entry.get('kind') === 'vm') {
       this.updateSession(entry, {status: 'ended'});
       this.closeWindow(entry);
-      return resolve();
+      return Ember.RSVP.resolve();
     }
 
     this.updateSession(entry, {status: 'closing'});
     let url = `/v1/exec/sessions/${encodeURIComponent(entry.get('sessionId'))}`;
 
-    return $.ajax({
+    return Ember.$.ajax({
       url,
       method: 'DELETE',
       headers: {
@@ -580,7 +574,7 @@ export default Service.extend({
     let entry = this.get('terminationEntry');
     this.set('terminationEntry', null);
     if (!entry) {
-      return resolve();
+      return Ember.RSVP.resolve();
     }
     return this.terminateSession(entry).catch(() => undefined);
   },
@@ -599,7 +593,7 @@ export default Service.extend({
     let requests = sessions.map((entry) => {
       return this.terminateSession(entry).catch(() => undefined);
     });
-    return all(requests).finally(() => {
+    return Ember.RSVP.all(requests).finally(() => {
       let accountId = this.get('accountId');
       if (accountId) {
         window.localStorage.removeItem(globalStorageKey(accountId));
@@ -640,7 +634,7 @@ export default Service.extend({
       if (entry) {
         entry.setProperties(raw);
       } else {
-        entry = EmberObject.create(raw);
+        entry = Ember.Object.create(raw);
       }
       this.decorateEntry(entry);
       let layout = layouts[raw.sessionId];

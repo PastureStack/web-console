@@ -1,11 +1,11 @@
-{{#if this.projects.current.isWindows}}
+{{#if projects.current.isWindows}}
   <section>
     <div class="row form-group">
       <div class="col-md-8 col-md-offset-2">
         <ul class="list-circles list-circles-clear">
           <li>
             <i>1</i>
-            {{format-html-message 'machine.driverCustom.windowsSteps.step1' docsBase=this.settings.docsBase}}
+            {{format-html-message 'machine.driverCustom.windowsSteps.step1' docsBase=settings.docsBase}}
           </li>
           <li>
             <i>2</i>
@@ -22,21 +22,21 @@
             <i>3</i>
             {{format-html-message 'machine.driverCustom.windowsSteps.step3'}}
             <div class="checkbox r-mt10">
-              {{input type="text" value=this.subnet classNames="form-control" input=(action 'subnetOnChange') placeholder=(t 'machine.driverCustom.windowsSteps.subnet.placeholder')}}
+              {{input type="text" value=subnet classNames="form-control" input=(action 'subnetOnChange') placeholder=(t 'machine.driverCustom.windowsSteps.subnet.placeholder')}}
             </div>
           </li>
           <li>
             <i>4</i>
             {{format-html-message 'machine.driverCustom.windowsSteps.step4'}}
             <div class="checkbox r-mt10">
-              {{input type="text" value=this.routerIp classNames="form-control" input=(action 'subnetOnChange') placeholder=(t 'machine.driverCustom.windowsSteps.routerIp.placeholder')}}
+              {{input type="text" value=routerIp classNames="form-control" input=(action 'subnetOnChange') placeholder=(t 'machine.driverCustom.windowsSteps.routerIp.placeholder')}}
             </div>
           </li>
           <li>
             <i>5</i>
             {{format-html-message 'machine.driverCustom.windowsSteps.step5'}}
             <div class="checkbox r-mt10">
-              {{input type="text" value=this.cattleAgentIp classNames="form-control" placeholder=(t 'machine.driverCustom.agentIp.placeholder')}}
+              {{input type="text" value=cattleAgentIp classNames="form-control" placeholder=(t 'machine.driverCustom.agentIp.placeholder')}}
             </div>
           </li>
           <li>
@@ -48,10 +48,10 @@
           </li>
           <li>
             <i>7</i>
-            {{t 'machine.driverCustom.windowsSteps.step7' appName=this.settings.appName}}
+            {{t 'machine.driverCustom.windowsSteps.step7' appName=settings.appName}}
             <div class="copy-pre">
-              <pre id="registration-command">{{this.registrationCommandWindows}}</pre>
-              {{copy-to-clipboard clipboardText=this.registrationCommandWindows}}
+              <pre id="registration-command">{{registrationCommandWindows}}</pre>
+              {{copy-to-clipboard clipboardText=registrationCommandWindows}}
             </div>
           </li>
           <li>
@@ -73,7 +73,7 @@
       <ul class="list-circles list-circles-clear">
         <li>
           <i>1</i>
-          {{format-html-message 'machine.driverCustom.step1' docsBase=this.settings.docsBase}}
+          {{format-html-message 'machine.driverCustom.step1' docsBase=settings.docsBase}}
         </li>
         <li>
           <i>2</i>
@@ -93,16 +93,16 @@
           <i>4</i>
           {{format-html-message 'machine.driverCustom.step4'}}
           <div class="checkbox r-mt10">
-            {{input type="text" value=this.cattleAgentIp classNames="form-control" placeholder=(t 'machine.driverCustom.agentIp.placeholder')}}
+            {{input type="text" value=cattleAgentIp classNames="form-control" placeholder=(t 'machine.driverCustom.agentIp.placeholder')}}
           </div>
         </li>
         <li>
           <i>5</i>
-          {{t 'machine.driverCustom.step5Copy'}} {{this.settings.appName}}:
-          {{#if this.registrationCommand}}
+          {{t 'machine.driverCustom.step5Copy'}} {{settings.appName}}:
+          {{#if registrationCommand}}
             <div class="copy-pre">
-              <pre id="registration-command">{{this.registrationCommand}}</pre>
-              {{copy-to-clipboard clipboardText=this.registrationCommand}}
+              <pre id="registration-command">{{registrationCommand}}</pre>
+              {{copy-to-clipboard clipboardText=registrationCommand}}
             </div>
           {{else}}
             <div><i class="icon icon-spinner icon-spin"></i> {{t 'machine.driverCustom.generating'}}</div>

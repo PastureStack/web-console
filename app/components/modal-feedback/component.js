@@ -1,14 +1,13 @@
-import { scheduleOnce, later } from '@ember/runloop';
-import { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import ModalBase from 'lacsso/components/modal-base';
 import { loadScript } from 'ui/utils/load-script';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'span-8', 'offset-2', 'modal-welcome'],
-  settings: service(),
-  prefs: service(),
-  access: service(),
+  settings: Ember.inject.service(),
+  prefs: Ember.inject.service(),
+  access: Ember.inject.service(),
 
   loading: true,
 
@@ -18,7 +17,7 @@ export default ModalBase.extend({
 
     let opt = JSON.parse(this.get(`settings.${C.SETTING.FEEDBACK_FORM}`)||'{}');
 
-    scheduleOnce('afterRender', this, function() {
+    Ember.run.scheduleOnce('afterRender', this, function() {
       loadScript('//js.hsforms.net/forms/v2.js').then(() => {
         window['hbspt'].forms.create({
           css: '',
@@ -34,7 +33,7 @@ export default ModalBase.extend({
           },
           onFormSubmit: function() {
             self.styleForm();
-            later(() =>  {
+            Ember.run.later(() =>  {
               self.send('sent');
             }, 1000);
           },

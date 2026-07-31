@@ -1,11 +1,10 @@
-import { helper as buildHelper } from '@ember/component/helper';
-import { get } from '@ember/object';
+import Ember from 'ember';
 
 export function isLast(params/*, hash*/) {
   let ary = params[0];
   let idx = params[1];
 
-  return (idx+1) >= get(ary,'length');
+  return (idx+1) >= Ember.get(ary,'length');
 }
 
-export default buildHelper(isLast);
+export default Ember.Helper.helper(isLast);

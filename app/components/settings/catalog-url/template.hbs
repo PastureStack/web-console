@@ -4,17 +4,17 @@
 
 <div class="row row-same-height">
   <div class="col-md-6">
-    <h5>{{t (if this.settings.isRancher 'catalogSettings.certified.header.rancher' 'catalogSettings.certified.header.pl') appName=this.settings.appName}}</h5>
+    <h5>{{t (if settings.isRancher 'catalogSettings.certified.header.rancher' 'catalogSettings.certified.header.pl') appName=settings.appName}}</h5>
     <div class="r-pt10">
       <label class="r-mr20 hand">
-        {{radio-button selection=this.enableLibrary value=true}} {{t 'generic.enabled'}}
+        {{radio-button selection=enableLibrary value=true}} {{t 'generic.enabled'}}
       </label>
       <label class="hand">
-        {{radio-button selection=this.enableLibrary value=false}} {{t 'generic.disabled'}}
+        {{radio-button selection=enableLibrary value=false}} {{t 'generic.disabled'}}
       </label>
     </div>
     <p class="help-block">
-      {{#if this.settings.isRancher}}
+      {{#if settings.isRancher}}
         {{t 'catalogSettings.certified.detail.rancher'}}
       {{else}}
         {{t 'catalogSettings.certified.detail.pl'}}
@@ -22,17 +22,17 @@
     </p>
   </div>
   <div class="col-md-6">
-    <h5>{{t (if this.settings.isRancher 'catalogSettings.community.header.rancher' 'catalogSettings.community.header.pl') appName=this.settings.appName}}</h5>
+    <h5>{{t (if settings.isRancher 'catalogSettings.community.header.rancher' 'catalogSettings.community.header.pl') appName=settings.appName}}</h5>
     <div class="r-pt10">
       <label class="r-mr20 hand">
-        {{radio-button selection=this.enableCommunity value=true}} {{t 'generic.enabled'}}
+        {{radio-button selection=enableCommunity value=true}} {{t 'generic.enabled'}}
       </label>
       <label class="hand">
-        {{radio-button selection=this.enableCommunity value=false}} {{t 'generic.disabled'}}
+        {{radio-button selection=enableCommunity value=false}} {{t 'generic.disabled'}}
       </label>
     </div>
     <p class="help-block">
-      {{#if this.settings.isRancher}}
+      {{#if settings.isRancher}}
         {{t 'catalogSettings.community.detail.rancher'}}
       {{else}}
         {{t 'catalogSettings.community.detail.pl'}}
@@ -48,7 +48,7 @@
 
 <button class="btn-circle-text" {{action "add"}}><i class="icon icon-plus-circle"/> <span>{{t 'catalogSettings.more.addActionLabel'}}</span></button>
 
-{{#if this.ary.length}}
+{{#if ary.length}}
   <table class="table fixed no-lines no-top-padding tight small">
     <tr class="text-muted hidden-xs hidden-sm">
       <th width="25%">{{t 'catalogSettings.more.name.label'}}</th>
@@ -58,7 +58,7 @@
       <th width="25%">{{t 'catalogSettings.more.branch.label'}}</th>
       <th width="30">&nbsp;</th>
     </tr>
-    {{#each this.ary as |row|}}
+    {{#each ary as |row|}}
       <tr>
         <td class="valign-top" data-title="{{t 'catalogSettings.more.name.label'}}:">
           {{input class="form-control input-sm name" type="text" value=row.name placeholder=(t 'catalogSettings.more.name.placeholder')}}

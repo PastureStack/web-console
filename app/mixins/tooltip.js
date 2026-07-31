@@ -1,19 +1,13 @@
-import $ from 'jquery';
-import { scheduleOnce } from '@ember/runloop';
-import { observer } from '@ember/object';
-import { service } from '@ember/service';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 
-import { on } from '@ember/object/evented';
-
-export default Mixin.create(ThrottledResize, {
+export default Ember.Mixin.create(ThrottledResize, {
   tooltipContent : null,
   originalNode   : null,
-  router         : service("-routing"),
+  router         : Ember.inject.service("-routing"),
   currentRoute   : null,
 
-  tooltipService: service('tooltip'),
+  tooltipService: Ember.inject.service('tooltip'),
 
   mouseEnter: function() {
     this.get('tooltipService').cancelTimer();
@@ -22,7 +16,7 @@ export default Mixin.create(ThrottledResize, {
     this.destroyTooltip();
   },
 
-  routeObserver: on('init', observer('router.currentRouteName', function() {
+  routeObserver: Ember.observer('router.currentRouteName', function() {
     // On init
     if (!this.get('currentRoute')) {
       this.set('currentRoute', this.get('router.currentRouteName'));
@@ -32,19 +26,19 @@ export default Mixin.create(ThrottledResize, {
     if (this.get('currentRoute') !== this.get('router.currentRouteName')) {
       this.destroyTooltip();
     }
-  })),
+  }).on('init'),
 
-  tooltipConstructor: on('init', observer('tooltipService.tooltipOpts', function() {
-    scheduleOnce('afterRender', this, function() {
+  tooltipConstructor: function() {
+    Ember.run.scheduleOnce('afterRender', this, function() {
       if (this.get('tooltipService.tooltipOpts')) {
         this.constructTooltip();
       }
     });
-  })),
+  }.observes('tooltipService.tooltipOpts').on('init'),
 
   constructTooltip: function() {
     let tts           = this.get('tooltipService');
-    let node          = $(this.element);
+    let node          = Ember.$(this.element);
     let eventPosition = tts.get('tooltipOpts.eventPosition');
     let position      = this.positionTooltip(node, eventPosition);
     let css           = {visibility: 'visible'};

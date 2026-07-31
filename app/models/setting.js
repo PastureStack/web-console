@@ -1,10 +1,8 @@
-import { later } from '@ember/runloop';
 import Resource from 'ember-api-store/models/resource';
-
-import { computed } from '@ember/object';
+import Ember from 'ember';
 
 export default Resource.extend({
-  isDefault: computed('source', 'value', 'activeValue', function() {
+  isDefault: function() {
     let source = this.get('source');
     if ( !source ) {
       return true;
@@ -15,11 +13,11 @@ export default Resource.extend({
     }
 
     return this.get('value') === this.get('activeValue');
-  }),
+  }.property('source','value','activeValue'),
 
   delete() {
     return this._super().then((res) => {
-      later(this,'reload',500);
+      Ember.run.later(this,'reload',500);
       return res;
     });
   },

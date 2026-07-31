@@ -8,7 +8,7 @@
       <div class="flex-content well">
         <h3>{{t 'helpPage.environment.header'}}</h3>
         <hr/>
-        {{format-html-message 'helpPage.environment.content' appName=this.settings.appName}}
+        {{format-html-message 'helpPage.environment.content' appName=settings.appName}}
         {{#link-to 'settings.projects' class="btn btn-primary right-divider-btn"}} {{t 'helpPage.environment.manageLink'}} {{/link-to}}
       </div>
     </div>
@@ -17,7 +17,7 @@
       <div class="flex-content well">
         <h3>{{t 'helpPage.host.header'}}</h3>
         <hr/>
-        <p>{{t 'helpPage.host.content' appName=this.settings.appName}} <a href="{{this.docsLink}}/hosts/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.host.contentLink'}}</a></p>
+        <p>{{t 'helpPage.host.content' appName=settings.appName}} <a href="{{docsLink}}/hosts/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.host.contentLink'}}</a></p>
         {{#link-to "hosts.new" class="btn btn-primary"}}{{t 'helpPage.host.addHostLink'}}{{/link-to}}
       </div>
     </div>
@@ -26,11 +26,11 @@
       <div class="flex-content well">
         <h3>{{t 'helpPage.stacks.header'}}</h3>
         <hr/>
-        <p>{{t 'helpPage.stacks.content.paragraph1' appName=this.settings.appName}}</p>
+        <p>{{t 'helpPage.stacks.content.paragraph1' appName=settings.appName}}</p>
 
-        <p>{{t 'helpPage.stacks.content.paragraph2' appName=this.settings.appName}} <a href="{{this.docsLink}}/services/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.stacks.content.link'}}</a></p>
+        <p>{{t 'helpPage.stacks.content.paragraph2' appName=settings.appName}} <a href="{{docsLink}}/services/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.stacks.content.link'}}</a></p>
 
-        {{#if this.hasHosts}}
+        {{#if hasHosts}}
           {{#link-to "applications-tab" class="btn btn-primary r-mb10"}} {{t 'helpPage.stacks.addServiceLink'}}{{/link-to}}
           {{#link-to "catalog-tab" class="btn btn-primary"}} {{t 'helpPage.stacks.addCatalogLink'}}{{/link-to}}
         {{else}}
@@ -47,40 +47,40 @@
     <div class="header">
       <h3>{{t 'helpPage.issues.header.text'}}</h3>
       <div class="pull-right r-mb20">
-        {{t 'helpPage.issues.header.tagline'}} <a href="{{this.settings.issueUrl}}" class="btn btn-primary r-ml10" target="_blank" rel="noopener noreferrer">{{t 'helpPage.issues.header.fileBug'}}</a>
+        {{t 'helpPage.issues.header.tagline'}} <a href="{{settings.issueUrl}}" class="btn btn-primary r-ml10" target="_blank" rel="noopener noreferrer">{{t 'helpPage.issues.header.fileBug'}}</a>
       </div>
     </div>
 
     <hr/>
 
     <div class="row">
-      <p class="text-center col-sm-12 col-md-8 col-md-offset-2">{{t 'helpPage.issues.content.paragraph1' appName=this.settings.appName}}</p>
+      <p class="text-center col-sm-12 col-md-8 col-md-offset-2">{{t 'helpPage.issues.content.paragraph1' appName=settings.appName}}</p>
     </div>
 
     <div class="row">
       <div class="col-sm-12 col-md-4 text-center">
-        <a href="{{this.settings.issueUrl}}" target="_blank" rel="noopener noreferrer"><img src="{{this.app.baseAssets}}assets/images/help-bug.svg" width="50%" alt="{{t 'helpPage.issues.content.graphic1.link'}}" /></a>
+        <a href="{{settings.issueUrl}}" target="_blank" rel="noopener noreferrer"><img src="{{app.baseAssets}}assets/images/help-bug.svg" width="50%" alt="{{t 'helpPage.issues.content.graphic1.link'}}" /></a>
         <p>
           {{t 'helpPage.issues.content.graphic1.text'}}
           <br/>
-          <a href="{{this.settings.issueUrl}}" target="_blank" rel="noopener noreferrer">{{t 'helpPage.issues.content.graphic1.link'}}</a>
+          <a href="{{settings.issueUrl}}" target="_blank" rel="noopener noreferrer">{{t 'helpPage.issues.content.graphic1.link'}}</a>
         </p>
       </div>
 
       <div class="col-sm-12 col-md-4 text-center">
-        <a href="{{this.docsLink}}" target="_blank" rel="noopener noreferrer"><img src="{{this.app.baseAssets}}assets/images/help-docs.svg" width="50%" alt="{{t 'pageFooter.documentation'}}" /></a>
+        <a href="{{docsLink}}" target="_blank" rel="noopener noreferrer"><img src="{{app.baseAssets}}assets/images/help-docs.svg" width="50%" alt="{{t 'pageFooter.documentation'}}" /></a>
         <p>
           {{t 'helpPage.issues.content.graphic2.text'}}
           <br/>
-          <a href="{{this.docsLink}}" target="_blank" rel="noopener noreferrer">{{t 'pageFooter.documentation'}}</a>
+          <a href="{{docsLink}}" target="_blank" rel="noopener noreferrer">{{t 'pageFooter.documentation'}}</a>
         </p>
       </div>
 
       <div class="col-sm-12 col-md-4 text-center">
-        <a href="{{this.docsLink}}/faqs/" target="_blank" rel="noopener noreferrer"><img src="{{this.app.baseAssets}}assets/images/help-troubleshoot.svg" width="50%" alt="{{t 'helpPage.issues.content.graphic3.link'}}" /></a>
+        <a href="{{docsLink}}/faqs/" target="_blank" rel="noopener noreferrer"><img src="{{app.baseAssets}}assets/images/help-troubleshoot.svg" width="50%" alt="{{t 'helpPage.issues.content.graphic3.link'}}" /></a>
         <p>
           {{t 'helpPage.issues.content.graphic3.text'}}
-          <br/><a href="{{this.docsLink}}/faqs/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.issues.content.graphic3.link'}}</a>
+          <br/><a href="{{docsLink}}/faqs/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.issues.content.graphic3.link'}}</a>
         </p>
       </div>
     </div>

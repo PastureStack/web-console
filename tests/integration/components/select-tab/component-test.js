@@ -1,10 +1,7 @@
-import { run } from '@ember/runloop';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 
 import SelectTabComponent from 'ui/components/select-tab/component';
-import componentWithTestOwner from 'ui/tests/helpers/component-with-test-owner';
-
-const TestSelectTabComponent = componentWithTestOwner(SelectTabComponent);
 
 function fakeDollar(calls) {
   return function(selector) {
@@ -23,7 +20,7 @@ function fakeDollar(calls) {
 }
 
 function destroy(component) {
-  run(() => component.destroy());
+  Ember.run(() => component.destroy());
 }
 
 module('Integration | Component | select tab');
@@ -32,8 +29,8 @@ test('it keeps the component defaults', function(assert) {
   var calls = [];
   var component;
 
-  run(() => {
-    component = TestSelectTabComponent.create({
+  Ember.run(() => {
+    component = SelectTabComponent.create({
       $: fakeDollar(calls),
     });
   });
@@ -47,8 +44,8 @@ test('it selects the configured initial tab after render', function(assert) {
   var calls = [];
   var component;
 
-  run(() => {
-    component = TestSelectTabComponent.create({
+  Ember.run(() => {
+    component = SelectTabComponent.create({
       initialTab: 'network',
       $: fakeDollar(calls),
     });
@@ -68,14 +65,14 @@ test('selectTab updates active tab and section classes', function(assert) {
   var calls = [];
   var component;
 
-  run(() => {
-    component = TestSelectTabComponent.create({
+  Ember.run(() => {
+    component = SelectTabComponent.create({
       $: fakeDollar(calls),
     });
   });
   calls.length = 0;
 
-  run(() => component.send('selectTab', 'advanced'));
+  Ember.run(() => component.send('selectTab', 'advanced'));
 
   assert.equal(component.get('tab'), 'advanced');
   assert.deepEqual(calls, [

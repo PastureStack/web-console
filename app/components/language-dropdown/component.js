@@ -1,10 +1,7 @@
-import { computed } from '@ember/object';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Component.extend({
+export default Ember.Component.extend({
   // Set to true on login to savesession value instead of user-pref
   login        : false,
 
@@ -12,16 +9,16 @@ export default Component.extend({
   classNames   : ['dropdown', 'language-dropdown', 'inline-block'],
   classNameBindings: ['hideSingle:hide'],
 
-  language     : service('user-language'),
-  intl         : service(),
-  session      : service(),
-  settings     : service(),
+  language     : Ember.inject.service('user-language'),
+  intl         : Ember.inject.service(),
+  session      : Ember.inject.service(),
+  settings     : Ember.inject.service(),
 
-  locales : alias('language.locales'),
+  locales : Ember.computed.alias('language.locales'),
 
-  hideSingle: computed('locales', function() {
+  hideSingle: function() {
     return Object.keys(this.get('locales')).length <= 1;
-  }),
+  }.property('locales'),
 
   actions: {
     selectLanguage(language) {
@@ -37,7 +34,7 @@ export default Component.extend({
     }
   },
 
-  selected : computed('intl._locale', function() {
+  selected : Ember.computed('intl._locale', function() {
     let locale = this.get('intl._locale');
     if (locale) {
       return locale[0];
@@ -45,7 +42,7 @@ export default Component.extend({
     return null;
   }),
 
-  selectedLabel: computed('selected','locales', function() {
+  selectedLabel: Ember.computed('selected','locales', function() {
     let sel = this.get('selected');
     let out = '';
     if (sel) {

@@ -2,7 +2,7 @@
   <button class="btn-circle-text" {{action "addUserLabel"}}><i class="icon icon-plus-circle"/> <span>{{t 'formUserLabels.addAction'}}</span></button>
 </div>
 
-{{#if this.userLabelArray.length}}
+{{#if userLabelArray.length}}
   <table class="table fixed no-lines no-top-padding tight small">
     <tr class="text-muted hidden-xs hidden-sm">
       <th>{{t 'formUserLabels.key.label'}}</th>
@@ -10,7 +10,7 @@
       <th>{{t 'formUserLabels.value.label'}}</th>
       <th width="30">&nbsp;</th>
     </tr>
-    {{#each this.userLabelArray as |label|}}
+    {{#each userLabelArray as |label|}}
       <tr>
         <td data-title="{{t 'formUserLabels.key.label'}}">
           {{input-paste pasted="pastedLabels" class="form-control input-sm key" type="text" value=label.key placeholder="formUserLabels.key.placeholder" disabled=(eq label.readonly true)}}

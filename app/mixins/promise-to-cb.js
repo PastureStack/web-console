@@ -1,6 +1,6 @@
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 
-export default Mixin.create({
+export default Ember.Mixin.create({
   toCb(name_or_fn, ...args) {
     return (results, cb) => {
       if ( typeof results === 'function' ) {

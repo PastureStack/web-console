@@ -1,17 +1,17 @@
 <td>
-  {{badge-state model=this.model}}
+  {{badge-state model=model}}
 </td>
 
 <td>
   <div class="clip">
-    {{this.model.displayUri}}
-    {{copy-to-clipboard clipboardText=this.model.displayUri class="with-clip" size="small"}}
+    {{model.displayUri}}
+    {{copy-to-clipboard clipboardText=model.displayUri class="with-clip" size="small"}}
   </div>
 </td>
 
 <td>
-  {{#if this.model.mounts.length}}
-    {{#each this.model.mounts as |mount|}}
+  {{#if model.mounts.length}}
+    {{#each model.mounts as |mount|}}
       <div>
         {{#link-to "container" mount.instanceId}}{{mount.instance.name}}{{/link-to}}:{{mount.path}}
         {{#if (eq mount.permissions "ro")}}
@@ -25,5 +25,5 @@
 </td>
 
 <td class="actions">
-  {{action-menu model=this.model}}
+  {{action-menu model=model}}
 </td>

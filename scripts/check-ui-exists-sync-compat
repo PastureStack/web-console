@@ -18,7 +18,7 @@ def fail(code, **fields):
     print(f"{code} {details}".rstrip())
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
-lock_path = Path("package-lock.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 dev = package.get("devDependencies", {})
 overrides = package.get("overrides", {})
 expected_spec = "file:vendor/exists-sync-compat/exists-sync-1.0.0-rc16.0.tgz"

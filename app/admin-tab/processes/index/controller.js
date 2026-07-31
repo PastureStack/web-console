@@ -1,7 +1,6 @@
-import EmberObject, { computed } from '@ember/object';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
+export default Ember.Controller.extend({
   sortBy: 'name',
   headers: [
     {
@@ -26,7 +25,7 @@ export default Controller.extend({
     },
   ],
 
-  total: computed('model.summary.[]', function() {
+  total: Ember.computed('model.summary.[]', function() {
     let running = 0;
     let ready = 0;
     let delay = 0;
@@ -37,7 +36,7 @@ export default Controller.extend({
       delay += summary.get('delay')||0;
     });
 
-    return EmberObject.create({
+    return Ember.Object.create({
       processName: 'Total',
       running: running,
       ready: ready,

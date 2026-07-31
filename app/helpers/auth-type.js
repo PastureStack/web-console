@@ -1,9 +1,8 @@
-import { service } from '@ember/service';
-import Helper from '@ember/component/helper';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Helper.extend({
-  intl: service(),
+export default Ember.Helper.extend({
+  intl: Ember.inject.service(),
 
   compute(params) {
     const type = params[0];

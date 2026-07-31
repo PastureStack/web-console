@@ -1,14 +1,12 @@
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
+export default Ember.Service.extend({
+  cookies: Ember.inject.service(),
+  'tab-session': Ember.inject.service('tab-session'),
+  settings: Ember.inject.service(),
 
-export default Service.extend({
-  cookies: service(),
-  'tab-session': service('tab-session'),
-  settings: service(),
-
-  absolute: computed('app.apiServer', function() {
+  absolute: function() {
     var url = this.get('app.apiServer');
 
     // If the URL is relative, add on the current base URL from the browser
@@ -21,21 +19,21 @@ export default Service.extend({
     url = url.replace(/\/+$/,'') + '/';
 
     return url;
-  }),
+  }.property('app.apiServer'),
 
-  host: computed('absolute', function() {
+  host: function() {
     var a = document.createElement('a');
     a.href = this.get('absolute');
     return a.host;
-  }),
+  }.property('absolute'),
 
-  origin: computed('absolute', function() {
+  origin: function() {
     var a = document.createElement('a');
     a.href = this.get('absolute');
     return a.origin;
-  }),
+  }.property('absolute'),
 
-  swarm: computed(`settings.${C.SETTING.SWARM_PORT}`, function() {
+  swarm: function() {
     var port = this.get(`settings.${C.SETTING.SWARM_PORT}`);
     if ( !port ) {
       port = parseInt(window.location.port,10);
@@ -46,5 +44,5 @@ export default Service.extend({
     }
 
     return `tcp://${window.location.hostname}:${port}`;
-  })
+  }.property(`settings.${C.SETTING.SWARM_PORT}`)
 });

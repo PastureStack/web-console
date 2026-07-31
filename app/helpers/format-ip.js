@@ -1,10 +1,7 @@
-import { service } from '@ember/service';
-import Helper from '@ember/component/helper';
-import { htmlSafe } from '@ember/template';
-import { escapeHtml } from 'ui/utils/util';
+import Ember from 'ember';
 
-export default Helper.extend({
-  intl: service(),
+export default Ember.Helper.extend({
+  intl: Ember.inject.service(),
 
   compute(params, options) {
     let noIp = options.noIp || 'formatIp.noIp';
@@ -17,7 +14,7 @@ export default Helper.extend({
     if ( ip ) {
       return ip;
     } else {
-      return htmlSafe('<span class="text-muted">'+escapeHtml(this.get('intl').t(noIp))+'</span>');
+      return ('<span class="text-muted">'+this.get('intl').t(noIp)+'</span>').htmlSafe();
     }
   }
 });

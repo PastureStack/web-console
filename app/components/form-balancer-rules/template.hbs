@@ -3,7 +3,7 @@
     <label>{{t 'formBalancerRules.label'}}</label>
   </div>
   <div class="col-xs-6 col-md-8">
-    {{#unless this.editing}}
+    {{#unless editing}}
       <button class="btn-circle-text" {{action "addRule" false}}><i class="icon icon-plus-circle"/> <span>{{t 'formBalancerRules.addServiceLabel'}}</span></button>
       <button class="btn-circle-text r-pl20" {{action "addRule" true}}><i class="icon icon-plus-circle"/> <span>{{t 'formBalancerRules.addSelectorLabel'}}</span></button>
     {{/unless}}
@@ -12,14 +12,14 @@
 
 <div class="row">
   <div class="col-xs-12">
-    {{#if this.rules.length}}
+    {{#if rules.length}}
       <table class="grid fixed no-lines no-top-padding tight r-mb0">
         <thead>
           <tr>
-            {{#if this.showListeners}}
+            {{#if showListeners}}
               <th width="30">&nbsp;</th>
               <th width="100">{{t 'formBalancerRules.access.label'}}*</th>
-              {{#if this.showIp}}
+              {{#if showIp}}
                 <th>{{t 'formBalancerRules.sourceIp.label'}}</th>
               {{/if}}
               <th width="100">{{t 'formBalancerRules.protocol.label'}}*</th>
@@ -33,29 +33,29 @@
               <th>{{t 'formBalancerRules.path.label'}}</th>
               <th width="100" class="divided">{{t 'formBalancerRules.targetPort.label'}}*</th>
             {{/if}}
-            {{#if this.showRegion}}
+            {{#if showRegion}}
               <th class="divided">{{t 'formBalancerRules.region.label'}}</th>
               <th>{{t 'formBalancerRules.environment.label'}}</th>
               <th>{{t 'formBalancerRules.weight.label'}}</th>
             {{/if}}
-            {{#if this.showBackend}}
+            {{#if showBackend}}
               <th class="divided">{{t 'formBalancerRules.backendName.label'}}</th>
             {{/if}}
-            {{#if this.showListeners}}
+            {{#if showListeners}}
               <th width="40">&nbsp;</th>
             {{/if}}
           </tr>
         </thead>
 
         <tbody>
-          {{#each this.rules as |rule idx|}}
+          {{#each rules as |rule idx|}}
             <tr>
-              {{#if this.showListeners}}
+              {{#if showListeners}}
                 <td data-title="{{t 'formBalancerRules.priority.label'}}">
-                  <button class="btn btn-primary btn-xs" {{action "moveUp" rule}} disabled={{eq rule.priority this.minPriority}}>
+                  <button class="btn btn-primary btn-xs" {{action "moveUp" rule}} disabled={{eq rule.priority minPriority}}>
                     <i class="icon icon-chevron-up"></i>
                   </button>
-                  <button class="btn btn-primary btn-xs" {{action "moveDown" rule}} disabled={{eq rule.priority this.maxPriority}}>
+                  <button class="btn btn-primary btn-xs" {{action "moveDown" rule}} disabled={{eq rule.priority maxPriority}}>
                     <i class="icon icon-chevron-down"></i>
                   </button>
                 </td>
@@ -67,7 +67,7 @@
                   </select>
                 </td>
 
-                {{#if this.showIp}}
+                {{#if showIp}}
                   <td data-title="{{t 'formBalancerRules.sourceIp.label'}}">
                     {{#if (eq rule.access "public")}}
                       {{input type="text" class="form-control input-sm" value=rule.sourceIp placeholder=(t 'formBalancerRules.sourceIp.placeholder')}}
@@ -79,7 +79,7 @@
 
                 <td data-title="{{t 'formBalancerRules.protocol.label'}}">
                   <select class="form-control input-sm" onchange={{action (mut rule.protocol) value="target.value"}}>
-                    {{#each this.protocolChoices as |proto|}}
+                    {{#each protocolChoices as |proto|}}
                       <option value={{proto}} selected={{eq rule.protocol proto}}>{{upper-case proto}}</option>
                     {{/each}}
                   </select>
@@ -94,7 +94,7 @@
                 {{/if}}
               </td>
 
-              {{#if this.showListeners}}
+              {{#if showListeners}}
                 <td data-title="{{t 'formBalancerRules.sourcePort.label'}}">
                   {{input-integer class="form-control input-sm" min="1" max="65535" value=rule.sourcePort placeholder=(t 'formBalancerRules.sourcePort.placeholder')}}
                 </td>
@@ -108,7 +108,7 @@
                 {{/if}}
               </td>
 
-              {{#if this.showListeners}}
+              {{#if showListeners}}
                 <td class="divided" data-title="{{t (if rule.isSelector 'formBalancerRules.selector.label' 'formBalancerRules.serviceId.label')}}">
                   {{#if rule.isSelector}}
                     {{input type="text" class="form-control input-sm" value=rule.selector placeholder=(t 'formBalancerRules.selector.placeholder')}}
@@ -122,7 +122,7 @@
                 {{input-integer class="form-control input-sm" min="1" max="65535" value=rule.targetPort placeholder=(t 'formBalancerRules.targetPort.placeholder')}}
               </td>
 
-              {{#if this.showRegion}}
+              {{#if showRegion}}
                 <td class="divided" data-title="{{t 'formBalancerRules.region.label'}}">
                   {{#if rule.isSelector}}
                     {{input type="text" class="form-control input-sm" value=rule.region placeholder=(t 'formBalancerRules.region.placeholder')}}
@@ -146,13 +146,13 @@
                 </td>
               {{/if}}
 
-              {{#if this.showBackend}}
+              {{#if showBackend}}
                 <td class="divided" data-title="{{t 'formBalancerRules.backendName.label'}}">
                   {{input type="text" class="form-control input-sm" value=rule.backendName placeholder=(t 'formBalancerRules.backendName.placeholder')}}
                 </td>
               {{/if}}
 
-              {{#if this.showListeners}}
+              {{#if showListeners}}
                 <td class="text-right">
                   <button class="btn btn-primary btn-sm" {{action "removeRule" rule}}><i class="icon icon-minus"/><span class="sr-only">{{t 'generic.remove'}}</span></button>
                 </td>
@@ -163,17 +163,17 @@
       </table>
       <p class="help-block">
         {{t 'formBalancerRules.help.prefix'}}
-        {{#unless this.showBackend}}
+        {{#unless showBackend}}
           <a href="#" {{action "showBackend"}}>
             {{t 'formBalancerRules.help.showBackendLink'}}
           </a>
         {{/unless}}
-        {{#unless this.showIp}}
+        {{#unless showIp}}
           <a href="#" {{action "showIp"}}>
             {{t 'formBalancerRules.help.showIpLink'}}
           </a>
         {{/unless}}
-        {{#if (and this.hasRegion (not this.showRegion))}}
+        {{#if (and hasRegion (not showRegion))}}
           <a href="#" {{action "showRegion"}}>
             {{t 'formBalancerRules.help.showRegionLink'}}
           </a>

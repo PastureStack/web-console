@@ -1,11 +1,7 @@
-import { resolve } from 'rsvp';
-import { alias } from '@ember/object/computed';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
-import fetch from 'ember-api-store/utils/fetch';
+import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
 import { loadScript } from 'ui/utils/load-script';
-
-import { on } from '@ember/object/evented';
 
 const RTL_LANGUAGES = ['fa-ir'];
 const MOMENT_LOCALES = {
@@ -23,20 +19,19 @@ const MOMENT_LOCALES = {
   'zh-tw': 'zh-tw',
 };
 
-export default Service.extend({
-  prefs         : service(),
-  session       : service(),
-  intl          : service(),
-  locales       : alias('app.locales'),
-  growl         : service(),
-  cookies       : service(),
-  userTheme     : service('user-theme'),
+export default Ember.Service.extend({
+  prefs         : Ember.inject.service(),
+  session       : Ember.inject.service(),
+  intl          : Ember.inject.service(),
+  locales       : Ember.computed.alias('app.locales'),
+  growl         : Ember.inject.service(),
+  cookies       : Ember.inject.service(),
+  userTheme     : Ember.inject.service('user-theme'),
   loadedLocales : null,
-  translationFetcher: fetch,
 
-  bootstrap: on('init', function() {
+  bootstrap: function() {
     this.set('loadedLocales', []);
-  }),
+  }.on('init'),
 
   initUnauthed() {
     let lang = C.LANGUAGE.DEFAULT;
@@ -99,7 +94,7 @@ export default Service.extend({
     if ( savePref && session.get(C.SESSION.ACCOUNT_ID) ) {
       return this.set(`prefs.${C.PREFS.LANGUAGE}`, lang);
     } else {
-      return resolve();
+      return Ember.RSVP.resolve();
     }
   },
 
@@ -120,7 +115,7 @@ export default Service.extend({
   sideLoadLanguage(language) {
     let baseLanguage = C.LANGUAGE.DEFAULT;
     let loadBase = language !== 'none' && language !== baseLanguage;
-    let promise = loadBase ? this.loadLanguageFile(baseLanguage) : resolve();
+    let promise = loadBase ? this.loadLanguageFile(baseLanguage) : Ember.RSVP.resolve();
 
     return promise.then(() => {
       return this.loadLanguageFile(language);
@@ -142,33 +137,23 @@ export default Service.extend({
     let loadedLocales = this.get('loadedLocales');
 
     if ( loadedLocales.includes(language) ) {
-      return resolve();
+      return Ember.RSVP.resolve();
     }
 
-    let url = `${this.get('app.baseAssets')}translations/${language}.json?${application.version}`;
-    let translationFetcher = this.get('translationFetcher');
-
-    return translationFetcher(url, {
+    return ajaxPromise({
+      url: `${this.get('app.baseAssets')}translations/${language}.json?${application.version}`,
       method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
+      dataType: 'json',
     }).then((resp) => {
-      let translations = resp.body;
-
-      if ( !translations || typeof translations !== 'object' || Array.isArray(translations) ) {
-        throw new Error(`Invalid translation response for ${language}`);
-      }
-
       let polyfillPromise;
       if ( this.get('app.needIntlPolyfill') ) {
         polyfillPromise = loadScript(`${this.get('app.baseAssets')}assets/intl/locales/${language.toLowerCase()}.js?${application.version}`);
       } else {
-        polyfillPromise = resolve();
+        polyfillPromise = Ember.RSVP.resolve();
       }
 
       return polyfillPromise.then(() => {
-        return this.get('intl').addTranslations(language, translations);
+        return this.get('intl').addTranslations(language, resp.xhr.responseJSON);
       }).then(() => {
         if ( !loadedLocales.includes(language) ) {
           loadedLocales.push(language);

@@ -1,14 +1,12 @@
-import { hash } from 'rsvp';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  session: service(),
-  userStore: service('user-store'),
+export default Ember.Route.extend({
+  session: Ember.inject.service(),
+  userStore: Ember.inject.service('user-store'),
 
   model() {
     let accountId = this.get('session.accountId');
-    return hash({
+    return Ember.RSVP.hash({
       accountId: accountId,
       factors: this.get('userStore').find('mfaFactor', null, {
         filter: {accountId: accountId},

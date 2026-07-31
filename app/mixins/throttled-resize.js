@@ -1,23 +1,20 @@
-import { next, throttle, cancel } from '@ember/runloop';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 
-import { on } from '@ember/object/evented';
-
-export default Mixin.create({
+export default Ember.Mixin.create({
   boundResize: null,
   throttleTimer: null,
   resizeInterval: 200,
 
-  setup: on('init', function() {
+  setup: function() {
 
     this.set('boundResize', this.triggerResize.bind(this));
     $(window).on('resize', this.get('boundResize'));
     $(window).on('focus', this.get('boundResize'));
-    next(this,'onResize');
-  }),
+    Ember.run.next(this,'onResize');
+  }.on('init'),
 
   triggerResize: function() {
-    var timer = throttle(this, 'onResize', this.get('resizeInterval'), false);
+    var timer = Ember.run.throttle(this, 'onResize', this.get('resizeInterval'), false);
     this.set('throttleTimer', timer);
   },
 
@@ -26,7 +23,7 @@ export default Mixin.create({
   },
 
   willDestroyElement: function() {
-    cancel(this.get('throttleTimer'));
+    Ember.run.cancel(this.get('throttleTimer'));
     $(window).off('resize', this.get('boundResize'));
     $(window).off('focus', this.get('boundResize'));
   },

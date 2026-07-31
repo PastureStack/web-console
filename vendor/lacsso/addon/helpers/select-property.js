@@ -1,9 +1,10 @@
-import { helper as buildHelper } from '@ember/component/helper';
-import { get } from '@ember/object';
+import Ember from 'ember';
+
+const {get} = Ember;
 
 export function selectProperty(params/*, hash*/) {
   var [objToSelect, property] = params;
   return get(objToSelect, property);
 }
 
-export default buildHelper(selectProperty);
+export default Ember.Helper.helper(selectProperty);

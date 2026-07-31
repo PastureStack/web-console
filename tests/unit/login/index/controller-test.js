@@ -1,24 +1,21 @@
-import { run } from '@ember/runloop';
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 import LoginController from 'ui/login/index/controller';
 
 module('Unit | Controller | login | index');
 
 test('keeps account recovery separate from regular MFA methods', function(assert) {
-  let SupportedLoginController = LoginController.extend({
-    webAuthnEnvironmentSupported: true,
-  });
-  let access = EmberObject.create({
+  let access = Ember.Object.create({
     mfaChallenge: {
       mfaRequired: true,
       mfaMethods: ['totp', 'webauthn', 'recoveryCode', 'emailRecovery'],
     },
   });
-  let controller = SupportedLoginController.create({
+  let controller = LoginController.create({
     access: access,
-    settings: EmberObject.create(),
-    intl: EmberObject.create(),
+    settings: Ember.Object.create(),
+    intl: Ember.Object.create(),
+    webAuthnEnvironmentSupported: true,
   });
 
   assert.deepEqual(
@@ -33,7 +30,7 @@ test('keeps account recovery separate from regular MFA methods', function(assert
   );
   assert.strictEqual(controller.get('activeMfaMethod'), 'totp', 'regular verification is selected first');
 
-  run(() => controller.send('showMfaRecoveryOptions'));
+  Ember.run(() => controller.send('showMfaRecoveryOptions'));
   assert.ok(controller.get('showMfaRecoveryOptions'), 'the user can explicitly open account recovery');
   assert.strictEqual(
     controller.get('activeMfaMethod'),
@@ -41,28 +38,26 @@ test('keeps account recovery separate from regular MFA methods', function(assert
     'the less destructive recovery-code option is selected before email recovery'
   );
 
-  run(() => controller.send('showMfaPrimaryOptions'));
+  Ember.run(() => controller.send('showMfaPrimaryOptions'));
   assert.notOk(controller.get('showMfaRecoveryOptions'), 'the user can return to regular verification');
   assert.strictEqual(controller.get('activeMfaMethod'), 'totp', 'regular verification is restored');
 
-  run(() => controller.destroy());
+  Ember.run(() => controller.destroy());
 });
 
 test('does not offer a passkey ceremony on an insecure connection', function(assert) {
-  let InsecureLoginController = LoginController.extend({
-    webAuthnEnvironmentSupported: false,
-  });
   let challenge = {
     mfaRequired: true,
     mfaMethods: ['webauthn', 'recoveryCode'],
   };
-  let controller = InsecureLoginController.create({
-    access: EmberObject.create({mfaChallenge: challenge}),
-    settings: EmberObject.create(),
-    intl: EmberObject.create(),
+  let controller = LoginController.create({
+    access: Ember.Object.create({mfaChallenge: challenge}),
+    settings: Ember.Object.create(),
+    intl: Ember.Object.create(),
+    webAuthnEnvironmentSupported: false,
   });
 
-  run(() => controller.handleLoginResponse(challenge, true));
+  Ember.run(() => controller.handleLoginResponse(challenge, true));
 
   assert.deepEqual(controller.get('primaryMfaMethods'), [],
     'the browser is not asked to start an unsupported WebAuthn ceremony');
@@ -73,9 +68,9 @@ test('does not offer a passkey ceremony on an insecure connection', function(ass
   assert.strictEqual(controller.get('activeMfaMethod'), 'recoveryCode',
     'the one-use recovery code is preferred over a dead-end passkey button');
 
-  run(() => controller.set('newRecoveryCodes', ['first-code', 'second-code']));
+  Ember.run(() => controller.set('newRecoveryCodes', ['first-code', 'second-code']));
   assert.strictEqual(controller.get('recoveryCodesText'), 'first-code\nsecond-code',
     'one-time recovery codes are passed to the standard clipboard component');
 
-  run(() => controller.destroy());
+  Ember.run(() => controller.destroy());
 });

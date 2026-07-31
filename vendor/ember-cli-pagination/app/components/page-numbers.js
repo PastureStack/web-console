@@ -1,17 +1,15 @@
-import { observer, computed } from '@ember/object';
-import { gt } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Util from 'ember-cli-pagination/util';
 import PageItems from 'ember-cli-pagination/lib/page-items';
 import Validate from 'ember-cli-pagination/validate';
 
-export default Component.extend({
+export default Ember.Component.extend({
   currentPageBinding: "content.page",
   totalPagesBinding: "content.totalPages",
 
-  hasPages: gt('totalPages', 1),
+  hasPages: Ember.computed.gt('totalPages', 1),
 
-  watchInvalidPage: observer("content", function() {
+  watchInvalidPage: Ember.observer("content", function() {
     const c = this.get('content');
     if (c && c.on) {
       c.on('invalidPage', (e) => {
@@ -32,7 +30,7 @@ export default Component.extend({
     }
   },
 
-  pageItemsObj: computed(function() {
+  pageItemsObj: Ember.computed(function() {
     return PageItems.create({
       parent: this,
       currentPageBinding: "parent.currentPage",
@@ -45,18 +43,18 @@ export default Component.extend({
 
   //pageItemsBinding: "pageItemsObj.pageItems",
 
-  pageItems: computed("pageItemsObj.pageItems","pageItemsObj", function() {
+  pageItems: Ember.computed("pageItemsObj.pageItems","pageItemsObj", function() {
     this.validate();
     return this.get("pageItemsObj.pageItems");
   }),
 
-  canStepForward: computed("currentPage", "totalPages", function() {
+  canStepForward: Ember.computed("currentPage", "totalPages", function() {
     const page = Number(this.get("currentPage"));
     const totalPages = Number(this.get("totalPages"));
     return page < totalPages;
   }),
 
-  canStepBackward: computed("currentPage", function() {
+  canStepBackward: Ember.computed("currentPage", function() {
     const page = Number(this.get("currentPage"));
     return page > 1;
   }),

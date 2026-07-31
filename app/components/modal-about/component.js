@@ -1,7 +1,7 @@
-import { service } from '@ember/service';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'generic', 'about', 'medium-modal'],
-  settings: service(),
+  settings: Ember.inject.service(),
 });

@@ -1,14 +1,11 @@
-import EmberObject, { computed } from '@ember/object';
-import { alias, sort } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 
-export default Component.extend({
-  prefs             : service(),
-  projects          : service(),
-  hasVm             : alias('projects.current.virtualMachine'),
+export default Ember.Component.extend({
+  prefs             : Ember.inject.service(),
+  projects          : Ember.inject.service(),
+  hasVm             : Ember.computed.alias('projects.current.virtualMachine'),
 
   model             : null,
   single            : false,
@@ -17,7 +14,7 @@ export default Component.extend({
   collapsed         : true,
   classNames        : ['stack-section'],
 
-  sortedServices    : sort('model.services','sortBy'),
+  sortedServices    : Ember.computed.sort('model.services','sortBy'),
   sortBy: ['name','id'],
 
   actions: {
@@ -62,31 +59,31 @@ export default Component.extend({
     }
   },
 
-  isKubernetes: computed('model.externalId', function() {
+  isKubernetes: function() {
     var parts = parseExternalId(this.get('model.externalId'));
     return parts && parts.kind === C.EXTERNAL_ID.KIND_KUBERNETES;
-  }),
+  }.property('model.externalId'),
 
 
-  instanceCount: computed('model.services.@each.instanceCount', function() {
+  instanceCount: function() {
     var count = 0;
     (this.get('model.services')||[]).forEach((service) => {
       count += service.get('instanceCount')||0;
     });
 
     return count;
-  }),
+  }.property('model.services.@each.instanceCount'),
 
-  outputs: computed('model.outputs', 'model.id', function() {
+  outputs: function() {
     var out = [];
     var map = this.get('model.outputs')||{};
     Object.keys(map).forEach((key) => {
-      out.push(EmberObject.create({
+      out.push(Ember.Object.create({
         key: key,
         value: map[key],
       }));
     });
 
     return out;
-  }),
+  }.property('model.outputs','model.id'),
 });

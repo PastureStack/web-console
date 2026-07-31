@@ -1,15 +1,11 @@
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Controller, { inject as controller } from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import Sortable from 'ui/mixins/sortable';
 
-import { computed } from '@ember/object';
-
-export default Controller.extend(Sortable, {
-  access: service(),
-  'tab-session': service(),
+export default Ember.Controller.extend(Sortable, {
+  access: Ember.inject.service(),
+  'tab-session': Ember.inject.service(),
 
   sortBy: 'name',
   sorts: {
@@ -20,53 +16,43 @@ export default Controller.extend(Sortable, {
     created:      ['created','name','id'],
   },
 
-  application: controller(),
-  cookies: service(),
-  projects: service(),
-  growl: service(),
-  project: alias('projects.current'),
-  endpointService: service('endpoint'),
-  modalService: service('modal'),
+  application: Ember.inject.controller(),
+  cookies: Ember.inject.service(),
+  projects: Ember.inject.service(),
+  growl: Ember.inject.service(),
+  project: Ember.computed.alias('projects.current'),
+  endpointService: Ember.inject.service('endpoint'),
+  modalService: Ember.inject.service('modal'),
 
-  accountArranged: computed(
-    'model.account.@each.{accountId,name,createdTs}',
-    'sortBy',
-    'descending',
-    function() {
-      var me = this.get(`session.${C.SESSION.ACCOUNT_ID}`);
-      let sort = this.get('sorts')[this.get('sortBy')];
+  accountArranged: function() {
+    var me = this.get(`session.${C.SESSION.ACCOUNT_ID}`);
+    let sort = this.get('sorts')[this.get('sortBy')];
 
-      let out = this.get('model.account').filter((row) => {
-        return row.get('accountId') === me;
-      }).sortBy(...sort);
+    let out = this.get('model.account').filter((row) => {
+      return row.get('accountId') === me;
+    }).sortBy(...sort);
 
-      if ( this.get('descending') ) {
-        out = out.reverse();
-      }
-
-      return out;
+    if ( this.get('descending') ) {
+      out = out.reverse();
     }
-  ),
 
-  environmentArranged: computed(
-    'model.environment.@each.{accountId,name,createdTs}',
-    'sortBy',
-    'descending',
-    function() {
-      var project = this.get('project.id');
-      let sort = this.get('sorts')[this.get('sortBy')];
+    return out;
+  }.property('model.account.@each.{accountId,name,createdTs}','sortBy','descending'),
 
-      let out = this.get('model.environment').filter((row) => {
-        return row.get('accountId') === project;
-      }).sortBy(...sort);
+  environmentArranged: function() {
+    var project = this.get('project.id');
+    let sort = this.get('sorts')[this.get('sortBy')];
 
-      if ( this.get('descending') ) {
-        out = out.reverse();
-      }
+    let out = this.get('model.environment').filter((row) => {
+      return row.get('accountId') === project;
+    }).sortBy(...sort);
 
-      return out;
+    if ( this.get('descending') ) {
+      out = out.reverse();
     }
-  ),
+
+    return out;
+  }.property('model.environment.@each.{accountId,name,createdTs}','sortBy','descending'),
 
   actions: {
     newApikey: function(kind) {
@@ -90,59 +76,54 @@ export default Controller.extend(Sortable, {
     },
   },
 
-  endpoint: computed(
-    'endpointService.absolute',
-    'app.{apiEndpoint,legacyApiEndpoint}',
-    `tab-session.${C.TABSESSION.PROJECT}`,
-    function() {
-      // Strip trailing slash off of the absoluteEndpoint
-      var base = this.get('endpointService.absolute').replace(/\/+$/,'');
-      // Add a single slash
-      base += '/';
+  endpoint: function() {
+    // Strip trailing slash off of the absoluteEndpoint
+    var base = this.get('endpointService.absolute').replace(/\/+$/,'');
+    // Add a single slash
+    base += '/';
 
-      var current = this.get('app.apiEndpoint').replace(/^\/+/,'');
-      var legacy = this.get('app.legacyApiEndpoint').replace(/^\/+/,'');
+    var current = this.get('app.apiEndpoint').replace(/^\/+/,'');
+    var legacy = this.get('app.legacyApiEndpoint').replace(/^\/+/,'');
 
-      // Go to the project-specific version
-      var projectId = this.get('tab-session').get(C.TABSESSION.PROJECT);
-      var project = '';
-      if ( projectId )
-      {
-        project = '/projects/' + projectId;
-      }
-
-      // For local development where API doesn't match origin, add basic auth token
-      var authBase = base;
-      if ( base.indexOf(window.location.origin) !== 0 )
-      {
-        var token = this.get('cookies').get(C.COOKIE.TOKEN);
-        if ( token ) {
-          authBase = Util.addAuthorization(base, C.USER.BASIC_BEARER, token);
-        }
-      }
-
-      return {
-        auth: {
-          account: {
-            current: authBase + current,
-            legacy:  authBase + legacy
-          },
-          environment: {
-            current: authBase + current + project,
-            legacy:  authBase + legacy + project
-          }
-        },
-        display: {
-          account: {
-            current: base + current,
-            legacy:  base + legacy
-          },
-          environment: {
-            current: base + current + project,
-            legacy:  base + legacy + project
-          }
-        },
-      };
+    // Go to the project-specific version
+    var projectId = this.get('tab-session').get(C.TABSESSION.PROJECT);
+    var project = '';
+    if ( projectId )
+    {
+      project = '/projects/' + projectId;
     }
-  ),
+
+    // For local development where API doesn't match origin, add basic auth token
+    var authBase = base;
+    if ( base.indexOf(window.location.origin) !== 0 )
+    {
+      var token = this.get('cookies').get(C.COOKIE.TOKEN);
+      if ( token ) {
+        authBase = Util.addAuthorization(base, C.USER.BASIC_BEARER, token);
+      }
+    }
+
+    return {
+      auth: {
+        account: {
+          current: authBase + current,
+          legacy:  authBase + legacy
+        },
+        environment: {
+          current: authBase + current + project,
+          legacy:  authBase + legacy + project
+        }
+      },
+      display: {
+        account: {
+          current: base + current,
+          legacy:  base + legacy
+        },
+        environment: {
+          current: base + current + project,
+          legacy:  base + legacy + project
+        }
+      },
+    };
+  }.property('endpointService.absolute', 'app.{apiEndpoint,legacyApiEndpoint}', `tab-session.${C.TABSESSION.PROJECT}`),
 });

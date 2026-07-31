@@ -1,9 +1,9 @@
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'large-modal', 'fullscreen-modal', 'modal-shell'],
-  originalModel: alias('modalService.modalOpts.model'),
+  originalModel: Ember.computed.alias('modalService.modalOpts.model'),
   init() {
     this._super(...arguments);
     this.shortcuts.disable();

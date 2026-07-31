@@ -1,11 +1,9 @@
-import { A } from '@ember/array';
-import { observer } from '@ember/object';
-import Helper from '@ember/component/helper';
+import Ember from 'ember';
 
-export default Helper.extend({
+export default Ember.Helper.extend({
   _haystack: null,
 
-  shouldUpdate: observer('_haystack.[]', function(){
+  shouldUpdate: Ember.observer('_haystack.[]', function(){
     this.recompute();
   }),
 
@@ -19,7 +17,7 @@ export default Helper.extend({
 
     let _haystack = this.get('_haystack');
     if (haystack !== _haystack) {
-      _haystack = new A(haystack);
+      _haystack = new Ember.A(haystack);
       this.set('_haystack', _haystack);
     }
     return _haystack.includes(needle);

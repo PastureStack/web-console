@@ -1,20 +1,17 @@
-import { computed, observer } from '@ember/object';
-import { alias, equal } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
-  intl: service(),
+export default Ember.Component.extend({
+  intl: Ember.inject.service(),
   service           : null,
 
-  lbConfig: alias('service.lbConfig'),
+  lbConfig: Ember.computed.alias('service.lbConfig'),
 
   lbCookie         : null,
   stickiness       : 'none',
-  isNone           : equal('stickiness','none'),
-  isCookie         : equal('stickiness','cookie'),
+  isNone           : Ember.computed.equal('stickiness','none'),
+  isCookie         : Ember.computed.equal('stickiness','cookie'),
 
-  modeChoices: computed('intl._locale', function() {
+  modeChoices: Ember.computed('intl._locale', function() {
     return [
       {value: 'rewrite', label: this.get('intl').t('formStickiness.modeChoices.rewrite')},
       {value: 'insert',  label: this.get('intl').t('formStickiness.modeChoices.insert')},
@@ -46,7 +43,7 @@ export default Component.extend({
     });
   },
 
-  stickinessDidChange: observer('stickiness', 'lbConfig.canSticky', function() {
+  stickinessDidChange: function() {
     var stickiness = this.get('stickiness');
     if ( !this.get('lbConfig.canSticky') || stickiness === 'none' )
     {
@@ -56,5 +53,5 @@ export default Component.extend({
     {
       this.set('lbConfig.stickinessPolicy', this.get('policy'));
     }
-  }),
+  }.observes('stickiness','lbConfig.canSticky'),
 });

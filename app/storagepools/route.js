@@ -1,10 +1,9 @@
-import { hash } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function() {
     let store = this.get('store');
-    return hash({
+    return Ember.RSVP.hash({
       pools:     store.findAll('storagepool'),
       mounts:    store.findAll('mounts', {filter: {'state_ne': 'inactive'}}),
     }).then((hash) => {

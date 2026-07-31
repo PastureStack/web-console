@@ -34,7 +34,7 @@
     "ember-cli-pagination": "file:../ember-cli-pagination",
     "ember-cli-sass": "10.0.1",
     "ember-rl-dropdown": "file:../ember-rl-dropdown",
-    "ember-truth-helpers": "5.0.0"
+    "ember-truth-helpers": "^1.2.0"
   },
   "ember-addon": {
     "configPath": "tests/dummy/config"

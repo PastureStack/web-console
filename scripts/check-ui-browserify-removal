@@ -28,7 +28,7 @@ if "ember-cli-uglify" in dev:
 if dev.get("ember-cli-terser") != "^4.0.2":
     fail("EMBER_CLI_TERSER_DEPENDENCY_MISSING", version=dev.get("ember-cli-terser"))
 
-lock_path = Path("package-lock.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:

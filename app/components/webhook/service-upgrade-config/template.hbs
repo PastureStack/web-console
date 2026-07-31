@@ -6,15 +6,15 @@
     <div>
       {{new-select
         classNames="form-control"
-        content=this.payloadFormatChoices
+        content=payloadFormatChoices
         localizedLabel=true
-        value=this.model.payloadFormat
+        value=model.payloadFormat
       }}
     </div>
   </div>
 </div>
 
-{{#if (eq this.model.payloadFormat 'alicloud')}}
+{{#if (eq model.payloadFormat 'alicloud')}}
   <div class="row form-group">
     <div class="col-md-6 col-md-offset-3">
       <div class="form-label form-control-static">
@@ -23,9 +23,9 @@
       <div>
         {{new-select
           classNames="form-control"
-          content=this.addressTypeChoices
+          content=addressTypeChoices
           localizedLabel=true
-          value=this.model.addressType
+          value=model.addressType
         }}
       </div>
     </div>
@@ -38,7 +38,7 @@
       <label>{{t 'newReceiver.tag.label'}}*</label>
     </div>
     <div>
-      {{input type="text" class="form-control" value=this.model.tag}}
+      {{input type="text" class="form-control" value=model.tag}}
     </div>
     <p class="help-block">{{t 'newReceiver.tag.help'}}</p>
   </div>
@@ -51,8 +51,8 @@
     </div>
     <div>
       {{form-key-value
-        initialMap=this.model.serviceSelector
-        changed=(fn (mut this.model.serviceSelector))
+        initialMap=model.serviceSelector
+        changed=(action (mut model.serviceSelector))
         addActionLabel="newReceiver.serviceSelector.addActionLabel"
         allowEmptyValue=true
       }}
@@ -67,7 +67,7 @@
       <label>{{t 'formUpgrade.size'}}</label>
     </div>
     <div>
-      {{input-integer min="1" class="form-control" value=this.model.batchSize}}
+      {{input-integer min="1" class="form-control" value=model.batchSize}}
     </div>
   </div>
 </div>
@@ -78,7 +78,7 @@
       <label>{{t 'formUpgrade.interval'}}</label>
     </div>
     <div class="input-group">
-      {{input-integer class="form-control" value=this.model.intervalMillis}}
+      {{input-integer class="form-control" value=model.intervalMillis}}
       <span class="input-group-addon">{{t 'formUpgrade.sec'}}</span>
     </div>
   </div>
@@ -90,7 +90,7 @@
       <label>{{t 'formUpgrade.behavior'}}</label>
     </div>
     <div class="form-control-static">
-      <label class="checkbox r-ml20" style="color: inherit; text-transform: none;">{{input type="checkbox" checked=this.model.startFirst}} {{t 'formUpgrade.startStop'}}</label>
+      <label class="checkbox r-ml20" style="color: inherit; text-transform: none;">{{input type="checkbox" checked=model.startFirst}} {{t 'formUpgrade.startStop'}}</label>
     </div>
   </div>
 </div>

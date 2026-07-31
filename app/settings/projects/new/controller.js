@@ -1,7 +1,6 @@
-import { filterBy } from '@ember/object/computed';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
+export default Ember.Controller.extend({
   actions: {
     done() {
       this.send('goToPrevious');
@@ -12,5 +11,5 @@ export default Controller.extend({
     }
   },
 
-  availableProjectTemplates: filterBy('model.projectTemplates','allThere',true),
+  availableProjectTemplates: Ember.computed.filterBy('model.projectTemplates','allThere',true),
 });

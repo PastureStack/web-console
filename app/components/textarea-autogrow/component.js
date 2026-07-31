@@ -1,13 +1,9 @@
-import { scheduleOnce, later, debounce, run } from '@ember/runloop';
-import { service } from '@ember/service';
-import { TextArea } from '@ember/legacy-built-in-components';
+import Ember from 'ember';
 import { isGecko } from 'ui/utils/platform';
 import IntlPlaceholder from 'ui/mixins/intl-placeholder';
 
-import { observer, computed } from '@ember/object';
-
-export default TextArea.extend(IntlPlaceholder, {
-  intl: service(),
+export default Ember.TextArea.extend(IntlPlaceholder, {
+  intl: Ember.inject.service(),
 
   minHeight: 0,
   maxHeight: 200,
@@ -16,7 +12,7 @@ export default TextArea.extend(IntlPlaceholder, {
   classNames: ['no-resize'],
 
   didInsertElement() {
-    scheduleOnce('afterRender', this, 'initHeights');
+    Ember.run.scheduleOnce('afterRender', this, 'initHeights');
   },
 
   initHeights() {
@@ -27,21 +23,21 @@ export default TextArea.extend(IntlPlaceholder, {
     this.autoSize();
 
     this.$().on('paste', () => {
-      later(this, 'autoSize', 100);
+      Ember.run.later(this, 'autoSize', 100);
     });
   },
 
-  changed: observer('value', function() {
-    debounce(this,'autoSize',100);
-  }),
+  changed: function() {
+    Ember.run.debounce(this,'autoSize',100);
+  }.observes('value'),
 
-  isSmall: computed(function() {
+  isSmall: function() {
     if ( this.isDestroyed || this.isDestroying ) {
       return;
     }
 
     return this.$().hasClass('input-sm');
-  }),
+  }.property(),
 
   autoSize() {
     if ( this.isDestroyed || this.isDestroying ) {
@@ -51,7 +47,7 @@ export default TextArea.extend(IntlPlaceholder, {
     let el = this.element;
     let $el = $(el);
 
-    run(() => {
+    Ember.run(() => {
       $el.css('height', '1px');
 
       let border = parseInt($el.css('borderTopWidth'),10)||0 + parseInt($el.css('borderBottomWidth'),10)||0;

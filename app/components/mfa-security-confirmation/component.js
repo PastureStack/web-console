@@ -1,6 +1,4 @@
-import { scheduleOnce } from '@ember/runloop';
-import { alias, equal, empty, or } from '@ember/object/computed';
-import { service } from '@ember/service';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 import {
   authenticate as authenticateWithPasskey,
@@ -8,15 +6,13 @@ import {
 } from 'ui/utils/webauthn';
 import { localizedMfaError } from 'ui/utils/mfa-error';
 
-import { computed } from '@ember/object';
-
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
 
-  intl: service(),
-  userStore: service('user-store'),
+  intl: Ember.inject.service(),
+  userStore: Ember.inject.service('user-store'),
 
-  opts: alias('modalService.modalOpts'),
+  opts: Ember.computed.alias('modalService.modalOpts'),
   challenge: null,
   method: null,
   verificationCode: '',
@@ -24,31 +20,31 @@ export default ModalBase.extend({
   waiting: true,
   errorMessage: null,
 
-  isTotp: equal('method', 'totp'),
-  isPasskey: equal('method', 'webauthn'),
-  isRecoveryCode: equal('method', 'recoveryCode'),
-  noAvailableMethod: empty('method'),
-  confirmDisabled: or('waiting', 'noAvailableMethod'),
+  isTotp: Ember.computed.equal('method', 'totp'),
+  isPasskey: Ember.computed.equal('method', 'webauthn'),
+  isRecoveryCode: Ember.computed.equal('method', 'recoveryCode'),
+  noAvailableMethod: Ember.computed.empty('method'),
+  confirmDisabled: Ember.computed.or('waiting', 'noAvailableMethod'),
 
-  webAuthnEnvironmentSupported: computed(function() {
+  webAuthnEnvironmentSupported: function() {
     return isWebAuthnAvailable();
-  }),
+  }.property(),
 
-  availableMethods: computed('challenge.methods.[]', 'webAuthnEnvironmentSupported', function() {
+  availableMethods: function() {
     let webAuthnSupported = this.get('webAuthnEnvironmentSupported');
     return (this.get('challenge.methods') || []).filter((method) => {
       return webAuthnSupported || method !== 'webauthn';
     });
-  }),
+  }.property('challenge.methods.[]', 'webAuthnEnvironmentSupported'),
 
-  hasUnavailablePasskeyMethod: computed('challenge.methods.[]', 'webAuthnEnvironmentSupported', function() {
+  hasUnavailablePasskeyMethod: function() {
     return !this.get('webAuthnEnvironmentSupported') &&
       (this.get('challenge.methods') || []).indexOf('webauthn') >= 0;
-  }),
+  }.property('challenge.methods.[]', 'webAuthnEnvironmentSupported'),
 
   didInsertElement() {
     this._super(...arguments);
-    scheduleOnce('afterRender', this, this.begin);
+    Ember.run.scheduleOnce('afterRender', this, this.begin);
   },
 
   begin() {

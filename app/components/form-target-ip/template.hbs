@@ -3,14 +3,14 @@
     <label>{{t 'formTarget.target'}}</label>
   </div>
   <div class="col-sm-5 col-md-4 radio">
-    <label>{{radio-button selection=this.which value="ip"}} {{t 'formTarget.pointAddress'}}</label>
+    <label>{{radio-button selection=which value="ip"}} {{t 'formTarget.pointAddress'}}</label>
   </div>
   <div class="col-sm-5 col-md-4 radio">
-    <label>{{radio-button selection=this.which value="hostname"}} {{t 'formTarget.pointHostname'}}</label>
+    <label>{{radio-button selection=which value="hostname"}} {{t 'formTarget.pointHostname'}}</label>
   </div>
 </div>
 
-{{#if (eq this.which "ip")}}
+{{#if (eq which "ip")}}
   <div class="row">
     <div class="col-xs-6 col-md-8 col-md-offset-2">
       <button class="btn-circle" {{action "addTargetIp"}}><i class="icon icon-plus-circle"/> {{t 'formTarget.addTarget'}}</button>
@@ -18,9 +18,9 @@
   </div>
   <div class="row">
     <div class="col-sm-12 col-md-8 col-md-offset-2">
-      {{#if this.targetIpArray.length}}
+      {{#if targetIpArray.length}}
         <table class="table fixed no-lines no-top-padding tight">
-          {{#each this.targetIpArray as |tgt|}}
+          {{#each targetIpArray as |tgt|}}
             <tr>
               <td>
                 {{input type="text" class="form-control input-sm target-ip" value=tgt.value placeholder=(t 'formTarget.ipPlaceholder')}}
@@ -36,10 +36,10 @@
   </div>
 {{/if}}
 
-{{#if (eq this.which "hostname")}}
+{{#if (eq which "hostname")}}
   <div class="row">
     <div class="col-sm-12 col-md-8 col-md-offset-2">
-      {{input type="text" class="form-control input-sm target-hostname" value=this.userHostname placeholder=(t 'formTarget.hostnamePlaceholder')}}
+      {{input type="text" class="form-control input-sm target-hostname" value=userHostname placeholder=(t 'formTarget.hostnamePlaceholder')}}
     </div>
   </div>
 {{/if}}

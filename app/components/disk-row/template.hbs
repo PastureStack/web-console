@@ -1,8 +1,8 @@
 <td>
-  {{#if this.disk.root}}
+  {{#if disk.root}}
     {{t 'formDisks.name.rootDisk'}}
   {{else}}
-    {{input class="form-control input-sm" type="text" value=this.disk.name placeholder=(t 'formDisks.name.placeholder')}}
+    {{input class="form-control input-sm" type="text" value=disk.name placeholder=(t 'formDisks.name.placeholder')}}
   {{/if}}
 </td>
 
@@ -10,13 +10,13 @@
 
 <td>
   <div class="row">
-    {{#if this.disk.root}}
+    {{#if disk.root}}
       <span class="text-muted">{{t 'formDisks.size.rootDisk'}}</span>
     {{else}}
-      <div class="col-sm-6 col-md-8 r-pt10">{{input-slider initialValue=this.gigs changed=(action "setSize") valueMin=10 valueMax=500 step=10}}</div>
+      <div class="col-sm-6 col-md-8 r-pt10">{{input-slider initialValue=gigs changed=(action "setSize") valueMin=10 valueMax=500 step=10}}</div>
       <div class="col-sm-6 col-md-4 r-pl0 r-pr0">
         <div class="input-group input-sm r-p0">
-          {{input type="text" value=this.gigs classNames="form-control r-pr0"}}
+          {{input type="text" value=gigs classNames="form-control r-pr0"}}
           <div class="input-group-addon">GB</div>
         </div>
       </div>
@@ -25,16 +25,16 @@
 </td>
 
 <td>&nbsp;</td>
-<td>{{input type="text" class="form-control" value=this.disk.readIops placeholder=(t 'formDisks.readIops.placeholder')}}</td>
+<td>{{input type="text" class="form-control" value=disk.readIops placeholder=(t 'formDisks.readIops.placeholder')}}</td>
 <td>&nbsp;</td>
-<td>{{input type="text" class="form-control" value=this.disk.writeIops placeholder=(t 'formDisks.writeIops.placeholder')}}</td>
+<td>{{input type="text" class="form-control" value=disk.writeIops placeholder=(t 'formDisks.writeIops.placeholder')}}</td>
 <td>&nbsp;</td>
 
 <td>
   {{new-select
     classNames="form-control"
-    content=this.driverChoices
-    value=this.disk.driver
+    content=driverChoices
+    value=disk.driver
   }}
 </td>
 

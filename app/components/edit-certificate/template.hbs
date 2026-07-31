@@ -2,7 +2,7 @@
   <h2>{{t 'editCertificate.title'}}</h2>
 
   {{form-name-description
-    model=this.primaryResource
+    model=primaryResource
     nameRequired=true
     namePlaceholder="editCertificate.name.placeholder"
     descriptionPlaceholder="editCertificate.description.placeholder"
@@ -12,8 +12,8 @@
     <div class="alert alert-info">{{t 'editCertificate.noteKeyWriteOnly'}}</div>
   </div>
 
-  {{input-certificate model=this.model}}
+  {{input-certificate model=model}}
 </section>
 
-{{top-errors errors=this.errors}}
+{{top-errors errors=errors}}
 {{save-cancel editing=true save="save" cancel="cancel"}}

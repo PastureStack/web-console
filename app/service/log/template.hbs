@@ -9,7 +9,7 @@
     </tr>
   </thead>
   <tbody>
-    {{#each this.model.logs.arrangedContent as |obj|}}
+    {{#each model.logs.arrangedContent as |obj|}}
       <tr>
         <td>
           {{date-str obj.created format="hh:mm:ss A"}}

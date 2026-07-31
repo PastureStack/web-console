@@ -1,5 +1,4 @@
-import { setProperties, computed, observer } from '@ember/object';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
 function splitEquals(str) {
@@ -35,7 +34,7 @@ function normalizedLabels(objects) {
   return out;
 }
 
-export default Component.extend({
+export default Ember.Component.extend({
   rule: null,
   instance: null,
 
@@ -119,7 +118,7 @@ export default Component.extend({
     }
   },
 
-  valuesChanged: observer('kind', 'suffix', 'userKey', 'userValue', function() {
+  valuesChanged: function() {
     var key = '';
     var value = null;
 
@@ -160,13 +159,13 @@ export default Component.extend({
 
     key += this.get('suffix');
 
-    setProperties(this.get('rule'),{
+    Ember.setProperties(this.get('rule'),{
       key: key,
       value: value
     });
-  }),
+  }.observes('kind','suffix','userKey','userValue'),
 
-  isGlobalChanged: observer('isGlobal', function() {
+  isGlobalChanged: function() {
     if ( this.get('isGlobal') )
     {
       var kindChoices = this.get('schedulingRuleKindChoices').map((choice) => { return choice.value; });
@@ -181,15 +180,15 @@ export default Component.extend({
       // 'Should' isn't allowed in global
       this.set('suffix', this.get('suffix').replace(/_soft/,''));
     }
-  }),
+  }.observes('isGlobal'),
 
-  getSuffixLabel: computed('suffix', function() {
+  getSuffixLabel: Ember.computed('suffix', function() {
     let label = this.get('schedulingRuleSuffixChoices').findBy('value', this.get('suffix')).label;
     label = label.split('.');
     return label[label.length -1];
   }),
 
-  schedulingRuleSuffixChoices: computed('isGlobal', function() {
+  schedulingRuleSuffixChoices: function() {
     var out = [
       {label: 'schedulingRuleRow.must', value: ''},
     ];
@@ -204,9 +203,9 @@ export default Component.extend({
 
     out.push({label: 'schedulingRuleRow.mustNot', value: '_ne'});
     return out;
-  }),
+  }.property('isGlobal'),
 
-  schedulingRuleKindChoices: computed('isGlobal', function() {
+  schedulingRuleKindChoices: function() {
     var out = [
       {label: 'schedulingRuleRow.hostLabel', value: 'host_label'},
     ];
@@ -221,22 +220,22 @@ export default Component.extend({
     }
 
     return out;
-  }),
+  }.property('isGlobal'),
 
-  normalizedHostLabels: computed('allHosts.@each.labels', function() {
+  normalizedHostLabels: function() {
     return normalizedLabels(this.get('allHosts'));
-  }),
+  }.property('allHosts.@each.labels'),
 
-  hostLabelKeyChoices: computed('normalizedHostLabels', function() {
+  hostLabelKeyChoices: function() {
     return Object.keys(this.get('normalizedHostLabels')).sort().uniq();
-  }),
+  }.property('normalizedHostLabels'),
 
-  hostLabelValueChoices: computed('userKey', 'normalizedHostLabels', function() {
+  hostLabelValueChoices: function() {
     var key = this.get('userKey').toLowerCase();
     return ((this.get('normalizedHostLabels')[key])||[]).sort().uniq();
-  }),
+  }.property('userKey','normalizedHostLabels'),
 
-  allContainers: computed('allHosts.@each.instances', function() {
+  allContainers: function() {
     var out = [];
     this.get('allHosts').map((host) => {
       var containers = (host.get('instances')||[]).filter(function(instance) {
@@ -248,22 +247,22 @@ export default Component.extend({
     });
 
     return out.sortBy('name','id').uniq();
-  }),
+  }.property('allHosts.@each.instances'),
 
-  normalizedContainerLabels: computed('allHosts.@each.labels', function() {
+  normalizedContainerLabels: function() {
     return normalizedLabels(this.get('allContainers'));
-  }),
+  }.property('allHosts.@each.labels'),
 
-  containerLabelKeyChoices: computed('normalizedContainerLabels', function() {
+  containerLabelKeyChoices: function() {
     return Object.keys(this.get('normalizedContainerLabels')).sort().uniq();
-  }),
+  }.property('normalizedContainerLabels'),
 
-  containerLabelValueChoices: computed('userKey', 'normalizedContainerLabels', function() {
+  containerLabelValueChoices: function() {
     var key = this.get('userKey').toLowerCase();
     return ((this.get('normalizedContainerLabels')[key])||[]).sort().uniq();
-  }),
+  }.property('userKey','normalizedContainerLabels'),
 
-  containerValueChoices: computed('allContainers.@each.name', function() {
+  containerValueChoices: function() {
     var out = [];
     this.get('allContainers').forEach((container) => {
       var name = container.get('name');
@@ -274,9 +273,9 @@ export default Component.extend({
     });
 
     return out.map((key) => { return (key||'').toLowerCase(); }).sort().uniq();
-  }),
+  }.property('allContainers.@each.name'),
 
-  serviceValueChoices: computed('allContainers.@each.labels', function() {
+  serviceValueChoices: function() {
     var out = [];
     this.get('allContainers').forEach((container) => {
       var label = (container.get('labels')||{})[C.LABEL.SERVICE_NAME];
@@ -287,5 +286,5 @@ export default Component.extend({
     });
 
     return out.map((key) => { return (key||'').toLowerCase(); }).sort().uniq();
-  }),
+  }.property('allContainers.@each.labels'),
 });

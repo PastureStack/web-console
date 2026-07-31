@@ -1,9 +1,4 @@
-import $ from 'jquery';
-import { later, schedule } from '@ember/runloop';
-import { computed } from '@ember/object';
-import { equal, alias, bool, notEmpty } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import {
   authenticate as authenticateWithPasskey,
   isAvailable as isWebAuthnAvailable,
@@ -12,21 +7,19 @@ import {
 import { totpProvisioningQr } from 'ui/utils/totp-qr';
 import { localizedMfaError } from 'ui/utils/mfa-error';
 
-import { on } from '@ember/object/evented';
-
-export default Controller.extend({
+export default Ember.Controller.extend({
   queryParams       : ['timedOut','errorMsg'],
-  access            : service(),
-  settings          : service(),
-  intl              : service(),
+  access            : Ember.inject.service(),
+  settings          : Ember.inject.service(),
+  intl              : Ember.inject.service(),
 
-  isGithub          : equal('access.provider', 'githubconfig'),
-  isActiveDirectory : equal('access.provider', 'ldapconfig'),
-  isOpenLdap        : equal('access.provider', 'openldapconfig'),
-  isLocal           : equal('access.provider', 'localauthconfig'),
-  isOidc            : equal('access.provider', 'oidcconfig'),
-  isAzureAd         : equal('access.provider', 'azureadconfig'),
-  isShibboleth      : equal('access.provider', 'shibbolethconfig'),
+  isGithub          : Ember.computed.equal('access.provider', 'githubconfig'),
+  isActiveDirectory : Ember.computed.equal('access.provider', 'ldapconfig'),
+  isOpenLdap        : Ember.computed.equal('access.provider', 'openldapconfig'),
+  isLocal           : Ember.computed.equal('access.provider', 'localauthconfig'),
+  isOidc            : Ember.computed.equal('access.provider', 'oidcconfig'),
+  isAzureAd         : Ember.computed.equal('access.provider', 'azureadconfig'),
+  isShibboleth      : Ember.computed.equal('access.provider', 'shibbolethconfig'),
 
   timedOut          : false,
   waiting           : false,
@@ -39,80 +32,75 @@ export default Controller.extend({
   newRecoveryCodes  : null,
   showMfaRecoveryOptions : false,
 
-  canLocalRecovery: alias('access.token.localRecoveryEnabled'),
-  mfaChallenge: alias('access.mfaChallenge'),
-  isMfaPending: bool('mfaChallenge.mfaRequired'),
-  emailCodeSent: alias('mfaChallenge.emailCodeSent'),
-  hasNewRecoveryCodes: notEmpty('newRecoveryCodes'),
-  recoveryCodesText: computed('newRecoveryCodes.[]', function() {
+  canLocalRecovery: Ember.computed.alias('access.token.localRecoveryEnabled'),
+  mfaChallenge: Ember.computed.alias('access.mfaChallenge'),
+  isMfaPending: Ember.computed.bool('mfaChallenge.mfaRequired'),
+  emailCodeSent: Ember.computed.alias('mfaChallenge.emailCodeSent'),
+  hasNewRecoveryCodes: Ember.computed.notEmpty('newRecoveryCodes'),
+  recoveryCodesText: function() {
     return (this.get('newRecoveryCodes') || []).join('\n');
-  }),
+  }.property('newRecoveryCodes.[]'),
 
-  webAuthnEnvironmentSupported: computed(function() {
+  webAuthnEnvironmentSupported: function() {
     return isWebAuthnAvailable();
-  }),
+  }.property(),
 
-  availableMfaMethods: computed('mfaChallenge.mfaMethods.[]', 'webAuthnEnvironmentSupported', function() {
+  availableMfaMethods: function() {
     return this._availableMfaMethods(this.get('mfaChallenge.mfaMethods') || []);
-  }),
+  }.property('mfaChallenge.mfaMethods.[]', 'webAuthnEnvironmentSupported'),
 
-  hasUnavailablePasskeyMethod: computed('mfaChallenge.mfaMethods.[]', 'webAuthnEnvironmentSupported', function() {
+  hasUnavailablePasskeyMethod: function() {
     let methods = this.get('mfaChallenge.mfaMethods') || [];
     return !this.get('webAuthnEnvironmentSupported') && methods.some((method) => {
       return ['webauthn', 'webauthnEnrollment'].indexOf(method) >= 0;
     });
-  }),
+  }.property('mfaChallenge.mfaMethods.[]', 'webAuthnEnvironmentSupported'),
 
-  primaryMfaMethods: computed('availableMfaMethods.[]', function() {
+  primaryMfaMethods: function() {
     return (this.get('availableMfaMethods') || []).filter((method) => {
       return ['recoveryCode', 'emailRecovery'].indexOf(method) < 0;
     });
-  }),
+  }.property('availableMfaMethods.[]'),
 
-  recoveryMfaMethods: computed('availableMfaMethods.[]', function() {
+  recoveryMfaMethods: function() {
     return (this.get('availableMfaMethods') || []).filter((method) => {
       return ['recoveryCode', 'emailRecovery'].indexOf(method) >= 0;
     });
-  }),
+  }.property('availableMfaMethods.[]'),
 
-  hasMfaRecoveryMethods: computed('recoveryMfaMethods.length', function() {
+  hasMfaRecoveryMethods: function() {
     return this.get('recoveryMfaMethods.length') > 0;
-  }),
+  }.property('recoveryMfaMethods.length'),
 
-  activeMfaMethod: computed(
-    'mfaChallenge.mfaMethods.[]',
-    'primaryMfaMethods.[]',
-    'selectedMfaMethod',
-    function() {
-      let methods = this.get('availableMfaMethods') || [];
-      let selected = this.get('selectedMfaMethod');
-      let primary = this.get('primaryMfaMethods') || [];
-      return methods.indexOf(selected) >= 0 ? selected : (primary[0] || methods[0]);
-    }
-  ),
+  activeMfaMethod: function() {
+    let methods = this.get('availableMfaMethods') || [];
+    let selected = this.get('selectedMfaMethod');
+    let primary = this.get('primaryMfaMethods') || [];
+    return methods.indexOf(selected) >= 0 ? selected : (primary[0] || methods[0]);
+  }.property('mfaChallenge.mfaMethods.[]', 'primaryMfaMethods.[]', 'selectedMfaMethod'),
 
-  isMfaTotp: computed('activeMfaMethod', function() {
+  isMfaTotp: Ember.computed('activeMfaMethod', function() {
     return ['totp', 'totpEnrollment'].indexOf(this.get('activeMfaMethod')) >= 0;
   }),
-  isMfaEnrollment: equal('activeMfaMethod', 'totpEnrollment'),
-  isMfaPasskey: computed('activeMfaMethod', function() {
+  isMfaEnrollment: Ember.computed.equal('activeMfaMethod', 'totpEnrollment'),
+  isMfaPasskey: function() {
     return ['webauthn', 'webauthnEnrollment'].indexOf(this.get('activeMfaMethod')) >= 0;
-  }),
-  isMfaPasskeyEnrollment: equal('activeMfaMethod', 'webauthnEnrollment'),
-  isMfaRecoveryCode: equal('activeMfaMethod', 'recoveryCode'),
-  isMfaEmailRecovery: equal('activeMfaMethod', 'emailRecovery'),
+  }.property('activeMfaMethod'),
+  isMfaPasskeyEnrollment: Ember.computed.equal('activeMfaMethod', 'webauthnEnrollment'),
+  isMfaRecoveryCode: Ember.computed.equal('activeMfaMethod', 'recoveryCode'),
+  isMfaEmailRecovery: Ember.computed.equal('activeMfaMethod', 'emailRecovery'),
 
-  totpEnrollmentQrSvg: computed('mfaChallenge.totpProvisioningUri', 'intl._locale', function() {
+  totpEnrollmentQrSvg: function() {
     let uri = this.get('mfaChallenge.totpProvisioningUri');
     if ( !uri ) {
       return null;
     }
     return totpProvisioningQr(uri, this.get('intl').t('loginPage.mfa.totp.qrAlt'));
-  }),
+  }.property('mfaChallenge.totpProvisioningUri', 'intl._locale'),
 
-  oidcProviderName: computed('access.token.providerDisplayName', 'intl._locale', function() {
+  oidcProviderName: function() {
     return this.get('access.token.providerDisplayName') || this.get('intl').t('authPage.oidc.defaultProviderName');
-  }),
+  }.property('access.token.providerDisplayName', 'intl._locale'),
 
   actions: {
     started() {
@@ -126,7 +114,7 @@ export default Controller.extend({
     authenticate(code) {
       this.send('started');
 
-      later(() => {
+      Ember.run.later(() => {
         let provider = this.get('useLocalRecovery') ? 'localAuthConfig' : undefined;
         this.get('access').login(code, provider).then((xhr) => {
           this.handleLoginResponse(xhr.body, true);
@@ -305,10 +293,10 @@ export default Controller.extend({
     });
   },
 
-  bootstrap: on('init', function() {
-    schedule('afterRender', this, () => {
-      var user = $('.login-user')[0];
-      var pass = $('.login-pass')[0];
+  bootstrap: function() {
+    Ember.run.schedule('afterRender', this, () => {
+      var user = Ember.$('.login-user')[0];
+      var pass = Ember.$('.login-pass')[0];
       if ( user )
       {
         if ( user.value )
@@ -321,9 +309,9 @@ export default Controller.extend({
         }
       }
     });
-  }),
+  }.on('init'),
 
-  infoMsg: computed('timedOut', 'errorMsg', 'intl._locale', function() {
+  infoMsg: function() {
     if ( this.get('errorMsg') ) {
       return this.get('errorMsg');
     } else if ( this.get('timedOut') ) {
@@ -331,6 +319,6 @@ export default Controller.extend({
     } else {
       return '';
     }
-  }),
+  }.property('timedOut','errorMsg','intl._locale'),
 
 });

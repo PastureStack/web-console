@@ -1,29 +1,29 @@
-{{#if (or this.expandSelf this.expanded)}}
-  <tr class="{{if this.execution.exception 'danger' ''}}">
+{{#if (or expandSelf expanded)}}
+  <tr class="{{if execution.exception 'danger' ''}}">
     <td class="clip">
-      <i class="icon icon-level-down indent-{{this.depth}}"></i>
-      {{#if this.execution.exception}}
-        <span {{action 'showError' this.execution.exception}}>
+      <i class="icon icon-level-down indent-{{depth}}"></i>
+      {{#if execution.exception}}
+        <span {{action 'showError' execution.exception}}>
           <i class="icon icon-alert hand"></i>
         </span>
       {{/if}}
-      {{#if this.checkExecutions }}
+      {{#if checkExecutions }}
         <span {{action 'expand'}}>
-            <i class="icon hand {{if this.expanded 'icon-minus-circle' 'icon-plus-circle'}}"></i>
+            <i class="icon hand {{if expanded 'icon-minus-circle' 'icon-plus-circle'}}"></i>
         </span>
       {{/if}}
-      {{this.execution.name}}
+      {{execution.name}}
     </td>
-    <td>{{this.execution.resourceId}}</td>
-    <td>{{this.execution.exitReason}}</td>
-    <td>{{date-from-now this.execution.startTime}}</td>
-    <td>{{date-from-now this.execution.stopTime}}</td>
-    <td>{{run-time this.execution.startTime this.execution.stopTime}}</td>
+    <td>{{execution.resourceId}}</td>
+    <td>{{execution.exitReason}}</td>
+    <td>{{date-from-now execution.startTime}}</td>
+    <td>{{date-from-now execution.stopTime}}</td>
+    <td>{{run-time execution.startTime execution.stopTime}}</td>
   </tr>
-{{#if this.checkExecutions }}
-  {{#each this.execution.children as |child|}}
+{{#if checkExecutions }}
+  {{#each execution.children as |child|}}
     {{#each child.executions as |execution|}}
-      {{process-execution-rows execution=execution expandSelf=this.expanded nodeDepth=this.depth expandAll=this.expandAll}}
+      {{process-execution-rows execution=execution expandSelf=expanded nodeDepth=depth expandAll=expandAll}}
     {{/each}}
   {{/each}}
 {{/if}}

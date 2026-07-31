@@ -1,13 +1,13 @@
 <div class="well r-mt40 text" style="width: 50%; margin-left: 25%">
-  <h2 class="loading">{{t this.label}}</h2>
+  <h2 class="loading">{{t label}}</h2>
 
   <ul class="list-unstyled r-mt20">
-    {{#each this.steps as |step index|}}
-      <li class="{{if (lt this.currentStep index) 'text-muted'}}">
-        {{#if (eq this.currentStep index)}}
+    {{#each steps as |step index|}}
+      <li class="{{if (lt currentStep index) 'text-muted'}}">
+        {{#if (eq currentStep index)}}
           <i class="icon icon-spinner icon-spin" />
         {{else}}
-          {{#if (gt this.currentStep index)}}
+          {{#if (gt currentStep index)}}
             <i class="icon icon-check text-success" />
           {{else}}
             <i class="icon icon-circle-o" />
@@ -15,7 +15,7 @@
         {{/if}}
 
         <span>
-          {{t step}}{{#if (and this.subStep this.subCount (eq this.currentStep index))}} {{t 'waitOrchestration.count' sub=this.subStep count=this.subCount}}{{/if}}
+          {{t step}}{{#if (and subStep subCount (eq currentStep index))}} {{t 'waitOrchestration.count' sub=subStep count=subCount}}{{/if}}
         </span>
       </li>
     {{/each}}

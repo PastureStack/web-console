@@ -1,44 +1,44 @@
 <section class="header clearfix">
-  {{#if this.showEdit}}
+  {{#if showEdit}}
     <h1>
-      {{#if this.editing}}
-        {{t 'viewEditProject.showEdit.edit'}} {{this.originalProject.displayName}}
+      {{#if editing}}
+        {{t 'viewEditProject.showEdit.edit'}} {{originalProject.displayName}}
       {{else}}
         {{t 'viewEditProject.showEdit.add'}}
       {{/if}}
     </h1>
   {{else}}
     <h1>{{#link-to "settings.projects"}}{{t 'viewEditProject.header'}}{{/link-to}}</h1>
-      {{#power-select options=this.allProjects selected=this.project onchange=(action "changeProject") searchField="displayName" as |obj|}}
+      {{#power-select options=allProjects selected=project onchange=(action "changeProject") searchField="displayName" as |obj|}}
           {{select-dot model=obj}}
       {{/power-select}}
 
     <div class="pull-right">
-      {{header-state model=this.project}}
-      {{action-menu model=this.project size="sm" classNames="r-ml10"}}
+      {{header-state model=project}}
+      {{action-menu model=project size="sm" classNames="r-ml10"}}
     </div>
   {{/if}}
 </section>
 
-{{#if this.showEdit}}
+{{#if showEdit}}
   <section class="well r-mb0">
     {{form-name-description
-      model=this.project
+      model=project
       namePlaceholder="viewEditDescription.form.name.placeholder"
       descriptionPlaceholder="viewEditDescription.form.description.placeholder"
-      nameDisabled=(not this.canEditProject)
-      descriptionDisabled=(not this.canEditProject)
+      nameDisabled=(not canEditProject)
+      descriptionDisabled=(not canEditProject)
     }}
   </section>
 
-  {{#unless this.editing}}
+  {{#unless editing}}
     <section class="well">
       <div class="row">
         <div class="col-xs-12">
           <label>{{t 'viewEditProject.showEdit.template'}}</label>
           <div class="nav nav-boxes checked-active">
-            {{#each this.templateChoices as |tpl|}}
-              <a href="#" tabindex="1" {{action "selectTemplate" tpl.id}} class="nav-box-item driver orchestration-driver r-p5 {{if (eq this.project.projectTemplateId tpl.id) 'active'}}">
+            {{#each templateChoices as |tpl|}}
+              <a href="#" tabindex="1" {{action "selectTemplate" tpl.id}} class="nav-box-item driver orchestration-driver r-p5 {{if (eq project.projectTemplateId tpl.id) 'active'}}">
                 <img src="{{tpl.image}}"/>
                 <div class="clip">{{tpl.name}}</div>
               </a>
@@ -46,7 +46,7 @@
           </div>
         </div>
 
-        {{#each-in this.selectedProjectTemplate.summary as |category names|}}
+        {{#each-in selectedProjectTemplate.summary as |category names|}}
           <div class="text-center">
             <label class="text-capitalize">{{category}}</label>: {{names}}
           </div>
@@ -58,10 +58,10 @@
       </div>
     </section>
   {{/unless}}
-{{else if this.project.description}}
+{{else if project.description}}
   <section class="well r-mb0">
     <label class="inline-block r-m0">{{t 'viewEditProject.description'}}: </label>
-    <p class="inline-block r-m0">{{this.project.description}}</p>
+    <p class="inline-block r-m0">{{project.description}}</p>
   </section>
 {{/if}}
 
@@ -69,33 +69,33 @@
   <h4>{{t 'viewEditProject.showEdit.accessControl'}}</h4>
   <hr/>
   <div class="well">
-    {{#if (and this.accessEnabled this.showEdit)}}
+    {{#if (and accessEnabled showEdit)}}
       <div class="form-group">
         {{input-identity action="checkMember" onError="error"}}
       </div>
     {{/if}}
 
-    {{#if this.accessEnabled}}
+    {{#if accessEnabled}}
       <table class="grid fixed" style="margin-bottom: 0;">
         <thead>
           <tr>
             {{sortable-th sortable=this action="changeSort" name="name" label="generic.name"}}
             {{sortable-th sortable=this action="changeSort" name="type" label="generic.type"}}
             {{sortable-th sortable=this action="changeSort" name="role" label="generic.role"}}
-            {{#if this.showEdit}}<th width="40">&nbsp;</th>{{/if}}
+            {{#if showEdit}}<th width="40">&nbsp;</th>{{/if}}
           </tr>
         </thead>
         <tbody>
-          {{#each this.arranged as |member|}}
+          {{#each arranged as |member|}}
             <tr>
               <td>
                 {{identity-block identity=member}}
               </td>
               <td>{{member.displayType}}</td>
               <td>
-                {{#if this.showEdit}}
+                {{#if showEdit}}
                   <select class="form-control input-sm" onchange={{action (mut member.role) value="target.value"}}>
-                    {{#each this.roleOptions as |choice|}}
+                    {{#each roleOptions as |choice|}}
                       <option value={{choice.value}} selected={{eq member.role choice.value}}>{{t choice.label}}</option>
                     {{/each}}
                   </select>
@@ -103,9 +103,9 @@
                   {{uc-first member.role}}
                 {{/if}}
               </td>
-              {{#if this.showEdit}}
+              {{#if showEdit}}
                 <td>
-                  {{#if this.accessEnabled}}
+                  {{#if accessEnabled}}
                     <button class="btn btn-primary btn-sm pull-right gh-action" {{action "removeMember" member}}><i class="icon icon-minus"/></button>
                   {{else}}
                     &nbsp;
@@ -132,7 +132,7 @@
 </section>
 
 
-{{#if this.network}}
+{{#if network}}
   <section>
     <h4>{{t 'viewEditProject.networkPolicy.label'}}</h4>
     <hr/>
@@ -143,13 +143,13 @@
           <hr/>
         </div>
       </div>
-      {{#if this.missingManager}}
+      {{#if missingManager}}
         <div class="row">
           <div class="col-xs-12">
             <p>{{t 'viewEditProject.networkPolicy.noManager'}}</p>
           </div>
         </div>
-      {{else if this.hasUnsupportedPolicy}}
+      {{else if hasUnsupportedPolicy}}
         <div class="row">
           <div class="col-xs-12">
             <p>{{t 'viewEditProject.networkPolicy.unsupported'}}</p>
@@ -159,12 +159,12 @@
         <div class="row">
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.withinLinked'}}</label>
-            {{#if this.showEdit}}
+            {{#if showEdit}}
               <div class="radio">
-                <label>{{radio-button selection=this.npWithinLinked.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
+                <label>{{radio-button selection=npWithinLinked.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
               <div class="radio">
-                <label>{{radio-button selection=this.npWithinLinked.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
+                <label>{{radio-button selection=npWithinLinked.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
               </div>
             {{else}}
               <div class="row">
@@ -176,41 +176,41 @@
           </div>
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.withinService'}}</label>
-            {{#if this.showEdit}}
+            {{#if showEdit}}
               <div class="radio">
-                <label>{{radio-button selection=this.npWithinService.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
+                <label>{{radio-button selection=npWithinService.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
               <div class="radio">
-                <label>{{radio-button selection=this.npWithinService.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
+                <label>{{radio-button selection=npWithinService.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
               </div>
             {{else}}
-              <div>{{uc-first this.npWithinService.action}}</div>
+              <div>{{uc-first npWithinService.action}}</div>
             {{/if}}
           </div>
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.withinStack'}}</label>
-            {{#if this.showEdit}}
+            {{#if showEdit}}
               <div class="radio">
-                <label>{{radio-button selection=this.npWithinStack.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
+                <label>{{radio-button selection=npWithinStack.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
               <div class="radio">
-                <label>{{radio-button selection=this.npWithinStack.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
+                <label>{{radio-button selection=npWithinStack.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
               </div>
             {{else}}
-              <div>{{uc-first this.npWithinStack.action}}</div>
+              <div>{{uc-first npWithinStack.action}}</div>
             {{/if}}
           </div>
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.default'}}</label>
-            {{#if this.showEdit}}
+            {{#if showEdit}}
               <div class="radio">
-                <label>{{radio-button selection=this.network.defaultPolicyAction value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
+                <label>{{radio-button selection=network.defaultPolicyAction value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
               <div class="radio">
-                <label>{{radio-button selection=this.network.defaultPolicyAction value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
+                <label>{{radio-button selection=network.defaultPolicyAction value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
               </div>
             {{else}}
-              <div>{{uc-first this.network.defaultPolicyAction}}</div>
+              <div>{{uc-first network.defaultPolicyAction}}</div>
             {{/if}}
           </div>
         </div>
@@ -219,7 +219,7 @@
   </section>
 {{/if}}
 
-{{#if this.showEdit}}
-  {{top-errors errors=this.errors}}
-  {{save-cancel editing=this.editing save="save" cancel="cancel"}}
+{{#if showEdit}}
+  {{top-errors errors=errors}}
+  {{save-cancel editing=editing save="save" cancel="cancel"}}
 {{/if}}

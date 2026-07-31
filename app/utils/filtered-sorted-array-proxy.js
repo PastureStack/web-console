@@ -1,8 +1,6 @@
-import { sort } from '@ember/object/computed';
-import { once } from '@ember/runloop';
-import ArrayProxy from '@ember/array/proxy';
+import Ember from 'ember';
 
-export default ArrayProxy.extend({
+export default Ember.ArrayProxy.extend({
   sourceContent: null,
   sortProperties: null,
 
@@ -36,7 +34,7 @@ export default ArrayProxy.extend({
   },
 
   sourceContentChanged() {
-    once(this, 'updateContent');
+    Ember.run.once(this, 'updateContent');
   },
 
   updateContent() {
@@ -45,5 +43,5 @@ export default ArrayProxy.extend({
   },
 
   // The array proxy reads this property
-  arrangedContent: sort('content','sortProperties'),
+  arrangedContent: Ember.computed.sort('content','sortProperties'),
 });

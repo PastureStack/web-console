@@ -1,24 +1,24 @@
 <header class="console-workspace-titlebar" onmousedown={{action "startDrag"}} ondblclick={{action "titlebarDoubleClick"}}>
   <div class="console-workspace-window-title">
-    {{#if this.entry.isLogs}}
+    {{#if entry.isLogs}}
       <i class="icon icon-file" aria-hidden="true"></i>
-    {{else if this.entry.isVm}}
+    {{else if entry.isVm}}
       <i class="icon icon-vm" aria-hidden="true"></i>
     {{else}}
       <i class="icon icon-terminal" aria-hidden="true"></i>
     {{/if}}
-    <span>{{this.windowTitle}}</span>
-    <span class="console-workspace-status-dot status-{{this.entry.status}}" aria-hidden="true"></span>
+    <span>{{windowTitle}}</span>
+    <span class="console-workspace-status-dot status-{{entry.status}}" aria-hidden="true"></span>
   </div>
 
   <div class="console-workspace-window-actions">
     <button type="button" {{action "minimize"}} title="{{t 'consoleWorkspace.window.minimize'}}" aria-label="{{t 'consoleWorkspace.window.minimize'}}">
       <i class="icon icon-minus" aria-hidden="true"></i>
     </button>
-    <button type="button" {{action "toggleMaximize"}} title="{{if this.entry.maximized (t 'consoleWorkspace.window.restore') (t 'consoleWorkspace.window.maximize')}}" aria-label="{{if this.entry.maximized (t 'consoleWorkspace.window.restore') (t 'consoleWorkspace.window.maximize')}}">
-      <i class="icon {{if this.entry.maximized 'icon-copy' 'icon-square'}}" aria-hidden="true"></i>
+    <button type="button" {{action "toggleMaximize"}} title="{{if entry.maximized (t 'consoleWorkspace.window.restore') (t 'consoleWorkspace.window.maximize')}}" aria-label="{{if entry.maximized (t 'consoleWorkspace.window.restore') (t 'consoleWorkspace.window.maximize')}}">
+      <i class="icon {{if entry.maximized 'icon-copy' 'icon-square'}}" aria-hidden="true"></i>
     </button>
-    {{#if (and (not this.entry.isVm) (not-eq this.entry.status "ended"))}}
+    {{#if (and (not entry.isVm) (not-eq entry.status "ended"))}}
       <button type="button" class="console-workspace-power-button" {{action "terminate"}} title="{{t 'consoleWorkspace.window.terminate'}}" aria-label="{{t 'consoleWorkspace.window.terminate'}}">
         <svg class="console-workspace-power-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
           <path d="M12 2v10"></path>
@@ -33,23 +33,23 @@
 </header>
 
 <div class="console-workspace-window-body">
-  {{#if this.loadError}}
+  {{#if loadError}}
     <div class="console-workspace-load-error">
       <i class="icon icon-alert" aria-hidden="true"></i>
       {{t 'consoleWorkspace.session.loadError'}}
     </div>
-  {{else if this.instanceLoaded}}
-    {{#if this.entry.isLogs}}
-      {{workspace-logs entry=this.entry instance=this.entry.instance}}
-    {{else if this.entry.isVm}}
+  {{else if instanceLoaded}}
+    {{#if entry.isLogs}}
+      {{workspace-logs entry=entry instance=entry.instance}}
+    {{else if entry.isVm}}
       {{vm-console
-        instance=this.entry.instance
+        instance=entry.instance
         showProtip=false
         embedded=true
         stateChanged=(action "vmStateChanged")
       }}
     {{else}}
-      {{workspace-terminal entry=this.entry instance=this.entry.instance}}
+      {{workspace-terminal entry=entry instance=entry.instance}}
     {{/if}}
   {{else}}
     <div class="console-workspace-loading">

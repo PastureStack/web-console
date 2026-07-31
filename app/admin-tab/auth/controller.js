@@ -1,14 +1,11 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Controller.extend({
-  access: service(),
-  intl: service(),
+export default Ember.Controller.extend({
+  access: Ember.inject.service(),
+  intl: Ember.inject.service(),
 
   lastRoute: 'admin-tab.auth.github',
-  drivers: computed('intl._locale', function() {
+  drivers: function() {
 
     return [
       {route: 'admin-tab.auth.activedirectory', label: this.get('intl').t('authPage.root.providers.activeDirectory'), css: 'activedirectory', available: this.hasRecord('ldapconfig')  },
@@ -19,7 +16,7 @@ export default Controller.extend({
       {route: 'admin-tab.auth.openldap',        label: this.get('intl').t('authPage.root.providers.openldap'),        css: 'openldap',        available: this.hasRecord('openldapconfig')  },
       {route: 'admin-tab.auth.shibboleth',      label: this.get('intl').t('authPage.root.providers.shibboleth'),      css: 'shibboleth',      available: this.hasRecord('shibbolethconfig')  },
     ];
-  }),
+  }.property('intl._locale'),
 
   hasRecord: function(record) {
     let type = 'schema';

@@ -1,15 +1,10 @@
-import { next, scheduleOnce } from '@ember/runloop';
-import { htmlSafe } from '@ember/template';
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 import ThrottledResize from 'ui/mixins/throttled-resize';
-
-import { computed, observer } from '@ember/object';
 
 const MIN_WIDTH     = 260; // Minimum width of a column, including margin-right
 const COLUMN_MARGIN = 10; // this must match the rule in styles/pod.scss .pod-column
 
-export default Component.extend(ThrottledResize, {
+export default Ember.Component.extend(ThrottledResize, {
   pods         : null, // Override me with an array of content pods
   emptyMessage : null,
 
@@ -20,19 +15,19 @@ export default Component.extend(ThrottledResize, {
   tagName      : 'section',
 
   columnCount  : 3, // Will be reset on didInsertElement and resize
-  podCount     : alias('pods.length'),
+  podCount     : Ember.computed.alias('pods.length'),
 
-  lastIndex: computed('columnCount', function() {
+  lastIndex: function() {
     return this.get('columnCount')-1;
-  }),
+  }.property('columnCount'),
 
-  columnWidthCss: computed('columnWidth', function() {
-    return htmlSafe('width: ' + this.get('columnWidth') + 'px');
-  }),
+  columnWidthCss: function() {
+    return Ember.String.htmlSafe('width: ' + this.get('columnWidth') + 'px');
+  }.property('columnWidth'),
 
-  lastColumnWidthCss: computed('columnWidth', 'columnFudge', function() {
-    return htmlSafe('width: ' + (this.get('columnWidth')+this.get('columnFudge')) + 'px');
-  }),
+  lastColumnWidthCss: function() {
+    return Ember.String.htmlSafe('width: ' + (this.get('columnWidth')+this.get('columnFudge')) + 'px');
+  }.property('columnWidth','columnFudge'),
 
   onResize: function() {
     if ( this.isDestroyed || this.isDestroying ) {
@@ -78,11 +73,11 @@ export default Component.extend(ThrottledResize, {
     this.onResize(); // Estimate the columnCount so it doesn't have to get called twice in most cases
   },
 
-  podCountChanged: observer('podCount', function() {
-    next(this,'onResize');
-  }),
+  podCountChanged: function() {
+    Ember.run.next(this,'onResize');
+  }.observes('podCount'),
 
-  columns: computed('pods.[]', 'columnCount', function() {
+  columns: function() {
     let i;
     let idx                           = 0;
     let pods                          = (this.get('pods')||[]).sortBy('displayName');
@@ -115,11 +110,11 @@ export default Component.extend(ThrottledResize, {
 
       return out;
     }
-  }),
+  }.property('pods.[]','columnCount'),
 
   didInsertElement: function() {
     this._super();
     // Removes deprecation warning about modifing after insert
-    scheduleOnce('afterRender', this, 'onResize');
+    Ember.run.scheduleOnce('afterRender', this, 'onResize');
   },
 });

@@ -1,5 +1,4 @@
-import { computed } from '@ember/object';
-import { TextField } from '@ember/legacy-built-in-components';
+import Ember from 'ember';
 import { isMobile } from 'ui/utils/platform';
 
 function sanitize(val) {
@@ -8,8 +7,8 @@ function sanitize(val) {
   return val;
 }
 
-export default TextField.extend({
-  type: computed(function() {
+export default Ember.TextField.extend({
+  type: Ember.computed(function() {
     return ( isMobile ? 'number' : 'text' );
   }),
 

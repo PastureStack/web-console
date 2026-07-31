@@ -36,7 +36,7 @@ for name, version in expected.items():
     if override_version != version:
         fail("UI_BABEL_HTMLBARS_OVERRIDE_UNEXPECTED", package=name, actual=override, expected=version)
 
-lock_path = Path("package-lock.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:
@@ -58,12 +58,12 @@ else:
         for package_path, actual in sorted(matches.items()):
             if actual != version:
                 fail("UI_BABEL_HTMLBARS_LOCK_VERSION_UNEXPECTED", package=package_path, actual=actual, expected=version)
-    htmlbars_checker = packages.get("node_modules/ember-cli-version-checker", {})
-    if htmlbars_checker.get("version") != "5.1.2":
+    htmlbars_checker = packages.get("node_modules/ember-cli-htmlbars/node_modules/ember-cli-version-checker", {})
+    if htmlbars_checker.get("version") != "1.3.1":
         fail(
             "EMBER_CLI_HTMLBARS_VERSION_CHECKER_UNEXPECTED",
             actual=htmlbars_checker.get("version"),
-            expected="5.1.2",
+            expected="1.3.1",
         )
     legacy_babel = {
         path: meta.get("version")

@@ -1,6 +1,6 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
+export default Ember.Controller.extend({
   queryParams: ['stackId','serviceId','virtualMachineId','upgrade'],
   stackId: null,
   serviceId: null,

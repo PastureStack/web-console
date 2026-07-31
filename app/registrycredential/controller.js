@@ -1,7 +1,5 @@
 import Cattle from 'ui/utils/cattle';
 
-import { computed } from '@ember/object';
-
 var RegistryController = Cattle.LegacyTransitioningResourceController.extend({
   actions: {
     deactivate: function() {
@@ -17,7 +15,7 @@ var RegistryController = Cattle.LegacyTransitioningResourceController.extend({
     },
   },
 
-  displayName: computed('email', 'publicValue', 'id', function() {
+  displayName: function() {
     var email = this.get('email')+'';
     var pub = this.get('publicValue')+'';
     if ( email || pub )
@@ -28,23 +26,20 @@ var RegistryController = Cattle.LegacyTransitioningResourceController.extend({
     {
       return '(' + this.get('id') + ')';
     }
-  }),
+  }.property('email','publicValue','id'),
 
-  availableActions: computed(
-    'actionLinks.{update,activate,deactivate,restore,remove,purge}',
-    function() {
-      var a = this.get('actionLinks');
+  availableActions: function() {
+    var a = this.get('actionLinks');
 
-      return [
-        { label: 'action.activate',   icon: 'icon icon-play',   action: 'activate',     enabled: !!a.activate },
-        { label: 'action.deactivate', icon: 'icon icon-pause',  action: 'deactivate',   enabled: !!a.deactivate },
-        { label: 'action.remove',     icon: 'icon icon-trash',  action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
-        { divider: true },
-        { label: 'action.restore', icon: '',                 action: 'restore',      enabled: !!a.restore },
-        { label: 'action.purge',   icon: '',                 action: 'purge',        enabled: !!a.purge },
-      ];
-    }
-  ),
+    return [
+      { label: 'action.activate',   icon: 'icon icon-play',   action: 'activate',     enabled: !!a.activate },
+      { label: 'action.deactivate', icon: 'icon icon-pause',  action: 'deactivate',   enabled: !!a.deactivate },
+      { label: 'action.remove',     icon: 'icon icon-trash',  action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
+      { divider: true },
+      { label: 'action.restore', icon: '',                 action: 'restore',      enabled: !!a.restore },
+      { label: 'action.purge',   icon: '',                 action: 'purge',        enabled: !!a.purge },
+    ];
+  }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}'),
 });
 
 export default RegistryController;

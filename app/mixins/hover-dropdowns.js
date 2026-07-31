@@ -1,6 +1,4 @@
-import { later, cancel } from '@ember/runloop';
-import $ from 'jquery';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
 const DROPDOWNCLOSETIMER = 250;
@@ -9,16 +7,16 @@ const WINDOW_SM          = 694;
 let timerObj             = null;
 let dropdown             = null;
 
-export default Mixin.create({
+export default Ember.Mixin.create({
   didInsertElement: function() {
-    let $body = $('BODY');
+    let $body = Ember.$('BODY');
 
-    if ($body.hasClass('touch') && $(window).width() <= WINDOW_SM) {
+    if ($body.hasClass('touch') && Ember.$(window).width() <= WINDOW_SM) {
 
       // below iphone 6plus vertical width no need for dropdown logic
       this.$().on('click', () => {
         if (dropdown) {
-          later(() => {
+          Ember.run.later(() => {
             this.clearHeaderMenus();
           }, DROPDOWNCLOSETIMER);
         }
@@ -32,7 +30,7 @@ export default Mixin.create({
 
       this.$('ul[data-dropdown-id="enviroment"] > li > a').on('touchend', () => {
         if (dropdown) {
-          later(() => {
+          Ember.run.later(() => {
             this.clearHeaderMenus();
           }, DROPDOWNCLOSETIMER);
         }
@@ -45,7 +43,7 @@ export default Mixin.create({
       $body.on('touchend', (e) => {
         let $el = $(e.target);
         if ($el.closest('.navbar').length < 1) {
-          later(() => {
+          Ember.run.later(() => {
             this.clearHeaderMenus();
           });
         }
@@ -83,18 +81,18 @@ export default Mixin.create({
   },
 
   touchHandler(e) {
-    let anchor = $(e.currentTarget);
+    let anchor = Ember.$(e.currentTarget);
 
-    cancel(timerObj);
+    Ember.run.cancel(timerObj);
 
     timerObj   = null;
     if (dropdown) { // dropdown open alread
 
-      if (dropdown.data('dropdown-id') !== $(e.currentTarget).find('ul').data('dropdown-id')) { // not the same dropdown
+      if (dropdown.data('dropdown-id') !== Ember.$(e.currentTarget).find('ul').data('dropdown-id')) { // not the same dropdown
 
         this.clearHeaderMenus();
 
-        dropdown = $(e.currentTarget).siblings('ul');
+        dropdown = Ember.$(e.currentTarget).siblings('ul');
 
         if (dropdown) {
           this.showMenu(anchor, dropdown);
@@ -102,7 +100,7 @@ export default Mixin.create({
       }
     } else { // no dropdown open
 
-      dropdown = $(e.currentTarget).siblings('ul');
+      dropdown = Ember.$(e.currentTarget).siblings('ul');
 
       if (dropdown) {
         this.showMenu(anchor, dropdown);
@@ -111,19 +109,19 @@ export default Mixin.create({
   },
 
   enterHandler(e) {
-    let anchor = $(e.currentTarget).find('a:first');
+    let anchor = Ember.$(e.currentTarget).find('a:first');
 
-    cancel(timerObj);
+    Ember.run.cancel(timerObj);
 
     timerObj   = null;
 
     if (dropdown) { // dropdown open alread
 
-      if (dropdown.data('dropdown-id') !== $(e.currentTarget).find('ul').data('dropdown-id')) { // not the same dropdown
+      if (dropdown.data('dropdown-id') !== Ember.$(e.currentTarget).find('ul').data('dropdown-id')) { // not the same dropdown
 
         this.clearHeaderMenus();
 
-        dropdown = $(e.currentTarget).find('ul');
+        dropdown = Ember.$(e.currentTarget).find('ul');
 
         if (dropdown) {
           this.showMenu(anchor, dropdown);
@@ -131,7 +129,7 @@ export default Mixin.create({
       }
     } else { // no dropdown open
 
-      dropdown = $(e.currentTarget).find('ul');
+      dropdown = Ember.$(e.currentTarget).find('ul');
 
       if (dropdown) {
         this.showMenu(anchor, dropdown);
@@ -141,7 +139,7 @@ export default Mixin.create({
   },
 
   leaveHandler() {
-    timerObj = later(() => {
+    timerObj = Ember.run.later(() => {
 
       if (dropdown) {
 
@@ -154,7 +152,7 @@ export default Mixin.create({
   },
 
   onClickHandler(e) {
-    let anchor = $(e.target).closest('A');
+    let anchor = Ember.$(e.target).closest('A');
     if ( anchor.hasClass('dropdown-toggle') && anchor[0].href.match(/#$/) ) {
       e.preventDefault();
       e.stopPropagation();
@@ -163,7 +161,7 @@ export default Mixin.create({
 
     timerObj = null;
 
-    let collapsedNav = $('#navbar');
+    let collapsedNav = Ember.$('#navbar');
 
     if (collapsedNav.hasClass('in')) {
       collapsedNav.collapse('toggle');
@@ -176,7 +174,7 @@ export default Mixin.create({
     let items = this.get('items');
     let currentIndex = 0;
 
-    let element      = $(e.currentTarget);
+    let element      = Ember.$(e.currentTarget);
     let dropdownMenu = element.siblings('ul').length ? element.siblings('ul') : element.parent().parent('ul'); // if we're not in the top link we're in the ul links
 
     if (dropdownMenu) {
@@ -225,9 +223,9 @@ export default Mixin.create({
   },
 
   showMenu: function(el, drpd) {
-    let body = $('BODY');
+    let body = Ember.$('BODY');
     if (body.hasClass('touch')) {
-      $('BODY').addClass('nav-dropdown-open');
+      Ember.$('BODY').addClass('nav-dropdown-open');
     }
     drpd.addClass('block');
     if (el.attr('aria-expanded')) {
@@ -236,11 +234,11 @@ export default Mixin.create({
   },
 
   clearHeaderMenus: function() {
-    let body = $('BODY');
+    let body = Ember.$('BODY');
     if (body.hasClass('touch')) {
-      $('BODY').removeClass('nav-dropdown-open');
+      Ember.$('BODY').removeClass('nav-dropdown-open');
     }
-    const navbar       = $('.navbar');
+    const navbar       = Ember.$('.navbar');
 
     dropdown = null;
 

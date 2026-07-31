@@ -1,7 +1,7 @@
 <div id="underlay" class="underlay hide"></div>
 <div id="loading-underlay" class="underlay"></div>
 <div id="loading-overlay" class="loading-overlay">
-  {{#if this.settings.isRancher}}
+  {{#if settings.isRancher}}
     <div class="loader">
       <div class="orbit">
         <div class="sun"></div>
@@ -10,7 +10,7 @@
 
       <div class="loadfield">
         <div class="grass"></div>
-        <img class="brand-mark" src="{{this.app.baseAssets}}assets/images/logos/pasturestack-mark.svg" alt="PastureStack" />
+        <img class="brand-mark" src="{{app.baseAssets}}assets/images/logos/pasturestack-mark.svg" alt="PastureStack" />
       </div>
     </div>
   {{else}}
@@ -23,13 +23,15 @@
   {{/if}}
 </div>
 
+{{outlet "overlay"}}
+{{outlet "error"}}
 <div id="application">
   {{outlet}}
 
   <div class="dropdown" id="resource-actions-parent">
     <ul role="menu" id="resource-actions" class="hide resource-actions global-actions dropdown-menu dropdown-menu-right">
       <li class="resource-actions-tabbable"><a tabindex="-1" id="resource-actions-first" aria-label="{{t 'generic.selectActionBelow'}}"></a></li>
-      {{#each this.resourceActions.activeActions as |item|}}
+      {{#each resourceActions.activeActions as |item|}}
         {{#if item.divider}}
           <li class="divider"></li>
         {{else}}
@@ -50,5 +52,5 @@
   </div>
 </div>
 
-{{component this.tooltip tooltipTemplate=this.tooltipTemplate class="container-tooltip" id="tooltip-base" role="tooltip" aria-hidden="false"}}
+{{component tooltip tooltipTemplate=tooltipTemplate class="container-tooltip" id="tooltip-base" role="tooltip" aria-hidden="false"}}
 {{modal-root}}

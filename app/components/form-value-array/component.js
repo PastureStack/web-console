@@ -1,8 +1,6 @@
-import { next } from '@ember/runloop';
-import EmberObject, { observer } from '@ember/object';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   // Inputs
   initialValues    : null,
   addActionLabel   : 'formValueArray.addActionLabel',
@@ -15,8 +13,8 @@ export default Component.extend({
 
   actions: {
     add() {
-      this.get('ary').pushObject(EmberObject.create({value: ''}));
-      next(() => {
+      this.get('ary').pushObject(Ember.Object.create({value: ''}));
+      Ember.run.next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }
@@ -41,7 +39,7 @@ export default Component.extend({
           return;
         }
 
-        ary.pushObject(EmberObject.create({value: line}));
+        ary.pushObject(Ember.Object.create({value: line}));
       });
 
       // Clean up empty user entries
@@ -62,18 +60,18 @@ export default Component.extend({
 
     var ary = [];
     (this.get('initialValues')||[]).forEach((value) => {
-      ary.push(EmberObject.create({value: value}));
+      ary.push(Ember.Object.create({value: value}));
     });
 
     this.set('ary', ary);
   },
 
-  asValuesObserver: observer('ary.@each.{value}', function() {
+  asValuesObserver: function() {
     var out = this.get('ary').filterBy('value').map((row) => {
       return row.get('value');
     });
 
     this.set('asValues', out);
     this.sendAction('changed', out);
-  }),
+  }.observes('ary.@each.{value}'),
 });

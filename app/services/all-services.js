@@ -1,12 +1,10 @@
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
+export default Ember.Service.extend({
+  intl: Ember.inject.service(),
+  store: Ember.inject.service(),
 
-export default Service.extend({
-  intl: service(),
-  store: service(),
-
-  list: computed('_allServices.@each.{id,system,displayName,type,hostname}', function() {
+  list: function() {
     let intl = this.get('intl');
 
     return this.get('_allServices').filter((service) => service.get('system') !== true).map((service) => {
@@ -21,11 +19,11 @@ export default Service.extend({
         obj: service,
       };
     });
-  }),
+  }.property('_allServices.@each.{id,system,displayName,type,hostname}'),
 
-  grouped: computed('list.[]', function() {
+  grouped: function() {
     return this.group(this.get('list'));
-  }),
+  }.property('list.[]'),
 
   group(list) {
     let out = {};
@@ -43,11 +41,11 @@ export default Service.extend({
     return out;
   },
 
-  _allServices: computed(function() {
+  _allServices: function() {
     let store = this.get('store');
     store.find('service');
     return store.all('service');
-  }),
+  }.property(),
 
   byId(id) {
     return this.get('_allServices').findBy('id',id);

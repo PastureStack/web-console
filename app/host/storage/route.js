@@ -1,7 +1,6 @@
-import { all } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function() {
     var host = this.modelFor('host').get('host');
     var out = [];
@@ -12,7 +11,7 @@ export default Route.extend({
         });
       });
 
-      return all(promises).then(() => {
+      return Ember.RSVP.all(promises).then(() => {
         return out;
       });
     });

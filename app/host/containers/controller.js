@@ -1,10 +1,9 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import ContainerSparkStats from 'ui/mixins/container-spark-stats';
 
-export default Controller.extend(ContainerSparkStats, {
-  prefs: service(),
+export default Ember.Controller.extend(ContainerSparkStats, {
+  prefs: Ember.inject.service(),
   statsSocket: null,
   sortBy: 'name',
   liveSortFields: ['cpuRms', 'memoryRms', 'networkRms', 'storageRms'],

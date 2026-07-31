@@ -1,9 +1,8 @@
-import { next } from '@ember/runloop';
-import Component from '@ember/component';
+import Ember from 'ember';
 
 export function addAction(action, selector) {
   return function() {
-    if ( Component.detectInstance(this) )
+    if ( Ember.Component.detectInstance(this) )
     {
       this._super();
     }
@@ -12,7 +11,7 @@ export function addAction(action, selector) {
       this.get('controller').send(action);
     }
 
-    next(this, function() {
+    Ember.run.next(this, function() {
       var matches = this.$(selector);
       if ( matches )
       {

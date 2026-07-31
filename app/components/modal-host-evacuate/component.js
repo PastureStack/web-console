@@ -1,11 +1,10 @@
-import { next } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 import { alternateLabel } from 'ui/utils/platform';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
-  resources: alias('modalService.modalOpts.model'),
+  resources: Ember.computed.alias('modalService.modalOpts.model'),
   alternateLabel: alternateLabel,
 
   actions: {
@@ -14,7 +13,7 @@ export default ModalBase.extend({
         resource.doAction('evacuate');
       });
 
-      next(() => {
+      Ember.run.next(() => {
         this.send('cancel');
       });
     }

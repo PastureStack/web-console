@@ -1,12 +1,8 @@
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
-  projects     : service(),
-  hasVm        : alias('projects.current.virtualMachine'),
+export default Ember.Component.extend({
+  projects     : Ember.inject.service(),
+  hasVm        : Ember.computed.alias('projects.current.virtualMachine'),
 
   index        : null,
   choices      : null,
@@ -28,11 +24,11 @@ export default Component.extend({
     this.send('switch', this.get('initialIndex'));
   },
 
-  hasSidekicks: computed('choices.length', function() {
+  hasSidekicks: function() {
     return this.get('choices.length') > 1;
-  }),
+  }.property('choices.length'),
 
-  enabledChoices: computed('choices.@each.enabled', function() {
+  enabledChoices: function() {
     return this.get('choices').filterBy('enabled',true);
-  })
+  }.property('choices.@each.enabled')
 });

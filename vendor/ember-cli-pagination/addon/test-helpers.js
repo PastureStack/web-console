@@ -1,7 +1,7 @@
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import DivideIntoPages from './divide-into-pages';
 
-var TestHelpers = EmberObject.extend({
+var TestHelpers = Ember.Object.extend({
   responseHash: function() {
     var page = this.pageFromRequest(this.request);
     var k = "" + this.name + "s";

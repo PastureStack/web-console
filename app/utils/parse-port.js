@@ -1,4 +1,4 @@
-import EmberObject, { get } from '@ember/object';
+import Ember from 'ember';
 
 // hostIp:hostPort:containerPort
 // hostIp::containerPort
@@ -50,7 +50,7 @@ export function parsePortSpec(str, defaultProtocol) {
     containerPort = parts[0];
   }
 
-  return EmberObject.create({
+  return Ember.Object.create({
     host: (hostIp ? hostIp + ':' : '') + hostPort,
     hostIp: hostIp,
     hostPort: parseInt(hostPort,10)||null,
@@ -60,7 +60,7 @@ export function parsePortSpec(str, defaultProtocol) {
 }
 
 export function stringifyPortSpec(port, defaultProtocol='http') {
-  var hostStr = get(port,'host')||'';
+  var hostStr = Ember.get(port,'host')||'';
   var match, hostIp, hostPort;
   if ( match = hostStr.match(/^((.*):)?([^:]+)$/) )
   {
@@ -73,8 +73,8 @@ export function stringifyPortSpec(port, defaultProtocol='http') {
     hostPort = hostStr;
   }
 
-  var container = get(port,'container');
-  var protocol = get(port,'protocol');
+  var container = Ember.get(port,'container');
+  var protocol = Ember.get(port,'protocol');
 
   var out = '';
   if ( hostPort )

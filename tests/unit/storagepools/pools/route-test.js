@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import StoragePoolsRoute from 'ui/storagepools/pools/route';
 
 module('Unit | Route | storagepools/pools');
@@ -8,7 +8,7 @@ module('Unit | Route | storagepools/pools');
 test('it exists', function(assert) {
   let route = StoragePoolsRoute.create();
   assert.ok(route);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('model wraps the parent storagepools model', function(assert) {
@@ -22,5 +22,5 @@ test('model wraps the parent storagepools model', function(assert) {
   let model = route.model();
 
   assert.strictEqual(model.get('all'), pools);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });

@@ -5,28 +5,28 @@
   </h1>
 </section>
 
-{{#if this.model.apiHostSet}}
-  {{#if (or this.showPicker this.showManage)}}
+{{#if model.apiHostSet}}
+  {{#if (or showPicker showManage)}}
     <section class="well r-mb0">
-      {{#if this.showPicker}}
+      {{#if showPicker}}
         <div class="nav nav-boxes checked-active">
 
-          {{#if this.allowCustom}}
-            <a {{action "switchDriver" "custom"}} aria-label="{{t 'hostsPage.new.customDriver'}}" class="nav-box-item driver machine-driver custom {{if (eq this.driver 'custom') 'active'}}" href="#"></a>
+          {{#if allowCustom}}
+            <a {{action "switchDriver" "custom"}} aria-label="{{t 'hostsPage.new.customDriver'}}" class="nav-box-item driver machine-driver custom {{if (eq driver 'custom') 'active'}}" href="#"></a>
           {{/if}}
 
-          {{#each this.sortedDrivers as |choice|}}
+          {{#each sortedDrivers as |choice|}}
             {{#if choice.hasUi}}
-              <a {{action "switchDriver" choice.name}} aria-label={{choice.name}} class="nav-box-item driver machine-driver {{choice.name}}{{if (eq choice.name this.driver) 'active'}}" href="#"></a>
+              <a {{action "switchDriver" choice.name}} aria-label={{choice.name}} class="nav-box-item driver machine-driver {{choice.name}} {{if (eq choice.name driver) 'active'}}" href="#"></a>
             {{/if}}
           {{/each}}
 
-          {{#if (and this.allowOther this.hasOther)}}
-            <a {{action "switchDriver" "other"}} aria-label="{{t 'hostsPage.new.otherDriver'}}" class="nav-box-item driver machine-driver other {{if (eq this.driver 'other') 'active'}}" href="#"></a>
+          {{#if (and allowOther hasOther)}}
+            <a {{action "switchDriver" "other"}} aria-label="{{t 'hostsPage.new.otherDriver'}}" class="nav-box-item driver machine-driver other {{if (eq driver 'other') 'active'}}" href="#"></a>
           {{/if}}
         </div>
       {{/if}}
-      {{#if this.showManage}}
+      {{#if showManage}}
         <p class="text-center small r-m0">
           {{#link-to "admin-tab.machine"}}{{t 'hostsPage.new.manageLink'}}{{/link-to}}
         </p>
@@ -34,15 +34,15 @@
     </section>
   {{/if}}
 
-  {{#if this.driver}}
-    {{component (if (or (not this.driverObj) this.driverObj.hasUi) (concat "machine/driver-" this.driver) 'machine/driver-other')
-      cancel=(action 'cancel')
-      goBack=(action 'goBack')
-      clonedModel=this.model.clonedModel
-      driver=(concat this.driver 'Config')
-      schemas=this.model.schemas
-      typeDocumentations=this.model.typeDocumentations
-      availableDrivers=this.model.availableDrivers
+  {{#if driver}}
+    {{component (if (or (not driverObj) driverObj.hasUi) (concat "machine/driver-" driver) 'machine/driver-other')
+      cancel=(route-action 'cancel')
+      goBack=(route-action 'goBack')
+      clonedModel=model.clonedModel
+      driver=(concat driver 'Config')
+      schemas=model.schemas
+      typeDocumentations=model.typeDocumentations
+      availableDrivers=model.availableDrivers
     }}
   {{/if}}
 {{else}}

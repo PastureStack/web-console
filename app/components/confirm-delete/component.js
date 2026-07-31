@@ -1,15 +1,13 @@
-import { computed } from '@ember/object';
-import { service } from '@ember/service';
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import { alternateLabel } from 'ui/utils/platform';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
-  resources: alias('modalService.modalOpts'),
+  resources: Ember.computed.alias('modalService.modalOpts'),
   alternateLabel: alternateLabel,
-  settings: service(),
-  intl: service(),
+  settings: Ember.inject.service(),
+  intl: Ember.inject.service(),
 
   actions: {
     confirm: function() {
@@ -22,7 +20,7 @@ export default ModalBase.extend({
 
   },
 
-  isEnvironment: computed('resources', function() {
+  isEnvironment: Ember.computed('resources', function() {
     let resources = this.get('resources');
     let out = false;
 
@@ -35,7 +33,7 @@ export default ModalBase.extend({
     return out;
   }),
 
-  largeDeleteText: computed(function() {
+  largeDeleteText: Ember.computed(function() {
     var resources = this.get('resources');
     return this.get('intl').t('confirmDelete.largeDeleteText', {
       key: resources[0].get('displayName'),

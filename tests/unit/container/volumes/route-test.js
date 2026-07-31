@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import ContainerVolumesRoute from 'ui/container/volumes/route';
 
 module('Unit | Route | container/volumes');
@@ -8,7 +8,7 @@ module('Unit | Route | container/volumes');
 test('it exists', function(assert) {
   var route = ContainerVolumesRoute.create();
   assert.ok(route);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('model returns the parent container model', function(assert) {
@@ -21,5 +21,5 @@ test('model returns the parent container model', function(assert) {
   });
 
   assert.strictEqual(route.model(), container);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });

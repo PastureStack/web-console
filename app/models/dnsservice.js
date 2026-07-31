@@ -1,35 +1,30 @@
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Service from 'ui/models/service';
-import { computed } from '@ember/object';
-import { htmlSafe } from '@ember/template';
-import { escapeHtml } from 'ui/utils/util';
+
+const esc = Ember.Handlebars.Utils.escapeExpression;
 
 var DnsService = Service.extend({
   type: 'dnsService',
-  intl: service(),
+  intl: Ember.inject.service(),
 
   healthState: 'healthy',
 
-  displayDetail: computed(
-    'consumedServicesWithNames.@each.{name,service}',
-    'intl._locale',
-    function() {
-      let intl = this.get('intl');
-      let toTranslation = intl.tHtml('generic.to');
-      let noneTranslation = intl.tHtml('generic.none');
+  displayDetail: function() {
+    let intl = this.get('intl');
+    let toTranslation = intl.tHtml('generic.to');
+    let noneTranslation = intl.tHtml('generic.none');
 
-      var services = '';
-      (this.get('consumedServicesWithNames')||[]).forEach((map, idx) => {
-        services += '<span>'+ (idx === 0 ? '' : ', ') +
-        (map.get('service.stackId') === this.get('stackId') ? '' : escapeHtml(map.get('service.displayStack')) + '/') +
-        escapeHtml(map.get('service.displayName')) + '</span>';
-      });
+    var services = '';
+    (this.get('consumedServicesWithNames')||[]).forEach((map, idx) => {
+      services += '<span>'+ (idx === 0 ? '' : ', ') +
+      (map.get('service.stackId') === this.get('stackId') ? '' : esc(map.get('service.displayStack')) + '/') +
+      esc(map.get('service.displayName')) + '</span>';
+    });
 
-      var out = '<label>'+ toTranslation +': </label>' + services || '<span class="text-muted">'+ noneTranslation +'</span>';
+    var out = '<label>'+ toTranslation +': </label>' + services || '<span class="text-muted">'+ noneTranslation +'</span>';
 
-      return htmlSafe(out);
-    }
-  ),
+    return out.htmlSafe();
+  }.property('consumedServicesWithNames.@each.{name,service}','intl._locale'),
 });
 
 export default DnsService;

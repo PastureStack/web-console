@@ -1,10 +1,10 @@
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 
-export default Service.extend({
-  store: service(),
-  userStore: service('user-store'),
-  webhookStore: service('webhook-store'),
-  catalog: service(),
+export default Ember.Service.extend({
+  store: Ember.inject.service(),
+  userStore: Ember.inject.service('user-store'),
+  webhookStore: Ember.inject.service('webhook-store'),
+  catalog: Ember.inject.service(),
 
   reset: function() {
     // Forget all the things

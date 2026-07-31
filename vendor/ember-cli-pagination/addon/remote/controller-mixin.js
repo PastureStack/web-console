@@ -1,7 +1,7 @@
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 
 
-export default Mixin.create({
+export default Ember.Mixin.create({
   queryParams: ["page", "perPage"],
 
   pageBinding: "content.page",

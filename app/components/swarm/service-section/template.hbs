@@ -1,4 +1,4 @@
-{{#if this.model.length}}
+{{#if model.length}}
   <table class="grid fixed no-lines r-mb0">
     <thead>
       <tr>
@@ -10,7 +10,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each this.model as |service|}}
+      {{#each model as |service|}}
         {{swarm/service-row model=service}}
       {{/each}}
     </tbody>

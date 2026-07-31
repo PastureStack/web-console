@@ -4,17 +4,17 @@
 
 <section class="horizontal-form container-fluid">
   {{form-name-description
-    model=this.service
+    model=service
     namePlaceholder="servicePage.newAlias.form.name.placeholder"
     descriptionPlaceholder="servicePage.newAlias.form.description.placeholder"
   }}
 
   {{form-targets
     isBalancer=false
-    existing=this.existing
+    existing=existing
     changed=(action "setTargets")
   }}
 </section>
 
-{{top-errors errors=this.errors}}
+{{top-errors errors=errors}}
 {{save-cancel save="save" cancel="cancel"}}

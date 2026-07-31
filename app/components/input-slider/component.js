@@ -1,8 +1,5 @@
-import { scheduleOnce } from '@ember/runloop';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
-
-import { computed, observer } from '@ember/object';
 
 function clientX(event) {
   if ( typeof event.clientX !== 'undefined' )
@@ -27,7 +24,7 @@ function clientX(event) {
   return 0;
 }
 
-export default Component.extend({
+export default Ember.Component.extend({
   classNames        : ['slider'],
   classNameBindings : ['disabled','active'],
 
@@ -56,7 +53,7 @@ export default Component.extend({
 
   didInsertElement: function() {
     this._super();
-    scheduleOnce('afterRender', this, 'valueChanged');
+    Ember.run.scheduleOnce('afterRender', this, 'valueChanged');
   },
 
   willDestroyElement: function() {
@@ -64,7 +61,7 @@ export default Component.extend({
     $('BODY').off('mouseup', this.get('upFn'));
   },
 
-  _scaleMin: computed('scaleMin', 'valueMin', function() {
+  _scaleMin: function() {
     var min = this.get('scaleMin');
     if ( min === null )
     {
@@ -72,9 +69,9 @@ export default Component.extend({
     }
 
     return min;
-  }),
+  }.property('scaleMin','valueMin'),
 
-  _scaleMax: computed('scaleMax', 'valueMax', function() {
+  _scaleMax: function() {
     var min = this.get('scaleMax');
     if ( min === null )
     {
@@ -82,14 +79,14 @@ export default Component.extend({
     }
 
     return min;
-  }),
+  }.property('scaleMax','valueMax'),
 
-  percent: computed('value', 'valueMin', 'valueMax', '_scaleMin', '_scaleMax', function() {
+  percent: function() {
     var cur = this.get('value');
     var min = Math.min(this.get('_scaleMin'), this.get('valueMin'));
     var max = Math.max(this.get('_scaleMax'), this.get('valueMax'));
     return  (((cur-min)/(max-min))*100).toFixed(3);
-  }),
+  }.property('value','valueMin','valueMax','_scaleMin','_scaleMax'),
 
   alignValue: function(val) {
     var step = this.get('step');
@@ -213,7 +210,7 @@ export default Component.extend({
     }
   },
 
-  valueChanged: observer('value', 'valueMin', 'valueMax', 'percent', function() {
+  valueChanged: function() {
     var orig = this.get('value');
     var value = Math.max(this.get('valueMin'), Math.min(orig, this.get('valueMax')));
     if ( isNaN(value) )
@@ -232,7 +229,7 @@ export default Component.extend({
     var percent = this.get('percent');
     this.$('.slider-bar').css('width', percent+'%');
     this.$('.slider-handle').css('left', percent+'%');
-  }),
+  }.observes('value','valueMin','valueMax','percent'),
 
 
 });

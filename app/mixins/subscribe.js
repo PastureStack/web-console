@@ -1,9 +1,8 @@
-import { schedule, once } from '@ember/runloop';
-import { service } from '@ember/service';
-import Mixin from '@ember/object/mixin';
-import { get } from '@ember/object';
+import Ember from 'ember';
 import Socket from 'ui/utils/socket';
 import C from 'ui/utils/constants';
+
+const { get } = Ember;
 
 const ORCHESTRATION_STACKS = [
   'k8s',
@@ -11,10 +10,10 @@ const ORCHESTRATION_STACKS = [
   'mesos'
 ];
 
-export default Mixin.create({
-  k8s             : service(),
-  projects        : service(),
-  'tab-session'   : service(),
+export default Ember.Mixin.create({
+  k8s             : Ember.inject.service(),
+  projects        : Ember.inject.service(),
+  'tab-session'   : Ember.inject.service(),
 
   subscribeSocket : null,
   reconnect: true,
@@ -30,7 +29,7 @@ export default Mixin.create({
     var socket = Socket.create();
 
     socket.on('message', (event) => {
-      schedule('actions', this, function() {
+      Ember.run.schedule('actions', this, function() {
         // Fail-safe: make sure the message is for this project
         var currentProject = this.get(`tab-session.${C.TABSESSION.PROJECT}`);
         var metadata = socket.getMetadata();
@@ -168,7 +167,7 @@ export default Mixin.create({
     let info = stack.get('externalIdInfo');
 
     if ( info && info.name && ORCHESTRATION_STACKS.includes(info.name) ) {
-      once(this, function() {
+      Ember.run.once(this, function() {
         this.get('projects.current').reload().then(() => {
           this.get('projects').updateOrchestrationState();
         });

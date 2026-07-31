@@ -1,10 +1,6 @@
-import { computed, get } from '@ember/object';
-import { reads } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-const noOp = () => {};
-
-export default Component.extend({
+export default Ember.Component.extend({
   tagName: 'select',
   // possible passed-in values with their defaults:
   content: null,
@@ -13,7 +9,7 @@ export default Component.extend({
   optionLabelPath: 'label',
   optionGroupPath: 'group',
   optionDisabledPath: 'disabled',
-  action: noOp, // action to fire on change
+  action: Ember.K, // action to fire on change
   value: null,
   localizedLabel: false,
   disabled: false,
@@ -24,7 +20,7 @@ export default Component.extend({
 
   // shadow the passed-in `selection` to avoid
   // leaking changes to it via a 2-way binding
-  _selection: reads('selection'),
+  _selection: Ember.computed.reads('selection'),
 
   init() {
     this._super(...arguments);
@@ -32,11 +28,11 @@ export default Component.extend({
       this.set('content', []);
     }
 
-    this.set('ungroupedContent', computed('content.@each.'+this.get('optionGroupPath'), () => {
+    this.set('ungroupedContent', Ember.computed('content.@each.'+this.get('optionGroupPath'), () => {
       var groupPath = this.get('optionGroupPath');
       var out = [];
       (this.get('content')||[]).forEach((opt) => {
-        var key = get(opt, groupPath);
+        var key = Ember.get(opt, groupPath);
         if ( !key )
         {
           out.push(opt);
@@ -46,12 +42,12 @@ export default Component.extend({
       return out;
     }));
 
-    this.set('groupedContent', computed('content.@each.'+this.get('optionGroupPath'), () => {
+    this.set('groupedContent', Ember.computed('content.@each.'+this.get('optionGroupPath'), () => {
       var groupPath = this.get('optionGroupPath');
       var out = [];
 
       (this.get('content')||[]).forEach((opt) => {
-        var key = get(opt, groupPath);
+        var key = Ember.get(opt, groupPath);
         if ( key )
         {
           var group = out.filterBy('group', key)[0];
@@ -113,7 +109,7 @@ export default Component.extend({
         changeCallback(selection);
       }
 
-      this.set('value', get(selection, this.get('optionValuePath')));
+      this.set('value', Ember.get(selection, this.get('optionValuePath')));
     } else {
       this.set('value', null);
     }

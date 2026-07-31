@@ -1,9 +1,8 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   resourceType: 'ldapconfig',
-  access: service(),
+  access: Ember.inject.service(),
 
   model: function () {
     return this.get('authStore').find('config', null, {

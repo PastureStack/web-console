@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 import {
   GLOBAL_FIELDS,
@@ -11,7 +11,7 @@ import {
 module('Unit | Service | console workspace');
 
 test('persists session identity globally and geometry only per tab', function(assert) {
-  let entry = EmberObject.create({
+  let entry = Ember.Object.create({
     sessionId: 'psw_session',
     secret: 'secret',
     kind: 'terminal',
@@ -57,20 +57,20 @@ test('removes malformed stored JSON without affecting valid data', function(asse
 });
 
 test('derives environment and stack labels for unambiguous session titles', function(assert) {
-  let project = EmberObject.create({
+  let project = Ember.Object.create({
     id: '1a5',
     displayName: 'PastureStack VM POC',
   });
-  let instance = EmberObject.create({
+  let instance = Ember.Object.create({
     labels: {},
-    primaryStack: EmberObject.create({displayName: 'Infrastructure'}),
+    primaryStack: Ember.Object.create({displayName: 'Infrastructure'}),
   });
 
   assert.deepEqual(sessionContext(instance, project, '1a5'), {
     environmentTitle: 'PastureStack VM POC',
     stackTitle: 'Infrastructure',
   });
-  assert.deepEqual(sessionContext(EmberObject.create({labels: {}}), null, '1a7'), {
+  assert.deepEqual(sessionContext(Ember.Object.create({labels: {}}), null, '1a7'), {
     environmentTitle: '1a7',
     stackTitle: null,
   });

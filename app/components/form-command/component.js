@@ -1,11 +1,8 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
 
-import { observer, computed } from '@ember/object';
-
-export default Component.extend(ManageLabels, {
+export default Ember.Component.extend(ManageLabels, {
   // Inputs
   instance: null,
   errors: null,
@@ -14,7 +11,7 @@ export default Component.extend(ManageLabels, {
   editing: true,
   classNameBindings: ['editing:component-editing:component-static'],
 
-  intl: service(),
+  intl: Ember.inject.service(),
 
   init() {
     this._super(...arguments);
@@ -69,13 +66,13 @@ export default Component.extend(ManageLabels, {
     this.terminalDidChange();
   },
 
-  terminalDidChange: observer('terminal.type', function() {
+  terminalDidChange: function() {
     var val = this.get('terminal.type');
     var stdinOpen = ( val === 'interactive' || val === 'both' );
     var tty = (val === 'terminal' || val === 'both');
     this.set('instance.tty', tty);
     this.set('instance.stdinOpen', stdinOpen);
-  }),
+  }.observes('terminal.type'),
 
   // ----------------------------------
   // Start Once
@@ -86,7 +83,7 @@ export default Component.extend(ManageLabels, {
     this.set('startOnce', startOnce);
   },
 
-  startOnceDidChange: observer('startOnce', function() {
+  startOnceDidChange: function() {
     if ( this.get('startOnce') )
     {
       this.setLabel(C.LABEL.START_ONCE, 'true');
@@ -95,7 +92,7 @@ export default Component.extend(ManageLabels, {
     {
       this.removeLabel(C.LABEL.START_ONCE);
     }
-  }),
+  }.observes('startOnce'),
 
 
   // ----------------------------------
@@ -121,7 +118,7 @@ export default Component.extend(ManageLabels, {
     }
   },
 
-  restartDidChange: observer('restart', 'restartLimit', function() {
+  restartDidChange: function() {
     var policy = {};
     var name = this.get('restart');
     var limit = parseInt(this.get('restartLimit'),10);
@@ -137,13 +134,13 @@ export default Component.extend(ManageLabels, {
 
     policy.name = name;
     this.set('instance.restartPolicy', policy);
-  }),
+  }.observes('restart','restartLimit'),
 
-  restartLimitDidChange: observer('restartLimit', function() {
+  restartLimitDidChange: function() {
     this.set('restart', 'on-failure-cond');
-  }),
+  }.observes('restartLimit'),
 
-  showDrainTimeout: computed('isService', 'isSidekick', function() {
+  showDrainTimeout: function() {
     return this.get('isService') && !this.get('isSidekick');
-  })
+  }.property('isService', 'isSidekick')
 });

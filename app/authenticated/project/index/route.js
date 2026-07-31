@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  projects: service(),
+export default Ember.Route.extend({
+  projects: Ember.inject.service(),
 
   redirect() {
     let orch = this.get('projects.current.orchestration');

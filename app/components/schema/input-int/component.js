@@ -1,6 +1,6 @@
-import { TextField } from '@ember/legacy-built-in-components';
+import Ember from 'ember';
 
-export default TextField.extend({
+export default Ember.TextField.extend({
   classNames: ['form-control'],
   type: 'number'
 });

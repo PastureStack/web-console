@@ -1,19 +1,14 @@
-import RSVP, { reject } from 'rsvp';
-import { cancel, next, scheduleOnce } from '@ember/runloop';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { observer } from '@ember/object';
-
-export default Route.extend({
-  access         : service(),
-  cookies        : service(),
-  github         : service(),
-  language       : service('user-language'),
-  modal          : service(),
-  oidc           : service(),
-  settings       : service(),
+export default Ember.Route.extend({
+  access         : Ember.inject.service(),
+  cookies        : Ember.inject.service(),
+  github         : Ember.inject.service(),
+  language       : Ember.inject.service('user-language'),
+  modal          : Ember.inject.service(),
+  oidc           : Ember.inject.service(),
+  settings       : Ember.inject.service(),
 
   previousParams : null,
   previousRoute  : null,
@@ -48,17 +43,17 @@ export default Route.extend({
 
   actions: {
     didTransition() {
-      // Fast route models can complete without entering Ember's loading
-      // substate. The initial overlay is rendered visible, so always reconcile
-      // it after a successful transition.
-      scheduleOnce('afterRender', this, this.hideLoadingOverlay);
+      // The initial loading overlay is visible in the static HTML.  A fast
+      // route can complete without entering the loading substate, so always
+      // reconcile the overlay after the first successful render.
+      Ember.run.scheduleOnce('afterRender', this, this.hideLoadingOverlay);
       return true;
     },
 
     loading(transition) {
       this.incrementProperty('loadingId');
       let id = this.get('loadingId');
-      cancel(this.get('hideTimer'));
+      Ember.run.cancel(this.get('hideTimer'));
 
       //console.log('Loading', id);
       if ( !this.get('loadingShown') ) {
@@ -83,7 +78,7 @@ export default Route.extend({
         if ( this.get('loadingId') === id ) {
           if ( transition.isAborted ) {
             //console.log('Loading aborted', id, this.get('loadingId'));
-            this.set('hideTimer', next(hide));
+            this.set('hideTimer', Ember.run.next(hide));
           } else {
             //console.log('Loading finished', id, this.get('loadingId'));
             hide();
@@ -163,15 +158,15 @@ export default Route.extend({
     }
   },
 
+  shortcuts: {
+    'shift+l': 'langToggle',
+  },
+
   hideLoadingOverlay() {
-    cancel(this.get('hideTimer'));
+    Ember.run.cancel(this.get('hideTimer'));
     this.set('loadingShown', false);
     $('#loading-overlay').stop(true, true).hide();
     $('#loading-underlay').stop(true, true).hide();
-  },
-
-  shortcuts: {
-    'shift+l': 'langToggle',
   },
 
   finishLogin() {
@@ -223,7 +218,7 @@ export default Route.extend({
         setTimeout(function() {
           window.close();
         }, 250);
-        return reject('oidcTest');
+        return Ember.RSVP.reject('oidcTest');
       }
 
       let oidcCode;
@@ -237,7 +232,7 @@ export default Route.extend({
       } catch (err) {
         transition.abort();
         this.transitionTo('login', {queryParams: {errorMsg: err.message}});
-        return reject(err);
+        return Ember.RSVP.reject(err);
       }
 
       return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
@@ -260,7 +255,7 @@ export default Route.extend({
 
       transition.abort();
 
-      return reject('isTest');
+      return Ember.RSVP.reject('isTest');
 
     } else if ( !isOidcCallback && params.code ) {
 
@@ -292,7 +287,7 @@ export default Route.extend({
 
         this.controllerFor('application').set('error', obj);
 
-        return reject(obj);
+        return Ember.RSVP.reject(obj);
       }
     }
 
@@ -304,16 +299,16 @@ export default Route.extend({
         setTimeout(function() {
           window.close();
         },250);
-        return new RSVP.promise();
+        return new Ember.RSVP.promise();
       } catch(e) {
         window.close();
       }
     }
   },
 
-  updateWindowTitle: observer('settings.appName', function() {
+  updateWindowTitle: function() {
     document.title = this.get('settings.appName');
-  }),
+  }.observes('settings.appName'),
 
   beforeModel() {
     this.updateWindowTitle();

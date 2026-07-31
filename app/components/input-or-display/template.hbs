@@ -1,9 +1,9 @@
-{{#if this.editable}}
+{{#if editable}}
   {{yield}}
 {{else}}
-  {{#if this.value}}
-    <div class={{this.classesForDisplay}}>{{this.value}}</div>
+  {{#if value}}
+    <div class={{classesForDisplay}}>{{value}}</div>
   {{else}}
-    <div class="{{this.classesForDisplay}} text-muted">{{t 'generic.na'}}</div>
+    <div class="{{classesForDisplay}} text-muted">{{t 'generic.na'}}</div>
   {{/if}}
 {{/if}}

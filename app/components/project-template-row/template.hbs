@@ -1,15 +1,15 @@
 <td data-title="{{t 'generic.name'}}:">
-  {{this.model.displayName}}
+  {{model.displayName}}
 </td>
 <td data-title="{{t 'generic.description'}}:">
-  {{#if this.model.description}}{{this.model.description}}{{else}}<span class="text-muted">{{t 'projectRow.none'}}</span>{{/if}}
+  {{#if model.description}}{{model.description}}{{else}}<span class="text-muted">{{t 'projectRow.none'}}</span>{{/if}}
 </td>
 <td data-title="{{t 'projectList.indexTemplate.table.header.stacks'}}:">
-  {{this.model.displayStacks}}
+  {{model.displayStacks}}
 </td>
 <td data-title="{{t 'projectList.indexTemplate.table.header.isPublic'}}:">
-  {{#if this.model.isPublic}}<i class="icon icon-check"></i>{{else}}<span class="text-muted">&ndash;</span>{{/if}}
+  {{#if model.isPublic}}<i class="icon icon-check"></i>{{else}}<span class="text-muted">&ndash;</span>{{/if}}
 </td>
 <td data-title="{{t 'generic.actions'}}:"class="actions">
-  {{action-menu model=this.model}}
+  {{action-menu model=model}}
 </td>

@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  storeReset: service(),
+export default Ember.Route.extend({
+  storeReset: Ember.inject.service(),
 
   actions: {
     activate: function() {

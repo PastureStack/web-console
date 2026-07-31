@@ -1,6 +1,4 @@
-import { next, debounce } from '@ember/runloop';
-import Component from '@ember/component';
-import EmberObject, { set, observer } from '@ember/object';
+import Ember from 'ember';
 
 function applyLinesIntoArray(lines, ary) {
   lines.forEach((line) => {
@@ -31,11 +29,11 @@ function applyLinesIntoArray(lines, ary) {
     var existing = ary.filterBy('key',key)[0];
     if ( existing )
     {
-      set(existing,'value',val);
+      Ember.set(existing,'value',val);
     }
     else
     {
-      ary.pushObject(EmberObject.create({key: key, value: val}));
+      ary.pushObject(Ember.Object.create({key: key, value: val}));
     }
   });
 }
@@ -57,7 +55,7 @@ function removeEmptyEntries(ary, allowEmptyValue=false) {
   ary.removeObjects(toRemove);
 }
 
-export default Component.extend({
+export default Ember.Component.extend({
   // Inputs
   initialStr:           null,
   initialMap:           null,
@@ -80,12 +78,12 @@ export default Component.extend({
       let required = this.get('requiredIfAny');
       if ( required && !ary.get('length') ) {
         Object.keys(required).forEach((k) => {
-          ary.pushObject(EmberObject.create({key: k, value: required[k], editable: false}));
+          ary.pushObject(Ember.Object.create({key: k, value: required[k], editable: false}));
         });
       }
 
-      ary.pushObject(EmberObject.create({key: '', value: ''}));
-      next(() => {
+      ary.pushObject(Ember.Object.create({key: '', value: ''}));
+      Ember.run.next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }
@@ -122,7 +120,7 @@ export default Component.extend({
     if ( map )
     {
       Object.keys(map).forEach((key) => {
-        ary.push(EmberObject.create({key: key, value: map[key]}));
+        ary.push(Ember.Object.create({key: key, value: map[key]}));
       });
     }
     else if ( this.get('initialStr') )
@@ -139,9 +137,9 @@ export default Component.extend({
     }
   },
 
-  aryObserver: observer('ary.@each.{key,value}', function() {
-    debounce(this,'fireChanged',100);
-  }),
+  aryObserver: function() {
+    Ember.run.debounce(this,'fireChanged',100);
+  }.observes('ary.@each.{key,value}'),
 
   fireChanged() {
     if ( this.isDestroyed || this.isDestroying ) {

@@ -1,4 +1,4 @@
-import Service from '@ember/service';
+import Ember from 'ember';
 
 function parseValue(value) {
   if ( value.charAt(0) === '"' )
@@ -35,7 +35,7 @@ function getAll() {
   return ret;
 }
 
-export default Service.extend({
+export default Ember.Service.extend({
   unknownProperty: function(key) {
     let all = getAll();
     return all[key] || null;

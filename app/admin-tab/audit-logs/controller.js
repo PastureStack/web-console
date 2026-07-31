@@ -1,20 +1,15 @@
-import { service } from '@ember/service';
-import { alias } from '@ember/object/computed';
-import Controller, { inject as controller } from '@ember/controller';
+import Ember from 'ember';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 
-import { observer, computed } from '@ember/object';
-import { on } from '@ember/object/evented';
-
-export default Controller.extend(Sortable, {
-  application       : controller(),
+export default Ember.Controller.extend(Sortable, {
+  application       : Ember.inject.controller(),
   queryParams       : ['sortBy', 'sortOrder', 'eventType', 'resourceType', 'resourceId', 'clientIp', 'authType'],
 
-  sortableContent   : alias('model.auditLog'),
+  sortableContent   : Ember.computed.alias('model.auditLog'),
   resourceTypeAndId : null,
-  modalService      : service('modal'),
-  intl              : service(),
+  modalService      : Ember.inject.service('modal'),
+  intl              : Ember.inject.service(),
 
   actions: {
     updateResourceType: function(type) {
@@ -109,7 +104,7 @@ export default Controller.extend(Sortable, {
     runtime                   : null,
   },
 
-  setup: observer('intl._locale', on('init', function() {
+  setup: function() {
     var out = [];
 
     Object.keys(C.AUTH_TYPES).forEach((key) => {
@@ -121,9 +116,9 @@ export default Controller.extend(Sortable, {
     });
 
     this.set('authTypes', out);
-  })),
+  }.on('init').observes('intl._locale'),
 
-  setSortOrderObserver: observer('descending', function() {
+  setSortOrderObserver: function() {
     var out = 'asc';
 
     if (this.get('descending')) {
@@ -133,17 +128,17 @@ export default Controller.extend(Sortable, {
     this.set('sortOrder', out);
     this.send('logsSorted');
 
-  }),
+  }.observes('descending'),
 
-  resourceIdReady: computed('filters.resourceType', function() {
+  resourceIdReady: function() {
     if (this.get('filters.resourceType')) {
       return false;
     } else {
       return true;
     }
-  }),
+  }.property('filters.resourceType'),
 
-  showPagination: computed('model.auditLog.pagination', function() {
+  showPagination: function() {
     var pagination = this.get('model.auditLog.pagination');
 
     if (pagination.next) {
@@ -151,7 +146,7 @@ export default Controller.extend(Sortable, {
     } else {
       return false;
     }
-  }),
+  }.property('model.auditLog.pagination'),
 
   // implemented here cause we're using sortable kinda but not really. Basically want the
   // actions but not the implmentation

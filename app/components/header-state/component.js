@@ -1,6 +1,6 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   classNames: ['header-state','section','r-mt5'],
   classNameBindings: ['model.stateColor'],
 });

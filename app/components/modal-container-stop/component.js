@@ -1,12 +1,11 @@
-import { next } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 import { alternateLabel } from 'ui/utils/platform';
 
 const TIMEOUT = 10;
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
-  resources: alias('modalService.modalOpts.model'),
+  resources: Ember.computed.alias('modalService.modalOpts.model'),
   inputTimeout: null,
   alternateLabel: alternateLabel,
   defaultTimeout: TIMEOUT,
@@ -19,7 +18,7 @@ export default ModalBase.extend({
       this.get('resources').forEach((resource) => {
         resource.doAction('stop', { timeout: (this.get('inputTimeout') || TIMEOUT) });
       });
-      next(() => {
+      Ember.run.next(() => {
         this.send('cancel');
       });
     }

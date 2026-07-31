@@ -1,13 +1,11 @@
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  webhookStore: service(),
+export default Ember.Route.extend({
+  webhookStore: Ember.inject.service(),
 
   model(params) {
     return this.get('webhookStore').find('receiver', params.receiver_id).then((receiver) => {
-      return EmberObject.create({
+      return Ember.Object.create({
         receiver: receiver,
       });
     });

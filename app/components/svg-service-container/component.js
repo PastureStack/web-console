@@ -1,10 +1,7 @@
-import { computed } from '@ember/object';
-import $ from 'jquery';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
-  resourceActions: service('resource-actions'),
+export default Ember.Component.extend({
+  resourceActions: Ember.inject.service('resource-actions'),
 
   node: null,
 
@@ -17,14 +14,14 @@ export default Component.extend({
 
   actions: {
     showDropDown: function() {
-      this.get('resourceActions').show(this.get('node.service'), $('#dropdown-toggler'), this.$());
+      this.get('resourceActions').show(this.get('node.service'), Ember.$('#dropdown-toggler'), this.$());
     },
   },
 
 
   click: function(e) {
     var target = e.target;
-    if ( $(target).closest('action-menu').length === 0 )
+    if ( Ember.$(target).closest('action-menu').length === 0 )
     {
       this.sendAction('action', this.get('node.service'));
     }
@@ -33,11 +30,11 @@ export default Component.extend({
     e.stopPropagation();
   },
 
-  transform: computed('node.{x,y}', function() {
+  transform: Ember.computed('node.{x,y}', function() {
     return `translate(${this.get('node.x')},${this.get('node.y')})`;
   }),
 
-  containerCount: computed('node.service.instances', function() {
+  containerCount: Ember.computed('node.service.instances', function() {
     if (this.get('node.service.instances')) {
       return this.get('node.service.instances').length;
     } else {
@@ -45,8 +42,8 @@ export default Component.extend({
     }
   }),
 
-  stateBackground: computed('node.service.stateColor', function() {
+  stateBackground: function() {
     return this.get('node.service.stateColor').replace("text-", "bg-");
-  }),
+  }.property('node.service.stateColor'),
 
 });

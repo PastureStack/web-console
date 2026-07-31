@@ -1,12 +1,10 @@
-import { hash } from 'rsvp';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  catalog: service(),
+export default Ember.Route.extend({
+  catalog: Ember.inject.service(),
 
   model() {
-    return hash({
+    return Ember.RSVP.hash({
       drivers: this.get('userStore').findAll('machinedriver', null, {forceReload: true}),
       catalogDrivers: this.get('catalog').fetchTemplates({templateBase: 'machine', category: 'all', allowFailure: true}),
     }).then((hash) => {

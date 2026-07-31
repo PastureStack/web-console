@@ -1,17 +1,15 @@
-import { LinkComponent } from '@ember/legacy-built-in-components';
-
-import { computed } from '@ember/object';
+import Ember from 'ember';
 
 // This is a link-to where models (path components) and query-params can be set as attribtues instead of positional params
-export default LinkComponent.extend({
+export default Ember.LinkComponent.extend({
   attributeBindings: ['role','aria-haspopup','aria-expanded'],
 
-  'current-when': computed('moreCurrentWhen', function() {
+  'current-when': function() {
     let base = this.get('qualifiedRouteName');
     if ( this.get('moreCurrentWhen.length') ) {
       return this.get('moreCurrentWhen').concat(base).join(' ');
     }
-  }),
+  }.property('moreCurrentWhen'),
 
   willRender() {
     this._super(...arguments);

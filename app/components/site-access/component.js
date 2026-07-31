@@ -1,14 +1,11 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Errors from 'ui/utils/errors';
 
-import { computed, observer } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   tagName: 'section',
   classNames: ['well'],
-  settings: service(),
-  access: service(),
+  settings: Ember.inject.service(),
+  access: Ember.inject.service(),
 
   model: null,
   individuals: 'siteAccess.users',
@@ -17,9 +14,9 @@ export default Component.extend({
   saved: true,
   errors: null,
 
-  showList: computed('copy.accessMode', function() {
+  showList: function() {
     return this.get('copy.accessMode') !== 'unrestricted';
-  }),
+  }.property('copy.accessMode'),
 
   actions: {
     addAuthorized: function(data) {
@@ -71,7 +68,7 @@ export default Component.extend({
     this.set('copy.allowedIdentities', (this.get('copy.allowedIdentities')||[]).slice());
   },
 
-  accessModeChanged: observer('copy.accessMode', function() {
+  accessModeChanged: function() {
     this.set('saved',false);
     let identities = this.get('copy.allowedIdentities');
     if ( !identities )
@@ -89,6 +86,6 @@ export default Component.extend({
         identities.push(me);
       }
     }
-  }),
+  }.observes('copy.accessMode'),
 
 });

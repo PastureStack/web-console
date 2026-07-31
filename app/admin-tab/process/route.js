@@ -1,7 +1,6 @@
-import EmberObject from '@ember/object';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   params: null,
   model: function(params /*, transition*/ ) {
     this.set('params', params);
@@ -9,7 +8,7 @@ export default Route.extend({
       return processInstance.followLink('processExecutions').then((processExecutions) => {
         var sorted = processExecutions.get('content').reverse();
         processExecutions.set('content', sorted);
-        return EmberObject.create({
+        return Ember.Object.create({
           processInstance: processInstance,
           processExecutions: processExecutions
         });

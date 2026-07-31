@@ -1,7 +1,4 @@
-import { next } from '@ember/runloop';
-import { alias, equal } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 import Util from 'ui/utils/util';
 import { alternateLabel } from 'ui/utils/platform';
@@ -29,8 +26,8 @@ var typeClass = {
   2: 'log-stderr',
 };
 
-export default Component.extend(ThrottledResize, {
-  intl: service(),
+export default Ember.Component.extend(ThrottledResize, {
+  intl: Ember.inject.service(),
   instance: null,
   alternateLabel: alternateLabel,
   showProtip: true,
@@ -40,11 +37,11 @@ export default Component.extend(ThrottledResize, {
 
   logHeight: 300,
 
-  onlyCombinedLog: alias('instance.tty'),
+  onlyCombinedLog: Ember.computed.alias('instance.tty'),
   which: 'combined',
-  isCombined: equal('which','combined'),
-  isStdOut: equal('which','stdout'),
-  isStdErr: equal('which','stderr'),
+  isCombined: Ember.computed.equal('which','combined'),
+  isStdOut: Ember.computed.equal('which','stdout'),
+  isStdErr: Ember.computed.equal('which','stderr'),
 
   stdErrVisible: true,
   stdOutVisible: true,
@@ -75,7 +72,7 @@ export default Component.extend(ThrottledResize, {
       this.set('which',which);
       this.set('stdErrVisible', (which === 'combined' || which === 'stderr') );
       this.set('stdOutVisible', (which === 'combined' || which === 'stdout') );
-      next(this, function() {
+      Ember.run.next(this, function() {
         this.send('scrollToBottom');
       });
     },
@@ -83,7 +80,7 @@ export default Component.extend(ThrottledResize, {
 
   didInsertElement: function() {
     this._super();
-    next(this, 'exec');
+    Ember.run.next(this, 'exec');
   },
 
   exec: function() {
@@ -146,7 +143,7 @@ export default Component.extend(ThrottledResize, {
 
       if ( isFollow )
       {
-        next(() => {
+        Ember.run.next(() => {
           this.send('scrollToBottom');
         });
       }

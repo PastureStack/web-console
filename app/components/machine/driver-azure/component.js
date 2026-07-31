@@ -1,17 +1,10 @@
-import { computed, observer } from '@ember/object';
-import { scheduleOnce } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
-import {
-  regions,
-  storageTypes,
-  environments
-} from 'ui/utils/azure-choices';
+import Ember from 'ember';
+import { regions, storageTypes, environments } from 'ui/utils/azure-choices';
 import { sizes } from 'ui/utils/azure-vm-choices';
 import Driver from 'ui/mixins/driver';
 
-export default Component.extend(Driver, {
-  azureConfig      : alias('model.azureConfig'),
+export default Ember.Component.extend(Driver, {
+  azureConfig      : Ember.computed.alias('model.azureConfig'),
   environments     : environments.sortBy('value'),
   vmTypeChoices    : sizes,
   driverName       : 'azure',
@@ -55,7 +48,7 @@ export default Component.extend(Driver, {
   init() {
     this._super(...arguments);
 
-    scheduleOnce('afterRender', () => {
+    Ember.run.scheduleOnce('afterRender', () => {
       this.set('publicIpChoice', this.initPublicIpChoices(this.get('azureConfig.staticPublicIp'), this.get('azureConfig.noPublicIp')));
       this.set('openPorts', this.initOpenPorts(this.get('azureConfig.openPort')));
     });
@@ -75,7 +68,7 @@ export default Component.extend(Driver, {
     }
   },
 
-  vmSizeChoices: computed('azureConfig.location', 'selectedVmType', function() {
+  vmSizeChoices: Ember.computed('azureConfig.location', 'selectedVmType', function() {
     const location = this.get('azureConfig.location');
     const selectedVmType = this.get('selectedVmType');
     const found = sizes.findBy('label', selectedVmType);
@@ -97,17 +90,17 @@ export default Component.extend(Driver, {
     return out;
   }),
 
-  regionChoices: computed('azureConfig.environment', function() {
+  regionChoices: Ember.computed('azureConfig.environment', function() {
       let environment = this.get('azureConfig.environment');
       return regions[environment];
   }),
 
-  evironmentChoiceObserver: observer('azureConfig.environment', function() {
+  evironmentChoiceObserver: Ember.observer('azureConfig.environment', function() {
       let environment = this.get('azureConfig.environment');
       this.set('azureConfig.location', regions[environment][0].name);
   }),
 
-  privateSet: computed('publicIpChoice', function() {
+  privateSet: Ember.computed('publicIpChoice', function() {
       let publicIpChoice = this.get('publicIpChoice');
       if (publicIpChoice && this.get('publicIpChoices').findBy('value', publicIpChoice).name === 'None') {
         return true;
@@ -115,7 +108,7 @@ export default Component.extend(Driver, {
       return false;
   }),
 
-  ipChoiceObserver: observer('publicIpChoice', function() {
+  ipChoiceObserver: Ember.observer('publicIpChoice', function() {
       let publicIpChoice = this.get('publicIpChoice');
       if (this.get('publicIpChoices').findBy('value', publicIpChoice).name === 'None') {
         this.set('azureConfig.usePrivateIp', true);
@@ -124,7 +117,7 @@ export default Component.extend(Driver, {
       }
   }),
 
-  setUsePrivateIp: computed('publicIpChoice', function() {
+  setUsePrivateIp: Ember.computed('publicIpChoice', function() {
       let publicIpChoice = this.get('publicIpChoice');
       if (publicIpChoice && this.get('publicIpChoices').findBy('value', publicIpChoice).name === 'None') {
         return this.set('azureConfig.usePrivateIp', true);
@@ -132,7 +125,7 @@ export default Component.extend(Driver, {
       return false;
   }),
 
-  publicIpObserver: observer('publicIpChoice', function() {
+  publicIpObserver: Ember.observer('publicIpChoice', function() {
     let elChoice = this.get('publicIpChoice');
     let choice = this.get('publicIpChoices').findBy('value', elChoice);
 
@@ -145,7 +138,7 @@ export default Component.extend(Driver, {
 
   }),
 
-  openPort: observer('openPorts', function() {
+  openPort: Ember.observer('openPorts', function() {
     let str = (this.get('openPorts')||'').trim();
     let ary = [];
     if ( str.length ) {

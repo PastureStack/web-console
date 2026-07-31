@@ -1,10 +1,8 @@
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  access    : service(),
-  projects  : service(),
+export default Ember.Route.extend({
+  access    : Ember.inject.service(),
+  projects  : Ember.inject.service(),
 
   model(params/*, transition*/) {
     var project = this.get('projects.current');
@@ -22,7 +20,7 @@ export default Route.extend({
       return;
     }
 
-    return EmberObject.create({
+    return Ember.Object.create({
       project: project,
     });
   },

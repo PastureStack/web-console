@@ -1,7 +1,6 @@
-import { observer } from '@ember/object';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   memoryLimit: null,
   init: function() {
     this._super(...arguments);
@@ -12,7 +11,7 @@ export default Component.extend({
       this.set('memoryLimit', '');
     }
   },
-  memoryReservationChanged: observer('memoryLimit', function() {
+  memoryReservationChanged: Ember.observer('memoryLimit', function() {
     var mem = this.get('memoryLimit');
 
     if ( isNaN(mem) || mem <= 0) {

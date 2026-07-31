@@ -1,9 +1,8 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   classNames: ['console-workspace-root'],
-  workspace: service('console-workspace'),
+  workspace: Ember.inject.service('console-workspace'),
 
   didInsertElement() {
     this._super(...arguments);

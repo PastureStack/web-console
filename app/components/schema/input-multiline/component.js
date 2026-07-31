@@ -1,6 +1,6 @@
-import { TextArea } from '@ember/legacy-built-in-components';
+import Ember from 'ember';
 
-export default TextArea.extend({
+export default Ember.TextArea.extend({
   classNames: ['form-control', 'text-mono'],
   rows: 3,
 });

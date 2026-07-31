@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import StackChartController from 'ui/stack/chart/controller';
 
 module('Unit | Controller | stack/chart');
@@ -9,7 +9,7 @@ module('Unit | Controller | stack/chart');
 test('it exists', function(assert) {
   var controller = StackChartController.create();
   assert.ok(controller);
-  run(() => controller.destroy());
+  Ember.run(() => controller.destroy());
 });
 
 test('it toggles additional service info', function(assert) {
@@ -22,5 +22,5 @@ test('it toggles additional service info', function(assert) {
 
   controller.send('dismiss');
   assert.strictEqual(controller.get('showAddtlInfo'), false);
-  run(() => controller.destroy());
+  Ember.run(() => controller.destroy());
 });

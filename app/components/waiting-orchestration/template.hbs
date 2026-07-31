@@ -1,11 +1,11 @@
-{{#if (and this.projects.orchestrationState.hasKubernetes (not this.projects.orchestrationState.kubernetesReady))}}
+{{#if (and projects.orchestrationState.hasKubernetes (not projects.orchestrationState.kubernetesReady))}}
   {{orchestration/wait-kubernetes ready=(action "kubernetesReady")}}
 {{/if}}
 
-{{#if (and this.projects.orchestrationState.hasSwarm (not this.projects.orchestrationState.swarmReady))}}
+{{#if (and projects.orchestrationState.hasSwarm (not projects.orchestrationState.swarmReady))}}
   {{orchestration/wait-swarm ready=(action "swarmReady")}}
 {{/if}}
 
-{{#if (and this.projects.orchestrationState.hasMesos (not this.projects.orchestrationState.mesosReady))}}
+{{#if (and projects.orchestrationState.hasMesos (not projects.orchestrationState.mesosReady))}}
   {{orchestration/wait-mesos ready=(action "mesosReady")}}
 {{/if}}

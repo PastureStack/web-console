@@ -1,9 +1,7 @@
-import { get, computed } from '@ember/object';
-import { next } from '@ember/runloop';
-import Service from '@ember/service';
+import Ember from 'ember';
 import BootstrapFixes from 'ui/utils/bootstrap-fixes';
 
-export default Service.extend({
+export default Ember.Service.extend({
   model          : null,
   open           : false,
   tooltipActions : null,
@@ -36,7 +34,7 @@ export default Service.extend({
       }
     });
 
-    next(() => {
+    Ember.run.next(() => {
 
       if (this.get('tooltipActions')) {
         $menu.addClass('tooltip-actions');
@@ -53,7 +51,7 @@ export default Service.extend({
 
       this.set('open',true);
       // Delay ensure it works in firefox
-      next(() => {
+      Ember.run.next(() => {
         BootstrapFixes.positionDropdown($menu, trigger, true);
         $('#resource-actions-first')[0].focus();
         $menu.css('visibility','visible');
@@ -77,37 +75,32 @@ export default Service.extend({
     this.get('model').send(actionName);
   },
 
-  activeActions: computed(
-    'model.availableActions.[]',
-    'model.availableActions.@each.enabled',
-    'model',
-    function() {
-      let list = (this.get('model.availableActions')||[]).filter(function(act) {
-        return get(act,'enabled') !== false || get(act,'divider');
-      });
+  activeActions: function() {
+    let list = (this.get('model.availableActions')||[]).filter(function(act) {
+      return Ember.get(act,'enabled') !== false || Ember.get(act,'divider');
+    });
 
-      // Remove dividers at the beginning
-      while ( list.length > 0 && get(list[0], 'divider') === true )
-      {
-        list.shift();
-      }
-
-      // Remove dividers at the end
-      while ( list.length > 0 && get(list[list.length - 1], 'divider') === true )
-      {
-        list.pop();
-      }
-
-      // Remove consecutive dividers
-      let last = null;
-      list = list.filter(function(act) {
-        let cur = (act.divider === true);
-        let ok = !cur || (cur && !last);
-        last = cur;
-        return ok;
-      });
-
-      return list;
+    // Remove dividers at the beginning
+    while ( list.get('firstObject.divider') === true )
+    {
+      list.shiftObject();
     }
-  ),
+
+    // Remove dividers at the end
+    while ( list.get('lastObject.divider') === true )
+    {
+      list.popObject();
+    }
+
+    // Remove consecutive dividers
+    let last = null;
+    list = list.filter(function(act) {
+      let cur = (act.divider === true);
+      let ok = !cur || (cur && !last);
+      last = cur;
+      return ok;
+    });
+
+    return list;
+  }.property('model.availableActions.[]','model.availableActions.@each.enabled', 'model'),
 });

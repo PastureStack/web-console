@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import HostsController from 'ui/hosts/controller';
 
 module('Unit | Controller | hosts');
@@ -9,5 +9,5 @@ module('Unit | Controller | hosts');
 test('it exists', function(assert) {
   var controller = HostsController.create();
   assert.ok(controller);
-  run(() => controller.destroy());
+  Ember.run(() => controller.destroy());
 });

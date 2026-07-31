@@ -1,10 +1,9 @@
-import { alias } from '@ember/object/computed';
-import Mixin from '@ember/object/mixin';
-import { get, computed } from '@ember/object';
+import Ember from 'ember';
 import { naturalSort } from 'ui/utils/natural-sort';
+const { get } = Ember;
 
-export default Mixin.create({
-  sortableContent: alias('model'),
+export default Ember.Mixin.create({
+  sortableContent: Ember.computed.alias('model'),
   headers: null,
   sortBy: null,
   descending: false,
@@ -39,7 +38,7 @@ export default Mixin.create({
     },
   },
 
-  currentSort: computed('sortBy','headers.@each.{name,sort}', function() {
+  currentSort: Ember.computed('sortBy','headers.@each.{name,sort}', function() {
     var headers = this.get('headers');
     if ( headers )
     {
@@ -55,7 +54,7 @@ export default Mixin.create({
     return ['id'];
   }),
 
-  arranged: computed(
+  arranged: Ember.computed(
     'sortableContent.[]',
     'currentSort',
     'sortBy',

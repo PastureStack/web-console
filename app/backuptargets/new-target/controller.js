@@ -1,7 +1,7 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-export default Controller.extend(NewOrEdit, {
+export default Ember.Controller.extend(NewOrEdit, {
 
   doneSaving() {
     this.transitionToRoute('backuptargets');

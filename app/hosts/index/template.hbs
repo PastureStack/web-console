@@ -4,17 +4,17 @@
   {{#link-to "hosts.new" classNames="btn btn-sm btn-primary"}}{{t 'hostsPage.index.addHost'}}{{/link-to}}
 
   <div class="btn-group pull-right">
-    {{#link-to "hosts" (query-params mode="dot") classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-ellipsis" text=(t 'hostsPage.index.tooltip.listView') options=this.listLinkOptions}}{{/link-to}}
-    {{#link-to "hosts" (query-params mode="grouped") classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-layeredgroup" text=(t 'hostsPage.index.tooltip.groupedView') options=this.groupLinkOptions}}{{/link-to}}
+    {{#link-to "hosts" (query-params mode="dot") classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-ellipsis" text=(t 'hostsPage.index.tooltip.listView') options=listLinkOptions}}{{/link-to}}
+    {{#link-to "hosts" (query-params mode="grouped") classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-layeredgroup" text=(t 'hostsPage.index.tooltip.groupedView') options=groupLinkOptions}}{{/link-to}}
 
 
   </div>
 
   <div class="btn-group pull-right r-mr10 r-mt5">
-    <label style="font-weight: normal;">{{input type="checkbox" checked=this.showSystem}} {{t 'hostsPage.index.showSystem'}}</label>
+    <label style="font-weight: normal;">{{input type="checkbox" checked=showSystem}} {{t 'hostsPage.index.showSystem'}}</label>
   </div>
 </section>
 
-{{#columns-section pods=this.model.hosts emptyMessage=(t 'hostsPage.index.columns.emptyMessage') as |item| }}
-  {{host-pod model=item mode=this.mode newContainer="newContainer" show=this.show}}
+{{#columns-section pods=model.hosts emptyMessage=(t 'hostsPage.index.columns.emptyMessage') as |item| }}
+  {{host-pod model=item mode=mode newContainer="newContainer" show=show}}
 {{/columns-section}}

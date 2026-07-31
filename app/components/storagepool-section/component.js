@@ -1,14 +1,11 @@
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Sortable from 'ui/mixins/sortable';
 
-import { computed } from '@ember/object';
-
-export default Component.extend(Sortable, {
+export default Ember.Component.extend(Sortable, {
   model: null,
   single: false,
 
-  sortableContent: alias('model.volumes'),
+  sortableContent: Ember.computed.alias('model.volumes'),
   sortBy: 'name',
   sorts: {
     state:  ['state','displayName','id'],
@@ -21,9 +18,9 @@ export default Component.extend(Sortable, {
     this._super();
   },
 
-  hostsByName: computed('model.hosts.@each.displayName', function() {
+  hostsByName: function() {
     return (this.get('model.hosts')||[]).sortBy('displayName');
-  }),
+  }.property('model.hosts.@each.displayName'),
 
   classNames: ['stack-section','storage', 'clear-section'],
 });

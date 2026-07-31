@@ -1,13 +1,12 @@
-import { next } from '@ember/runloop';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Sortable from 'ui/mixins/sortable';
 
-export default Component.extend(Sortable, {
+export default Ember.Component.extend(Sortable, {
   expandAll: false,
 
   actions: {
     expandChildren: function() {
-      next(() => {
+      Ember.run.next(() => {
       this.toggleProperty('expandAll');
       });
     }

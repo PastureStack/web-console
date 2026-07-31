@@ -1,19 +1,15 @@
-import { scheduleOnce } from '@ember/runloop';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
-
-import { observer } from '@ember/object';
 
 // Remember the last value and use that for new one
 var lastContainer = 'ubuntu:26.04';
 var lastVm = 'ubuntu:26.04';
 var lastWindows = 'microsoft/nanoserver';
 
-export default Component.extend(ManageLabels, {
-  settings: service(),
-  projects: service(),
+export default Ember.Component.extend(ManageLabels, {
+  settings: Ember.inject.service(),
+  projects: Ember.inject.service(),
 
   // Inputs
   initialValue: null,
@@ -53,7 +49,7 @@ export default Component.extend(ManageLabels, {
       }
     }
 
-    scheduleOnce('afterRender', () => {
+    Ember.run.scheduleOnce('afterRender', () => {
       this.set('userInput', initial);
       this.userInputDidChange();
     });
@@ -63,7 +59,7 @@ export default Component.extend(ManageLabels, {
     this.sendAction('setLabels', labels);
   },
 
-  pullImageDidChange: observer('pullImage', function() {
+  pullImageDidChange: function() {
     if ( this.get('pullImage') )
     {
       this.setLabel(C.LABEL.PULL_IMAGE, C.LABEL.PULL_IMAGE_VALUE);
@@ -72,9 +68,9 @@ export default Component.extend(ManageLabels, {
     {
       this.removeLabel(C.LABEL.PULL_IMAGE, true);
     }
-  }),
+  }.observes('pullImage'),
 
-  userInputDidChange: observer('userInput', function() {
+  userInputDidChange: function() {
     var input = (this.get('userInput')||'').trim();
     var out = 'docker:';
 
@@ -105,7 +101,7 @@ export default Component.extend(ManageLabels, {
     this.set('value', out);
     this.sendAction('changed', out);
     this.validate();
-  }),
+  }.observes('userInput'),
 
   validate() {
     var errors = [];

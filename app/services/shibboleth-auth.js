@@ -1,16 +1,14 @@
-import { Promise } from 'rsvp';
-import { observer } from '@ember/object';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { denormalizeName } from 'ui/services/settings';
 
-export default Service.extend({
-  userStore: service('user-store'),
-  session: service(),
-  access: service(),
+export default Ember.Service.extend({
+  userStore: Ember.inject.service('user-store'),
+  session: Ember.inject.service(),
+  access: Ember.inject.service(),
   hasToken: null,
-  parseIdentity: observer('hasToken', function() {
+  parseIdentity: Ember.observer('hasToken', function() {
     let locToken = this.get('hasToken');
     if (locToken) {
       let userIdent = locToken.userIdentity;
@@ -18,7 +16,7 @@ export default Service.extend({
     }
   }),
   getToken: function() {
-    return new Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve, reject) => {
       this.get('userStore').rawRequest({
         url: 'token',
       })

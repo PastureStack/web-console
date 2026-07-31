@@ -1,5 +1,4 @@
-import { computed } from '@ember/object';
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 import C from 'ui/utils/constants';
@@ -27,8 +26,8 @@ function displayUrl(url) {
 
 var machineDriver = Resource.extend(PolledResource, {
   type: 'machineDriver',
-  modalService: service('modal'),
-  catalog: service(),
+  modalService: Ember.inject.service('modal'),
+  catalog: Ember.inject.service(),
 
   actions: {
     activate: function() {
@@ -44,7 +43,7 @@ var machineDriver = Resource.extend(PolledResource, {
     },
   },
 
-  catalogTemplateIcon: computed('externalId', function() {
+  catalogTemplateIcon: Ember.computed('externalId', function() {
     let parsedExtId = parseExternalId(this.get('externalId')) || null;
 
     if (!parsedExtId) {
@@ -57,7 +56,7 @@ var machineDriver = Resource.extend(PolledResource, {
     }
   }),
 
-  iconMapFromConstants: computed('name', function() {
+  iconMapFromConstants: Ember.computed('name', function() {
     let name = this.get('name').toUpperCase();
     let icon = C.MACHINE_DRIVER_IMAGES[name];
 
@@ -69,36 +68,36 @@ var machineDriver = Resource.extend(PolledResource, {
 
   }),
 
-  displayUrl: computed('url', function() {
+  displayUrl: function() {
     return displayUrl(this.get('url'));
-  }),
+  }.property('url'),
 
-  displayChecksum: computed('checksum', function() {
+  displayChecksum: Ember.computed('checksum', function() {
     return this.get('checksum').substring(0, 8);
   }),
 
-  displayUiUrl: computed('uiUrl', function() {
+  displayUiUrl: function() {
     return displayUrl(this.get('uiUrl'));
-  }),
+  }.property('uiUrl'),
 
-  hasBuiltinUi: computed('name', function() {
+  hasBuiltinUi: function() {
     return builtInUi.indexOf(this.get('name')) >= 0;
-  }),
+  }.property('name'),
 
-  isCustom: computed('builtin', 'externalId', function() {
+  isCustom: function() {
     return !this.get('builtin') && !this.get('externalId');
-  }),
+  }.property('builtin','externalId'),
 
-  hasUi: computed('hasBuiltinUi', function() {
+  hasUi: function() {
     return this.get('hasBuiltinUi') || !!this.get('uiUrl');
-  }),
+  }.property('hasBuiltinUi'),
 
-  newExternalId: computed('isSystem', 'selectedTemplateModel.id', function() {
+  newExternalId: function() {
     var externalId = C.EXTERNAL_ID.KIND_CATALOG + C.EXTERNAL_ID.KIND_SEPARATOR + this.get('selectedTemplateModel.id');
     return externalId;
-  }),
+  }.property('isSystem','selectedTemplateModel.id'),
 
-  availableActions: computed('actionLinks.{update,activate,deactivate,remove}', 'builtin', function() {
+  availableActions: function() {
     let a = this.get('actionLinks');
     let builtin = !!this.get('builtin');
 
@@ -110,11 +109,11 @@ var machineDriver = Resource.extend(PolledResource, {
       { divider: true },
       { label: 'action.viewInApi',   icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
     ];
-  }),
+  }.property('actionLinks.{update,activate,deactivate,remove}','builtin'),
 
-  externalIdInfo: computed('externalId', function() {
+  externalIdInfo: function() {
     return parseExternalId(this.get('externalId'));
-  }),
+  }.property('externalId'),
 });
 
 machineDriver.reopenClass({

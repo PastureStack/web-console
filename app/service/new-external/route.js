@@ -1,7 +1,6 @@
-import { all } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(params/*, transition*/) {
     var store = this.get('store');
 
@@ -15,7 +14,7 @@ export default Route.extend({
       dependencies.pushObject(store.find('service', params.serviceId));
     }
 
-    return all(dependencies, 'Load dependencies').then(function(results) {
+    return Ember.RSVP.all(dependencies, 'Load dependencies').then(function(results) {
       var allHosts = results[0];
       var stack = results[1];
       var existing = results[2];

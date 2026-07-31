@@ -1,4 +1,4 @@
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import ManageLabels from 'ui/mixins/manage-labels';
 import { flattenLabelArrays } from 'ui/mixins/manage-labels';
 import NewOrEdit from 'ui/mixins/new-or-edit';
@@ -6,11 +6,9 @@ import ModalBase from 'lacsso/components/modal-base';
 import C from 'ui/utils/constants';
 import { debouncedObserver } from 'ui/utils/debounce';
 
-import { observer } from '@ember/object';
-
 export default ModalBase.extend(NewOrEdit, ManageLabels, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: alias('modalService.modalOpts'),
+  originalModel: Ember.computed.alias('modalService.modalOpts'),
   model: null,
   editing: true,
 
@@ -36,15 +34,15 @@ export default ModalBase.extend(NewOrEdit, ManageLabels, {
     this.set('requireAny', this.getLabel(C.LABEL.REQUIRE_ANY));
   },
 
-  ipsChanged: observer('ips.[]', function() {
+  ipsChanged: function() {
     let ips = (this.get('ips')||[]).map((x) => x.trim()).filter(x => x.length);
     this.setLabel(C.LABEL.SCHED_IPS, ips.join(', '));
-  }),
+  }.observes('ips.[]'),
 
-  requireAnyChanged: observer('requireAny', function() {
+  requireAnyChanged: function() {
     let any = this.get('requireAny');
     this.setLabel(C.LABEL.REQUIRE_ANY, any||undefined);
-  }),
+  }.observes('requireAny'),
 
   updateLabels(labels) {
     this.set('systemLabels', labels);

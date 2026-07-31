@@ -1,8 +1,7 @@
-import { alias } from '@ember/object/computed';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
-  stack: alias('model.stack'),
+export default Ember.Controller.extend({
+  stack: Ember.computed.alias('model.stack'),
 
   showServiceInfo: null,
   selectedService: null,

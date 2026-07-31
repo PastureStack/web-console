@@ -1,16 +1,13 @@
-import { resolve, reject } from 'rsvp';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Service.extend({
-  cookies: service(),
-  session: service(),
-  github:  service(),
-  shibbolethAuth: service(),
-  store: service(),
-  userStore: service('user-store'),
+export default Ember.Service.extend({
+  cookies: Ember.inject.service(),
+  session: Ember.inject.service(),
+  github:  Ember.inject.service(),
+  shibbolethAuth: Ember.inject.service(),
+  store: Ember.inject.service(),
+  userStore: Ember.inject.service('user-store'),
 
   token: null,
   mfaChallenge: null,
@@ -27,11 +24,11 @@ export default Service.extend({
   admin: null,
 
   // The identity from the session isn't an actual identity model...
-  identity: computed('session.'+C.SESSION.IDENTITY, function() {
+  identity: function() {
     var obj = this.get('session.'+C.SESSION.IDENTITY) || {};
     obj.type = 'identity';
     return this.get('userStore').createRecord(obj);
-  }),
+  }.property('session.'+C.SESSION.IDENTITY),
 
   testAuth() {
     // make a call to api base because it is authenticated
@@ -48,16 +45,16 @@ export default Service.extend({
       }
 
       // Auth token still good
-      return resolve('Auth Succeeded');
+      return Ember.RSVP.resolve('Auth Succeeded');
     }, (/* err */) => {
       // Auth token expired
-      return reject('Auth Failed');
+      return Ember.RSVP.reject('Auth Failed');
     });
   },
 
   detect() {
     if ( this.get('enabled') !== null ) {
-      return resolve();
+      return Ember.RSVP.resolve();
     }
 
     return this.get('userStore').rawRequest({
@@ -93,13 +90,13 @@ export default Service.extend({
         this.clearSessionKeys();
       }
 
-      return resolve(undefined,'API supports authentication'+(token.security ? '' : ', but is not enabled'));
+      return Ember.RSVP.resolve(undefined,'API supports authentication'+(token.security ? '' : ', but is not enabled'));
     })
     .catch((err) => {
       // Otherwise this API is too old to do auth.
       this.set('enabled', false);
       this.set('app.initError', err);
-      return resolve(undefined,'Error determining API authentication');
+      return Ember.RSVP.resolve(undefined,'Error determining API authentication');
     });
   },
 
@@ -135,7 +132,7 @@ export default Service.extend({
       } catch(e) {
         err = {type: 'error', message: 'Error logging in'};
       }
-      return reject(err);
+      return Ember.RSVP.reject(err);
     });
   },
 
@@ -165,7 +162,7 @@ export default Service.extend({
       } catch(e) {
         err = {type: 'error', message: 'Error verifying the security factor'};
       }
-      return reject(err);
+      return Ember.RSVP.reject(err);
     });
   },
 

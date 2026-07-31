@@ -1,18 +1,15 @@
-import { notEmpty, empty } from '@ember/object/computed';
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import { denormalizeId } from 'ember-api-store/utils/denormalize';
 
-import { computed } from '@ember/object';
-
 export default Resource.extend({
   type: 'snapshot',
-  modalService: service('modal'),
+  modalService: Ember.inject.service('modal'),
 
   volume: denormalizeId('volumeId'),
 
-  hasBackups: notEmpty('backupTargetId'),
-  backupEnabled: empty('backupTargetId'),
+  hasBackups: Ember.computed.notEmpty('backupTargetId'),
+  backupEnabled: Ember.computed.empty('backupTargetId'),
 
   actions: {
     backup() {
@@ -41,28 +38,20 @@ export default Resource.extend({
     },
   },
 
-  availableActions: computed(
-    'actionLinks.remove',
-    'backupEnabled',
-    'hasBackups',
-    'volume.actionLinks.reverttosnapshot',
-    'state',
-    'volume.state',
-    function() {
-      var a = this.get('actionLinks');
-      var volA = this.get('volume.actionLinks');
+  availableActions: function() {
+    var a = this.get('actionLinks');
+    var volA = this.get('volume.actionLinks');
 
-      let created = this.get('state') === 'snapshotted';
+    let created = this.get('state') === 'snapshotted';
 
-      return [
-        { label: 'action.remove',       icon: 'icon icon-trash',        action: 'promptDelete',     enabled: !!a.remove, altAction: 'delete' },
-        { divider: true },
-        { label: 'action.revertToSnapshot', icon: 'icon icon-history',  action: 'revertToSnapshot', enabled: created && volA && !!volA.reverttosnapshot },
-        { label: 'action.restoreFromBackup', icon: 'icon icon-history', action: 'restoreFromBackup', enabled: created && volA && this.get('hasBackups') && !!volA.restorefrombackup },
-        { label: 'action.backup',       icon: 'icon icon-hdd',          action: 'backup',           enabled: created && this.get('backupEnabled') },
-        { label: 'action.deleteBackup', icon: 'icon icon-hdd',          action: 'deleteBackup',     enabled: this.get('hasBackups') },
-        { label: 'action.viewInApi',    icon: 'icon icon-external-link',action: 'goToApi',          enabled: true },
-      ];
-    }
-  ),
+    return [
+      { label: 'action.remove',       icon: 'icon icon-trash',        action: 'promptDelete',     enabled: !!a.remove, altAction: 'delete' },
+      { divider: true },
+      { label: 'action.revertToSnapshot', icon: 'icon icon-history',  action: 'revertToSnapshot', enabled: created && volA && !!volA.reverttosnapshot },
+      { label: 'action.restoreFromBackup', icon: 'icon icon-history', action: 'restoreFromBackup', enabled: created && volA && this.get('hasBackups') && !!volA.restorefrombackup },
+      { label: 'action.backup',       icon: 'icon icon-hdd',          action: 'backup',           enabled: created && this.get('backupEnabled') },
+      { label: 'action.deleteBackup', icon: 'icon icon-hdd',          action: 'deleteBackup',     enabled: this.get('hasBackups') },
+      { label: 'action.viewInApi',    icon: 'icon icon-external-link',action: 'goToApi',          enabled: true },
+    ];
+  }.property('actionLinks.remove','backupEnabled','hasBackups','volume.actionLinks.reverttosnapshot','state','volume.state'),
 });

@@ -1,12 +1,10 @@
-import { hash } from 'rsvp';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  catalog: service(),
+export default Ember.Route.extend({
+  catalog: Ember.inject.service(),
 
   model(params) {
-    return hash({
+    return Ember.RSVP.hash({
       catalogInfo: this.get('catalog').fetchTemplates({templateBase: 'infra', category: 'all'}),
       originalProjectTemplate: this.get('userStore').find('projecttemplate', params.template_id),
     }).then((hash) => {

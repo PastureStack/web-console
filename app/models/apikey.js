@@ -1,16 +1,14 @@
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 import C from 'ui/utils/constants';
-
-import { computed } from '@ember/object';
 
 var ApiKey = Resource.extend(PolledResource,{
 
   type: 'apiKey',
   publicValue: null,
   secretValue: null,
-  modalService: service('modal'),
+  modalService: Ember.inject.service('modal'),
 
   actions: {
     deactivate: function() {
@@ -26,31 +24,28 @@ var ApiKey = Resource.extend(PolledResource,{
     },
   },
 
-  isForAccount: computed('accountId', `session.${C.SESSION.ACCOUNT_ID}`, function() {
+  isForAccount: function() {
     return this.get('accountId') === this.get(`session.${C.SESSION.ACCOUNT_ID}`);
-  }),
+  }.property('accountId', `session.${C.SESSION.ACCOUNT_ID}`),
 
-  displayName: computed('name', 'publicValue', 'id', function() {
+  displayName: function() {
     return this.get('name') || this.get('publicValue') || '('+this.get('id')+')';
-  }),
+  }.property('name','publicValue','id'),
 
-  availableActions: computed(
-    'actionLinks.{update,activate,deactivate,restore,remove,purge}',
-    function() {
-      var a = this.get('actionLinks');
+  availableActions: function() {
+    var a = this.get('actionLinks');
 
-      return [
-        { label: 'action.activate',      icon: 'icon icon-play',   action: 'activate',     enabled: !!a.activate },
-        { label: 'action.deactivate',    icon: 'icon icon-pause',  action: 'deactivate',   enabled: !!a.deactivate },
-        { label: 'action.remove',        icon: 'icon icon-trash',  action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
-        { divider: true },
-        { label: 'action.purge',         icon: '',                 action: 'purge',        enabled: !!a.purge },
-        { label: 'action.restore',       icon: '',                 action: 'restore',      enabled: !!a.restore },
-        { divider: true },
-        { label: 'action.edit',          icon: 'icon icon-edit',   action: 'edit',         enabled: !!a.update },
-      ];
-    }
-  ),
+    return [
+      { label: 'action.activate',      icon: 'icon icon-play',   action: 'activate',     enabled: !!a.activate },
+      { label: 'action.deactivate',    icon: 'icon icon-pause',  action: 'deactivate',   enabled: !!a.deactivate },
+      { label: 'action.remove',        icon: 'icon icon-trash',  action: 'promptDelete', enabled: !!a.remove, altAction: 'delete' },
+      { divider: true },
+      { label: 'action.purge',         icon: '',                 action: 'purge',        enabled: !!a.purge },
+      { label: 'action.restore',       icon: '',                 action: 'restore',      enabled: !!a.restore },
+      { divider: true },
+      { label: 'action.edit',          icon: 'icon icon-edit',   action: 'edit',         enabled: !!a.update },
+    ];
+  }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}'),
 });
 
 ApiKey.reopenClass({

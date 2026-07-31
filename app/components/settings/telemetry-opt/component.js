@@ -1,12 +1,11 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
 const IN = 'in';
 const OUT = 'out';
 
-export default Component.extend({
-  settings: service(),
+export default Ember.Component.extend({
+  settings: Ember.inject.service(),
 
   initialValue: null,
   optIn: null,

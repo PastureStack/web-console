@@ -1,17 +1,13 @@
-import { next, scheduleOnce } from '@ember/runloop';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import { parsePortSpec } from 'ui/utils/parse-port';
-
-import { observer } from '@ember/object';
 
 const protocolOptions = [
   {label: 'TCP', value: 'tcp'},
   {label: 'UDP', value: 'udp'}
 ];
 
-export default Component.extend({
-  intl: service(),
+export default Ember.Component.extend({
+  intl: Ember.inject.service(),
 
   // The initial ports to show, as an array of objects
   initialPorts    : null,
@@ -43,7 +39,7 @@ export default Component.extend({
 
           if ( value.bindAddress )
           {
-            next(() => { this.send('showIp'); });
+            Ember.run.next(() => { this.send('showIp'); });
           }
 
           out.push({
@@ -62,7 +58,7 @@ export default Component.extend({
 
           if ( parsed.hostIp )
           {
-            next(() => { this.send('showIp'); });
+            Ember.run.next(() => { this.send('showIp'); });
           }
 
           out.push({
@@ -80,7 +76,7 @@ export default Component.extend({
       });
     }
 
-    scheduleOnce('afterRender', () => {
+    Ember.run.scheduleOnce('afterRender', () => {
       this.set('portsArray', out);
       this.portsArrayDidChange();
     });
@@ -100,7 +96,7 @@ export default Component.extend({
     },
   },
 
-  portsArrayDidChange: observer('portsArray.@each.{bindAddress,public,private,protocol}', function() {
+  portsArrayDidChange: function() {
     var out = [];
     this.get('portsArray').forEach(function(row) {
       if ( !row.protocol ) {
@@ -143,9 +139,9 @@ export default Component.extend({
     this.set('portsAsStrArray', out);
     this.sendAction('changed', this.get('portsArray'));
     this.sendAction('changedStr', this.get('portsAsStrArray'));
-  }),
+  }.observes('portsArray.@each.{bindAddress,public,private,protocol}'),
 
-  validate: observer('portsArray.@each.{bindAddress,public,private,protocol}', function() {
+  validate: function() {
     var errors = [];
     let seen = {};
 
@@ -173,5 +169,5 @@ export default Component.extend({
     });
 
     this.set('errors', errors.uniq());
-  }),
+  }.observes('portsArray.@each.{bindAddress,public,private,protocol}'),
 });

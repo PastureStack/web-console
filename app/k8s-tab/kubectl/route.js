@@ -1,12 +1,9 @@
-import { reject } from 'rsvp';
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Route.extend({
-  access: service(),
-  cookies: service(),
+export default Ember.Route.extend({
+  access: Ember.inject.service(),
+  cookies: Ember.inject.service(),
 
   model() {
     return this.get('store').findAll('container').then((containers) => {
@@ -43,14 +40,14 @@ export default Route.extend({
 
       if ( inst )
       {
-        return EmberObject.create({
+        return Ember.Object.create({
           command: command,
           instance: inst,
         });
       }
       else
       {
-        return reject('Unable to find an active kubectld container');
+        return Ember.RSVP.reject('Unable to find an active kubectld container');
       }
     });
   },

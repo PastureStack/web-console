@@ -230,7 +230,6 @@ authPage:
       wellKnownUrl: Kinakailangan ang URL ng discovery document.
       invalidUrl: Hindi wasto ang URL ng discovery document.
       https: Dapat HTTPS ang discovery maliban sa lokal na development.
-      externalPlatformUrl: Bago i-configure ang OpenID Connect, itakda ang panlabas na URL ng platform sa isang HTTPS domain name. Hindi maaaring redirect URI ang IP address o plain HTTP URL.
       clientId: Kinakailangan ang Client ID.
       clientSecret: Kinakailangan ang client secret.
       openidScope: Dapat kasama sa mga scope ang openid.

@@ -1,6 +1,6 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   tagName: 'SPAN',
   classNames: ['state', 'badge'],
   classNameBindings: ['model.stateColor', 'model.stateBackground'],

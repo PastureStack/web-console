@@ -1,14 +1,12 @@
-import { later } from '@ember/runloop';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
-  github: service(),
+export default Ember.Component.extend({
+  github: Ember.inject.service(),
 
   actions: {
     authenticate() {
       this.sendAction('action');
-      later(() => {
+      Ember.run.later(() => {
         this.get('github').authorizeRedirect();
       }, 10);
     }

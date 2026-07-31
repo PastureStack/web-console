@@ -1,10 +1,8 @@
-import { later } from '@ember/runloop';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  shibbolethAuth: service(),
-  intl              : service(),
+export default Ember.Route.extend({
+  shibbolethAuth: Ember.inject.service(),
+  intl              : Ember.inject.service(),
   queryParams: {
     shibbolethTest: {
       refreshModel:false
@@ -51,7 +49,7 @@ export default Route.extend({
     function reply(err) {
       try {
         window.opener.window.onShibbolethTest(err);
-        later(() => {
+        Ember.run.later(() => {
           window.close();
         },250);
       } catch(e) {
@@ -60,7 +58,7 @@ export default Route.extend({
     }
   },
   setupController: function(controller) {
-    controller.set('settings', service('settings'));
+    controller.set('settings', Ember.inject.service('settings'));
   },
 
 });

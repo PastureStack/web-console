@@ -1,9 +1,9 @@
-{{#if this.editing}}
-  <select class="form-control" multiple=true onchange={{action "selectChanged" this.target.value}}>
-    <option value="r" selected={{this.rSelected}}>{{t 'devicePermissions.read'}}</option>
-    <option value="w" selected={{this.wSelected}}>{{t 'devicePermissions.write'}}</option>
-    <option value="m" selected={{this.mSelected}}>{{t 'devicePermissions.mknod'}}</option>
+{{#if editing}}
+  <select class="form-control" multiple=true onchange={{action "selectChanged" target.value}}>
+    <option value="r" selected={{rSelected}}>{{t 'devicePermissions.read'}}</option>
+    <option value="w" selected={{wSelected}}>{{t 'devicePermissions.write'}}</option>
+    <option value="m" selected={{mSelected}}>{{t 'devicePermissions.mknod'}}</option>
   </select>
 {{else}}
-  {{this.humanReadableList}}
+  {{humanReadableList}}
 {{/if}}

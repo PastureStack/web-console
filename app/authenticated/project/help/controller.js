@@ -1,18 +1,14 @@
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-import { observer } from '@ember/object';
-
-export default Controller.extend({
-  settings: service(),
+export default Ember.Controller.extend({
+  settings: Ember.inject.service(),
 
   modelError: false,
   modelResolved: false,
   hasHosts: true,
-  docsLink: alias('settings.docsBase'),
+  docsLink: Ember.computed.alias('settings.docsBase'),
 
-  modelObserver: observer('model', function() {
+  modelObserver: function() {
     if (this.get('model.resolved')) {
 
       // @@TODO@@ - need to add some error handling
@@ -24,6 +20,6 @@ export default Controller.extend({
       this.set('modelError', true);
     }
 
-  }),
+  }.observes('model'),
 
 });

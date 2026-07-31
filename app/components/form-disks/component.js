@@ -1,13 +1,11 @@
-import { get, set, computed, observer } from '@ember/object';
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   instance: null,
   availableDrivers: null,
   errors: null,
 
-  disksArray: alias('instance.disks'),
+  disksArray: Ember.computed.alias('instance.disks'),
 
   init() {
     this._super(...arguments);
@@ -15,27 +13,27 @@ export default Component.extend({
 
     var disks = (this.get('instance.disks')||[]).slice();
     disks.forEach((disk) => {
-      if ( !get(disk, 'driver') )
+      if ( !Ember.get(disk, 'driver') )
       {
-        set(disk, 'driver', defaultDriver);
+        Ember.set(disk, 'driver', defaultDriver);
       }
     });
 
     this.set('instance.disks', disks);
   },
 
-  driverChoices: computed('availableDrivers.[]', function() {
+  driverChoices: function() {
     return this.get('availableDrivers').map((name) => {
       return {label: name, value: name};
     });
-  }),
+  }.property('availableDrivers.[]'),
 
-  disksChanged: observer('instance.disks.@each.name', function() {
+  disksChanged: function() {
     var errors = [];
 
     this.get('instance.disks').forEach((disk) => {
-      var name = (get(disk,'name')||'').trim().toLowerCase();
-      set(disk, 'name', name);
+      var name = (Ember.get(disk,'name')||'').trim().toLowerCase();
+      Ember.set(disk, 'name', name);
 
       if ( name.match(/([^a-z0-9._-])/) )
       {
@@ -55,11 +53,11 @@ export default Component.extend({
     {
       this.set('errors', null);
     }
-  }),
+  }.observes('instance.disks.@each.name'),
 
-  hasRoot: computed('instance.disks.@each.root', function() {
+  hasRoot: function() {
     return this.get('instance.disks').filterBy('root',true).length > 0;
-  }),
+  }.property('instance.disks.@each.root'),
 
   actions: {
     addRootDisk() {

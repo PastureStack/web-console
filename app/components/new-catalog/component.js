@@ -1,8 +1,4 @@
-import { set, computed, observer } from '@ember/object';
-import { scheduleOnce } from '@ember/runloop';
-import { alias, notEmpty } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ShellQuote from 'ui/utils/shell-quote';
 import C from 'ui/utils/constants';
@@ -13,11 +9,11 @@ import {
   localizedCatalogReadme
 } from 'ui/utils/localized-catalog-field';
 
-export default Component.extend(NewOrEdit, {
-  intl: service(),
-  catalog: service(),
-  projects: service(),
-  settings: service(),
+export default Ember.Component.extend(NewOrEdit, {
+  intl: Ember.inject.service(),
+  catalog: Ember.inject.service(),
+  projects: Ember.inject.service(),
+  settings: Ember.inject.service(),
 
   allTemplates: null,
   templateResource: null,
@@ -39,9 +35,9 @@ export default Component.extend(NewOrEdit, {
 
   classNames: ['launch-catalog'],
 
-  primaryResource: alias('stackResource'),
-  templateBase: alias('templateResource.templateBase'),
-  editing: notEmpty('stackResource.id'),
+  primaryResource: Ember.computed.alias('stackResource'),
+  templateBase: Ember.computed.alias('templateResource.templateBase'),
+  editing: Ember.computed.notEmpty('stackResource.id'),
 
   previewOpen: false,
   previewTab: null,
@@ -75,7 +71,7 @@ export default Component.extend(NewOrEdit, {
     this.set('selectedTemplateModel', null);
     this.set('catalogQuestionFallbacks', null);
 
-    scheduleOnce('afterRender', () => {
+    Ember.run.scheduleOnce('afterRender', () => {
       if ( this.get('selectedTemplateUrl') ) {
         this.templateChanged();
       } else {
@@ -134,14 +130,14 @@ export default Component.extend(NewOrEdit, {
         description: item.description
       };
 
-      set(item, 'label', localizedCatalogQuestionField(
+      Ember.set(item, 'label', localizedCatalogQuestionField(
         labels,
         locale,
         item.variable,
         'label',
         fallback.label
       ));
-      set(item, 'description', localizedCatalogQuestionField(
+      Ember.set(item, 'description', localizedCatalogQuestionField(
         labels,
         locale,
         item.variable,
@@ -151,20 +147,20 @@ export default Component.extend(NewOrEdit, {
     });
   },
 
-  catalogLocaleChanged: observer('intl._locale', function() {
+  catalogLocaleChanged: function() {
     let model = this.get('selectedTemplateModel');
 
     if ( model ) {
       this.localizeQuestions(model);
       this.updateReadme();
     }
-  }),
+  }.observes('intl._locale'),
 
-  showDescription: computed('loading', 'loadingReadme', function () {
+  showDescription: Ember.computed('loading', 'loadingReadme', function () {
     return (!this.get('loading') && !this.get('loadingReadme'));
   }),
 
-  sortedVersions: computed('versionsArray', 'templateResource.defaultVersion', function() {
+  sortedVersions: function() {
     let out = this.get('versionsArray').sort((a,b) => {
       return compareVersion(a.version, b.version);
     });
@@ -175,9 +171,9 @@ export default Component.extend(NewOrEdit, {
     }
 
     return out;
-  }),
+  }.property('versionsArray','templateResource.defaultVersion'),
 
-  defaultUrl: computed('templateResource.defaultVersion', 'versionLinks', function() {
+  defaultUrl: function() {
     var defaultVersion = this.get('templateResource.defaultVersion');
     var versionLinks = this.get('versionLinks');
 
@@ -186,9 +182,9 @@ export default Component.extend(NewOrEdit, {
     }
 
     return null;
-  }),
+  }.property('templateResource.defaultVersion','versionLinks'),
 
-  templateChanged: observer('selectedTemplateUrl', 'templateResource.defaultVersion', function() {
+  templateChanged: function() {
     var url = this.get('selectedTemplateUrl');
 
     if ( url === 'default' ) {
@@ -258,20 +254,20 @@ export default Component.extend(NewOrEdit, {
       this.updateReadme();
       this.set('readmeContent', null);
     }
-  }),
+  }.observes('selectedTemplateUrl','templateResource.defaultVersion'),
 
-  answers: computed('selectedTemplateModel.questions.@each.{variable,answer}', function() {
+  answers: function() {
     var out = {};
     (this.get('selectedTemplateModel.questions') || []).forEach((item) => {
       out[item.variable] = item.answer;
     });
 
     return out;
-  }),
+  }.property('selectedTemplateModel.questions.@each.{variable,answer}'),
 
-  answersArray: alias('selectedTemplateModel.questions'),
+  answersArray: Ember.computed.alias('selectedTemplateModel.questions'),
 
-  answersString: computed('answersArray.@each.{variable,answer}', function() {
+  answersString: function() {
     return (this.get('answersArray')||[]).map((obj) => {
       if (obj.answer === null || obj.answer === undefined) {
         return obj.variable + '=';
@@ -279,7 +275,7 @@ export default Component.extend(NewOrEdit, {
         return obj.variable + '=' + ShellQuote.quote([obj.answer]);
       }
     }).join("\n");
-  }),
+  }.property('answersArray.@each.{variable,answer}'),
 
   validate() {
     var errors = [];
@@ -304,9 +300,9 @@ export default Component.extend(NewOrEdit, {
     return true;
   },
 
-  newExternalId: computed('selectedTemplateModel.id', function() {
+  newExternalId: function() {
     return C.EXTERNAL_ID.KIND_CATALOG + C.EXTERNAL_ID.KIND_SEPARATOR + this.get('selectedTemplateModel.id');
-  }),
+  }.property('selectedTemplateModel.id'),
 
   willSave() {
     this.set('errors', null);

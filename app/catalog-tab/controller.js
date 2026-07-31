@@ -1,6 +1,6 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
+export default Ember.Controller.extend({
   queryParams: ['category', 'catalogId','templateBase'],
   category: 'all',
   templateBase: '',

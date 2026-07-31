@@ -1,7 +1,7 @@
-import { helper as buildHelper } from '@ember/component/helper';
+import Ember from 'ember';
 
 export function upperCase(params) {
   return (params[0]||'').toUpperCase();
 }
 
-export default buildHelper(upperCase);
+export default Ember.Helper.helper(upperCase);

@@ -1,12 +1,9 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import { isAlternate } from 'ui/utils/platform';
 
-import { observer } from '@ember/object';
-
-export default Component.extend({
-  resourceActions : service('resource-actions'),
+export default Ember.Component.extend({
+  resourceActions : Ember.inject.service('resource-actions'),
   icon            : 'icon-help',
   label           : '',
   prefix          : null,
@@ -48,7 +45,7 @@ export default Component.extend({
   },
 
 
-  iconChanged: observer('icon', function() {
+  iconChanged: function() {
     this.rerender();
-  }),
+  }.observes('icon'),
 });

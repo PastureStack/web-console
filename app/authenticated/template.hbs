@@ -1,20 +1,20 @@
-{{#unless this.isPopup}}
+{{#unless isPopup}}
   {{page-header
-    currentPath=this.currentPath
-    hasCattleSystem=this.hasCattleSystem
+    currentPath=currentPath
+    hasCattleSystem=hasCattleSystem
     switchProject="switchProject"
     switchNamespace="switchNamespace"
     goToPrevious="goToPrevious"
   }}
 {{/unless}}
 <main class="clearfix">
-  {{#if (and this.forceUpgrade this.projects.current.needsUpgrade)}}
-    {{project-upgrade model=this.projects.current}}
+  {{#if (and forceUpgrade projects.current.needsUpgrade)}}
+    {{project-upgrade model=projects.current}}
   {{/if}}
 
   {{outlet}}
 </main>
-{{#unless this.isPopup}}
+{{#unless isPopup}}
   {{page-footer
     showAbout="showAbout"
   }}

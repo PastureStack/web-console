@@ -1,9 +1,9 @@
 <section class="well">
   <h2>
-    <b class="text-warning">{{t 'authPage.shibboleth.enabled.header' providerName=(t this.providerName)}}</b>
+    <b class="text-warning">{{t 'authPage.shibboleth.enabled.header' providerName=(t providerName)}}</b>
   </h2>
   <div>
-    {{t (concat-str 'authPage.shibboleth.enabled.' this.model.accessMode character='') appName=this.settings.appName providerName=(t this.providerName) users=this.numUsers orgs=this.numOrgs}}
+    {{t (concat-str 'authPage.shibboleth.enabled.' model.accessMode character='') appName=settings.appName providerName=(t providerName) users=numUsers orgs=numOrgs}}
   </div>
 </section>
 
@@ -13,18 +13,18 @@
     <hr/>
     <div class="col-md-4 r-pl0">
       <div>
-        <b>{{t 'authPage.shibboleth.enabled.displayName'}}</b> <span class="text-muted">{{this.config.displayNameField}}</span>
+        <b>{{t 'authPage.shibboleth.enabled.displayName'}}</b> <span class="text-muted">{{config.displayNameField}}</span>
       </div>
       <div>
-        <b>{{t 'authPage.shibboleth.enabled.userName'}}</b> <span class="text-muted">{{this.config.userNameField}}</span>
+        <b>{{t 'authPage.shibboleth.enabled.userName'}}</b> <span class="text-muted">{{config.userNameField}}</span>
       </div>
     </div>
     <div class="col-md-4">
       <div>
-        <b>{{t 'authPage.shibboleth.enabled.userId'}}</b> <span class="text-muted">{{this.config.uidField}}</span>
+        <b>{{t 'authPage.shibboleth.enabled.userId'}}</b> <span class="text-muted">{{config.uidField}}</span>
       </div>
       <div>
-        <b>{{t 'authPage.shibboleth.enabled.groupsField'}}</b> <span class="text-muted">{{this.config.groupsField}}</span>
+        <b>{{t 'authPage.shibboleth.enabled.groupsField'}}</b> <span class="text-muted">{{config.groupsField}}</span>
       </div>
     </div>
   </div>
@@ -32,7 +32,7 @@
 </section>
 
 {{site-access
-  model=this.model
+  model=model
   collection='siteAccess.organizations'
 }}
 
@@ -41,10 +41,10 @@
   <hr/>
 
   <p>
-    {{format-html-message 'authPage.shibboleth.enabled.disableAccess.warning' appName=this.settings.appName}}
+    {{format-html-message 'authPage.shibboleth.enabled.disableAccess.warning' appName=settings.appName}}
   </p>
 
-  {{#if this.confirmDisable}}
+  {{#if confirmDisable}}
     <button class="btn btn-danger" {{action "disable"}}>
       <i class="icon icon-alert"></i> {{t 'authPage.shibboleth.enabled.disableAccess.confirmDisable'}}
     </button>

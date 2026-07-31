@@ -1,9 +1,8 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import Sortable from 'ui/mixins/sortable';
 
-export default Controller.extend(Sortable, {
-  settings: service(),
+export default Ember.Controller.extend(Sortable, {
+  settings: Ember.inject.service(),
 
   sortBy: 'address',
   sorts: {

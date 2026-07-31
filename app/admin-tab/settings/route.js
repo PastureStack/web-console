@@ -1,10 +1,8 @@
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Route.extend({
-  settings: service(),
+export default Ember.Route.extend({
+  settings: Ember.inject.service(),
 
   beforeModel() {
     return this.get('settings').load([
@@ -18,7 +16,7 @@ export default Route.extend({
     let settings = this.get('settings');
 
     return this.get('userStore').find('setting').then(() => {
-      return EmberObject.create({
+      return Ember.Object.create({
         host:      settings.get(C.SETTING.API_HOST),
         catalog:   settings.get(C.SETTING.CATALOG_URL),
       });

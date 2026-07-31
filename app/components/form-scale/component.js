@@ -1,17 +1,14 @@
-import { scheduleOnce } from '@ember/runloop';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
 import { debouncedObserver } from 'ui/utils/debounce';
-
-import { observer, computed } from '@ember/object';
 
 // Subtract 1 (because 11...), round up to the nearest 10, then double it
 function roundScale(num) {
   return Math.ceil((num-1)/10)*10*2;
 }
 
-export default Component.extend(ManageLabels, {
+export default Ember.Component.extend(ManageLabels, {
   initialLabels : null,
   initialScale  : null,
   isGlobal      : null,
@@ -29,7 +26,7 @@ export default Component.extend(ManageLabels, {
     this.set('max', Math.max(11, roundScale(this.get('scale'))));
 
     this.initLabels(this.get('initialLabels'), null, C.LABEL.SCHED_GLOBAL);
-    scheduleOnce('afterRender', () => {
+    Ember.run.scheduleOnce('afterRender', () => {
       var on = this.getLabel(C.LABEL.SCHED_GLOBAL) === 'true';
       this.sendAction('setGlobal', this.set('isGlobal', on));
     });
@@ -39,7 +36,7 @@ export default Component.extend(ManageLabels, {
     this.sendAction('setLabels', labels);
   },
 
-  isGlobalChanged: observer('isGlobal', function() {
+  isGlobalChanged: function() {
     var on = this.get('isGlobal');
     if ( on )
     {
@@ -51,7 +48,7 @@ export default Component.extend(ManageLabels, {
     }
 
     this.sendAction('setGlobal', on);
-  }),
+  }.observes('isGlobal'),
 
   scaleChanged: debouncedObserver('scale', function() {
     if ( this.get('scale') >= this.get('max') )
@@ -62,8 +59,8 @@ export default Component.extend(ManageLabels, {
     this.sendAction('setScale', this.get('scale'));
   }, 500),
 
-  oneLouder: computed('max', function() {
+  oneLouder: function() {
     return this.get('max')+1;
-  }),
+  }.property('max'),
 
 });

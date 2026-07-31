@@ -8,10 +8,10 @@
   </div>
 </section>
 
-{{#unless this.access.enabled}}
+{{#unless access.enabled}}
   <section class="well">
     <div class="nav nav-boxes checked-active">
-      {{#each this.drivers as |driver|}}
+      {{#each drivers as |driver|}}
         {{#if driver.available}}
           {{#link-to driver.route aria-label=driver.label title=driver.label classNames=(concat "nav-box-item driver auth-driver " driver.css) href=false}}{{/link-to}}
         {{/if}}
@@ -21,7 +21,7 @@
 {{else}}
   <section class="well">
     <div class="nav nav-boxes checked-active">
-      {{#each this.drivers as |driver|}}
+      {{#each drivers as |driver|}}
         {{#if driver.safeWhileEnabled}}
           {{#if driver.available}}
             {{#link-to driver.route aria-label=driver.label title=driver.label classNames=(concat "nav-box-item driver auth-driver " driver.css) href=false}}{{/link-to}}

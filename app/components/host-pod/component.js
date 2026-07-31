@@ -1,13 +1,9 @@
-import { equal, alias, or } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import ManageLabels from 'ui/mixins/manage-labels';
 import GroupedInstances from 'ui/mixins/grouped-instances';
 
-import { observer, computed } from '@ember/object';
-
-export default Component.extend(ManageLabels, GroupedInstances, {
-  settings: service(),
+export default Ember.Component.extend(ManageLabels, GroupedInstances, {
+  settings: Ember.inject.service(),
 
   model: null,
   mode: null,
@@ -27,11 +23,11 @@ export default Component.extend(ManageLabels, GroupedInstances, {
     },
   },
 
-  shouldUpdateLabels: observer('model.labels', function() {
+  shouldUpdateLabels: function() {
     this.initLabels(this.get('model.labels'));
-  }),
+  }.observes('model.labels'),
 
-  filteredInstances: computed('model.instances.@each.labels', 'show', function() {
+  filteredInstances: function() {
     let out = this.get('model.instances')||[];
     //out = out.filterBy('isRemoved', false);
 
@@ -41,20 +37,20 @@ export default Component.extend(ManageLabels, GroupedInstances, {
 
 
     return out;
-  }),
+  }.property('model.instances.@each.labels','show'),
 
-  arrangedInstances: computed('filteredInstances.@each.{name,id}', function() {
+  arrangedInstances: function() {
     return this.get('filteredInstances').sortBy('name','id');
-  }),
+  }.property('filteredInstances.@each.{name,id}'),
 
-  isActive: equal('model.state','active'),
-  isProvisioning: equal('model.state','provisioning'),
-  isError: equal('model.state','error'),
-  showAdd: alias('isActive'),
-  showOnlyMessage: or('isProvisioning','isError'),
+  isActive: Ember.computed.equal('model.state','active'),
+  isProvisioning: Ember.computed.equal('model.state','provisioning'),
+  isError: Ember.computed.equal('model.state','error'),
+  showAdd: Ember.computed.alias('isActive'),
+  showOnlyMessage: Ember.computed.or('isProvisioning','isError'),
 
-  stateBackground: computed('model.stateColor', function() {
+  stateBackground: function() {
     return this.get('model.stateColor').replace("text-","bg-");
-  }),
+  }.property('model.stateColor'),
 
 });

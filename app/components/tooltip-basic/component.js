@@ -1,15 +1,12 @@
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Tooltip from 'ui/mixins/tooltip';
 
-import { computed } from '@ember/object';
-
-export default Component.extend(Tooltip, {
+export default Ember.Component.extend(Tooltip, {
   needs   : ['application'],
-  model   : alias('tooltipService.tooltipOpts.model'),
+  model   : Ember.computed.alias('tooltipService.tooltipOpts.model'),
   display : null,
 
-  selectPartial: computed('tooltipService.tooltipOpts.template', function() {
+  selectPartial: function() {
     var template = this.get('tooltipService.tooltipOpts.template');
     var out      = template;
 
@@ -18,6 +15,6 @@ export default Component.extend(Tooltip, {
     }
 
     return out;
-  })
+  }.property('tooltipService.tooltipOpts.template')
 
 });

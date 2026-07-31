@@ -1,16 +1,12 @@
-import { on } from '@ember/object/evented';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed, observer } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   tagName    : '',
   expanded   : false,
   expandAll  : false,
   expandSelf : false,
   depth      : 0,
-  modalService: service('modal'),
+  modalService: Ember.inject.service('modal'),
 
   actions: {
     expand: function() {
@@ -21,7 +17,7 @@ export default Component.extend({
     }
   },
 
-  setup: on('init', function() {
+  setup: Ember.on('init', function() {
 
     if (this.get('nodeDepth')) {
       this.set('depth', this.incrementProperty('nodeDepth'));
@@ -30,19 +26,19 @@ export default Component.extend({
     }
   }),
 
-  checkProcessHandlerExecutions: computed(function() {
+  checkProcessHandlerExecutions: function() {
     if (this.get('execution').hasOwnProperty('processHandlerExecutions') && this.get('execution').processHandlerExecutions.length > 0) {
       return true;
     } else {
       return false;
     }
-  }),
+  }.property(),
 
-  expandChildren: on('init', observer('expandAll', function() {
+  expandChildren: function() {
     if (this.get('expandAll')) {
       this.set('expanded', true);
     } else {
       this.set('expanded', false);
     }
-  }))
+  }.observes('expandAll').on('init')
 });

@@ -34,7 +34,6 @@ for 30 days. Release publication remains a separate reviewed step.
 
 ```sh
 npm ci --ignore-scripts
-./node_modules/.bin/patch-package
 npm run build -- --environment=production
 npm test
 bash scripts/package-static-candidate 1.6.56 dist build/ui/1.6.56.tar.gz

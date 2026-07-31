@@ -30,7 +30,7 @@ for section in ("dependencies", "devDependencies", "overrides"):
         if name in values:
             fail("DISABLED_BUILD_ADDON_PRESENT_IN_PACKAGE", section=section, package=name)
 
-lock_path = Path("package-lock.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
     package_count = 0

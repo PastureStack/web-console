@@ -1,9 +1,6 @@
-import EmberObject from '@ember/object';
-import { isArray } from '@ember/array';
-import { hash } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(params/*, transition*/) {
     var store = this.get('store');
 
@@ -17,7 +14,7 @@ export default Route.extend({
       dependencies['existing'] = store.find('virtualmachine', params.virtualMachineId, {include: ['ports','instanceLinks']});
     }
 
-    return hash(dependencies, 'Load VM dependencies').then(function(results) {
+    return Ember.RSVP.hash(dependencies, 'Load VM dependencies').then(function(results) {
       var data, healthCheckData;
       if ( results.existing )
       {
@@ -27,7 +24,7 @@ export default Route.extend({
           return port;
         });
 
-        if ( isArray(data.instanceLinks) )
+        if ( Ember.isArray(data.instanceLinks) )
         {
           data.instanceLinks = (data.instanceLinks||[]).map((link) => {
             delete link.id;
@@ -56,7 +53,7 @@ export default Route.extend({
         instance.set('healthCheck', store.createRecord(healthCheckData));
       }
 
-      return EmberObject.create({
+      return Ember.Object.create({
         instance: instance,
         allHosts: results.allHosts,
         allStoragePools: results.allStoragePools,

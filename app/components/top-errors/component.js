@@ -1,20 +1,17 @@
-import { later } from '@ember/runloop';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   errors: null,
 
   classNames: ['top-errors','alert','alert-danger'],
   classNameBindings: ['errors.length::hide'],
 
-  errorsDidChange: computed('errors.[]', function() {
+  errorsDidChange: function() {
     if ( this.get('errors.length') )
     {
-      later(() => {
+      Ember.run.later(() => {
         this.$().scrollIntoView();
       },100);
     }
-  }),
+  }.property('errors.[]'),
 });

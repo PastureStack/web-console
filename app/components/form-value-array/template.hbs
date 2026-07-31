@@ -1,15 +1,15 @@
-<button class="btn-circle-text" {{action "add"}}><i class="icon icon-plus-circle"/> <span>{{t this.addActionLabel}}</span></button>
+<button class="btn-circle-text" {{action "add"}}><i class="icon icon-plus-circle"/> <span>{{t addActionLabel}}</span></button>
 
-{{#if this.ary.length}}
+{{#if ary.length}}
   <table class="table fixed no-lines no-top-padding tight small">
     <tr class="text-muted hidden-xs hidden-sm">
-      <th>{{t this.valueLabel}}</th>
+      <th>{{t valueLabel}}</th>
       <th width="30">&nbsp;</th>
     </tr>
-    {{#each this.ary as |row|}}
+    {{#each ary as |row|}}
       <tr>
-        <td data-title="{{t this.valueLabel}}">
-          {{input-paste pasted="pastedValues" class="form-control input-sm value" type="text" value=row.value placeholder=this.valuePlaceholder}}
+        <td data-title="{{t valueLabel}}">
+          {{input-paste pasted="pastedValues" class="form-control input-sm value" type="text" value=row.value placeholder=valuePlaceholder}}
         </td>
 
         <td class="text-right">
@@ -18,7 +18,7 @@
       </tr>
     {{/each}}
   </table>
-  {{#if this.showProTip}}
+  {{#if showProTip}}
     <div class="text-muted" style="font-size: 12px; margin-bottom: 12px;">
       {{t 'formValueArray.protip'}}
     </div>

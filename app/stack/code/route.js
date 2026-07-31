@@ -1,7 +1,6 @@
-import EmberObject from '@ember/object';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(/*params, transition*/) {
     var par = this.modelFor('stack');
     var stack = par.get('stack');
@@ -10,7 +9,7 @@ export default Route.extend({
       var dockerCompose = config.dockerComposeConfig.split(/\r?\n/).join('\r\n');
       var rancherCompose = config.rancherComposeConfig.split(/\r?\n/).join('\r\n');
 
-      return EmberObject.create({
+      return Ember.Object.create({
         stack: stack,
         all: par.get('all'),
         dockerCompose: dockerCompose,

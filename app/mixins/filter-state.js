@@ -1,12 +1,9 @@
-import { alias } from '@ember/object/computed';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Mixin.create({
+export default Ember.Mixin.create({
   filterStates: null,
-  filterableContent: alias('model'),
+  filterableContent: Ember.computed.alias('model'),
 
   init() {
     this._super();
@@ -16,11 +13,11 @@ export default Mixin.create({
     }
   },
 
-  filtered: computed('filterableContent.@each.state', 'filterStates.[]', function() {
+  filtered: function() {
     var filterStates = this.get('filterStates');
     return (this.get('filterableContent')||[]).filter((row) => {
       var state = (row.get('state')||'').toLowerCase();
       return filterStates.indexOf(state) === -1;
     });
-  }),
+  }.property('filterableContent.@each.state','filterStates.[]'),
 });

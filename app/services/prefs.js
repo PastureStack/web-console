@@ -1,14 +1,12 @@
-import { computed } from '@ember/object';
-import { run } from '@ember/runloop';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Service.extend({
-  userStore: service('user-store'),
+export default Ember.Service.extend({
+  userStore: Ember.inject.service('user-store'),
 
-  unremoved: computed('userStore.generation', function() {
+  unremoved: function() {
     return this.get('userStore').all('userpreference');
-  }),
+  }.property('userStore.generation'),
 
   findByName: function(key) {
     return this.get('unremoved').filterBy('name',key)[0];
@@ -62,7 +60,7 @@ export default Service.extend({
     if ( !obj.get('id') || obj.get('value') !== neu ) {
       obj.set('value', neu);
       obj.save().then(() => {
-        run(() => {
+        Ember.run(() => {
           this.notifyPropertyChange(key);
         });
       });
@@ -81,7 +79,7 @@ export default Service.extend({
     this.endPropertyChanges();
   },
 
-  tablePerPage: computed(`${C.PREFS.TABLE_COUNT}`, function() {
+  tablePerPage: Ember.computed(`${C.PREFS.TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.TABLE_COUNT}`);
     if ( C.TABLES.PAGE_SIZES.indexOf(out) === -1 ) {
       out = C.TABLES.DEFAULT_COUNT;
@@ -90,7 +88,7 @@ export default Service.extend({
     return out;
   }),
 
-  statsTablePerPage: computed(`${C.PREFS.STATS_TABLE_COUNT}`, function() {
+  statsTablePerPage: Ember.computed(`${C.PREFS.STATS_TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.STATS_TABLE_COUNT}`);
 
     if ( C.TABLES.STATS_PAGE_SIZES.indexOf(out) === -1 ) {
@@ -100,7 +98,7 @@ export default Service.extend({
     return out;
   }),
 
-  storageTablePerPage: computed(`${C.PREFS.STORAGE_TABLE_COUNT}`, function() {
+  storageTablePerPage: Ember.computed(`${C.PREFS.STORAGE_TABLE_COUNT}`, function() {
     let out = this.get(`${C.PREFS.STORAGE_TABLE_COUNT}`);
 
     if ( C.TABLES.STORAGE_PAGE_SIZES.indexOf(out) === -1 ) {

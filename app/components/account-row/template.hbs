@@ -1,39 +1,39 @@
 <td data-title="{{t 'generic.state'}}:" >
-  {{badge-state model=this.model}}
+  {{badge-state model=model}}
 </td>
 <td data-title="{{t 'generic.id'}}:" >
-  {{this.model.id}}
+  {{model.id}}
 </td>
 <td data-title="{{t 'accountsPage.index.table.kind'}}:" >
-  {{t (concat-str 'model.account.kind.' this.model.kind character='')}}
+  {{t (concat-str 'model.account.kind.' model.kind character='')}}
 </td>
-{{#if this.isLocal}}
+{{#if isLocal}}
   <td data-title="{{t 'accountsPage.index.table.username'}}:" >
-    {{#if this.model.username}}
-      {{this.model.username}}
+    {{#if model.username}}
+      {{model.username}}
     {{else}}
       <span class="text-muted">{{t 'accountsPage.index.table.noName'}}</span>
     {{/if}}
   </td>
   <td data-title="{{t 'generic.name'}}:" class="force-wrap">
-    {{this.model.displayName}}
+    {{model.displayName}}
   </td>
 {{else}}
   <td data-title="{{t 'accountsPage.index.table.identity'}}" >
-    {{#if (and this.model.externalId this.model.externalIdType)}}
-      {{identity-block externalIdType=this.model.externalIdType externalId=this.model.externalId}}
+    {{#if (and model.externalId model.externalIdType)}}
+      {{identity-block externalIdType=model.externalIdType externalId=model.externalId}}
     {{else}}
       <span class="text-muted">{{t 'accountsPage.index.table.noName'}}</span>
     {{/if}}
   </td>
 {{/if}}
 <td data-title="{{t 'generic.actions'}}:" class="actions">
-  {{#link-to "admin-tab.auth.mfa" (query-params accountId=this.model.id)
+  {{#link-to "admin-tab.auth.mfa" (query-params accountId=model.id)
       classNames="btn btn-xs btn-default account-row-manage-mfa"
       data-testid="account-row-manage-mfa"
-      title=(t 'authPage.mfa.manageAccount' account=this.model.displayName)}}
+      title=(t 'authPage.mfa.manageAccount' account=model.displayName)}}
     <i class="icon icon-shield"></i>
-    <span class="sr-only">{{t 'authPage.mfa.manageAccount' account=this.model.displayName}}</span>
+    <span class="sr-only">{{t 'authPage.mfa.manageAccount' account=model.displayName}}</span>
   {{/link-to}}
-  {{action-menu model=this.model}}
+  {{action-menu model=model}}
 </td>

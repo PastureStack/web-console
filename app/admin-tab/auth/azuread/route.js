@@ -1,6 +1,6 @@
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function() {
     return this.get('userStore').find('azureadconfig', null, {forceReload: true}).then((collection) => {
       let obj = collection.get('firstObject');

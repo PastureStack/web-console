@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
-  projects: service(),
+export default Ember.Controller.extend({
+  projects: Ember.inject.service(),
 
   actions: {
     openDashboard() {

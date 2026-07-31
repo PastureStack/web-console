@@ -1,11 +1,10 @@
-import { hash } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 import PolledModel from 'ui/mixins/polled-model';
 
-export default Route.extend(PolledModel, {
+export default Ember.Route.extend(PolledModel, {
   model() {
     let us = this.get('userStore');
-    return hash({
+    return Ember.RSVP.hash({
       pools: us.find('processpool', null, {forceReload: true}),
     });
   },

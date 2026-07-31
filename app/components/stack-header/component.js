@@ -1,12 +1,9 @@
-import EmberObject, { computed } from '@ember/object';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
-  settings: service(),
-  projects: service(),
-  hasVm: alias('projects.current.virtualMachine'),
+export default Ember.Component.extend({
+  settings: Ember.inject.service(),
+  projects: Ember.inject.service(),
+  hasVm: Ember.computed.alias('projects.current.virtualMachine'),
 
   actions: {
     changeStack(stack) {
@@ -16,18 +13,18 @@ export default Component.extend({
     }
   },
 
-  outputs: computed('model.outputs', 'model.id', function() {
+  outputs: function() {
     var out = [];
     var map = this.get('model.outputs')||{};
     Object.keys(map).forEach((key) => {
-      out.push(EmberObject.create({
+      out.push(Ember.Object.create({
         key: key,
         value: map[key],
       }));
     });
 
     return out;
-  }),
+  }.property('model.outputs','model.id'),
 
   listLinkOptions: {
     route: 'stack.index',

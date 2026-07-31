@@ -1,13 +1,10 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
-
-import { observer } from '@ember/object';
 
 const DRIVERS = ['scaleService','scaleHost','serviceUpgrade'];
 
-export default Component.extend(NewOrEdit, {
-  projects: service(),
+export default Ember.Component.extend(NewOrEdit, {
+  projects: Ember.inject.service(),
   model: null,
 
   init() {
@@ -65,14 +62,14 @@ export default Component.extend(NewOrEdit, {
     }
   },
 
-  scaleHostActionChanged: observer('model.scaleHostConfig.action', function() {
+  scaleHostActionChanged: function() {
     let action = this.get('model.scaleHostConfig.action');
     if ( action === 'up' ) {
       this.set('model.scaleHostConfig.deleteOption', null);
     } else if ( action === 'down' && !this.get('model.scaleHostConfig.deleteOption') ) {
       this.set('model.scaleHostConfig.deleteOption', 'leastRecent');
     }
-  }),
+  }.observes('model.scaleHostConfig.action'),
 
   actions: {
     changeDriver(e) {

@@ -66,7 +66,7 @@ require_pattern "$styles" 'overflow-x:[[:space:]]*hidden' 'fitted tables suppres
 require_pattern "$styles" 'table-column-scroll-host-overflowing' 'horizontal scrolling only for real overflow'
 require_pattern "$styles" 'sortable-table-page-size' 'page-size layout rules'
 require_pattern "$styles" 'flex:[[:space:]]*0[[:space:]]+0[[:space:]]+auto' 'page-size control cannot be squeezed away'
-require_pattern "$page_numbers" 'this\.content\.page[[:space:]]+0\}\}[[:space:]]*/[[:space:]]*\{\{this\.content\.totalPages' 'compact current-page / total-pages summary'
+require_pattern "$page_numbers" 'content\.page[[:space:]]+0\}\}[[:space:]]*/[[:space:]]*\{\{content\.totalPages' 'compact current-page / total-pages summary'
 require_pattern "$pagination_styles" 'white-space:[[:space:]]*nowrap' 'pagination summary stays on one line'
 require_pattern "$utility" 'hasHorizontalOverflow' 'sub-pixel-safe overflow detection'
 require_pattern "$header_styles" 'right:[[:space:]]*0' 'environment menu overlay ends at its containing row'

@@ -1,13 +1,10 @@
-import { next } from '@ember/runloop';
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import { parseCatalogSetting } from 'ui/utils/parse-catalog-setting';
 
-export default Component.extend({
-  settings: service(),
-  catalog: service(),
+export default Ember.Component.extend({
+  settings: Ember.inject.service(),
+  catalog: Ember.inject.service(),
 
   initialValue: null,
 
@@ -18,8 +15,8 @@ export default Component.extend({
 
   actions: {
     add() {
-      this.get('ary').pushObject(EmberObject.create({name: '', branch: C.CATALOG.DEFAULT_BRANCH, url: ''}));
-      next(() => {
+      this.get('ary').pushObject(Ember.Object.create({name: '', branch: C.CATALOG.DEFAULT_BRANCH, url: ''}));
+      Ember.run.next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }
@@ -93,7 +90,7 @@ export default Component.extend({
 
     var ary = [];
     Object.keys(map).forEach((name) => {
-      ary.push(EmberObject.create({name: name, branch: map[name].branch, url: map[name].url}));
+      ary.push(Ember.Object.create({name: name, branch: map[name].branch, url: map[name].url}));
     });
 
     this.setProperties({

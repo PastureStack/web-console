@@ -3,7 +3,7 @@
 </section>
 
 <section class="well">
-  {{t 'haPage.setup.prefix' appName=this.settings.appName}} <a href="{{this.settings.docsBase}}/high-availability/" target="_blank" rel="noopener noreferrer">{{t 'haPage.setup.link' appName=this.settings.appName}}</a>{{t 'haPage.setup.suffix' appName=this.settings.appName}}
+  {{t 'haPage.setup.prefix' appName=settings.appName}} <a href="{{settings.docsBase}}/high-availability/" target="_blank" rel="noopener noreferrer">{{t 'haPage.setup.link' appName=settings.appName}}</a>{{t 'haPage.setup.suffix' appName=settings.appName}}
 </section>
 
 <section class="well instances">
@@ -18,7 +18,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each this.arranged as |member|}}
+      {{#each arranged as |member|}}
         <tr>
           <td>{{member.uuid}}</td>
           <td>{{member.advertiseAddress}}</td>

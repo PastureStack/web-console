@@ -1,14 +1,9 @@
-import { observer } from '@ember/object';
-import $ from 'jquery';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import { isMore } from 'ui/utils/platform';
 
-import { on } from '@ember/object/evented';
-
-export default Component.extend({
-  resourceActions : service('resource-actions'),
-  tooltipService  : service('tooltip'),
+export default Ember.Component.extend({
+  resourceActions : Ember.inject.service('resource-actions'),
+  tooltipService  : Ember.inject.service('tooltip'),
   model           : null,
   tagName         : 'span',
   type            : 'tooltip-action-menu',
@@ -41,19 +36,19 @@ export default Component.extend({
 
       this.get('resourceActions').set('open', true);
       this.get('tooltipService').set('openedViaContextClick', true);
-      $('.container-tooltip .more-actions').trigger('click');
+      Ember.$('.container-tooltip .more-actions').trigger('click');
     } else {
 
       this.get('resourceActions').show(this.get('model'), this.$());
     }
   },
 
-  resourceActionsObserver: on('init', observer('resourceActions.open', function() {
+  resourceActionsObserver: Ember.observer('resourceActions.open', function() {
 
     if (this.get('tooltipService.openedViaContextClick')) {
 
       this.get('tooltipService').set('openedViaContextClick', false);
     }
 
-  })),
+  }).on('init'),
 });

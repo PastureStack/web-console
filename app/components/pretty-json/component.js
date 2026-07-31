@@ -1,11 +1,9 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   value: null,
 
-  json: computed('value', function() {
+  json: function() {
     var value = (this.get('value')||'')+'';
     if ( ['[','{'].indexOf(value.substr(0,1)) >= 0 )
     {
@@ -17,5 +15,5 @@ export default Component.extend({
     }
 
     return null;
-  }),
+  }.property('value'),
 });

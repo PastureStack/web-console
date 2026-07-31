@@ -1,12 +1,12 @@
-{{#unless this.isActions}}
-  {{#if this.sortableEnabled}}
+{{#unless isActions}}
+  {{#if sortableEnabled}}
     <button class="btn bg-transparent lacsso">
-      {{#if hasBlock}}{{yield}}{{else}} {{#if this.translationKey}} {{t this.translationKey}} {{else}} {{this.label}} {{/if}}{{/if}}
+      {{#if hasBlock}}{{yield}}{{else}} {{#if translationKey}} {{t translationKey}} {{else}} {{label}} {{/if}}{{/if}}
       <span class="icon-stack" aria-hidden="true">
-        {{#if this.activeAscending}}
+        {{#if activeAscending}}
           <i class="icon icon-sort-down icon-stack-1x"></i>
         {{else}}
-          {{#if this.activeDescending}}
+          {{#if activeDescending}}
             <i class="icon icon-sort-up icon-stack-1x"></i>
           {{else}}
             <i class="icon icon-sort icon-stack-1x faded"></i>
@@ -15,6 +15,6 @@
       </span>
     </button>
   {{else}}
-    <span>{{#if hasBlock}}{{yield}}{{else}}{{#if this.translationKey}}{{t this.translationKey}}{{else}}{{this.label}}{{/if}}{{/if}}</span>
+    <span>{{#if hasBlock}}{{yield}}{{else}}{{#if translationKey}}{{t translationKey}}{{else}}{{label}}{{/if}}{{/if}}</span>
   {{/if}}
 {{/unless}}

@@ -1,10 +1,6 @@
-import { computed } from '@ember/object';
-import { alias, notEmpty } from '@ember/object/computed';
-import { service } from '@ember/service';
-import { htmlSafe } from '@ember/template';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
-import { escapeHtml } from 'ui/utils/util';
 import { denormalizeId, denormalizeIdArray } from 'ember-api-store/utils/denormalize';
 import Instance from 'ui/models/instance';
 import { formatSi } from 'ui/utils/util';
@@ -14,9 +10,9 @@ var Container = Instance.extend({
   requestedHostId            : null,
   primaryIpAddress           : null,
   primaryAssociatedIpAddress : null,
-  projects                   : service(),
-  modalService: service('modal'),
-  consoleWorkspace: service('console-workspace'),
+  projects                   : Ember.inject.service(),
+  modalService: Ember.inject.service('modal'),
+  consoleWorkspace: Ember.inject.service('console-workspace'),
   // Container-specific
   type                       : 'container',
   imageUuid                  : null,
@@ -34,8 +30,8 @@ var Container = Instance.extend({
   mounts                     : denormalizeIdArray('mountIds'),
   primaryHost                : denormalizeId('hostId'),
   services                   : denormalizeIdArray('serviceIds'),
-  primaryService             : alias('services.firstObject'),
-  primaryStack               : alias('primaryService.stack'),
+  primaryService             : Ember.computed.alias('services.firstObject'),
+  primaryStack               : Ember.computed.alias('primaryService.stack'),
 
   actions: {
     restart: function() {
@@ -86,57 +82,50 @@ var Container = Instance.extend({
 
   },
 
-  availableActions: computed(
-    'actionLinks.{restart,start,stop,restore,purge,execute,logs,update}',
-    'systemContainer',
-    'canDelete',
-    'labels',
-    'isVm',
-    function() {
-      var a = this.get('actionLinks');
-      if ( !a )
-      {
-        return [];
-      }
-
-      var labelKeys = Object.keys(this.get('labels')||{});
-      var isSystem = !!this.get('system') || labelKeys.indexOf(C.LABEL.SYSTEM_TYPE) >= 0;
-      var isService = labelKeys.indexOf(C.LABEL.SERVICE_NAME) >= 0;
-      var isVm = this.get('isVm');
-      var isK8s = labelKeys.indexOf(C.LABEL.K8S_POD_NAME) >= 0;
-
-      var choices = [
-        { label: 'action.restart',    icon: 'icon icon-refresh',      action: 'restart',      enabled: !!a.restart, bulkable: true, bulkActionName: 'Restart'},
-        { label: 'action.start',      icon: 'icon icon-play',         action: 'start',        enabled: !!a.start, bulkable: true, bulkActionName:  'Start'},
-        { label: 'action.stop',       icon: 'icon icon-stop',         action: 'promptStop',   enabled: !!a.stop, altAction: 'stop', bulkable: true, bulkActionName: 'Stop' },
-        { label: 'action.remove',     icon: 'icon icon-trash',        action: 'promptDelete', enabled: this.get('canDelete'), altAction: 'delete', bulkable: true, bulkActionName: 'Delete' },
-        { label: 'action.purge',      icon: '',                       action: 'purge',        enabled: !!a.purge },
-        { divider: true },
-        { label: 'action.execute',    icon: '',                       action: 'shell',        enabled: !!a.execute && !isVm, altAction:'popoutShell'},
-        { label: 'action.console',    icon: '',                       action: 'console',      enabled: !!a.console &&  isVm, altAction:'popoutShellVm' },
-        { label: 'action.logs',       icon: '',                       action: 'logs',         enabled: !!a.logs, altAction: 'popoutLogs' },
-        { label: 'action.viewInApi',  icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
-        { divider: true },
-        { label: 'action.clone',      icon: 'icon icon-copy',         action: 'clone',        enabled: !isSystem && !isService && !isK8s},
-        { label: 'action.edit',       icon: 'icon icon-edit',         action: 'edit',         enabled: !!a.update && !isK8s },
-      ];
-
-      return choices;
+  availableActions: function() {
+    var a = this.get('actionLinks');
+    if ( !a )
+    {
+      return [];
     }
-  ),
+
+    var labelKeys = Object.keys(this.get('labels')||{});
+    var isSystem = !!this.get('system') || labelKeys.indexOf(C.LABEL.SYSTEM_TYPE) >= 0;
+    var isService = labelKeys.indexOf(C.LABEL.SERVICE_NAME) >= 0;
+    var isVm = this.get('isVm');
+    var isK8s = labelKeys.indexOf(C.LABEL.K8S_POD_NAME) >= 0;
+
+    var choices = [
+      { label: 'action.restart',    icon: 'icon icon-refresh',      action: 'restart',      enabled: !!a.restart, bulkable: true, bulkActionName: 'Restart'},
+      { label: 'action.start',      icon: 'icon icon-play',         action: 'start',        enabled: !!a.start, bulkable: true, bulkActionName:  'Start'},
+      { label: 'action.stop',       icon: 'icon icon-stop',         action: 'promptStop',   enabled: !!a.stop, altAction: 'stop', bulkable: true, bulkActionName: 'Stop' },
+      { label: 'action.remove',     icon: 'icon icon-trash',        action: 'promptDelete', enabled: this.get('canDelete'), altAction: 'delete', bulkable: true, bulkActionName: 'Delete' },
+      { label: 'action.purge',      icon: '',                       action: 'purge',        enabled: !!a.purge },
+      { divider: true },
+      { label: 'action.execute',    icon: '',                       action: 'shell',        enabled: !!a.execute && !isVm, altAction:'popoutShell'},
+      { label: 'action.console',    icon: '',                       action: 'console',      enabled: !!a.console &&  isVm, altAction:'popoutShellVm' },
+      { label: 'action.logs',       icon: '',                       action: 'logs',         enabled: !!a.logs, altAction: 'popoutLogs' },
+      { label: 'action.viewInApi',  icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
+      { divider: true },
+      { label: 'action.clone',      icon: 'icon icon-copy',         action: 'clone',        enabled: !isSystem && !isService && !isK8s},
+      { label: 'action.edit',       icon: 'icon icon-edit',         action: 'edit',         enabled: !!a.update && !isK8s },
+    ];
+
+    return choices;
+  }.property('actionLinks.{restart,start,stop,restore,purge,execute,logs,update}','systemContainer','canDelete','labels','isVm'),
 
 
-  memoryReservationBlurb: computed('memoryReservation', function() {
+  memoryReservationBlurb: Ember.computed('memoryReservation', function() {
     if ( this.get('memoryReservation') ) {
       return formatSi(this.get('memoryReservation'), 1024, 'iB', 'B');
     }
   }),
   // Hacks
-  hasManagedNetwork: computed('primaryIpAddress', function() {
+  hasManagedNetwork: function() {
     return this.get('primaryIpAddress') && this.get('primaryIpAddress').indexOf('10.') === 0;
-  }),
+  }.property('primaryIpAddress'),
 
-  combinedState: computed('state', 'healthState', function() {
+  combinedState: function() {
     var resource = this.get('state');
     var health = this.get('healthState');
 
@@ -159,21 +148,21 @@ var Container = Instance.extend({
     {
       return resource;
     }
-  }),
+  }.property('state', 'healthState'),
 
-  isVm: computed('type', function() {
+  isVm: function() {
     return this.get('type').toLowerCase() === 'virtualmachine';
-  }),
+  }.property('type'),
 
-  isOn: computed('state', function() {
+  isOn: function() {
     return ['running','updating-running','migrating','restarting'].indexOf(this.get('state')) >= 0;
-  }),
+  }.property('state'),
 
-  displayIp: computed('primaryIpAddress', 'primaryAssociatedIpAddress', function() {
+  displayIp: function() {
     return this.get('primaryAssociatedIpAddress') || this.get('primaryIpAddress') || null;
-  }),
+  }.property('primaryIpAddress','primaryAssociatedIpAddress'),
 
-  sortIp: computed('primaryIpAddress', 'primaryAssociatedIpAddress', function() {
+  sortIp: function() {
     var ip = this.get('primaryAssociatedIpAddress') || this.get('primaryIpAddress');
     if ( !ip ) {
       return '';
@@ -183,29 +172,29 @@ var Container = Instance.extend({
     {
       return match.slice(1).map((octet) => { return Util.strPad(octet,3,'0',false); }).join(".");
     }
-  }),
+  }.property('primaryIpAddress','primaryAssociatedIpAddress'),
 
-  canDelete: computed('state', function() {
+  canDelete: function() {
     return ['removed','removing','purging','purged'].indexOf(this.get('state')) === -1;
-  }),
+  }.property('state'),
 
-  isManaged: notEmpty('systemContainer'),
+  isManaged: Ember.computed.notEmpty('systemContainer'),
 
-  displayImage: computed('imageUuid', function() {
+  displayImage: function() {
     return (this.get('imageUuid')||'').replace(/^docker:/,'');
-  }),
+  }.property('imageUuid'),
 
-  displayExternalId: computed('externalId', function() {
+  displayExternalId: function() {
     var id = this.get('externalId');
     if ( id )
     {
-      return htmlSafe(escapeHtml(id.substr(0,12))+"&hellip;");
+      return (Ember.Handlebars.Utils.escapeExpression(id.substr(0,12))+"&hellip;").htmlSafe();
     }
-  }),
+  }.property('externalId'),
 
-  isGlobalScale: computed('labels', function() {
+  isGlobalScale: function() {
     return (this.get('labels')||{})[C.LABEL.SCHED_GLOBAL] + '' === 'true';
-  }),
+  }.property('labels'),
 });
 
 export default Container;

@@ -1,17 +1,12 @@
-import { equal } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import { parsePortSpec } from 'ui/utils/parse-port';
 
-import { on } from '@ember/object/evented';
-import { computed } from '@ember/object';
-
-export default Component.extend({
-  intl: service(),
+export default Ember.Component.extend({
+  intl: Ember.inject.service(),
 
   service: null,
   ruleType: 'portRule',
-  showListeners: equal('ruleType','portRule'),
+  showListeners: Ember.computed.equal('ruleType','portRule'),
 
   rules: null,
   protocolChoices: null,
@@ -20,7 +15,7 @@ export default Component.extend({
   showRegion: null,
   hasRegion: null,
 
-  onInit: on('init', function() {
+  onInit: function() {
     let rules = this.get('service.lbConfig.portRules');
     if ( !rules ) {
       rules = [];
@@ -65,7 +60,7 @@ export default Component.extend({
         }
       });
     }
-  }),
+  }.on('init'),
 
   actions: {
     addRule(isSelector) {
@@ -133,7 +128,7 @@ export default Component.extend({
     });
   },
 
-  minPriority: computed('rules.@each.priority', function() {
+  minPriority: function() {
     let val = null;
     this.get('rules').forEach((rule) => {
       let cur = rule.get('priority');
@@ -145,14 +140,14 @@ export default Component.extend({
     });
 
     return val;
-  }),
+  }.property('rules.@each.priority'),
 
-  maxPriority: computed('rules.@each.priority', function() {
+  maxPriority: function() {
     let val = 0;
     this.get('rules').forEach((rule) => {
       val = Math.max(val, rule.get('priority'));
     });
 
     return val;
-  }),
+  }.property('rules.@each.priority'),
 });

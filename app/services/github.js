@@ -1,13 +1,12 @@
-import { Promise } from 'rsvp';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 
-export default Service.extend({
-  access: service(),
-  cookies  : service(),
-  session  : service(),
-  userStore: service(),
+export default Ember.Service.extend({
+  access: Ember.inject.service(),
+  cookies  : Ember.inject.service(),
+  session  : Ember.inject.service(),
+  userStore: Ember.inject.service(),
 
   // Set by app/services/access
   hostname : null,
@@ -21,7 +20,7 @@ export default Service.extend({
   },
 
   getToken: function() {
-    return new Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve, reject) => {
       this.get('userStore').rawRequest({
         url: 'token',
       })

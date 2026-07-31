@@ -41,38 +41,24 @@ deps = bower.get("dependencies", {}) or {}
 if deps:
     fail("BOWER_DEPENDENCIES_REMAIN", actual=",".join(sorted(deps)))
 
-package = json.loads(Path("package.json").read_text(encoding="utf-8"))
-lock = json.loads(Path("package-lock.json").read_text(encoding="utf-8"))
-packages = lock.get("packages", {})
-expected_packages = {
-    "ember-source": ("7.1.0", "node_modules/ember-source"),
-    "@ember/jquery": ("2.0.0", "node_modules/@ember/jquery"),
-    "ember-cli-htmlbars": ("7.0.1", "node_modules/ember-cli-htmlbars"),
-}
-for name, (expected, lock_path) in expected_packages.items():
-    actual = package.get("devDependencies", {}).get(name)
-    if actual != expected:
-        fail("EMBER_RUNTIME_PACKAGE_DRIFT", package=name, actual=actual, expected=expected)
-    locked = packages.get(lock_path, {}).get("version")
-    if locked != expected:
-        fail("EMBER_RUNTIME_LOCK_DRIFT", package=name, actual=locked, expected=expected)
-
 build = Path("ember-cli-build.js").read_text(encoding="utf-8")
 environment = Path("config/environment.js").read_text(encoding="utf-8")
-for marker in [
-    "app.import('vendor/ember/",
-    "app.import('vendor/jquery/",
-    "templateCompilerPath: 'vendor/ember/",
-    "bower_components/ember",
-]:
-    if marker in build or marker in environment:
-        fail("ACTIVE_VENDORED_EMBER_PATH_REMAINS", marker=marker)
-if "name: 'ui'" not in build:
-    fail("EMBER_MODULE_PREFIX_COMPAT_MISSING")
-
-lacsso_index = Path("vendor/lacsso/index.js").read_text(encoding="utf-8")
-if "require.resolve('ember-source/ember-template-compiler/index.js')" not in lacsso_index:
-    fail("MODERN_TEMPLATE_COMPILER_CONFIG_MISSING")
+required_build_markers = [
+    "'jquery.js': 'vendor/jquery/jquery.js'",
+    "development: 'vendor/ember/ember.debug.js'",
+    "production: 'vendor/ember/ember.prod.js'",
+    "'vendor/ember/ember-testing.js'",
+    "app.import('vendor/ember/ember-module-shim.js')",
+    "'app-shims.js': null",
+    "'ember-resolver.js': null",
+]
+for marker in required_build_markers:
+    if marker not in build:
+        fail("EMBER_VENDORFILES_MARKER_MISSING", marker=marker)
+if "templateCompilerPath: 'vendor/ember/ember-template-compiler.js'" not in environment:
+    fail("EMBER_TEMPLATE_COMPILER_CONFIG_MISSING")
+if "bower_components/ember" in build or "bower_components/ember" in environment:
+    fail("ACTIVE_BOWER_EMBER_PATH_REMAINS")
 
 shim = Path("vendor/ember/ember-module-shim.js")
 if not shim.is_file():
@@ -101,11 +87,11 @@ if jquery.is_file() and "jQuery JavaScript Library v3.7.1" not in jquery.read_te
 
 docs = Path("docs/modernization.md").read_text(encoding="utf-8")
 for phrase in [
-    "Active Ember 7 Runtime",
-    "ember-source@7.1.0",
-    "@ember/jquery@2.0.0",
-    "provenance-only",
-    "not imported",
+    "No-Publish Ember Runtime Bower Removal",
+    "components/ember",
+    "jquery@3.7.1",
+    "ember-module-shim",
+    "not a framework upgrade",
 ]:
     if phrase not in docs:
         fail("EMBER_BOWER_VENDOR_DOC_MISSING", phrase=phrase)
@@ -114,5 +100,5 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print("ui-ember-runtime-ok ember-source=7.1.0 ember-jquery=2.0.0 active_vendor_imports=0 bower_dependencies=0")
+print("ui-ember-bower-vendor-runtime-ok ember=2.9.1 jquery=3.7.1 bower_dependencies=0")
 PY

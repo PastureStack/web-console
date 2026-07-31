@@ -14,7 +14,7 @@
 </section>
 
 <section class="well">
-  <p>{{t 'hookPage.receiver.content' appName=this.settings.appName}}</p>
+  <p>{{t 'hookPage.receiver.content' appName=settings.appName}}</p>
   <table class="grid fixed r-mb0 r-mt10">
     <thead>
       <tr>
@@ -27,7 +27,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each this.arranged as |row|}}
+      {{#each arranged as |row|}}
         {{hook-row model=row}}
       {{else}}
         <tr><td colspan="6" class="text-center text-muted">{{t 'hookPage.receiver.noData'}}</td></tr>

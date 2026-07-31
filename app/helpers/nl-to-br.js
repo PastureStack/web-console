@@ -1,10 +1,8 @@
-import { helper as buildHelper } from '@ember/component/helper';
-import { htmlSafe } from '@ember/template';
-import { escapeHtml } from 'ui/utils/util';
+import Ember from 'ember';
 
 export function nlToBr(params) {
-  var val = escapeHtml(params[0]||'');
-  return htmlSafe(val.replace(/\n/g,'<br/>\n'));
+  var val = Ember.Handlebars.Utils.escapeExpression(params[0]||'');
+  return new Ember.String.htmlSafe(val.replace(/\n/g,'<br/>\n'));
 }
 
-export default buildHelper(nlToBr);
+export default Ember.Helper.helper(nlToBr);

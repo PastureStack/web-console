@@ -1,19 +1,16 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
-  access: service(),
-  intl: service(),
+export default Ember.Component.extend({
+  access: Ember.inject.service(),
+  intl: Ember.inject.service(),
   allowTeams: true,
   checking: false,
   addInput: '',
   allIdentities: null,
-  showDropdown: computed('access.provider', function() {
+  showDropdown: function() {
     return this.get('access.provider') !== 'localauthconfig';
-  }),
+  }.property('access.provider'),
 
   init: function() {
     this.set('allIdentities', this.get('userStore').all('identity'));
@@ -54,37 +51,33 @@ export default Component.extend({
     }
   },
 
-  addDisabled: computed('addInput', 'checking', function() {
+  addDisabled: function() {
     return this.get('checking') || this.get('addInput').trim().length === 0;
-  }),
+  }.property('addInput','checking'),
 
-  dropdownChoices: computed(
-    'allIdentities.@each.{logicalType,externalIdType}',
-    'allowTeams',
-    function() {
-      var allowTeams = this.get('allowTeams');
-      return this.get('allIdentities').filter((identity) => {
-        var type = identity.get('externalIdType');
-        var logicalType = identity.get('logicalType');
+  dropdownChoices: function() {
+    var allowTeams = this.get('allowTeams');
+    return this.get('allIdentities').filter((identity) => {
+      var type = identity.get('externalIdType');
+      var logicalType = identity.get('logicalType');
 
-        // Don't show people
-        if ( logicalType === C.PROJECT.PERSON )
-        {
-          return false;
-        }
+      // Don't show people
+      if ( logicalType === C.PROJECT.PERSON )
+      {
+        return false;
+      }
 
-        // Don't show teams if disabled
-        if ( !allowTeams && type === C.PROJECT.TYPE_GITHUB_TEAM )
-        {
-          return false;
-        }
+      // Don't show teams if disabled
+      if ( !allowTeams && type === C.PROJECT.TYPE_GITHUB_TEAM )
+      {
+        return false;
+      }
 
-        return true;
-      }).sortBy('logicalTypeSort','profileUrl','name');
-    }
-  ),
+      return true;
+    }).sortBy('logicalTypeSort','profileUrl','name');
+  }.property('allIdentities.@each.{logicalType,externalIdType}','allowTeams'),
 
-  dropdownLabel: computed('access.provider', 'intl._locale', function() {
+  dropdownLabel: function() {
     let out = '';
     let intl = this.get('intl');
     if ( this.get('access.provider') === 'githubconfig' )
@@ -96,5 +89,5 @@ export default Component.extend({
       out = intl.findTranslationByKey('inputIdentity.dropdownLabel.groups');
     }
     return intl.formatMessage(out);
-  }),
+  }.property('access.provider', 'intl._locale'),
 });

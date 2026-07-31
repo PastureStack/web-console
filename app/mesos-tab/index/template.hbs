@@ -5,7 +5,7 @@
 <div class="alert alert-info alert-header r-ml20 r-mr20 r-mt20">
     <span class="banner-head">{{t 'mesosPage.banner.header'}} <i class="icon icon-host"></i></span>
       <span class="banner-content">
-        {{t 'mesosPage.banner.content' hosts=this.activeHostCount}}
+        {{t 'mesosPage.banner.content' hosts=activeHostCount}}
         {{#link-to 'hosts' class="r-pl10"}}{{t 'mesosPage.banner.link'}}{{/link-to}}
       </span>
 </div>
@@ -14,12 +14,12 @@
   <div class="text-center col-md-6 gutter">
     <div class="well">
       <div class="row">
-        <img height="55" src="{{this.app.baseAssets}}assets/images/mesos-logo.svg" />
+        <img height="55" src="{{app.baseAssets}}assets/images/mesos-logo.svg" />
       </div>
       <h4>{{t 'mesosPage.manage.header'}}</h4>
       <p>{{t 'mesosPage.manage.content'}}</p>
-      {{#if this.model.url}}
-        <a href="{{this.model.url}}" target="_blank" rel="noreferrer nofollow" class="btn btn-primary">{{t 'mesosPage.manage.button'}}</a>
+      {{#if model.url}}
+        <a href="{{model.url}}" target="_blank" rel="noreferrer nofollow" class="btn btn-primary">{{t 'mesosPage.manage.button'}}</a>
       {{else}}
         <button class="btn btn-primary btn-disabled">{{t 'mesosPage.manage.button'}}</button>
       {{/if}}
@@ -28,11 +28,11 @@
   <div class="text-center col-md-6 gutter">
     <div class="well">
       <div>
-        <img height="55" src="{{this.app.baseAssets}}assets/images/mesos-frameworks.svg" />
+        <img height="55" src="{{app.baseAssets}}assets/images/mesos-frameworks.svg" />
       </div>
       <h4>{{t 'mesosPage.launch.header'}}</h4>
       <p>{{t 'mesosPage.launch.content'}}</p>
-      {{#if this.model.url}}
+      {{#if model.url}}
         {{#link-to 'catalog-tab' class="btn btn-primary"}}{{t 'mesosPage.launch.button'}}{{/link-to}}
       {{else}}
         <button class="btn btn-primary btn-disabled">{{t 'mesosPage.launch.button'}}</button>

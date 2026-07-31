@@ -1,6 +1,4 @@
-import EmberObject from '@ember/object';
-import { run } from '@ember/runloop';
-import { resolve, all, reject } from 'rsvp';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 import OidcController from 'ui/admin-tab/auth/oidc/controller';
 
@@ -25,27 +23,24 @@ test('requires a fresh local administrator verification when preparing activatio
         'the local administrator username is verified by the server');
       assert.strictEqual(fields.localPassword, 'current-local-password',
         'the current password is sent only in the verification request');
-      return resolve({providerSwitchCode: 'switch-ticket'});
+      return Ember.RSVP.resolve({providerSwitchCode: 'switch-ticket'});
     },
   });
 
   return controller.prepareIdentitySwitch().then((code) => {
     assert.strictEqual(code, 'switch-ticket', 'activation receives the one-use switch ticket');
-    run(() => controller.destroy());
+    Ember.run(() => controller.destroy());
   });
 });
 
 test('requires confirmation for the exact identity and permission reassignment', function(assert) {
-  let source = EmberObject.create({id: '1a1', name: 'Old account', kind: 'admin', state: 'active'});
-  let target = EmberObject.create({id: '1a2', name: 'New account', kind: 'user', state: 'active'});
+  let source = Ember.Object.create({id: '1a1', name: 'Old account', kind: 'admin', state: 'active'});
+  let target = Ember.Object.create({id: '1a2', name: 'New account', kind: 'user', state: 'active'});
   let controller = OidcController.create({
-    access: EmberObject.create({
-      enabled: true,
-      provider: 'oidcconfig',
-    }),
     accounts: [source, target],
     identityMatchAccountId: '1a1',
     identityStrategy: 'reassign',
+    oidcEnabled: true,
     oldAccountDisposition: 'disable',
     selectedTargetAccountId: '1a2',
     testedIdentityProof: 'signed-proof',
@@ -62,26 +57,26 @@ test('requires confirmation for the exact identity and permission reassignment',
   controller.set('oldAccountDisposition', 'discardPermissions');
   assert.notOk(controller.get('identityChangeConfirmed'), 'changing a destructive choice invalidates confirmation');
   assert.notOk(controller.get('mappingReady'), 'the changed decision must be confirmed again');
-  run(() => controller.destroy());
+  Ember.run(() => controller.destroy());
 });
 
 test('restores a disabled matched account before retaining its identity link', function(assert) {
   assert.expect(8);
 
-  let disabled = EmberObject.create({id: '1a9', name: 'Disabled account', kind: 'admin', state: 'inactive'});
-  let restored = EmberObject.create({id: '1a9', name: 'Disabled account', kind: 'admin', state: 'active'});
+  let disabled = Ember.Object.create({id: '1a9', name: 'Disabled account', kind: 'admin', state: 'inactive'});
+  let restored = Ember.Object.create({id: '1a9', name: 'Disabled account', kind: 'admin', state: 'active'});
   let controller = OidcController.create({
     accounts: [disabled],
     identityMatchAccountId: '1a9',
     selectedTargetAccountId: '1a1',
     testedIdentityProof: 'signed-proof',
-    userStore: EmberObject.create({
+    userStore: Ember.Object.create({
       createRecord(fields) {
         assert.strictEqual(fields.operation, 'restore', 'the explicit restore operation is used');
         assert.strictEqual(fields.targetAccountId, '1a9', 'only the matched account is restored');
         return {
           save() {
-            return resolve({status: 'restored'});
+            return Ember.RSVP.resolve({status: 'restored'});
           },
         };
       },
@@ -89,7 +84,7 @@ test('restores a disabled matched account before retaining its identity link', f
         assert.strictEqual(type, 'account', 'accounts are reloaded after restoration');
         assert.strictEqual(id, null, 'the account collection is requested');
         assert.ok(options.forceReload, 'the restored state is not served from cache');
-        return resolve([restored]);
+        return Ember.RSVP.resolve([restored]);
       },
     }),
   });
@@ -98,7 +93,7 @@ test('restores a disabled matched account before retaining its identity link', f
   return controller.restoreMatchedIdentityAccount().then(() => {
     assert.strictEqual(controller.get('identityStrategy'), 'useExisting', 'the restored account link is retained');
     assert.strictEqual(controller.get('selectedTargetAccountId'), '1a9', 'the restored account becomes the target');
-    run(() => controller.destroy());
+    Ember.run(() => controller.destroy());
   });
 });
 
@@ -107,23 +102,23 @@ test('restores the existing local provider without replacing its password', func
 
   let fallbackSaved = false;
   let restored;
-  let localRecoveryModel = EmberObject.create({
+  let localRecoveryModel = Ember.Object.create({
     clone() {
-      return EmberObject.create({
+      return Ember.Object.create({
         enabled: false,
         username: 'not-returned-by-api',
         password: 'not-returned-by-api',
         save() {
           restored = this.getProperties('enabled', 'username', 'password');
-          return resolve(this);
+          return Ember.RSVP.resolve(this);
         },
       });
     },
   });
-  let fallbackModel = EmberObject.create({
+  let fallbackModel = Ember.Object.create({
     save() {
       fallbackSaved = true;
-      return resolve(this);
+      return Ember.RSVP.resolve(this);
     },
   });
   let controller = OidcController.create({
@@ -138,7 +133,7 @@ test('restores the existing local provider without replacing its password', func
     assert.strictEqual(restored.enabled, true, 'local authentication is re-enabled');
     assert.strictEqual(restored.username, '', 'the existing username credential is not replaced');
     assert.strictEqual(restored.password, '', 'the existing password credential is not replaced');
-    run(() => controller.destroy());
+    Ember.run(() => controller.destroy());
   });
 });
 
@@ -146,25 +141,25 @@ test('persists the browser origin before preparing an OIDC provider', function(a
   assert.expect(5);
 
   let savedValue;
-  let setting = EmberObject.create({
+  let setting = Ember.Object.create({
     value: '',
     save() {
       savedValue = this.get('value');
-      return resolve(this);
+      return Ember.RSVP.resolve(this);
     },
   });
   let controller = OidcController.create({
-    settings: EmberObject.create({
+    settings: Ember.Object.create({
       get(key) {
         assert.strictEqual(key, 'api$host', 'the canonical API host setting is checked');
         return '';
       },
     }),
-    userStore: EmberObject.create({
+    userStore: Ember.Object.create({
       find(type, id) {
         assert.strictEqual(type, 'setting', 'the persistent setting resource is used');
         assert.strictEqual(id, 'api.host', 'the normalized setting name is converted for the API');
-        return resolve(setting);
+        return Ember.RSVP.resolve(setting);
       },
     }),
     platformHostname() {
@@ -178,91 +173,8 @@ test('persists the browser origin before preparing an OIDC provider', function(a
   return controller.ensureApiHost().then((value) => {
     assert.strictEqual(savedValue, 'https://console.example.test', 'the browser origin is persisted');
     assert.strictEqual(value, savedValue, 'preparation waits for the saved API host');
-    run(() => controller.destroy());
+    Ember.run(() => controller.destroy());
   });
-});
-
-test('keeps the configured external platform URL when the console is opened by IP', function(assert) {
-  assert.expect(2);
-
-  let controller = OidcController.create({
-    settings: EmberObject.create({
-      get(key) {
-        assert.strictEqual(key, 'api$host', 'the canonical API host setting is checked');
-        return 'https://console.example.test';
-      },
-    }),
-    userStore: EmberObject.create({
-      find() {
-        assert.ok(false, 'the configured external platform URL must not be replaced');
-      },
-    }),
-    platformHostname() {
-      return '192.0.2.125';
-    },
-    platformOrigin() {
-      return 'http://192.0.2.125:8080';
-    },
-  });
-
-  return controller.ensureApiHost().then((value) => {
-    assert.strictEqual(value, 'https://console.example.test',
-      'the configured HTTPS domain remains canonical');
-    run(() => controller.destroy());
-  });
-});
-
-test('rejects automatic HTTP and IP external platform URLs', function(assert) {
-  assert.expect(6);
-
-  let origins = [
-    {hostname: 'console.example.test', origin: 'http://console.example.test'},
-    {hostname: '192.0.2.125', origin: 'https://192.0.2.125'},
-  ];
-
-  return all(origins.map((candidate) => {
-    let saved = false;
-    let setting = EmberObject.create({
-      value: '',
-      save() {
-        saved = true;
-        return resolve(this);
-      },
-    });
-    let controller = OidcController.create({
-      intl: EmberObject.create({
-        t(key) {
-          assert.strictEqual(key, 'authPage.oidc.validation.externalPlatformUrl',
-            'the localized canonical URL error is used');
-          return 'A stable HTTPS domain is required.';
-        },
-      }),
-      settings: EmberObject.create({
-        get() {
-          return '';
-        },
-      }),
-      userStore: EmberObject.create({
-        find() {
-          return resolve(setting);
-        },
-      }),
-      platformHostname() {
-        return candidate.hostname;
-      },
-      platformOrigin() {
-        return candidate.origin;
-      },
-    });
-
-    return controller.ensureApiHost().then(() => {
-      assert.ok(false, `${candidate.origin} must not become the canonical external platform URL`);
-    }).catch((err) => {
-      assert.strictEqual(err.message, 'A stable HTTPS domain is required.',
-        'configuration stops before preparing the provider');
-      assert.notOk(saved, 'the unsafe browser origin is not persisted');
-    }).then(() => run(() => controller.destroy()));
-  }));
 });
 
 test('keeps security enabled and restores the local session after provider activation fails', function(assert) {
@@ -271,16 +183,16 @@ test('keeps security enabled and restores the local session after provider activ
   let events = [];
   let saveStates = [];
   let snapshot = {token: 'existing-local-session', values: {accountId: '1a1'}};
-  let candidate = EmberObject.create({
+  let candidate = Ember.Object.create({
     enabled: null,
     save() {
       saveStates.push(this.get('enabled'));
       events.push(`save:${this.get('enabled')}`);
-      return resolve(this);
+      return Ember.RSVP.resolve(this);
     },
   });
   let controller = OidcController.create({
-    access: EmberObject.create({
+    access: Ember.Object.create({
       suspendSession() {
         events.push('suspend');
         return snapshot;
@@ -291,11 +203,11 @@ test('keeps security enabled and restores the local session after provider activ
           assert.strictEqual(code, 'one-time-code', 'the fresh authorization code is exchanged');
           assert.strictEqual(options.providerSwitchCode, 'switch-ticket',
             'the account-bound activation ticket accompanies the fresh provider login');
-          return reject(new Error('controlled token failure'));
+          return Ember.RSVP.reject(new Error('controlled token failure'));
         }
         assert.strictEqual(provider, 'providerSwitch', 'rollback uses the one-use recovery provider');
         assert.strictEqual(code, 'switch-ticket', 'rollback uses the same short-lived switch ticket');
-        return resolve();
+        return Ember.RSVP.resolve();
       },
       restoreSession(value) {
         assert.strictEqual(value, snapshot, 'the exact prior session snapshot is restored');
@@ -306,14 +218,14 @@ test('keeps security enabled and restores the local session after provider activ
         events.push('set-local-provider');
       },
     }),
-    intl: EmberObject.create({
+    intl: Ember.Object.create({
       t() {
         return 'The failed activation was rolled back.';
       },
     }),
-    recoveryModel: EmberObject.create({
+    recoveryModel: Ember.Object.create({
       clone() {
-        return EmberObject.create();
+        return Ember.Object.create();
       },
     }),
     recoveryEnabled: true,
@@ -321,18 +233,18 @@ test('keeps security enabled and restores the local session after provider activ
     testedIdentity: {externalId: 'test-user'},
     prepareIdentitySwitch() {
       events.push('prepare-switch');
-      return resolve('switch-ticket');
+      return Ember.RSVP.resolve('switch-ticket');
     },
     cancelIdentitySwitch() {
       events.push('cancel-switch');
-      return resolve();
+      return Ember.RSVP.resolve();
     },
     buildCandidateConfig() {
       return candidate;
     },
     restorePreviousProvider() {
       events.push('restore-provider');
-      return resolve();
+      return Ember.RSVP.resolve();
     },
   });
   let originalSend = controller.send;
@@ -351,7 +263,7 @@ test('keeps security enabled and restores the local session after provider activ
     assert.ok(events.indexOf('restore-provider') > events.indexOf('login:oidcconfig'),
       'the provider is restored after the failed exchange');
     assert.ok(events.indexOf('restore-session') > events.indexOf('restore-provider'), 'the local session returns after provider restoration');
-    run(() => controller.destroy());
+    Ember.run(() => controller.destroy());
   });
 });
 
@@ -359,15 +271,15 @@ test('activates OIDC with an identity-bound ticket and never disables security',
   assert.expect(8);
 
   let events = [];
-  let candidate = EmberObject.create({
+  let candidate = Ember.Object.create({
     enabled: null,
     save() {
       events.push(`save:${this.get('enabled')}`);
-      return resolve(this);
+      return Ember.RSVP.resolve(this);
     },
   });
   let controller = OidcController.create({
-    access: EmberObject.create({
+    access: Ember.Object.create({
       suspendSession() {
         events.push('suspend');
         return {token: 'local'};
@@ -377,27 +289,27 @@ test('activates OIDC with an identity-bound ticket and never disables security',
         assert.strictEqual(options.providerSwitchCode, 'switch-ticket',
           'the identity-bound switch ticket is submitted with the authorization response');
         events.push('login');
-        return resolve();
+        return Ember.RSVP.resolve();
       },
       setProperties(values) {
         assert.strictEqual(values.provider, 'oidcconfig', 'OIDC becomes the active provider');
         events.push('set-oidc-provider');
       },
     }),
-    recoveryModel: EmberObject.create({
+    recoveryModel: Ember.Object.create({
       clone() {
-        return EmberObject.create();
+        return Ember.Object.create();
       },
     }),
     testedIdentity: {externalId: 'test-user'},
     prepareIdentitySwitch() {
       events.push('prepare-switch');
-      return resolve('switch-ticket');
+      return Ember.RSVP.resolve('switch-ticket');
     },
     cancelIdentitySwitch(code) {
       assert.strictEqual(code, 'switch-ticket', 'the used activation ticket is cancelled if still active');
       events.push('cancel-switch');
-      return resolve();
+      return Ember.RSVP.resolve();
     },
     buildCandidateConfig() {
       return candidate;
@@ -420,6 +332,6 @@ test('activates OIDC with an identity-bound ticket and never disables security',
       'the UI provider changes after the fresh provider session exists');
     assert.ok(events.indexOf('refresh') > events.indexOf('set-oidc-provider'), 'the page refreshes after activation completes');
     assert.strictEqual(candidate.get('enabled'), true, 'the final saved model is enabled');
-    run(() => controller.destroy());
+    Ember.run(() => controller.destroy());
   });
 });

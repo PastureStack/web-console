@@ -1,11 +1,11 @@
 {{yield}}
-{{#if this.avatarSrc}}
-  {{#if (and this.url this.link)}}
-    <a href="{{this.url}}" target="_blank">
-      <img src="{{this.avatarSrc}}" width="{{this.size}}" height="{{this.size}}">
+{{#if avatarSrc}}
+  {{#if (and url link)}}
+    <a href="{{url}}" target="_blank">
+      <img src="{{avatarSrc}}" width="{{size}}" height="{{size}}">
     </a>
   {{else}}
-    <img src="{{this.avatarSrc}}" width="{{this.size}}" height="{{this.size}}">
+    <img src="{{avatarSrc}}" width="{{size}}" height="{{size}}">
   {{/if}}
 {{else}}
   <div class="gh-placeholder"></div>

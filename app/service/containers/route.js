@@ -1,7 +1,7 @@
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 import MultiStatsSocket from 'ui/utils/multi-stats';
 
-export default Route.extend({
+export default Ember.Route.extend({
   statsSocket: null,
 
   model() {

@@ -1,21 +1,19 @@
-import { resolve, reject } from 'rsvp';
-import EmberObject, { computed } from '@ember/object';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import { addQueryParams, uniqKeys } from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
 const RANCHER_VERSION = 'rancherVersion';
 
-export default Service.extend({
-  settings:                   service(),
-  store:                      service('store'),
-  userStore:                  service('user-store'),
-  projects:                   service(),
+export default Ember.Service.extend({
+  settings:                   Ember.inject.service(),
+  store:                      Ember.inject.service('store'),
+  userStore:                  Ember.inject.service('user-store'),
+  projects:                   Ember.inject.service(),
 
   templateCache:              null,
   catalogs:                   null,
 
-  templateBase: computed('projects.current.orchestration', function() {
+  templateBase: Ember.computed('projects.current.orchestration', function() {
     return this.get('projects.current.orchestration') || 'cattle';
   }),
 
@@ -69,7 +67,7 @@ export default Service.extend({
     }
 
     if ( cached ) {
-      return resolve(cached);
+      return Ember.RSVP.resolve(cached);
     }
 
     let url = this._addLimits(`${this.get('app.catalogEndpoint')}/${type}/${id}`);
@@ -93,7 +91,7 @@ export default Service.extend({
     // If the catalogIds dont match we need to go get the other catalog from the store since we do not cache all catalogs
     if ( cache && cache.catalogId === catalogId)
     {
-      return resolve(this.filter(cache, params.category, templateBase, plusInfra));
+      return Ember.RSVP.resolve(this.filter(cache, params.category, templateBase, plusInfra));
     }
 
     let url = this._addLimits(`${this.get('app.catalogEndpoint')}/templates`, qp);
@@ -105,7 +103,7 @@ export default Service.extend({
       if ( params.allowFailure ) {
         return this.filter([], params.category, templateBase, plusInfra);
       } else {
-        return reject(err);
+        return Ember.RSVP.reject(err);
       }
     });
   },
@@ -148,7 +146,7 @@ export default Service.extend({
 
     data = data.sortBy('name');
 
-    return EmberObject.create({
+    return Ember.Object.create({
       categories: categories,
       catalog: data,
       templateBase: templateBase,

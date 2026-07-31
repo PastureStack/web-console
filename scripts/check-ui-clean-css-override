@@ -21,10 +21,10 @@ def fail(code, **fields):
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 overrides = package.get("overrides", {})
-if "clean-css" in overrides:
-    fail("OBSOLETE_CLEAN_CSS_OVERRIDE_PRESENT", actual=overrides.get("clean-css"))
+if overrides.get("clean-css") != "5.3.3":
+    fail("CLEAN_CSS_OVERRIDE_UNEXPECTED", actual=overrides.get("clean-css"), expected="5.3.3")
 
-lock_path = Path("package-lock.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:
@@ -39,15 +39,18 @@ else:
         for path, meta in packages.items()
         if path.endswith("node_modules/clean-css")
     }
+    if not versions:
+        fail("CLEAN_CSS_LOCK_MISSING")
     for package_path, actual in sorted(versions.items()):
-        fail("CLEAN_CSS_LOCK_PACKAGE_REINTRODUCED", package=package_path, actual=actual)
+        if actual != "5.3.3":
+            fail("CLEAN_CSS_LOCK_VERSION_UNEXPECTED", package=package_path, actual=actual, expected="5.3.3")
     package_count = len(packages)
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_CLEAN_CSS_REMOVAL_OK clean-css=absent lockfile={lock_path} package_count={package_count}")
-print("The current Ember build no longer resolves clean-css, so a compatibility override is neither active nor required.")
+print(f"UI_CLEAN_CSS_OVERRIDE_OK clean-css=5.3.3 lockfile={lock_path} package_count={package_count}")
+print("clean-css-promise and broccoli-clean-css keep the old promise wrapper while resolving the maintained clean-css engine.")
 print("failure_count=0")
 PY

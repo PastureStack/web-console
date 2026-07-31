@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import ContainerPortsRoute from 'ui/container/ports/route';
 
 module('Unit | Route | container/ports');
@@ -8,7 +8,7 @@ module('Unit | Route | container/ports');
 test('it exists', function(assert) {
   var route = ContainerPortsRoute.create();
   assert.ok(route);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('model loads ports from the parent container', function(assert) {
@@ -32,6 +32,6 @@ test('model loads ports from the parent container', function(assert) {
   return route.model().then((result) => {
     assert.strictEqual(result.container, container);
     assert.strictEqual(result.ports, ports);
-    run(() => route.destroy());
+    Ember.run(() => route.destroy());
   });
 });

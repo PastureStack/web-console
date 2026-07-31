@@ -1,7 +1,7 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 import Util from 'ui/utils/util';
 
-export default Component.extend({
+export default Ember.Component.extend({
   classNames: ['input-group'],
   value: '',
 

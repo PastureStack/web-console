@@ -3,20 +3,20 @@
   <div class="content">
     <label class="text-muted">{{t 'sidekickAddtlInfo.image'}}</label>
     <div class="force-wrap">
-      {{this.sidekick.imageUuid}}
+      {{sidekick.imageUuid}}
     </div>
     <label class="text-muted r-mt15">{{t 'sidekickAddtlInfo.entryPoint'}}</label>
     <div class="force-wrap">
-      {{#if this.sidekick.launchConfig.entryPoint}}
-        {{this.sidekick.launchConfig.entryPoint}}
+      {{#if sidekick.launchConfig.entryPoint}}
+        {{sidekick.launchConfig.entryPoint}}
       {{else}}
         <span class="text-muted">{{t 'generic.none'}}</span>
       {{/if}}
     </div>
     <label class="text-muted r-mt15">{{t 'sidekickAddtlInfo.command'}}</label>
     <div class="force-wrap">
-      {{#if this.sidekick.launchConfig.command}}
-        {{this.sidekick.launchConfig.command}}
+      {{#if sidekick.launchConfig.command}}
+        {{sidekick.launchConfig.command}}
       {{else}}
         <span class="text-muted">{{t 'generic.none'}}</span>
       {{/if}}
@@ -24,10 +24,10 @@
   </div>
 </div>
 <div class="content-box col-sm-4 col-md-4">
-  <label class="text-muted">{{t 'sidekickAddtlInfo.containers'}} ({{this.containers.length}})</label>
+  <label class="text-muted">{{t 'sidekickAddtlInfo.containers'}} ({{containers.length}})</label>
   <div class="content">
     <div class="container-dots clearfix">
-      {{#each this.containers as |instance|}}
+      {{#each containers as |instance|}}
         {{container-dot model=instance}}
       {{else}}
         <span class="text-muted">{{t 'sidekickAddtlInfo.noContainers'}}</span>
@@ -39,7 +39,7 @@
   <label class="text-muted">{{t 'sidekickAddtlInfo.labels'}}</label>
   <div class="content">
     <ul class="list-unstyled">
-      {{#each this.labelArray as |label|}}
+      {{#each labelArray as |label|}}
         <li>{{label.key}}: {{label.value}}</li>
       {{else}}
         <li class="text-muted">{{t 'sidekickAddtlInfo.noLabels'}}</li>

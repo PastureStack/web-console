@@ -1,10 +1,10 @@
 {{new-catalog
-  allTemplates=this.model.allTemplates
-  stackResource=this.model.stack
-  templateResource=this.model.tpl
-  versionLinks=this.model.versionLinks
-  versionsArray=this.model.versionsArray
-  parentRoute=this.parentRoute
-  showName=(and (not this.editing) (not this.model.stack.system))
+  allTemplates=model.allTemplates
+  stackResource=model.stack
+  templateResource=model.tpl
+  versionLinks=model.versionLinks
+  versionsArray=model.versionsArray
+  parentRoute=parentRoute
+  showName=(and (not editing) (not model.stack.system))
   cancel=(action "cancel")
 }}

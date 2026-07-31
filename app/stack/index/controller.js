@@ -1,8 +1,6 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Controller.extend({
+export default Ember.Controller.extend({
   showAddtlInfo: false,
   selectedService: null,
 
@@ -18,12 +16,12 @@ export default Controller.extend({
     }
   },
 
-  instanceCount: computed('model.stack.services.@each.healthState', function() {
+  instanceCount: function() {
     var count = 0;
     (this.get('model.stack.services')||[]).forEach((service) => {
       count += service.get('instances.length')||0;
     });
 
     return count;
-  }),
+  }.property('model.stack.services.@each.healthState'),
 });

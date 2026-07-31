@@ -1,6 +1,6 @@
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 
-export default Mixin.create({
+export default Ember.Mixin.create({
   getPage: function() {
     return parseInt(this.get('page') || 1);
   },

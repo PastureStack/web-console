@@ -1,12 +1,12 @@
-{{log this.service}}
+{{log service}}
 <div class="content-box col-sm-12 col-md-12">
-  <label class="text-muted">{{t 'externalServicePartial.extService.labelText'}} (<small>{{#link-to 'service' this.service.stackId this.service.id class=''}} {{t 'externalServicePartial.extService.linkTo'}} {{/link-to}}</small>)</label>
+  <label class="text-muted">{{t 'externalServicePartial.extService.labelText'}} (<small>{{#link-to 'service' service.stackId service.id class=''}} {{t 'externalServicePartial.extService.linkTo'}} {{/link-to}}</small>)</label>
   <div class="content">
-    {{#if this.service.externalIpAddresses}}
+    {{#if service.externalIpAddresses}}
       <label class="text-muted">{{t 'externalServicePartial.ips'}}</label>
-      {{#if this.service.externalIpAddresses.length}}
+      {{#if service.externalIpAddresses.length}}
         <ul class="list-unstyled" style="mergin:0 auto;">
-          {{#each this.service.externalIpAddresses as |ip|}}
+          {{#each service.externalIpAddresses as |ip|}}
             <li style="display: inline-block;vertical-align: top;margin: 15px 10px;">
               <i class="icon icon-link"></i> {{ip}}
             </li>
@@ -14,16 +14,16 @@
         </ul>
       {{/if}}
     {{/if}}
-    {{#if this.service.hostname}}
+    {{#if service.hostname}}
       <label class="text-muted">{{t 'externalServicePartial.hostname'}} </label>
       <div>
-        {{this.service.hostname}}
+        {{service.hostname}}
       </div>
     {{/if}}
-    {{#if this.service.description}}
+    {{#if service.description}}
       <label class="text-muted r-mt10">{{t 'externalServicePartial.description'}}</label>
       <div>
-        {{this.service.description}}
+        {{service.description}}
       </div>
     {{/if}}
   </div>

@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
-  settings: service(),
+export default Ember.Component.extend({
+  settings: Ember.inject.service(),
 
   showUser: true,
   catalog: null,

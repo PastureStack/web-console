@@ -1,9 +1,9 @@
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: alias('modalService.modalOpts'),
+  originalModel: Ember.computed.alias('modalService.modalOpts'),
   editing       : false,
   clone         : null,
   errors        : null,

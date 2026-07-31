@@ -6,7 +6,7 @@ test_file=tests/unit/admin-tab/auth/oidc/controller-test.js
 
 for marker in \
   "import { denormalizeName } from 'ui/services/settings';" \
-  "userStore: service('user-store')" \
+  "userStore: Ember.inject.service('user-store')" \
   "ensureApiHost: function()" \
   "this.get('userStore').find('setting', denormalizeName(C.SETTING.API_HOST))" \
   "setting.set('value', origin)" \

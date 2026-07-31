@@ -2,18 +2,18 @@
   <h2>{{t 'editAliasService.title'}}</h2>
 
   {{form-name-description
-    model=this.service
+    model=service
     namePlaceholder="servicePage.newAlias.form.name.placeholder"
     descriptionPlaceholder="servicePage.newAlias.form.description.placeholder"
   }}
 
   {{form-targets
     isBalancer=false
-    existing=this.existing
-    exclude=this.service.id
+    existing=existing
+    exclude=service.id
     changed=(action "setTargets")
   }}
 </section>
 
-{{top-errors errors=this.errors}}
-{{save-cancel editing=this.editing save="save" cancel="cancel"}}
+{{top-errors errors=errors}}
+{{save-cancel editing=editing save="save" cancel="cancel"}}

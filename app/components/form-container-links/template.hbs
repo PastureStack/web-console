@@ -4,16 +4,16 @@
   </div>
 
   <div class="col-sm-12 col-md-8">
-    {{#unless this.editing}}
+    {{#unless editing}}
       <div>
-        {{#if this.containersOnRequestedHostIfUnmanaged.length}}
+        {{#if containersOnRequestedHostIfUnmanaged.length}}
           <button class="btn-circle" {{action "addLink"}}><i class="icon icon-plus-circle"/> {{t 'formContainerLinks.addActionLabel'}}</button>
         {{else}}
           <span class="text-muted">{{t 'formContainerLinks.noContainers'}}</span>
         {{/if}}
       </div>
     {{/unless}}
-    {{#if this.linksArray.length}}
+    {{#if linksArray.length}}
       <table class="table fixed no-lines no-top-padding tight small">
         <tr class="text-muted">
           <th>{{t 'formContainerLinks.targetInstance.label'}}</th>
@@ -21,14 +21,14 @@
           <th>{{t 'formContainerLinks.name.label'}}</th>
           <th width="30">&nbsp;</th>
         </tr>
-        {{#each this.linksArray as |link|}}
+        {{#each linksArray as |link|}}
           <tr>
             <td>
               {{new-select
                 classNames="form-control link-container input-sm"
                 prompt="formContainerLinks.targetInstance.prompt"
                 value=link.targetInstanceId
-                content=this.containersOnRequestedHostIfUnmanaged
+                content=containersOnRequestedHostIfUnmanaged
                 optionValuePath="id"
                 optionLabelPath="name"
                 optionGroupPath="group"
@@ -38,7 +38,7 @@
               <p class="form-control-static"><i class="icon icon-chevron-right"></i></p>
             </td>
             <td>
-              {{#if this.editing}}
+              {{#if editing}}
                 <p class="form-control-static input-sm text-muted">{{link.name}}</p>
               {{else}}
                 {{input class="form-control input-sm" type="text" value=link.name placeholder=(t 'formContainerLinks.name.placeholder')}}
@@ -53,7 +53,7 @@
         {{/each}}
       </table>
     {{else}}
-      {{#if this.editing}}
+      {{#if editing}}
         <span class="text-center text-muted">{{t 'formContainerLinks.noLinks'}}</span>
       {{/if}}
     {{/if}}

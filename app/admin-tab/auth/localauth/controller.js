@@ -1,14 +1,10 @@
-import { later } from '@ember/runloop';
-import { Promise } from 'rsvp';
-import { computed, get } from '@ember/object';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Controller.extend({
-  access            : service(),
-  settings          : service(),
-  intl              : service(),
+export default Ember.Controller.extend({
+  access            : Ember.inject.service(),
+  settings          : Ember.inject.service(),
+  intl              : Ember.inject.service(),
 
   confirmDisable    : false,
   errors            : null,
@@ -21,32 +17,25 @@ export default Controller.extend({
   adminSecretValue  : '',
   adminSecretValue2 : '',
 
-  isLocalActive: computed('access.enabled', 'access.provider', function() {
+  isLocalActive: function() {
     return this.get('access.enabled') &&
       (this.get('access.provider') || '').toLowerCase() === 'localauthconfig';
-  }),
+  }.property('access.enabled', 'access.provider'),
 
-  isExternalActive: computed('access.enabled', 'isLocalActive', function() {
+  isExternalActive: function() {
     return this.get('access.enabled') && !this.get('isLocalActive');
-  }),
+  }.property('access.enabled', 'isLocalActive'),
 
-  createDisabled: computed(
-    'adminPublicValue',
-    'adminSecretValue',
-    'adminSecretValue2',
-    'isExternalActive',
-    'testing',
-    'switching',
-    function() {
-      var ok = this.get('adminPublicValue.length') && this.get('adminSecretValue.length') && (this.get('adminSecretValue') === this.get('adminSecretValue2'));
-      if ( this.get('isExternalActive') ) {
-        ok = this.get('adminPublicValue.length') && this.get('adminSecretValue.length');
-      }
-      return !ok || this.get('testing') || this.get('switching');
+  createDisabled: function() {
+    var ok = this.get('adminPublicValue.length') && this.get('adminSecretValue.length') && (this.get('adminSecretValue') === this.get('adminSecretValue2'));
+    if ( this.get('isExternalActive') ) {
+      ok = this.get('adminPublicValue.length') && this.get('adminSecretValue.length');
     }
-  ),
+    return !ok || this.get('testing') || this.get('switching');
+  }.property('adminPublicValue','adminSecretValue','adminSecretValue2',
+    'isExternalActive', 'testing', 'switching'),
 
-  validateDescription: computed(function() {
+  validateDescription: Ember.computed(function() {
     return this.get('settings').get(C.SETTING.AUTH_LOCAL_VALIDATE_DESC) || null;
   }),
 
@@ -135,14 +124,14 @@ export default Controller.extend({
         localUsername: username,
         localPassword: password,
       }).save().then((result) => {
-        let providerSwitchCode = get(result, 'providerSwitchCode');
+        let providerSwitchCode = Ember.get(result, 'providerSwitchCode');
         if ( !providerSwitchCode ) {
           throw new Error(this.get('intl').t('authPage.localAuth.switch.missingTicket'));
         }
 
         this.get('access').suspendSession();
-        return new Promise((resolve) => {
-          later(this, resolve, 1200);
+        return new Ember.RSVP.Promise((resolve) => {
+          Ember.run.later(this, resolve, 1200);
         }).then(() => {
           return this.get('access').login(providerSwitchCode, 'providerSwitch');
         }).catch(() => {
@@ -177,7 +166,7 @@ export default Controller.extend({
 
     promptDisable: function() {
       this.set('confirmDisable', true);
-      later(this, function() {
+      Ember.run.later(this, function() {
         this.set('confirmDisable', false);
       }, 10000);
     },
@@ -227,7 +216,7 @@ export default Controller.extend({
       });
     },
   },
-  headerText: computed('isLocalActive', 'isExternalActive', 'intl._locale', function() {
+  headerText: Ember.computed('isLocalActive', 'isExternalActive', 'intl._locale', function() {
     let out = this.get('intl').findTranslationByKey('authPage.localAuth.header.disabled');
     if (this.get('isLocalActive')) {
       out = this.get('intl').findTranslationByKey('authPage.localAuth.header.enabled');

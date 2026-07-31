@@ -1,12 +1,10 @@
-import { get, set, computed, observer } from '@ember/object';
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   service         : null,
   allCertificates : null,
 
-  lbConfig: alias('service.lbConfig'),
+  lbConfig: Ember.computed.alias('service.lbConfig'),
 
   alternates      : null,
 
@@ -30,28 +28,28 @@ export default Component.extend({
     },
   },
 
-  alternateCertificates: computed('allCertificates.@each.id', 'lbConfig.defaultCertificateId', function() {
+  alternateCertificates: function() {
     var def = this.get('lbConfig.defaultCertificateId');
     return this.get('allCertificates').slice().filter((obj) => {
-      return get(obj, 'id') !== def;
+      return Ember.get(obj, 'id') !== def;
     });
-  }),
+  }.property('allCertificates.@each.id','lbConfig.defaultCertificateId'),
 
-  defaultDidChange: observer('lbConfig.defaultCertificateId', function() {
+  defaultDidChange: function() {
     var def = this.get('lbConfig.defaultCertificateId');
     this.get('alternates').forEach((obj) => {
-      if ( get(obj, 'value') === def )
+      if ( Ember.get(obj, 'value') === def )
       {
-        set(obj,'value',null);
+        Ember.set(obj,'value',null);
       }
     });
-  }),
+  }.observes('lbConfig.defaultCertificateId'),
 
-  alternatesDidChange: observer('alternates.@each.value', function() {
+  alternatesDidChange: function() {
     this.set('lbConfig.certificateIds', this.get('alternates').map((obj) => {
-      return get(obj, 'value');
+      return Ember.get(obj, 'value');
     }).filter((id) => { return !!id; }).uniq());
-  }),
+  }.observes('alternates.@each.value'),
 
   updateLabels(labels) {
     this.sendAction('setLabels', labels);

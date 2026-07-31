@@ -1,13 +1,10 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   machine: null,
-  settings: service(),
-  intl: service(),
+  settings: Ember.inject.service(),
+  intl: Ember.inject.service(),
   showEngineUrl: null,
 
   didReceiveAttrs() {
@@ -17,7 +14,7 @@ export default Component.extend({
     }
   },
 
-  engineUrlChoices: computed('intl._locale', `settings.${C.SETTING.ENGINE_URL}`, function() {
+  engineUrlChoices: function() {
     let def = this.get(`settings.${C.SETTING.ENGINE_URL}`);
     let out = [
       {label: this.get('intl').t('formEngineOpts.engineInstallUrl.recommended'), value: def},
@@ -27,7 +24,7 @@ export default Component.extend({
     ];
 
     return out;
-  }),
+  }.property('intl._locale',`settings.${C.SETTING.ENGINE_URL}`),
 
   actions: {
     setEngine(url) {

@@ -64,8 +64,8 @@ grep -F "consoleWorkspace:" translations/zh-tw.yaml >/dev/null
 grep -F "工作階段" translations/zh-tw.yaml >/dev/null
 
 dock_active_style=$(
-  tr -d '\r' < app/styles/components/_console-workspace.scss |
-    sed -n '/^  &\.active {$/,/^  }$/p'
+  sed -n '/^  &\.active {$/,/^  }$/p' \
+    app/styles/components/_console-workspace.scss
 )
 for marker in \
   'background: rgba(255, 255, 255, .1);' \
@@ -134,4 +134,4 @@ if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] && grep -RInF -- "$PASTURESTACK_PRI
 fi
 
 printf 'UI_CONSOLE_WORKSPACE_OK version=%s persistence=%s cross_tab=%s\n' \
-  1.6.56-pasturestack.33 browser-session broker-broadcast
+  1.6.56-pasturestack.34 browser-session broker-broadcast

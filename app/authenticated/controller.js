@@ -1,24 +1,18 @@
-import { schedule } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Controller, { inject as controller } from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { on } from '@ember/object/evented';
-import { computed } from '@ember/object';
-
-export default Controller.extend({
-  application : controller(),
-  settings    : service(),
-  prefs       : service(),
-  projects    : service(),
-  currentPath : alias('application.currentPath'),
+export default Ember.Controller.extend({
+  application : Ember.inject.controller(),
+  settings    : Ember.inject.service(),
+  prefs       : Ember.inject.service(),
+  projects    : Ember.inject.service(),
+  currentPath : Ember.computed.alias('application.currentPath'),
   error       : null,
 
-  isPopup: alias('application.isPopup'),
+  isPopup: Ember.computed.alias('application.isPopup'),
 
-  bootstrap: on('init', function() {
-    schedule('afterRender', this, () => {
+  bootstrap: function() {
+    Ember.run.schedule('afterRender', this, () => {
       this.get('application').setProperties({
         error: null,
         error_description: null,
@@ -30,9 +24,9 @@ export default Controller.extend({
         $('BODY').css('background', bg);
       }
     });
-  }),
+  }.on('init'),
 
-  hasCattleSystem: computed('model.stacks.@each.externalId', function() {
+  hasCattleSystem: function() {
     var out = false;
     (this.get('model.stacks')||[]).forEach((stack) => {
       var info = stack.get('externalIdInfo');
@@ -43,20 +37,18 @@ export default Controller.extend({
     });
 
     return out;
-  }),
+  }.property('model.stacks.@each.externalId'),
 
-  hasHosts: computed('model.hosts.length', function() {
+  hasHosts: function() {
     return (this.get('model.hosts.length') > 0);
-  }),
+  }.property('model.hosts.length'),
 
-  isReady: computed('projects.isReady', 'hasHosts', function() {
+  isReady: function() {
     return this.get('projects.isReady') && this.get('hasHosts');
-  }),
+  }.property('projects.isReady','hasHosts'),
 
-  forceUpgrade: computed('currentPath', function() {
-    const currentPath = this.get('currentPath') || '';
-
-    return currentPath.indexOf('authenticated.settings.projects') !== 0 &&
-      currentPath.indexOf('authenticated.admin-tab.') !== 0;
-  }),
+  forceUpgrade: function() {
+    return this.get('currentPath').indexOf('authenticated.settings.projects') !== 0 &&
+      this.get('currentPath').indexOf('authenticated.admin-tab.') !== 0;
+  }.property('currentPath'),
 });

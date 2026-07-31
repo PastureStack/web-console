@@ -1,14 +1,10 @@
-import { cancel, later } from '@ember/runloop';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import { debouncedObserver } from 'ui/utils/debounce';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-import { observer } from '@ember/object';
-
-export default Component.extend({
-  mesos       : service(),
+export default Ember.Component.extend({
+  mesos       : Ember.inject.service(),
 
   timer       : null,
   currentStep : 0,
@@ -26,7 +22,7 @@ export default Component.extend({
   },
 
   willDestroyElement() {
-    cancel(this.get('timer'));
+    Ember.run.cancel(this.get('timer'));
   },
 
   steps: [
@@ -100,14 +96,14 @@ export default Component.extend({
 
     var self = this;
     function reschedule() {
-      self.set('timer', later(self, 'updateStep', 5000));
+      self.set('timer', Ember.run.later(self, 'updateStep', 5000));
     }
   }),
 
-  stepChanged: observer('currentStep', 'steps.length', function(){
+  stepChanged: function(){
     if ( this.get('currentStep') >= this.get('steps.length') )
     {
       this.sendAction('ready');
     }
-  }),
+  }.observes('currentStep','steps.length'),
 });

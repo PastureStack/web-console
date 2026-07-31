@@ -1,19 +1,18 @@
-import { computed } from '@ember/object';
-import Component from '@ember/component';
+import Ember from 'ember';
 import RlDropdownContainer from './rl-dropdown-container';
 
-export default Component.extend({
+export default Ember.Component.extend({
   classNames: ['rl-dropdown-toggle'],
 
   tagName: 'button',
 
   attributeBindings: ['type'],
 
-  type: computed('tagName', function () {
+  type: Ember.computed('tagName', function () {
     return this.get('tagName') === 'button' ? 'button' : null;
   }),
 
-  dropdownContainer: computed(function () {
+  dropdownContainer: Ember.computed(function () {
     return this.nearestOfType(RlDropdownContainer);
   }),
 

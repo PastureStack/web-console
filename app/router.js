@@ -1,8 +1,8 @@
-import EmberRouter from '@ember/routing/router';
+import Ember from 'ember';
 import config from './config/environment';
-import { applyRoutes, clearRoutes } from 'ui/utils/additional-routes';
+import {applyRoutes, clearRoutes} from 'ui/utils/additional-routes';
 
-const Router = EmberRouter.extend({
+const Router = Ember.Router.extend({
   location: config.locationType
 });
 

@@ -1,12 +1,10 @@
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
 
-import { computed } from '@ember/object';
-
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: alias('modalService.modalOpts'),
+  originalModel: Ember.computed.alias('modalService.modalOpts'),
   model: null,
   clone: null,
   justCreated: false,
@@ -23,9 +21,9 @@ export default ModalBase.extend(NewOrEdit, {
     }, 250);
   },
 
-  editing: computed('clone.id', function() {
+  editing: function() {
     return !!this.get('clone.id');
-  }),
+  }.property('clone.id'),
 
   doneSaving: function(neu) {
     if ( this.get('editing') )

@@ -213,7 +213,7 @@ if (/toLocale(?:Date|Time)String\s*\(/u.test(containerLogsSource)) {
 if (snapshotTooltipSource.includes('{{format-date')) {
   failures.push('date_display_not_using_shared_formatter=snapshot-tooltip');
 }
-if (!snapshotTooltipSource.includes('{{date-str this.model.created}}')) {
+if (!snapshotTooltipSource.includes('{{date-str model.created}}')) {
   failures.push('missing_date_helper=snapshot-tooltip');
 }
 if (!stacksNewTemplateSource.includes('nameLabel="editStack.name.label"')) {

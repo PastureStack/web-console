@@ -1,8 +1,8 @@
-{{#if this.loading}}
+{{#if loading}}
   <span class="text-muted">{{t 'generic.loading'}}</span>
 {{else}}
-  {{#if (and this.env this.env.displayName)}}
-    {{this.env.displayName}}
+  {{#if (and env env.displayName)}}
+    {{env.displayName}}
   {{else}}
     <span class="text-muted">&mdash;</span>
   {{/if}}

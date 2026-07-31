@@ -1,12 +1,12 @@
-{{stack-header model=this.model.stack all=this.model.all.stacks}}
+{{stack-header model=model.stack all=model.all.stacks}}
 
 <section>
   <div class="col-md-6">
-    {{t 'uiText.dockerComposeFile'}} {{copy-to-clipboard clipboardText=this.model.dockerCompose size='small'}}
-    {{code-block language="yaml" code=this.model.dockerCompose classNames="docker-compose"}}
+    {{t 'uiText.dockerComposeFile'}} {{copy-to-clipboard clipboardText=model.dockerCompose size='small'}}
+    {{code-block language="yaml" code=model.dockerCompose classNames="docker-compose"}}
   </div>
   <div class="col-md-6">
-    {{t 'uiText.pastureStackCompose'}} {{copy-to-clipboard clipboardText=this.model.rancherCompose size='small'}}
-    {{code-block language="yaml" code=this.model.rancherCompose classNames="rancher-compose"}}
+    {{t 'uiText.pastureStackCompose'}} {{copy-to-clipboard clipboardText=model.rancherCompose size='small'}}
+    {{code-block language="yaml" code=model.rancherCompose classNames="rancher-compose"}}
   </div>
 </section>

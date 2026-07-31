@@ -1,6 +1,6 @@
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model() {
     let container = this.modelFor('container');
     return container.followLink('ports').then((ports) => {

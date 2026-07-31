@@ -1,11 +1,9 @@
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 
-import { computed } from '@ember/object';
-
 var ProjectTemplate = Resource.extend(PolledResource, {
-  access: service(),
+  access: Ember.inject.service(),
 
   actions: {
     edit: function() {
@@ -13,15 +11,15 @@ var ProjectTemplate = Resource.extend(PolledResource, {
     },
   },
 
-  displayStacks: computed('stacks.@each.name', function() {
+  displayStacks: function() {
     return (this.get('stacks')||[]).map((s) => s.name).join(', ');
-  }),
+  }.property('stacks.@each.name'),
 
-  canEdit: computed('access.admin', 'isPublic', function() {
+  canEdit: function() {
     return !this.get('isPublic') || this.get('access.admin');
-  }),
+  }.property('access.admin','isPublic'),
 
-  availableActions: computed('canEdit', function() {
+  availableActions: function() {
     var choices = [
       { label: 'action.edit',             icon: 'icon icon-edit',         action: 'edit',         enabled: this.get('canEdit')},
 //      { label: 'action.clone',            icon: 'icon icon-copy',         action: 'clone',        enabled: true},
@@ -32,16 +30,16 @@ var ProjectTemplate = Resource.extend(PolledResource, {
 
 
     return choices;
-  }),
+  }.property('canEdit'),
 
   icon: 'icon icon-file',
 
-  allThere: computed('stacks.@each.catalogTemplate', function() {
+  allThere: function() {
     let bad = this.get('stacks').find((stack) => { return !stack.get('catalogTemplate'); });
     return !bad;
-  }),
+  }.property('stacks.@each.catalogTemplate'),
 
-  summary: computed('stacks.[]', function() {
+  summary: function() {
     let map = {
       'Orchestration': '',
     };
@@ -81,9 +79,9 @@ var ProjectTemplate = Resource.extend(PolledResource, {
     });
 
     return map;
-  }),
+  }.property('stacks.[]'),
 
-  orchestrationIcon: computed('stacks.[]', function() {
+  orchestrationIcon: function() {
     let orch = this.get('stacks').find((stack) => {
       return stack.get('categories').includes('Orchestration');
     });
@@ -93,7 +91,7 @@ var ProjectTemplate = Resource.extend(PolledResource, {
     } else {
       return `${this.get('app.baseAssets')}assets/images/logos/pasturestack-mark.svg`;
     }
-  }),
+  }.property('stacks.[]'),
 });
 
 // Projects don't get pushed by /subscribe WS, so refresh more often

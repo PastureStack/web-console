@@ -1,15 +1,11 @@
-import { observer, computed } from '@ember/object';
-import $ from 'jquery';
-import { later, once, throttle } from '@ember/runloop';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import Util from 'ui/utils/util';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 import { activeIcon } from 'ui/models/service';
 
-export default Component.extend(ThrottledResize, {
+export default Ember.Component.extend(ThrottledResize, {
   classNames: ['stack-graph'],
-  tooltipService: service('tooltip'),
+  tooltipService: Ember.inject.service('tooltip'),
   graphZoom: null,
   graphInner: null,
   graphOuter: null,
@@ -28,7 +24,7 @@ export default Component.extend(ThrottledResize, {
     this.set('stackId', this.get('model.stack.id'));
 
     if (this.get('model.stack.services.length')) {
-      later(this,'initGraph',100);
+      Ember.run.later(this,'initGraph',100);
     } else {
       this.sendAction('setNoServices', true);
     }
@@ -154,7 +150,7 @@ export default Component.extend(ThrottledResize, {
     }
   },
 
-  crosslinkServices: computed('model.stack.services.@each.consumedServicesWithNames', function() {
+  crosslinkServices: function() {
     // Add services that are cross-linked from another stack
     var out = [];
 
@@ -166,7 +162,7 @@ export default Component.extend(ThrottledResize, {
     });
 
     return out;
-  }),
+  }.property('model.stack.services.@each.consumedServicesWithNames'),
 
   updateGraph: function() {
     var g = this.get('graph');
@@ -254,7 +250,7 @@ export default Component.extend(ThrottledResize, {
   addTooltip: function () {
     let svc = this.get('tooltipService');
     $(".stack-graph-tooltip").mouseenter(function (e) {
-      let node = $(e.target);
+      let node = Ember.$(e.target);
       let out = {
         type: 'tooltip-basic',
         eventPosition: node.offset(),
@@ -301,25 +297,21 @@ export default Component.extend(ThrottledResize, {
     this.addTooltip();
   },
 
-  stackIdObserver: observer('model.stack.id', function() {
+  stackIdObserver: Ember.observer('model.stack.id', function() {
     if (this.get('model.stack.id') !== this.get('stackId')) {
       this.tearDown();
-      once(() => {
+      Ember.run.once(() => {
         this.sendAction('setNoServices', false);
       });
-      later(this,'bootstrap',100);
+      Ember.run.later(this,'bootstrap',100);
     }
   }),
 
-  throttledUpdateGraph: observer(
-    'model.stack.services.@each.{id,name,displayState,consumedServicesWithNames}',
-    'crosslinkServices.@each.{id,name,displayState,displayStack}',
-    function() {
-      if (this.get('model.stack.id') === this.get('stackId')) {
-        throttle(this,'updateGraph',250);
-      }
+  throttledUpdateGraph: function() {
+    if (this.get('model.stack.id') === this.get('stackId')) {
+      Ember.run.throttle(this,'updateGraph',250);
     }
-  ),
+  }.observes('model.stack.services.@each.{id,name,displayState,consumedServicesWithNames}','crosslinkServices.@each.{id,name,displayState,displayStack}'),
 
   willDestroyElement: function() {
     this._super();

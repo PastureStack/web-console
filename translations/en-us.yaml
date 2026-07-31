@@ -392,7 +392,6 @@ authPage:
       wellKnownUrl: Discovery document URL is required.
       invalidUrl: Discovery document URL is invalid.
       https: Discovery must use HTTPS except for local development.
-      externalPlatformUrl: Before configuring OpenID Connect, set the external platform URL to an HTTPS domain name. IP addresses and plain HTTP URLs cannot be used as redirect URIs.
       clientId: Client ID is required.
       clientSecret: Client secret is required.
       openidScope: Scopes must include openid.

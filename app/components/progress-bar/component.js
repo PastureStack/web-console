@@ -1,8 +1,6 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed, observer } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   tagName: 'div',
   classNames: ['progress'],
 
@@ -13,7 +11,7 @@ export default Component.extend({
   max: 100,
   zIndex: null,
 
-  percent: computed('min', 'max', 'value', function() {
+  percent: function() {
     var min   = this.get('min');
     var max   = this.get('max');
     var value = Math.max(min, Math.min(max, this.get('value')));
@@ -21,13 +19,13 @@ export default Component.extend({
     var per = value/(max-min)*100; // Percent 0-100
     per = Math.round(per*100)/100; // Round to 2 decimal places
     return per;
-  }),
+  }.property('min','max','value'),
 
-  textLabel: computed('percent', 'textSuffix', function() {
+  textLabel: function() {
     return this.get('percent') + this.get('textSuffix');
-  }),
+  }.property('percent','textSuffix'),
 
-  colorClass: computed('color', function() {
+  colorClass: function() {
     var color = this.get('color');
     if ( !color )
     {
@@ -35,15 +33,15 @@ export default Component.extend({
     }
 
     return 'progress-bar-' + color.replace(/^progress-bar-/,'');
-  }),
+  }.property('color'),
 
-  percentDidChange: observer('percent', function() {
+  percentDidChange: function() {
     this.$('.progress-bar').css('width', this.get('percent') + "%");
-  }),
+  }.observes('percent'),
 
-  zIndexDidChange: observer('zIndex', function() {
+  zIndexDidChange: function() {
     this.$().css('zIndex', this.get('zIndex') || "inherit");
-  }),
+  }.observes('zIndex'),
 
   didInsertElement: function() {
     this.percentDidChange();

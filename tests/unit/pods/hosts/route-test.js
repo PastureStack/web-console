@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import HostsRoute from 'ui/hosts/route';
 
 module('Unit | Route | hosts');
@@ -8,7 +8,7 @@ module('Unit | Route | hosts');
 test('it exists', function(assert) {
   var route = HostsRoute.create();
   assert.ok(route);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('model returns hosts after loading instances', function(assert) {
@@ -31,6 +31,6 @@ test('model returns hosts after loading instances', function(assert) {
   return route.model().then((result) => {
     assert.strictEqual(result, hosts);
     assert.deepEqual(instances, [{ id: '1i1' }]);
-    run(() => route.destroy());
+    Ember.run(() => route.destroy());
   });
 });

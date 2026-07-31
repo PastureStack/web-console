@@ -1,11 +1,8 @@
-import { alias } from '@ember/object/computed';
-import { computed, observer } from '@ember/object';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Controller.extend({
-  bulkActionHandler: service(),
+export default Ember.Controller.extend({
+  bulkActionHandler: Ember.inject.service(),
   bulkActionsList: [
     {
       "label": "action.remove",
@@ -16,11 +13,11 @@ export default Controller.extend({
     },
   ],
   sortBy: 'name',
-  prefs: service(),
+  prefs: Ember.inject.service(),
 
   queryParams: ['sortBy'],
 
-  showSystem: computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
+  showSystem: Ember.computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
     get() {
       return this.get(`prefs.${C.PREFS.SHOW_SYSTEM}`) !== false;
     },
@@ -31,7 +28,7 @@ export default Controller.extend({
     }
   }),
 
-  show: computed('showSystem', function() {
+  show: Ember.computed('showSystem', function() {
     return this.get('showSystem') === false ? 'standard' : 'all';
   }),
 
@@ -80,22 +77,22 @@ export default Controller.extend({
   // showChanged should be an observer rather then init to correctly set the showSystem checkbox
   // if showSystem is set on init show does not contain the correct qp as the router has not set it
   // so the checkbox never gets set
-  showChanged: observer('show', function() {
+  showChanged: function() {
     this.set('showSystem', this.get('show') === 'all');
-  }),
+  }.observes('show'),
 
-  showSystemChanged: observer('showSystem', function() {
+  showSystemChanged: function() {
     this.set('show', (this.get('showSystem') ? 'all' : 'standard'));
-  }),
+  }.observes('showSystem'),
 
-  sortableContent: alias('filtered'),
-  filtered: computed('model.@each.system', 'showSystem', function() {
+  sortableContent: Ember.computed.alias('filtered'),
+  filtered: function() {
     let all = this.get('model');
     if ( this.get('showSystem') ) {
       return all;
     } else {
       return all.filterBy('isSystem', false);
     }
-  }),
+  }.property('model.@each.system','showSystem'),
 
 });

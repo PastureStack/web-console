@@ -1,11 +1,10 @@
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-export default Component.extend(NewOrEdit, {
+export default Ember.Component.extend(NewOrEdit, {
   service: null,
 
-  primaryResource: alias('service'),
+  primaryResource: Ember.computed.alias('service'),
 
   actions: {
     done() {

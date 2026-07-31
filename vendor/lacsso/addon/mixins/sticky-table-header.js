@@ -1,5 +1,4 @@
-import $ from 'jquery';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import ThrottledResize from './throttled-resize';
 
 const tableProps = {
@@ -7,11 +6,11 @@ const tableProps = {
   fixedHeaderHeight: '40px',
 };
 
-export default Mixin.create(ThrottledResize, {
+export default Ember.Mixin.create(ThrottledResize, {
   didInsertElement() {
     this._super(...arguments);
 
-    let $offset = $(this.element).find('thead tr').offset().top;
+    let $offset = Ember.$(this.element).find('thead tr').offset().top;
 
     this.buildTableWidths();
 
@@ -23,13 +22,13 @@ export default Mixin.create(ThrottledResize, {
       this.syncHorizontalPosition();
     };
 
-    $(window).on('scroll', this._boundStickyWindowScroll);
-    $(this.element).find('table').parent().on('scroll', this._boundStickyHostScroll);
+    Ember.$(window).on('scroll', this._boundStickyWindowScroll);
+    Ember.$(this.element).find('table').parent().on('scroll', this._boundStickyHostScroll);
   },
 
   willDestroyElement() {
-    $(window).off('scroll', this._boundStickyWindowScroll);
-    $(this.element).find('table').parent().off('scroll', this._boundStickyHostScroll);
+    Ember.$(window).off('scroll', this._boundStickyWindowScroll);
+    Ember.$(this.element).find('table').parent().off('scroll', this._boundStickyHostScroll);
     this._boundStickyWindowScroll = null;
     this._boundStickyHostScroll = null;
     this._super(...arguments);
@@ -41,11 +40,11 @@ export default Mixin.create(ThrottledResize, {
   },
 
   buildTableWidths() {
-    let $table = $(this.element).find('table').first();
+    let $table = Ember.$(this.element).find('table').first();
     let ths = $table.find('thead tr.fixed-header th');
 
     $table.find('thead tr.fixed-header-placeholder th').each((idx, th) => {
-      $(ths[idx]).attr('width', $(th).outerWidth());
+      Ember.$(ths[idx]).attr('width', Ember.$(th).outerWidth());
     });
 
     $table.find('thead tr.fixed-header').css({
@@ -62,13 +61,13 @@ export default Mixin.create(ThrottledResize, {
   },
 
   tearDownTableWidths() {
-    $(this.element).find('thead tr.fixed-header th').each((idx, td) => {
-      $(td).removeAttr('width');
+    Ember.$(this.element).find('thead tr.fixed-header th').each((idx, td) => {
+      Ember.$(td).removeAttr('width');
     });
   },
 
   positionHeaders() {
-    let $table = $(this.element).find('table').first();
+    let $table = Ember.$(this.element).find('table').first();
     let $actionRow = $table.find('thead .fixed-header-actions');
     let $fixedHeader = $table.find('thead tr.fixed-header');
     let showHeader = this.get('showHeader');
@@ -93,7 +92,7 @@ export default Mixin.create(ThrottledResize, {
   },
 
   removePositions() {
-    let $table = $(this.element).find('table').first();
+    let $table = Ember.$(this.element).find('table').first();
     let $actionRow = $table.find('thead .fixed-header-actions');
     let $fixedHeader = $table.find('thead tr.fixed-header');
 
@@ -118,7 +117,7 @@ export default Mixin.create(ThrottledResize, {
   },
 
   syncHorizontalPosition() {
-    let $table = $(this.element).find('table').first();
+    let $table = Ember.$(this.element).find('table').first();
     let $host = $table.parent();
     let host = $host[0];
     let $actionRow = $table.find('thead .fixed-header-actions');
@@ -145,10 +144,10 @@ export default Mixin.create(ThrottledResize, {
   },
 
   updateHeaders(offset) {
-    let $windowScroll = $(window).scrollTop();
-    let $table = $(this.element).find('table').first();
+    let $windowScroll = Ember.$(window).scrollTop();
+    let $table = Ember.$(this.element).find('table').first();
     let $floatingHeader = $table.find('thead tr.fixed-header');
-    let $scrollTop = $(window).scrollTop();
+    let $scrollTop = Ember.$(window).scrollTop();
     let containerBottom = $table.height() + $table.offset().top;
 
     if ( $windowScroll < containerBottom ) {

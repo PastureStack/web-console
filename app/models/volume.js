@@ -1,18 +1,15 @@
-import { notEmpty } from '@ember/object/computed';
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import { denormalizeIdArray } from 'ember-api-store/utils/denormalize';
 
-import { computed } from '@ember/object';
-
 var Volume = Resource.extend({
   type: 'volume',
-  modalService: service('modal'),
+  modalService: Ember.inject.service('modal'),
 
   mounts: denormalizeIdArray('mountIds'),
   snapshots: denormalizeIdArray('snapshotIds'),
 
-  isRoot: notEmpty('instanceId'),
+  isRoot: Ember.computed.notEmpty('instanceId'),
 
   actions: {
     snapshot() {
@@ -24,7 +21,7 @@ var Volume = Resource.extend({
     },
   },
 
-  availableActions: computed('actionLinks.{restore,purge,remove}', function() {
+  availableActions: function() {
     var a = this.get('actionLinks');
 
     return [
@@ -35,11 +32,11 @@ var Volume = Resource.extend({
       { label: 'action.purge',            icon: '',                         action: 'purge',             enabled: !!a.purge },
       { label: 'action.snapshot',         icon: 'icon icon-copy',           action: 'snapshot',          enabled: !!a.snapshot },
     ];
-  }),
+  }.property('actionLinks.{restore,purge,remove}'),
 
-  displayUri: computed('uri', function() {
+  displayUri: function() {
     return (this.get('uri')||'').replace(/^file:\/\//,'');
-  }),
+  }.property('uri'),
 });
 
 Volume.reopenClass({

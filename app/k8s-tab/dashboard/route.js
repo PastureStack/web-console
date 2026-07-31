@@ -1,12 +1,10 @@
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  k8s: service(),
+export default Ember.Route.extend({
+  k8s: Ember.inject.service(),
 
   model() {
-    return EmberObject.create({
+    return Ember.Object.create({
       dashboardUrl: this.get('k8s.kubernetesDashboard'),
     });
   },

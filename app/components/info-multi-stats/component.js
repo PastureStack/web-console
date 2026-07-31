@@ -1,15 +1,6 @@
-import { next } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import MultiStatsSocket from 'ui/utils/multi-stats';
-import {
-  formatPercent,
-  formatMib,
-  formatKbps
-} from 'ui/utils/util';
-
-import { observer } from '@ember/object';
+import { formatPercent, formatMib, formatKbps } from 'ui/utils/util';
 
 const MAX_POINTS = 60;
 const TICK_COUNT = 6;
@@ -35,8 +26,8 @@ const GRADIENT_COLORS = [
   },
 ];
 
-export default Component.extend({
-  intl: service(),
+export default Ember.Component.extend({
+  intl: Ember.inject.service(),
   model: null,
   linkName: 'containerStats',
   single: true,
@@ -46,9 +37,9 @@ export default Component.extend({
   renderSeconds: null,
 
   statsSocket: null,
-  available: alias('statsSocket.available'),
-  active: alias('statsSocket.active'),
-  loading: alias('statsSocket.loading'),
+  available: Ember.computed.alias('statsSocket.available'),
+  active: Ember.computed.alias('statsSocket.active'),
+  loading: Ember.computed.alias('statsSocket.loading'),
 
   cpuCanvas: '#cpuGraph',
   cpuGraph: null,
@@ -84,8 +75,8 @@ export default Component.extend({
   },
 
   // The SVG gradients have the path name in them, so they have to be updated when the route changes.
-  routeChanged: observer('application.currentRouteName', function() {
-    next(() => {
+  routeChanged: function() {
+    Ember.run.next(() => {
       let graphs = [this.get('cpuGraph'), this.get('memoryGraph'), this.get('storageGraph'), this.get('networkGraph')];
       graphs.forEach((graph) => {
         try {
@@ -99,7 +90,7 @@ export default Component.extend({
         }
       });
     });
-  }),
+  }.observes('application.currentRouteName'),
 
   willDestroyElement: function() {
     this._super();
@@ -107,7 +98,7 @@ export default Component.extend({
     this.tearDown();
   },
 
-  onActiveChanged: observer('active', function() {
+  onActiveChanged: function() {
     if ( this.get('active') )
     {
       this.setUp();
@@ -116,10 +107,10 @@ export default Component.extend({
     {
       this.tearDown();
     }
-  }),
+  }.observes('active'),
 
   connect() {
-    next(() => {
+    Ember.run.next(() => {
       try {
         var stats = MultiStatsSocket.create({
           resource: this.get('model'),
@@ -181,9 +172,9 @@ export default Component.extend({
     this.set('renderTimer', setInterval(this.renderGraphs.bind(this), interval*1000));
   },
 
-  renderSecondsChanged: observer('renderSeconds', function() {
+  renderSecondsChanged: function() {
     this.startTimer();
-  }),
+  }.observes('renderSeconds'),
 
 
 setupMarkers: function() {

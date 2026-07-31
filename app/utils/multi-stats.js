@@ -1,6 +1,4 @@
-import { and } from '@ember/object/computed';
-import Evented from '@ember/object/evented';
-import EmberObject, { computed, observer } from '@ember/object';
+import Ember from "ember";
 import Socket from "ui/utils/socket";
 import C from 'ui/utils/constants';
 
@@ -16,7 +14,7 @@ import C from 'ui/utils/constants';
   // When done
   sock.close();
 */
-export default EmberObject.extend(Evented, {
+export default Ember.Object.extend(Ember.Evented, {
   resource: null,
   linkName: 'containerStats',
 
@@ -29,17 +27,17 @@ export default EmberObject.extend(Evented, {
     this.onAvailableChanged();
   },
 
-  available: computed('resource.{state,healthState}', function() {
+  available: function() {
     return C.ACTIVEISH_STATES.indexOf(this.get('resource.state')) >= 0 && this.get('resource.healthState') !== 'started-once';
-  }),
+  }.property('resource.{state,healthState}'),
 
-  active: and('available', 'connected'),
+  active: Ember.computed.and('available', 'connected'),
 
-  loading: computed('available', 'connected', function() {
+  loading: function() {
     return this.get('available') && !this.get('connected');
-  }),
+  }.property('available','connected'),
 
-  onAvailableChanged: observer('available', function() {
+  onAvailableChanged: function() {
     if ( this.get('available') )
     {
       this.connect();
@@ -48,7 +46,7 @@ export default EmberObject.extend(Evented, {
     {
       this.disconnect();
     }
-  }),
+  }.observes('available'),
 
   connect() {
     if ( this.get('socket') || this.get('closed') )

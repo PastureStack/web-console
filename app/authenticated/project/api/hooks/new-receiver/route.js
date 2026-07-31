@@ -1,10 +1,7 @@
-import EmberObject from '@ember/object';
-import { resolve } from 'rsvp';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  webhookStore: service(),
+export default Ember.Route.extend({
+  webhookStore: Ember.inject.service(),
 
   model(params) {
     let promise;
@@ -12,14 +9,14 @@ export default Route.extend({
     if ( params.receiverId ) {
       promise = store.find('receiver', params.receiverId);
     } else {
-      promise = resolve(store.createRecord({
+      promise = Ember.RSVP.resolve(store.createRecord({
         type: 'receiver',
         driver: 'scaleService',
       }));
     }
 
     return promise.then((receiver) => {
-      return EmberObject.create({
+      return Ember.Object.create({
         receiver: receiver.cloneForNew(),
       });
     });

@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Controller, { inject as controller } from '@ember/controller';
+import Ember from 'ember';
 import Sortable from 'ui/mixins/sortable';
 
-export default Controller.extend(Sortable, {
+export default Ember.Controller.extend(Sortable, {
   sortBy: 'name',
   sorts: {
     state:        ['stateSort','name','id'],
@@ -11,8 +10,8 @@ export default Controller.extend(Sortable, {
     orchestration:['displayOrchestration','name','id'],
   },
 
-  access: service(),
-  projects: service(),
-  settings: service(),
-  application: controller(),
+  access: Ember.inject.service(),
+  projects: Ember.inject.service(),
+  settings: Ember.inject.service(),
+  application: Ember.inject.controller(),
 });

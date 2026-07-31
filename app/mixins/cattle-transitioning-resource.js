@@ -1,9 +1,4 @@
-import { reject, Promise } from 'rsvp';
-import { isArray } from '@ember/array';
-import { equal } from '@ember/object/computed';
-import { computed, get, set } from '@ember/object';
-import { service } from '@ember/service';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import Util from 'ui/utils/util';
 import Resource from 'ember-api-store/models/resource';
 import { normalizeType } from 'ember-api-store/utils/normalize';
@@ -53,13 +48,13 @@ const stateColorSortMap = {
 };
 const stateColorUnknown = 5;
 
-export default Mixin.create({
-  endpointSvc: service('endpoint'), // Some machine drivers have a property called 'endpoint'
-  cookies: service(),
-  growl: service(),
-  intl: service(),
+export default Ember.Mixin.create({
+  endpointSvc: Ember.inject.service('endpoint'), // Some machine drivers have a property called 'endpoint'
+  cookies: Ember.inject.service(),
+  growl: Ember.inject.service(),
+  intl: Ember.inject.service(),
 
-  modalService: service('modal'),
+  modalService: Ember.inject.service('modal'),
   reservedKeys: ['waitInterval','waitTimeout'],
 
   state: null,
@@ -67,7 +62,7 @@ export default Mixin.create({
   transitioningMessage: null,
   transitioningProgress: null,
 
-  availableActions: computed(function() {
+  availableActions: function() {
     /*
       Override me and return [
         {
@@ -83,9 +78,9 @@ export default Mixin.create({
       ]
     */
     return [];
-  }),
+  }.property(),
 
-  translatedAvailableActions: computed('availableActions','intl._locale', function() {
+  translatedAvailableActions: Ember.computed('availableActions','intl._locale', function() {
     // use this if you need to pass translated actions to addons
     var availableActions = this.get('availableActions');
     if (availableActions) {
@@ -96,7 +91,7 @@ export default Mixin.create({
     return availableActions;
   }),
 
-  primaryAction: computed('availableActions.@each.enabled', function() {
+  primaryAction: function() {
     // The default implementation returns the first enabled item that has an icon
     // and is before the first divider.  If you want a different behavior or
     // multiple primaryActions, you can override this in a specific model.
@@ -106,7 +101,7 @@ export default Mixin.create({
     for ( var i = 0 ; i < all.get('length') ; i++ )
     {
       obj = all.objectAt(i);
-      if ( get(obj,'divider') )
+      if ( Ember.get(obj,'divider') )
       {
         // Nothing was found, stop at the first divider;
         if ( seenAnAction )
@@ -114,10 +109,10 @@ export default Mixin.create({
           return null;
         }
       }
-      else if ( get(obj,'enabled') )
+      else if ( Ember.get(obj,'enabled') )
       {
         seenAnAction = true;
-        if ( get(obj,'icon') && get(obj,'action') !== 'promptDelete')
+        if ( Ember.get(obj,'icon') && Ember.get(obj,'action') !== 'promptDelete')
         {
           return obj;
         }
@@ -125,7 +120,7 @@ export default Mixin.create({
     }
 
     return null;
-  }),
+  }.property('availableActions.@each.enabled'),
 
   actions: {
     promptDelete: function() {
@@ -163,33 +158,33 @@ export default Mixin.create({
     },
   },
 
-  displayName: computed('name', 'id', function() {
+  displayName: function() {
     return this.get('name') || '('+this.get('id')+')';
-  }),
+  }.property('name','id'),
 
-  isTransitioning: equal('transitioning','yes'),
-  isError: equal('transitioning','error'),
-  isRemoved: computed('state', () => { return !C.REMOVEDISH_STATES.includes(this.state); }),
-  isPurged: equal('state','purged'),
-  isActive: equal('state','active'),
+  isTransitioning: Ember.computed.equal('transitioning','yes'),
+  isError: Ember.computed.equal('transitioning','error'),
+  isRemoved: Ember.computed('state', () => { return !C.REMOVEDISH_STATES.includes(this.state); }),
+  isPurged: Ember.computed.equal('state','purged'),
+  isActive: Ember.computed.equal('state','active'),
 
-  relevantState: computed('combinedState', 'state', function() {
+  relevantState: function() {
     return this.get('combinedState') || this.get('state');
-  }),
+  }.property('combinedState','state'),
 
-  displayState: computed('relevantState', function() {
+  displayState: function() {
     var state = this.get('relevantState')||'';
     return state.split(/-/).map((word) => {
       return Util.ucFirst(word);
     }).join('-');
-  }),
+  }.property('relevantState'),
 
-  showTransitioningMessage: computed('transitioning', 'transitioningMessage', function() {
+  showTransitioningMessage: function() {
     var trans = this.get('transitioning');
     return (trans === 'yes' || trans === 'error') && (this.get('transitioningMessage')||'').length > 0;
-  }),
+  }.property('transitioning','transitioningMessage'),
 
-  stateIcon: computed('relevantState', 'transitioning', function() {
+  stateIcon: function() {
     var trans = this.get('transitioning');
     var icon = '';
     if ( trans === 'yes' )
@@ -233,9 +228,9 @@ export default Mixin.create({
     }
 
     return icon;
-  }),
+  }.property('relevantState','transitioning'),
 
-  stateColor: computed('relevantState', 'isError', function() {
+  stateColor: function() {
     if ( this.get('isError') ) {
       return 'text-danger';
     }
@@ -260,16 +255,16 @@ export default Mixin.create({
     }
 
     return this.constructor.defaultStateColor;
-  }),
+  }.property('relevantState','isError'),
 
-  stateSort: computed('stateColor', 'relevantState', function() {
+  stateSort: function() {
     var color = this.get('stateColor').replace('text-','');
     return (stateColorSortMap[color] || stateColorUnknown) + ' ' + this.get('relevantState');
-  }),
+  }.property('stateColor','relevantState'),
 
-  stateBackground: computed('stateColor', function() {
+  stateBackground: function() {
     return this.get('stateColor').replace("text-","bg-");
-  }),
+  }.property('stateColor'),
 
   trimValues: function(depth, seenObjs) {
     if ( !depth )
@@ -282,7 +277,7 @@ export default Mixin.create({
       seenObjs = [];
     }
     this.eachKeys((val,key) => {
-      set(this, key, recurse(val,depth));
+      Ember.set(this, key, recurse(val,depth));
     }, false);
 
     return this;
@@ -297,7 +292,7 @@ export default Mixin.create({
       {
         return val.trim();
       }
-      else if ( isArray(val) )
+      else if ( Ember.isArray(val) )
       {
         val.beginPropertyChanges();
         val.forEach((v, idx) => {
@@ -326,7 +321,7 @@ export default Mixin.create({
           // Skip keys with dots in them, like container labels
           if ( key.indexOf('.') === -1 )
           {
-            set(val, key, recurse(val[key], depth+1));
+            Ember.set(val, key, recurse(val[key], depth+1));
           }
         });
         return val;
@@ -427,9 +422,9 @@ export default Mixin.create({
         }
       }
 
-      var len = (val ? get(val,'length') : 0);
+      var len = (val ? Ember.get(val,'length') : 0);
 
-      if ( field.required && (val === null || (typeof val === 'string' && len === 0) || (isArray(val) && len === 0) ) )
+      if ( field.required && (val === null || (typeof val === 'string' && len === 0) || (Ember.isArray(val) && len === 0) ) )
       {
         errors.push(intl.t('validation.required', {key: displayKey}));
         continue;
@@ -536,7 +531,7 @@ export default Mixin.create({
     {
       return promise.catch((err) => {
         this.get('growl').fromError(Util.ucFirst(name) + ' Error', err);
-        return reject(err);
+        return Ember.RSVP.reject(err);
       });
     }
 
@@ -549,7 +544,7 @@ export default Mixin.create({
   waitInterval: 1000,
   waitTimeout: 30000,
   _waitForTestFn: function(testFn, msg) {
-    return new Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve, reject) => {
       var timeout = setTimeout(() =>  {
         clearInterval(interval);
         clearTimeout(timeout);

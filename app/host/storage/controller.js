@@ -1,18 +1,13 @@
-import { run } from '@ember/runloop';
-import { gt } from '@ember/object/computed';
-import { computed } from '@ember/object';
-import { A } from '@ember/array';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import {
   filterVolumesByState,
   isBulkRemovableVolume,
 } from 'ui/utils/volume-bulk-remove';
 
-export default Controller.extend({
-  modalService: service('modal'),
-  prefs: service(),
+export default Ember.Controller.extend({
+  modalService: Ember.inject.service('modal'),
+  prefs: Ember.inject.service(),
 
   sortBy: 'displayUri',
   storageFilter: 'all',
@@ -23,17 +18,17 @@ export default Controller.extend({
 
   init() {
     this._super(...arguments);
-    this.set('selectedVolumes', A());
+    this.set('selectedVolumes', Ember.A());
   },
 
-  nonRootVolumes: computed('model.@each.{instanceId,state}', function() {
+  nonRootVolumes: function() {
     return this.get('model').filter(function(volume) {
       return !volume.get('instanceId') &&
         ['removing', 'removed', 'purging', 'purged'].indexOf(volume.get('state')) === -1;
     });
-  }),
+  }.property('model.@each.{instanceId,state}'),
 
-  filteredVolumes: computed(
+  filteredVolumes: Ember.computed(
     'storageFilter',
     'nonRootVolumes.[]',
     'nonRootVolumes.@each.{state,instanceId,removed,actionLinks,mounts}',
@@ -42,8 +37,8 @@ export default Controller.extend({
     }
   ),
 
-  hasSelectedVolumes: gt('selectedVolumes.length', 0),
-  selectedVolumeCount: computed('selectedVolumes.length', function() {
+  hasSelectedVolumes: Ember.computed.gt('selectedVolumes.length', 0),
+  selectedVolumeCount: Ember.computed('selectedVolumes.length', function() {
     return String(this.get('selectedVolumes.length') || 0);
   }),
 
@@ -90,12 +85,12 @@ export default Controller.extend({
 
       this.setProperties({
         storageFilter: value,
-        selectedVolumes: A(),
+        selectedVolumes: Ember.A(),
       });
     },
 
     selectionChanged(volumes) {
-      this.set('selectedVolumes', A((volumes || []).slice()));
+      this.set('selectedVolumes', Ember.A((volumes || []).slice()));
     },
 
     promptRemoveSelected() {
@@ -110,7 +105,7 @@ export default Controller.extend({
         volumes: selected.slice(),
         escToClose: true,
         onComplete: (successful) => {
-          run(() => {
+          Ember.run(() => {
             this.get('model').removeObjects(successful);
             this.get('selectedVolumes').removeObjects(successful);
           });

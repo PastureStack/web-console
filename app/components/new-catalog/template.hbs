@@ -1,29 +1,29 @@
-{{#if this.showHeader}}
+{{#if showHeader}}
   <section class="header clearfix">
-    {{#if this.editing}}
-      <h1>{{t 'newCatalog.upgrade'}} <span style="font-weight: normal">{{this.stackResource.name}}</span></h1>
+    {{#if editing}}
+      <h1>{{t 'newCatalog.upgrade'}} <span style="font-weight: normal">{{stackResource.name}}</span></h1>
     {{else}}
-      <h1>{{#link-to this.parentRoute}}{{t 'newCatalog.catalog'}}{{/link-to}}</h1>
-      {{#power-select options=this.allTemplates selected=this.templateResource onchange=(action "changeTemplate") searchField="name" as |obj|}}
+      <h1>{{#link-to parentRoute}}{{t 'newCatalog.catalog'}}{{/link-to}}</h1>
+      {{#power-select options=allTemplates selected=templateResource onchange=(action "changeTemplate") searchField="name" as |obj|}}
         <span class="clip">{{obj.name}}</span>
       {{/power-select}}
     {{/if}}
   </section>
 {{/if}}
 
-<section class="{{this.sectionClass}} row">
+<section class="{{sectionClass}} row">
   <div class="col-sm-12 col-md-3">
-    {{#if this.templateResource.links.icon}}
-      <img src={{this.templateResource.links.icon}} alt={{this.templateResource.localizedName}} class="r-mr20" style="height:75px;max-width: 100%;">
+    {{#if templateResource.links.icon}}
+      <img src={{templateResource.links.icon}} alt={{templateResource.localizedName}} class="r-mr20" style="height:75px;max-width: 100%;">
     {{/if}}
 
     <div>
-      <small><strong>{{t 'newCatalog.catalog'}}</strong> <span class="text-capitalize">{{this.templateResource.catalogId}}</span></small>
+      <small><strong>{{t 'newCatalog.catalog'}}</strong> <span class="text-capitalize">{{templateResource.catalogId}}</span></small>
     </div>
     <div>
-      <small><strong>{{t 'newCatalog.category'}}</strong> {{join-array this.templateResource.categoryArray}}</small>
+      <small><strong>{{t 'newCatalog.category'}}</strong> {{join-array templateResource.categoryArray}}</small>
     </div>
-    {{#if this.templateResource.isUpstreamFirstParty}}
+    {{#if templateResource.isUpstreamFirstParty}}
       <div>
         <small><strong>{{t 'newCatalog.origin'}}</strong> {{t 'newCatalog.upstreamFirstParty'}}</small>
       </div>
@@ -31,86 +31,86 @@
         <small><strong>{{t 'newCatalog.currentMaintenance'}}</strong> {{t 'newCatalog.communityMaintained'}}</small>
       </div>
     {{else}}
-      {{#if (eq this.templateResource.certifiedType 'rancher')}}
+      {{#if (eq templateResource.certifiedType 'rancher')}}
         <small><strong>{{t 'newCatalog.support'}} </strong>{{t 'newCatalog.official'}}</small>
       {{else}}
         <small><strong>{{t 'newCatalog.support'}} </strong>{{t 'newCatalog.maintainedBy'}}</small>
       {{/if}}
     {{/if}}
-    {{#if this.templateResource.maintainer}}
+    {{#if templateResource.maintainer}}
       <div>
-        <small><strong>{{t 'newCatalog.maintainer'}}</strong> {{this.templateResource.maintainer}}</small>
+        <small><strong>{{t 'newCatalog.maintainer'}}</strong> {{templateResource.maintainer}}</small>
       </div>
     {{/if}}
-    {{#if this.templateResource.license}}
+    {{#if templateResource.license}}
       <div>
-        <small><strong>{{t 'newCatalog.license'}}</strong> {{this.templateResource.license}}</small>
+        <small><strong>{{t 'newCatalog.license'}}</strong> {{templateResource.license}}</small>
       </div>
     {{/if}}
-    {{#if this.templateResource.links.project}}
-      <small class="force-wrap"><strong>{{t 'newCatalog.url'}}</strong> <a href="{{this.templateResource.cleanProjectUrl}}" target="_blank" rel="noopener noreferrer">{{this.templateResource.cleanProjectUrl}}</a></small>
+    {{#if templateResource.links.project}}
+      <small class="force-wrap"><strong>{{t 'newCatalog.url'}}</strong> <a href="{{templateResource.cleanProjectUrl}}" target="_blank" rel="noopener noreferrer">{{templateResource.cleanProjectUrl}}</a></small>
     {{/if}}
   </div>
-  {{#if this.showDescription}}
-    {{#if this.readmeContent}}
+  {{#if showDescription}}
+    {{#if readmeContent}}
       <div class="col-sm-12 col-md-9" style="overflow-y: auto; max-height: 500px;">
-        {{common-mark markdown=this.readmeContent}}
+        {{common-mark markdown=readmeContent}}
       </div>
     {{else}}
       <h2 class="r-mb10">
-        {{t (if this.editing this.titleUpgrade this.titleAdd) name=this.templateResource.localizedName}}
+        {{t (if editing titleUpgrade titleAdd) name=templateResource.localizedName}}
       </h2>
-      <p>{{this.templateResource.localizedDescription}}</p>
+      <p>{{templateResource.localizedDescription}}</p>
     {{/if}}
   {{/if}}
 </section>
 
-<section class="{{this.sectionClass}}">
+<section class="{{sectionClass}}">
   <h4>{{t 'newCatalog.templateVersion'}}</h4>
   <hr/>
   <div class="row">
     <div class="col-sm-12 col-md-6">
       {{new-select
         classNames="form-control"
-        content=this.sortedVersions
+        content=sortedVersions
         prompt="newCatalog.version.prompt"
         optionLabelPath="version"
         optionValuePath="link"
-        value=this.selectedTemplateUrl
-        disabled=this.loading
+        value=selectedTemplateUrl
+        disabled=loading
       }}
-      <p class="help-block">{{t (if this.editing this.selectVersionUpgrade this.selectVersionAdd)}}</p>
+      <p class="help-block">{{t (if editing selectVersionUpgrade selectVersionAdd)}}</p>
     </div>
   </div>
 </section>
 
-{{#if (and this.showName this.selectedTemplateModel)}}
-  <section class="{{this.sectionClass}}">
+{{#if (and showName selectedTemplateModel)}}
+  <section class="{{sectionClass}}">
     <h4>{{t 'newCatalog.newStack'}}</h4>
     <hr/>
 
     {{form-name-description
-      model=this.stackResource
+      model=stackResource
       nameRequired=true
     }}
 
   </section>
 {{/if}}
 
-<section class="{{this.sectionClass}}">
-  {{#if this.loading}}
+<section class="{{sectionClass}}">
+  {{#if loading}}
     <div class="text-center">
       <i class="icon icon-spinner icon-spin" style="font-size:36px;"></i>
     </div>
   {{/if}}
 
-  {{#if this.selectedTemplateModel}}
-    <form {{action "submitTemplate" on="submit"}} class="{{if this.loading 'hide'}}">
+  {{#if selectedTemplateModel}}
+    <form {{action "submitTemplate" on="submit"}} class="{{if loading 'hide'}}">
       <h4>{{t 'newCatalog.config'}}</h4>
       <hr/>
 
       <div class="container-flex">
-        {{#each this.selectedTemplateModel.questions as |question|}}
+        {{#each selectedTemplateModel.questions as |question|}}
           <div class="flex-item-half">
             <div class="col-sm-12 form-label r-mb10">
               <label class="form-label form-control-static">{{question.label}}{{if question.required "*"}}</label>
@@ -129,10 +129,10 @@
           <span class="text-muted">{{t 'newCatalog.noConfig'}}</span>
         {{/each}}
       </div>
-      {{#if (and (not this.editing) (eq this.templateBase ""))}}
+      {{#if (and (not editing) (eq templateBase ""))}}
         <div class="row r-mt20">
           <div class="col-md-12">
-            <label class="checkbox small">{{input type="checkbox" checked=this.stackResource.startOnCreate}} {{t 'newCatalog.startService'}}</label>
+            <label class="checkbox small">{{input type="checkbox" checked=stackResource.startOnCreate}} {{t 'newCatalog.startService'}}</label>
           </div>
         </div>
       {{/if}}
@@ -140,40 +140,40 @@
   {{/if}}
 </section>
 
-{{#if (and this.selectedTemplateModel (not this.loading))}}
-  {{#if this.showPreview}}
+{{#if (and selectedTemplateModel (not loading))}}
+  {{#if showPreview}}
     <section>
-      <div class="over-hr"><span {{action "togglePreview"}}>{{t 'newCatalog.preview'}} <i class="icon {{if this.previewOpen 'icon-chevron-up' 'icon-chevron-down'}}"></i></span></div>
+      <div class="over-hr"><span {{action "togglePreview"}}>{{t 'newCatalog.preview'}} <i class="icon {{if previewOpen 'icon-chevron-up' 'icon-chevron-down'}}"></i></span></div>
 
-      {{#if this.previewOpen}}
+      {{#if previewOpen}}
         <ul class="nav nav-tabs nav-tabs-well" role="tablist">
-          {{#each this.selectedTemplateModel.filesAsArray as |file|}}
-            <li role="tab" class="{{if (eq this.previewTab file.name) 'active'}}" {{action "selectPreviewTab" file.name}}><a href="#">{{file.name}} {{copy-to-clipboard clipboardText=file.body size="small"}}</a></li>
+          {{#each selectedTemplateModel.filesAsArray as |file|}}
+            <li role="tab" class="{{if (eq previewTab file.name) 'active'}}" {{action "selectPreviewTab" file.name}}><a href="#">{{file.name}} {{copy-to-clipboard clipboardText=file.body size="small"}}</a></li>
           {{/each}}
-          <li role="tab" class="{{if (eq this.previewTab 'answers') 'active'}}" {{action "selectPreviewTab" "answers"}}><a href="#">{{t 'newCatalog.txt'}} {{copy-to-clipboard clipboardText=this.answersString size="small"}}</a></li>
+          <li role="tab" class="{{if (eq previewTab 'answers') 'active'}}" {{action "selectPreviewTab" "answers"}}><a href="#">{{t 'newCatalog.txt'}} {{copy-to-clipboard clipboardText=answersString size="small"}}</a></li>
         </ul>
         <div class="well nav-well preview-content" role="tabpanel">
-          {{#each this.selectedTemplateModel.filesAsArray as |file|}}
-            {{code-block code=file.body language="yaml" hide=(not-eq this.previewTab file.name)}}
+          {{#each selectedTemplateModel.filesAsArray as |file|}}
+            {{code-block code=file.body language="yaml" hide=(not-eq previewTab file.name)}}
           {{/each}}
-          {{code-block code=this.answersString language="bash" hide=(not-eq  this.previewTab 'answers')}}
+          {{code-block code=answersString language="bash" hide=(not-eq  previewTab 'answers')}}
         </div>
       {{/if}}
     </section>
   {{/if}}
 
-  {{#if this.errors.length}}
+  {{#if errors.length}}
     <section>
       <div class="row">
         <div class="col-sm-12">
-          {{top-errors errors=this.errors}}
+          {{top-errors errors=errors}}
         </div>
       </div>
     </section>
   {{/if}}
 
   <div class="footer-actions">
-    {{save-cancel createLabel=(if this.editing this.saveUpgrade this.saveNew) save="save" cancel="cancel"}}
+    {{save-cancel createLabel=(if editing saveUpgrade saveNew) save="save" cancel="cancel"}}
   </div>
 {{else}}
   <div class="footer-actions">

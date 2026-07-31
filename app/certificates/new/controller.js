@@ -1,13 +1,11 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-import { computed } from '@ember/object';
-
-export default Controller.extend(NewOrEdit,{
-  isEncrypted: computed('model.key', function() {
+export default Ember.Controller.extend(NewOrEdit,{
+  isEncrypted: function() {
     var key = this.get('model.key')||'';
     return key.match(/^Proc-Type: 4,ENCRYPTED$/m) || key.match(/^-----BEGIN ENCRYPTED PRIVATE KEY-----$/m);
-  }),
+  }.property('model.key'),
 
   actions: {
     cancel() {

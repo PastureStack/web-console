@@ -1,13 +1,12 @@
-import EmberObject from '@ember/object';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(params) {
     var stack = this.modelFor('stack');
     var service = this.get('store').getById('service', params.service_id);
     if ( service )
     {
-      return EmberObject.create({
+      return Ember.Object.create({
         service: service,
         stack: stack.get('stack'),
       });
@@ -15,7 +14,7 @@ export default Route.extend({
     else
     {
       return this.get('store').find('service', params.service_id).then((service) => {
-        return EmberObject.create({
+        return Ember.Object.create({
           service: service,
           stack: stack.get('stack'),
         });

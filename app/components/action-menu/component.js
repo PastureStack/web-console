@@ -1,26 +1,22 @@
-import { get } from '@ember/object';
-import $ from 'jquery';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import { isAlternate } from 'ui/utils/platform';
 
-export default Component.extend({
+export default Ember.Component.extend({
   model           : null,
   size            : 'xs',
   showPrimary     : true,
   inTooltip       : false,
 
-  resourceActions : service('resource-actions'),
+  resourceActions : Ember.inject.service('resource-actions'),
 
   tagName         : 'div',
   classNames      : ['btn-group','resource-actions','action-menu'],
-  tooltipService  : service('tooltip'),
+  tooltipService  : Ember.inject.service('tooltip'),
 
-  primaryAction   : alias('model.primaryAction'),
+  primaryAction   : Ember.computed.alias('model.primaryAction'),
 
   click(e) {
-    var tgt = $(e.target);
+    var tgt = Ember.$(e.target);
     var more = tgt.closest('.more-actions');
     if ( more && more.length ) {
       e.preventDefault();
@@ -41,10 +37,10 @@ export default Component.extend({
           e.preventDefault();
           e.stopPropagation();
 
-          if ( isAlternate(e) && get(action,'altAction') ) {
-            this.sendToModel(get(action,'altAction'));
+          if ( isAlternate(e) && Ember.get(action,'altAction') ) {
+            this.sendToModel(Ember.get(action,'altAction'));
           } else {
-            this.sendToModel(get(action,'action'));
+            this.sendToModel(Ember.get(action,'action'));
           }
         }
       }

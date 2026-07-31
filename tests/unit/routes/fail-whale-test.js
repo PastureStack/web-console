@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import FailWhaleRoute from 'ui/fail-whale/route';
 
 module('Unit | Route | fail-whale');
@@ -8,7 +8,7 @@ module('Unit | Route | fail-whale');
 test('it exists', function(assert) {
   var route = FailWhaleRoute.create();
   assert.ok(route);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('model returns the application error', function(assert) {
@@ -28,7 +28,7 @@ test('model returns the application error', function(assert) {
   });
 
   assert.strictEqual(route.model(), error);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('afterModel resets store when an error exists', function(assert) {
@@ -43,7 +43,7 @@ test('afterModel resets store when an error exists', function(assert) {
   });
 
   route.afterModel({ status: 500 });
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('afterModel redirects when no error exists', function(assert) {
@@ -56,5 +56,5 @@ test('afterModel redirects when no error exists', function(assert) {
   });
 
   route.afterModel(null);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });

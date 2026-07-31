@@ -1,9 +1,7 @@
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Controller.extend({
-  activeHostCount: computed('model.hosts', function() {
+export default Ember.Controller.extend({
+  activeHostCount: function() {
     return this.get('model.hosts').filterBy('state','active').get('length');
-  }),
+  }.property('model.hosts'),
 });

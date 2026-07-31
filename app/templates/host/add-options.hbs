@@ -1,5 +1,5 @@
 <div class="over-hr r-mt10 r-mb10">
-  <span>{{this.settings.appName}}</span>
+  <span>{{settings.appName}}</span>
 </div>
 
 <div class="row">
@@ -7,11 +7,11 @@
     <label class="form-control-static">{{t 'hostPartial.host.addOptions.labels'}}</label>
   </div>
   <div class="col-md-10">
-    {{form-user-labels initialLabels=this.model.labels setLabels=(action 'setLabels')}}
+    {{form-user-labels initialLabels=model.labels setLabels=(action 'setLabels')}}
   </div>
 </div>
 
 {{#advanced-section}}
-  {{limit-parameters model=this.model}}
-  {{form-engine-opts machine=this.model showEngineUrl=this.showEngineUrl}}
+  {{limit-parameters model=model}}
+  {{form-engine-opts machine=model showEngineUrl=showEngineUrl}}
 {{/advanced-section}}

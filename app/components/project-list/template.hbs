@@ -4,10 +4,10 @@
 </section>
 <section>
   <div class="well">
-    {{format-html-message 'projectList.index.subtext' appName=this.settings.appName}}
+    {{format-html-message 'projectList.index.subtext' appName=settings.appName}}
   </div>
 
-  {{#unless this.projects.current}}
+  {{#unless projects.current}}
     <div class="alert alert-danger"><i class="icon icon-alert"></i> {{t 'projectList.index.alert'}}</div>
   {{/unless}}
 </section>
@@ -26,7 +26,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each this.arranged as |p|}}
+      {{#each arranged as |p|}}
         {{project-row model=p}}
       {{else}}
         <tr><td colspan="5" class="text-center text-muted">{{t 'projectList.index.table.body.noData'}}</td></tr>

@@ -1,10 +1,9 @@
-import { hash } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function() {
     var userStore = this.get('userStore');
-    return hash({
+    return Ember.RSVP.hash({
       projects: userStore.find('project', null, {url: 'projects', filter: {all: 'true'}, forceReload: true, removeMissing: true}),
       projectTemplates: userStore.find('projecttemplate', null, {url: 'projectTemplates', forceReload: true, removeMissing: true}),
     }).then(() => {

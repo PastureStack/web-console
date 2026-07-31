@@ -1,11 +1,7 @@
-import { scheduleOnce } from '@ember/runloop';
-import { isArray } from '@ember/array';
-import Component from '@ember/component';
+import Ember from 'ember';
 import ContainerChoices from 'ui/mixins/container-choices';
 
-import { observer } from '@ember/object';
-
-export default Component.extend(ContainerChoices, {
+export default Ember.Component.extend(ContainerChoices, {
   // Inputs
   editing: null,
   instance: null,
@@ -30,7 +26,7 @@ export default Component.extend(ContainerChoices, {
     var out = [];
     var links = this.get('initialLinks')||[];
 
-    if ( isArray(links) )
+    if ( Ember.isArray(links) )
     {
       links.forEach(function(value) {
         // Objects, from edit
@@ -55,13 +51,13 @@ export default Component.extend(ContainerChoices, {
       });
     }
 
-    scheduleOnce('afterRender', () => {
+    Ember.run.scheduleOnce('afterRender', () => {
       this.set('linksArray', out);
       this.linksDidChange();
     });
   },
 
-  linksDidChange: observer('linksArray.@each.{targetInstanceId,name}', function() {
+  linksDidChange: function() {
     var errors = [];
     var linksAsMap = {};
 
@@ -93,5 +89,5 @@ export default Component.extend(ContainerChoices, {
     this.set('instance.instanceLinks', linksAsMap);
     this.set('errors', errors);
     this.sendAction('changed', this.get('linksArray'));
-  }),
+  }.observes('linksArray.@each.{targetInstanceId,name}'),
 });

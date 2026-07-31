@@ -1,15 +1,15 @@
 <td data-title="{{t 'generic.state'}}:" class="state">
-  {{badge-state model=this.model}}
+  {{badge-state model=model}}
 </td>
 <td data-title="{{t 'registryRow.address'}}:">
-  {{this.model.displayAddress}}
+  {{model.displayAddress}}
 </td>
 <td data-title="{{t 'registryRow.username'}}:">
-  {{#if this.model.credential.publicValue}}{{this.model.credential.publicValue}}{{else}}<i class="text-muted">{{t 'generic.none'}}</i>{{/if}}
+  {{#if model.credential.publicValue}}{{model.credential.publicValue}}{{else}}<i class="text-muted">{{t 'generic.none'}}</i>{{/if}}
 </td>
 <td data-title="{{t 'registryRow.created'}}:">
-  {{date-calendar this.model.created}}
+  {{date-calendar model.created}}
 </td>
 <td data-title="{{t 'generic.actions'}}:" align="actions">
-  {{action-menu model=this.model}}
+  {{action-menu model=model}}
 </td>

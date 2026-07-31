@@ -1,12 +1,7 @@
-import Component from '@ember/component';
-import Resource from 'ember-api-store/models/resource';
-import ownerLookup from 'ui/utils/owner-lookup';
-
-export function initialize() {
-  const router = ownerLookup('router:main');
-
-  Component.reopen({ router });
-  Resource.reopen({ router });
+export function initialize(application) {
+  // Injects all Ember components & models (for actions) with a router object:
+  application.inject('component', 'router', 'router:main');
+  application.inject('model',     'router', 'router:main');
 }
 
 export default {

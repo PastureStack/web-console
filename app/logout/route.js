@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  access: service(),
+export default Ember.Route.extend({
+  access: Ember.inject.service(),
 
   beforeModel: function(transition) {
     transition.send('logout');

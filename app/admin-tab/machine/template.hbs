@@ -9,7 +9,7 @@
 </section>
 
 <section class="r-plr15 clearfix">
-  {{#each this.arranged as |driver|}}
+  {{#each arranged as |driver|}}
     {{#catalog-box
       model=driver
       active=(not (or (eq driver.state 'inactive') (eq driver.type 'template')))

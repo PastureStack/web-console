@@ -1,11 +1,11 @@
 <button class="btn btn-primary btn-sm pull-right" style="position:relative;top:-30px;right:25px;" {{action 'expandChildren'}}>
-  {{#if this.expandAll}}
+  {{#if expandAll}}
     <i class="icon icon-minus"></i> {{t 'processExecutions.collapseAll'}}
   {{else}}
     <i class="icon icon-plus"></i> {{t 'processExecutions.expandAll'}}
   {{/if}}
 </button>
-<a href="{{this.apiView}}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm pull-right" style="position:relative;top:-30px;right:40px;">{{t 'action.viewInApi'}}</a>
+<a href="{{apiView}}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm pull-right" style="position:relative;top:-30px;right:40px;">{{t 'action.viewInApi'}}</a>
 <table class="grid fixed table table-hover">
   <thead>
     <tr>
@@ -18,8 +18,8 @@
     </tr>
   </thead>
   <tbody>
-    {{#each this.execution as |execution|}}
-      {{process-execution-rows execution=execution topLevel=true expandAll=this.expandAll}}
+    {{#each execution as |execution|}}
+      {{process-execution-rows execution=execution topLevel=true expandAll=expandAll}}
     {{/each}}
   </tbody>
 </table>

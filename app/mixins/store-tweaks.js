@@ -1,16 +1,13 @@
-import { service } from '@ember/service';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Mixin.create({
-  cookies: service(),
+export default Ember.Mixin.create({
+  cookies: Ember.inject.service(),
 
   defaultPageSize: -1,
   removeAfterDelete: false,
 
-  headers: computed(`cookies.${C.COOKIE.CSRF}`, function() {
+  headers: function() {
     let out = {
       [C.HEADER.ACTIONS]: C.HEADER.ACTIONS_VALUE,
       [C.HEADER.NO_CHALLENGE]: C.HEADER.NO_CHALLENGE_VALUE
@@ -22,5 +19,5 @@ export default Mixin.create({
     }
 
     return out;
-  }),
+  }.property().volatile(),
 });

@@ -1,10 +1,9 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  access: service(),
-  catalog: service(),
-  projects: service(),
+export default Ember.Route.extend({
+  access: Ember.inject.service(),
+  catalog: Ember.inject.service(),
+  projects: Ember.inject.service(),
 
   queryParams: {
     category: { refreshModel: true },

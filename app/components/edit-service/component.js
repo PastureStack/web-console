@@ -1,13 +1,13 @@
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: alias('modalService.modalOpts'),
+  originalModel: Ember.computed.alias('modalService.modalOpts'),
   service: null,
 
-  primaryResource: alias('service'),
+  primaryResource: Ember.computed.alias('service'),
 
   editing: true,
   isService: true,

@@ -1,10 +1,9 @@
-import { A } from '@ember/array';
-import { computed } from '@ember/object';
+import Ember from 'ember';
 import PagedArray from 'ember-cli-pagination/local/paged-array';
 import PagedInfiniteArray from 'ember-cli-pagination/infinite/paged-infinite-array';
 
 function makeLocal(contentProperty,ops) {
-  return computed("",function() {
+  return Ember.computed("",function() {
     const pagedOps = {}; //{content: this.get(contentProperty)};
     pagedOps.parent = this;
 
@@ -31,16 +30,16 @@ function makeLocal(contentProperty,ops) {
 }
 
 function makeInfiniteWithPagedSource(contentProperty /*, ops */) {
-  return computed(function() {
+  return Ember.computed(function() {
     return PagedInfiniteArray.create({all: this.get(contentProperty)});
   });
 }
 
 function makeInfiniteWithUnpagedSource(contentProperty,ops) {
-  return computed(function() {
+  return Ember.computed(function() {
     let all = this.get(contentProperty);
     if (all) {
-      all = A(all);
+      all = Ember.A(all);
     }
     ops.all = all;
     return PagedInfiniteArray.createFromUnpaged(ops);

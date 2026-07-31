@@ -1,44 +1,42 @@
-import { service } from '@ember/service';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
 export default Resource.extend({
-  catalog: service(),
+  catalog: Ember.inject.service(),
 
   type: 'catalogTemplate',
 
-  externalId: computed('templateVersionId', 'templateId', function() {
+  externalId: function() {
     let id = this.get('templateVersionId') || this.get('templateId');
     if ( id ) {
       return C.EXTERNAL_ID.KIND_CATALOG + C.EXTERNAL_ID.KIND_SEPARATOR + id;
     }
-  }),
+  }.property('templateVersionId','templateId'),
 
-  externalIdInfo: computed('externalId', function() {
+  externalIdInfo: function() {
     return parseExternalId(this.get('externalId'));
-  }),
+  }.property('externalId'),
 
   // These only works if the templates have already been loaded elsewhere...
-  catalogTemplate: computed('externalIdInfo.templateId', function() {
+  catalogTemplate: function() {
     return this.get('catalog').getTemplateFromCache(this.get('externalIdInfo.templateId'));
-  }),
+  }.property('externalIdInfo.templateId'),
 
-  icon: computed('catalogTemplate', function() {
+  icon: function() {
     let tpl = this.get('catalogTemplate');
     if ( tpl ) {
       return tpl.linkFor('icon');
     }
-  }),
+  }.property('catalogTemplate'),
 
-  categories: computed('catalogTemplate.categories', function() {
+  categories: function() {
     let tpl = this.get('catalogTemplate');
     if ( tpl ) {
       return tpl.get('categories')||[];
     }
 
     return [];
-  }),
+  }.property('catalogTemplate.categories'),
 });

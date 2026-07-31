@@ -1,4 +1,4 @@
-{{#if this.showGraphs}}
+{{#if showGraphs}}
   <div class="row">
     <div class="row-same-height row-full-height">
       <div class="col-sm-12 col-md-4 col-md-height col-md-full-height col-top" style="margin-bottom: 20px;">
@@ -10,13 +10,13 @@
               <span class="r-ml10 legend-circle-user"></span> {{t 'infoMultiStats.cpuSection.user'}}
             </div>
             <hr>
-            <div class="info-graph {{unless this.active 'hide'}}">
+            <div class="info-graph {{unless active 'hide'}}">
               <div id="cpuGraph"></div>
             </div>
-            <div class="text-center text-muted {{unless this.loading 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{unless loading 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{if available 'hide'}}" style="height: 100px; padding-top: 30px;">
               {{t 'infoMultiStats.utilizationStats'}}
             </div>
           </div>
@@ -30,13 +30,13 @@
               <span class="r-ml10 legend-circle-receive"></span> {{t 'infoMultiStats.networkSection.receive'}}
             </div>
             <hr>
-            <div class="info-graph {{unless this.active 'hide'}}">
+            <div class="info-graph {{unless active 'hide'}}">
               <div id="networkGraph"></div>
             </div>
-            <div class="text-center text-muted {{unless this.loading 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{unless loading 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{if available 'hide'}}" style="height: 100px; padding-top: 30px;">
               {{t 'infoMultiStats.utilizationStats'}}
             </div>
           </div>
@@ -51,13 +51,13 @@
               <span class="r-ml20 legend-circle-used"></span> {{t 'infoMultiStats.memorySection.used'}}
             </div>
             <hr>
-            <div class="{{unless this.active 'hide'}}">
+            <div class="{{unless active 'hide'}}">
               <div id="memoryGraph"></div>
             </div>
-            <div class="text-center text-muted {{unless this.loading 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{unless loading 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{if available 'hide'}}" style="height: 100px; padding-top: 30px;">
               {{t 'infoMultiStats.utilizationStats'}}
             </div>
           </div>
@@ -71,13 +71,13 @@
               <span class="r-ml10 legend-circle-read"></span> {{t 'infoMultiStats.storageSection.read'}}
             </div>
             <hr>
-            <div class="info-graph {{unless this.active 'hide'}}">
+            <div class="info-graph {{unless active 'hide'}}">
               <div id="storageGraph"></div>
             </div>
-            <div class="text-center text-muted {{unless this.loading 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{unless loading 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
+            <div class="text-center text-muted {{if available 'hide'}}" style="height: 100px; padding-top: 30px;">
               {{t 'infoMultiStats.utilizationStats'}}
             </div>
           </div>

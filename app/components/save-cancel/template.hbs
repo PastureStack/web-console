@@ -1,11 +1,11 @@
 {{yield}}
-{{#if this.saving}}
+{{#if saving}}
   <button class="btn btn-primary btn-disabled"><i class="icon icon-spinner icon-spin"></i> {{t 'saveCancel.saving'}}</button>
 {{else}}
-  <button {{action "save"}} disabled={{this.saveDisabled}} class="btn {{if this.saved 'btn-success' 'btn-primary'}}">
-    {{t this.btnLabel}}
+  <button {{action "save"}} disabled={{saveDisabled}} class="btn {{if saved 'btn-success' 'btn-primary'}}">
+    {{t btnLabel}}
   </button>
 {{/if}}
-{{#unless this.cancelDisabled}}
-  <button {{action "cancel"}} class="btn btn-link">{{t this.cancelLabel}}</button>
+{{#unless cancelDisabled}}
+  <button {{action "cancel"}} class="btn btn-link">{{t cancelLabel}}</button>
 {{/unless}}

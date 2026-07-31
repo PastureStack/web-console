@@ -1,6 +1,6 @@
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(params) {
     return this.get('store').find('container', params.container_id);
   },

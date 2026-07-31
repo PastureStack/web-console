@@ -1,9 +1,6 @@
-import { alias } from '@ember/object/computed';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   tagName: 'TH',
   classNames: ['sortable'],
   name: null,
@@ -12,16 +9,16 @@ export default Component.extend({
   label: null,
   ariaRole: ['columnheader'],
 
-  current: alias('sortable.sortBy'),
-  descending: alias('sortable.descending'),
+  current: Ember.computed.alias('sortable.sortBy'),
+  descending: Ember.computed.alias('sortable.descending'),
 
-  activeAscending: computed('name', 'current', 'descending', function() {
+  activeAscending: function() {
     return !this.get('descending') && this.get('current') === this.get('name');
-  }),
+  }.property('name','current','descending'),
 
-  activeDescending: computed('name', 'current', 'descending', function() {
+  activeDescending: function() {
     return this.get('descending') && this.get('current') === this.get('name');
-  }),
+  }.property('name','current','descending'),
 
   attributeBindings: ['width'],
 

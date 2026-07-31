@@ -16,7 +16,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each this.arranged as |registry|}}
+      {{#each arranged as |registry|}}
         {{registry-row model=registry}}
       {{else}}
         <tr><td colspan="6" class="text-center text-muted">{{t 'registriesPage.index.table.body.noData'}}</td></tr>

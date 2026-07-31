@@ -1,21 +1,17 @@
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   tagName: '',
 
-  access: service(),
-  modalService: service('modal'),
+  access: Ember.inject.service(),
+  modalService: Ember.inject.service('modal'),
 
-  accessEnabled    : alias('access.enabled'),
+  accessEnabled    : Ember.computed.alias('access.enabled'),
 
-  isLocalAuth: computed('access.{enabled,provider}', function() {
+  isLocalAuth: function() {
     return this.get('access.enabled') && this.get('access.provider') === 'localauthconfig';
-  }),
+  }.property('access.{enabled,provider}'),
 
   actions: {
     changePassword() {

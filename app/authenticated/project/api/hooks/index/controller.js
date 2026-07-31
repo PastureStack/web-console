@@ -1,16 +1,13 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import Sortable from 'ui/mixins/sortable';
 
-import { computed } from '@ember/object';
+export default Ember.Controller.extend(Sortable, {
+  settings: Ember.inject.service(),
 
-export default Controller.extend(Sortable, {
-  settings: service(),
-
-  sortableContent: computed('model.receivers.@each.driver', function() {
+  sortableContent: function() {
     let receivers = this.get('model.receivers');
     return receivers.filter(ele => ele.driver !== 'forwardPost');
-  }),
+  }.property('model.receivers.@each.driver'),
   sortBy: 'name',
   sorts: {
     state:        ['stateSort','name','id'],

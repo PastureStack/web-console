@@ -1,10 +1,8 @@
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
-  modalService: service('modal'),
-  modalOpts: alias('modalService.modalOpts'),
+export default Ember.Component.extend({
+  modalService: Ember.inject.service('modal'),
+  modalOpts: Ember.computed.alias('modalService.modalOpts'),
   // Focus does not want to focus on modal el here, dont know why but
   // esc wont work if a modal doesnt have a focused element
   //init() {

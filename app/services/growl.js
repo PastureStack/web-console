@@ -1,8 +1,8 @@
-import Service from '@ember/service';
+import Ember from 'ember';
 import Errors from 'ui/utils/errors';
 import Util from 'ui/utils/util';
 
-export default Service.extend({
+export default Ember.Service.extend({
   init: function() {
     $.jGrowl.defaults.pool = 6;
     $.jGrowl.defaults.closeTemplate = '<i class="icon icon-x"></i>';

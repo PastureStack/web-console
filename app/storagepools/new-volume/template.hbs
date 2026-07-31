@@ -2,7 +2,7 @@
   <h1>{{t 'storagePoolsPage.newVolume.header'}}</h1>
 </section>
 <section class="horizontal-form container-fluid">
-  {{form-name-description model=this.model.volume}}
+  {{form-name-description model=model.volume}}
 
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
@@ -10,7 +10,7 @@
     </div>
     <div class="col-sm-12 col-md-8">
       {{form-key-value
-        changed=(fn (mut this.model.volume.driverOpts))
+        changed=(action (mut model.volume.driverOpts))
         nameLabel='storagePoolsPage.newVolume.form.addActionLabel'
       }}
     </div>
@@ -18,5 +18,5 @@
 
 </section>
 
-{{top-errors errors=this.errors}}
+{{top-errors errors=errors}}
 {{save-cancel save="save" cancel="cancel"}}

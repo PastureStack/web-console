@@ -3,10 +3,10 @@
   <p class="help-block">{{t 'authPage.mfa.selfService.help'}}</p>
 </section>
 
-{{top-errors errors=this.errors}}
+{{top-errors errors=errors}}
 
 <section class="well" data-testid="mfa-self-service-summary">
-  <h2>{{this.session.user}}</h2>
+  <h2>{{session.user}}</h2>
   {{partial "mfa-status-summary"}}
 </section>
 

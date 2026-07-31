@@ -1,24 +1,24 @@
 <section class="well">
-  <h2>{{this.headerText}}</h2>
+  <h2>{{headerText}}</h2>
   <div>
-    {{#if this.access.enabled}}
-      {{t 'authPage.azuread.subtext.enabled' appName=this.settings.appName}}
+    {{#if access.enabled}}
+      {{t 'authPage.azuread.subtext.enabled' appName=settings.appName}}
     {{else}}
-      {{t 'authPage.azuread.subtext.disabled' appName=this.settings.appName}}
+      {{t 'authPage.azuread.subtext.disabled' appName=settings.appName}}
     {{/if}}
   </div>
 </section>
 
-{{#if this.access.enabled}}
+{{#if access.enabled}}
   <section class="well">
     <h3>{{format-html-message 'authPage.azuread.enabled.header'}}</h3>
     <hr/>
 
     <p>
-      {{format-html-message 'authPage.azuread.enabled.warning' appName=this.settings.appName}}
+      {{format-html-message 'authPage.azuread.enabled.warning' appName=settings.appName}}
     </p>
 
-    {{#if this.confirmDisable}}
+    {{#if confirmDisable}}
       <button class="btn btn-danger" {{action "disable"}}>
         <i class="icon icon-alert"></i> {{t 'authPage.azuread.enabled.reallyDisable'}}
       </button>
@@ -31,7 +31,7 @@
   </section>
 {{/if}}
 
-{{#unless this.access.enabled}}
+{{#unless access.enabled}}
   <section class="well">
     <h3>{{t 'authPage.azuread.configure.header'}}</h3>
     <hr/>
@@ -40,20 +40,20 @@
       <div class="col-md-4">
         <div class="form-group">
           <label>{{t 'authPage.azuread.configure.tenantId.label'}}*</label>
-          {{input type="text" value=this.model.tenantId placeholder=(t 'authPage.azuread.configure.tenantId.placeholder') classNames="form-control"}}
+          {{input type="text" value=model.tenantId placeholder=(t 'authPage.azuread.configure.tenantId.placeholder') classNames="form-control"}}
           <p class="help-block">{{t 'authPage.azuread.configure.tenantId.help'}}</p>
         </div>
       </div>
       <div class="col-md-4">
         <div class="form-group">
           <label>{{t 'authPage.azuread.configure.clientId.label'}}*</label>
-          {{input type="text" value=this.model.clientId placeholder=(t 'authPage.azuread.configure.clientId.placeholder') classNames="form-control"}}
+          {{input type="text" value=model.clientId placeholder=(t 'authPage.azuread.configure.clientId.placeholder') classNames="form-control"}}
         </div>
       </div>
       <div class="col-md-4">
         <div class="form-group">
           <label>{{t 'authPage.azuread.configure.domain.label'}}*</label>
-          {{input type="text" value=this.model.domain placeholder=(t 'authPage.azuread.configure.domain.placeholder') classNames="form-control"}}
+          {{input type="text" value=model.domain placeholder=(t 'authPage.azuread.configure.domain.placeholder') classNames="form-control"}}
         </div>
       </div>
     </div>
@@ -63,26 +63,26 @@
     <h3>{{t 'authPage.azuread.test.header'}}</h3>
     <hr/>
     <p class="help-block">{{t 'authPage.azuread.test.help'}}</p>
-    {{top-errors errors=this.errors}}
+    {{top-errors errors=errors}}
 
     <div class="row">
       <div class="col-md-4">
         <div class="form-group">
           <label>{{t 'authPage.azuread.test.username.label'}}*</label>
-          {{input type="text" value=this.loginUsername prompt=(t 'authPage.azuread.test.username.placeholder') classNames="form-control"}}
+          {{input type="text" value=loginUsername prompt=(t 'authPage.azuread.test.username.placeholder') classNames="form-control"}}
         </div>
       </div>
       <div class="col-md-4">
         <div class="form-group">
           <label>{{t 'authPage.azuread.test.password.label'}}*</label>
-          {{input type="password" value=this.loginPassword classNames="form-control"}}
+          {{input type="password" value=loginPassword classNames="form-control"}}
         </div>
       </div>
       <div class="col-md-4">
         <div class="form-group">
           <label>&nbsp;</label>
           <button class="btn btn-primary" style="display: block;" {{action "test"}}>
-            {{#if this.testing}}
+            {{#if testing}}
               <i class="icon icon-spinner icon-spin"></i> {{t 'authPage.azuread.test.post'}}
             {{else}}
               {{t 'authPage.azuread.test.pre'}}

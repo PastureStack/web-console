@@ -21,10 +21,10 @@ def fail(code, **fields):
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 overrides = package.get("overrides", {})
-if "serialize-javascript" in overrides:
-    fail("OBSOLETE_SERIALIZE_JAVASCRIPT_OVERRIDE_PRESENT", actual=overrides.get("serialize-javascript"))
+if overrides.get("serialize-javascript") != "7.0.5":
+    fail("SERIALIZE_JAVASCRIPT_OVERRIDE_UNEXPECTED", actual=overrides.get("serialize-javascript"), expected="7.0.5")
 
-lock_path = Path("package-lock.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
     fail("MISSING_PACKAGE_LOCK", file=lock_path)
 else:
@@ -39,15 +39,18 @@ else:
         for path, meta in packages.items()
         if path.endswith("node_modules/serialize-javascript")
     }
+    if not versions:
+        fail("SERIALIZE_JAVASCRIPT_LOCK_MISSING")
     for package_path, actual in sorted(versions.items()):
-        fail("SERIALIZE_JAVASCRIPT_LOCK_PACKAGE_REINTRODUCED", package=package_path, actual=actual)
+        if actual != "7.0.5":
+            fail("SERIALIZE_JAVASCRIPT_LOCK_VERSION_UNEXPECTED", package=package_path, actual=actual, expected="7.0.5")
     package_count = len(packages)
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_SERIALIZE_JAVASCRIPT_REMOVAL_OK serialize-javascript=absent lockfile={lock_path} package_count={package_count}")
-print("The current ember-intl build no longer resolves serialize-javascript, so no forced override remains.")
+print(f"UI_SERIALIZE_JAVASCRIPT_OVERRIDE_OK serialize-javascript=7.0.5 lockfile={lock_path} package_count={package_count}")
+print("ember-intl 2.13 keeps its existing serialize(result) call while npm resolves the maintained serializer version.")
 print("failure_count=0")
 PY

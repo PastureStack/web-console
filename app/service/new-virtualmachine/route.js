@@ -1,8 +1,6 @@
-import EmberObject from '@ember/object';
-import { hash } from 'rsvp';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(params/*, transition*/) {
     var store = this.get('store');
 
@@ -20,7 +18,7 @@ export default Route.extend({
       dependencies.vm = store.find('virtualmachine', params.virtualMachineId, {include: ['ports']});
     }
 
-    return hash(dependencies, 'Load VM dependencies').then((results) => {
+    return Ember.RSVP.hash(dependencies, 'Load VM dependencies').then((results) => {
       var store = this.get('store');
       var serviceOrVm = results.service || results.vm;
       var serviceLinks = [];
@@ -28,7 +26,7 @@ export default Route.extend({
 
       if ( params.upgrade )
       {
-        return EmberObject.create({
+        return Ember.Object.create({
           service: serviceOrVm.clone(),
           allHosts: results.allHosts,
           allStoragePools: results.allStoragePools,
@@ -96,7 +94,7 @@ export default Route.extend({
       service.set('launchConfig', instance);
       service.set('secondaryLaunchConfigs', secondaryLaunchConfigs);
 
-      return EmberObject.create({
+      return Ember.Object.create({
         service: service,
         allHosts: results.allHosts,
         allStoragePools: results.allStoragePools,

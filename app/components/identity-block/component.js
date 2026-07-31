@@ -1,12 +1,8 @@
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
-  intl              : service(),
+export default Ember.Component.extend({
+  intl              : Ember.inject.service(),
 
   // Identity or externalId+externalIdType
   identity          : null,
@@ -58,11 +54,11 @@ export default Component.extend({
   classNames: ['gh-block'],
   attributeBindings: ['aria-label:identity.name'],
 
-  avatarSrc: alias('identity.profilePicture'),
-  url: alias('identity.profileUrl'),
-  login: alias('identity.login'),
+  avatarSrc: Ember.computed.alias('identity.profilePicture'),
+  url: Ember.computed.alias('identity.profileUrl'),
+  login: Ember.computed.alias('identity.login'),
 
-  displayDescription: computed('identity.{externalIdType,name,externalId}', 'intl._locale', function() {
+  displayDescription: function() {
     var out;
     var name = this.get('identity.name');
     if ( name === 'System Service' )
@@ -82,5 +78,5 @@ export default Component.extend({
       }
     }
     return out;
-  }),
+  }.property('identity.{externalIdType,name,externalId}', 'intl._locale'),
 });

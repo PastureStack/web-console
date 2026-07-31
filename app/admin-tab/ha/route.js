@@ -1,9 +1,8 @@
-import { cancel, later } from '@ember/runloop';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
 const INTERVAL = 2000;
 
-export default Route.extend({
+export default Ember.Route.extend({
   model() {
     return this.get('userStore').find('clustermembership');
   },
@@ -13,14 +12,14 @@ export default Route.extend({
   },
 
   deactivate() {
-    cancel(this.get('timer'));
+    Ember.run.cancel(this.get('timer'));
     this.set('timer', null); // This prevents scheduleTimer from rescheduling if deactivate happened at just the wrong time.
   },
 
   timer: null,
   scheduleTimer: function() {
-    cancel(this.get('timer'));
-    this.set('timer', later(() => {
+    Ember.run.cancel(this.get('timer'));
+    this.set('timer', Ember.run.later(() => {
       this.get('userStore').find('clustermembership', null, {forceReload: true}).then((response) => {
         this.controller.set('model', response);
         if ( this.get('timer') ) {

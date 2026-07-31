@@ -1,18 +1,16 @@
-import { alias } from '@ember/object/computed';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
-
-import { on } from '@ember/object/evented';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'generic', 'full-width-modal'],
 
-  serviceChoices: alias('modalService.modalOpts.serviceChoices'),
-  originalModel: alias('modalService.modalOpts.originalModel'),
-  selectedTemplateUrl: alias('modalService.modalOpts.selectedTemplateUrl'),
+  serviceChoices: Ember.computed.alias('modalService.modalOpts.serviceChoices'),
+  originalModel: Ember.computed.alias('modalService.modalOpts.originalModel'),
+  selectedTemplateUrl: Ember.computed.alias('modalService.modalOpts.selectedTemplateUrl'),
 
   model: null,
 
-  onInit: on('init', function() {
+  onInit: function() {
     this._super();
 
     let orig = this.get('originalModel');
@@ -40,7 +38,7 @@ export default ModalBase.extend({
     };
 
     this.set('model', out);
-  }),
+  }.on('init'),
 
   actions: {
     doSave(opt) {

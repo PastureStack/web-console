@@ -1,11 +1,7 @@
-import { isArray } from '@ember/array';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { computed, observer } from '@ember/object';
-
-export default Component.extend({
-  allServices : service(),
+export default Ember.Component.extend({
+  allServices : Ember.inject.service(),
 
   selected:          null,  // Selected service ID
   custom:            null, // Custom input
@@ -42,7 +38,7 @@ export default Component.extend({
     }
   },
 
-  grouped: computed('allServices.list.[]', 'canBalanceTo', 'canHaveContainers', function() {
+  grouped: function() {
     let list = this.get('allServices.list');
 
     if ( this.get('canBalanceTo') ) {
@@ -55,7 +51,7 @@ export default Component.extend({
 
     let exclude = this.get('exclude');
     if ( exclude ) {
-      if ( !isArray(exclude) ) {
+      if ( !Ember.isArray(exclude) ) {
         exclude = [exclude];
       }
 
@@ -63,9 +59,9 @@ export default Component.extend({
     }
 
     return this.get('allServices').group(list);
-  }),
+  }.property('allServices.list.[]','canBalanceTo','canHaveContainers'),
 
-  selectedChanged: observer('selected', function() {
+  selectedChanged: function() {
     let id = this.get('selected');
     let str = null;
 
@@ -90,5 +86,5 @@ export default Component.extend({
     }
 
     this.set('value', str);
-  }),
+  }.observes('selected'),
 });

@@ -1,9 +1,8 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  projects: service(),
-  'tab-session': service(),
+export default Ember.Route.extend({
+  projects: Ember.inject.service(),
+  'tab-session': Ember.inject.service(),
 
   beforeModel() {
     this._super(...arguments);

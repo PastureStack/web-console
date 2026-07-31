@@ -1,5 +1,6 @@
-import { isArray } from '@ember/array';
-import { get } from '@ember/object';
+import Ember from 'ember';
+
+const { get } = Ember;
 
 const LOCALE_SAFE = /^[\w-.\s,]*$/;
 
@@ -28,7 +29,7 @@ export function insensitiveCompare(a,b) {
 
 export function sortInsensitiveBy(ary, ...fields) {
   // sortInsensitiveBy(ary, field1, field2) or sortInsensitiveBy(ary, [field1, field2])
-  if ( fields.length === 1 && isArray(fields[0]) ) {
+  if ( fields.length === 1 && Ember.isArray(fields[0]) ) {
     fields = fields[0];
   }
 

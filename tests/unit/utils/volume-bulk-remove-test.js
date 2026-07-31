@@ -1,6 +1,4 @@
-import { later } from '@ember/runloop';
-import { Promise } from 'rsvp';
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 
 import {
@@ -13,7 +11,7 @@ import {
 module('Unit | Utility | volume bulk remove');
 
 function volume(overrides={}) {
-  return EmberObject.create(Object.assign({
+  return Ember.Object.create(Object.assign({
     state: 'detached',
     removed: null,
     instanceId: null,
@@ -33,7 +31,7 @@ test('it allows the operator to select any detached removable volume', function(
   assert.notOk(isBulkRemovableVolume(volume({actionLinks: {}})));
   assert.notOk(isBulkRemovableVolume(volume({instanceId: '1i1'})));
   assert.notOk(isBulkRemovableVolume(volume({
-    mounts: [EmberObject.create({state: 'active', removed: null})],
+    mounts: [Ember.Object.create({state: 'active', removed: null})],
   })));
 });
 
@@ -48,7 +46,7 @@ test('it filters by visible state without changing removal eligibility', functio
   assert.deepEqual(filterVolumesByState(list, 'detached'), [detached, unavailable]);
   assert.deepEqual(filterVolumesByState(list, 'unknown'), list, 'an unknown filter falls back to all rows');
   assert.ok(hasActiveMount(volume({
-    mounts: [EmberObject.create({state: 'active', removed: null})],
+    mounts: [Ember.Object.create({state: 'active', removed: null})],
   })));
 });
 
@@ -61,8 +59,8 @@ test('it runs bounded work and waits for every item', function(assert) {
     active++;
     peak = Math.max(peak, active);
 
-    return new Promise((resolve) => {
-      later(() => {
+    return new Ember.RSVP.Promise((resolve) => {
+      Ember.run.later(() => {
         seen.push(item);
         active--;
         resolve();

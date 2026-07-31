@@ -1,4 +1,4 @@
-import { helper as buildHelper } from '@ember/component/helper';
+import Ember from 'ember';
 
 export function defaultStr(params, options) {
   var out = null;
@@ -17,4 +17,4 @@ export function defaultStr(params, options) {
   return out;
 }
 
-export default buildHelper(defaultStr);
+export default Ember.Helper.helper(defaultStr);

@@ -1,10 +1,10 @@
 <div class="r-p40 text-center">
-  <h1 class="header">{{t 'projectUpgrade.header' appName=this.settings.appName}}</h1>
+  <h1 class="header">{{t 'projectUpgrade.header' appName=settings.appName}}</h1>
 
-  <p>{{format-html-message 'projectUpgrade.detail' appName=this.settings.appName appVersion=this.settings.minorVersion}}</p>
+  <p>{{format-html-message 'projectUpgrade.detail' appName=settings.appName appVersion=settings.minorVersion}}</p>
 
     <div class="footer-actions">
-      {{#if this.canUpgrade}}
+      {{#if canUpgrade}}
         <button {{action "upgrade"}} class="btn btn-primary">{{t 'projectUpgrade.actionButton'}}</button>
       {{else}}
         <button class="btn btn-primary btn-disabled" disabled="disabled">{{t 'projectUpgrade.actionButton'}}</button>

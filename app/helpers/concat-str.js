@@ -1,14 +1,13 @@
-import { helper as buildHelper } from '@ember/component/helper';
-import { isArray } from '@ember/array';
+import Ember from 'ember';
 
 export function concatStr(params, hash) {
   let chr = (hash.character === undefined ? ' ' : hash.character);
 
-  if ( isArray(params[0]) ) {
+  if ( Ember.isArray(params[0]) ) {
     return params[0].join(chr);
   } else {
     return params.join(chr);
   }
 }
 
-export default buildHelper(concatStr);
+export default Ember.Helper.helper(concatStr);

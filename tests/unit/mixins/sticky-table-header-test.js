@@ -1,5 +1,4 @@
-import { run } from '@ember/runloop';
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 
 import StickyTableHeader from 'lacsso/mixins/sticky-table-header';
@@ -25,7 +24,7 @@ module('Unit | Mixin | sticky table header');
 
 test('it follows the table scroll host horizontally', function(assert) {
   let host = fixture();
-  let Subject = EmberObject.extend(StickyTableHeader);
+  let Subject = Ember.Object.extend(StickyTableHeader);
   let subject = Subject.create({
     element: host,
     showHeader: true,
@@ -44,6 +43,6 @@ test('it follows the table scroll host horizontally', function(assert) {
     'the rendered header moves by the same amount as the body scroll'
   );
 
-  run(() => subject.destroy());
+  Ember.run(() => subject.destroy());
   host.remove();
 });

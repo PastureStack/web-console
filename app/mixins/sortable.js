@@ -11,15 +11,11 @@
  * @function currentSort - returns the current sort
  * @function arranged - returns the sorted data, you should use this as your data to display
  */
-import { alias } from '@ember/object/computed';
-
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import { naturalSort } from 'ui/utils/natural-sort';
 
-import { computed } from '@ember/object';
-
-export default Mixin.create({
-  sortableContent: alias('model'),
+export default Ember.Mixin.create({
+  sortableContent: Ember.computed.alias('model'),
   sorts: null,
   sortBy: null,
   descending: false,
@@ -48,7 +44,7 @@ export default Mixin.create({
     },
   },
 
-  currentSort: computed('sortBy', 'sorts.@each.{name}', function() {
+  currentSort: function() {
     var sorts = this.get('sorts');
     if ( sorts )
     {
@@ -58,14 +54,14 @@ export default Mixin.create({
         return sort;
       }
     }
-  }),
+  }.property('sortBy','sorts.@each.{name}'),
 
-  arranged: computed('sortableContent.[]', 'currentSort', 'descending', function(){
+  arranged: function(){
     var content = this.get('sortableContent')||[];
     var currentSort = this.get('currentSort');
 
     return naturalSort(content, currentSort || ['id'], {
       descending: this.get('descending'),
     });
-  }),
+  }.property('sortableContent.[]','currentSort','descending'),
 });

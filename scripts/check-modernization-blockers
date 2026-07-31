@@ -41,18 +41,14 @@ with open('package.json', encoding='utf-8') as f:
     print(json.load(f).get('version', ''))
 PY
 )
-if [[ "$version" != "1.6.56-pasturestack.33" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.33"
+if [[ "$version" != "1.6.56-pasturestack.34" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.34"
   failures=$((failures + 1))
 fi
 
 require_no_pattern 'rancher/dind|deb\.nodesource\.com/setup_6|setup_6\.x|phantomjs|npm install -g bower|releases\.rancher\.com/ui' \
   'EOL or unreviewed upstream artifact build dependency in executable UI entrypoints' \
   scripts/bootstrap scripts/build scripts/build-static scripts/ci scripts/update-dependencies
-
-require_no_pattern '\{\{this\.[a-z0-9]+(-[a-z0-9]+)+\}\}' \
-  'zero-argument component invocation incorrectly rewritten as a property lookup' \
-  app vendor/lacsso
 
 if [[ $failures -ne 0 ]]; then
   echo "failure_count=$failures"

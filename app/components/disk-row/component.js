@@ -1,8 +1,6 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { observer } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   driverChoices : null,
   disk          : null,
 
@@ -28,7 +26,7 @@ export default Component.extend({
     }
   },
 
-  gigsChanged: observer('gigs', function() {
+  gigsChanged: function() {
     this.set('disk.size', this.get('gigs')+'g');
-  }),
+  }.observes('gigs'),
 });

@@ -1,37 +1,30 @@
-import $ from 'jquery';
-import { htmlSafe } from '@ember/template';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import { clampWorkspaceGeometry } from 'ui/utils/console-workspace';
 
-import { computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   classNames: ['console-workspace-window'],
   attributeBindings: ['style', 'role', 'ariaLabel:aria-label'],
   role: 'dialog',
-  workspace: service('console-workspace'),
-  intl: service(),
+  workspace: Ember.inject.service('console-workspace'),
+  intl: Ember.inject.service(),
   entry: null,
   instanceLoaded: false,
   loadError: null,
 
-  ariaLabel: alias('windowTitle'),
+  ariaLabel: Ember.computed.alias('windowTitle'),
 
-  windowTitle: computed(
+  windowTitle: function() {
+    return this.get('intl').t('consoleWorkspace.context.title', {
+      environment: this.get('entry.environmentTitle'),
+      stack: this.get('entry.stackTitle') || this.get('intl').t('consoleWorkspace.context.noStack'),
+      resource: this.get('entry.resourceTitle'),
+    });
+  }.property(
     'entry.{environmentTitle,stackTitle,resourceTitle}',
-    'intl._locale',
-    function() {
-      return this.get('intl').t('consoleWorkspace.context.title', {
-        environment: this.get('entry.environmentTitle'),
-        stack: this.get('entry.stackTitle') || this.get('intl').t('consoleWorkspace.context.noStack'),
-        resource: this.get('entry.resourceTitle'),
-      });
-    }
+    'intl._locale'
   ),
 
-  style: computed('entry.{x,y,width,height,z}', function() {
+  style: function() {
     let entry = this.get('entry');
     let value = [
       'position:fixed',
@@ -41,8 +34,8 @@ export default Component.extend({
       `height:${Math.round(entry.get('height') || 480)}px`,
       `z-index:${entry.get('z') || 1000}`,
     ].join(';');
-    return htmlSafe(value);
-  }),
+    return Ember.String.htmlSafe(value);
+  }.property('entry.{x,y,width,height,z}'),
 
   didInsertElement() {
     this._super(...arguments);
@@ -84,7 +77,7 @@ export default Component.extend({
     },
 
     titlebarDoubleClick(event) {
-      if (!$(event.target).closest('button').length) {
+      if (!Ember.$(event.target).closest('button').length) {
         this.get('workspace').toggleMaximize(this.get('entry'));
       }
     },
@@ -106,7 +99,7 @@ export default Component.extend({
     },
 
     startDrag(event) {
-      if ($(event.target).closest('button').length) {
+      if (Ember.$(event.target).closest('button').length) {
         return;
       }
       event.preventDefault();
@@ -143,10 +136,10 @@ export default Component.extend({
 
     let namespace = `.consoleWorkspaceWindow-${entry.get('sessionId')}`;
     this._pointerNamespace = namespace;
-    $(document)
+    Ember.$(document)
       .on(`mousemove${namespace}`, (moveEvent) => this.trackPointer(moveEvent))
       .on(`mouseup${namespace}`, () => this.finishPointerTracking());
-    $('body').addClass('console-workspace-pointer-active');
+    Ember.$('body').addClass('console-workspace-pointer-active');
   },
 
   trackPointer(event) {
@@ -177,23 +170,23 @@ export default Component.extend({
     geometry = clampWorkspaceGeometry(geometry, window.innerWidth, window.innerHeight);
     this.get('entry').setProperties(geometry);
     if (state.mode === 'resize') {
-      $(window).trigger('resize');
+      Ember.$(window).trigger('resize');
     }
   },
 
   finishPointerTracking() {
     if (this._pointerState) {
       this.get('workspace').saveLayouts();
-      $(window).trigger('resize');
+      Ember.$(window).trigger('resize');
     }
     this.stopPointerTracking();
   },
 
   stopPointerTracking() {
     if (this._pointerNamespace) {
-      $(document).off(this._pointerNamespace);
+      Ember.$(document).off(this._pointerNamespace);
     }
-    $('body').removeClass('console-workspace-pointer-active');
+    Ember.$('body').removeClass('console-workspace-pointer-active');
     this._pointerNamespace = null;
     this._pointerState = null;
   },

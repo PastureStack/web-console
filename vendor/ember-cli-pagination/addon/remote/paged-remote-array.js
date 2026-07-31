@@ -1,15 +1,10 @@
-import { once } from '@ember/runloop';
-import { computed, observer } from '@ember/object';
-import Evented from '@ember/object/evented';
-import ArrayProxy from '@ember/array/proxy';
-import PromiseProxyMixin from '@ember/object/promise-proxy-mixin';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import Util from 'ember-cli-pagination/util';
 import LockToRange from 'ember-cli-pagination/watch/lock-to-range';
 import { QueryParamsForBackend, ChangeMeta } from './mapping';
 import PageMixin from '../page-mixin';
 
-var ArrayProxyPromiseMixin = Mixin.create(PromiseProxyMixin, {
+var ArrayProxyPromiseMixin = Ember.Mixin.create(Ember.PromiseProxyMixin, {
   then: function(success,failure) {
     var promise = this.get('promise');
     var me = this;
@@ -20,9 +15,9 @@ var ArrayProxyPromiseMixin = Mixin.create(PromiseProxyMixin, {
   }
 });
 
-export default ArrayProxy.extend(PageMixin, Evented, ArrayProxyPromiseMixin, {
+export default Ember.ArrayProxy.extend(PageMixin, Ember.Evented, ArrayProxyPromiseMixin, {
   page: 1,
-  paramMapping: computed(() => {
+  paramMapping: Ember.computed(() => {
     return {};
   }),
 
@@ -61,7 +56,7 @@ export default ArrayProxy.extend(PageMixin, Evented, ArrayProxyPromiseMixin, {
     return this.addParamMapping(key,mappedKey,mappingFunc);
   },
 
-  paramsForBackend: computed('page','perPage','paramMapping','paramsForBackendCounter', function() {
+  paramsForBackend: Ember.computed('page','perPage','paramMapping','paramsForBackendCounter', function() {
     var paramsObj = QueryParamsForBackend.create({page: this.getPage(),
                                                   perPage: this.getPerPage(),
                                                   paramMapping: this.get('paramMapping')});
@@ -108,7 +103,7 @@ export default ArrayProxy.extend(PageMixin, Evented, ArrayProxyPromiseMixin, {
 
   totalPagesBinding: "meta.total_pages",
 
-  pageChanged: observer("page", "perPage", function() {
+  pageChanged: Ember.observer("page", "perPage", function() {
     this.set("promise", this.fetchContent());
   }),
 
@@ -116,7 +111,7 @@ export default ArrayProxy.extend(PageMixin, Evented, ArrayProxyPromiseMixin, {
     LockToRange.watch(this);
   },
 
-  watchPage: observer('page','totalPages', function() {
+  watchPage: Ember.observer('page','totalPages', function() {
     var page = this.get('page');
     var totalPages = this.get('totalPages');
     if (parseInt(totalPages) <= 0) {
@@ -137,6 +132,6 @@ export default ArrayProxy.extend(PageMixin, Evented, ArrayProxyPromiseMixin, {
 
     this.get('otherParams')[k] = v;
     this.incrementProperty('paramsForBackendCounter');
-    once(this,"pageChanged");
+    Ember.run.once(this,"pageChanged");
   }
 });

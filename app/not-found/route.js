@@ -1,8 +1,7 @@
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  language  : service('user-language'),
+export default Ember.Route.extend({
+  language  : Ember.inject.service('user-language'),
 
   beforeModel: function() {
     return this.get('language').initLanguage();

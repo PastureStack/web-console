@@ -1,9 +1,7 @@
-import { hash } from 'rsvp';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  webhookStore: service(),
+export default Ember.Route.extend({
+  webhookStore: Ember.inject.service(),
 
   model: function() {
     return this.get('webhookStore').findAll('schema', {url: 'schemas'}).then((schemas) => {
@@ -13,7 +11,7 @@ export default Route.extend({
       schemas.findBy('id','scalehost').resourceFields.hostSelector.required = true;
       schemas.findBy('id','serviceupgrade').resourceFields.serviceSelector.required = true;
 
-      return hash({
+      return Ember.RSVP.hash({
         receivers: this.get('webhookStore').findAll('receiver', {forceReload: true}),
       });
     });

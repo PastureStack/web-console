@@ -1,8 +1,8 @@
-import { helper as buildHelper } from '@ember/component/helper';
+import Ember from 'ember';
 import Util from 'ui/utils/util';
 
 export function ucFirst(params) {
  return Util.ucFirst(params[0]);
 }
 
-export default buildHelper(ucFirst);
+export default Ember.Helper.helper(ucFirst);

@@ -1,18 +1,14 @@
-import EmberObject, { computed } from '@ember/object';
-import { later } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-export default Controller.extend({
-  access         : service(),
-  settings       : service(),
-  session        : service(),
-  shibbolethAuth : service(),
+export default Ember.Controller.extend({
+  access         : Ember.inject.service(),
+  settings       : Ember.inject.service(),
+  session        : Ember.inject.service(),
+  shibbolethAuth : Ember.inject.service(),
   providerName   : 'authPage.shibboleth.providerName.shibboleth',
-  config         : alias('model.shibbolethConfig'),
+  config         : Ember.computed.alias('model.shibbolethConfig'),
   errors         : null,
   confirmDisable : false,
   redirectUrl    : null,
@@ -20,21 +16,13 @@ export default Controller.extend({
   saved          : false,
   testing        : false,
   disableAuth       : true,
-  numUsers: computed(
-    'model.allowedIdentities.@each.externalIdType',
-    'wasRestricted',
-    function() {
-      return (this.get('model.allowedIdentities')|| []).filterBy('externalIdType',C.PROJECT.TYPE_SHIBBOLETH_USER).get('length');
-    }
-  ),
+  numUsers: function() {
+    return (this.get('model.allowedIdentities')|| []).filterBy('externalIdType',C.PROJECT.TYPE_SHIBBOLETH_USER).get('length');
+  }.property('model.allowedIdentities.@each.externalIdType','wasRestricted'),
 
-  numOrgs: computed(
-    'model.allowedIdentities.@each.externalIdType',
-    'wasRestricted',
-    function() {
-      return (this.get('model.allowedIdentities')|| []).filterBy('externalIdType',C.PROJECT.TYPE_SHIBBOLETH_GROUP).get('length');
-    }
-  ),
+  numOrgs: function() {
+    return (this.get('model.allowedIdentities')|| []).filterBy('externalIdType',C.PROJECT.TYPE_SHIBBOLETH_GROUP).get('length');
+  }.property('model.allowedIdentities.@each.externalIdType','wasRestricted'),
   actions: {
     disable: function() {
 
@@ -57,7 +45,7 @@ export default Controller.extend({
     },
     promptDisable: function() {
       this.set('confirmDisable', true);
-      later(this, function() {
+      Ember.run.later(this, function() {
         this.set('confirmDisable', false);
       }, 10000);
     },
@@ -116,7 +104,7 @@ export default Controller.extend({
 
   },
   validate: function() {
-    let model = EmberObject.create(this.get('config'));
+    let model = Ember.Object.create(this.get('config'));
     let errors = [];
 
     if ((model.get('displayNameField')||'').trim().length === 0 ) {

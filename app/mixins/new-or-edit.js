@@ -1,16 +1,14 @@
-import { resolve } from 'rsvp';
-import { alias } from '@ember/object/computed';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import Errors from 'ui/utils/errors';
 
-export default Mixin.create({
+export default Ember.Mixin.create({
   originalModel: null,
   errors: null,
   saving: false,
   editing: true,
-  primaryResource: alias('model'),
-  originalPrimaryResource: alias('originalModel'),
+  primaryResource: Ember.computed.alias('model'),
+  originalPrimaryResource: Ember.computed.alias('originalModel'),
 
   initFields: function() {
     this._super();
@@ -52,7 +50,7 @@ export default Mixin.create({
 
     save: function(cb) {
       // Will save can return true/false or a promise
-      resolve(this.willSave()).then((ok) => {
+      Ember.RSVP.resolve(this.willSave()).then((ok) => {
         if ( !ok )
         {
           // Validation or something else said not to save

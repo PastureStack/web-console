@@ -1,5 +1,4 @@
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
 const OLD_CONFIG_TPL = `apiVersion: v1
@@ -40,12 +39,12 @@ users:
     token: "%token%"`;
 
 
-export default Controller.extend({
-  access: service(),
-  growl: service(),
-  k8s: service(),
-  projects: service(),
-  consoleWorkspace: service('console-workspace'),
+export default Ember.Controller.extend({
+  access: Ember.inject.service(),
+  growl: Ember.inject.service(),
+  k8s: Ember.inject.service(),
+  projects: Ember.inject.service(),
+  consoleWorkspace: Ember.inject.service('console-workspace'),
 
   step: 1,
   kubeconfig: '',

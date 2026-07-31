@@ -1,6 +1,6 @@
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
+export default Ember.Route.extend({
   model: function(/*params, transition*/) {
     return this.get('store').createRecord({
       type: 'certificate'

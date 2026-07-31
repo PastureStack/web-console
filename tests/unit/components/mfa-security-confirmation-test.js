@@ -1,15 +1,6 @@
-import { run } from '@ember/runloop';
-import { resolve } from 'rsvp';
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import { module, test } from 'qunit';
 import MfaSecurityConfirmation from 'ui/components/mfa-security-confirmation/component';
-import componentWithTestOwner from 'ui/tests/helpers/component-with-test-owner';
-
-const InsecureMfaSecurityConfirmation = componentWithTestOwner(
-  MfaSecurityConfirmation.extend({
-    webAuthnEnvironmentSupported: false,
-  })
-);
 
 module('Unit | Component | mfa security confirmation');
 
@@ -18,14 +9,15 @@ test('does not start a passkey confirmation on an insecure connection', function
     challengeId: 'challenge-1',
     methods: ['webauthn', 'totp', 'recoveryCode'],
   };
-  let component = InsecureMfaSecurityConfirmation.create({
-    intl: EmberObject.create(),
-    modalService: EmberObject.create({modalOpts: {}}),
-    userStore: EmberObject.create({
+  let component = MfaSecurityConfirmation.create({
+    intl: Ember.Object.create(),
+    modalService: Ember.Object.create({modalOpts: {}}),
+    userStore: Ember.Object.create({
       rawRequest() {
-        return resolve({body: challenge});
+        return Ember.RSVP.resolve({body: challenge});
       },
     }),
+    webAuthnEnvironmentSupported: false,
   });
 
   return component.begin().then(() => {
@@ -35,5 +27,5 @@ test('does not start a passkey confirmation on an insecure connection', function
       'the first usable registered factor is selected');
     assert.ok(component.get('hasUnavailablePasskeyMethod'),
       'the modal explains why the registered passkey is not shown');
-  }).finally(() => run(() => component.destroy()));
+  }).finally(() => Ember.run(() => component.destroy()));
 });

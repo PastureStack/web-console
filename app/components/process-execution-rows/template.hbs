@@ -1,67 +1,67 @@
-{{#if this.topLevel}}
-  <tr class="{{if this.execution.exception 'danger' ''}}">
+{{#if topLevel}}
+  <tr class="{{if execution.exception 'danger' ''}}">
     <td class="clip">
-      {{#if this.checkProcessHandlerExecutions }}
+      {{#if checkProcessHandlerExecutions }}
         <span {{action 'expand'}}>
-          <i class="icon hand {{if this.expanded 'icon-minus-square' 'icon-plus-square'}}"></i>
+          <i class="icon hand {{if expanded 'icon-minus-square' 'icon-plus-square'}}"></i>
         </span>
       {{/if}}
-      {{#if this.execution.exception}}
-        <span {{action 'showError' this.execution.exception}}>
+      {{#if execution.exception}}
+        <span {{action 'showError' execution.exception}}>
           <i class="icon icon-alert hand"></i>
         </span>
       {{/if}}
-      <span title={{this.execution.processName}}>{{this.execution.processName}}</span>
+      <span title={{execution.processName}}>{{execution.processName}}</span>
     </td>
-    <td class="clip"><span title={{this.execution.resourceType}}>{{this.execution.resourceType}}:{{this.execution.resourceId}}</span></td>
-    <td>{{this.execution.exitReason}}</td>
-    {{#if this.execution.startTime}}
-      <td>{{date-from-now this.execution.startTime}}</td>
+    <td class="clip"><span title={{execution.resourceType}}>{{execution.resourceType}}:{{execution.resourceId}}</span></td>
+    <td>{{execution.exitReason}}</td>
+    {{#if execution.startTime}}
+      <td>{{date-from-now execution.startTime}}</td>
     {{else}}
       <td></td>
     {{/if}}
-    {{#if this.execution.stopTime}}
-      <td>{{date-from-now this.execution.stopTime}}</td>
+    {{#if execution.stopTime}}
+      <td>{{date-from-now execution.stopTime}}</td>
     {{else}}
       <td></td>
     {{/if}}
-    <td>{{run-time this.execution.startTime this.execution.stopTime}}</td>
+    <td>{{run-time execution.startTime execution.stopTime}}</td>
   </tr>
 {{else}}
-  {{#if (or this.expandSelf this.expanded)}}
-    <tr class="{{if this.execution.exception 'danger' ''}}">
+  {{#if (or expandSelf expanded)}}
+    <tr class="{{if execution.exception 'danger' ''}}">
       <td class="clip">
-        <i class="icon icon-level-down indent-{{this.depth}}"></i>
-        {{#if this.execution.exception}}
-          <span {{action 'showError' this.execution.exception}}>
+        <i class="icon icon-level-down indent-{{depth}}"></i>
+        {{#if execution.exception}}
+          <span {{action 'showError' execution.exception}}>
             <i class="icon icon-alert hand"></i>
           </span>
         {{/if}}
-        {{#if this.checkProcessHandlerExecutions }}
+        {{#if checkProcessHandlerExecutions }}
             <span {{action 'expand'}}>
-              <i class="icon hand {{if this.expanded 'icon-minus-circle' 'icon-plus-circle'}}"></i>
+              <i class="icon hand {{if expanded 'icon-minus-circle' 'icon-plus-circle'}}"></i>
             </span>
         {{/if}}
-        <span title={{this.execution.processName}}>{{this.execution.processName}}</span>
+        <span title={{execution.processName}}>{{execution.processName}}</span>
       </td>
-      <td class="clip"><span title={{this.execution.resourceType}}>{{this.execution.resourceType}}:{{this.execution.resourceId}}</span></td>
-      <td>{{this.execution.exitReason}}</td>
-      {{#if this.execution.startTime}}
-        <td>{{date-from-now this.execution.startTime}}</td>
+      <td class="clip"><span title={{execution.resourceType}}>{{execution.resourceType}}:{{execution.resourceId}}</span></td>
+      <td>{{execution.exitReason}}</td>
+      {{#if execution.startTime}}
+        <td>{{date-from-now execution.startTime}}</td>
       {{else}}
         <td></td>
       {{/if}}
-      {{#if this.execution.stopTime}}
-        <td>{{date-from-now this.execution.stopTime}}</td>
+      {{#if execution.stopTime}}
+        <td>{{date-from-now execution.stopTime}}</td>
       {{else}}
         <td></td>
       {{/if}}
-      <td>{{run-time this.execution.startTime this.execution.stopTime}}</td>
+      <td>{{run-time execution.startTime execution.stopTime}}</td>
     </tr>
   {{/if}}
 {{/if}}
-{{#if this.checkProcessHandlerExecutions }}
-  {{#each this.execution.processHandlerExecutions as |processExe|}}
-    {{process-execution-handler-rows execution=processExe nodeDepth=this.depth expandSelf=this.expanded expandAll=this.expandAll }}
+{{#if checkProcessHandlerExecutions }}
+  {{#each execution.processHandlerExecutions as |processExe|}}
+    {{process-execution-handler-rows execution=processExe nodeDepth=depth expandSelf=expanded expandAll=expandAll }}
   {{/each}}
 {{/if}}

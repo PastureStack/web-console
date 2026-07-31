@@ -1,5 +1,4 @@
-import { computed } from '@ember/object';
-import { alias, gt } from '@ember/object/computed';
+import Ember from 'ember';
 import ModalBase from 'lacsso/components/modal-base';
 import { runWithConcurrency } from 'ui/utils/volume-bulk-remove';
 
@@ -10,8 +9,8 @@ function displayName(volume) {
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal', 'volume-bulk-remove-modal'],
 
-  opts: alias('modalService.modalOpts'),
-  volumes: alias('opts.volumes'),
+  opts: Ember.computed.alias('modalService.modalOpts'),
+  volumes: Ember.computed.alias('opts.volumes'),
 
   isRunning: false,
   isComplete: false,
@@ -27,15 +26,15 @@ export default ModalBase.extend({
     });
   },
 
-  previewVolumes: computed('volumes.[]', function() {
+  previewVolumes: Ember.computed('volumes.[]', function() {
     return (this.get('volumes') || []).slice(0, 12);
   }),
 
-  additionalCount: computed('volumes.length', function() {
+  additionalCount: Ember.computed('volumes.length', function() {
     return Math.max(0, (this.get('volumes.length') || 0) - 12);
   }),
 
-  hasFailures: gt('failed.length', 0),
+  hasFailures: Ember.computed.gt('failed.length', 0),
 
   escToClose() {
     return !this.get('isRunning') && this._super(...arguments);

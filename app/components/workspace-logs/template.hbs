@@ -1,30 +1,30 @@
-{{#unless this.instance.tty}}
+{{#unless instance.tty}}
   <ul class="nav nav-tabs workspace-log-tabs">
-    <li role="presentation" class="{{if this.isCombined 'active'}}">
+    <li role="presentation" class="{{if isCombined 'active'}}">
       <a {{action "changeShow" "combined"}}>{{t 'containerLogs.combined'}}</a>
     </li>
-    <li role="presentation" class="{{if this.isStdOut 'active'}}">
+    <li role="presentation" class="{{if isStdOut 'active'}}">
       <a {{action "changeShow" "stdout"}}>{{t 'containerLogs.stdout'}}</a>
     </li>
-    <li role="presentation" class="{{if this.isStdErr 'active'}}">
+    <li role="presentation" class="{{if isStdErr 'active'}}">
       <a {{action "changeShow" "stderr"}}>{{t 'containerLogs.stderr'}}</a>
     </li>
   </ul>
 {{/unless}}
 
-<pre class="workspace-log-body {{unless this.stdErrVisible 'hide-stderr'}}{{unless this.stdOutVisible 'hide-stdout'}}{{if this.wrapLines 'wrap-lines'}}"></pre>
+<pre class="workspace-log-body {{unless stdErrVisible 'hide-stderr'}} {{unless stdOutVisible 'hide-stdout'}} {{if wrapLines 'wrap-lines'}}"></pre>
 
 <footer class="workspace-log-footer">
   <span>
-    <span class="console-workspace-status-dot status-{{this.status}}" aria-hidden="true"></span>
-    {{t (concat-str 'consoleWorkspace.session.status.' this.status character='')}}
+    <span class="console-workspace-status-dot status-{{status}}" aria-hidden="true"></span>
+    {{t (concat-str 'consoleWorkspace.session.status.' status character='')}}
   </span>
   <span class="workspace-log-actions">
     <label class="workspace-log-wrap">
-      {{input type="checkbox" checked=this.wrapLines}}
+      {{input type="checkbox" checked=wrapLines}}
       <span>{{t 'containerLogs.wrapLines'}}</span>
     </label>
-    {{#if (or (eq this.status "disconnected") (eq this.status "error"))}}
+    {{#if (or (eq status "disconnected") (eq status "error"))}}
       <button type="button" class="btn btn-xs btn-default" {{action "reconnect"}}>
         <i class="icon icon-refresh" aria-hidden="true"></i>
         {{t 'consoleWorkspace.window.reconnect'}}

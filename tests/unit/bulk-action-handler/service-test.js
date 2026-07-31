@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import BulkActionHandlerService from 'ui/bulk-action-handler/service';
 
 module('Unit | Service | bulk action handler');
@@ -9,7 +9,7 @@ module('Unit | Service | bulk action handler');
 test('it exists', function(assert) {
   let service = BulkActionHandlerService.create();
   assert.ok(service);
-  run(() => service.destroy());
+  Ember.run(() => service.destroy());
 });
 
 test('it sends lifecycle actions to each node', function(assert) {
@@ -35,5 +35,5 @@ test('it sends lifecycle actions to each node', function(assert) {
     'first:delete',
     'second:delete',
   ]);
-  run(() => service.destroy());
+  Ember.run(() => service.destroy());
 });

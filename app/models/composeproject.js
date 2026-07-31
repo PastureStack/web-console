@@ -1,12 +1,10 @@
 import Stack from 'ui/models/stack';
 
-import { computed } from '@ember/object';
-
 export default Stack.extend({
   type: 'composeProject',
   grouping: 'swarm',
 
-  availableActions: computed('actionLinks.{remove}', function() {
+  availableActions: function() {
     var a = this.get('actionLinks');
 
     var out = [
@@ -15,6 +13,6 @@ export default Stack.extend({
     ];
 
     return out;
-  }),
+  }.property('actionLinks.{remove}'),
 
 });

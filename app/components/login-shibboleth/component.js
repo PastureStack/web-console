@@ -1,10 +1,8 @@
-import { later } from '@ember/runloop';
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 
-export default Component.extend({
+export default Ember.Component.extend({
   redirectUrl: null,
-  shibbolethAuth: service(),
+  shibbolethAuth: Ember.inject.service(),
   outRoute: null,
   init: function() {
     this._super(...arguments);
@@ -13,7 +11,7 @@ export default Component.extend({
   actions: {
     authenticate() {
       this.sendAction('action');
-      later(() => {
+      Ember.run.later(() => {
         this.authShibboleth();
       }, 10);
     }

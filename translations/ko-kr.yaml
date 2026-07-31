@@ -226,7 +226,6 @@ authPage:
       wellKnownUrl: 검색 문서 URL이 필요합니다.
       invalidUrl: 검색 문서 URL이 올바르지 않습니다.
       https: 로컬 개발 환경을 제외하고 검색에는 HTTPS가 필요합니다.
-      externalPlatformUrl: OpenID Connect를 구성하기 전에 외부 플랫폼 URL을 HTTPS 도메인 이름으로 설정하십시오. IP 주소와 암호화되지 않은 HTTP URL은 리디렉션 URI로 사용할 수 없습니다.
       clientId: 클라이언트 ID가 필요합니다.
       clientSecret: 클라이언트 비밀이 필요합니다.
       openidScope: 범위에 openid가 포함되어야 합니다.

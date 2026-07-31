@@ -1,21 +1,15 @@
-import $ from 'jquery';
-import { observer } from '@ember/object';
-import { on } from '@ember/object/evented';
-import { bind, later } from '@ember/runloop';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 
-function noop() {}
-
-export default Mixin.create({
+export default Ember.Mixin.create({
   init: function (...args) {
     this._super.apply(this, args);
 
-    this.set('boundClickoutHandler', bind(this, this.clickoutHandler));
-    this.set('boundEscapeHandler', bind(this, this.escapeHandler));
+    this.set('boundClickoutHandler', Ember.run.bind(this, this.clickoutHandler));
+    this.set('boundEscapeHandler', Ember.run.bind(this, this.escapeHandler));
   },
 
-  onOpen: noop,
-  onClose: noop,
+  onOpen: Ember.K,
+  onClose: Ember.K,
 
   dropdownExpanded: false,
 
@@ -49,20 +43,20 @@ export default Mixin.create({
     }
   },
 
-  manageClosingEvents: on('didInsertElement', observer('dropdownExpanded', function () {
+  manageClosingEvents: Ember.on('didInsertElement', Ember.observer('dropdownExpanded', function () {
     let namespace = this.get('closingEventNamespace');
     let clickEventName = 'click.'+ namespace;
     let touchEventName = 'touchstart.'+ namespace;
     let escapeEventName = 'keydown.'+ namespace;
     let component = this;
-    let $document = $(document);
+    let $document = Ember.$(document);
 
     if (this.get('dropdownExpanded')) {
 
       /* Add clickout handler with 1ms delay, to allow opening the dropdown
        * by clicking e.g. a checkbox and binding to dropdownExpanded, without
        * having the handler close the dropdown immediately. */
-      later(() => {
+      Ember.run.later(() => {
         $document.bind(clickEventName, {component: component}, component.boundClickoutHandler);
         $document.bind(touchEventName, {component: component}, component.boundClickoutHandler);
       }, 1);
@@ -77,9 +71,9 @@ export default Mixin.create({
     }
   })),
 
-  unbindClosingEvents: on('willDestroyElement', function () {
+  unbindClosingEvents: Ember.on('willDestroyElement', function () {
     let namespace = this.get('closingEventNamespace');
-    let $document = $(document);
+    let $document = Ember.$(document);
 
     $document.unbind('click.'+ namespace, this.boundClickoutHandler);
     $document.unbind('touchstart.'+ namespace, this.boundClickoutHandler);
@@ -89,7 +83,7 @@ export default Mixin.create({
   clickoutHandler(event) {
     let component = event.data.component;
     let $c = component.$();
-    let $target = $(event.target);
+    let $target = Ember.$(event.target);
 
     /* There is an issue when the click triggered a dom change in the
      * dropdown that unloaded the target element. The ancestry of the target

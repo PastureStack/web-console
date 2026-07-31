@@ -1,26 +1,24 @@
-import { alias } from '@ember/object/computed';
 import Service from 'ui/models/service';
-import { htmlSafe } from '@ember/template';
-import { escapeHtml } from 'ui/utils/util';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
+const esc = Ember.Handlebars.Utils.escapeExpression;
 
 var KubernetesService = Service.extend({
   type: 'kubernetesService',
-  spec: alias('template.spec'),
+  spec: Ember.computed.alias('template.spec'),
 
-  displayPorts: computed('spec.ports.[]', function() {
+  displayPorts: function() {
     var pub = '';
     (this.get('spec.ports')||[]).forEach((port, idx) => {
       pub += '<span>' + (idx === 0 ? '' : ', ') +
-        escapeHtml(port.port) +
+        esc(port.port) +
         '</span>';
     });
 
     var out =  '<label>Ports: </label>' + (pub||'<span class="text-muted">None</span>');
 
-    return htmlSafe(out);
-  }),
+    return out.htmlSafe();
+  }.property('spec.ports.[]'),
 });
 
 export default KubernetesService;

@@ -1,19 +1,19 @@
 <div class="row form-group">
   <div class="col-md-6">
     <div class="form-label">
-      <label class="form-control-static">{{t this.nameLabel}}{{if this.nameRequired '*'}}</label>
+      <label class="form-control-static">{{t nameLabel}}{{if nameRequired '*'}}</label>
     </div>
-    {{input type="text" value=this._name classNames="form-control" placeholder=(t this.namePlaceholder) disabled=this.nameDisabled}}
-    {{#if this.nameHelpText}}<p class="help-block">{{this.nameHelpText}}</p>{{/if}}
+    {{input type="text" value=_name classNames="form-control" placeholder=(t namePlaceholder) disabled=nameDisabled}}
+    {{#if nameHelpText}}<p class="help-block">{{nameHelpText}}</p>{{/if}}
   </div>
 
   <div class="col-md-6">
-    {{#if this.descriptionShown}}
+    {{#if descriptionShown}}
       <div class="form-label">
-        <label class="form-control-static">{{t this.descriptionLabel}}{{if this.descriptionRequired '*'}}</label>
+        <label class="form-control-static">{{t descriptionLabel}}{{if descriptionRequired '*'}}</label>
       </div>
-      {{textarea-autogrow value=this._description classNames="form-control no-resize" rows="1" placeholder=this.descriptionPlaceholder disabled=this.descriptionDisabled}}
-      {{#if this.descriptionHelp}}<p class="help-block">{{t this.descriptionHelp}}</p>{{/if}}
+      {{textarea-autogrow value=_description classNames="form-control no-resize" rows="1" placeholder=descriptionPlaceholder disabled=descriptionDisabled}}
+      {{#if descriptionHelp}}<p class="help-block">{{t descriptionHelp}}</p>{{/if}}
     {{else}}
       {{yield}}
     {{/if}}

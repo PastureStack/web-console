@@ -1,15 +1,13 @@
 import Resource from 'ember-api-store/models/resource';
 
-import { computed } from '@ember/object';
-
 export default Resource.extend({
-  hostSelectorStr: computed('hostSelector', function() {
+  hostSelectorStr: function() {
     let all = this.get('hostSelector')||[];
     return Object.keys(all).map((key) => {
       let val = all[key];
       return key + (val ? '=' + val : '');
     }).join(', ');
-  }),
+  }.property('hostSelector'),
 
   validationErrors() {
     let errors = this._super(...arguments);

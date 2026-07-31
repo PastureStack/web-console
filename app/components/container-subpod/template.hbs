@@ -1,27 +1,27 @@
 <div class="container-subpod">
   <div class="subpod-name clip">
-    <i class="{{this.model.stateIcon}}{{this.model.stateColor}} dot "></i>
-    <a class="{{if this.showEllipsis 'tiny-hellip'}}" href="{{href-to (if this.model.isVm "virtualmachine" "container") this.model.id}}">
-      {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-action-menu" model=this.model tooltipTemplate='tooltip-action-menu' tooltipFor="containerSubpod"}}
-        {{this.displayName}}
+    <i class="{{model.stateIcon}} {{model.stateColor}} dot "></i>
+    <a class="{{if showEllipsis 'tiny-hellip'}}" href="{{href-to (if model.isVm "virtualmachine" "container") model.id}}">
+      {{#tooltip-element tagName="span" inlineBlock=false type="tooltip-action-menu" model=model tooltipTemplate='tooltip-action-menu' tooltipFor="containerSubpod"}}
+        {{displayName}}
       {{/tooltip-element}}
     </a>
   </div>
-  {{#if this.model.showTransitioningMessage}}
-    <div class="subpod-detail clip {{if this.model.isError 'text-danger'}}">
-      {{this.model.transitioningMessage}}
+  {{#if model.showTransitioningMessage}}
+    <div class="subpod-detail clip {{if model.isError 'text-danger'}}">
+      {{model.transitioningMessage}}
     </div>
   {{else}}
     <div class="subpod-detail">
-      {{format-ip this.model.displayIp}}
+      {{format-ip model.displayIp}}
     </div>
   {{/if}}
-  {{action-menu model=this.model showPrimary=false}}
+  {{action-menu model=model showPrimary=false}}
 </div>
-{{#if this.children}}
+{{#if children}}
   <div class="subpod-children clearfix">
-    <h6 class="pull-left">{{t (if this.isKubernetes 'containerSubpod.childContainers' 'containerSubpod.childSidekicks')}}</h6>
-    {{#each this.children as |child|}}
+    <h6 class="pull-left">{{t (if isKubernetes 'containerSubpod.childContainers' 'containerSubpod.childSidekicks')}}</h6>
+    {{#each children as |child|}}
        {{container-dot model=child type='tooltip-action-menu' template='tooltip-action-menu'}}
     {{else}}
       &nbsp;

@@ -1,24 +1,20 @@
-import $ from 'jquery';
-import { on } from '@ember/object/evented';
-import { alias } from '@ember/object/computed';
-import { computed, observer } from '@ember/object';
-import Component from '@ember/component';
+import Ember from 'ember';
 import RlDropdownContainer from './rl-dropdown-container';
 
-export default Component.extend({
+export default Ember.Component.extend({
   classNames: ['rl-dropdown'],
 
-  dropdownContainer: computed(function () {
+  dropdownContainer: Ember.computed(function () {
     return this.nearestOfType(RlDropdownContainer);
   }),
 
-  isExpanded: alias('dropdownContainer.dropdownExpanded'),
+  isExpanded: Ember.computed.alias('dropdownContainer.dropdownExpanded'),
 
   closeOnChildClick: false,
 
   propagateClicks: true,
 
-  manageVisibility: on('didInsertElement', observer('isExpanded', function () {
+  manageVisibility: Ember.on('didInsertElement', Ember.observer('isExpanded', function () {
     if (this.get('isExpanded')) {
       this.$().css('display', 'block');
     } else {
@@ -29,7 +25,7 @@ export default Component.extend({
   click(event) {
     let closeOnChildClick = this.get('closeOnChildClick');
     let propagateClicks = this.get('propagateClicks');
-    let $target = $(event.target);
+    let $target = Ember.$(event.target);
     let $c = this.$();
 
     if ($target !== $c) {

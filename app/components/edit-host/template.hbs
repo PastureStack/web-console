@@ -7,7 +7,7 @@
       <label>{{t 'editHost.hostname.label'}}</label>
     </div>
     <div class="col-sm-12 col-md-8">
-      {{this.model.hostname}}
+      {{model.hostname}}
       <p class="help-block">{{t 'editHost.hostname.help'}}</p>
     </div>
   </div>
@@ -17,7 +17,7 @@
       <label>{{t 'editHost.customName.label'}}</label>
     </div>
     <div class="col-sm-12 col-md-8">
-      {{input type="text" value=this.primaryResource.name classNames="form-control" placeholder=(t 'editHost.customName.placeholder')}}
+      {{input type="text" value=primaryResource.name classNames="form-control" placeholder=(t 'editHost.customName.placeholder')}}
       <p class="help-block">{{t 'editHost.customName.help'}}</p>
     </div>
   </div>
@@ -27,11 +27,11 @@
       <label>{{t 'editHost.description.label'}}</label>
     </div>
     <div class="col-sm-12 col-md-8">
-      {{textarea value=this.primaryResource.description classNames="form-control no-resize" rows="5" placeholder=(t 'editHost.description.placeholder')}}
+      {{textarea value=primaryResource.description classNames="form-control no-resize" rows="5" placeholder=(t 'editHost.description.placeholder')}}
     </div>
   </div>
 
-  {{limit-parameters model=this.primaryResource}}
+  {{limit-parameters model=primaryResource}}
 
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label form-control-static">
@@ -39,8 +39,8 @@
     </div>
     <div class="col-sm-12 col-md-8">
       {{form-user-labels
-         initialLabels=this.originalModel.labels
-         readonlyLabels=this.readonlyLabels
+         initialLabels=originalModel.labels
+         readonlyLabels=readonlyLabels
          setLabels=(action 'setUserLabels')
       }}
     </div>
@@ -52,8 +52,8 @@
     </div>
     <div class="col-sm-12 col-md-8">
       {{form-value-array
-        initialValues=this.ips
-        changed=(fn (mut this.ips))
+        initialValues=ips
+        changed=(action (mut ips))
         addActionLabel="editHost.ips.addActionLabel"
         valueLabel="editHost.ips.valueLabel"
         valuePlaceholder="editHost.ips.valuePlaceholder"
@@ -68,9 +68,9 @@
     </div>
     <div class="col-sm-12 col-md-8">
       {{form-key-value
-        initialStr=this.requireAny
-        changedStr=(fn (mut this.requireAny))
-        requiredIfAny=this.requiredIfAny
+        initialStr=requireAny
+        changedStr=(action (mut requireAny))
+        requiredIfAny=requiredIfAny
         addActionLabel="editHost.requireAny.addActionLabel"
         allowEmptyValue=true
       }}
@@ -79,5 +79,5 @@
   </div>
 </section>
 
-{{top-errors errors=this.errors}}
-{{save-cancel editing=this.editing save="save" cancel="cancel"}}
+{{top-errors errors=errors}}
+{{save-cancel editing=editing save="save" cancel="cancel"}}

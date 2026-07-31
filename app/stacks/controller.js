@@ -1,5 +1,5 @@
-import Controller from '@ember/controller';
-export default Controller.extend({
+import Ember from 'ember';
+export default Ember.Controller.extend({
   which: 'user',
   tags: '',
   queryParams: ['which','tags'],

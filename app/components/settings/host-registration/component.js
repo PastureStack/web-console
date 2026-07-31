@@ -1,8 +1,5 @@
-import { service } from '@ember/service';
-import Component from '@ember/component';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
-
-import { computed, observer } from '@ember/object';
 
 function hostname(str) {
   return (str||'').trim().replace(/^[a-z0-9]+:\/+/i, '').replace(/\/.*$/g,'');
@@ -23,9 +20,9 @@ function isBadTld(name) {
   }
 }
 
-export default Component.extend({
-  endpoint      : service(),
-  settings      : service(),
+export default Ember.Component.extend({
+  endpoint      : Ember.inject.service(),
+  settings      : Ember.inject.service(),
 
   customRadio   : null,
   customValue   : '',
@@ -93,23 +90,23 @@ export default Component.extend({
     });
   },
 
-  looksPrivate: computed('activeValue', function() {
+  looksPrivate: function() {
     return isPrivate(this.get('activeValue'));
-  }),
+  }.property('activeValue'),
 
-  badTld: computed('activeValue', function() {
+  badTld: function() {
     return isBadTld(this.get('activeValue'));
-  }),
+  }.property('activeValue'),
 
-  activeValue: computed('customRadio', 'customValue', 'thisPage', function() {
+  activeValue: function() {
     if (this.get('customRadio') === 'yes') {
       return this.get('customValue').trim();
     } else {
       return this.get('thisPage');
     }
-  }),
+  }.property('customRadio','customValue','thisPage'),
 
-  customValueDidChange: observer('customValue', function() {
+  customValueDidChange: function() {
     let val = (this.get('customValue') || '').trim();
     let idx = val.indexOf('/', 8); // 8 is enough for "https://"
     if (idx !== -1) {
@@ -121,6 +118,6 @@ export default Component.extend({
     if (val) {
       this.set('customRadio', 'yes');
     }
-  }),
+  }.observes('customValue'),
 
 });

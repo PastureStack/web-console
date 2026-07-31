@@ -51,15 +51,8 @@ module.exports = function(environment) {
     environment: environment,
     exportApplicationGlobal: true,
     rootURL: '/',
-    locationType: 'history',
+    locationType: 'auto',
     EmberENV: {
-      // The inherited 1.6 application and ember-api-store still use Ember's
-      // observable NativeArray methods. Ember 7 disables these extensions by
-      // default, so keep the compatibility layer enabled until those call
-      // sites are migrated deliberately.
-      EXTEND_PROTOTYPES: {
-        Array: true
-      },
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
         // e.g. 'with-controller': true
@@ -72,6 +65,10 @@ module.exports = function(environment) {
 
     minifyJS: {
         enabled: false
+    },
+
+    'ember-cli-htmlbars': {
+      templateCompilerPath: 'vendor/ember/ember-template-compiler.js'
     },
 
     contentSecurityPolicy: {

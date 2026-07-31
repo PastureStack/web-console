@@ -1,12 +1,9 @@
-import { computed } from '@ember/object';
-import { later } from '@ember/runloop';
-import { service } from '@ember/service';
-import Controller from '@ember/controller';
+import Ember from 'ember';
 
-export default Controller.extend({
-  access            : service(),
-  settings          : service(),
-  intl              : service(),
+export default Ember.Controller.extend({
+  access            : Ember.inject.service(),
+  settings          : Ember.inject.service(),
+  intl              : Ember.inject.service(),
 
   confirmDisable    : false,
   errors            : null,
@@ -79,7 +76,7 @@ export default Controller.extend({
 
     promptDisable: function() {
       this.set('confirmDisable', true);
-      later(this, function() {
+      Ember.run.later(this, function() {
         this.set('confirmDisable', false);
       }, 10000);
     },
@@ -129,7 +126,7 @@ export default Controller.extend({
     },
   },
 
-  headerText: computed('access.enabled', 'intl._locale', function() {
+  headerText: Ember.computed('access.enabled', 'intl._locale', function() {
     let out = this.get('intl').findTranslationByKey('authPage.azuread.header.disabled');
     if (this.get('access.enabled')) {
       out = this.get('intl').findTranslationByKey('authPage.azuread.header.enabled');

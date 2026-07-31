@@ -1,6 +1,4 @@
-import { isArray } from '@ember/array';
-import EmberObject, { set, setProperties, computed } from '@ember/object';
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import { debouncedObserver } from 'ui/utils/debounce';
 
@@ -52,12 +50,12 @@ function isSoftUser(type,key) {
   return true;
 }
 
-export default Mixin.create({
+export default Ember.Mixin.create({
   labelArray: null,
 
   actions: {
     addUserLabel() {
-      this.get('labelArray').pushObject(EmberObject.create({
+      this.get('labelArray').pushObject(Ember.Object.create({
         type: USER,
         key: '',
         value: '',
@@ -65,7 +63,7 @@ export default Mixin.create({
     },
 
     addSystemLabel() {
-      this.get('labelArray').pushObject(EmberObject.create({
+      this.get('labelArray').pushObject(Ember.Object.create({
         type: SYSTEM,
         key: '',
         value: '',
@@ -73,7 +71,7 @@ export default Mixin.create({
     },
 
     addAffinityLabel() {
-      this.get('labelArray').pushObject(EmberObject.create({
+      this.get('labelArray').pushObject(Ember.Object.create({
         type: AFFINITY,
         key: C.LABEL.SCHED_HOST_LABEL,
         value: '',
@@ -123,11 +121,11 @@ export default Mixin.create({
         let existing = ary.filterBy('key',key)[0];
         if ( existing )
         {
-          set(existing,'value',val);
+          Ember.set(existing,'value',val);
         }
         else
         {
-          ary.pushObject(EmberObject.create({key: key, value: val, type: USER}));
+          ary.pushObject(Ember.Object.create({key: key, value: val, type: USER}));
         }
       });
 
@@ -144,23 +142,23 @@ export default Mixin.create({
   },
 
   // User labels are actual user ones, plus system ones that have no controls in the UI so they are manually entered.
-  userLabelArray: computed('labelArray.@each.type', function() {
+  userLabelArray: function() {
     return (this.get('labelArray')||[]).filter((item) => {
       return isSoftUser(item.get('type'), item.get('key'));
     });
-  }),
+  }.property('labelArray.@each.type'),
 
-  strictUserLabelArray: computed('labelArray.@each.type', function() {
+  strictUserLabelArray: function() {
     return (this.get('labelArray')||[]).filterBy('type',USER);
-  }),
+  }.property('labelArray.@each.type'),
 
-  systemLabelArray: computed('labelArray.@each.type', function() {
+  systemLabelArray: function() {
     return (this.get('labelArray')||[]).filterBy('type',SYSTEM);
-  }),
+  }.property('labelArray.@each.type'),
 
-  affinityLabelArray: computed('labelArray.@each.type', function() {
+  affinityLabelArray: function() {
     return (this.get('labelArray')||[]).filterBy('type',AFFINITY);
-  }),
+  }.property('labelArray.@each.type'),
 
   getLabelObj: function(key) {
     let lcKey = (key||'').toLowerCase();
@@ -219,14 +217,14 @@ export default Mixin.create({
     let existing = this.getLabelObj(key);
     if ( existing )
     {
-      setProperties(existing,{
+      Ember.setProperties(existing,{
         value: value,
         type: type,
       });
     }
     else
     {
-      existing = this.get('labelArray').pushObject(EmberObject.create({
+      existing = this.get('labelArray').pushObject(Ember.Object.create({
         key: key,
         value: value,
         type: type,
@@ -254,12 +252,12 @@ export default Mixin.create({
   initLabels: function(obj, onlyOfType, onlyKeys, readonlyKeys) {
     let out = [];
 
-    if ( onlyKeys && !isArray(onlyKeys) )
+    if ( onlyKeys && !Ember.isArray(onlyKeys) )
     {
       onlyKeys = [onlyKeys];
     }
 
-    if ( readonlyKeys && !isArray(readonlyKeys) )
+    if ( readonlyKeys && !Ember.isArray(readonlyKeys) )
     {
       readonlyKeys = [readonlyKeys];
     }
@@ -308,7 +306,7 @@ export default Mixin.create({
       if ( type === AFFINITY && obj[key] && obj[key].indexOf(',') > -1 )
       {
         obj[key].split(',').forEach((s) => {
-          out.push(EmberObject.create({
+          out.push(Ember.Object.create({
             key: key,
             value: s || '',
             type: type,
@@ -316,7 +314,7 @@ export default Mixin.create({
           }));
         });
       } else {
-        out.push(EmberObject.create({
+        out.push(Ember.Object.create({
           key: key,
           value: obj[key]||'',
           type: type,

@@ -1,12 +1,10 @@
-import $ from 'jquery';
-import { cancel, later } from '@ember/runloop';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Service.extend({
-  prefs        : service(),
-  session      : service(),
-  language     : service('user-language'),
+export default Ember.Service.extend({
+  prefs        : Ember.inject.service(),
+  session      : Ember.inject.service(),
+  language     : Ember.inject.service('user-language'),
   currentTheme : null,
   updateTimer  : null,
 
@@ -35,7 +33,7 @@ export default Service.extend({
     }
 
     if (this.get('updateTimer')) {
-      cancel(this.get('updateTimer'));
+      Ember.run.cancel(this.get('updateTimer'));
     }
 
     if (newTheme === 'ui-auto') {
@@ -68,7 +66,7 @@ export default Service.extend({
       this.get('session').set(C.PREFS.THEME, newTheme);
     }
 
-    this.set('updateTimer', later(() => {
+    this.set('updateTimer', Ember.run.later(() => {
       return this.setAutoUpdate();
     }, nextHalfHour));
 
@@ -102,7 +100,7 @@ export default Service.extend({
     updateHref('#vendor',`${application.baseAssets}assets/vendor${direction}.css?${application.version}`);
 
     function updateHref(node, neu) {
-      let elem = $(node);
+      let elem = Ember.$(node);
       let cur = elem.attr('href');
       if ( cur !== neu ) {
         elem.attr('href', neu);

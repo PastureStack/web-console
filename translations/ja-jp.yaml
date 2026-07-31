@@ -226,7 +226,6 @@ authPage:
       wellKnownUrl: ディスカバリードキュメント URL が必要です。
       invalidUrl: ディスカバリードキュメント URL が無効です。
       https: ローカル開発環境を除き、ディスカバリーには HTTPS が必要です。
-      externalPlatformUrl: OpenID Connect を設定する前に、プラットフォームの外部 URL を HTTPS のドメイン名に設定してください。IP アドレスや暗号化されていない HTTP URL はリダイレクト URI に使用できません。
       clientId: クライアント ID が必要です。
       clientSecret: クライアントシークレットが必要です。
       openidScope: スコープには openid を含める必要があります。

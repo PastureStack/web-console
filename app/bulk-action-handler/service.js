@@ -1,7 +1,7 @@
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 
-export default Service.extend({
-  modalService: service('modal'),
+export default Ember.Service.extend({
+  modalService: Ember.inject.service('modal'),
   promptStop: function(nodes) {
     this.get('modalService').toggleModal('modal-container-stop', {
       model: nodes

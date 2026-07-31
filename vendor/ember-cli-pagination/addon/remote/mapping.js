@@ -1,8 +1,8 @@
-import EmberObject from '@ember/object';
+import Ember from 'ember';
 import Validate from '../validate';
 import Util from '../util';
 
-export var QueryParamsForBackend = EmberObject.extend({
+export var QueryParamsForBackend = Ember.Object.extend({
   defaultKeyFor: function(key) {
     if (key === 'perPage') {
       return 'per_page';
@@ -49,7 +49,7 @@ export var QueryParamsForBackend = EmberObject.extend({
   }
 });
 
-export var ChangeMeta = EmberObject.extend({
+export var ChangeMeta = Ember.Object.extend({
   getSuppliedParamMapping: function(targetVal) {
     var h = this.get('paramMapping') || {};
 

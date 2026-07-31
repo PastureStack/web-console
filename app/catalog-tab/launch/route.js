@@ -1,11 +1,8 @@
-import EmberObject from '@ember/object';
-import { hash } from 'rsvp';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 
-export default Route.extend({
-  catalog: service(),
+export default Ember.Route.extend({
+  catalog: Ember.inject.service(),
 
   parentRoute: 'catalog-tab',
 
@@ -26,7 +23,7 @@ export default Route.extend({
       dependencies.stack = store.find('stack', params.stackId);
     }
 
-    return hash(dependencies, 'Load dependencies').then((results) => {
+    return Ember.RSVP.hash(dependencies, 'Load dependencies').then((results) => {
       if ( !results.stack )
       {
         results.stack = store.createRecord({
@@ -63,7 +60,7 @@ export default Route.extend({
         });
       }
 
-      return EmberObject.create({
+      return Ember.Object.create({
         stack: results.stack,
         tpl: results.tpl,
         upgrade: results.upgrade,

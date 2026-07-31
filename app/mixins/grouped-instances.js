@@ -1,7 +1,5 @@
-import Mixin from '@ember/object/mixin';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
-
-import { computed } from '@ember/object';
 
 function labelsMatching(ary,key,val) {
   return ary.filter((x) => {
@@ -10,8 +8,8 @@ function labelsMatching(ary,key,val) {
 }
 
 
-export default Mixin.create({
-  groupedInstances: computed('filteredInstances.@each.{name,id}', function() {
+export default Ember.Mixin.create({
+  groupedInstances: function() {
     var groups = [];
 
     function getOrCreateGroup(id, name, isK8s)
@@ -118,5 +116,5 @@ export default Mixin.create({
     });
 
     return groups;
-  }),
+  }.property('filteredInstances.@each.{name,id}'),
 });

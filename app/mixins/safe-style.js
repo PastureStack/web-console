@@ -1,20 +1,17 @@
-import Mixin from '@ember/object/mixin';
-import { htmlSafe } from '@ember/template';
+import Ember from 'ember';
 
-import { computed } from '@ember/object';
-
-export default Mixin.create({
+export default Ember.Mixin.create({
   safeStyle: null,
-  _safeStyle: computed('safeStyle', function() {
+  _safeStyle: function() {
     if ( this.get('safeStyle') )
     {
-      return htmlSafe(this.get('safeStyle'));
+      return this.get('safeStyle').htmlSafe();
     }
     else
     {
-      return htmlSafe('');
+      return ''.htmlSafe();
     }
-  }),
+  }.property('safeStyle'),
 
   attributeBindings: ['_safeStyle:style'],
 });

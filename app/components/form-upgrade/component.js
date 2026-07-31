@@ -1,8 +1,6 @@
-import Component from '@ember/component';
+import Ember from 'ember';
 
-import { observer, computed } from '@ember/object';
-
-export default Component.extend({
+export default Ember.Component.extend({
   choices    : null,
   index      : null,
 
@@ -16,15 +14,15 @@ export default Component.extend({
     this.optionsDidChange();
   },
 
-  optionsDidChange: observer('batchSize', 'interval', 'startFirst', function() {
+  optionsDidChange: function() {
     this.sendAction('optionsChanged', {
       batchSize: parseInt(this.get('batchSize'),10),
       intervalMillis: parseInt(this.get('interval'),10)*1000,
       startFirst: this.get('startFirst'),
     });
-  }),
+  }.observes('batchSize','interval','startFirst'),
 
-  choicesDidChange: observer('choices.@each.enabled', function() {
+  choicesDidChange: function() {
     var index = this.get('index');
     var obj = this.get('choices').filterBy('index',index)[0];
     if ( !obj || !obj.enabled ) {
@@ -38,9 +36,9 @@ export default Component.extend({
         this.sendAction('switch', null);
       }
     }
-  }),
+  }.observes('choices.@each.enabled'),
 
-  hasSidekicks: computed('choices.length', function() {
+  hasSidekicks: function() {
     return this.get('choices.length') > 1;
-  }),
+  }.property('choices.length'),
 });

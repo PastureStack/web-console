@@ -1,5 +1,4 @@
-import { debounce, throttle } from '@ember/runloop';
-import { observer } from '@ember/object';
+import Ember from 'ember';
 
 // debouncedObserver('observeKey1','...','observerKeyN', function() {} [, delay] [,leadingEdge])
 export function debouncedObserver(...args) {
@@ -30,8 +29,8 @@ export function debouncedObserver(...args) {
     opt[0].apply(this);
   };
 
-  return observer.apply(Ember, keys.concat(function() {
-    debounce(this, fn, opt[1] || 250, opt[2] || false);
+  return Ember.observer.apply(Ember, keys.concat(function() {
+    Ember.run.debounce(this, fn, opt[1] || 250, opt[2] || false);
   }));
 }
 
@@ -55,7 +54,7 @@ export function throttledObserver(...args) {
   opt = args.slice(funcIndex);
   keys = args.slice(0, funcIndex);
 
-  return observer.apply(Ember, keys.concat(function() {
-    throttle(this, opt[0], opt[1] || 250, opt[2] || false);
+  return Ember.observer.apply(Ember, keys.concat(function() {
+    Ember.run.throttle(this, opt[0], opt[1] || 250, opt[2] || false);
   }));
 }

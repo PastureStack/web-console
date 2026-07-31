@@ -377,7 +377,6 @@ authPage:
       wellKnownUrl: 請輸入探索文件網址。
       invalidUrl: 探索文件網址格式不正確。
       https: 除本機開發環境外，探索文件必須使用 HTTPS。
-      externalPlatformUrl: 設定 OpenID Connect 前，請先將平台對外網址設為 HTTPS 網域名稱；重新導向 URI 不能使用 IP 位址或未加密的 HTTP 網址。
       clientId: 請輸入用戶端 ID。
       clientSecret: 請輸入用戶端密鑰。
       openidScope: 授權範圍必須包含 openid。

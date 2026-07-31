@@ -1,18 +1,16 @@
-import EmberObject from '@ember/object';
-import { service } from '@ember/service';
-import Route from '@ember/routing/route';
+import Ember from 'ember';
 
-export default Route.extend({
-  mesos: service(),
+export default Ember.Route.extend({
+  mesos: Ember.inject.service(),
 
   model() {
     return this.get('mesos').publicUrl().then((url) => {
-      return EmberObject.create({
+      return Ember.Object.create({
         url: url,
         hosts: this.modelFor('authenticated').get('hosts'),
       });
     }).catch(() => {
-      return EmberObject.create({
+      return Ember.Object.create({
         url: null,
         hosts: this.modelFor('authenticated').get('hosts'),
         ready: false,

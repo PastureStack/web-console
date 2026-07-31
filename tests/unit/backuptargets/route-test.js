@@ -1,6 +1,6 @@
-import { run } from '@ember/runloop';
-
 import { module, test } from 'qunit';
+
+import Ember from 'ember';
 import BackupTargetsRoute from 'ui/backuptargets/route';
 
 module('Unit | Route | backuptargets');
@@ -8,7 +8,7 @@ module('Unit | Route | backuptargets');
 test('it exists', function(assert) {
   let route = BackupTargetsRoute.create();
   assert.ok(route);
-  run(() => route.destroy());
+  Ember.run(() => route.destroy());
 });
 
 test('model loads all backup targets', function(assert) {
@@ -26,6 +26,6 @@ test('model loads all backup targets', function(assert) {
 
   return route.model().then((result) => {
     assert.strictEqual(result, targets);
-    run(() => route.destroy());
+    Ember.run(() => route.destroy());
   });
 });

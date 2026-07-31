@@ -1,5 +1,4 @@
-import Service, { service } from '@ember/service';
-import { resolve } from 'rsvp';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
 import sha256Ascii from 'ui/utils/sha256';
 import Util from 'ui/utils/util';
@@ -30,7 +29,7 @@ function randomValue(length) {
 
 function pkceChallenge(verifier) {
   if ( !window.crypto || !window.crypto.subtle ) {
-    return resolve(base64Url(sha256Ascii(verifier)));
+    return Ember.RSVP.resolve(base64Url(sha256Ascii(verifier)));
   }
 
   let bytes = new Uint8Array(verifier.length);
@@ -43,13 +42,13 @@ function pkceChallenge(verifier) {
   });
 }
 
-export default Service.extend({
-  access: service(),
-  authStore: service('auth-store'),
-  intl: service(),
-  settings: service(),
-  'tab-session': service('tab-session'),
-  userStore: service('user-store'),
+export default Ember.Service.extend({
+  access: Ember.inject.service(),
+  authStore: Ember.inject.service('auth-store'),
+  intl: Ember.inject.service(),
+  settings: Ember.inject.service(),
+  'tab-session': Ember.inject.service('tab-session'),
+  userStore: Ember.inject.service('user-store'),
 
   callbackUrl: function(token) {
     let tokenUrl = token && token.callbackUrl ? token.callbackUrl : this.get('access.token.callbackUrl');
@@ -97,7 +96,7 @@ export default Service.extend({
     };
 
     if ( !pkceEnabled ) {
-      return resolve(transaction);
+      return Ember.RSVP.resolve(transaction);
     }
 
     transaction.codeVerifier = randomValue(32);
@@ -109,7 +108,7 @@ export default Service.extend({
 
   getAuthorizeUrl: function(preparedToken) {
     let token = preparedToken || this.get('access.token');
-    let tokenPromise = token && token.redirectUrl ? resolve(token) : this.getToken();
+    let tokenPromise = token && token.redirectUrl ? Ember.RSVP.resolve(token) : this.getToken();
 
     return tokenPromise.then((currentToken) => {
       this.get('access').set('token', currentToken);

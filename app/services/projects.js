@@ -1,30 +1,26 @@
-import { once } from '@ember/runloop';
-import { reject, resolve, Promise, all } from 'rsvp';
-import Service, { service } from '@ember/service';
+import Ember from 'ember';
 import C from 'ui/utils/constants';
-
-import { computed, observer } from '@ember/object';
 
 let ACTIVEISH = ['active','upgrading','updating-active'];
 
-export default Service.extend({
-  access: service(),
-  'tab-session': service('tab-session'),
-  prefs: service(),
-  k8sSvc: service('k8s'),
-  swarmSvc: service('swarm'),
-  mesosSvc: service('mesos'),
-  userStore: service('user-store'),
-  store: service(),
+export default Ember.Service.extend({
+  access: Ember.inject.service(),
+  'tab-session': Ember.inject.service('tab-session'),
+  prefs: Ember.inject.service(),
+  k8sSvc: Ember.inject.service('k8s'),
+  swarmSvc: Ember.inject.service('swarm'),
+  mesosSvc: Ember.inject.service('mesos'),
+  userStore: Ember.inject.service('user-store'),
+  store: Ember.inject.service(),
 
   current: null,
   all: null,
 
-  active: computed('all.@each.state', function() {
+  active: function() {
     return this.get('all').filter((project) => {
       return ACTIVEISH.includes(project.get('state'));
     });
-  }),
+  }.property('all.@each.state'),
 
   getAll: function() {
     var opt = {
@@ -118,7 +114,7 @@ export default Service.extend({
     function fail() {
       // Then cry
       select(null);
-      return reject();
+      return Ember.RSVP.reject();
     }
   },
 
@@ -129,11 +125,11 @@ export default Service.extend({
     } else {
       this.set('store.baseUrl', this.get('app.apiEndpoint'));
     }
-    return resolve(project);
+    return Ember.RSVP.resolve(project);
   },
 
   _activeProjectFromId: function(projectId) {
-    return new Promise((resolve, reject) => {
+    return new Ember.RSVP.Promise((resolve, reject) => {
       if ( !projectId )
       {
         reject();
@@ -196,19 +192,19 @@ export default Service.extend({
       }
     }
 
-    return all(promises).then(() => {
+    return Ember.RSVP.all(promises).then(() => {
       this.set('orchestrationState', hash);
-      return resolve(hash);
+      return Ember.RSVP.resolve(hash);
     }).catch((e) => {
-      return reject(e);
+      return Ember.RSVP.reject(e);
     });
   },
 
-  orchestrationStateShouldChange: observer('current.{id,orchestration}', function() {
-    once(this, 'updateOrchestrationState', true);
-  }),
+  orchestrationStateShouldChange: function() {
+    Ember.run.once(this, 'updateOrchestrationState', true);
+  }.observes('current.{id,orchestration}'),
 
-  isReady: computed('orchestrationState', function() {
+  isReady: function() {
     var state = this.get('orchestrationState');
 
     if ( !state )
@@ -221,5 +217,5 @@ export default Service.extend({
       (!state.hasSwarm || state.swarmReady) &&
       (!state.hasMesos || state.mesosReady)
     );
-  }), // The state object is always completely replaced, so this is ok
+  }.property('orchestrationState'), // The state object is always completely replaced, so this is ok
 });

@@ -16,7 +16,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each this.arranged as |cert|}}
+      {{#each arranged as |cert|}}
         {{certificate-row model=cert}}
       {{else}}
         <tr><td colspan="5" class="text-center text-muted">{{t 'certificatesPage.index.table.body.noData'}}</td></tr>
