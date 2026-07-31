@@ -51,10 +51,11 @@ if module_for_count != 0:
     fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
 if module_for_component_count != 0:
     fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
-if direct_qunit_import_count != 57:
-    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=57)
+if direct_qunit_import_count != 58:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=58)
 
 direct_qunit_tests = [
+    Path("tests/unit/application/route-test.js"),
     Path("tests/unit/admin-tab/auth/mfa/controller-test.js"),
     Path("tests/unit/components/mfa-security-confirmation-test.js"),
     Path("tests/unit/login/index/controller-test.js"),
