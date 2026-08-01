@@ -893,7 +893,7 @@ function expectEmberLtsAndJQueryRuntime() {
     }
   }
   const compat = fs.readFileSync("vendor/ember/ember-global-compat.js", "utf8");
-  for (const marker of ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "root.find(selector)", "legacyTextInput"]) {
+  for (const marker of ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "legacySendAction", "this._target", "target.send.apply", "root.find(selector)", "legacyTextInput"]) {
     if (!compat.includes(marker)) {
       fail(`Ember global compatibility marker missing: ${marker}`);
     }

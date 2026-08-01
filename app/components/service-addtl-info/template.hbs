@@ -19,12 +19,12 @@
             {{lb-addtl-info service=this.service containers=this.primaryContainers}}
           {{else}}
             {{#if (eq this.service.type 'dnsService')}}
-              {{partial 'alias-service-addtl-info'}}
+              {{alias-service-addtl-info context=this}}
             {{else}}
               {{#if (eq this.service.type 'externalService')}}
-                {{partial 'ext-service-addtl-info'}}
+                {{ext-service-addtl-info context=this}}
               {{else}}
-                {{partial 'service-addtl-info'}}
+                {{service-addtl-info-content context=this}}
               {{/if}}
             {{/if}}
           {{/if}}
@@ -40,4 +40,3 @@
     </div>
   {{yield}}
 </div>
-

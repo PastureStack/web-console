@@ -83,7 +83,7 @@ if not compat_path.is_file():
     fail("EMBER_GLOBAL_COMPAT_MISSING", file=compat_path)
 else:
     compat = compat_path.read_text(encoding="utf-8")
-    for marker in ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "root.find(selector)", "legacyTextInput"]:
+    for marker in ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "legacySendAction", "this._target", "target.send.apply", "root.find(selector)", "legacyTextInput"]:
         if marker not in compat:
             fail("EMBER_GLOBAL_COMPAT_MARKER_MISSING", marker=marker)
 

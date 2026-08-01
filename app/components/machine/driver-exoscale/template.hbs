@@ -174,7 +174,7 @@
       <span>{{t 'machine.driverExoscale.instanceSection'}}</span>
     </div>
 
-    {{partial "host/add-common"}}
+    {{host-add-common context=this}}
 
     <div class="row form-group">
       <div class="col-md-2 form-label">
@@ -214,7 +214,7 @@
       </div>
     </div>
 
-    {{partial "host/add-options"}}
+    {{host-add-options context=this}}
   </div>
 
   {{top-errors errors=this.errors}}

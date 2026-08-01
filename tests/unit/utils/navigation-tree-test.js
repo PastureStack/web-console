@@ -1,5 +1,8 @@
 import { module, test } from 'qunit';
-import { cloneNavigationValue } from 'ui/utils/navigation-tree';
+import {
+  cloneNavigationValue,
+  normalizeNavigationQueryParams
+} from 'ui/utils/navigation-tree';
 
 module('Unit | Utility | Navigation tree', function() {
   test('deeply isolates mutable navigation data while preserving callbacks', function(assert) {
@@ -22,5 +25,13 @@ module('Unit | Utility | Navigation tree', function() {
     copy[0].submenu[0].id = 'containers';
     assert.strictEqual(source[0].queryParams.which, 'infra');
     assert.strictEqual(source[0].submenu[0].id, 'hosts');
+  });
+
+  test('normalizes LinkTo query parameters to an object', function(assert) {
+    const query = { which: 'infra' };
+
+    assert.strictEqual(normalizeNavigationQueryParams(query), query, 'preserves a valid query object');
+    assert.deepEqual(normalizeNavigationQueryParams(), {}, 'uses an empty object for a missing query');
+    assert.deepEqual(normalizeNavigationQueryParams([]), {}, 'rejects an array query value');
   });
 });

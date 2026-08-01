@@ -67,7 +67,7 @@
       <span>{{t 'machine.driverUbiquity.instanceSection'}}</span>
     </div>
 
-    {{partial "host/add-common"}}
+    {{host-add-common context=this}}
 
     <div class="over-hr r-mt20 r-mb20">
       <span>{{t 'machine.driverUbiquity.regionSection'}}</span>
@@ -109,7 +109,7 @@
       </div>
     </div>
 
-    {{partial "host/add-options"}}
+    {{host-add-options context=this}}
   </div>
 
   {{top-errors errors=this.errors}}

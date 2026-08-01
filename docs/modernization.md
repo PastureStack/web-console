@@ -165,9 +165,32 @@ These no-publish candidates replace Bower delivery paths with pinned npm or revi
   `qrcode-generator@2.0.4` browser bundle. Authenticator provisioning data is
   encoded locally and is not sent to a third-party rendering service.
 
-`v1.6.56-pasturestack.37` moves the browser application and build CLI to the
+`v1.6.56-pasturestack.38` moves the browser application and build CLI to the
 supported Ember 6.12 LTS line, removes copied Ember runtime binaries, and keeps
 the classic application contract behind a reviewed compatibility boundary.
+The `.38` candidate also restores the Ember Intl HTML-message helper, binds
+existing pod component templates through Ember's public component-template
+API, and routes legacy curly input and textarea invocations through the
+reviewed compatibility components. The global compatibility boundary also
+restores classic component action dispatch for the 63 maintained components
+that still call `sendAction`, supporting both named target actions and closure
+actions. Ember's retained classic `_target` is read only inside that audited
+shim and is locked by source and browser tests until string actions migrate to
+closures. These guards prevent an apparently successful production build from
+publishing an empty or unusable login form whose submit action cannot reach the
+controller. Navigation data is also normalized before it reaches Ember 6
+`LinkTo`, whose `@query` argument now requires an object even when a legacy menu
+item has no query parameters.
+The removed Handlebars `partial` helper is replaced by an explicit, audited
+inventory of tagless context components. Each compiled template is attached
+through Ember's public `setComponentTemplate` API, property reads and writes
+are delegated only to the explicitly supplied rendering context, and action
+dispatch fails closed when that context cannot receive the action. Tooltip
+content uses a fixed component-name allowlist instead of runtime partial or
+layout-name selection. Ember view lifecycle state remains declared on the
+component itself so it cannot be intercepted by the context proxy. A source
+gate rejects every reintroduced `partial`
+invocation before an artifact can be built.
 The reviewed `ember-fetch@5.1.3` compatibility package retains the upstream MIT
 license, avoids shadowing the browser global `self` object inside its AMD
 exports callback, and re-exports Fetch after the polyfill installs it. The

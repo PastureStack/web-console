@@ -215,12 +215,12 @@
       }}
     </div>
     <div class="col-md-8">
-      {{partial "mfa-status-summary"}}
+      {{mfa-status-summary context=this}}
     </div>
   </div>
 </section>
 
-{{partial "mfa-self-service"}}
+{{mfa-self-service context=this}}
 
 <section class="well danger-zone">
   <h2>{{t 'authPage.mfa.danger.header'}}</h2>

@@ -805,7 +805,7 @@ async function main() {
   const i18nWarnings = [];
 
   page.on("pageerror", (err) => {
-    if (pageErrors.length < 50) pageErrors.push(err.message);
+    if (pageErrors.length < 50) pageErrors.push(err.stack || err.message);
   });
   page.on("console", (msg) => {
     const text = msg.text();
@@ -843,18 +843,26 @@ async function main() {
     const passwordInputs = await page.locator('input[type="password"]').count();
     if (passwordInputs > 0) {
       const tokenPromise = page.waitForResponse(
-        (resp) => resp.url().includes("/token") && resp.request().method() === "POST" && resp.status() === 201,
+        (resp) => resp.url().includes("/token") && resp.request().method() === "POST",
         { timeout: 30000 }
       );
       await page.locator(".login-user").fill(username);
       await page.locator(".login-pass").fill(password);
       const submit = page.locator(".login-user").locator("xpath=ancestor::form[1]").locator(".btn-primary");
+      let triggerLogin;
       if (await submit.count()) {
-        await submit.click();
+        triggerLogin = () => submit.click();
       } else {
-        await page.keyboard.press("Enter");
+        triggerLogin = () => page.keyboard.press("Enter");
       }
-      await tokenPromise;
+      const [tokenResponse] = await Promise.all([tokenPromise, triggerLogin()]);
+      if (tokenResponse.status() !== 201) {
+        const body = await tokenResponse.json().catch(() => ({}));
+        throw new Error(
+          `primary login failed status=${tokenResponse.status()} ` +
+          `code=${body.code || body.type || "unknown"} message=${body.message || "none"}`
+        );
+      }
       await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
 
       const mfaCode = page.locator("#mfa-code");
@@ -965,6 +973,7 @@ async function main() {
 }
 
 main().catch((err) => {
+  console.error(err.message || String(err));
   console.error(err.stack || err.message || String(err));
   process.exit(1);
 });

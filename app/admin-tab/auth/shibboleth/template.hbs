@@ -1,5 +1,5 @@
 {{#if this.access.enabled}}
-  {{partial 'shibboleth-configured'}}
+  {{shibboleth-configured context=this}}
 {{else}}
-  {{partial 'shibboleth-config'}}
+  {{shibboleth-config context=this}}
 {{/if}}

@@ -227,7 +227,7 @@
       <span>{{t 'machine.driverAmazon.instanceSection'}}</span>
     </div>
 
-    {{partial "host/add-common"}}
+    {{host-add-common context=this}}
 
     <div class="over-hr r-mt20 r-mb20">
       <span>{{t 'machine.driverAmazon.instanceOptionsSection'}}</span>
@@ -309,7 +309,7 @@
     </div>
 
     {{#if this.model}}
-      {{partial "host/add-options"}}
+      {{host-add-options context=this}}
     {{/if}}
   </div>
 

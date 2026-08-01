@@ -389,6 +389,14 @@ export function cloneNavigationValue(value) {
   return value;
 }
 
+export function normalizeNavigationQueryParams(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value;
+  }
+
+  return {};
+}
+
 export function get() {
   return cloneNavigationValue(navTree);
 }

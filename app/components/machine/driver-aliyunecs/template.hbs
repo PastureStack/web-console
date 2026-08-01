@@ -1,7 +1,7 @@
 <section class="horizontal-form">
   <div class="container-fluid">
 
-    {{partial "host/add-common"}}
+    {{host-add-common context=this}}
 
     <div class="over-hr r-mt20 r-mb20">
       <span>{{t 'machine.driverAliyunecs.accountSection'}}</span>
@@ -242,7 +242,7 @@
 
 
 
-    {{partial "host/add-options"}}
+    {{host-add-options context=this}}
   </div>
 
 

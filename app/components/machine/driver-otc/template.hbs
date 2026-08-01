@@ -206,7 +206,7 @@
         <span>{{t 'machine.driverOtc.instance.header'}}</span>
       </div>
       {{!-- This partial contains the quantity, name, and description fields --}}
-      {{partial "host/add-common"}}
+      {{host-add-common context=this}}
 
       <div class="over-hr r-mt20 r-mb20">
         <span>{{t 'machine.driverOtc.instance.options'}}</span>
@@ -307,7 +307,7 @@
         </div>
       </div>
       {{!-- This partial contains the Labels and Advanced Options fields --}}
-      {{partial "host/add-options"}}
+      {{host-add-options context=this}}
       {{!-- This component shows the Create and Cancel buttons --}}
       {{save-cancel save="save" cancel="cancel"}}
     {{/if}}

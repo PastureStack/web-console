@@ -26,11 +26,11 @@ mfa_docs_path = Path("docs/multi-factor-authentication.md")
 mfa_templates = [
     Path("app/login/index/template.hbs"),
     Path("app/admin-tab/auth/mfa/template.hbs"),
-    Path("app/templates/mfa-self-service.hbs"),
+    Path("app/components/mfa-self-service/template.hbs"),
 ]
 account_security_route = Path("app/router.js")
 admin_mfa_template = Path("app/admin-tab/auth/mfa/template.hbs")
-self_service_template = Path("app/templates/mfa-self-service.hbs")
+self_service_template = Path("app/components/mfa-self-service/template.hbs")
 
 for path in [shell_path, js_path]:
     if not path.is_file():

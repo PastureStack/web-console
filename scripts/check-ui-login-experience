@@ -66,6 +66,12 @@ for path in [
     Path("public/assets/images/logos/pasturestack-favicon.svg"),
     Path("public/favicon.ico"),
     Path("docs/login-experience.md"),
+    Path("app/helpers/format-html-message.js"),
+    Path("app/initializers/pod-component-layouts.js"),
+    Path("app/initializers/legacy-context-partials.js"),
+    Path("app/components/legacy-context-partial/component.js"),
+    Path("app/components/input/component.js"),
+    Path("app/components/textarea/component.js"),
 ]:
     if not path.is_file() or path.stat().st_size == 0:
         failures.append(f"UI_LOGIN_ASSET_MISSING file={path}")
@@ -73,6 +79,31 @@ for path in [
 ico = Path("public/favicon.ico").read_bytes() if Path("public/favicon.ico").is_file() else b""
 if len(ico) < 30 or ico[:4] != b"\x00\x00\x01\x00" or ico[22:26] != b"\x89PNG":
     failures.append("UI_LOGIN_FAVICON_INVALID")
+
+pod_layouts = require("app/initializers/pod-component-layouts.js", "setComponentTemplate")
+for marker in ["getComponentTemplate", "ui/components/", "requirejs.entries"]:
+    if marker not in pod_layouts:
+        failures.append(f"UI_LOGIN_POD_LAYOUT_COMPATIBILITY_MISSING marker={marker}")
+
+input_compat = require("app/components/input/component.js", "Ember.TextField.extend")
+for marker in ["attributeBindings: ['checked']", "type === 'checkbox'", "type === 'radio'"]:
+    if marker not in input_compat:
+        failures.append(f"UI_LOGIN_INPUT_COMPATIBILITY_MISSING marker={marker}")
+
+component_compat = require("vendor/ember/ember-global-compat.js", "legacySendAction")
+for marker in ["Ember.Component.prototype.sendAction", "this._target", "target.send.apply", "action.apply"]:
+    if marker not in component_compat:
+        failures.append(f"UI_LOGIN_COMPONENT_ACTION_COMPATIBILITY_MISSING marker={marker}")
+
+partial_compat = require("app/initializers/legacy-context-partials.js", "LEGACY_CONTEXT_PARTIALS")
+for marker in ["setComponentTemplate", "LegacyContextPartial.extend", "component:${name}"]:
+    if marker not in partial_compat:
+        failures.append(f"UI_LOGIN_PARTIAL_COMPONENT_COMPATIBILITY_MISSING marker={marker}")
+
+partial_proxy = require("app/components/legacy-context-partial/component.js", "unknownProperty")
+for marker in ["setUnknownProperty", "dispatchContextAction", "this.get('context')", "parentView: null", "elementId: null"]:
+    if marker not in partial_proxy:
+        failures.append(f"UI_LOGIN_PARTIAL_CONTEXT_PROXY_MISSING marker={marker}")
 
 production_locales = sorted(path for path in Path("translations").glob("*.yaml") if path.name != "none.yaml")
 if len(production_locales) != 13:

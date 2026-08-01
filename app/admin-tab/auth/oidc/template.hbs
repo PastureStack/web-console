@@ -49,7 +49,7 @@
         <i class="icon icon-check"></i>
         {{t 'authPage.oidc.test.success' identity=this.testedIdentityName providerName=this.providerDisplayName}}
       </div>
-      {{partial "oidc-identity-mapping"}}
+      {{oidc-identity-mapping context=this}}
       {{top-errors errors=this.errors}}
       <div class="text-right r-mt15">
         <button type="button" class="btn btn-default" disabled={{this.testing}} {{action "manageIdentity"}}>
@@ -264,7 +264,7 @@
                     class="form-control"}}
           </div>
         </div>
-        {{partial "oidc-identity-mapping"}}
+        {{oidc-identity-mapping context=this}}
       {{else}}
         <p>{{t 'authPage.oidc.test.help' providerName=this.providerDisplayName}}</p>
       {{/if}}

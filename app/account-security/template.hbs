@@ -7,7 +7,7 @@
 
 <section class="well" data-testid="mfa-self-service-summary">
   <h2>{{this.session.user}}</h2>
-  {{partial "mfa-status-summary"}}
+  {{mfa-status-summary context=this}}
 </section>
 
-{{partial "mfa-self-service"}}
+{{mfa-self-service context=this}}

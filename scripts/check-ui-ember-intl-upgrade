@@ -45,12 +45,15 @@ for package_path in packages:
 build = (repo / "ember-cli-build.js").read_text(encoding="utf-8")
 tree = (repo / "lib/translation-json-tree.js").read_text(encoding="utf-8")
 initializer = (repo / "app/instance-initializers/intl.js").read_text(encoding="utf-8")
+html_helper = (repo / "app/helpers/format-html-message.js").read_text(encoding="utf-8")
 for marker in ["TranslationJsonTree", "translations", "mergeTrees"]:
     expect(marker in build, f"translation build marker missing: {marker}")
 for marker in ["YAML.parse", "JSON.stringify", "outputPath"]:
     expect(marker in tree, f"translation JSON tree marker missing: {marker}")
 for marker in ["instance.lookup('service:intl')", "findTranslationByKey", "formatHtmlMessage", "getLocalesByTranslations"]:
     expect(marker in initializer, f"Intl compatibility marker missing: {marker}")
+for marker in ["Ember.Helper.extend", "intl.t(key, options)", "options.htmlSafe = true"]:
+    expect(marker in html_helper, f"HTML message helper compatibility marker missing: {marker}")
 
 yaml_files = sorted((repo / "translations").glob("*.yaml"))
 expect(len(yaml_files) == 14, f"locale source count is {len(yaml_files)}, expected 14 including the development-only pseudo-locale")
@@ -68,7 +71,7 @@ if failures:
 
 print(
     "UI_EMBER_INTL_UPGRADE_OK "
-    "ember-intl=8.4.0 parser=3.5.16 selectable-locales=13 pseudo-locales=1 legacy-intl-packages=0"
+    "ember-intl=8.4.0 parser=3.5.16 selectable-locales=13 pseudo-locales=1 legacy-intl-packages=0 html-helper=restored"
 )
 print("Locale YAML is converted to release JSON by a first-party build plugin and consumed through the Ember Intl 8 public service boundary.")
 print("failure_count=0")

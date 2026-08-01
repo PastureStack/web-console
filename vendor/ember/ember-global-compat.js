@@ -79,6 +79,30 @@
     Ember.$ = global.jQuery;
   }
 
+  function legacySendAction(actionProperty) {
+    var propertyName = actionProperty || 'action';
+    var args = Array.prototype.slice.call(arguments, 1);
+    var action = this.get(propertyName);
+
+    if (typeof action === 'function') {
+      return action.apply(this, args);
+    }
+
+    // Ember 6 still assigns the classic component action target internally,
+    // but no longer exposes Component#sendAction. Keep that retained classic
+    // boundary in this one audited shim while closure actions migrate normally.
+    var target = this.get('target') || this._target;
+    if (action && target && typeof target.send === 'function') {
+      return target.send.apply(target, [action].concat(args));
+    }
+  }
+
+  if (Ember.Component && typeof Ember.Component.prototype.sendAction !== 'function') {
+    Ember.Component.reopen({
+      sendAction: legacySendAction,
+    });
+  }
+
   if (Ember.Component && Ember.$ && typeof Ember.Component.prototype.$ !== 'function') {
     Ember.Component.reopen({
       $: function(selector) {
