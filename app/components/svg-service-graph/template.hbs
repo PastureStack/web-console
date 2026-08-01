@@ -12,9 +12,9 @@
         <path d="M2,2 L2,6 L6,4.25 L2,2" style="fill: #9CB6B5;" />
     </marker>
 </defs>
-{{#each nodes as |node|}}
+{{#each this.nodes as |node|}}
   {{svg-service-container node=node action='openInfo'}}
 {{/each}}
-{{#each paths as |path|}}
+{{#each this.paths as |path|}}
   {{svg-edge path=path}}
 {{/each}}

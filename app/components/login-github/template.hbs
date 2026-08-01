@@ -1,6 +1,6 @@
 <form {{action "authenticate" on="submit"}} class="text-left login-provider-form">
   <div class="login-submit-row">
-    <button type="submit" disabled={{waiting}} class="btn btn-primary btn-block">
+    <button type="submit" disabled={{this.waiting}} class="btn btn-primary btn-block">
       <i class="icon icon-github"></i> {{t 'loginGithub.buttonText'}}
     </button>
   </div>

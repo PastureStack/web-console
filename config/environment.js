@@ -53,6 +53,12 @@ module.exports = function(environment) {
     rootURL: '/',
     locationType: 'auto',
     EmberENV: {
+      // Ember 6.12 still supports the legacy Array convenience methods used by
+      // the classic console. Keep this explicit during the staged native-array
+      // migration; Ember 7 removes this compatibility switch.
+      EXTEND_PROTOTYPES: {
+        Array: true
+      },
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
         // e.g. 'with-controller': true
@@ -65,10 +71,6 @@ module.exports = function(environment) {
 
     minifyJS: {
         enabled: false
-    },
-
-    'ember-cli-htmlbars': {
-      templateCompilerPath: 'vendor/ember/ember-template-compiler.js'
     },
 
     contentSecurityPolicy: {

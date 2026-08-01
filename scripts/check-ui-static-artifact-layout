@@ -4,6 +4,19 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
 
+module_id_settings=$(grep -Ec "moduleIds:" ember-cli-build.js || true)
+chunk_id_settings=$(grep -Ec "chunkIds:" ember-cli-build.js || true)
+if [[ "$module_id_settings" -ne 1 ]] ||
+   ! grep -F "moduleIds: 'natural'" ember-cli-build.js >/dev/null; then
+  echo "AUTO_IMPORT_MODULE_IDS_NOT_REPRODUCIBLE count=$module_id_settings"
+  exit 1
+fi
+if [[ "$chunk_id_settings" -ne 1 ]] ||
+   ! grep -F "chunkIds: 'deterministic'" ember-cli-build.js >/dev/null; then
+  echo "AUTO_IMPORT_CHUNK_IDS_NOT_DETERMINISTIC count=$chunk_id_settings"
+  exit 1
+fi
+
 tmpdir=$(mktemp -d)
 cleanup() {
   rm -rf "$tmpdir"
@@ -11,6 +24,7 @@ cleanup() {
 trap cleanup EXIT
 
 mkdir -p "$tmpdir/dist/assets"
+mkdir -p "$tmpdir/dist/licenses/ember"
 mkdir -p "$tmpdir/dist/translations"
 cat >"$tmpdir/dist/index.html" <<'HTML'
 <!doctype html>
@@ -22,6 +36,8 @@ printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
 printf 'source map\n' >"$tmpdir/dist/assets/ui-test.js.map"
 printf '{}\n' >"$tmpdir/dist/translations/en-us.json"
 printf '{}\n' >"$tmpdir/dist/translations/none.json"
+cp vendor/ember/LICENSE "$tmpdir/dist/licenses/ember/LICENSE"
+cp vendor/ember/UPSTREAM.md "$tmpdir/dist/licenses/ember/UPSTREAM.md"
 
 printf 'vendor bs.collapse bs.dropdown bs.tooltip\n' >"$tmpdir/dist/assets/vendor-test.js"
 if SOURCE_DATE_EPOCH=1700000000 bash ./scripts/package-static-candidate \
@@ -51,6 +67,8 @@ grep -qx '9.9.9/index.html' "$tar_list"
 grep -qx '9.9.9/VERSION.txt' "$tar_list"
 grep -qx '9.9.9/assets/vendor-test.js' "$tar_list"
 grep -qx '9.9.9/assets/ui-test.js' "$tar_list"
+grep -qx '9.9.9/licenses/ember/LICENSE' "$tar_list"
+grep -qx '9.9.9/licenses/ember/UPSTREAM.md' "$tar_list"
 grep -qx '9.9.9/translations/en-us.json' "$tar_list"
 
 if grep -Eq '\.map$' "$tar_list"; then
@@ -78,6 +96,13 @@ if [[ "$version" != "9.9.9" ]]; then
   exit 1
 fi
 
+expected_ember_license=84e97eb6663fa5fa07f36661e6040ab8a557b165c13860e2e72c1a692ca3c2a0
+actual_ember_license=$(sha256sum "$extract/9.9.9/licenses/ember/LICENSE" | awk 'NR == 1 {print $1}')
+if [[ "$actual_ember_license" != "$expected_ember_license" ]]; then
+  echo "EMBER_LICENSE_ARCHIVE_DRIFT actual=$actual_ember_license expected=$expected_ember_license"
+  exit 1
+fi
+
 if [[ ! -s "${out}.sha256" ]]; then
   echo "SHA256_FILE_MISSING file=${out}.sha256"
   exit 1
@@ -94,6 +119,7 @@ fi
 )
 
 cat "$tmpdir/ui-static-layout.out"
+echo "ui-auto-import-reproducible-ids-ok module_ids=natural chunk_ids=deterministic"
 echo "ui-static-artifact-reproducible-ok"
 echo "ui-static-artifact-layout-ok"
 echo "failure_count=0"

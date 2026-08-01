@@ -3099,9 +3099,9 @@ newBalancer:
     noRegion: A região é obrigatória para a meta de serviço personalizada
     noEnvironment: O ambiente é necessário para a meta de serviço personalizada
     missingEnvironment: O ambiente é necessário
-    invalidSourcePort: 'Porta de origem inválida: ''{num}'''
-    invalidTargetPort: 'Porta de destino inválida: ''{num}'''
-    invalidWeight: 'Peso inválido: ''{num}'''
+    invalidSourcePort: 'Porta de origem inválida: “{num}”'
+    invalidTargetPort: 'Porta de destino inválida: “{num}”'
+    invalidWeight: 'Peso inválido: “{num}”'
     mixedPort: 'A porta {num} possui múltiplas regras com acesso/protocolos conflitantes'
     noTarget: A meta é obrigatória em cada regra
     needsCertificate: Um certificado é necessário porque existem regras de porta SSL/TLS
@@ -3263,7 +3263,7 @@ pagination:
   rowsPerPage: Linhas por página
   all: Todos
   multi: >
-    {pages, plural, =0 {0 itens} =1 {{count} {count, select, =1 {Artigo} other {Itens}}} other {{from} - {to} de
+    {pages, plural, =0 {0 itens} =1 {{count, plural, =1 {# item} other {# itens}}} other {{from} - {to} de
     {count}}}
 pageHeaderEnvironment:
   namespace: Espaço para nome

@@ -1,18 +1,18 @@
 {{#sortable-table
   classNames="lacsso grid sortable-table container-table table-fit-content"
-  body=model.instances
-  sortBy=sortBy
+  body=this.model.instances
+  sortBy=this.sortBy
   bulkActions=false
   search=true
   columnSelector=true
-  columnPreference=statsColumnPreferenceKey
+  columnPreference=this.statsColumnPreferenceKey
   paging=true
-  perPage=prefs.statsTablePerPage
-  pageSizeOptions=statsPageSizes
-  perPagePreference=statsTablePreferenceKey
-  headers=headers
-  liveSortFields=liveSortFields
-  sortRevision=statsSortRevision
+  perPage=this.prefs.statsTablePerPage
+  pageSizeOptions=this.statsPageSizes
+  perPagePreference=this.statsTablePreferenceKey
+  headers=this.headers
+  liveSortFields=this.liveSortFields
+  sortRevision=this.statsSortRevision
   animateLiveSort=true
   onPageContentChange=(action 'setVisibleStatsInstances') as |container kind dt visibleColumns|}}
   {{#if (eq kind "row")}}
@@ -33,10 +33,10 @@
       showImageColumn=visibleColumns.image
       showCommandColumn=visibleColumns.command
       showActionsColumn=visibleColumns.actions
-      cpuMax=cpuMax
-      memoryMax=memoryMax
-      storageMax=storageMax
-      networkMax=networkMax}}
+      cpuMax=this.cpuMax
+      memoryMax=this.memoryMax
+      storageMax=this.storageMax
+      networkMax=this.networkMax}}
   {{else if (eq kind "nomatch")}}
     <tr><td colspan="{{visibleColumns.count}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'containersPage.index.table.body.noMatch'}}</td></tr>
   {{else if (eq kind "norows")}}

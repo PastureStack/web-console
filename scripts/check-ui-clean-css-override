@@ -21,8 +21,8 @@ def fail(code, **fields):
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 overrides = package.get("overrides", {})
-if overrides.get("clean-css") != "5.3.3":
-    fail("CLEAN_CSS_OVERRIDE_UNEXPECTED", actual=overrides.get("clean-css"), expected="5.3.3")
+if "clean-css" in overrides:
+    fail("CLEAN_CSS_RETIRED_OVERRIDE_REMAINS", actual=overrides.get("clean-css"))
 
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
@@ -39,18 +39,15 @@ else:
         for path, meta in packages.items()
         if path.endswith("node_modules/clean-css")
     }
-    if not versions:
-        fail("CLEAN_CSS_LOCK_MISSING")
     for package_path, actual in sorted(versions.items()):
-        if actual != "5.3.3":
-            fail("CLEAN_CSS_LOCK_VERSION_UNEXPECTED", package=package_path, actual=actual, expected="5.3.3")
+        fail("CLEAN_CSS_RETIRED_PACKAGE_REMAINS", package=package_path, actual=actual)
     package_count = len(packages)
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_CLEAN_CSS_OVERRIDE_OK clean-css=5.3.3 lockfile={lock_path} package_count={package_count}")
-print("clean-css-promise and broccoli-clean-css keep the old promise wrapper while resolving the maintained clean-css engine.")
+print(f"UI_CLEAN_CSS_REMOVAL_OK clean-css=absent lockfile={lock_path} package_count={package_count}")
+print("Ember CLI 6.12 no longer resolves the retired clean-css wrapper chain, so its obsolete override is removed instead of retained as dead configuration.")
 print("failure_count=0")
 PY

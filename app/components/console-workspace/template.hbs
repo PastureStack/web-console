@@ -1,19 +1,19 @@
-{{#if workspace.clientReady}}
-  {{#each workspace.visibleWindows as |entry|}}
+{{#if this.workspace.clientReady}}
+  {{#each this.workspace.visibleWindows as |entry|}}
     {{console-workspace-window entry=entry}}
   {{/each}}
 
-  {{#if workspace.menuOpen}}
+  {{#if this.workspace.menuOpen}}
     <section class="console-workspace-menu" aria-label="{{t 'consoleWorkspace.dock.label'}}">
     <header>
-      <strong>{{t 'consoleWorkspace.dock.sessions' count=workspace.sessionCount}}</strong>
+      <strong>{{t 'consoleWorkspace.dock.sessions' count=this.workspace.sessionCount}}</strong>
       <button type="button" class="btn btn-link" {{action "toggleMenu"}} aria-label="{{t 'generic.closeModal'}}">
         <i class="icon icon-x" aria-hidden="true"></i>
       </button>
     </header>
 
     <div class="console-workspace-menu-list">
-      {{#each workspace.sessions as |entry|}}
+      {{#each this.workspace.sessions as |entry|}}
         <article class="console-workspace-menu-item">
           <button type="button" class="console-workspace-session-main" {{action "open" entry}}>
             {{#if entry.isLogs}}
@@ -66,10 +66,10 @@
     </section>
   {{/if}}
 
-  {{#if workspace.sessionCount}}
+  {{#if this.workspace.sessionCount}}
     <nav class="console-workspace-dock" aria-label="{{t 'consoleWorkspace.dock.label'}}">
       <div class="console-workspace-dock-scroll">
-        {{#each workspace.sessions as |entry|}}
+        {{#each this.workspace.sessions as |entry|}}
           {{#unless (eq entry.windowState "closed")}}
             <button
               type="button"
@@ -98,16 +98,16 @@
           type="button"
           class="console-workspace-dock-item console-workspace-dock-menu"
           {{action "toggleMenu"}}
-          title="{{t 'consoleWorkspace.dock.sessions' count=workspace.sessionCount}}"
+          title="{{t 'consoleWorkspace.dock.sessions' count=this.workspace.sessionCount}}"
         >
           <i class="icon icon-thumbnails" aria-hidden="true"></i>
-          <span class="console-workspace-count">{{workspace.sessionCount}}</span>
+          <span class="console-workspace-count">{{this.workspace.sessionCount}}</span>
         </button>
       </div>
     </nav>
   {{/if}}
 
-  {{#if workspace.terminationEntry}}
+  {{#if this.workspace.terminationEntry}}
     <div class="console-workspace-confirm-backdrop">
       <section
         class="console-workspace-confirm"
@@ -125,9 +125,9 @@
         <p class="console-workspace-confirm-resource">
           {{t
             'consoleWorkspace.context.title'
-            environment=workspace.terminationEntry.environmentTitle
-            stack=(if workspace.terminationEntry.stackTitle workspace.terminationEntry.stackTitle (t 'consoleWorkspace.context.noStack'))
-            resource=workspace.terminationEntry.resourceTitle
+            environment=this.workspace.terminationEntry.environmentTitle
+            stack=(if this.workspace.terminationEntry.stackTitle this.workspace.terminationEntry.stackTitle (t 'consoleWorkspace.context.noStack'))
+            resource=this.workspace.terminationEntry.resourceTitle
           }}
         </p>
         <div class="console-workspace-confirm-actions">

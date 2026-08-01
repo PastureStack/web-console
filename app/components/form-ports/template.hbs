@@ -1,16 +1,16 @@
 <div class="row form-group">
   <div class="col-sm-12 col-md-12">
-    {{#unless editing}}
+    {{#unless this.editing}}
       <div class="over-hr r-p10">
         <span>
           <button class="btn-circle" {{action "addPort"}}><i class="icon icon-plus-circle"/> {{t 'formPorts.addAction'}}</button>
         </span>
       </div>
     {{/unless}}
-    {{#if portsArray.length}}
+    {{#if this.portsArray.length}}
       <table class="table fixed no-lines no-top-padding tight small">
         <tr class="text-muted hidden-sm">
-          {{#if showIp}}
+          {{#if this.showIp}}
             <th>{{t 'formPorts.bindAddress.label'}}</th>
             <th class="hidden-sm" width="30">&nbsp;</th>
           {{/if}}
@@ -21,9 +21,9 @@
           <th width="100">{{t 'formPorts.protocol.label'}}</th>
           <th class="hidden-sm" width="40">&nbsp;</th>
         </tr>
-        {{#each portsArray as |port|}}
+        {{#each this.portsArray as |port|}}
           <tr>
-            {{#if showIp}}
+            {{#if this.showIp}}
               <td data-title="{{t 'formPorts.public.label'}}">
                 {{#if port.existing}}
                   {{#if port.bindAddress}}
@@ -58,7 +58,7 @@
               {{else}}
                 {{new-select
                   class="form-control input-sm"
-                  content=protocolOptions
+                  content=this.protocolOptions
                   value=port.protocol}}
               {{/if}}
             </td>
@@ -72,7 +72,7 @@
           </tr>
         {{/each}}
       </table>
-      {{#unless showIp}}
+      {{#unless this.showIp}}
         <p class="help-block">
           <a href="#" {{action "showIp"}}>
             {{t 'formPorts.showIpLink'}}
@@ -80,7 +80,7 @@
         </p>
       {{/unless}}
     {{else}}
-      {{#if editing}}
+      {{#if this.editing}}
         <span class="text-center text-muted">{{t 'formPorts.noPorts'}}</span>
       {{/if}}
     {{/if}}

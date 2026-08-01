@@ -3290,7 +3290,7 @@ pagination:
   rowsPerPage: Строк на странице
   all: Все
   multi: >
-    {pages, plural, =0 {0 товаров} =1 {{count} {count, select, =1 {Товар} other {Предметы}}} other {{from} - {to} из
+    {pages, plural, =0 {0 элементов} =1 {{count, plural, =1 {# элемент} other {# элементов}}} other {{from} - {to} из
     {count}}}
 pageHeaderEnvironment:
   namespace: Пространство имен

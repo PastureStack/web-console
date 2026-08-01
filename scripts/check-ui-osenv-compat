@@ -24,8 +24,8 @@ overrides = package.get("overrides", {})
 expected_spec = "file:vendor/osenv-compat/osenv-0.2.0-rc16.0.tgz"
 if dev.get("osenv") != expected_spec:
     fail("OSENV_COMPAT_DEV_DEP_UNEXPECTED", actual=dev.get("osenv"))
-if overrides.get("osenv") != "$osenv":
-    fail("OSENV_COMPAT_OVERRIDE_UNEXPECTED", actual=overrides.get("osenv"))
+if overrides.get("osenv") is not None:
+    fail("OSENV_UNSAFE_OVERRIDE_PRESENT", actual=overrides.get("osenv"))
 
 wrapper_manifest = Path("vendor/osenv-compat/package.json")
 wrapper_index = Path("vendor/osenv-compat/index.js")
@@ -69,6 +69,6 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 print(f"UI_OSENV_COMPAT_OK wrapper=vendor/osenv-compat version=0.2.0-rc16.0 lockfile={lock_path}")
-print("Old osenv 0.1.x is removed from the Node 24 lock baseline; bower-config and npm-package-arg behavior is covered by the Node 24 smoke.")
+print("Old osenv 0.1.x and bower-config are absent without a cross-package override; npm-package-arg behavior is covered by the Node 24 smoke.")
 print("failure_count=0")
 PY

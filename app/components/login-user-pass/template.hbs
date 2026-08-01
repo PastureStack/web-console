@@ -2,23 +2,20 @@
   <div class="form-group">
     <label for="login-username">{{t 'loginUserPass.userLabel'}}</label>
     <div>
-      {{input id="login-username" type="text" class="form-control login-user" value=username
-              autocomplete="username" autocapitalize="none" spellcheck="false"
-              placeholder=(t 'loginUserPass.userPlaceholder')}}
+      {{input id="login-username" type="text" class="form-control login-user" value=this.username autocomplete="username" autocapitalize="none" spellcheck="false" placeholder=(t 'loginUserPass.userPlaceholder')}}
     </div>
   </div>
 
   <div class="form-group">
     <label for="login-password">{{t 'loginUserPass.passwordLabel'}}</label>
     <div>
-      {{input id="login-password" type="password" class="form-control login-pass" value=password
-              autocomplete="current-password"}}
+      {{input id="login-password" type="password" class="form-control login-pass" value=this.password autocomplete="current-password"}}
     </div>
   </div>
 
   <div class="login-submit-row">
-    <button type="submit" disabled={{waiting}} class="btn btn-primary btn-block" data-testid="login-submit">
-      {{#if waiting}}
+    <button type="submit" disabled={{this.waiting}} class="btn btn-primary btn-block" data-testid="login-submit">
+      {{#if this.waiting}}
         <i class="icon icon-spinner icon-spin"></i> {{t 'loginUserPass.loggingInLabel'}}
       {{else}}
         {{t 'loginUserPass.loginLabel'}}

@@ -2,6 +2,7 @@ import { module, test } from 'qunit';
 
 import Ember from 'ember';
 import BackupTargetsRoute from 'ui/backuptargets/route';
+import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
 module('Unit | Route | backuptargets');
 
@@ -15,17 +16,17 @@ test('model loads all backup targets', function(assert) {
   assert.expect(2);
 
   let targets = [{ id: 'bt1' }];
-  let route = BackupTargetsRoute.create({
+  let route = createOwned(BackupTargetsRoute, {
     store: {
       findAll(type) {
         assert.equal(type, 'backuptarget');
         return Promise.resolve(targets);
       },
     },
-  });
+  }, 'route');
 
   return route.model().then((result) => {
     assert.strictEqual(result, targets);
-    Ember.run(() => route.destroy());
+    destroyOwned(route);
   });
 });

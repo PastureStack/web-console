@@ -3138,9 +3138,9 @@ newBalancer:
     noRegion: Регіон потрібен для користувацької цільової служби
     noEnvironment: Середовище потрібне для спеціальної цільової служби
     missingEnvironment: Потрібне середовище
-    invalidSourcePort: 'Невірний Порт: ''{num}'''
-    invalidTargetPort: 'Недійсний цільовий порт: ''{num}'''
-    invalidWeight: 'Недійсна вага: ''{num}'''
+    invalidSourcePort: 'Неприпустимий вихідний порт: «{num}»'
+    invalidTargetPort: 'Неприпустимий цільовий порт: «{num}»'
+    invalidWeight: 'Неприпустима вага: «{num}»'
     mixedPort: 'Порт {num} має кілька правил із конфліктуючими доступами/протоколами'
     noTarget: Ціль обов’язкова для кожного правила
     needsCertificate: 'Потрібен сертифікат, оскільки існують правила порту SSL/TLS.'
@@ -3314,7 +3314,7 @@ pagination:
   rowsPerPage: Рядків на сторінці
   all: Усі
   multi: >
-    {pages, plural, =0 {0 предметів} =1 {{count} {count, select, =1 {Пункт} other {Предмети}}} other {{from} - {to} з
+    {pages, plural, =0 {0 елементів} =1 {{count, plural, =1 {# елемент} other {# елементів}}} other {{from} - {to} з
     {count}}}
 pageHeaderEnvironment:
   namespace: Простір імен

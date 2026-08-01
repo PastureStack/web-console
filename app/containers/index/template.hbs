@@ -4,27 +4,27 @@
   {{#link-to "containers.new" classNames="btn btn-sm btn-primary"}}{{t 'containersPage.index.linkTo'}}{{/link-to}}
 
   <div class="btn-group r-mr10 r-mt5" style="float: right;">
-    <label style="font-weight: normal;">{{input type="checkbox" checked=showSystem}} {{t 'hostsPage.index.showSystem'}}</label>
+    <label style="font-weight: normal;">{{input type="checkbox" checked=this.showSystem}} {{t 'hostsPage.index.showSystem'}}</label>
   </div>
 </section>
 
 <section class="well instances r-pt5 r-pb5">
   {{#sortable-table
     classNames="lacsso grid sortable-table"
-    sorts=sorts
-    body=filtered
-    sortBy=sortBy
+    sorts=this.sorts
+    body=this.filtered
+    sortBy=this.sortBy
     bulkActions=true
     bulkActionCallee=(action 'applyBulkAction')
-    bulkActionsList=bulkActionsList
-    perPage=prefs.tablePerPage
-    headers=headers as |container kind|}}
+    bulkActionsList=this.bulkActionsList
+    perPage=this.prefs.tablePerPage
+    headers=this.headers as |container kind|}}
     {{#if (eq kind "row")}}
       {{container-row model=container showCommand="column" showHost=true showActions=true showPrimaryActions=false}}
     {{else if (eq kind "nomatch")}}
-      <tr><td colspan="{{headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'containersPage.index.table.body.noMatch'}}</td></tr>
+      <tr><td colspan="{{this.headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'containersPage.index.table.body.noMatch'}}</td></tr>
     {{else if (eq kind "norows")}}
-      <tr><td colspan="{{headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'containersPage.index.table.body.noData'}}</td></tr>
+      <tr><td colspan="{{this.headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'containersPage.index.table.body.noData'}}</td></tr>
     {{/if}}
   {{/sortable-table}}
 </section>

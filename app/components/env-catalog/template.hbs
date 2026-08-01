@@ -6,7 +6,7 @@
 <div>
   <button class="btn-circle-text" {{action "add"}}><i class="icon icon-plus-circle"/> <span>{{t 'envCatalog.addActionLabel'}}</span></button>
 
-  {{#if (or global.length ary.length)}}
+  {{#if (or this.global.length this.ary.length)}}
     <table class="table fixed no-lines no-top-padding">
       <tr class="text-muted hidden-xs hidden-sm text-left">
         <th width="200">{{t 'catalogSettings.more.name.label'}}</th>
@@ -18,7 +18,7 @@
         <th width="200">{{t 'catalogSettings.more.branch.label'}}</th>
         <th width="30">&nbsp;</th>
       </tr>
-      {{#each global as |row|}}
+      {{#each this.global as |row|}}
         <tr>
           <td class="r-pt5 r-pb5" data-title="{{t 'catalogSettings.more.name.label'}}:">
             {{row.name}}
@@ -37,7 +37,7 @@
           </td>
         </tr>
       {{/each}}
-      {{#each ary as |row|}}
+      {{#each this.ary as |row|}}
         <tr>
           <td class="r-pt5 r-pb5" data-title="{{t 'catalogSettings.more.name.label'}}:">
             {{input class="form-control input-sm name" type="text" value=row.name placeholder=(t 'catalogSettings.more.name.placeholder')}}
@@ -71,5 +71,5 @@
     </table>
   {{/if}}
 </div>
-{{top-errors errors=errors}}
-{{save-cancel classNames="pt-20" cancel=(action cancel) editing=true save="save"}}
+{{top-errors errors=this.errors}}
+{{save-cancel classNames="pt-20" cancel=(action this.cancel) editing=true save="save"}}

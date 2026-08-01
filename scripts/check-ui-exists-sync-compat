@@ -24,8 +24,8 @@ overrides = package.get("overrides", {})
 expected_spec = "file:vendor/exists-sync-compat/exists-sync-1.0.0-rc16.0.tgz"
 if dev.get("exists-sync") != expected_spec:
     fail("EXISTS_SYNC_COMPAT_DEV_DEP_UNEXPECTED", actual=dev.get("exists-sync"))
-if overrides.get("exists-sync") != "$exists-sync":
-    fail("EXISTS_SYNC_COMPAT_OVERRIDE_UNEXPECTED", actual=overrides.get("exists-sync"))
+if overrides.get("exists-sync") is not None:
+    fail("EXISTS_SYNC_UNSAFE_OVERRIDE_PRESENT", actual=overrides.get("exists-sync"))
 
 wrapper_manifest = Path("vendor/exists-sync-compat/package.json")
 wrapper_index = Path("vendor/exists-sync-compat/index.js")
@@ -55,20 +55,23 @@ if compat.get("version") != "1.0.0-rc16.0":
 if compat.get("resolved") != expected_spec:
     fail("EXISTS_SYNC_COMPAT_LOCK_RESOLUTION_UNEXPECTED", actual=compat.get("resolved"))
 
-old_exists = [
-    (path, meta.get("version"))
+old_exists = {
+    path: meta.get("version")
     for path, meta in sorted(packages.items())
     if path.startswith("node_modules/")
     and path.endswith("node_modules/exists-sync")
     and meta.get("version") != "1.0.0-rc16.0"
-]
-for path, version in old_exists:
-    fail("OLD_EXISTS_SYNC_REINTRODUCED", package=path, version=version)
+}
+expected_old_exists = {
+    "node_modules/ember-cli-node-assets/node_modules/exists-sync": "0.0.4",
+}
+if old_exists != expected_old_exists:
+    fail("EXISTS_SYNC_BUILD_DEBT_INVENTORY_DRIFT", actual=old_exists, expected=expected_old_exists)
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
-print(f"UI_EXISTS_SYNC_COMPAT_OK wrapper=vendor/exists-sync-compat version=1.0.0-rc16.0 lockfile={lock_path}")
-print("Old exists-sync 0.0.x paths are removed from the Node 24 lock baseline; runtime behavior is covered by the Node 24 smoke.")
+print(f"UI_EXISTS_SYNC_COMPAT_OK wrapper=vendor/exists-sync-compat version=1.0.0-rc16.0 nested_build_only=1 lockfile={lock_path}")
+print("The first-party path uses the reviewed wrapper; the one addon-owned 0.0.4 copy remains exact P1 build debt and is not force-overridden.")
 print("failure_count=0")
 PY

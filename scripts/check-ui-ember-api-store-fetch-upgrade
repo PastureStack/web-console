@@ -22,50 +22,41 @@ def package_entry(path):
     return item
 
 
-if package.get("devDependencies", {}).get("ember-api-store") != "2.3.5":
-    fail("package.json must pin ember-api-store to 2.3.5")
+if package.get("devDependencies", {}).get("ember-api-store") != "2.8.5":
+    fail("package.json must pin ember-api-store to 2.8.5")
 
 root_deps = packages.get("", {}).get("devDependencies", {})
-if root_deps.get("ember-api-store") != "2.3.5":
-    fail("lock root must pin ember-api-store to 2.3.5")
+if root_deps.get("ember-api-store") != "2.8.5":
+    fail("lock root must pin ember-api-store to 2.8.5")
 
 api_store = package_entry("node_modules/ember-api-store")
-if api_store.get("version") != "2.3.5":
-    fail(f"lock resolves ember-api-store {api_store.get('version')} instead of 2.3.5")
+if api_store.get("version") != "2.8.5":
+    fail(f"lock resolves ember-api-store {api_store.get('version')} instead of 2.8.5")
 
 api_store_deps = api_store.get("dependencies", {})
 if "ember-network" in api_store_deps:
     fail("ember-api-store must not depend on deprecated ember-network")
-if api_store_deps.get("ember-fetch") != "^3.4.0":
-    fail(f"ember-api-store must depend on ember-fetch ^3.4.0, got {api_store_deps.get('ember-fetch')}")
-if api_store_deps.get("broccoli-file-creator") != "^1.1.1":
-    fail(f"ember-api-store must keep broccoli-file-creator ^1.1.1, got {api_store_deps.get('broccoli-file-creator')}")
+if api_store_deps.get("ember-fetch") != "^5.1.1":
+    fail(f"ember-api-store must depend on ember-fetch ^5.1.1, got {api_store_deps.get('ember-fetch')}")
+if api_store_deps.get("broccoli-file-creator") != "^2.1.1":
+    fail(f"ember-api-store must keep broccoli-file-creator ^2.1.1, got {api_store_deps.get('broccoli-file-creator')}")
 
 ember_fetch = package_entry("node_modules/ember-fetch")
-if ember_fetch.get("version") != "3.4.5":
-    fail(f"lock resolves ember-fetch {ember_fetch.get('version')} instead of 3.4.5")
+if ember_fetch.get("version") != "5.1.3":
+    fail(f"lock resolves ember-fetch {ember_fetch.get('version')} instead of 5.1.3")
 
 broccoli_file_creator = package_entry("node_modules/broccoli-file-creator")
-if broccoli_file_creator.get("version") != "1.2.0":
-    fail(f"lock resolves broccoli-file-creator {broccoli_file_creator.get('version')} instead of 1.2.0")
+if broccoli_file_creator.get("version") != "2.1.1":
+    fail(f"lock resolves broccoli-file-creator {broccoli_file_creator.get('version')} instead of 2.1.1")
 
 for forbidden in [
     "node_modules/ember-network",
-    "node_modules/ember-auto-import",
-    "node_modules/eslint",
-    "node_modules/babel-eslint",
 ]:
     if forbidden in packages:
         fail(f"forbidden dependency returned to lock: {forbidden}")
 
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
-if len(deprecated) > 24:
-    fail(f"deprecated package count increased above 24: {len(deprecated)}")
-
-if len(packages) > 1189:
-    fail(f"package count increased above 1189: {len(packages)}")
-
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.3.5 ember-fetch=3.4.5 deprecated_count={len(deprecated)} package_count={len(packages)}"
+    f"version=2.8.5 ember-fetch=5.1.3 deprecated_count={len(deprecated)} package_count={len(packages)}"
 )

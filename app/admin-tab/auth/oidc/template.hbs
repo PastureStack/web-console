@@ -1,37 +1,37 @@
 <section class="well">
   <h2>
-    {{#if oidcEnabled}}
-      <b>{{t 'authPage.oidc.status.enabled' providerName=providerDisplayName}}</b>
+    {{#if this.oidcEnabled}}
+      <b>{{t 'authPage.oidc.status.enabled' providerName=this.providerDisplayName}}</b>
     {{else}}
       <b class="text-warning">{{t 'authPage.oidc.status.disabled'}}</b>
     {{/if}}
   </h2>
   <p>
-    {{#if oidcEnabled}}
-      {{t 'authPage.oidc.status.enabledHelp' appName=settings.appName providerName=providerDisplayName users=numUsers groups=numGroups}}
+    {{#if this.oidcEnabled}}
+      {{t 'authPage.oidc.status.enabledHelp' appName=this.settings.appName providerName=this.providerDisplayName users=this.numUsers groups=this.numGroups}}
     {{else}}
-      {{t 'authPage.oidc.status.disabledHelp' appName=settings.appName}}
+      {{t 'authPage.oidc.status.disabledHelp' appName=this.settings.appName}}
     {{/if}}
   </p>
 </section>
 
-{{#if oidcEnabled}}
+{{#if this.oidcEnabled}}
   <section class="well">
     <h3>{{t 'authPage.oidc.summary.header'}}</h3>
     <hr>
     <dl class="dl-horizontal">
       <dt>{{t 'authPage.oidc.form.displayName.label'}}</dt>
-      <dd>{{providerDisplayName}}</dd>
+      <dd>{{this.providerDisplayName}}</dd>
       <dt>{{t 'authPage.oidc.form.wellKnownUrl.label'}}</dt>
-      <dd><code>{{config.wellKnownUrl}}</code></dd>
+      <dd><code>{{this.config.wellKnownUrl}}</code></dd>
       <dt>{{t 'authPage.oidc.form.clientId.label'}}</dt>
-      <dd><code>{{config.clientId}}</code></dd>
+      <dd><code>{{this.config.clientId}}</code></dd>
       <dt>{{t 'authPage.oidc.form.scopes.label'}}</dt>
-      <dd><code>{{config.scopes}}</code></dd>
+      <dd><code>{{this.config.scopes}}</code></dd>
       <dt>{{t 'authPage.oidc.form.subjectClaim.label'}}</dt>
       <dd><code>{{t 'authPage.oidc.form.subjectClaim.value'}}</code></dd>
       <dt>{{t 'authPage.oidc.form.groupsClaim.label'}}</dt>
-      <dd><code>{{config.groupsClaim}}</code></dd>
+      <dd><code>{{this.config.groupsClaim}}</code></dd>
     </dl>
   </section>
 
@@ -39,24 +39,24 @@
     <h3>{{t 'authPage.oidc.identity.managementHeader'}}</h3>
     <hr>
     <p>{{t 'authPage.oidc.identity.managementHelp'}}</p>
-    {{#if identityUpdateSuccess}}
+    {{#if this.identityUpdateSuccess}}
       <div class="alert alert-success">
         <i class="icon icon-check"></i> {{t 'authPage.oidc.identity.managementSuccess'}}
       </div>
     {{/if}}
-    {{#if testedIdentity}}
+    {{#if this.testedIdentity}}
       <div class="alert alert-success">
         <i class="icon icon-check"></i>
-        {{t 'authPage.oidc.test.success' identity=testedIdentityName providerName=providerDisplayName}}
+        {{t 'authPage.oidc.test.success' identity=this.testedIdentityName providerName=this.providerDisplayName}}
       </div>
       {{partial "oidc-identity-mapping"}}
-      {{top-errors errors=errors}}
+      {{top-errors errors=this.errors}}
       <div class="text-right r-mt15">
-        <button type="button" class="btn btn-default" disabled={{testing}} {{action "manageIdentity"}}>
+        <button type="button" class="btn btn-default" disabled={{this.testing}} {{action "manageIdentity"}}>
           {{t 'authPage.oidc.test.again'}}
         </button>
-        <button type="button" class="btn btn-primary" disabled={{identityApplyDisabled}} {{action "applyIdentityMapping"}}>
-          {{#if applyingIdentity}}
+        <button type="button" class="btn btn-primary" disabled={{this.identityApplyDisabled}} {{action "applyIdentityMapping"}}>
+          {{#if this.applyingIdentity}}
             <i class="icon icon-spinner icon-spin"></i> {{t 'authPage.oidc.identity.applying'}}
           {{else}}
             <i class="icon icon-link"></i> {{t 'authPage.oidc.identity.apply'}}
@@ -64,9 +64,9 @@
         </button>
       </div>
     {{else}}
-      {{top-errors errors=errors}}
-      <button type="button" class="btn btn-primary" disabled={{testing}} {{action "manageIdentity"}}>
-        {{#if testing}}
+      {{top-errors errors=this.errors}}
+      <button type="button" class="btn btn-primary" disabled={{this.testing}} {{action "manageIdentity"}}>
+        {{#if this.testing}}
           <i class="icon icon-spinner icon-spin"></i> {{t 'authPage.oidc.test.waiting'}}
         {{else}}
           <i class="icon icon-lock"></i> {{t 'authPage.oidc.identity.managementAction'}}
@@ -76,7 +76,7 @@
   </section>
 
   {{site-access
-    model=model
+    model=this.model
     collection='siteAccess.organizations'
   }}
 
@@ -97,9 +97,9 @@
       <div class="form-group">
         <label>{{t 'authPage.oidc.registration.callbackUrl.label'}}</label>
         <div class="input-group">
-          {{input type="text" readonly=true value=callbackUrl classNames="form-control"}}
+          {{input type="text" readonly=true value=this.callbackUrl classNames="form-control"}}
           <span class="input-group-btn">
-            {{copy-to-clipboard clipboardText=callbackUrl}}
+            {{copy-to-clipboard clipboardText=this.callbackUrl}}
           </span>
         </div>
         <p class="help-block">{{t 'authPage.oidc.registration.callbackUrl.help'}}</p>
@@ -115,14 +115,14 @@
         <div class="col-md-6">
           <div class="form-group">
             <label>{{t 'authPage.oidc.form.displayName.label'}}*</label>
-            {{input type="text" value=config.displayName classNames="form-control" placeholder=(t 'authPage.oidc.form.displayName.placeholder')}}
+            {{input type="text" value=this.config.displayName classNames="form-control" placeholder=(t 'authPage.oidc.form.displayName.placeholder')}}
             <p class="help-block">{{t 'authPage.oidc.form.displayName.help'}}</p>
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
             <label>{{t 'authPage.oidc.form.wellKnownUrl.label'}}*</label>
-            {{input type="url" value=config.wellKnownUrl classNames="form-control" placeholder=(t 'authPage.oidc.form.wellKnownUrl.placeholder')}}
+            {{input type="url" value=this.config.wellKnownUrl classNames="form-control" placeholder=(t 'authPage.oidc.form.wellKnownUrl.placeholder')}}
             <p class="help-block">{{t 'authPage.oidc.form.wellKnownUrl.help'}}</p>
           </div>
         </div>
@@ -132,13 +132,13 @@
         <div class="col-md-6">
           <div class="form-group">
             <label>{{t 'authPage.oidc.form.clientId.label'}}*</label>
-            {{input type="text" value=config.clientId autocomplete="off" classNames="form-control"}}
+            {{input type="text" value=this.config.clientId autocomplete="off" classNames="form-control"}}
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
             <label>{{t 'authPage.oidc.form.clientSecret.label'}}*</label>
-            {{input type="password" value=config.clientSecret autocomplete="new-password" classNames="form-control" placeholder=(if config.clientSecretSet (t 'authPage.oidc.form.clientSecret.unchanged'))}}
+            {{input type="password" value=this.config.clientSecret autocomplete="new-password" classNames="form-control" placeholder=(if this.config.clientSecretSet (t 'authPage.oidc.form.clientSecret.unchanged'))}}
             <p class="help-block">{{t 'authPage.oidc.form.clientSecret.help'}}</p>
           </div>
         </div>
@@ -148,14 +148,14 @@
         <div class="col-md-6">
           <div class="form-group">
             <label>{{t 'authPage.oidc.form.scopes.label'}}*</label>
-            {{input type="text" value=config.scopes classNames="form-control" placeholder=(t 'authPage.oidc.form.scopes.placeholder')}}
+            {{input type="text" value=this.config.scopes classNames="form-control" placeholder=(t 'authPage.oidc.form.scopes.placeholder')}}
             <p class="help-block">{{t 'authPage.oidc.form.scopes.help'}}</p>
           </div>
         </div>
         <div class="col-md-6">
           <div class="checkbox r-mt20">
             <label>
-              {{input type="checkbox" checked=config.usePkce}}
+              {{input type="checkbox" checked=this.config.usePkce}}
               {{t 'authPage.oidc.form.pkce.label'}}
             </label>
             <p class="help-block">{{t 'authPage.oidc.form.pkce.help'}}</p>
@@ -164,11 +164,11 @@
       </div>
 
       <button type="button" class="btn btn-link r-pl0" {{action "toggleAdvanced"}}>
-        <i class="icon {{if advancedOpen 'icon-chevron-up' 'icon-chevron-down'}}"></i>
-        {{if advancedOpen (t 'authPage.oidc.form.advanced.hide') (t 'authPage.oidc.form.advanced.show')}}
+        <i class="icon {{if this.advancedOpen 'icon-chevron-up' 'icon-chevron-down'}}"></i>
+        {{if this.advancedOpen (t 'authPage.oidc.form.advanced.hide') (t 'authPage.oidc.form.advanced.show')}}
       </button>
 
-      {{#if advancedOpen}}
+      {{#if this.advancedOpen}}
         <div class="well well-sm r-mt10">
           <h4>{{t 'authPage.oidc.form.claims.header'}}</h4>
           <p class="help-block">{{t 'authPage.oidc.form.claims.help'}}</p>
@@ -183,13 +183,13 @@
             <div class="col-md-4">
               <div class="form-group">
                 <label>{{t 'authPage.oidc.form.usernameClaim.label'}}</label>
-                {{input type="text" value=config.usernameClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.usernameClaim.placeholder')}}
+                {{input type="text" value=this.config.usernameClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.usernameClaim.placeholder')}}
               </div>
             </div>
             <div class="col-md-4">
               <div class="form-group">
                 <label>{{t 'authPage.oidc.form.displayNameClaim.label'}}</label>
-                {{input type="text" value=config.displayNameClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.displayNameClaim.placeholder')}}
+                {{input type="text" value=this.config.displayNameClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.displayNameClaim.placeholder')}}
               </div>
             </div>
           </div>
@@ -197,30 +197,30 @@
             <div class="col-md-6">
               <div class="form-group">
                 <label>{{t 'authPage.oidc.form.emailClaim.label'}}</label>
-                {{input type="text" value=config.emailClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.emailClaim.placeholder')}}
+                {{input type="text" value=this.config.emailClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.emailClaim.placeholder')}}
               </div>
             </div>
             <div class="col-md-6">
               <div class="form-group">
                 <label>{{t 'authPage.oidc.form.groupsClaim.label'}}</label>
-                {{input type="text" value=config.groupsClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.groupsClaim.placeholder')}}
+                {{input type="text" value=this.config.groupsClaim classNames="form-control" placeholder=(t 'authPage.oidc.form.groupsClaim.placeholder')}}
                 <p class="help-block">{{t 'authPage.oidc.form.groupsClaim.help'}}</p>
               </div>
             </div>
           </div>
           <div class="form-group">
             <label>{{t 'authPage.oidc.form.certificateAuthority.label'}}</label>
-            {{textarea value=config.certificateAuthority rows="5" classNames="form-control" placeholder=(t 'authPage.oidc.form.certificateAuthority.placeholder')}}
+            {{textarea value=this.config.certificateAuthority rows="5" classNames="form-control" placeholder=(t 'authPage.oidc.form.certificateAuthority.placeholder')}}
             <p class="help-block">{{t 'authPage.oidc.form.certificateAuthority.help'}}</p>
           </div>
         </div>
       {{/if}}
 
-      {{top-errors errors=errors}}
+      {{top-errors errors=this.errors}}
 
       <div class="text-center r-mt20">
-        <button type="submit" class="btn btn-primary" disabled={{saving}}>
-          {{#if saving}}
+        <button type="submit" class="btn btn-primary" disabled={{this.saving}}>
+          {{#if this.saving}}
             <i class="icon icon-spinner icon-spin"></i>
             {{t 'generic.saving'}}
           {{else}}
@@ -233,12 +233,12 @@
     <section class="well">
       <h3>{{t 'authPage.oidc.test.header'}}</h3>
       <hr>
-      {{#if testedIdentity}}
+      {{#if this.testedIdentity}}
         <div class="alert alert-success">
           <i class="icon icon-check"></i>
-          {{t 'authPage.oidc.test.success' identity=testedIdentityName providerName=providerDisplayName}}
+          {{t 'authPage.oidc.test.success' identity=this.testedIdentityName providerName=this.providerDisplayName}}
         </div>
-        <p>{{t 'authPage.oidc.test.activateHelp' providerName=providerDisplayName}}</p>
+        <p>{{t 'authPage.oidc.test.activateHelp' providerName=this.providerDisplayName}}</p>
         <div class="alert alert-info">
           <strong>{{t 'authPage.oidc.localRecovery.header'}}</strong>
           <p class="r-mb0">{{t 'authPage.oidc.localRecovery.help'}}</p>
@@ -249,7 +249,7 @@
               {{t 'authPage.oidc.localRecovery.username'}}
             </label>
             {{input id="oidc-local-recovery-username"
-                    value=localRecoveryUsername
+                    value=this.localRecoveryUsername
                     autocomplete="username"
                     class="form-control"}}
           </div>
@@ -259,38 +259,38 @@
             </label>
             {{input id="oidc-local-recovery-password"
                     type="password"
-                    value=localRecoveryPassword
+                    value=this.localRecoveryPassword
                     autocomplete="current-password"
                     class="form-control"}}
           </div>
         </div>
         {{partial "oidc-identity-mapping"}}
       {{else}}
-        <p>{{t 'authPage.oidc.test.help' providerName=providerDisplayName}}</p>
+        <p>{{t 'authPage.oidc.test.help' providerName=this.providerDisplayName}}</p>
       {{/if}}
       <div class="row">
         <div class="col-md-12 text-right">
-          {{#if testedIdentity}}
-            <button type="button" class="btn btn-default" disabled={{testDisabled}} {{action "authenticate"}}>
+          {{#if this.testedIdentity}}
+            <button type="button" class="btn btn-default" disabled={{this.testDisabled}} {{action "authenticate"}}>
               {{t 'authPage.oidc.test.again'}}
             </button>
-            <button type="button" class="btn btn-primary" disabled={{activateDisabled}} {{action "activate"}}>
-              {{#if activating}}
+            <button type="button" class="btn btn-primary" disabled={{this.activateDisabled}} {{action "activate"}}>
+              {{#if this.activating}}
                 <i class="icon icon-spinner icon-spin"></i>
                 {{t 'authPage.oidc.test.activating'}}
               {{else}}
                 <i class="icon icon-lock"></i>
-                {{t 'authPage.oidc.test.activateAction' providerName=providerDisplayName}}
+                {{t 'authPage.oidc.test.activateAction' providerName=this.providerDisplayName}}
               {{/if}}
             </button>
           {{else}}
-          <button type="button" class="btn btn-primary" disabled={{testDisabled}} {{action "authenticate"}}>
-            {{#if testing}}
+          <button type="button" class="btn btn-primary" disabled={{this.testDisabled}} {{action "authenticate"}}>
+            {{#if this.testing}}
               <i class="icon icon-spinner icon-spin"></i>
               {{t 'authPage.oidc.test.waiting'}}
             {{else}}
               <i class="icon icon-lock"></i>
-              {{t 'authPage.oidc.test.action' providerName=providerDisplayName}}
+              {{t 'authPage.oidc.test.action' providerName=this.providerDisplayName}}
             {{/if}}
           </button>
           {{/if}}

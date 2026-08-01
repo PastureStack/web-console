@@ -79,9 +79,7 @@ node ./scripts/check-ui-localization-quality
 ./scripts/check-ui-osenv-compat
 ./scripts/check-ui-sort-package-json-compat
 ./scripts/check-ui-source-map-url-compat
-./scripts/check-ui-intl-messageformat-parser-compat
-./scripts/check-ui-intl-messageformat-parser-dedupe
-./scripts/check-ui-intl-relativeformat-compat
+./scripts/check-ui-ember-intl-upgrade
 ./scripts/check-ui-lodash-template-compat
 ./scripts/check-ui-static-artifact-layout
 ./scripts/check-ui-candidate-browser-smoke-harness

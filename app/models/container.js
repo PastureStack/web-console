@@ -4,6 +4,7 @@ import Util from 'ui/utils/util';
 import { denormalizeId, denormalizeIdArray } from 'ember-api-store/utils/denormalize';
 import Instance from 'ui/models/instance';
 import { formatSi } from 'ui/utils/util';
+import escapeHtml from 'ui/utils/escape-html';
 
 var Container = Instance.extend({
   // Common to all instances
@@ -188,7 +189,7 @@ var Container = Instance.extend({
     var id = this.get('externalId');
     if ( id )
     {
-      return (Ember.Handlebars.Utils.escapeExpression(id.substr(0,12))+"&hellip;").htmlSafe();
+      return (escapeHtml(id.substr(0,12))+"&hellip;").htmlSafe();
     }
   }.property('externalId'),
 

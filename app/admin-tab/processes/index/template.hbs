@@ -4,9 +4,9 @@
   prefix=true
   paging=false
   search=false
-  sortBy=sortBy
-  headers=headers
-  body=model.summary
+  sortBy=this.sortBy
+  headers=this.headers
+  body=this.model.summary
   as |row kind dt|
 }}
   {{#if (eq kind "row")}}
@@ -15,15 +15,15 @@
     <td data-title="{{dt.ready}}">{{row.ready}}</td>
     <td data-title="{{dt.delay}}">{{row.delay}}</td>
   {{else if (eq kind "nomatch")}}
-    <td colspan="{{headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.summary.noMatch'}}</td>
+    <td colspan="{{this.headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.summary.noMatch'}}</td>
   {{else if (eq kind "norows")}}
-    <td colspan="{{headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.summary.noData'}}</td>
-  {{else if (and model.summary.length (eq kind "prefix"))}}
+    <td colspan="{{this.headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.summary.noData'}}</td>
+  {{else if (and this.model.summary.length (eq kind "prefix"))}}
     <tr class="total">
-      <td data-title="{{dt.name}}">{{total.processName}}</td>
-      <td data-title="{{dt.running}}">{{total.running}}</td>
-      <td data-title="{{dt.ready}}">{{total.ready}}</td>
-      <td data-title="{{dt.delay}}">{{total.delay}}</td>
+      <td data-title="{{dt.name}}">{{this.total.processName}}</td>
+      <td data-title="{{dt.running}}">{{this.total.running}}</td>
+      <td data-title="{{dt.ready}}">{{this.total.ready}}</td>
+      <td data-title="{{dt.delay}}">{{this.total.delay}}</td>
     </tr>
   {{/if}}
 {{/sortable-table}}

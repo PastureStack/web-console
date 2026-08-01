@@ -1,9 +1,9 @@
-{{#if reauthenticationRequired}}
+{{#if this.reauthenticationRequired}}
   <div class="alert alert-warning" role="status"
        data-testid="mfa-reauthentication-required">
     <i class="icon icon-lock"></i>
     {{t 'authPage.mfa.sessionRevoked'}}
-    {{#unless recoveryCodes}}
+    {{#unless this.recoveryCodes}}
       <button type="button" class="btn btn-warning r-ml10" {{action "signInAgain"}}>
         {{t 'authPage.mfa.signInAgain'}}
       </button>
@@ -11,7 +11,7 @@
   </div>
 {{/if}}
 
-{{#unless isCurrentAccount}}
+{{#unless this.isCurrentAccount}}
   <div class="alert alert-warning" role="status"
        data-testid="mfa-managed-account-warning">
     <i class="icon icon-alert"></i>
@@ -19,21 +19,21 @@
   </div>
 {{/unless}}
 
-{{#if recoveryCodes}}
+{{#if this.recoveryCodes}}
   <section class="well" data-testid="mfa-recovery-codes">
     <div class="alert alert-warning">
       <strong>{{t 'authPage.mfa.recoveryCodes.header'}}</strong>
       <p>{{t 'authPage.mfa.recoveryCodes.oneTimeHelp'}}</p>
     </div>
     <div class="row">
-      {{#each recoveryCodes as |code|}}
+      {{#each this.recoveryCodes as |code|}}
         <div class="col-sm-6"><code>{{code}}</code></div>
       {{/each}}
     </div>
     <div class="r-mt15">
       {{copy-to-clipboard
         buttonText="authPage.mfa.recoveryCodes.copy"
-        clipboardText=recoveryCodesText}}
+        clipboardText=this.recoveryCodesText}}
       <button type="button" class="btn btn-primary"
               data-testid="mfa-recovery-codes-saved"
               {{action "dismissRecoveryCodes"}}>
@@ -45,7 +45,7 @@
 
 <section class="well" data-testid="mfa-factor-management">
   <h2>{{t 'authPage.mfa.factor.header'}}</h2>
-  {{#if factors.length}}
+  {{#if this.factors.length}}
     <table class="table fixed no-lines">
       <thead>
         <tr>
@@ -57,7 +57,7 @@
         </tr>
       </thead>
       <tbody>
-        {{#each factors as |factor|}}
+        {{#each this.factors as |factor|}}
           <tr data-testid="mfa-factor-row">
             <td>{{t (concat 'authPage.mfa.factor.types.' factor.factorType)}}</td>
             <td>{{factor.label}}</td>
@@ -66,7 +66,7 @@
             <td class="text-right">
               <button type="button" class="btn btn-sm btn-danger"
                       data-testid="mfa-revoke-factor"
-                      disabled={{busy}} {{action "revokeFactor" factor}}>
+                      disabled={{this.busy}} {{action "revokeFactor" factor}}>
                 {{t 'generic.remove'}}
               </button>
             </td>
@@ -78,47 +78,45 @@
     <div class="alert alert-info">{{t 'authPage.mfa.factor.none'}}</div>
   {{/if}}
 
-  {{#if isCurrentAccount}}
+  {{#if this.isCurrentAccount}}
     <div class="row">
       <div class="col-md-6">
         <h3>{{t 'authPage.mfa.totp.header'}}</h3>
-        {{#if totpEnrollment}}
+        {{#if this.totpEnrollment}}
           <p>{{t 'authPage.mfa.totp.scanHelp'}}</p>
-          {{#if totpQrSvg}}
-            <div class="mfa-totp-qr" data-testid="mfa-totp-qr">{{{totpQrSvg}}}</div>
+          {{#if this.totpQrSvg}}
+            <div class="mfa-totp-qr" data-testid="mfa-totp-qr">{{{this.totpQrSvg}}}</div>
           {{/if}}
           <div class="form-group">
             <label>{{t 'authPage.mfa.totp.manualSecret'}}</label>
-            <div class="well mfa-secret-value"><code>{{totpEnrollment.totpSecret}}</code></div>
+            <div class="well mfa-secret-value"><code>{{this.totpEnrollment.totpSecret}}</code></div>
           </div>
           <div class="r-mb15">
-            <a href="{{totpEnrollment.totpProvisioningUri}}" class="btn btn-default">
+            <a href="{{this.totpEnrollment.totpProvisioningUri}}" class="btn btn-default">
               <i class="icon icon-external-link"></i>
               {{t 'authPage.mfa.totp.openAuthenticator'}}
             </a>
-            {{copy-to-clipboard clipboardText=totpEnrollment.totpProvisioningUri}}
+            {{copy-to-clipboard clipboardText=this.totpEnrollment.totpProvisioningUri}}
           </div>
           <div class="form-group">
             <label>{{t 'authPage.mfa.factor.label'}}</label>
-            {{input value=totpLabel class="form-control"
-                    placeholder=(t 'authPage.mfa.totp.defaultLabel')}}
+            {{input value=this.totpLabel class="form-control" placeholder=(t 'authPage.mfa.totp.defaultLabel')}}
           </div>
           <div class="form-group">
             <label>{{t 'authPage.mfa.totp.code'}}</label>
-            {{input value=totpCode class="form-control" maxlength="6"
-                    inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"}}
+            {{input value=this.totpCode class="form-control" maxlength="6" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"}}
           </div>
-          <button type="button" class="btn btn-primary" disabled={{busy}}
+          <button type="button" class="btn btn-primary" disabled={{this.busy}}
                   {{action "confirmTotp"}}>
             {{t 'authPage.mfa.totp.confirm'}}
           </button>
-          <button type="button" class="btn btn-default" disabled={{busy}}
+          <button type="button" class="btn btn-default" disabled={{this.busy}}
                   {{action "cancelTotp"}}>
             {{t 'generic.cancel'}}
           </button>
         {{else}}
           <p>{{t 'authPage.mfa.totp.help'}}</p>
-          <button type="button" class="btn btn-primary" disabled={{busy}}
+          <button type="button" class="btn btn-primary" disabled={{this.busy}}
                   data-testid="mfa-begin-totp" {{action "beginTotp"}}>
             {{t 'authPage.mfa.totp.add'}}
           </button>
@@ -127,18 +125,17 @@
 
       <div class="col-md-6">
         <h3>{{t 'authPage.mfa.passkey.header'}}</h3>
-        {{#if webAuthnReady}}
+        {{#if this.webAuthnReady}}
           <p>{{t 'authPage.mfa.passkey.help'}}</p>
           <div class="form-group">
             <label>{{t 'authPage.mfa.factor.label'}}</label>
-            {{input value=passkeyLabel class="form-control"
-                    placeholder=(t 'authPage.mfa.passkey.defaultLabel')}}
+            {{input value=this.passkeyLabel class="form-control" placeholder=(t 'authPage.mfa.passkey.defaultLabel')}}
           </div>
-          <button type="button" class="btn btn-primary" disabled={{busy}}
+          <button type="button" class="btn btn-primary" disabled={{this.busy}}
                   data-testid="mfa-begin-passkey" {{action "beginPasskey"}}>
             {{t 'authPage.mfa.passkey.add'}}
           </button>
-        {{else if webAuthnPolicyConfigured}}
+        {{else if this.webAuthnPolicyConfigured}}
           <div class="alert alert-warning">{{t 'authPage.mfa.passkey.secureContextRequired'}}</div>
         {{else}}
           <div class="alert alert-warning">{{t 'authPage.mfa.passkey.notConfigured'}}</div>
@@ -148,17 +145,17 @@
   {{/if}}
 </section>
 
-{{#if isCurrentAccount}}
+{{#if this.isCurrentAccount}}
   <section class="well" data-testid="mfa-recovery-management">
     <div class="row">
       <div class="col-md-6">
         <h2>{{t 'authPage.mfa.recoveryCodes.header'}}</h2>
         <p>{{t 'authPage.mfa.recoveryCodes.help'}}</p>
-        {{#unless status.enrolled}}
+        {{#unless this.status.enrolled}}
           <div class="alert alert-info">{{t 'authPage.mfa.recoveryCodes.requiresFactor'}}</div>
         {{/unless}}
         <button type="button" class="btn btn-warning"
-                disabled={{or busy (not status.enrolled)}}
+                disabled={{or this.busy (not this.status.enrolled)}}
                 {{action "regenerateRecoveryCodes"}}>
           {{t 'authPage.mfa.recoveryCodes.regenerate'}}
         </button>
@@ -167,32 +164,26 @@
         <h2>{{t 'authPage.mfa.email.header'}}</h2>
         <p>{{t 'authPage.mfa.email.help'}}</p>
         <p class="help-block">{{t 'authPage.mfa.email.systemManaged'}}</p>
-        {{#if status.recoveryEmailMasked}}
+        {{#if this.status.recoveryEmailMasked}}
           <div class="alert alert-success">
-            {{t 'authPage.mfa.email.verified' email=status.recoveryEmailMasked}}
+            {{t 'authPage.mfa.email.verified' email=this.status.recoveryEmailMasked}}
           </div>
-          <button type="button" class="btn btn-danger" disabled={{busy}}
+          <button type="button" class="btn btn-danger" disabled={{this.busy}}
                   {{action "revokeRecoveryEmail"}}>
             {{t 'authPage.mfa.email.revoke'}}
           </button>
-        {{else if status.recoveryEmailEnrollmentAvailable}}
-          {{#if recoveryEmailEnrollment}}
-            <p>{{t 'authPage.mfa.email.sent' email=recoveryEmailEnrollment.recoveryEmailMasked}}</p>
-            {{input value=recoveryEmailCode class="form-control" maxlength="6"
-                    data-testid="mfa-recovery-email-code"
-                    inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"
-                    placeholder=(t 'authPage.mfa.email.code')}}
-            <button type="button" class="btn btn-primary r-mt10" disabled={{busy}}
+        {{else if this.status.recoveryEmailEnrollmentAvailable}}
+          {{#if this.recoveryEmailEnrollment}}
+            <p>{{t 'authPage.mfa.email.sent' email=this.recoveryEmailEnrollment.recoveryEmailMasked}}</p>
+            {{input value=this.recoveryEmailCode class="form-control" maxlength="6" data-testid="mfa-recovery-email-code" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" placeholder=(t 'authPage.mfa.email.code')}}
+            <button type="button" class="btn btn-primary r-mt10" disabled={{this.busy}}
                     data-testid="mfa-confirm-recovery-email"
                     {{action "confirmRecoveryEmail"}}>
               {{t 'authPage.mfa.email.confirm'}}
             </button>
           {{else}}
-            {{input value=recoveryEmail class="form-control" type="email"
-                    data-testid="mfa-recovery-email-input"
-                    autocomplete="email"
-                    placeholder=(t 'authPage.mfa.email.placeholder')}}
-            <button type="button" class="btn btn-primary r-mt10" disabled={{busy}}
+            {{input value=this.recoveryEmail class="form-control" type="email" data-testid="mfa-recovery-email-input" autocomplete="email" placeholder=(t 'authPage.mfa.email.placeholder')}}
+            <button type="button" class="btn btn-primary r-mt10" disabled={{this.busy}}
                     data-testid="mfa-begin-recovery-email"
                     {{action "beginRecoveryEmail"}}>
               {{t 'authPage.mfa.email.verify'}}

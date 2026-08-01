@@ -2566,10 +2566,10 @@ machine:
       step7: '制粘贴下面的命令到Powershell命令行中运行以启动 {appName} agent'
   driverDigitalocean:
     sizeLabel: |
-      '{highMem, select, true {High Memory: } other {}}{memoryGb} GB RAM, {disk} GB Disk, {vcpus, plural,
+      {highMem, select, true {大内存：} other {}}{memoryGb} GB 内存、{disk} GB 磁盘、{vcpus, plural,
         =1 {# vCPU}
         other {# vCPUs}
-      }'
+      }
     accountSection: 账户访问
     authAccountButton: '下一步: 配置 Droplet'
     accessToken:
@@ -2993,9 +2993,9 @@ newBalancer:
     noRegion: 自定义服务目标需要区域
     noEnvironment: 自定义服务目标需要环境
     missingEnvironment: 需要环境
-    invalidSourcePort: '不正确的源端口: ''{num}'''
-    invalidTargetPort: '不正确的目标端口: ''{num}'''
-    invalidWeight: '无效重量：“{num}”'
+    invalidSourcePort: '源端口无效：“{num}”'
+    invalidTargetPort: '目标端口无效：“{num}”'
+    invalidWeight: '权重无效：“{num}”'
     mixedPort: '端口 {num} 有多条冲突的访问/协议规则'
     noTarget: 每条规则必须设置目标端口
     needsCertificate: 设置SSL/TLS规则时需要证书
@@ -3161,7 +3161,7 @@ pagination:
   rowsPerPage: 每页显示
   all: 全部
   multi: |
-    {pages, plural, =0 {0 项目} =1 {{count} {count, select, =1 {项目} other {项目}}} other {{from} - {to} 的 {count}}}
+    {pages, plural, =0 {共 0 项} =1 {共 {count} 项} other {第 {from}–{to} 项，共 {count} 项}}
 pageHeaderEnvironment:
   namespace: 命名空间
 projectRow:
@@ -3271,10 +3271,10 @@ stackSection:
     other {服务}
     }
   sidekick: |
-    '{numSidekicks, plural,
+    {numSidekicks, plural,
     =1 {+ 1 从容器}
     other {+ # 从容器}
-    }'
+    }
   add:
     service: 添加服务
     loadBalancer: 添加负载均衡

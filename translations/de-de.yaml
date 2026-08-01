@@ -326,18 +326,18 @@ authPage:
           {appName} ist konfiguriert für den Zugriff auf {orgs, plural,
           =0 {keine Organisationen}
           =1 {# Organisationen}
-          andere {# Organisationen}
+          other {# Organisationen}
           } und {users, plural,
           =0 {keine Benutzer}
           =1 {# Benutzer}
-          andere {# Benutzer}
+          other {# Benutzer}
           }.
         restricted: |
           {appName} ist konfiguriert für den Zugriff auf Mitglieder der Umgebung, {orgs, plural,
           =0 {keine Organisationen}
           =1 {# Organisationen}
-          andere {# Organisationen}
-          } and {users, plural,
+          other {# Organisationen}
+          } und {users, plural,
           =0 {keine Benutzer}
           =1 {# Benutzer}
           other {# Benutzer}
@@ -1923,7 +1923,7 @@ formHealthCheck:
     recreateOnQuorumSuffix: |
       {quorum, plural,
       =1 {Container ist}
-      andere {Containers sind}
+      other {Container sind}
       } in Ordnung
 formKeyValue:
   addAction: Schlüsselpaar hinzufügen
@@ -3312,7 +3312,7 @@ pagination:
   rowsPerPage: Zeilen pro Seite
   all: Alle
   multi: >
-    {pages, plural, =0 {0 Artikel} =1 {{count} {count, select, =1 {Artikel} other {Artikel}}} other {{from} - {to} von
+    {pages, plural, =0 {0 Artikel} =1 {{count, plural, =1 {# Artikel} other {# Artikel}}} other {{from} - {to} von
     {count}}}
 pageHeaderEnvironment:
   namespace: Namensraum

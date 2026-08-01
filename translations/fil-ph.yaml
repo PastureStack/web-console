@@ -3100,9 +3100,9 @@ newBalancer:
     noRegion: Kinakailangan ang rehiyon para sa custom na target ng serbisyo
     noEnvironment: Kinakailangan ang kapaligiran para sa custom na target ng serbisyo
     missingEnvironment: Kinakailangan ang kapaligiran
-    invalidSourcePort: 'Di-wastong source port: ''{num}'''
-    invalidTargetPort: 'Di-wastong target na port: ''{num}'''
-    invalidWeight: 'Di-wastong timbang: ''{num}'''
+    invalidSourcePort: 'Di-wastong source port: “{num}”'
+    invalidTargetPort: 'Di-wastong target na port: “{num}”'
+    invalidWeight: 'Di-wastong weight: “{num}”'
     mixedPort: 'Ang Port {num} ay may maraming panuntunan na may magkasalungat na access/protcol'
     noTarget: Kinakailangan ang target sa bawat panuntunan
     needsCertificate: Kailangan ng certificate dahil may SSL/TLS port rules
@@ -3264,7 +3264,7 @@ pagination:
   rowsPerPage: Mga hilera bawat pahina
   all: Lahat
   multi: >
-    {pages, plural, =0 {0 item} =1 {{count} {count, select, =1 {item} other {Mga bagay}}} other {{from} - {to} ng
+    {pages, plural, =0 {0 item} =1 {{count, plural, =1 {# item} other {# item}}} other {{from} - {to} ng
     {count}}}
 pageHeaderEnvironment:
   namespace: Namespace

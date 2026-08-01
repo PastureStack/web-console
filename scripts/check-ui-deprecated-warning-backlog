@@ -8,65 +8,42 @@ lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-script
 
 python3 - <<'PY'
 import json
+import hashlib
 import sys
 from pathlib import Path
 
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 
-allowed = set()
-
-
-def is_deprecated_warning_family(name, version):
-    version = version or ""
-    if name == "core-js":
-        return not version.endswith("-rc16.0")
-    if name == "glob":
-        return version.startswith(("5.", "7.", "9."))
-    if name == "rimraf":
-        return version.startswith("2.")
-    if name == "exists-sync":
-        return not version.endswith("-rc16.0")
-    if name == "osenv":
-        return not version.endswith("-rc16.0")
-    if name == "source-map-url":
-        return not version.endswith("-rc16.0")
-    if name == "inflight":
-        return not version.endswith("-rc16.0")
-    if name == "lodash.template":
-        return not version.endswith("-rc16.0")
-    if name == "intl-relativeformat":
-        return not version.endswith("-rc16.0")
-    if name == "intl-messageformat-parser":
-        return not version.endswith("-rc16.0")
-    return False
-
-
+expected_count = 188
+expected_sha256 = "e64f44ff1109217339fdbfccfcb1d2f7d5d4a00e5655b2e20027f5a65191515f"
 hits = []
 for package_path, meta in sorted(lock.get("packages", {}).items()):
-    if not package_path.startswith("node_modules/"):
+    if not package_path or not meta.get("deprecated"):
         continue
-    name = package_path.split("node_modules/")[-1]
     version = str(meta.get("version", ""))
-    if is_deprecated_warning_family(name, version):
-        hits.append((name, version, package_path))
+    hits.append(f"{package_path}\t{version}\t{meta.get('deprecated')}")
 
-unexpected = [hit for hit in hits if hit not in allowed]
-current = [hit for hit in hits if hit in allowed]
-
-if unexpected:
-    for name, version, package_path in unexpected:
-        print(f"UI_DEPRECATED_WARNING_UNEXPECTED name={name} version={version} path={package_path}")
-    print(f"failure_count={len(unexpected)}")
+actual_sha256 = hashlib.sha256("\n".join(hits).encode("utf-8")).hexdigest()
+if len(hits) != expected_count or actual_sha256 != expected_sha256:
+    print(
+        "UI_DEPRECATED_WARNING_BACKLOG_DRIFT "
+        f"actual_count={len(hits)} expected_count={expected_count} "
+        f"actual_sha256={actual_sha256} expected_sha256={expected_sha256}"
+    )
+    print("Removing deprecated paths is permitted only when this reviewed baseline is deliberately regenerated with the smaller graph.")
+    print("failure_count=1")
     sys.exit(1)
 
 by_name = {}
-for name, _, _ in current:
+for row in hits:
+    package_path = row.split("\t", 1)[0]
+    name = package_path.rsplit("node_modules/", 1)[-1]
     by_name[name] = by_name.get(name, 0) + 1
 
 summary = ",".join(f"{name}:{count}" for name, count in sorted(by_name.items()))
-print(f"UI_DEPRECATED_WARNING_BACKLOG_OK current_deprecated_paths={len(current)} max_allowed={len(allowed)} lockfile={lock_path}")
+print(f"UI_DEPRECATED_WARNING_BACKLOG_OK current_deprecated_paths={len(hits)} inventory_sha256={actual_sha256} lockfile={lock_path}")
 print(f"known_deprecated_warning_families={summary}")
-print("No unexpected deprecated warning family/path was introduced; removing existing entries is allowed and should not require this gate to keep old paths.")
+print("The exact Ember 6.12 build-only deprecation inventory is fail-closed; P1 supply-chain work must reduce and deliberately re-baseline it.")
 print("failure_count=0")
 PY

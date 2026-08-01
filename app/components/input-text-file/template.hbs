@@ -1,13 +1,13 @@
 {{textarea-autogrow
-  value=value
+  value=this.value
   classNames="form-control"
-  placeholder=placeholder
-  minHeight=minHeight
-  maxHeight=maxHeight
+  placeholder=this.placeholder
+  minHeight=this.minHeight
+  maxHeight=this.maxHeight
 }}
 <span class="input-group-btn input-group-btn-textarea">
   {{#tooltip-element type="tooltip-basic" model=(t 'inputTextFile.tooltip') tooltipTemplate="tooltip-static" aria-describedby="tooltip-base" tooltipFor="inputTextFile"}}
-    <button type="button" class="{{btnClass}}" {{action "click"}}><i class="icon icon-upload"></i></button>
+    <button type="button" class="{{this.btnClass}}" {{action "click"}}><i class="icon icon-upload"></i></button>
   {{/tooltip-element}}
-  <input type="file" accept="{{actualAccept}}" class="hide">
+  <input type="file" accept="{{this.actualAccept}}" class="hide">
 </span>

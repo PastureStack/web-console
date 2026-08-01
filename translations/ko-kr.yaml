@@ -2965,9 +2965,9 @@ newBalancer:
     noRegion: 맞춤 서비스 대상에는 지역이 필요합니다.
     noEnvironment: 맞춤 서비스 대상에는 환경이 필요합니다.
     missingEnvironment: 환경은 필수 항목입니다.
-    invalidSourcePort: '잘못된 소스 포트: ''{num}'''
-    invalidTargetPort: '잘못된 대상 포트: ''{num}'''
-    invalidWeight: '잘못된 중량: ''{num}'''
+    invalidSourcePort: '잘못된 소스 포트: “{num}”'
+    invalidTargetPort: '잘못된 대상 포트: “{num}”'
+    invalidWeight: '잘못된 가중치: “{num}”'
     mixedPort: '포트 {num}에 액세스/프로토콜이 충돌하는 여러 규칙이 있습니다.'
     noTarget: 각 규칙에는 대상이 필요합니다.
     needsCertificate: SSL/TLS 포트 규칙이 있으므로 인증서가 필요합니다.
@@ -3127,7 +3127,7 @@ pagination:
   rowsPerPage: 페이지당 행 수
   all: 전체
   multi: |
-    {pages, plural, =0 {0개 항목} =1 {{count} {count, select, =1 {품목} other {품목}}} other {{from} - {to} 의 {count}}}
+    {pages, plural, =0 {항목 0개} =1 {총 {count}개} other {총 {count}개 중 {from}~{to}}}
 pageHeaderEnvironment:
   namespace: 네임스페이스
 projectRow:

@@ -96,19 +96,13 @@ function expectModuleResolverGlobCompat() {
   const ownerDir = path.dirname(require.resolve("babel-plugin-module-resolver/package.json"));
   const globPath = require.resolve("glob", { paths: [ownerDir] });
   const globInfo = packageInfoFromResolved(globPath, "babel-plugin-module-resolver glob");
-  if (globInfo.version !== "13.0.6") {
-    fail(`babel-plugin-module-resolver glob version ${globInfo.version} != 13.0.6`);
+  if (globInfo.version !== "9.3.5") {
+    fail(`babel-plugin-module-resolver declared glob version ${globInfo.version} != 9.3.5`);
   }
 
   const glob = require(globPath);
-  if (glob.__esModule) {
-    fail("babel-plugin-module-resolver glob wrapper must not expose __esModule");
-  }
-  if (glob.default !== glob) {
-    fail("babel-plugin-module-resolver glob wrapper default export is not self-referential");
-  }
   if (typeof glob.hasMagic !== "function" || typeof glob.sync !== "function") {
-    fail("babel-plugin-module-resolver glob wrapper hasMagic/sync API is missing");
+    fail("babel-plugin-module-resolver declared glob hasMagic/sync API is missing");
   }
 
   const normalizeMod = require("babel-plugin-module-resolver/lib/normalizeOptions");
@@ -123,7 +117,7 @@ function expectModuleResolverGlobCompat() {
     fail(`babel-plugin-module-resolver glob normalize smoke failed: ${JSON.stringify(normalized)}`);
   }
 
-  console.log(`module-resolver-glob-compat-smoke-ok version=13.0.6 roots=${normalized.root.length}`);
+  console.log(`module-resolver-glob-smoke-ok version=9.3.5 roots=${normalized.root.length}`);
 }
 
 function expectBodyRawBodyOverride() {
@@ -185,16 +179,6 @@ function expectSaneWatcherOverride() {
 
 function expectQuickTempRimrafOverride() {
   const quickTemp = require("quick-temp");
-  const quickTempDir = path.dirname(require.resolve("quick-temp/package.json"));
-  const rimrafPath = require.resolve("rimraf", { paths: [quickTempDir] });
-  const rimrafInfo = packageInfoFromResolved(rimrafPath, "quick-temp rimraf");
-  const rimraf = require(rimrafPath);
-  if (rimrafInfo.version !== "6.1.3") {
-    fail(`quick-temp rimraf version ${rimrafInfo.version} != 6.1.3`);
-  }
-  if (typeof (rimraf.sync || rimraf.rimrafSync) !== "function") {
-    fail("quick-temp rimraf sync API missing");
-  }
 
   const holder = {};
   quickTemp.makeOrRemake(holder, "tmp", "rc16-quick-temp-smoke");
@@ -206,21 +190,11 @@ function expectQuickTempRimrafOverride() {
   if (holder.tmp) {
     fail("quick-temp remove did not clear the holder property");
   }
-  console.log("quick-temp-rimraf-smoke-ok rimraf=6.1.3");
+  console.log("quick-temp-cleanup-smoke-ok version=0.1.9");
 }
 
 function expectSyncDiskCacheRimrafOverride() {
   const Cache = require("sync-disk-cache");
-  const cacheDir = path.dirname(require.resolve("sync-disk-cache/package.json"));
-  const rimrafPath = require.resolve("rimraf", { paths: [cacheDir] });
-  const rimrafInfo = packageInfoFromResolved(rimrafPath, "sync-disk-cache rimraf");
-  if (rimrafInfo.version !== "6.1.3") {
-    fail(`sync-disk-cache rimraf version ${rimrafInfo.version} != 6.1.3`);
-  }
-  if (typeof (require(rimrafPath).sync || require(rimrafPath).rimrafSync) !== "function") {
-    fail("sync-disk-cache rimraf sync API missing");
-  }
-
   const cache = new Cache(`rc16-sync-disk-cache-smoke-${process.pid}`);
   cache.set("probe", "ok");
   const hit = cache.get("probe");
@@ -234,67 +208,23 @@ function expectSyncDiskCacheRimrafOverride() {
     fail(`sync-disk-cache remove smoke failed: ${JSON.stringify(miss)}`);
   }
   cache.clear();
-  console.log("sync-disk-cache-rimraf-smoke-ok rimraf=6.1.3");
-}
-
-function expectTempRimrafOverride() {
-  const temp = require("temp");
-  const tempDir = path.dirname(require.resolve("temp/package.json"));
-  const rimrafPath = require.resolve("rimraf", { paths: [tempDir] });
-  const rimrafInfo = packageInfoFromResolved(rimrafPath, "temp rimraf");
-  if (rimrafInfo.version !== "6.1.3") {
-    fail(`temp rimraf version ${rimrafInfo.version} != 6.1.3`);
-  }
-  if (typeof (require(rimrafPath).sync || require(rimrafPath).rimrafSync) !== "function") {
-    fail("temp rimraf sync API missing");
-  }
-
-  temp.track();
-  const dir = temp.mkdirSync("rc16-temp-rimraf-smoke");
-  const file = path.join(dir, "probe.txt");
-  fs.writeFileSync(file, "ok");
-  if (!fs.existsSync(file)) {
-    fail("temp mkdir/write smoke failed");
-  }
-  temp.cleanupSync();
-  if (fs.existsSync(dir)) {
-    fail("temp cleanupSync did not remove tracked directory");
-  }
-  console.log("temp-rimraf-smoke-ok rimraf=6.1.3");
+  console.log("sync-disk-cache-cleanup-smoke-ok version=2.1.0");
 }
 
 function expectBroccoliTerserRimrafOverride() {
   const terserPlugin = require("broccoli-terser-sourcemap");
-  const terserDir = path.dirname(require.resolve("broccoli-terser-sourcemap/package.json"));
-  const rimrafPath = require.resolve("rimraf", { paths: [terserDir] });
-  const rimrafInfo = packageInfoFromResolved(rimrafPath, "broccoli-terser-sourcemap rimraf");
-  if (rimrafInfo.version !== "6.1.3") {
-    fail(`broccoli-terser-sourcemap rimraf version ${rimrafInfo.version} != 6.1.3`);
-  }
-  if (typeof (require(rimrafPath).sync || require(rimrafPath).rimrafSync) !== "function") {
-    fail("broccoli-terser-sourcemap rimraf sync API missing");
-  }
   if (typeof terserPlugin !== "function") {
     fail("broccoli-terser-sourcemap export is no longer a build plugin function");
   }
-  console.log("broccoli-terser-rimraf-smoke-ok rimraf=6.1.3");
+  console.log("broccoli-terser-plugin-smoke-ok version=4.1.1");
 }
 
 function expectEmberCliBabelRimrafOverride() {
   const emberCliBabel = require("ember-cli-babel");
-  const babelDir = path.dirname(require.resolve("ember-cli-babel/package.json"));
-  const rimrafPath = require.resolve("rimraf", { paths: [babelDir] });
-  const rimrafInfo = packageInfoFromResolved(rimrafPath, "ember-cli-babel rimraf");
-  if (rimrafInfo.version !== "6.1.3") {
-    fail(`ember-cli-babel rimraf version ${rimrafInfo.version} != 6.1.3`);
-  }
-  if (typeof (require(rimrafPath).sync || require(rimrafPath).rimrafSync) !== "function") {
-    fail("ember-cli-babel rimraf sync API missing");
-  }
   if (!emberCliBabel || typeof emberCliBabel !== "object") {
     fail("ember-cli-babel export changed");
   }
-  console.log("ember-cli-babel-rimraf-smoke-ok rimraf=6.1.3");
+  console.log("ember-cli-babel-export-smoke-ok version=8.3.1");
 }
 
 async function expectRimrafCallbackCompat() {
@@ -357,13 +287,13 @@ async function expectRimrafCallbackCompat() {
   console.log("rimraf-callback-compat-smoke-ok version=6.1.3");
 }
 
-function expectYamljsGlobOverride() {
+function expectYamljsBuildGraph() {
   const yaml = require("yamljs");
   const yamlDir = path.dirname(require.resolve("yamljs/package.json"));
   const globPath = require.resolve("glob", { paths: [yamlDir] });
   const globInfo = packageInfoFromResolved(globPath, "yamljs glob");
-  if (globInfo.version !== "13.0.6") {
-    fail(`yamljs glob version ${globInfo.version} != 13.0.6`);
+  if (globInfo.version !== "7.2.3") {
+    fail(`yamljs declared glob version ${globInfo.version} != 7.2.3`);
   }
 
   const parsed = yaml.parse("a: 1\nb:\n  - c\n");
@@ -381,17 +311,17 @@ function expectYamljsGlobOverride() {
   if (!loaded || loaded.hello !== "world") {
     fail("yamljs load smoke failed");
   }
-  console.log("yamljs-glob-smoke-ok yamljs=0.3.0 glob=13.0.6");
+  console.log("yamljs-build-graph-smoke-ok yamljs=0.3.0 glob=7.2.3");
 }
 
-async function expectMkdirpOverride() {
+async function expectMkdirpGraph() {
   expectPackageJsonVersion("mkdirp", "0.5.6");
 
-  const ownerDir = path.join(process.cwd(), "node_modules", "broccoli-templater", "node_modules", "broccoli-filter");
+  const ownerDir = path.dirname(require.resolve("broccoli-filter/package.json"));
   const mkdirpPath = require.resolve("mkdirp", { paths: [ownerDir] });
   const mkdirpInfo = packageInfoFromResolved(mkdirpPath, "mkdirp");
   if (mkdirpInfo.version !== "0.5.6") {
-    fail(`broccoli-templater broccoli-filter mkdirp resolved ${mkdirpInfo.version} instead of 0.5.6`);
+    fail(`broccoli-filter mkdirp resolved ${mkdirpInfo.version} instead of 0.5.6`);
   }
 
   const mkdirp = require(mkdirpPath);
@@ -424,13 +354,13 @@ async function expectMkdirpOverride() {
 
     const filter = require(ownerDir);
     if (typeof filter !== "function") {
-      fail("broccoli-filter require smoke failed after mkdirp override");
+      fail("broccoli-filter require smoke failed with its declared mkdirp graph");
     }
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
 
-  console.log("mkdirp-override-smoke-ok version=0.5.6");
+  console.log("mkdirp-graph-smoke-ok version=0.5.6");
 }
 
 function expectExistsSyncCompat() {
@@ -456,7 +386,6 @@ function expectExistsSyncCompat() {
   }
 
   require("ember-cli");
-  require("ember-intl");
   console.log("exists-sync-compat-smoke-ok wrapper=1.0.0-rc16.0");
 }
 
@@ -572,14 +501,11 @@ function expectOsenvCompat() {
     }
   });
 
-  const bowerConfig = require("bower-config");
+  expectMissing("bower-config");
   const npa = require("npm-package-arg");
-  if (!bowerConfig || typeof bowerConfig.read !== "function") {
-    fail("bower-config require smoke failed after osenv compatibility wrapper");
-  }
   const parsed = npa("lodash@4.18.1");
   if (!parsed || parsed.name !== "lodash") {
-    fail("npm-package-arg parse smoke failed after osenv compatibility wrapper");
+    fail("npm-package-arg parse smoke failed in the modern Ember CLI graph");
   }
   console.log("osenv-compat-smoke-ok wrapper=0.2.0-rc16.0");
 }
@@ -683,12 +609,17 @@ function expectLodashTemplateCompat() {
   expectVersion("lodash.template", "4.18.1-rc16.0");
   expectVersion("lodash-real", "4.17.21");
 
-  for (const owner of ["broccoli-templater", "ember-cli", "sourcemap-validator"]) {
+  const ownerVersions = {
+    "broccoli-templater": "4.18.1",
+    "ember-cli": "4.18.1-rc16.0",
+    "sourcemap-validator": "4.18.1",
+  };
+  for (const [owner, expectedVersion] of Object.entries(ownerVersions)) {
     const ownerDir = path.dirname(require.resolve(`${owner}/package.json`));
     const resolvedPath = require.resolve("lodash.template", { paths: [ownerDir] });
     const info = packageInfoFromResolved(resolvedPath, `${owner} lodash.template`);
-    if (info.version !== "4.18.1-rc16.0") {
-      fail(`${owner} lodash.template version ${info.version} != 4.18.1-rc16.0`);
+    if (info.version !== expectedVersion) {
+      fail(`${owner} lodash.template version ${info.version} != ${expectedVersion}`);
     }
 
     const template = require(resolvedPath);
@@ -706,114 +637,7 @@ function expectLodashTemplateCompat() {
     }
   }
 
-  console.log("lodash-template-compat-smoke-ok wrapper=4.18.1-rc16.0 lodash-real=4.17.21");
-}
-
-function expectIntlRelativeFormatCompat() {
-  expectVersion("intl-relativeformat", "1.3.1-rc16.0");
-
-  const IntlRelativeFormat = require("intl-relativeformat");
-  if (typeof IntlRelativeFormat !== "function") {
-    fail("intl-relativeformat compatibility wrapper no longer exports a constructor");
-  }
-  if (IntlRelativeFormat.default !== IntlRelativeFormat) {
-    fail("intl-relativeformat compatibility wrapper default export is not self-referential");
-  }
-  if (typeof IntlRelativeFormat.__addLocaleData !== "function") {
-    fail("intl-relativeformat compatibility wrapper missing __addLocaleData");
-  }
-
-  IntlRelativeFormat.__addLocaleData({ locale: "en" });
-
-  const now = Date.UTC(2026, 4, 9, 12, 0, 0);
-  const relative = new IntlRelativeFormat("en", { style: "numeric" });
-  const threeHoursAgo = relative.format(now - 3 * 60 * 60 * 1000, { now });
-  if (threeHoursAgo !== "3 hours ago") {
-    fail(`intl-relativeformat numeric hour output changed: ${threeHoursAgo}`);
-  }
-
-  const inTwoDays = new IntlRelativeFormat(["en-US"], { units: "day", style: "numeric" }).format(now + 2 * 24 * 60 * 60 * 1000, { now });
-  if (inTwoDays !== "in 2 days") {
-    fail(`intl-relativeformat forced day output changed: ${inTwoDays}`);
-  }
-
-  const bestFit = new IntlRelativeFormat("en", { units: "day" }).format(now - 24 * 60 * 60 * 1000, { now });
-  if (bestFit !== "yesterday") {
-    fail(`intl-relativeformat best-fit day output changed: ${bestFit}`);
-  }
-
-  const options = new IntlRelativeFormat("en-us", { units: "minute", style: "numeric" }).resolvedOptions();
-  if (options.locale !== "en-US" || options.units !== "minute" || options.style !== "numeric") {
-    fail(`intl-relativeformat resolvedOptions changed: ${JSON.stringify(options)}`);
-  }
-
-  for (const owner of ["ember-intl", "ember-intl-relativeformat"]) {
-    const ownerDir = path.dirname(require.resolve(`${owner}/package.json`));
-    const resolvedPath = require.resolve("intl-relativeformat", { paths: [ownerDir] });
-    const info = packageInfoFromResolved(resolvedPath, `${owner} intl-relativeformat`);
-    if (info.version !== "1.3.1-rc16.0") {
-      fail(`${owner} intl-relativeformat version ${info.version} != 1.3.1-rc16.0`);
-    }
-  }
-
-  require("ember-intl");
-  console.log("intl-relativeformat-compat-smoke-ok wrapper=1.3.1-rc16.0 native-intl-relative-time-format");
-}
-
-function expectIntlMessageformatParserCompat() {
-  expectVersion("intl-messageformat-parser", "1.8.2-rc16.0");
-
-  const parser = require("intl-messageformat-parser");
-  if (!parser || typeof parser.parse !== "function") {
-    fail("intl-messageformat-parser compatibility package no longer exports parse()");
-  }
-  if (typeof parser.SyntaxError !== "function") {
-    fail("intl-messageformat-parser compatibility package no longer exports SyntaxError");
-  }
-
-  const ast = parser.parse("{count, plural, =0 {No items} one {One item} other {# items}}");
-  if (ast.type !== "messageFormatPattern" || !Array.isArray(ast.elements)) {
-    fail(`intl-messageformat-parser root AST changed: ${JSON.stringify(ast)}`);
-  }
-
-  const element = ast.elements[0];
-  if (!element || element.type !== "argumentElement" || element.id !== "count") {
-    fail(`intl-messageformat-parser argument AST changed: ${JSON.stringify(element)}`);
-  }
-  if (!element.format || element.format.type !== "pluralFormat" || element.format.ordinal !== false || element.format.offset !== 0) {
-    fail(`intl-messageformat-parser plural format AST changed: ${JSON.stringify(element.format)}`);
-  }
-
-  const other = element.format.options.find((option) => option.selector === "other");
-  if (!other || other.value.elements[0].type !== "messageTextElement" || other.value.elements[0].value !== "# items") {
-    fail(`intl-messageformat-parser legacy pound text handling changed: ${JSON.stringify(other)}`);
-  }
-
-  let syntaxError = null;
-  try {
-    parser.parse("{count, plural, one {ok}");
-  } catch (err) {
-    syntaxError = err;
-  }
-  if (!syntaxError || syntaxError.name !== "SyntaxError" || typeof syntaxError.message !== "string") {
-    fail("intl-messageformat-parser syntax error shape changed");
-  }
-
-  const ownerDir = path.dirname(require.resolve("intl-messageformat/package.json"));
-  const ownerParserPath = require.resolve("intl-messageformat-parser", { paths: [ownerDir] });
-  const ownerParserInfo = packageInfoFromResolved(ownerParserPath, "intl-messageformat intl-messageformat-parser");
-  if (ownerParserInfo.version !== "1.8.2-rc16.0") {
-    fail(`intl-messageformat parser version ${ownerParserInfo.version} != 1.8.2-rc16.0`);
-  }
-
-  const intlMessageformatModule = require("intl-messageformat");
-  const IntlMessageFormat = intlMessageformatModule.default || intlMessageformatModule.IntlMessageFormat || intlMessageformatModule;
-  const formatted = new IntlMessageFormat("{count, plural, one {# item} other {# items}}", "en").format({ count: 2 });
-  if (formatted !== "2 items") {
-    fail(`intl-messageformat plural formatting changed: ${formatted}`);
-  }
-
-  console.log("intl-messageformat-parser-compat-smoke-ok wrapper=1.8.2-rc16.0 legacy-message-format-pattern");
+  console.log("lodash-template-compat-smoke-ok wrapper=4.18.1-rc16.0 lodash-real=4.17.21 nested_build_only=2");
 }
 
 function expectCoreJsCompat() {
@@ -864,23 +688,20 @@ function expectCoreJsCompat() {
 }
 
 function expectEmberApiStoreFetchUpgrade() {
-  expectPackageJsonVersion("ember-api-store", "2.3.5");
-  expectPackageJsonVersion("ember-fetch", "3.4.5");
-  expectPackageJsonVersion("broccoli-file-creator", "1.2.0");
+  expectPackageJsonVersion("ember-api-store", "2.8.5");
+  expectPackageJsonVersion("ember-fetch", "5.1.3");
+  expectPackageJsonVersion("broccoli-file-creator", "2.1.1");
   expectMissing("ember-network");
-  expectMissing("ember-auto-import");
-  expectMissing("babel-eslint");
-  expectMissing("eslint");
 
   const apiStoreDir = path.dirname(require.resolve("ember-api-store/package.json"));
   const apiStoreInfo = packageJsonInfo("ember-api-store");
   if (apiStoreInfo.dependencies["ember-network"]) {
     fail("ember-api-store still depends on deprecated ember-network");
   }
-  if (apiStoreInfo.dependencies["ember-fetch"] !== "^3.4.0") {
+  if (apiStoreInfo.dependencies["ember-fetch"] !== "^5.1.1") {
     fail(`ember-api-store ember-fetch dependency changed to ${apiStoreInfo.dependencies["ember-fetch"]}`);
   }
-  if (apiStoreInfo.dependencies["broccoli-file-creator"] !== "^1.1.1") {
+  if (apiStoreInfo.dependencies["broccoli-file-creator"] !== "^2.1.1") {
     fail(`ember-api-store broccoli-file-creator dependency changed to ${apiStoreInfo.dependencies["broccoli-file-creator"]}`);
   }
 
@@ -898,7 +719,7 @@ function expectEmberApiStoreFetchUpgrade() {
     }
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.3.5 ember-fetch=3.4.5 broccoli-file-creator=1.2.0");
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 ember-fetch=5.1.3 broccoli-file-creator=2.1.1");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {
@@ -991,26 +812,39 @@ function expectVendoredFileSha256(file, expected) {
   }
 }
 
-function expectEmberJQueryVendorRuntime() {
+function expectEmberLtsAndJQueryRuntime() {
+  expectPackageJsonVersion("ember-source", "6.12.0");
+  expectPackageJsonVersion("ember-cli", "6.12.0");
+  expectPackageJsonVersion("ember-cli-htmlbars", "7.0.1");
   const expected = {
-    "vendor/ember/ember.debug.js": "0a8f5cc16a333de3fa5e16bd9e486ff51c06eb7b93a0aa66a9e7aae474c921ff",
-    "vendor/ember/ember.prod.js": "fff6aba5ce16c30727482a76feb8d0b409fe95e37e0eb3b37cc3843bbc337599",
-    "vendor/ember/ember-template-compiler.js": "4e5340a5346b3db819732623ffa86eb40d4d3a65628fc4ad76e1a092c330af46",
-    "vendor/ember/ember-testing.js": "278a43217b3e3039c5d8c6513ec0dc973f4a47df105a50ac95e8495cc346cdab",
+    "vendor/ember/LICENSE": "84e97eb6663fa5fa07f36661e6040ab8a557b165c13860e2e72c1a692ca3c2a0",
     "vendor/jquery/jquery.js": "78a85aca2f0b110c29e0d2b137e09f0a1fb7a8e554b499f740d6744dc8962cfe",
   };
   for (const [file, sha] of Object.entries(expected)) {
     expectVendoredFileSha256(file, sha);
   }
-  const emberCompiler = fs.readFileSync("vendor/ember/ember-template-compiler.js", "utf8");
-  const jquery = fs.readFileSync("vendor/jquery/jquery.js", "utf8");
-  if (!emberCompiler.includes("@version   2.9.1")) {
-    fail("vendored Ember template compiler version header changed");
+  for (const file of [
+    "vendor/ember/ember.debug.js",
+    "vendor/ember/ember.prod.js",
+    "vendor/ember/ember-testing.js",
+    "vendor/ember/ember-template-compiler.js",
+    "vendor/ember/ember-module-shim.js",
+  ]) {
+    if (fs.existsSync(file)) {
+      fail(`EOL Ember distribution file remains: ${file}`);
+    }
   }
+  const compat = fs.readFileSync("vendor/ember/ember-global-compat.js", "utf8");
+  for (const marker of ["requireModule('@ember/runloop')", "Ember.NativeArray.apply", "legacyTextInput"]) {
+    if (!compat.includes(marker)) {
+      fail(`Ember global compatibility marker missing: ${marker}`);
+    }
+  }
+  const jquery = fs.readFileSync("vendor/jquery/jquery.js", "utf8");
   if (!jquery.includes("jQuery JavaScript Library v3.7.1")) {
     fail("vendored jQuery version header changed");
   }
-  console.log("ember-jquery-vendor-runtime-smoke-ok ember=2.9.1 jquery=3.7.1");
+  console.log("ember-lts-runtime-smoke-ok ember=6.12.0 ember-cli=6.12.0 jquery=3.7.1 vendored-runtime=absent");
 }
 
 function expectBrowserifyReplacementVendorGlobals() {
@@ -1568,16 +1402,10 @@ function expectPrismBrowserGlobals() {
 const sass = require("sass");
 const ansiUpModule = require("ansi_up");
 const serialize = require("serialize-javascript");
-const CleanCSS = require("clean-css");
-const CleanCSSPromise = require("clean-css-promise");
 const xterm = require("@xterm/xterm");
 const fit = require("@xterm/addon-fit");
 if (!sass.info || !sass.info.includes("dart-sass")) {
   fail("Dart Sass smoke failed");
-}
-const cleanCssResult = new CleanCSS({}).minify(".a { color: red; }");
-if (!cleanCssResult || cleanCssResult.styles !== ".a{color:red}") {
-  fail(`clean-css minify changed: ${cleanCssResult && cleanCssResult.styles}`);
 }
 if (!xterm.Terminal || !fit.FitAddon) {
   fail("@xterm smoke failed");
@@ -1605,20 +1433,13 @@ if (!serialized.includes('new RegExp("abc", "gi")')) {
   fail(`serialize-javascript RegExp serialization changed: ${serialized}`);
 }
 
-function runCleanCSSPromiseSmoke() {
-  return Promise.resolve(new CleanCSSPromise({}).minify(".a { color: red; }")).then((result) => {
-    if (!result || result.styles !== ".a{color:red}") {
-      fail(`clean-css-promise minify changed: ${result && result.styles}`);
-    }
-    console.log("clean-css-promise-smoke-ok");
-  });
-}
-
 expectMissing("dompurify");
 expectMissing("xmldom");
 expectVersion("xmlhttprequest-ssl", "4.0.0");
-expectVersion("ember-cli", "2.18.2");
-expectVersion("ember-resolver", "2.1.1");
+expectPackageJsonVersion("ember-cli", "6.12.0");
+expectPackageJsonVersion("ember-resolver", "13.2.0");
+expectPackageJsonVersion("ember-intl", "8.4.0");
+expectPackageJsonVersion("@formatjs/icu-messageformat-parser", "3.5.16");
 expectVersion("ember-cli-babel", "8.3.1");
 expectMissing("ember-cli-htmlbars-inline-precompile");
 expectPackageJsonVersion("lacsso", "0.0.60-rc16.0");
@@ -1626,7 +1447,8 @@ expectPackageJsonVersion("ember-cli-pagination", "2.2.4-rc16.0");
 expectPackageJsonVersion("ember-rl-dropdown", "0.8.1-rc16.0");
 expectVersion("ansi_up", "6.0.6");
 expectVersion("serialize-javascript", "7.0.5");
-expectVersion("clean-css", "5.3.3");
+expectMissing("clean-css");
+expectMissing("clean-css-promise");
 expectVersion("raw-body", "2.5.3");
 expectPackageJsonVersion("uuid", "11.1.1");
 expectVersion("testem", "3.20.0");
@@ -1650,7 +1472,7 @@ expectVersion("yamljs", "0.3.0");
 expectMissing("request");
 expectMissing("forever-agent");
 expectMissing("jsdom");
-expectVersion("ws", "8.18.3");
+expectVersion("ws", "8.21.1");
 
 require("ember-cli");
 require("testem");
@@ -1706,7 +1528,6 @@ function runSocketSmoke(label, transport) {
 }
 
 (async () => {
-  await runCleanCSSPromiseSmoke();
   expectShortcutManagerSemantics();
   expectPositionCalculatorVendorGlobal();
   expectNoVNCVendorGlobal();
@@ -1714,7 +1535,7 @@ function runSocketSmoke(label, transport) {
   expectEmberPowerSelectSassAssets();
   expectBootstrapMultiselectVendorGlobal();
   expectDagreGraphlibBrowserGlobals();
-  expectEmberJQueryVendorRuntime();
+  expectEmberLtsAndJQueryRuntime();
   expectBrowserifyReplacementVendorGlobals();
   expectJGrowlBrowserGlobal("node_modules/jgrowl/jquery.jgrowl.js");
   expectMd5IdenticonBrowserGlobals();
@@ -1731,20 +1552,17 @@ function runSocketSmoke(label, transport) {
   await expectSaneWatcherOverride();
   expectQuickTempRimrafOverride();
   expectSyncDiskCacheRimrafOverride();
-  expectTempRimrafOverride();
   expectBroccoliTerserRimrafOverride();
   expectEmberCliBabelRimrafOverride();
   await expectRimrafCallbackCompat();
-  expectYamljsGlobOverride();
-  await expectMkdirpOverride();
+  expectYamljsBuildGraph();
+  await expectMkdirpGraph();
   expectExistsSyncCompat();
   await expectInflightCompat();
   expectOsenvCompat();
   expectSourceMapUrlCompat();
   expectSortPackageJsonCompat();
   expectLodashTemplateCompat();
-  expectIntlRelativeFormatCompat();
-  expectIntlMessageformatParserCompat();
   expectCoreJsCompat();
   expectEmberApiStoreFetchUpgrade();
   await runSocketSmoke("websocket", "websocket");

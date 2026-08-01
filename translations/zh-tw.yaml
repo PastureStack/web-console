@@ -3261,9 +3261,9 @@ newBalancer:
     noRegion: 自訂服務目標必須指定區域
     noEnvironment: 自訂服務目標必須指定環境
     missingEnvironment: 必須指定環境
-    invalidSourcePort: '不正確的來源連接埠： ''{num}'''
-    invalidTargetPort: '不正確的目標連接埠： ''{num}'''
-    invalidWeight: '權重無效：''{num}'''
+    invalidSourcePort: '來源連接埠無效：「{num}」'
+    invalidTargetPort: '目標連接埠無效：「{num}」'
+    invalidWeight: '權重無效：「{num}」'
     mixedPort: '連接埠 {num} 有多條衝突的存取/通訊協定規則'
     noTarget: 每條規則必須設定目標連接埠
     needsCertificate: 設定 SSL/TLS 規則時需要憑證

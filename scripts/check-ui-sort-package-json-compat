@@ -28,11 +28,6 @@ if dev.get("sort-package-json") != "file:vendor/sort-package-json-compat":
         "SORT_PACKAGE_JSON_COMPAT_DEV_DEP_UNEXPECTED",
         actual=dev.get("sort-package-json"),
     )
-if overrides.get("sort-package-json") != "$sort-package-json":
-    fail(
-        "SORT_PACKAGE_JSON_COMPAT_OVERRIDE_UNEXPECTED",
-        actual=overrides.get("sort-package-json"),
-    )
 
 wrapper_manifest = Path("vendor/sort-package-json-compat/package.json")
 wrapper_index = Path("vendor/sort-package-json-compat/index.js")
@@ -72,6 +67,6 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 print(f"UI_SORT_PACKAGE_JSON_COMPAT_OK wrapper=vendor/sort-package-json-compat upstream=3.6.1 lockfile={lock_path}")
-print("Ember CLI 2.18 still receives a CommonJS function export while the underlying sorter resolves through the maintained 3.x package.")
+print("The classic project tooling receives a CommonJS function export while the underlying sorter resolves through the maintained 3.x package.")
 print("failure_count=0")
 PY

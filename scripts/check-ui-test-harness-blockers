@@ -51,8 +51,8 @@ if module_for_count != 0:
     fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
 if module_for_component_count != 0:
     fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
-if direct_qunit_import_count != 59:
-    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=59)
+if direct_qunit_import_count != 61:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=61)
 
 direct_qunit_tests = [
     Path("tests/unit/application/route-test.js"),
@@ -71,6 +71,7 @@ direct_qunit_tests = [
     Path("tests/unit/utils/rolling-rms-test.js"),
     Path("tests/unit/utils/totp-qr-test.js"),
     Path("tests/unit/utils/volume-bulk-remove-test.js"),
+    Path("tests/unit/utils/socket-test.js"),
     Path("tests/unit/bulk-action-handler/service-test.js"),
     Path("tests/unit/routes/loading-test.js"),
     Path("tests/unit/routes/index-test.js"),
@@ -90,6 +91,7 @@ direct_qunit_tests = [
     Path("tests/unit/initializers/extend-ember-input-test.js"),
     Path("tests/unit/initializers/touch-test.js"),
     Path("tests/unit/pods/hosts/new/route-test.js"),
+    Path("tests/unit/mixins/subscribe-test.js"),
     Path("tests/integration/components/select-tab/component-test.js"),
 ]
 for path in direct_qunit_tests:
@@ -192,13 +194,14 @@ else:
         if phrase not in gate_text:
             fail("BROWSER_EMBER_TEST_GATE_MARKER_MISSING", phrase=phrase)
 
-compiler_path = Path("vendor/ember/ember-template-compiler.js")
-if not compiler_path.exists():
-    fail("VENDORED_TEMPLATE_COMPILER_MISSING", file=compiler_path)
-
 environment = Path("config/environment.js").read_text(encoding="utf-8")
-if "templateCompilerPath: 'vendor/ember/ember-template-compiler.js'" not in environment:
-    fail("VENDORED_TEMPLATE_COMPILER_CONFIG_MISSING")
+if "templateCompilerPath" in environment:
+    fail("EOL_TEMPLATE_COMPILER_OVERRIDE_REMAINS")
+
+release_lock = json.loads(Path("package-lock.json").read_text(encoding="utf-8"))
+release_packages = release_lock.get("packages", {}) or {}
+if release_packages.get("node_modules/ember-source", {}).get("version") != "6.12.0":
+    fail("EMBER_LTS_TEMPLATE_COMPILER_LOCK_MISSING")
 
 modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
 required_phrases = [
@@ -211,7 +214,7 @@ required_phrases = [
     "No-Publish Browser Ember Test Gate",
     "No-Publish Ember QUnit Helper Removal",
     "No-Publish Testem Browser Runtime Modernization",
-    "vendor/ember/ember-template-compiler.js",
+    "ember-source@6.12.0",
     "ember-cli-qunit",
     "moduleFor",
 ]
@@ -223,6 +226,13 @@ ci = Path("scripts/ci").read_text(encoding="utf-8")
 if "./scripts/check-ui-browser-ember-test" not in ci:
     fail("BROWSER_EMBER_TEST_CI_GATE_MISSING")
 
+template_files = list(Path("app").rglob("*.hbs")) + list(Path("vendor").rglob("*.hbs"))
+component_as_property = re.compile(r"\{\{[#/]?\s*this\.[A-Za-z0-9_]*-")
+for path in template_files:
+    text = path.read_text(encoding="utf-8")
+    if component_as_property.search(text):
+        fail("TEMPLATE_COMPONENT_MISCLASSIFIED_AS_PROPERTY", file=path)
+
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
@@ -232,7 +242,8 @@ print(
     f"test_files={len(all_test_files)} js_files={len(test_files)} moduleFor={module_for_count} "
     f"moduleForComponent={module_for_component_count} directQunitImports={direct_qunit_import_count} "
     f"directQunitTests={len(direct_qunit_tests)} "
-    "testemCiBrowser=Chrome vendored_template_compiler=present browserEmberGate=present emberQunitHelpers=removed"
+    f"templates={len(template_files)} "
+    "testemCiBrowser=Chrome lockedTemplateCompiler=6.12.0 browserEmberGate=present emberQunitHelpers=removed"
 )
 print("Browser ember test is now a no-publish source gate; generated asset diff and live route smoke remain required before artifact publication.")
 print("failure_count=0")

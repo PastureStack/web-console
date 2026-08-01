@@ -3042,9 +3042,9 @@ newBalancer:
     noRegion: منطقه برای هدف خدمات سفارشی مورد نیاز است
     noEnvironment: محیط برای هدف خدمات سفارشی مورد نیاز است
     missingEnvironment: محیط مورد نیاز است
-    invalidSourcePort: 'پورت منبع نامعتبر: ''{num}'''
-    invalidTargetPort: 'پورت هدف نامعتبر: ''{num}'''
-    invalidWeight: 'وزن نامعتبر: ''{num}'''
+    invalidSourcePort: 'پورت منبع نامعتبر: «{num}»'
+    invalidTargetPort: 'پورت هدف نامعتبر: «{num}»'
+    invalidWeight: 'وزن نامعتبر: «{num}»'
     mixedPort: 'پورت {num} دارای قوانین متعدد با دسترسی/پروتکل های متناقض است'
     noTarget: هدف در هر قانون مورد نیاز است
     needsCertificate: گواهینامه لازم است زیرا قوانین پورت SSL/TLS وجود دارد
@@ -3212,7 +3212,7 @@ pagination:
   rowsPerPage: ردیف در هر صفحه
   all: همه
   multi: |
-    {pages, plural, =0 {0 مورد} =1 {{count} {count, select, =1 {مورد} other {موارد}}} other {{from} - {to} از {count}}}
+    {pages, plural, =0 {0 مورد} =1 {{count, plural, =1 {# مورد} other {# موارد}}} other {{from} - {to} از {count}}}
 pageHeaderEnvironment:
   namespace: فضای نام
 projectRow:

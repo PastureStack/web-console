@@ -2,6 +2,7 @@ import { module, test } from 'qunit';
 
 import Ember from 'ember';
 import HostsRoute from 'ui/hosts/route';
+import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
 
 module('Unit | Route | hosts');
 
@@ -16,7 +17,7 @@ test('model returns hosts after loading instances', function(assert) {
 
   var hosts = [{ id: '1h1' }];
   var instances = [{ id: '1i1' }];
-  var route = HostsRoute.create({
+  var route = createOwned(HostsRoute, {
     store: {
       findAll(type) {
         if (type === 'host') {
@@ -26,11 +27,11 @@ test('model returns hosts after loading instances', function(assert) {
         return Promise.resolve(instances);
       },
     },
-  });
+  }, 'route');
 
   return route.model().then((result) => {
     assert.strictEqual(result, hosts);
     assert.deepEqual(instances, [{ id: '1i1' }]);
-    Ember.run(() => route.destroy());
+    destroyOwned(route);
   });
 });

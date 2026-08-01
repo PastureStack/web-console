@@ -20,13 +20,8 @@ def fail(code, **fields):
 
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
-sync_disk_cache_override = (package.get("overrides", {}) or {}).get("sync-disk-cache", {}) or {}
-if sync_disk_cache_override.get("rimraf") != "6.1.3":
-    fail(
-        "SYNC_DISK_CACHE_RIMRAF_OVERRIDE_UNEXPECTED",
-        actual=sync_disk_cache_override.get("rimraf"),
-        expected="6.1.3",
-    )
+if "sync-disk-cache" in (package.get("overrides", {}) or {}):
+    fail("SYNC_DISK_CACHE_UNSAFE_OVERRIDE_REMAINS", actual=package.get("overrides", {}).get("sync-disk-cache"))
 
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
@@ -35,17 +30,11 @@ else:
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     packages = lock.get("packages", {}) or {}
     sync_disk_cache = packages.get("node_modules/sync-disk-cache", {})
-    rimraf = packages.get("node_modules/sync-disk-cache/node_modules/rimraf") or packages.get("node_modules/rimraf", {})
+    rimraf = packages.get("node_modules/sync-disk-cache/node_modules/rimraf", {})
     if sync_disk_cache.get("version") != "2.1.0":
         fail("SYNC_DISK_CACHE_LOCK_VERSION_UNEXPECTED", actual=sync_disk_cache.get("version"), expected="2.1.0")
-    if rimraf.get("version") != "6.1.3":
-        fail("SYNC_DISK_CACHE_RIMRAF_LOCK_VERSION_UNEXPECTED", actual=rimraf.get("version"), expected="6.1.3")
-    for removed in [
-        "node_modules/sync-disk-cache/node_modules/glob",
-        "node_modules/sync-disk-cache/node_modules/inflight",
-    ]:
-        if removed in packages:
-            fail("SYNC_DISK_CACHE_LEGACY_DEPENDENCY_REMAINS", package=removed, version=packages[removed].get("version"))
+    if rimraf.get("version") != "3.0.2":
+        fail("SYNC_DISK_CACHE_RIMRAF_LOCK_VERSION_UNEXPECTED", actual=rimraf.get("version"), expected="3.0.2")
     package_count = len(packages)
 
 if failures:
@@ -54,8 +43,8 @@ if failures:
 
 print(
     "UI_SYNC_DISK_CACHE_RIMRAF_OVERRIDE_OK "
-    f"sync-disk-cache=2.1.0 rimraf=6.1.3 lockfile={lock_path} package_count={package_count}"
+    f"sync-disk-cache=2.1.0 rimraf=3.0.2 lockfile={lock_path} package_count={package_count}"
 )
-print("The no-publish sync-disk-cache path resolves maintained rimraf 6.1.3 and no longer carries its nested legacy glob/inflight path.")
+print("sync-disk-cache keeps its declared callback-compatible rimraf major; deprecated transitive paths remain exact P1 inventory entries instead of unsafe forced overrides.")
 print("failure_count=0")
 PY

@@ -4,7 +4,7 @@
 
 <section class="container-fluid well">
   {{form-name-description
-    model=primaryResource
+    model=this.primaryResource
     nameLabel="editStack.name.label"
     namePlaceholder="stacksPage.new.form.name.placeholder"
     descriptionPlaceholder="stacksPage.new.form.description.placeholder"
@@ -18,7 +18,7 @@
       </div>
       {{input-text-file
         accept=".yml, .yaml"
-        value=primaryResource.dockerCompose
+        value=this.primaryResource.dockerCompose
         placeholder="stacksPage.new.form.dockerCompose.placeholder"
       }}
     </div>
@@ -28,7 +28,7 @@
       </div>
       {{input-text-file
         accept=".yml, .yaml"
-        value=primaryResource.rancherCompose
+        value=this.primaryResource.rancherCompose
         placeholder="stacksPage.new.form.rancherCompose.placeholder"
       }}
     </div>
@@ -38,11 +38,11 @@
       <div class="col-md-6">
         <label class="r-pt5">{{t 'editStack.group.label'}}</label>
         <div class="input-group">
-          {{input type="text" value=primaryResource.group classNames="form-control" placeholder=(t 'editStack.group.placeholder')}}
+          {{input type="text" value=this.primaryResource.group classNames="form-control" placeholder=(t 'editStack.group.placeholder')}}
           <div class="input-group-btn">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-              {{#each groupChoices as |key|}}
+              {{#each this.groupChoices as |key|}}
                 <li><a {{action "addTag" key}}>{{key}}</a></li>
               {{/each}}
             </ul>
@@ -53,12 +53,12 @@
       <div class="col-md-6">
         <label class="r-pt5">&nbsp;</label>
         <div class="form-control-static checkbox">
-          <label>{{input type="checkbox" checked=primaryResource.startOnCreate}} {{t 'stacksPage.new.form.startOnCreate.label'}}</label>
+          <label>{{input type="checkbox" checked=this.primaryResource.startOnCreate}} {{t 'stacksPage.new.form.startOnCreate.label'}}</label>
         </div>
       </div>
     </div>
   {{/advanced-section}}
 </section>
 
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 {{save-cancel save="save" cancel="cancel"}}

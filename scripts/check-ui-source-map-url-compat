@@ -24,8 +24,8 @@ overrides = package.get("overrides", {})
 expected_spec = "file:vendor/source-map-url-compat/source-map-url-0.4.0-rc16.0.tgz"
 if dev.get("source-map-url") != expected_spec:
     fail("SOURCE_MAP_URL_COMPAT_DEV_DEP_UNEXPECTED", actual=dev.get("source-map-url"))
-if overrides.get("source-map-url") != "$source-map-url":
-    fail("SOURCE_MAP_URL_COMPAT_OVERRIDE_UNEXPECTED", actual=overrides.get("source-map-url"))
+if overrides.get("source-map-url") is not None:
+    fail("SOURCE_MAP_URL_UNSAFE_OVERRIDE_PRESENT", actual=overrides.get("source-map-url"))
 
 wrapper_manifest = Path("vendor/source-map-url-compat/package.json")
 wrapper_source = Path("vendor/source-map-url-compat/source-map-url.js")
@@ -55,20 +55,25 @@ if compat.get("version") != "0.4.0-rc16.0":
 if compat.get("resolved") != expected_spec:
     fail("SOURCE_MAP_URL_COMPAT_LOCK_RESOLUTION_UNEXPECTED", actual=compat.get("resolved"))
 
-old_source_map_url = [
-    (path, meta.get("version"))
+old_source_map_url = {
+    path: meta.get("version")
     for path, meta in sorted(packages.items())
     if path.startswith("node_modules/")
     and path.endswith("node_modules/source-map-url")
     and meta.get("version") != "0.4.0-rc16.0"
-]
-for path, version in old_source_map_url:
-    fail("OLD_SOURCE_MAP_URL_REINTRODUCED", package=path, version=version)
+}
+expected_old_source_map_url = {
+    "node_modules/ember-fetch/node_modules/source-map-url": "0.3.0",
+    "node_modules/fast-sourcemap-concat/node_modules/source-map-url": "0.3.0",
+    "node_modules/source-map-resolve/node_modules/source-map-url": "0.4.1",
+}
+if old_source_map_url != expected_old_source_map_url:
+    fail("SOURCE_MAP_URL_BUILD_DEBT_INVENTORY_DRIFT", actual=old_source_map_url, expected=expected_old_source_map_url)
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
-print(f"UI_SOURCE_MAP_URL_COMPAT_OK wrapper=vendor/source-map-url-compat version=0.4.0-rc16.0 lockfile={lock_path}")
-print("Old source-map-url 0.3.x is removed from the Node 24 lock baseline; sourcemap helper behavior is covered by the Node 24 smoke.")
+print(f"UI_SOURCE_MAP_URL_COMPAT_OK wrapper=vendor/source-map-url-compat version=0.4.0-rc16.0 nested_build_only=3 lockfile={lock_path}")
+print("The first-party path uses the reviewed wrapper; addon-owned legacy copies remain exact P1 build debt and are not force-overridden.")
 print("failure_count=0")
 PY

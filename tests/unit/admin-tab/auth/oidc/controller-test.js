@@ -36,11 +36,11 @@ test('requires a fresh local administrator verification when preparing activatio
 test('requires confirmation for the exact identity and permission reassignment', function(assert) {
   let source = Ember.Object.create({id: '1a1', name: 'Old account', kind: 'admin', state: 'active'});
   let target = Ember.Object.create({id: '1a2', name: 'New account', kind: 'user', state: 'active'});
-  let controller = OidcController.create({
+  let EnabledOidcController = OidcController.extend({oidcEnabled: true});
+  let controller = EnabledOidcController.create({
     accounts: [source, target],
     identityMatchAccountId: '1a1',
     identityStrategy: 'reassign',
-    oidcEnabled: true,
     oldAccountDisposition: 'disable',
     selectedTargetAccountId: '1a2',
     testedIdentityProof: 'signed-proof',

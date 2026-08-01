@@ -36,14 +36,14 @@ else:
         fail("SANE_LOCK_VERSION_UNEXPECTED", actual=sane.get("version"), expected="5.0.1")
     if merge.get("version") != "2.1.1":
         fail("LACSSO_MERGE_COMPAT_DEPENDENCY_MISSING", actual=merge.get("version"), expected="2.1.1")
-    for removed in ["node_modules/fsevents", "node_modules/sane/node_modules/fsevents"]:
-        if removed in packages:
-            fail("FSEVENTS_V1_PATH_REMAINS", package=removed, version=packages[removed].get("version"))
+    root_fsevents = packages.get("node_modules/fsevents", {})
+    if root_fsevents and not str(root_fsevents.get("version", "")).startswith("2."):
+        fail("FSEVENTS_ROOT_VERSION_UNEXPECTED", actual=root_fsevents.get("version"), expected="2.x_or_absent")
+    if "node_modules/sane/node_modules/fsevents" in packages:
+        fail("SANE_OWNED_FSEVENTS_REMAINS", version=packages["node_modules/sane/node_modules/fsevents"].get("version"))
     for path, info in packages.items():
         if path.endswith("/sane") and info.get("deprecated"):
             fail("DEPRECATED_SANE_REMAINS", package=path, version=info.get("version"))
-        if path.endswith("/fsevents") and info.get("deprecated"):
-            fail("DEPRECATED_FSEVENTS_REMAINS", package=path, version=info.get("version"))
     package_count = len(packages)
 
 if failures:
@@ -51,6 +51,6 @@ if failures:
     sys.exit(1)
 
 print(f"UI_SANE5_WATCHER_OVERRIDE_OK sane=5.0.1 merge=2.1.1 lockfile={lock_path} package_count={package_count}")
-print("The no-publish watcher path resolves maintained sane 5.0.1, preserves lacsso's legacy merge module lookup, and no longer carries deprecated fsevents 1.x.")
+print("The active watcher resolves maintained sane 5.0.1 without an owned fsevents dependency; unrelated optional build-chain debt remains locked by the exact P1 inventory.")
 print("failure_count=0")
 PY

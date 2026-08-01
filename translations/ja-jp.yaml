@@ -3038,9 +3038,9 @@ newBalancer:
     noRegion: カスタム サービス ターゲットにはリージョンが必要です
     noEnvironment: カスタムサービスターゲットには環境が必要です
     missingEnvironment: 環境が必要です
-    invalidSourcePort: '無効なソースポート: ''{num}'''
-    invalidTargetPort: '無効な対象ポート: ''{num}'''
-    invalidWeight: '無効な体重: ''{num}'''
+    invalidSourcePort: '無効なソースポート：「{num}」'
+    invalidTargetPort: '無効な対象ポート：「{num}」'
+    invalidWeight: '無効な重み：「{num}」'
     mixedPort: 'ポート {num} はアクセスするプロトコルが競合する複数のルールを持っています'
     noTarget: 各ルールには対象が必要です
     needsCertificate: SSL/TLS ポートルールであるため証明書が必要です
@@ -3208,8 +3208,8 @@ pagination:
   multi: |
     {pages, plural,
     =0 {0 項目}
-    =1 {{count} {count, select, =1 {項目} other {項目}}}
-    other {{from} - {to} of {count}}}
+    =1 {全 {count} 件}
+    other {{from}～{to} 件（全 {count} 件）}}
 pageHeaderEnvironment:
   namespace: 名前空間
 projectRow:

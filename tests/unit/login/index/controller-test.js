@@ -11,11 +11,11 @@ test('keeps account recovery separate from regular MFA methods', function(assert
       mfaMethods: ['totp', 'webauthn', 'recoveryCode', 'emailRecovery'],
     },
   });
-  let controller = LoginController.create({
+  let WebAuthnLoginController = LoginController.extend({webAuthnEnvironmentSupported: true});
+  let controller = WebAuthnLoginController.create({
     access: access,
     settings: Ember.Object.create(),
     intl: Ember.Object.create(),
-    webAuthnEnvironmentSupported: true,
   });
 
   assert.deepEqual(
@@ -50,11 +50,11 @@ test('does not offer a passkey ceremony on an insecure connection', function(ass
     mfaRequired: true,
     mfaMethods: ['webauthn', 'recoveryCode'],
   };
-  let controller = LoginController.create({
+  let InsecureLoginController = LoginController.extend({webAuthnEnvironmentSupported: false});
+  let controller = InsecureLoginController.create({
     access: Ember.Object.create({mfaChallenge: challenge}),
     settings: Ember.Object.create(),
     intl: Ember.Object.create(),
-    webAuthnEnvironmentSupported: false,
   });
 
   Ember.run(() => controller.handleLoginResponse(challenge, true));

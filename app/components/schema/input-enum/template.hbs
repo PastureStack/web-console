@@ -1,6 +1,6 @@
-<select name="" class="form-control r-mb10" onChange={{action (mut value) value="target.value"}}>
+<select name="" class="form-control r-mb10" onChange={{action (mut this.value) value="target.value"}}>
   <option value="">{{t 'schema.inputEnum.option'}}</option>
-  {{#each field.options as |option|}}
-    <option value={{option}} selected={{eq option value}}>{{option}}</option>
+  {{#each this.field.options as |option|}}
+    <option value={{option}} selected={{eq option this.value}}>{{option}}</option>
   {{/each}}
 </select>

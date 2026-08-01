@@ -53,7 +53,7 @@ NODE
     if [[ "$PASTURESTACK_UI_TESTEM_LAUNCHER" = "chromium" ]]; then
       export CHROME_BIN="${CHROME_BIN:-/usr/bin/chromium}"
     fi
-    ./node_modules/.bin/ember test
+    ./node_modules/.bin/ember test --ssl=false
   '
 
 echo "UI_BROWSER_EMBER_TEST_OK image=$node_image launcher=$launcher"

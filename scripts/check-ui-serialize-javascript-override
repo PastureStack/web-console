@@ -51,6 +51,6 @@ if failures:
     sys.exit(1)
 
 print(f"UI_SERIALIZE_JAVASCRIPT_OVERRIDE_OK serialize-javascript=7.0.5 lockfile={lock_path} package_count={package_count}")
-print("ember-intl 2.13 keeps its existing serialize(result) call while npm resolves the maintained serializer version.")
+print("The Ember 6.12 build graph resolves the maintained serializer version without changing application payload semantics.")
 print("failure_count=0")
 PY

@@ -1,8 +1,8 @@
 {{#form-name-description
-  name=prefix
+  name=this.prefix
   nameRequired=true
   namePlaceholder="hostPartial.host.addCommon.new.form.name.placeholder"
-  nameHelpText=nameCountLabel
+  nameHelpText=this.nameCountLabel
   descriptionShown=false
 }}
   <div class="form-label">
@@ -10,10 +10,10 @@
   </div>
   <div class="row form-control-static">
     <div class="col-xs-2 col-md-1">
-      {{count}}
+      {{this.count}}
     </div>
     <div class="col-xs-10 col-md-11">
-      {{input-slider value=count valueMin=1 valueMax=11}}
+      {{input-slider value=this.count valueMin=1 valueMax=11}}
     </div>
   </div>
 {{/form-name-description}}

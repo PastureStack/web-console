@@ -1,8 +1,13 @@
 /* global require, module */
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
+var BroccoliFunnel = require('broccoli-funnel');
+var BroccoliMergeTrees = require('broccoli-merge-trees');
+var Funnel   = BroccoliFunnel.default || BroccoliFunnel;
+var mergeTrees = BroccoliMergeTrees.default || BroccoliMergeTrees;
 var util     = require('util');
 var env      = EmberApp.env();
 var dartSass = require('sass');
+var TranslationJsonTree = require('./lib/translation-json-tree');
 
 
 module.exports = function(defaults) {
@@ -27,19 +32,6 @@ module.exports = function(defaults) {
     name: 'ui',
     storeConfigInMeta: false,
     inlineContent: inline,
-    vendorFiles: {
-      'jquery.js': 'vendor/jquery/jquery.js',
-      'ember.js': {
-        development: 'vendor/ember/ember.debug.js',
-        production: 'vendor/ember/ember.prod.js',
-      },
-      'ember-testing.js': [
-        'vendor/ember/ember-testing.js',
-        { type: 'test' },
-      ],
-      'app-shims.js': null,
-      'ember-resolver.js': null,
-    },
     sassOptions: {
       implementation: dartSass
     },
@@ -55,6 +47,20 @@ module.exports = function(defaults) {
     nodeAssets: {
       'lacsso': {
         import: ['lacsso.css']
+      }
+    },
+
+    // ember-auto-import stages two generated entry modules in a temporary
+    // Broccoli directory. Webpack's production default hashes those absolute
+    // paths into module IDs, so identical clean builds can receive different
+    // chunk fingerprints. Natural entry-module IDs are stable for an identical
+    // graph, while deterministic chunk IDs retain cache-safe output names.
+    autoImport: {
+      webpack: {
+        optimization: {
+          moduleIds: 'natural',
+          chunkIds: 'deterministic'
+        }
       }
     },
 
@@ -97,11 +103,11 @@ module.exports = function(defaults) {
   // along with the exports of each module as its value.
   // Tests now bundle QUnit directly instead of pulling the legacy
   // ember-cli-qunit -> ember-qunit -> ember-test-helpers chain.
+  app.import('vendor/jquery/jquery.js');
   app.import('node_modules/qunit/qunit/qunit.css', { type: 'test' });
   app.import('node_modules/qunit/qunit/qunit.js', { type: 'test' });
   app.import('vendor/qunit-module-shim.js', { type: 'test' });
-  app.import('vendor/ember/ember-module-shim.js');
-  app.import('vendor/intl-format-cache/memoizer-shim.js');
+  app.import('vendor/ember/ember-global-compat.js');
   app.import('node_modules/@xterm/xterm/css/xterm.css');
   app.import('node_modules/@xterm/xterm/lib/xterm.js');
   app.import('node_modules/@xterm/addon-fit/lib/addon-fit.js');
@@ -194,5 +200,14 @@ module.exports = function(defaults) {
     destDir: 'assets/fonts'
   });
 
-  return app.toTree();
+  var translationSource = new Funnel('translations', {
+    include: ['*.yaml']
+  });
+  var translationJson = new TranslationJsonTree(translationSource);
+  var emberLegalSource = new Funnel('vendor/ember', {
+    include: ['LICENSE', 'UPSTREAM.md'],
+    destDir: 'licenses/ember'
+  });
+
+  return mergeTrees([app.toTree(), translationJson, emberLegalSource], {overwrite: true});
 };

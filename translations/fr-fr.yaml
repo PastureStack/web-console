@@ -3097,9 +3097,9 @@ newBalancer:
     noRegion: La région est requise pour la cible de service personnalisée
     noEnvironment: L'environnement est requis pour la cible de service personnalisée
     missingEnvironment: L'environnement est requis
-    invalidSourcePort: 'Port source invalide : ''{num}'''
-    invalidTargetPort: 'Port cible invalide : ''{num}'''
-    invalidWeight: "Poids invalide\_: '{num}'"
+    invalidSourcePort: 'Port source invalide : « {num} »'
+    invalidTargetPort: 'Port cible invalide : « {num} »'
+    invalidWeight: 'Poids invalide : « {num} »'
     mixedPort: 'Le port {num} a plusieurs règles avec des conflits d''accès/de protocole'
     noTarget: La Cible est requise pour chaque règle
     needsCertificate: Un certificat est requis parce qu'il y a des règles de port SSL/TLS
@@ -3261,7 +3261,7 @@ pagination:
   rowsPerPage: Lignes par page
   all: Tous
   multi: >
-    {pages, plural, =0 {0 articles} =1 {{count} {count, select, =1 {Article} other {Articles}}} other {{from} - {to} de
+    {pages, plural, =0 {0 article} =1 {{count, plural, =1 {# article} other {# articles}}} other {{from} - {to} sur
     {count}}}
 pageHeaderEnvironment:
   namespace: Espace de noms

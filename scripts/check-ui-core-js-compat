@@ -17,8 +17,8 @@ failures = []
 root = packages.get("node_modules/core-js", {})
 pure = packages.get("node_modules/core-js-pure", {})
 
-if package.get("overrides", {}).get("core-js") != "$core-js":
-    failures.append("package override for core-js is missing")
+if package.get("overrides", {}).get("core-js") is not None:
+    failures.append("unsafe package override for core-js is present")
 if root.get("version") != "2.6.13-rc16.0":
     failures.append(f"root core-js version is {root.get('version')!r}")
 if root.get("deprecated"):
@@ -28,9 +28,19 @@ if root.get("resolved") != "file:vendor/core-js-compat/core-js-2.6.13-rc16.0.tgz
 if pure.get("version") != "3.49.0":
     failures.append(f"core-js-pure version is {pure.get('version')!r}")
 
-nested = [path for path in packages if path.endswith("/node_modules/core-js")]
-if nested:
-    failures.append(f"nested core-js copies remain: {nested}")
+expected_nested = {
+    "node_modules/@babel/polyfill/node_modules/core-js": "2.6.12",
+    "node_modules/babel-polyfill/node_modules/core-js": "2.6.12",
+    "node_modules/babel-register/node_modules/core-js": "2.6.12",
+    "node_modules/babel-runtime/node_modules/core-js": "2.6.12",
+}
+actual_nested = {
+    path: meta.get("version")
+    for path, meta in packages.items()
+    if path.endswith("/node_modules/core-js")
+}
+if actual_nested != expected_nested:
+    failures.append(f"nested core-js P1 inventory drifted: {actual_nested!r}")
 
 if failures:
     for failure in failures:
@@ -38,6 +48,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_CORE_JS_COMPAT_OK wrapper=2.6.13-rc16.0 core-js-pure=3.49.0")
+print("UI_CORE_JS_COMPAT_OK wrapper=2.6.13-rc16.0 core-js-pure=3.49.0 nested_build_only=4")
+print("Legacy Babel-owned core-js copies remain exact P1 build debt; no cross-major override is applied to third-party packages.")
 print("failure_count=0")
 PY

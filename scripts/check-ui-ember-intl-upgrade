@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+import json
+from pathlib import Path
+
+repo = Path(__file__).resolve().parents[1]
+package = json.loads((repo / "package.json").read_text(encoding="utf-8"))
+lock_path = repo / "docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+packages = lock.get("packages", {})
+failures = []
+
+
+def expect(condition, message):
+    if not condition:
+        failures.append(message)
+
+
+dev = package.get("devDependencies", {})
+overrides = package.get("overrides", {})
+expect(dev.get("ember-intl") == "8.4.0", f"ember-intl declaration is {dev.get('ember-intl')!r}")
+expect(
+    dev.get("@formatjs/icu-messageformat-parser") == "3.5.16",
+    f"FormatJS parser declaration is {dev.get('@formatjs/icu-messageformat-parser')!r}",
+)
+expect(
+    overrides.get("@formatjs/icu-messageformat-parser") == "3.5.16",
+    "FormatJS parser override is not locked to 3.5.16",
+)
+
+expected_lock = {
+    "node_modules/ember-intl": "8.4.0",
+    "node_modules/@formatjs/icu-messageformat-parser": "3.5.16",
+}
+for package_path, version in expected_lock.items():
+    expect(
+        packages.get(package_path, {}).get("version") == version,
+        f"{package_path} is {packages.get(package_path, {}).get('version')!r}, expected {version}",
+    )
+
+for package_path in packages:
+    name = package_path.rsplit("node_modules/", 1)[-1]
+    if name in {"intl-messageformat-parser", "intl-relativeformat", "ember-intl-messageformat-parser", "ember-intl-relativeformat"}:
+        failures.append(f"retired Intl package remains: {package_path}")
+
+build = (repo / "ember-cli-build.js").read_text(encoding="utf-8")
+tree = (repo / "lib/translation-json-tree.js").read_text(encoding="utf-8")
+initializer = (repo / "app/instance-initializers/intl.js").read_text(encoding="utf-8")
+for marker in ["TranslationJsonTree", "translations", "mergeTrees"]:
+    expect(marker in build, f"translation build marker missing: {marker}")
+for marker in ["YAML.parse", "JSON.stringify", "outputPath"]:
+    expect(marker in tree, f"translation JSON tree marker missing: {marker}")
+for marker in ["instance.lookup('service:intl')", "findTranslationByKey", "formatHtmlMessage", "getLocalesByTranslations"]:
+    expect(marker in initializer, f"Intl compatibility marker missing: {marker}")
+
+yaml_files = sorted((repo / "translations").glob("*.yaml"))
+expect(len(yaml_files) == 14, f"locale source count is {len(yaml_files)}, expected 14 including the development-only pseudo-locale")
+expect(any(path.name == "none.yaml" for path in yaml_files), "development-only none.yaml pseudo-locale is missing")
+
+docs = (repo / "docs/modernization.md").read_text(encoding="utf-8")
+for phrase in ["Ember Intl 8 public service API", "generated JSON assets"]:
+    expect(phrase in docs, f"modernization documentation missing: {phrase}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_EMBER_INTL_UPGRADE_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    raise SystemExit(1)
+
+print(
+    "UI_EMBER_INTL_UPGRADE_OK "
+    "ember-intl=8.4.0 parser=3.5.16 selectable-locales=13 pseudo-locales=1 legacy-intl-packages=0"
+)
+print("Locale YAML is converted to release JSON by a first-party build plugin and consumed through the Ember Intl 8 public service boundary.")
+print("failure_count=0")

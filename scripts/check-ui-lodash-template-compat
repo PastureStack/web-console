@@ -22,8 +22,8 @@ if dep != expected:
     failures.append(f"root lodash.template dependency is {dep!r}")
 
 override = package.get("overrides", {}).get("lodash.template")
-if override != "$lodash.template":
-    failures.append(f"lodash.template override is {override!r}")
+if override is not None:
+    failures.append(f"unsafe lodash.template override is present: {override!r}")
 
 root = packages.get("node_modules/lodash.template", {})
 if root.get("version") != "4.18.1-rc16.0":
@@ -35,13 +35,18 @@ real = packages.get("node_modules/lodash-real", {})
 if real.get("version") != "4.17.21":
     failures.append(f"lodash-real version is {real.get('version')!r}")
 
-for legacy_path in (
-    "node_modules/broccoli-templater/node_modules/lodash.template",
-    "node_modules/ember-cli/node_modules/lodash.template",
-    "node_modules/sourcemap-validator/node_modules/lodash.template",
-):
-    if legacy_path in packages:
-        failures.append(f"legacy lodash.template remains at {legacy_path} version={packages[legacy_path].get('version')!r}")
+expected_legacy = {
+    "node_modules/broccoli-templater/node_modules/lodash.template": "4.18.1",
+    "node_modules/sourcemap-validator/node_modules/lodash.template": "4.18.1",
+}
+actual_legacy = {
+    path: meta.get("version")
+    for path, meta in packages.items()
+    if path.endswith("/node_modules/lodash.template")
+    and meta.get("version") != "4.18.1-rc16.0"
+}
+if actual_legacy != expected_legacy:
+    failures.append(f"lodash.template P1 inventory drifted: {actual_legacy!r}")
 
 if failures:
     for failure in failures:
@@ -49,7 +54,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_LODASH_TEMPLATE_COMPAT_OK wrapper=4.18.1-rc16.0 lodash_real=4.17.21")
-print("Ember CLI, Broccoli Templater, and Sourcemap Validator resolve lodash.template through the maintained wrapper.")
+print("UI_LODASH_TEMPLATE_COMPAT_OK wrapper=4.18.1-rc16.0 lodash_real=4.17.21 nested_build_only=2")
+print("First-party tooling uses the reviewed wrapper; two addon-owned packages remain exact P1 build debt without an unsafe forced override.")
 print("failure_count=0")
 PY

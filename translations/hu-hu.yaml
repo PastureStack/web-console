@@ -3280,7 +3280,7 @@ pagination:
   rowsPerPage: Sor oldalanként
   all: Mind
   multi: >
-    {pages, plural, =0 {0 elem} =1 {{count} {count, select, =1 {Tétel} other {Tételek}}} other {{from} - {to} a
+    {pages, plural, =0 {0 elem} =1 {{count, plural, =1 {# elem} other {# elem}}} other {{from} - {to}, összesen
     {count}}}
 pageHeaderEnvironment:
   namespace: Névtér

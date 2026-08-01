@@ -25,10 +25,10 @@ def fail(code, **fields):
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 overrides = package.get("overrides", {})
-for owner in ("ember-cli", "node-notifier"):
-    owner_override = overrides.get(owner, {})
-    if not isinstance(owner_override, dict) or owner_override.get("uuid") != expected:
-        fail("UI_UUID11_OVERRIDE_DRIFT", owner=owner, actual=owner_override, expected=expected)
+if package.get("devDependencies", {}).get("uuid") != expected:
+    fail("UI_UUID11_DECLARATION_DRIFT", actual=package.get("devDependencies", {}).get("uuid"), expected=expected)
+if overrides.get("uuid") != "$uuid":
+    fail("UI_UUID11_OVERRIDE_DRIFT", actual=overrides.get("uuid"), expected="$uuid")
 
 if not lock_path.is_file():
     fail("UI_UUID11_LOCK_MISSING", file=lock_path)
@@ -51,6 +51,6 @@ if failures:
     sys.exit(1)
 
 print(f"UI_UUID11_OVERRIDES_OK version={expected} lockfile={lock_path}")
-print("ember-cli and node-notifier keep their CommonJS uuid.v4 call sites while resolving uuid 11.1.1 in the active no-publish UI graph.")
+print("All CommonJS uuid.v4 call sites resolve the supported uuid 11 release through the locked root dependency.")
 print("failure_count=0")
 PY

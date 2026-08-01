@@ -1,19 +1,19 @@
 <section class="header clearfix">
   <h1>{{#link-to "stacks"}}{{t 'stackHeader.backLink'}}{{/link-to}}</h1>
 
-  {{#power-select options=all selected=model onchange=(action "changeStack") searchField="displayName" as |obj|}}
+  {{#power-select options=this.all selected=this.model onchange=(action "changeStack") searchField="displayName" as |obj|}}
       {{select-dot model=obj}}
   {{/power-select}}
 
 
   <div class="pull-right">
-    {{#if outputs.length}}
+    {{#if this.outputs.length}}
       <div class="btn-group">
         <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {{t 'stackHeader.outputs'}} <i class="icon icon-chevron-down"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-right">
-          {{#each outputs as |obj|}}
+          {{#each this.outputs as |obj|}}
             <li><a href="{{obj.value}}" target="_blank">{{obj.key}}</a></li>
           {{/each}}
         </ul>
@@ -21,34 +21,34 @@
     {{/if}}
 
     <div class="btn-group r-ml10">
-      {{#link-to "service.new" (query-params stackId=model.id) classNames="btn btn-primary btn-sm"}}{{t 'stackHeader.add.service'}}{{/link-to}}
+      {{#link-to "service.new" (query-params stackId=this.model.id) classNames="btn btn-primary btn-sm"}}{{t 'stackHeader.add.service'}}{{/link-to}}
         <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
           <i class="icon icon-chevron-down"></i>
           <span class="sr-only">{{t 'nav.srToggleNav'}}</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-right" role="menu">
-          {{#unless projects.current.isWindows}}
-          <li>{{#link-to "service.new-balancer" (query-params stackId=model.id)}}{{t 'stackHeader.add.balancer'}}{{/link-to}}</li>
+          {{#unless this.projects.current.isWindows}}
+          <li>{{#link-to "service.new-balancer" (query-params stackId=this.model.id)}}{{t 'stackHeader.add.balancer'}}{{/link-to}}</li>
           {{/unless}}
-          <li>{{#link-to "service.new-alias" (query-params stackId=model.id)}}{{t 'stackHeader.add.alias'}}{{/link-to}}</li>
-          <li>{{#link-to "service.new-external" (query-params stackId=model.id)}}{{t 'stackHeader.add.external'}}{{/link-to}}</li>
-          {{#if (and hasVm (not projects.current.isWindows))}}
-            <li>{{#link-to "service.new-virtualmachine" (query-params stackId=model.id)}}{{t 'stackHeader.add.vm'}}{{/link-to}}</li>
+          <li>{{#link-to "service.new-alias" (query-params stackId=this.model.id)}}{{t 'stackHeader.add.alias'}}{{/link-to}}</li>
+          <li>{{#link-to "service.new-external" (query-params stackId=this.model.id)}}{{t 'stackHeader.add.external'}}{{/link-to}}</li>
+          {{#if (and this.hasVm (not this.projects.current.isWindows))}}
+            <li>{{#link-to "service.new-virtualmachine" (query-params stackId=this.model.id)}}{{t 'stackHeader.add.vm'}}{{/link-to}}</li>
           {{/if}}
         </ul>
     </div>
 
-    {{action-menu model=model classNames="r-ml10 pull-right" size="sm"}}
-    {{header-state model=model classNames="pull-right"}}
+    {{action-menu model=this.model classNames="r-ml10 pull-right" size="sm"}}
+    {{header-state model=this.model classNames="pull-right"}}
 
     <div class="btn-group r-ml10">
-      {{#link-to "stack.index" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-tasks" text=(t 'tooltipLink.list') options=listLinkOptions}}{{/link-to}}
-      {{#link-to "stack.graph" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-share" text=(t 'tooltipLink.linkGraph') options=graphLinkOptions}}{{/link-to}}
-      {{#if model.canViewConfig}}
-        {{#link-to "stack.code" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-file" text=(t 'tooltipLink.composeYaml') options=yamlLinkOptions}}{{/link-to}}
+      {{#link-to "stack.index" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-tasks" text=(t 'tooltipLink.list') options=this.listLinkOptions}}{{/link-to}}
+      {{#link-to "stack.graph" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-share" text=(t 'tooltipLink.linkGraph') options=this.graphLinkOptions}}{{/link-to}}
+      {{#if this.model.canViewConfig}}
+        {{#link-to "stack.code" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-file" text=(t 'tooltipLink.composeYaml') options=this.yamlLinkOptions}}{{/link-to}}
       {{/if}}
     </div>
 
-    {{upgrade-btn model=model classNames="r-ml10"}}
+    {{upgrade-btn model=this.model classNames="r-ml10"}}
   </div>
 </section>

@@ -2,6 +2,7 @@ import { module, test } from 'qunit';
 
 import Ember from 'ember';
 import HostsNewRoute, { proxifyUrl } from 'ui/hosts/new/route';
+import { createOwned, destroyOwned } from '../../../../helpers/owned-subject';
 
 module('Unit | Route | hosts/new');
 
@@ -59,7 +60,7 @@ test('getHost clones a host and carries over the driver config', function(assert
       return clonedHost;
     },
   };
-  var route = HostsNewRoute.create({
+  var route = createOwned(HostsNewRoute, {
     store: {
       find(type, id) {
         assert.equal(type, 'host');
@@ -71,11 +72,11 @@ test('getHost clones a host and carries over the driver config', function(assert
         return driverConfigRecord;
       },
     },
-  });
+  }, 'route');
 
   return route.getHost('1h1').then((result) => {
     assert.strictEqual(result, clonedHost);
     assert.deepEqual(copiedConfig, { region: 'us-east-1', type: 'amazonec2Config' });
-    Ember.run(() => route.destroy());
+    destroyOwned(route);
   });
 });

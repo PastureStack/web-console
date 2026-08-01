@@ -1,7 +1,8 @@
 import Service from 'ui/models/service';
 import Ember from 'ember';
+import escapeHtml from 'ui/utils/escape-html';
 
-const esc = Ember.Handlebars.Utils.escapeExpression;
+const esc = escapeHtml;
 
 var KubernetesService = Service.extend({
   type: 'kubernetesService',

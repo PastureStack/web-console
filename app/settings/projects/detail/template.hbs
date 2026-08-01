@@ -1,14 +1,14 @@
 {{view-edit-project
-  originalProject=model.originalProject
-  project=model.project
-  allProjects=model.all
-  network=model.network
-  initialStacks=model.stacks
-  serviceChoices=model.serviceChoices
-  policyManager=model.policyManager
-  showEdit=editing
+  originalProject=this.model.originalProject
+  project=this.model.project
+  allProjects=this.model.all
+  network=this.model.network
+  initialStacks=this.model.stacks
+  serviceChoices=this.model.serviceChoices
+  policyManager=this.model.policyManager
+  showEdit=this.editing
   editing=true
-  tab=tab
+  tab=this.tab
   done=(action "done")
   cancel=(action "cancel")
 }}

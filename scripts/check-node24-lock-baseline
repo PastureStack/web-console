@@ -47,10 +47,8 @@ docker run --rm \
     mkdir -p "$tmpdir/vendor/ember-power-select"
     cp -a vendor/ember-power-select/package.json vendor/ember-power-select/LICENSE.md vendor/ember-power-select/UPSTREAM.md vendor/ember-power-select/app "$tmpdir/vendor/ember-power-select/"
     mkdir -p "$tmpdir/vendor/ember" "$tmpdir/vendor/jquery"
-    cp vendor/ember/ember.debug.js "$tmpdir/vendor/ember/ember.debug.js"
-    cp vendor/ember/ember.prod.js "$tmpdir/vendor/ember/ember.prod.js"
-    cp vendor/ember/ember-testing.js "$tmpdir/vendor/ember/ember-testing.js"
-    cp vendor/ember/ember-template-compiler.js "$tmpdir/vendor/ember/ember-template-compiler.js"
+    cp vendor/ember/ember-global-compat.js "$tmpdir/vendor/ember/ember-global-compat.js"
+    cp vendor/ember/LICENSE vendor/ember/UPSTREAM.md "$tmpdir/vendor/ember/"
     cp vendor/jquery/jquery.js "$tmpdir/vendor/jquery/jquery.js"
     mkdir -p "$tmpdir/vendor/ansi-up" "$tmpdir/vendor/semver" "$tmpdir/vendor/shell-quote"
     cp vendor/ansi-up/ansi-up-global.js "$tmpdir/vendor/ansi-up/ansi-up-global.js"
@@ -63,8 +61,6 @@ docker run --rm \
     cp -a vendor/exists-sync-compat "$tmpdir/vendor/exists-sync-compat"
     cp -a vendor/glob-cjs-default-compat "$tmpdir/vendor/glob-cjs-default-compat"
     cp -a vendor/inflight-compat "$tmpdir/vendor/inflight-compat"
-    cp -a vendor/intl-messageformat-parser-compat "$tmpdir/vendor/intl-messageformat-parser-compat"
-    cp -a vendor/intl-relativeformat-compat "$tmpdir/vendor/intl-relativeformat-compat"
     cp -a vendor/lodash-template-compat "$tmpdir/vendor/lodash-template-compat"
     cp -a vendor/osenv-compat "$tmpdir/vendor/osenv-compat"
     cp -a vendor/rimraf-callback-compat "$tmpdir/vendor/rimraf-callback-compat"
@@ -78,5 +74,5 @@ docker run --rm \
   '
 
 echo "UI_NODE24_RELEASE_LOCK_INSTALL_OK image=$node_image lockfile=$lock_path"
-echo "The tracked release lock is restorable with npm ci on Node 24 and passes Sass, clean-css, ansi_up, serialize-javascript, xterm, XML, Ember Babel/htmlbars, lacsso vendor-chain cleanup, exists-sync compatibility cleanup, glob CJS default compatibility cleanup, inflight compatibility cleanup, mkdirp override cleanup, osenv compatibility cleanup, rimraf callback compatibility cleanup, sort-package-json compatibility cleanup, source-map-url compatibility cleanup, unused DOMPurify removal, legacy JSHint/release addon removal, disabled live-reload/SRI addon removal, dependency-checker removal, dev-server glob cleanup, ember-cli-terser replacement, and socket.io transport smoke checks, and the vendored noVNC, PositionCalculator, bootstrap-multiselect, bootstrap-sass, ember-power-select Sass, dagre, graphlib, Ember, jQuery, ansi_up, semver, and shell-quote browser-source smokes."
+echo "The tracked release lock is restorable with npm ci on Node 24 and passes Sass, clean-css, ansi_up, serialize-javascript, xterm, XML, Ember 6.12 LTS and Ember CLI 6.12, lacsso vendor-chain checks, reviewed first-party compatibility packages, exact addon-owned P1 build-debt checks, ember-cli-terser replacement, and socket.io transport smoke checks, plus reviewed noVNC, PositionCalculator, bootstrap-multiselect, bootstrap-sass, ember-power-select Sass, dagre, graphlib, jQuery, ansi_up, semver, and shell-quote browser-source smokes."
 echo "failure_count=0"

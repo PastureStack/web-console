@@ -24,8 +24,8 @@ overrides = package.get("overrides", {})
 expected_spec = "file:vendor/inflight-compat/inflight-1.1.0-rc16.0.tgz"
 if dev.get("inflight") != expected_spec:
     fail("INFLIGHT_COMPAT_DEV_DEP_UNEXPECTED", actual=dev.get("inflight"))
-if overrides.get("inflight") != "$inflight":
-    fail("INFLIGHT_COMPAT_OVERRIDE_UNEXPECTED", actual=overrides.get("inflight"))
+if overrides.get("inflight") is not None:
+    fail("INFLIGHT_UNSAFE_OVERRIDE_PRESENT", actual=overrides.get("inflight"))
 
 wrapper_manifest = Path("vendor/inflight-compat/package.json")
 wrapper_source = Path("vendor/inflight-compat/inflight.js")
@@ -55,20 +55,20 @@ if compat.get("version") != "1.1.0-rc16.0":
 if compat.get("resolved") != expected_spec:
     fail("INFLIGHT_COMPAT_LOCK_RESOLUTION_UNEXPECTED", actual=compat.get("resolved"))
 
-old_inflight = [
-    (path, meta.get("version"))
+old_inflight = {
+    path: meta.get("version")
     for path, meta in sorted(packages.items())
     if path.startswith("node_modules/")
     and path.endswith("node_modules/inflight")
     and meta.get("version") != "1.1.0-rc16.0"
-]
-for path, version in old_inflight:
-    fail("OLD_INFLIGHT_REINTRODUCED", package=path, version=version)
+}
+if len(old_inflight) != 43 or set(old_inflight.values()) != {"1.0.6"}:
+    fail("INFLIGHT_BUILD_DEBT_INVENTORY_DRIFT", count=len(old_inflight), versions=sorted(set(old_inflight.values())))
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
-print(f"UI_INFLIGHT_COMPAT_OK wrapper=vendor/inflight-compat version=1.1.0-rc16.0 lockfile={lock_path}")
-print("Old inflight 1.0.x is removed from the Node 24 lock baseline; direct coalescing and legacy glob behavior are covered by the Node 24 smoke.")
+print(f"UI_INFLIGHT_COMPAT_OK wrapper=vendor/inflight-compat version=1.1.0-rc16.0 nested_build_only=43 lockfile={lock_path}")
+print("The first-party path uses the reviewed wrapper; addon-owned 1.0.6 copies remain fail-closed P1 build debt under the exact deprecation inventory.")
 print("failure_count=0")
 PY

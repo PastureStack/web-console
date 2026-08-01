@@ -3421,9 +3421,9 @@ newBalancer:
     noRegion: "Region is required for custom service target"
     noEnvironment: "Environment is required for custom service target"
     missingEnvironment: "Environment is required"
-    invalidSourcePort: "Invalid source port: '{num}'"
-    invalidTargetPort: "Invalid target port: '{num}'"
-    invalidWeight: "Invalid weight: '{num}'"
+    invalidSourcePort: 'Invalid source port: “{num}”'
+    invalidTargetPort: 'Invalid target port: “{num}”'
+    invalidWeight: 'Invalid weight: “{num}”'
     mixedPort: "Port {num} has multiple rules with conflicting access/protcols"
     noTarget: "Target is required on each rule"
     needsCertificate: "A certificate is required because there are SSL/TLS port rules"
@@ -3599,7 +3599,7 @@ pagination:
   multi: |
     {pages, plural,
     =0 {0 Items}
-    =1 {{count} {count, select, =1 {Item} other {Items}}}
+    =1 {{count, plural, =1 {# Item} other {# Items}}}
     other {{from} - {to} of {count}}}
 
 pageHeaderEnvironment:

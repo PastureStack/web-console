@@ -5,16 +5,16 @@
   <div class="well">
     <div class="form-inline r-mb25 inline-block">
       <div class="form-group">
-        {{input class="form-control input-sm r-mr5" value=filters.eventType placeholder=(t "auditLogsPage.form.eventType.placeholder")}}
+        {{input class="form-control input-sm r-mr5" value=this.filters.eventType placeholder=(t "auditLogsPage.form.eventType.placeholder")}}
         <div class="input-group r-mr5">
           <span class="input-group-btn">
-            {{input class="form-control input-sm pull-right" value=filters.resourceId  placeholder=(t "auditLogsPage.form.resourceId.placeholder") disabled=resourceIdReady}}
-            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{if filters.resourceType filters.resourceType (t "auditLogsPage.form.resourceType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
+            {{input class="form-control input-sm pull-right" value=this.filters.resourceId placeholder=(t "auditLogsPage.form.resourceId.placeholder") disabled=this.resourceIdReady}}
+            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{if this.filters.resourceType this.filters.resourceType (t "auditLogsPage.form.resourceType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu" role="menu">
               <li role="presentation" class="dropdown-header">
                 {{t 'auditLogsPage.form.resourceType.dropdownPlaceholder'}}
               </li>
-              {{#each model.resourceTypes as |resource|}}
+              {{#each this.model.resourceTypes as |resource|}}
                 <li {{action "updateResourceType" resource}}>
                   <a href="#">{{resource}}</a>
                 </li>
@@ -22,14 +22,14 @@
             </ul>
           </span>
         </div>
-        {{input class="form-control input-sm r-mr5" value=filters.clientIp placeholder=(t "auditLogsPage.form.requestIp.placeholder")}}
+        {{input class="form-control input-sm r-mr5" value=this.filters.clientIp placeholder=(t "auditLogsPage.form.requestIp.placeholder")}}
         <span class="dropdown">
-          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{if authTypeReadable authTypeReadable (t "auditLogsPage.form.authType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
+          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{if this.authTypeReadable this.authTypeReadable (t "auditLogsPage.form.authType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
           <ul class="dropdown-menu" role="menu">
             <li role="presentation" class="dropdown-header">
               {{t 'auditLogsPage.form.authType.dropdownPlaceholder'}}
             </li>
-            {{#each authTypes as |type|}}
+            {{#each this.authTypes as |type|}}
               <li {{action "updateAuthType" type}}>
                 <a href="#">{{type.value}}</a>
               </li>
@@ -51,7 +51,7 @@
         <th width="150" class="r-pl10">{{t 'auditLogsPage.table.authIp'}}</th>
       </thead>
       <tbody>
-        {{#each model.auditLog as |log|}}
+        {{#each this.model.auditLog as |log|}}
           <tr>
             <td data-title="{{t 'auditLogsPage.table.time'}}:">{{date-from-now log.created}}</td>
             <td data-title="{{t 'auditLogsPage.table.eventType'}}:" class="force-wrap" title="{{log.eventType}}">
@@ -76,7 +76,7 @@
     </table>
       <div class="container-paginatio text-center">
         <button class="btn btn-sm btn-default" {{action 'first'}}>{{t 'auditLogsPage.first'}}</button>
-        {{#if showPagination }}
+        {{#if this.showPagination }}
           <button class="btn btn-sm btn-default" {{action 'next'}}>{{t 'auditLogsPage.next'}}</button>
         {{/if}}
       </div>

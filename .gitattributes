@@ -8,6 +8,8 @@ scripts/* text eol=lf
 # Security smoke tests pin these vendored browser assets by SHA-256. Keep their
 # checked-out bytes stable on Windows and Linux.
 vendor/ember/*.js text eol=lf
+vendor/ember/LICENSE text eol=lf
+vendor/ember/UPSTREAM.md text eol=lf
 vendor/jquery/jquery.js text eol=lf
 vendor/ansi-up/ansi-up-global.js text eol=lf
 vendor/semver/semver-global.js text eol=lf

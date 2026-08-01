@@ -1,4 +1,4 @@
-{{#if rules.length}}
+{{#if this.rules.length}}
   <table class="grid fixed no-lines no-top-padding tight r-mb0">
     <thead>
       <tr>
@@ -15,7 +15,7 @@
     </thead>
 
     <tbody>
-      {{#each rules as |rule idx|}}
+      {{#each this.rules as |rule idx|}}
         <tr>
           <td data-title="{{t 'formBalancerRules.priority.label'}}">
             {{rule.priority}}
@@ -62,7 +62,7 @@
               {{rule.selector}}
             {{else}}
               <a href="{{href-to "service" rule.serviceId}}">
-                {{#if (not-eq service.stackId rule.service.stackId)~}}
+                {{#if (not-eq this.service.stackId rule.service.stackId)~}}
                   {{rule.service.displayStack}}/
                 {{~/if~}}
                 {{~rule.service.displayName~}}

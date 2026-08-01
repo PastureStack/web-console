@@ -1,8 +1,8 @@
 <form {{action "authenticate" on="submit"}} class="text-left login-provider-form" data-testid="login-oidc-form">
   <div class="login-submit-row">
-    <button type="submit" disabled={{waiting}} class="btn btn-primary btn-block">
+    <button type="submit" disabled={{this.waiting}} class="btn btn-primary btn-block">
       <i class="icon icon-shield"></i>
-      {{t 'loginOidc.buttonText' providerName=providerName}}
+      {{t 'loginOidc.buttonText' providerName=this.providerName}}
     </button>
   </div>
 </form>

@@ -63,6 +63,22 @@ if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' | grep -q .;
   exit 1
 fi
 
+ember_license="$dist_dir/licenses/ember/LICENSE"
+ember_upstream="$dist_dir/licenses/ember/UPSTREAM.md"
+ember_license_sha256=84e97eb6663fa5fa07f36661e6040ab8a557b165c13860e2e72c1a692ca3c2a0
+if [[ ! -s "$ember_license" ]] || [[ ! -s "$ember_upstream" ]]; then
+  echo "DIST_EMBER_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember" >&2
+  exit 1
+fi
+if [[ "$(sha256sum "$ember_license" | awk 'NR == 1 {print $1}')" != "$ember_license_sha256" ]]; then
+  echo "DIST_EMBER_LICENSE_DRIFT file=$ember_license" >&2
+  exit 1
+fi
+if ! grep -Fx -- '- Distribution: `ember-source@6.12.0`' "$ember_upstream" >/dev/null; then
+  echo "DIST_EMBER_PROVENANCE_DRIFT file=$ember_upstream" >&2
+  exit 1
+fi
+
 for required_signature in bs.collapse bs.dropdown; do
   if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
       -exec grep -lF "$required_signature" {} + | grep -q .; then
@@ -124,6 +140,8 @@ grep -qx "${version}/index.html" "$tar_list"
 grep -qx "${version}/VERSION.txt" "$tar_list"
 grep -Eq "^${version}/assets/(ui[^/]*|@pasturestack/web-console[^/]*)\\.js$" "$tar_list"
 grep -Eq "^${version}/assets/vendor.*\\.js$" "$tar_list"
+grep -qx "${version}/licenses/ember/LICENSE" "$tar_list"
+grep -qx "${version}/licenses/ember/UPSTREAM.md" "$tar_list"
 
 if grep -Eq '\.map$' "$tar_list"; then
   echo "SOURCE_MAP_PRESENT tarball=$out_tar" >&2

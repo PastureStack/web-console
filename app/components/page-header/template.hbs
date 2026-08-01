@@ -8,8 +8,8 @@
       --><ul class="nav">
         <li><button class="navbar-brand logo btn"></button></li><!--
           -->{{~page-header-environment
-            currentPath=currentPath
-            canEdit=canEdit
+            currentPath=this.currentPath
+            canEdit=this.canEdit
             switchProject="switchProject"
             switchNamespace="switchNamespace"
           ~}}
@@ -17,7 +17,7 @@
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-        {{#each navTree as |item|}}
+        {{#each this.navTree as |item|}}
           {{#if item.url}}
             <li>
               <a href="{{item.url}}" target="{{item.target}}">{{#if item.localizedLabel}}{{t item.localizedLabel}}{{else}}{{item.label}}{{/if}}</a>
@@ -102,19 +102,19 @@
     </div>
   </div>
 </nav>
-{{#if (and projects.current (not hosts.length))}}
+{{#if (and this.projects.current (not this.hosts.length))}}
   <div class="lacsso banner bg-info m-0 p-0">
     <div class="lacsso banner-icon" style="width: 68px;"><span class="icon icon-2x icon-alert"></span></div>
     <div class="lacsso banner-message">
       <p class="lacsso mt-15 mb-15">
-        {{~format-html-message (if projects.current.isWindows 'nav.noHostsWindows.prefix' 'nav.noHosts.prefix') appName=settings.appName docsBase=settings.docsBase minVersion=settings.minDockerVersion}}
-        <a href="{{href-to 'hosts.new' projects.current.id}}">{{t (if projects.current.isWindows 'nav.noHostsWindows.link' 'nav.noHosts.link') appName=settings.appName docsBase=settings.docsBase minVersion=settings.minDockerVersion}}</a>
-        {{format-html-message (if projects.current.isWindows 'nav.noHostsWindows.suffix' 'nav.noHosts.suffix') appName=settings.appName docsBase=settings.docsBase minVersion=settings.minDockerVersion~}}
+        {{~format-html-message (if this.projects.current.isWindows 'nav.noHostsWindows.prefix' 'nav.noHosts.prefix') appName=this.settings.appName docsBase=this.settings.docsBase minVersion=this.settings.minDockerVersion}}
+        <a href="{{href-to 'hosts.new' this.projects.current.id}}">{{t (if this.projects.current.isWindows 'nav.noHostsWindows.link' 'nav.noHosts.link') appName=this.settings.appName docsBase=this.settings.docsBase minVersion=this.settings.minDockerVersion}}</a>
+        {{format-html-message (if this.projects.current.isWindows 'nav.noHostsWindows.suffix' 'nav.noHosts.suffix') appName=this.settings.appName docsBase=this.settings.docsBase minVersion=this.settings.minDockerVersion~}}
       </p>
     </div>
   </div>
 {{/if}}
-{{#if projects.current.isUpgrading}}
+{{#if this.projects.current.isUpgrading}}
   <div class="lacsso banner bg-warning m-0 p-0">
     <div class="lacsso banner-icon" style="width: 68px;"><span class="icon icon-2x icon-spinner icon-spin"></span></div>
     <div class="lacsso banner-message">
