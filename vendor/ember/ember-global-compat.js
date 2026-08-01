@@ -79,12 +79,31 @@
     Ember.$ = global.jQuery;
   }
 
+  function isPrototypeMethod(component, propertyName, action) {
+    var prototype = Object.getPrototypeOf(component);
+
+    while (prototype && prototype !== Object.prototype) {
+      var descriptor = Object.getOwnPropertyDescriptor(prototype, propertyName);
+
+      if (descriptor && descriptor.value === action) {
+        return true;
+      }
+
+      prototype = Object.getPrototypeOf(prototype);
+    }
+
+    return false;
+  }
+
   function legacySendAction(actionProperty) {
     var propertyName = actionProperty || 'action';
     var args = Array.prototype.slice.call(arguments, 1);
     var action = this.get(propertyName);
 
-    if (typeof action === 'function') {
+    // Native event handlers such as TextField#input are methods on the
+    // component prototype, not closure actions supplied by the caller. Calling
+    // one through sendAction would recursively re-enter the same event handler.
+    if (typeof action === 'function' && !isPrototypeMethod(this, propertyName, action)) {
       return action.apply(this, args);
     }
 

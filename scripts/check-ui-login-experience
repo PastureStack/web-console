@@ -91,7 +91,7 @@ for marker in ["attributeBindings: ['checked']", "type === 'checkbox'", "type ==
         failures.append(f"UI_LOGIN_INPUT_COMPATIBILITY_MISSING marker={marker}")
 
 component_compat = require("vendor/ember/ember-global-compat.js", "legacySendAction")
-for marker in ["Ember.Component.prototype.sendAction", "this._target", "target.send.apply", "action.apply"]:
+for marker in ["Ember.Component.prototype.sendAction", "isPrototypeMethod", "Object.getPrototypeOf", "this._target", "target.send.apply", "action.apply"]:
     if marker not in component_compat:
         failures.append(f"UI_LOGIN_COMPONENT_ACTION_COMPATIBILITY_MISSING marker={marker}")
 

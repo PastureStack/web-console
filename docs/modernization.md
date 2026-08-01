@@ -165,10 +165,10 @@ These no-publish candidates replace Bower delivery paths with pinned npm or revi
   `qrcode-generator@2.0.4` browser bundle. Authenticator provisioning data is
   encoded locally and is not sent to a third-party rendering service.
 
-`v1.6.56-pasturestack.38` moves the browser application and build CLI to the
+`v1.6.56-pasturestack.39` moves the browser application and build CLI to the
 supported Ember 6.12 LTS line, removes copied Ember runtime binaries, and keeps
 the classic application contract behind a reviewed compatibility boundary.
-The `.38` candidate also restores the Ember Intl HTML-message helper, binds
+The `.39` candidate also restores the Ember Intl HTML-message helper, binds
 existing pod component templates through Ember's public component-template
 API, and routes legacy curly input and textarea invocations through the
 reviewed compatibility components. The global compatibility boundary also
@@ -178,7 +178,9 @@ actions. Ember's retained classic `_target` is read only inside that audited
 shim and is locked by source and browser tests until string actions migrate to
 closures. These guards prevent an apparently successful production build from
 publishing an empty or unusable login form whose submit action cannot reach the
-controller. Navigation data is also normalized before it reaches Ember 6
+controller. The action shim also rejects component prototype event methods as
+closure actions, preventing native input events from recursively re-entering
+themselves. Navigation data is also normalized before it reaches Ember 6
 `LinkTo`, whose `@query` argument now requires an object even when a legacy menu
 item has no query parameters.
 The removed Handlebars `partial` helper is replaced by an explicit, audited

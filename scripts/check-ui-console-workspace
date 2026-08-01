@@ -134,4 +134,4 @@ if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] && grep -RInF -- "$PASTURESTACK_PRI
 fi
 
 printf 'UI_CONSOLE_WORKSPACE_OK version=%s persistence=%s cross_tab=%s\n' \
-  1.6.56-pasturestack.38 browser-session broker-broadcast
+  1.6.56-pasturestack.39 browser-session broker-broadcast

@@ -53,3 +53,21 @@ test('it invokes closure actions and ignores missing actions', function(assert) 
   );
   Ember.Component.prototype.sendAction.call({get() {}}, 'missing');
 });
+
+test('it does not recursively invoke a component prototype event method', function(assert) {
+  assert.expect(1);
+
+  let prototype = {
+    input() {
+      assert.ok(false, 'must not re-enter the native input event handler');
+    }
+  };
+  let component = Object.create(prototype);
+
+  component.get = function(key) {
+    return this[key];
+  };
+
+  Ember.Component.prototype.sendAction.call(component, 'input', 'value');
+  assert.ok(true, 'prototype event methods are ignored when no closure action was supplied');
+});
