@@ -5,6 +5,7 @@ cd "$(dirname "$0")/.."
 
 python3 - <<'PY_CHECK'
 import json
+import re
 from pathlib import Path
 
 pkg = json.loads(Path("package.json").read_text())
@@ -22,6 +23,48 @@ if vendor_package.get("version") != "3.4.3":
     raise SystemExit("vendor bootstrap-sass must track npm bootstrap-sass 3.4.3")
 if vendor_package.get("license") != "MIT":
     raise SystemExit("vendor bootstrap-sass license metadata must remain MIT")
+
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+runtime_imports = re.findall(
+    r"app\.import\('(?P<path>vendor/bootstrap-sass/assets/javascripts/[^']+)'\)",
+    build,
+)
+expected_imports = [
+    "vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js",
+    "vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js",
+    "vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js",
+]
+if runtime_imports != expected_imports:
+    raise SystemExit(
+        "Bootstrap runtime allowlist drift: "
+        f"actual={runtime_imports!r} expected={expected_imports!r}"
+    )
+
+forbidden_source_patterns = {
+    "Bootstrap loading-state data API": re.compile(r"data-loading-text", re.I),
+    "Bootstrap Button data API": re.compile(r"data-toggle\s*=\s*['\"]buttons?['\"]", re.I),
+    "Bootstrap Tooltip data API": re.compile(r"data-toggle\s*=\s*['\"]tooltip['\"]", re.I),
+    "Bootstrap Popover data API": re.compile(r"data-toggle\s*=\s*['\"]popover['\"]", re.I),
+    "Bootstrap Button jQuery API": re.compile(r"\.button\s*\("),
+    "Bootstrap Tooltip jQuery API": re.compile(r"\.tooltip\s*\("),
+    "Bootstrap Popover jQuery API": re.compile(r"\.popover\s*\("),
+}
+active_sources = [
+    path
+    for root in (Path("app"), Path("tests"))
+    for path in root.rglob("*")
+    if path.is_file() and path.suffix in {".js", ".hbs", ".html"}
+]
+violations = []
+for path in active_sources:
+    source = path.read_text(encoding="utf-8")
+    for description, pattern in forbidden_source_patterns.items():
+        if pattern.search(source):
+            violations.append(f"{path}: {description}")
+if violations:
+    raise SystemExit(
+        "Vulnerable Bootstrap runtime API restored:\n" + "\n".join(violations)
+    )
 PY_CHECK
 
 if grep -R "bower_components/bootstrap-sass-official\\|node_modules/bootstrap-sass" -n ember-cli-build.js app/styles package.json docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json 2>/dev/null; then
@@ -29,7 +72,13 @@ if grep -R "bower_components/bootstrap-sass-official\\|node_modules/bootstrap-sa
   exit 1
 fi
 
-grep -q "vendor/bootstrap-sass/assets/javascripts/bootstrap.js" ember-cli-build.js
+if grep -q "app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap.js')" ember-cli-build.js; then
+  echo "The unsupported aggregate Bootstrap JavaScript bundle must not be imported" >&2
+  exit 1
+fi
+grep -q "vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js" ember-cli-build.js
+grep -q "vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js" ember-cli-build.js
+grep -q "vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js" ember-cli-build.js
 grep -q "vendor/bootstrap-sass/assets/stylesheets/bootstrap" app/styles/app-light.scss
 grep -q "vendor/bootstrap-sass/assets/stylesheets/bootstrap" app/styles/app-dark.scss
 test -f vendor/bootstrap-sass/LICENSE

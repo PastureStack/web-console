@@ -105,7 +105,13 @@ module.exports = function(defaults) {
   app.import('node_modules/@xterm/xterm/css/xterm.css');
   app.import('node_modules/@xterm/xterm/lib/xterm.js');
   app.import('node_modules/@xterm/addon-fit/lib/addon-fit.js');
-  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap.js');
+  // Bootstrap 3 is out of support.  Keep its reviewed styles during the
+  // compatibility migration, but only ship the two JavaScript behaviours the
+  // console still uses.  In particular, do not re-introduce button.js,
+  // tooltip.js, popover.js, or the aggregate bootstrap.js bundle.
+  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js');
+  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js');
+  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js');
   app.import('node_modules/jgrowl/jquery.jgrowl.js');
   app.import('node_modules/jgrowl/jquery.jgrowl.css');
   app.import('node_modules/jquery.cookie/jquery.cookie.js');

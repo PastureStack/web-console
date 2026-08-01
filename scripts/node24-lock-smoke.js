@@ -1459,10 +1459,13 @@ function expectBootstrapMultiselectVendorGlobal() {
 function expectBootstrapSassAssets() {
   const packagePath = "vendor/bootstrap-sass/package.json";
   const jsPath = "vendor/bootstrap-sass/assets/javascripts/bootstrap.js";
+  const transitionPath = "vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js";
+  const collapsePath = "vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js";
+  const dropdownPath = "vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js";
   const scssPath = "vendor/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
   const variablesPath = "vendor/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss";
   const fontPath = "vendor/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2";
-  for (const file of [packagePath, jsPath, scssPath, variablesPath, fontPath]) {
+  for (const file of [packagePath, jsPath, transitionPath, collapsePath, dropdownPath, scssPath, variablesPath, fontPath]) {
     if (!fs.existsSync(file)) {
       fail(`bootstrap-sass asset missing: ${file}`);
     }
@@ -1472,14 +1475,20 @@ function expectBootstrapSassAssets() {
     fail(`bootstrap-sass vendor metadata changed: version=${packageJson.version} license=${packageJson.license}`);
   }
   const js = fs.readFileSync(jsPath, "utf8");
+  const transition = fs.readFileSync(transitionPath, "utf8");
+  const collapse = fs.readFileSync(collapsePath, "utf8");
+  const dropdown = fs.readFileSync(dropdownPath, "utf8");
   const scss = fs.readFileSync(scssPath, "utf8");
   if (!js.includes("VERSION  = '3.4.1'") || !js.includes("$.fn.modal") || !js.includes("$.fn.dropdown")) {
     fail("bootstrap-sass JavaScript asset does not look like Bootstrap 3.4.x");
   }
+  if (!transition.includes("emulateTransitionEnd") || !collapse.includes("bs.collapse") || !dropdown.includes("bs.dropdown")) {
+    fail("bootstrap-sass runtime allowlist modules lost expected behavior");
+  }
   if (!scss.includes("bootstrap/variables") || !scss.includes("bootstrap/mixins")) {
     fail("bootstrap-sass SCSS entrypoint lost expected imports");
   }
-  console.log("bootstrap-sass-assets-smoke-ok vendor=3.4.3 bootstrap-js=3.4.1");
+  console.log("bootstrap-sass-assets-smoke-ok vendor=3.4.3 bootstrap-js=3.4.1 runtime=transition,collapse,dropdown");
 }
 
 function expectEmberPowerSelectSassAssets() {

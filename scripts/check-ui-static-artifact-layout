@@ -17,11 +17,20 @@ cat >"$tmpdir/dist/index.html" <<'HTML'
 <script src="assets/vendor-test.js"></script>
 <script src="assets/ui-test.js"></script>
 HTML
-printf 'vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'vendor bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
 printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
 printf 'source map\n' >"$tmpdir/dist/assets/ui-test.js.map"
 printf '{}\n' >"$tmpdir/dist/translations/en-us.json"
 printf '{}\n' >"$tmpdir/dist/translations/none.json"
+
+printf 'vendor bs.collapse bs.dropdown bs.tooltip\n' >"$tmpdir/dist/assets/vendor-test.js"
+if SOURCE_DATE_EPOCH=1700000000 bash ./scripts/package-static-candidate \
+    9.9.9 "$tmpdir/dist" "$tmpdir/unsafe.tar.gz" >"$tmpdir/unsafe.out" 2>&1; then
+  echo "VULNERABLE_BOOTSTRAP_RUNTIME_ACCEPTED"
+  exit 1
+fi
+grep -q 'DIST_VULNERABLE_BOOTSTRAP_RUNTIME_PRESENT signature=bs.tooltip' "$tmpdir/unsafe.out"
+printf 'vendor bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
 
 out="$tmpdir/9.9.9.tar.gz"
 out_repeat="$tmpdir/9.9.9-repeat.tar.gz"

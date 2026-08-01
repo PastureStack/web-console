@@ -45,6 +45,15 @@ responsive local, OpenID Connect, SAML, MFA, and recovery layout; a
 reduced-motion animated gradient; new PastureStack-owned authentication and
 favicon assets; and a root favicon response so the login console remains clean.
 
+`v1.6.56-pasturestack.36` removes the unsupported aggregate Bootstrap 3
+JavaScript bundle from the production graph. The compatibility UI now loads
+only the reviewed transition, collapse, and dropdown modules required by the
+navigation and menus. The vulnerable Button, Tooltip, and Popover plug-ins are
+excluded from both test and production artifacts, and source gates prevent
+their data APIs or jQuery entry points from being restored accidentally.
+Bootstrap-derived Sass remains temporarily isolated behind the existing theme
+boundary and must be replaced as a separate visual migration.
+
 Production candidate packages omit JavaScript and third-party Intl source maps.
 They also omit the development-only `none` pseudo-locale. Development and test
 builds retain application source maps and the pseudo-locale for local diagnostics.

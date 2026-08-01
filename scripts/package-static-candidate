@@ -63,6 +63,22 @@ if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' | grep -q .;
   exit 1
 fi
 
+for required_signature in bs.collapse bs.dropdown; do
+  if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
+      -exec grep -lF "$required_signature" {} + | grep -q .; then
+    echo "DIST_REQUIRED_BOOTSTRAP_RUNTIME_MISSING signature=$required_signature" >&2
+    exit 1
+  fi
+done
+
+for forbidden_signature in bs.button bs.tooltip bs.popover data-loading-text; do
+  if find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
+      -exec grep -lF "$forbidden_signature" {} + | grep -q .; then
+    echo "DIST_VULNERABLE_BOOTSTRAP_RUNTIME_PRESENT signature=$forbidden_signature" >&2
+    exit 1
+  fi
+done
+
 tmpdir=$(mktemp -d)
 out_tmp="${out_tar}.tmp.$$"
 cleanup() {
