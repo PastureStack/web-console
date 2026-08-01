@@ -1,9 +1,9 @@
 <section class="header clearfix">
   <h1>{{t 'servicePage.header'}}</h1>
-  {{#power-select options=this.model.stack.services selected=this.service onchange=(action "changeService") searchField="displayName" as |obj|}}
+  <PowerSelect @options={{this.model.stack.services}} @selected={{this.service}} @onChange={{action "changeService"}} @searchField="displayName" as |obj|>
     {{select-dot model=obj}}
-  {{/power-select}}
-  <strong class="r-mr5 r-ml5">{{t 'uiText.relationIn'}} {{#link-to "stack" this.model.stack.id}}{{this.model.stack.displayName}}{{/link-to}}</strong>
+  </PowerSelect>
+  <strong class="r-mr5 r-ml5">{{t 'uiText.relationIn'}} <LinkTo @route="stack" @model={{this.model.stack.id}}>{{this.model.stack.displayName}}</LinkTo></strong>
 
   <div class="pull-right">
     {{action-menu model=this.service classNames="r-ml5 pull-right" size="sm"}}
@@ -125,26 +125,26 @@
         <section>
           <ul class="nav nav-tabs nav-tabs-well">
             {{#if (eq this.service.kind 'dnsService')}}
-              {{#link-to 'service.links' tagName='li' href=false classNames='hide'}}<a href="#">{{t 'servicePage.navTabs.links'}}</a>{{/link-to}}
+              <li class="hide"><LinkTo @route="service.links">{{t 'servicePage.navTabs.links'}}</LinkTo></li>
             {{else}}
               {{#if this.service.hasPorts}}
-                {{#link-to "service.ports" tagName="li" href=false}}<a href="#">{{t 'servicePage.navTabs.ports'}}</a>{{/link-to}}
+                <li><LinkTo @route="service.ports">{{t 'servicePage.navTabs.ports'}}</LinkTo></li>
               {{/if}}
               {{#if this.service.isBalancer}}
-                {{#link-to "service.port-rules" tagName="li" href=false}}<a href="#">{{t 'servicePage.navTabs.portRules'}}</a>{{/link-to}}
-                {{#link-to "service.certificates" tagName="li" href=false}}<a href="#">{{t 'servicePage.navTabs.certificates'}}</a>{{/link-to}}
+                <li><LinkTo @route="service.port-rules">{{t 'servicePage.navTabs.portRules'}}</LinkTo></li>
+                <li><LinkTo @route="service.certificates">{{t 'servicePage.navTabs.certificates'}}</LinkTo></li>
               {{/if}}
               {{#if this.service.canHaveContainers}}
-                {{#link-to "service.containers" tagName="li" href=false}}<a href="#">{{t 'servicePage.navTabs.containers'}}</a>{{/link-to}}
+                <li><LinkTo @route="service.containers">{{t 'servicePage.navTabs.containers'}}</LinkTo></li>
               {{/if}}
               {{#if this.service.hasLabels}}
-                {{#link-to "service.labels" tagName="li" href=false}}<a href="#">{{t 'servicePage.navTabs.labels'}}</a>{{/link-to}}
+                <li><LinkTo @route="service.labels">{{t 'servicePage.navTabs.labels'}}</LinkTo></li>
               {{/if}}
               {{#if this.service.consumedServicesWithNames.length}}
-                {{#link-to 'service.links' tagName='li' href=false}}<a href="#">{{t 'servicePage.navTabs.links'}}</a>{{/link-to}}
+                <li><LinkTo @route="service.links">{{t 'servicePage.navTabs.links'}}</LinkTo></li>
               {{/if}}
               {{#if this.service.canHaveContainers}}
-                {{#link-to "service.log" tagName="li" href=false}}<a href="#">{{t 'servicePage.navTabs.log'}}</a>{{/link-to}}
+                <li><LinkTo @route="service.log">{{t 'servicePage.navTabs.log'}}</LinkTo></li>
               {{/if}}
             {{/if}}
           </ul>

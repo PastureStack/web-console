@@ -28,12 +28,9 @@
   </td>
 {{/if}}
 <td data-title="{{t 'generic.actions'}}:" class="actions">
-  {{#link-to "admin-tab.auth.mfa" (query-params accountId=this.model.id)
-      classNames="btn btn-xs btn-default account-row-manage-mfa"
-      data-testid="account-row-manage-mfa"
-      title=(t 'authPage.mfa.manageAccount' account=this.model.displayName)}}
+  <LinkTo @route="admin-tab.auth.mfa" @query={{hash accountId=this.model.id}} class="btn btn-xs btn-default account-row-manage-mfa" data-testid="account-row-manage-mfa" title={{t 'authPage.mfa.manageAccount' account=this.model.displayName}}>
     <i class="icon icon-shield"></i>
     <span class="sr-only">{{t 'authPage.mfa.manageAccount' account=this.model.displayName}}</span>
-  {{/link-to}}
+  </LinkTo>
   {{action-menu model=this.model}}
 </td>

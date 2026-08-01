@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
-import { denormalizeId, denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import { denormalizeId, denormalizeIdArray } from 'ui/utils/api-store-references';
 import Instance from 'ui/models/instance';
 import { formatSi } from 'ui/utils/util';
 import escapeHtml from 'ui/utils/escape-html';

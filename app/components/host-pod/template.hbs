@@ -95,7 +95,7 @@
                     {{group.name}}
                   {{else}}
                     {{t 'hostPod.groupedInstances.stack'}}
-                    {{#link-to "stack" group.id}}{{group.name}}{{/link-to}}
+                    <LinkTo @route="stack" @model={{group.id}}>{{group.name}}</LinkTo>
                   {{/if}}
                 {{else}}
                   {{t 'hostPod.groupedInstances.standalone'}}

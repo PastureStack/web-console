@@ -1,6 +1,6 @@
 <section class="header clearfix">
   <h1>
-    {{#link-to "infrastructure-tab"}}{{t 'hostsPage.new.header.linkTo'}}{{/link-to}}
+    <LinkTo @route="infrastructure-tab">{{t 'hostsPage.new.header.linkTo'}}</LinkTo>
     {{t 'hostsPage.new.header.text'}}
   </h1>
 </section>
@@ -28,7 +28,7 @@
       {{/if}}
       {{#if this.showManage}}
         <p class="text-center small r-m0">
-          {{#link-to "admin-tab.machine"}}{{t 'hostsPage.new.manageLink'}}{{/link-to}}
+          <LinkTo @route="admin-tab.machine">{{t 'hostsPage.new.manageLink'}}</LinkTo>
         </p>
       {{/if}}
     </section>

@@ -42,9 +42,9 @@
         <li role="presentation" class="divider"></li>
       {{/if}}
       {{#if (and this.canEdit this.projects.current)}}
-        <li>{{#link-to "settings.projects.detail" this.projects.current.id (query-params editing="true")}}{{t 'nav.environment.edit' name=this.projects.current.displayName}}{{/link-to}}</li>
+        <li><LinkTo @route="settings.projects.detail" @model={{this.projects.current.id}} @query={{hash editing="true"}}>{{t 'nav.environment.edit' name=this.projects.current.displayName}}</LinkTo></li>
       {{/if}}
-      <li>{{#link-to "settings.projects"}}{{t 'nav.environment.manage'}}{{/link-to}}</li>
+      <li><LinkTo @route="settings.projects">{{t 'nav.environment.manage'}}</LinkTo></li>
     </ul>
   </li>
 {{~/if~}}

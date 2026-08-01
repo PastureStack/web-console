@@ -12,7 +12,7 @@
 
     <div class="header-left name {{if this.model.description 'with-description'}}">
       <h4 class="divider clip stack-link">
-        {{#link-to "stack" this.model.id}}{{this.model.name}}{{/link-to}}
+        <LinkTo @route="stack" @model={{this.model.id}}>{{this.model.name}}</LinkTo>
       </h4>
       {{#if this.model.description}}
         <div class="text-muted clip">{{this.model.description}}</div>
@@ -52,7 +52,7 @@
       {{upgrade-btn model=this.model}}
       {{#if this.showAddService}}
         <div class="btn-group">
-          {{#link-to "service.new" (query-params stackId=this.model.id) classNames="btn btn-default btn-sm"}}{{t 'stackSection.add.service'}}{{/link-to}}
+          <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-default btn-sm">{{t 'stackSection.add.service'}}</LinkTo>
 
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
               <i class="icon icon-fw icon-chevron-down"></i>
@@ -60,12 +60,12 @@
             </button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
               {{#unless this.projects.current.isWindows}}
-              <li>{{#link-to "service.new-balancer" (query-params stackId=this.model.id)}}{{t 'stackSection.add.loadBalancer'}}{{/link-to}}</li>
+              <li><LinkTo @route="service.new-balancer" @query={{hash stackId=this.model.id}}>{{t 'stackSection.add.loadBalancer'}}</LinkTo></li>
               {{/unless}}
-              <li>{{#link-to "service.new-alias" (query-params stackId=this.model.id)}}{{t 'stackSection.add.serviceAlias'}}{{/link-to}}</li>
-              <li>{{#link-to "service.new-external" (query-params stackId=this.model.id)}}{{t 'stackSection.add.externalService'}}{{/link-to}}</li>
+              <li><LinkTo @route="service.new-alias" @query={{hash stackId=this.model.id}}>{{t 'stackSection.add.serviceAlias'}}</LinkTo></li>
+              <li><LinkTo @route="service.new-external" @query={{hash stackId=this.model.id}}>{{t 'stackSection.add.externalService'}}</LinkTo></li>
               {{#if (and this.hasVm (not this.projects.current.isWindows))}}
-                <li>{{#link-to "service.new-virtualmachine" (query-params stackId=this.model.id)}}{{t 'stackSection.add.virtualMachine'}}{{/link-to}}</li>
+                <li><LinkTo @route="service.new-virtualmachine" @query={{hash stackId=this.model.id}}>{{t 'stackSection.add.virtualMachine'}}</LinkTo></li>
               {{/if}}
             </ul>
 
@@ -88,7 +88,7 @@
         <label>{{t 'stackSection.tags'}}:&nbsp;</label>
           {{#each this.model.tags as |tag|}}
             
-            {{#link-to "stacks" (query-params tags=tag)}}<span class="badge">{{tag}}</span>{{/link-to}}
+            <LinkTo @route="stacks" @query={{hash tags=tag}}><span class="badge">{{tag}}</span></LinkTo>
             
           {{/each}}
         </div>
@@ -103,7 +103,7 @@
                 {{badge-state model=service}}
               </td>
               <td data-title="{{t 'stackSection.table.dataTitle.serviceName'}}:" class="force-wrap">
-                {{#link-to "service" service.stackId service.id}}{{service.displayName}}{{/link-to}}
+                <LinkTo @route="service" @models={{array service.stackId service.id}}>{{service.displayName}}</LinkTo>
                 {{#if service.hasSidekicks}}
                   {{t 'stackSection.sidekick' numSidekicks=service.secondaryLaunchConfigs.length}}
                 {{/if}}
@@ -121,7 +121,7 @@
                   {{/tooltip-element}}
                 {{~/if~}}
                 {{~#if service.isError~}}
-                  {{#link-to "service.log" service.stackId service.id class="btn-link service-icon-button"}}<i class="icon icon-alert"/>{{/link-to}}
+                  <LinkTo @route="service.log" @models={{array service.stackId service.id}} class="btn-link service-icon-button"><i class="icon icon-alert"/></LinkTo>
                 {{~/if~}}
               </td>
               <td data-title="{{t 'stackSection.table.dataTitle.details'}}:" class="force-wrap service-detail">{{service.displayDetail}}{{service.displayPorts}}</td>

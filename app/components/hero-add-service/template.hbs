@@ -9,7 +9,7 @@
       <a href="{{this.settings.docsBase}}/services/" target="_blank" rel="noopener noreferrer">{{t 'heroAddService.service.contentLink'}}</a>
     </p>
     <button role="button" class="btn btn-primary" {{action "newService"}}>{{t 'heroAddService.addService'}}</button>
-    {{#link-to "catalog-tab" class="btn btn-primary"}}{{t 'heroAddService.linkToCatalog'}}{{/link-to}}
+    <LinkTo @route="catalog-tab" class="btn btn-primary">{{t 'heroAddService.linkToCatalog'}}</LinkTo>
   </section>
 {{/if}}
 

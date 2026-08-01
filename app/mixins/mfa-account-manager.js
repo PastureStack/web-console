@@ -177,7 +177,7 @@ export default Ember.Mixin.create({
 
     signInAgain() {
       this.get('access').clearSessionKeys();
-      this.transitionToRoute('login');
+      this.get('router').transitionTo('login');
     },
   },
 

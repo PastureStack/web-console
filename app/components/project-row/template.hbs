@@ -2,7 +2,7 @@
   {{badge-state model=this.model}}
 </td>
 <td data-title="{{t 'generic.name'}}:">
-  {{#link-to "settings.projects.detail" this.model.id (query-params editing=false)}}{{this.model.displayName}}{{/link-to}}
+  <LinkTo @route="settings.projects.detail" @model={{this.model.id}} @query={{hash editing=false}}>{{this.model.displayName}}</LinkTo>
 </td>
 <td data-title="{{t 'generic.description'}}:">
   {{#if this.model.description}}{{this.model.description}}{{else}}<span class="text-muted">{{t 'projectRow.none'}}</span>{{/if}}

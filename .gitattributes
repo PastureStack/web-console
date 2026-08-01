@@ -14,3 +14,14 @@ vendor/jquery/jquery.js text eol=lf
 vendor/ansi-up/ansi-up-global.js text eol=lf
 vendor/semver/semver-global.js text eol=lf
 vendor/shell-quote/shell-quote-global.js text eol=lf
+
+# The reviewed ember-fetch source and its legal files must pack byte-for-byte
+# the same way on Windows and Linux. The install archive itself stays binary.
+vendor/ember-fetch-compat/** text eol=lf
+vendor/ember-fetch-compat/*.tgz -text
+
+# Vendored theme sources and their MIT provenance must archive identically on
+# Windows and Linux so the public artifact license hashes remain reproducible.
+vendor/ember-power-select/** text eol=lf
+vendor/ember-basic-dropdown/** text eol=lf
+vendor/runtime-licenses/** text eol=lf

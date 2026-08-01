@@ -21,7 +21,10 @@
 
   var runloopModule = requireModule('@ember/runloop');
   Object.keys(runloopModule).forEach(function(name) {
-    if (name !== 'default' && Ember.run[name] === undefined) {
+    // Ember.run is itself a function. `bind` therefore resolves to the native
+    // Function.prototype method unless the public runloop export is installed
+    // as an own property.
+    if (name !== 'default' && !Object.prototype.hasOwnProperty.call(Ember.run, name)) {
       Ember.run[name] = runloopModule[name];
     }
   });
@@ -74,6 +77,20 @@
 
   if (!Ember.$ && global.jQuery) {
     Ember.$ = global.jQuery;
+  }
+
+  if (Ember.Component && Ember.$ && typeof Ember.Component.prototype.$ !== 'function') {
+    Ember.Component.reopen({
+      $: function(selector) {
+        if (!this.element) {
+          return Ember.$();
+        }
+
+        var root = Ember.$(this.element);
+
+        return selector ? root.find(selector) : root;
+      },
+    });
   }
 
   var objectModule = requireModule('@ember/object');

@@ -13,7 +13,7 @@
   {{#if this.model.mounts.length}}
     {{#each this.model.mounts as |mount|}}
       <div>
-        {{#link-to "container" mount.instanceId}}{{mount.instance.name}}{{/link-to}}:{{mount.path}}
+        <LinkTo @route="container" @model={{mount.instanceId}}>{{mount.instance.name}}</LinkTo>:{{mount.path}}
         {{#if (eq mount.permissions "ro")}}
           <span class="text-muted">{{t 'volumeRow.mounts.readOnly'}}</span>
         {{/if}}

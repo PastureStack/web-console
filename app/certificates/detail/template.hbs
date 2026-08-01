@@ -1,11 +1,11 @@
 <section class="header clearfix">
-  <h1>{{#link-to "certificates"}}{{t 'certificatesPage.detail.header'}}{{/link-to}}</h1>
+  <h1><LinkTo @route="certificates">{{t 'certificatesPage.detail.header'}}</LinkTo></h1>
 
-  {{#power-select options=this.model.allCertificates selected=this.model.certificate onchange=(action "changeCertificate") searchField="displayName" as |obj|}}
+  <PowerSelect @options={{this.model.allCertificates}} @selected={{this.model.certificate}} @onChange={{action "changeCertificate"}} @searchField="displayName" as |obj|>
     <span class="clip">
       {{select-dot model=obj}}
     </span>
-  {{/power-select}}
+  </PowerSelect>
 
   {{action-menu model=this.model.certificate size="sm"}}
 </section>

@@ -2,20 +2,16 @@
   <h1>{{t 'accountsPage.index.header'}}</h1>
 
   <div class="right-buttons">
-    {{#link-to "account-security"
-        classNames="btn btn-sm btn-default accounts-manage-my-mfa"
-        data-testid="accounts-manage-my-mfa"}}
+    <LinkTo @route="account-security" class="btn btn-sm btn-default accounts-manage-my-mfa" data-testid="accounts-manage-my-mfa">
       <i class="icon icon-shield"></i>
       {{t 'authPage.mfa.selfService.manageMine'}}
-    {{/link-to}}
-    {{#link-to "admin-tab.auth.mfa"
-        classNames="btn btn-sm btn-default accounts-manage-account-mfa"
-        data-testid="accounts-manage-account-mfa"}}
+    </LinkTo>
+    <LinkTo @route="admin-tab.auth.mfa" class="btn btn-sm btn-default accounts-manage-account-mfa" data-testid="accounts-manage-account-mfa">
       <i class="icon icon-users"></i>
       {{t 'authPage.mfa.manageAccounts'}}
-    {{/link-to}}
+    </LinkTo>
     {{#if this.isLocal}}
-      {{#link-to "admin-tab.accounts.new" classNames="btn btn-sm btn-primary"}}{{t 'accountsPage.index.localLink'}}{{/link-to}}
+      <LinkTo @route="admin-tab.accounts.new" class="btn btn-sm btn-primary">{{t 'accountsPage.index.localLink'}}</LinkTo>
     {{/if}}
   </div>
 </section>
@@ -45,4 +41,3 @@
     </tbody>
   </table>
 </section>
-

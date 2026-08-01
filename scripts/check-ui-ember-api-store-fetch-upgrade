@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
+import hashlib
 import json
+import re
+import tarfile
 from pathlib import Path
 
 repo = Path(__file__).resolve().parents[1]
 package_path = repo / "package.json"
 lock_path = repo / "docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
 
-package = json.loads(package_path.read_text())
-lock = json.loads(lock_path.read_text())
+package = json.loads(package_path.read_text(encoding="utf-8"))
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
+compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.2.tgz"
 
 
 def fail(message):
@@ -24,10 +28,14 @@ def package_entry(path):
 
 if package.get("devDependencies", {}).get("ember-api-store") != "2.8.5":
     fail("package.json must pin ember-api-store to 2.8.5")
+if package.get("devDependencies", {}).get("ember-fetch") != compat_spec:
+    fail("package.json must use the reviewed ember-fetch browser-global compatibility package")
 
 root_deps = packages.get("", {}).get("devDependencies", {})
 if root_deps.get("ember-api-store") != "2.8.5":
     fail("lock root must pin ember-api-store to 2.8.5")
+if root_deps.get("ember-fetch") != compat_spec:
+    fail("lock root must use the reviewed ember-fetch compatibility package")
 
 api_store = package_entry("node_modules/ember-api-store")
 if api_store.get("version") != "2.8.5":
@@ -44,6 +52,43 @@ if api_store_deps.get("broccoli-file-creator") != "^2.1.1":
 ember_fetch = package_entry("node_modules/ember-fetch")
 if ember_fetch.get("version") != "5.1.3":
     fail(f"lock resolves ember-fetch {ember_fetch.get('version')} instead of 5.1.3")
+if ember_fetch.get("resolved") != compat_spec:
+    fail(f"lock resolves unreviewed ember-fetch source {ember_fetch.get('resolved')}")
+
+compat_dir = repo / "vendor/ember-fetch-compat"
+template_path = compat_dir / "assets/browser-fetch.js.t"
+archive_path = compat_dir / "ember-fetch-5.1.3-pasturestack.2.tgz"
+license_path = compat_dir / "LICENSE.md"
+upstream_path = compat_dir / "UPSTREAM.md"
+for required in [template_path, archive_path, license_path, upstream_path]:
+    if not required.is_file():
+        fail(f"reviewed ember-fetch compatibility file missing: {required.relative_to(repo)}")
+
+if hashlib.sha256(archive_path.read_bytes()).hexdigest() != "94aeda898ead7ea9e23d5756649e588a2e65025c62961f7ae93b2325bc2e2cb1":
+    fail("reviewed ember-fetch compatibility archive hash changed")
+if hashlib.sha256(license_path.read_bytes()).hexdigest() != "bae5cb45df11b4fa8e894ae3b9b13595e154ade61ee6c57d5cfcd422771153a7":
+    fail("ember-fetch upstream MIT license changed")
+
+template = template_path.read_text(encoding="utf-8")
+for marker in [
+    "define('fetch', ['exports'], function(exports)",
+    "Object.defineProperty(exports, prop",
+    "polyfillProps.forEach(exposeGlobal)",
+    "global.fetch.apply(global, arguments)",
+    "typeof self !== 'undefined' ? self : this",
+]:
+    if marker not in template:
+        fail(f"ember-fetch browser-global compatibility marker missing: {marker}")
+if "function(self)" in template:
+    fail("ember-fetch AMD exports callback shadows the browser global self object")
+for forbidden in ["Ember.Test", "registerWaiter", "exports.fetch.apply"]:
+    if forbidden in template:
+        fail(f"ember-fetch production wrapper contains obsolete test integration: {forbidden}")
+
+with tarfile.open(archive_path, "r:gz") as archive:
+    archived_template = archive.extractfile("package/assets/browser-fetch.js.t")
+    if archived_template is None or archived_template.read() != template_path.read_bytes():
+        fail("ember-fetch compatibility source and install archive differ")
 
 broccoli_file_creator = package_entry("node_modules/broccoli-file-creator")
 if broccoli_file_creator.get("version") != "2.1.1":
@@ -55,8 +100,208 @@ for forbidden in [
     if forbidden in packages:
         fail(f"forbidden dependency returned to lock: {forbidden}")
 
+initializer_compat = repo / "app/utils/initialize-api-store.js"
+if not initializer_compat.is_file():
+    fail("ember-api-store Ember 6 initializer compatibility boundary is missing")
+initializer_compat_text = initializer_compat.read_text(encoding="utf-8")
+for marker in [
+    "application.register(`service:${serviceName}`, Store)",
+    "application.hasRegistration('model:resource')",
+    "import { getOwner, setOwner } from '@ember/application'",
+    "adoptStoreOwner(this._super(...arguments), this)",
+    "this._group(type).forEach((instance) => adoptStoreOwner(instance, this))",
+    "properties[propertyName] = service(serviceName)",
+    "injectService(Controller, propertyName, serviceName)",
+    "injectService(Route, propertyName, serviceName)",
+    "injectService(Component, propertyName, serviceName)",
+]:
+    if marker not in initializer_compat_text:
+        fail(f"ember-api-store initializer compatibility marker missing: {marker}")
+if ".inject(" in initializer_compat_text:
+    fail("removed registry injection API returned to ember-api-store compatibility boundary")
+
+store_initializers = [
+    repo / "app/initializers/ember-api-store.js",
+    repo / "app/initializers/auth-store.js",
+    repo / "app/initializers/user-store.js",
+    repo / "app/initializers/webhook-store.js",
+]
+for initializer_path in store_initializers:
+    if not initializer_path.is_file():
+        fail(f"local ember-api-store initializer missing: {initializer_path.relative_to(repo)}")
+    initializer_text = initializer_path.read_text(encoding="utf-8")
+    if "ui/utils/initialize-api-store" not in initializer_text:
+        fail(f"local ember-api-store initializer bypasses compatibility boundary: {initializer_path.relative_to(repo)}")
+    if "ember-api-store/initializers/store" in initializer_text:
+        fail(f"removed addon registry injector remains active: {initializer_path.relative_to(repo)}")
+
+reference_compat = repo / "app/utils/api-store-references.js"
+if not reference_compat.is_file():
+    fail("ember-api-store reference compatibility boundary is missing")
+reference_compat_text = reference_compat.read_text(encoding="utf-8")
+for marker in [
+    "computed(field",
+    "import { computed, get } from '@ember/object'",
+    "store._state.watchReference",
+    "store._state.missingReference",
+    "set(_computedKey, value)",
+    "referenceTypeForField(field, true)",
+    "referencedType || referenceTypeForField(field)",
+]:
+    if marker not in reference_compat_text:
+        fail(f"ember-api-store reference compatibility marker missing: {marker}")
+if "ember-api-store/utils/denormalize" in reference_compat_text:
+    fail("reference compatibility boundary must own the Ember 6 relationship setters")
+
+reference_tests = (repo / "tests/unit/utils/api-store-references-test.js").read_text(encoding="utf-8")
+for marker in [
+    "accepts expanded API relationships without a missing computed setter",
+    "resolves ID relationships and registers reference watches",
+]:
+    if marker not in reference_tests:
+        fail(f"ember-api-store reference regression test missing: {marker}")
+
+reference_models = []
+for model_path in sorted((repo / "app/models").glob("*.js")):
+    model_text = model_path.read_text(encoding="utf-8")
+    if "ember-api-store/utils/denormalize" in model_text:
+        fail(f"model bypasses API-store reference compatibility boundary: {model_path.relative_to(repo)}")
+    if "ui/utils/api-store-references" in model_text:
+        reference_models.append(model_path)
+if len(reference_models) != 13:
+    fail(f"unexpected API-store reference model count: {len(reference_models)}")
+
+runtime_packages = {
+    "ember-power-select": {
+        "version": "9.0.2",
+        "integrity": "sha512-XsbvnIhdeL/HJSThsLgJCMgYKJIn6HFLgWRARJffsMfUE1hsW5XAL8pQkGA5iBpl69cZ3RA5U5ljttZDQoR/rg==",
+        "license_sha256": "fee7ff7079edfdbac1c78d0329da16ae9b6ef73405cec197ed6136ddf1d70117",
+    },
+    "ember-basic-dropdown": {
+        "version": "9.0.0",
+        "integrity": "sha512-v14n7srtuHyZEgy+uESN/sN5UtavfnCrZ70i+iUlzfTgMc/Mq0U9pteilNVftn6CSiHvV8o2SRaRauvKYNJFBA==",
+        "license_sha256": "fee7ff7079edfdbac1c78d0329da16ae9b6ef73405cec197ed6136ddf1d70117",
+    },
+    "ember-concurrency": {
+        "version": "5.2.0",
+        "integrity": "sha512-NUptPzaxaF2XWqn3VQ5KqiLSRqPFIZhWXH3UkOMhiedmiolxGYjUV96maoHWdd5msxNgQBC0UkZ28m7pV7A0sQ==",
+        "license_sha256": "c7543891093cb613eeb5a90c16a18fa25b8708a0c7c1c67691202384ff9b6567",
+    },
+    "ember-modifier": {
+        "version": "4.3.0",
+        "integrity": "sha512-O0rirSLQbGg0VJ/NqoQ4uN1bh2iAekZC/Ykma+FkjCM2ofrO38u+d8n3+AK6uVWeMJmogGX2KL+Is5fofoInJg==",
+        "license_sha256": "0390d452d98169895ab1ca8c14d35471642759366d51e1cfd014ded8bb10c51d",
+    },
+}
+for package_name, expected in runtime_packages.items():
+    version = expected["version"]
+    if package.get("devDependencies", {}).get(package_name) != version:
+        fail(f"package.json must pin {package_name} to {version}")
+    if root_deps.get(package_name) != version:
+        fail(f"lock root must pin {package_name} to {version}")
+    runtime_entry = package_entry(f"node_modules/{package_name}")
+    expected_resolved = f"https://registry.npmjs.org/{package_name}/-/{package_name}-{version}.tgz"
+    if runtime_entry.get("version") != version:
+        fail(f"lock resolves {package_name} {runtime_entry.get('version')} instead of {version}")
+    if runtime_entry.get("resolved") != expected_resolved:
+        fail(f"lock resolves unreviewed {package_name} source {runtime_entry.get('resolved')}")
+    if runtime_entry.get("integrity") != expected["integrity"]:
+        fail(f"lock integrity changed for {package_name}")
+    if runtime_entry.get("license") != "MIT":
+        fail(f"lock license changed for {package_name}: {runtime_entry.get('license')}")
+
+    legal_dir = repo / "vendor" / "runtime-licenses" / package_name
+    runtime_license = legal_dir / "LICENSE.md"
+    runtime_upstream = legal_dir / "UPSTREAM.md"
+    for required in [runtime_license, runtime_upstream]:
+        if not required.is_file():
+            fail(f"runtime legal file missing: {required.relative_to(repo)}")
+    if hashlib.sha256(runtime_license.read_bytes()).hexdigest() != expected["license_sha256"]:
+        fail(f"runtime MIT license changed for {package_name}")
+    upstream_text = runtime_upstream.read_text(encoding="utf-8")
+    for marker in [
+        f"- Upstream package: `{package_name}`",
+        f"- Upstream version: `{version}`",
+        f"- Upstream tarball: `{expected_resolved}`",
+        f"- npm integrity: `{expected['integrity']}`",
+    ]:
+        if marker not in upstream_text:
+            fail(f"runtime provenance marker missing for {package_name}: {marker}")
+
+template_roots = [
+    repo / "app",
+    repo / "vendor" / "lacsso" / "app",
+    repo / "vendor" / "lacsso" / "upstream-templates",
+]
+template_paths = []
+for template_root in template_roots:
+    template_paths.extend(sorted(template_root.rglob("*.hbs")))
+
+duplicate_action_context = re.compile(r"(?:\{\{|\()action\s+this\s+")
+legacy_link_to = re.compile(r"\{\{#?link-to\b")
+invalid_link_to_attribute = re.compile(r"<LinkTo\b[^>]*@(tagName|classNames|href)=", re.DOTALL)
+legacy_power_select = re.compile(r"\{\{#power-select\b")
+template_action_count = 0
+power_select_count = 0
+for template_path in template_paths:
+    template = template_path.read_text(encoding="utf-8")
+    relative = template_path.relative_to(repo)
+    if duplicate_action_context.search(template):
+        fail(f"template action duplicates the compiler-managed context: {relative}")
+    if legacy_link_to.search(template):
+        fail(f"legacy positional LinkTo remains: {relative}")
+    if invalid_link_to_attribute.search(template):
+        fail(f"invalid modern LinkTo attribute remains: {relative}")
+    if legacy_power_select.search(template):
+        fail(f"legacy PowerSelect invocation remains: {relative}")
+    if "{{#if hasBlock" in template or "{{if hasBlock" in template:
+        fail(f"legacy hasBlock property remains: {relative}")
+    template_action_count += len(re.findall(r"(?:\{\{|\()action\s+", template))
+    power_select_count += template.count("<PowerSelect")
+
+if template_action_count != 470:
+    fail(f"unexpected template action count: {template_action_count}")
+if power_select_count != 7:
+    fail(f"unexpected modern PowerSelect count: {power_select_count}")
+
+action_compat_paths = [
+    repo / "app" / "helpers" / "action.js",
+    repo / "app" / "modifiers" / "action.js",
+    repo / "app" / "utils" / "legacy-template-action.js",
+    repo / "tests" / "unit" / "utils" / "legacy-template-action-test.js",
+]
+action_compat = "\n".join(path.read_text(encoding="utf-8") for path in action_compat_paths)
+for marker in [
+    "createLegacyClosureAction",
+    "invokeLegacyModifierAction",
+    "isAllowedActionEvent",
+    "named.target === undefined ? context : named.target",
+    "element.removeEventListener(eventName, handler)",
+    "invokes a quoted action with curried and invocation arguments",
+]:
+    if marker not in action_compat:
+        fail(f"template action compatibility marker missing: {marker}")
+for forbidden in ["__container__", "_actions", "requireModule("]:
+    if forbidden in action_compat:
+        fail(f"template action compatibility uses a private runtime API: {forbidden}")
+
+terminal_component = (repo / "app" / "components" / "workspace-terminal" / "component.js").read_text(encoding="utf-8")
+terminal_tests = (repo / "tests" / "unit" / "components" / "workspace-terminal-test.js").read_text(encoding="utf-8")
+for marker in [
+    "function terminalCloseAction(options)",
+    "this.get('socket') !== socket",
+    "action === 'create'",
+    "action === 'reconnect'",
+    "replaces a stale broker session before it has completed the handshake",
+    "reconnects only after a live broker session disconnects",
+]:
+    if marker not in terminal_component + terminal_tests:
+        fail(f"terminal reconnect regression marker missing: {marker}")
+
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.8.5 ember-fetch=5.1.3 deprecated_count={len(deprecated)} package_count={len(packages)}"
+    f"version=2.8.5 ember-fetch=5.1.3 fetch_compat_revision=2 initializer_compat_revision=2 reference_compat_revision=2 "
+    f"ember6_template_compat_revision=1 terminal_reconnect_revision=1 "
+    f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )

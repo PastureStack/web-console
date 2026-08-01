@@ -84,9 +84,9 @@
     <h3>{{t 'authPage.oidc.switch.header'}}</h3>
     <hr>
     <p>{{t 'authPage.oidc.switch.help'}}</p>
-    {{#link-to "admin-tab.auth.localauth" classNames="btn btn-primary"}}
+    <LinkTo @route="admin-tab.auth.localauth" class="btn btn-primary">
       <i class="icon icon-exchange"></i> {{t 'authPage.oidc.switch.local'}}
-    {{/link-to}}
+    </LinkTo>
   </section>
 {{else}}
   <form autocomplete="off" {{action "save" on="submit"}}>

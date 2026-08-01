@@ -2,6 +2,7 @@ import Ember from 'ember';
 import C from 'ui/utils/constants';
 import {get as getTree} from 'ui/utils/navigation-tree';
 import HoverDropdown from 'ui/mixins/hover-dropdowns';
+import linkCurrentWhen from 'ui/utils/link-current-when';
 
 function fnOrValue(val, ctx) {
   if ( typeof val === 'function' )
@@ -93,6 +94,7 @@ export default Ember.Component.extend(HoverDropdown, {
       item.localizedLabel = fnOrValue(item.localizedLabel, this);
       item.label = fnOrValue(item.label, this);
       item.route = fnOrValue(item.route, this);
+      item.currentWhen = linkCurrentWhen(item.route, item.moreCurrentWhen);
       item.ctx = (item.ctx||[]).map((prop) => {
         return fnOrValue(prop, this);
       });
@@ -111,6 +113,7 @@ export default Ember.Component.extend(HoverDropdown, {
         subitem.localizedLabel = fnOrValue(subitem.localizedLabel, this);
         subitem.label = fnOrValue(subitem.label, this);
         subitem.route = fnOrValue(subitem.route, this);
+        subitem.currentWhen = linkCurrentWhen(subitem.route, subitem.moreCurrentWhen);
         subitem.ctx = (subitem.ctx||[]).map((prop) => {
           return fnOrValue(prop, this);
         });

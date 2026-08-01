@@ -4,11 +4,11 @@
   </h1>
 
   {{#if (eq this.which "infra")}}
-    {{#link-to "catalog-tab" this.projects.current.id (query-params catalogId="all" templateBase="infra") classNames="btn btn-sm btn-primary"}}{{t 'stacksPage.catalogButton'}}{{/link-to}}
+    <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all" templateBase="infra"}} class="btn btn-sm btn-primary">{{t 'stacksPage.catalogButton'}}</LinkTo>
   {{else}}
-    {{#link-to "stacks.new" classNames="btn btn-sm btn-primary"}}{{t 'stacksPage.actionButton'}}{{/link-to}}
+    <LinkTo @route="stacks.new" class="btn btn-sm btn-primary">{{t 'stacksPage.actionButton'}}</LinkTo>
     {{#if this.arranged.length}}
-      {{#link-to "catalog-tab" this.projects.current.id (query-params catalogId="all") classNames="btn btn-sm btn-primary"}}{{t 'stacksPage.catalogButton'}}{{/link-to}}
+      <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all"}} class="btn btn-sm btn-primary">{{t 'stacksPage.catalogButton'}}</LinkTo>
     {{/if}}
   {{/if}}
 

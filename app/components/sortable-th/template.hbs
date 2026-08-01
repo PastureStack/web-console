@@ -1,5 +1,5 @@
 <button class="btn btn-link r-p0">
-  {{#if hasBlock}}{{yield}}{{else}}{{t this.label}}{{/if}}
+  {{#if (has-block)}}{{yield}}{{else}}{{t this.label}}{{/if}}
   <span class="icon-stack" aria-hidden="true">
     {{#if this.activeAscending}}
       <i class="icon icon-sort-down icon-stack-1x"></i>

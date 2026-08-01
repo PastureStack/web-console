@@ -11,13 +11,17 @@ import sys
 
 path = Path("config/environment.js")
 text = path.read_text(encoding="utf-8")
+router_path = Path("app/router.js")
+router_text = router_path.read_text(encoding="utf-8")
 test_index = Path("tests/index.html")
 test_index_text = test_index.read_text(encoding="utf-8")
 failures = []
 
 required = [
     "rootURL: '/'",
+    "locationType: 'history'",
     "ENV.rootURL = '/'",
+    "ENV.locationType = 'none'",
     "ENV.rootURL = process.env.BASE_URL",
     "ENV.APP.rootURL = ENV.rootURL",
     "ENV.APP.baseURL = ENV.rootURL",
@@ -37,6 +41,20 @@ for pattern, code in blocked_patterns:
     if re.search(pattern, text):
         failures.append(f"{code} file={path}")
 
+if re.search(r"locationType\s*:\s*['\"]auto['\"]", text):
+    failures.append(f"UI_REMOVED_AUTO_LOCATION_RETURNED file={path}")
+
+for snippet in [
+    "import EmberRouter from '@ember/routing/router'",
+    "location: config.locationType",
+    "rootURL: config.rootURL",
+]:
+    if snippet not in router_text:
+        failures.append(f"UI_ROUTER_CONFIG_SNIPPET_MISSING snippet={snippet!r}")
+
+if "Ember.Router" in router_text:
+    failures.append(f"UI_ROUTER_GLOBAL_API_RETURNED file={router_path}")
+
 if '<base href="/">' not in test_index_text:
     failures.append(f"UI_TEST_INDEX_BASE_TAG_MISSING file={test_index}")
 
@@ -46,7 +64,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_ROOT_URL_CONFIG_OK rootURL=true app_baseURL_compat=true test_base_href=true")
-print("Ember config now uses rootURL while ENV.APP.baseURL remains populated for protocol compatibility.")
+print("UI_ROOT_URL_CONFIG_OK rootURL=true location=history test_location=none app_baseURL_compat=true test_base_href=true")
+print("Ember config uses the registered history location and rootURL while ENV.APP.baseURL remains populated for protocol compatibility.")
 print("failure_count=0")
 PY

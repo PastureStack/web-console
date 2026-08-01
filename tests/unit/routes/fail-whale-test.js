@@ -50,8 +50,10 @@ test('afterModel redirects when no error exists', function(assert) {
   assert.expect(1);
 
   var route = FailWhaleRoute.create({
-    transitionTo(name) {
-      assert.equal(name, 'authenticated');
+    router: {
+      transitionTo(name) {
+        assert.equal(name, 'authenticated');
+      },
     },
   });
 

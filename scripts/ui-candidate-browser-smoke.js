@@ -275,10 +275,19 @@ async function assertApiStoreContract(page) {
   }
 
   console.log(`api-store-contract-smoke-ok projects=${projects.length} schemas=${schemas.length} settings=${settings.length} hosts=${hosts.length} stacks=${stacks.length}`);
+  return { hosts };
 }
 
 async function failOnRenderedError(page, route) {
+  await page.waitForFunction(
+    () => Boolean(document.body && document.body.innerText.trim()),
+    null,
+    { timeout: 20000 }
+  ).catch(() => {});
   const body = (await page.locator("body").innerText({ timeout: 10000 })).slice(0, 6000);
+  if (!body.trim()) {
+    throw new Error(`route ${route} rendered an empty body`);
+  }
   if (/HTTP ERROR 404|Problem accessing|Application Error|fail whale|Template version not found|Error check update/i.test(body)) {
     throw new Error(`route ${route} rendered error body: ${body.slice(0, 400)}`);
   }
@@ -286,6 +295,9 @@ async function failOnRenderedError(page, route) {
 
 async function assertI18nHealth(page, route, warningStartIndex, i18nWarnings) {
   const body = (await page.locator("body").innerText({ timeout: 10000 })).slice(0, 12000);
+  if (!body.trim()) {
+    throw new Error(`route ${route} rendered an empty body`);
+  }
   if (/\*%MISSING%\*/i.test(body)) {
     throw new Error(`route ${route} rendered missing translation marker`);
   }
@@ -301,6 +313,14 @@ async function assertI18nHealth(page, route, warningStartIndex, i18nWarnings) {
   }
 
   console.log(`i18n-smoke-ok route=${route} warnings=0 keyLeaks=0`);
+}
+
+function assertNoLoadingErrors(route, startIndex, loadingErrors) {
+  const newErrors = loadingErrors.slice(startIndex);
+
+  if (newErrors.length) {
+    throw new Error(`route ${route} emitted Loading Error: ${newErrors.slice(0, 10).join(" | ")}`);
+  }
 }
 
 async function assertI18nFormatterContract(page, i18nWarnings) {
@@ -394,6 +414,34 @@ async function assertI18nFormatterContract(page, i18nWarnings) {
     throw new Error(`i18n formatter emitted warnings: ${newWarnings.slice(0, 10).join(" | ")}`);
   }
   console.log(`i18n-formatter-smoke-ok locale=${Array.isArray(result.locale) ? result.locale.join(",") : result.locale} htmlLength=${result.htmlLength}`);
+}
+
+async function assertTemplateActionBridge(page, hostId) {
+  if (!hostId) {
+    throw new Error("template action bridge smoke requires at least one candidate host");
+  }
+
+  const route = `/env/${projectId}/infra/hosts/${hostId}/storage`;
+  await page.goto(base + route, { waitUntil: "domcontentloaded", timeout: 45000 });
+  await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
+  await failOnRenderedError(page, route);
+
+  const storageFilter = page.locator(".storage-state-filter select");
+  await storageFilter.waitFor({ state: "visible", timeout: 15000 });
+  await storageFilter.selectOption("detached");
+  await page.waitForFunction(() => {
+    const app = window.Ui;
+    const controller = app && app.__container__ && app.__container__.lookup("controller:host.storage");
+    return controller && controller.get("storageFilter") === "detached";
+  }, null, { timeout: 15000 });
+  await storageFilter.selectOption("all");
+  await page.waitForFunction(() => {
+    const app = window.Ui;
+    const controller = app && app.__container__ && app.__container__.lookup("controller:host.storage");
+    return controller && controller.get("storageFilter") === "all";
+  }, null, { timeout: 15000 });
+
+  console.log(`template-action-bridge-smoke-ok host=${hostId} filter=detached,all`);
 }
 
 async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
@@ -751,23 +799,45 @@ async function main() {
     virtualAuthenticatorId = created.authenticatorId;
   }
   const pageErrors = [];
+  const consoleErrors = [];
+  const loadingErrors = [];
   const failedRequests = [];
   const i18nWarnings = [];
 
-  page.on("pageerror", (err) => pageErrors.push(err.message));
+  page.on("pageerror", (err) => {
+    if (pageErrors.length < 50) pageErrors.push(err.message);
+  });
   page.on("console", (msg) => {
     const text = msg.text();
+    if (msg.type() === "error" && consoleErrors.length < 50) {
+      consoleErrors.push(text);
+    }
+    if (/\bLoading Error:/i.test(text) && loadingErrors.length < 50) {
+      loadingErrors.push(`${msg.type()}: ${text}`);
+    }
     if (/translation not found|\*%MISSING%\*/i.test(text)) {
       i18nWarnings.push(`${msg.type()}: ${text}`);
     }
   });
   page.on("requestfailed", (req) => {
     const failure = req.failure();
-    failedRequests.push(`${req.method()} ${req.url()} ${failure ? failure.errorText : ""}`);
+    if (failedRequests.length < 50) {
+      failedRequests.push(`${req.method()} ${req.url()} ${failure ? failure.errorText : ""}`);
+    }
   });
 
   try {
-    await page.goto(`${base}/`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    try {
+      await page.goto(`${base}/`, { waitUntil: "commit", timeout: 15000 });
+      await page.waitForLoadState("domcontentloaded", { timeout: 45000 });
+    } catch (error) {
+      throw new Error(
+        `initial navigation failed: ${error.message}; ` +
+        `pageErrors=${pageErrors.join(" | ") || "none"}; ` +
+        `consoleErrors=${consoleErrors.join(" | ") || "none"}; ` +
+        `requestFailures=${failedRequests.join(" | ") || "none"}`
+      );
+    }
     await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
 
     const passwordInputs = await page.locator('input[type="password"]').count();
@@ -840,25 +910,45 @@ async function main() {
     }
 
     await fetchProjectsStatus(page);
-    await assertApiStoreContract(page);
+    const apiContract = await assertApiStoreContract(page);
+    assertNoLoadingErrors("post-login", 0, loadingErrors);
     await assertI18nHealth(page, "post-login", 0, i18nWarnings);
     await assertI18nFormatterContract(page, i18nWarnings);
+    let actionBridgeChecked = false;
     for (const route of routes) {
       const beforeWsUpgradeCount = wsUpgradeCount;
       const beforeI18nWarningCount = i18nWarnings.length;
+      const beforeLoadingErrorCount = loadingErrors.length;
       await page.goto(base + route, { waitUntil: "domcontentloaded", timeout: 45000 });
       await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
       await failOnRenderedError(page, route);
+      assertNoLoadingErrors(route, beforeLoadingErrorCount, loadingErrors);
       await assertI18nHealth(page, route, beforeI18nWarningCount, i18nWarnings);
       await assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount);
+      if (!actionBridgeChecked) {
+        await assertTemplateActionBridge(page, apiContract.hosts[0] && apiContract.hosts[0].id);
+        actionBridgeChecked = true;
+      }
     }
     await assertPasskeyLogin(page);
 
     await page.screenshot({ path: path.join(outDir, "ui-candidate-browser-smoke-final.png"), fullPage: true });
     const filteredFailures = failedRequests.filter((line) => !line.includes("net::ERR_ABORTED"));
     if (pageErrors.length) throw new Error(`page errors: ${pageErrors.join(" | ")}`);
+    if (consoleErrors.length) throw new Error(`console errors: ${consoleErrors.join(" | ")}`);
+    if (loadingErrors.length) throw new Error(`loading errors: ${loadingErrors.join(" | ")}`);
     if (filteredFailures.length) throw new Error(`request failures: ${filteredFailures.join(" | ")}`);
     console.log(`ui-candidate-browser-smoke-ok routes=${routes.join(",")} wsUpgrades=${wsUpgradeCount}`);
+  } catch (error) {
+    const diagnostics = [
+      `pageErrors=${pageErrors.join(" | ") || "none"}`,
+      `consoleErrors=${consoleErrors.join(" | ") || "none"}`,
+      `loadingErrors=${loadingErrors.join(" | ") || "none"}`,
+      `requestFailures=${failedRequests.join(" | ") || "none"}`,
+    ].join("; ");
+
+    error.message = `${error.message}; ${diagnostics}`;
+    throw error;
   } finally {
     if (webAuthnSession && virtualAuthenticatorId) {
       await webAuthnSession.send("WebAuthn.removeVirtualAuthenticator", {

@@ -23,13 +23,13 @@
     <ul class="dropdown-menu dropdown-menu-right">
       {{#each this.categories as |opt|}}
         {{#if (eq opt "all")}}
-          <li class="text-capitalize {{if (eq this.category opt) 'active'}}">{{#link-to this.parentRoute (query-params category=opt)}}{{t "nav.catalog.all"}}{{/link-to}}</li>
+          <li class="text-capitalize {{if (eq this.category opt) 'active'}}"><LinkTo @route={{this.parentRoute}} @query={{hash category=opt}}>{{t "nav.catalog.all"}}</LinkTo></li>
           <li class="divider"></li>
         {{else}}
           <li class="{{if (eq this.category opt) 'active'}}">
-            {{#link-to this.parentRoute (query-params category=opt)}}
+            <LinkTo @route={{this.parentRoute}} @query={{hash category=opt}}>
               {{opt}}
-            {{/link-to}}
+            </LinkTo>
           </li>
         {{/if}}
       {{/each}}

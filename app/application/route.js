@@ -100,7 +100,7 @@ export default Ember.Route.extend({
       }
 
       this.controllerFor('application').set('error',err);
-      this.transitionTo('failWhale');
+      this.get('router').transitionTo('failWhale');
 
       console.log('Application Error', (err ? err.stack : undefined));
     },
@@ -142,7 +142,7 @@ export default Ember.Route.extend({
           params.queryParams.errorMsg = errorMsg;
         }
 
-        this.transitionTo('login', params);
+        this.get('router').transitionTo('login', params);
       });
     },
 
@@ -179,7 +179,7 @@ export default Ember.Route.extend({
       console.log('Going back to', backTo);
       window.location.href = backTo;
     } else {
-      this.replaceWith('authenticated');
+      this.get('router').replaceWith('authenticated');
     }
   },
 
@@ -231,20 +231,20 @@ export default Ember.Route.extend({
         });
       } catch (err) {
         transition.abort();
-        this.transitionTo('login', {queryParams: {errorMsg: err.message}});
+        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
         return Ember.RSVP.reject(err);
       }
 
       return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
         transition.abort();
         if ( xhr.body && xhr.body.mfaRequired ) {
-          this.transitionTo('login');
+          this.get('router').transitionTo('login');
         } else {
           this.finishLogin();
         }
       }).catch((err) => {
         transition.abort();
-        this.transitionTo('login', {queryParams: {errorMsg: err.message}});
+        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
       });
     } else if ( !isOidcCallback && params.isTest ) {
       if ( github.stateMatches(params.state) ) {
@@ -267,13 +267,13 @@ export default Ember.Route.extend({
           transition.abort();
           // Can't call this.send() here because the initial transition isn't done yet
           if ( xhr.body && xhr.body.mfaRequired ) {
-            this.transitionTo('login');
+            this.get('router').transitionTo('login');
           } else {
             this.finishLogin();
           }
         }).catch((err) => {
           transition.abort();
-          this.transitionTo('login', {queryParams: { errorMsg: err.message}});
+          this.get('router').transitionTo('login', {queryParams: { errorMsg: err.message}});
         }).finally(() => {
           this.controllerFor('application').setProperties({
             state: null,
@@ -316,7 +316,7 @@ export default Ember.Route.extend({
     let agent = window.navigator.userAgent.toLowerCase();
 
     if ( agent.indexOf('msie ') >= 0 || agent.indexOf('trident/') >= 0 ) {
-      this.replaceWith('ie');
+      this.get('router').replaceWith('ie');
       return;
     }
 

@@ -1,13 +1,13 @@
 <section class="header clearfix">
-  <h1>{{#link-to "hosts"}}{{t 'hostsPage.hostPage.header.linkTo'}}{{/link-to}}</h1>
+  <h1><LinkTo @route="hosts">{{t 'hostsPage.hostPage.header.linkTo'}}</LinkTo></h1>
 
-  {{#power-select options=this.model.all selected=this.host onchange=(action "changeHost") searchField="displayName" as |obj|}}
+  <PowerSelect @options={{this.model.all}} @selected={{this.host}} @onChange={{action "changeHost"}} @searchField="displayName" as |obj|>
     {{select-dot model=obj}}
-  {{/power-select}}
+  </PowerSelect>
 
   <div class="pull-right">
     {{#action-menu model=this.host size="sm" classNames="r-ml10 pull-right"}}
-      {{#link-to "containers.new" (query-params hostId=this.host.id) classNames="btn btn-sm btn-primary"}}{{t 'hostsPage.hostPage.addContainer.linkTo'}}{{/link-to}}
+      <LinkTo @route="containers.new" @query={{hash hostId=this.host.id}} class="btn btn-sm btn-primary">{{t 'hostsPage.hostPage.addContainer.linkTo'}}</LinkTo>
     {{/action-menu}}
 
     {{header-state model=this.host classNames="pull-right"}}
@@ -145,10 +145,10 @@
       </div>
       <div class="row r-p15">
         <ul class="nav nav-tabs nav-tabs-well shadowed" role="tablist">
-          {{#link-to "host.containers" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.containers'}}</a>{{/link-to}}
-          {{#link-to "host.ports" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.ports'}}</a>{{/link-to}}
-          {{#link-to "host.labels" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.labels'}}</a>{{/link-to}}
-          {{#link-to "host.storage" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.storage'}}</a>{{/link-to}}
+          <li><LinkTo @route="host.containers">{{t 'hostsPage.hostPage.navTabs.containers'}}</LinkTo></li>
+          <li><LinkTo @route="host.ports">{{t 'hostsPage.hostPage.navTabs.ports'}}</LinkTo></li>
+          <li><LinkTo @route="host.labels">{{t 'hostsPage.hostPage.navTabs.labels'}}</LinkTo></li>
+          <li><LinkTo @route="host.storage">{{t 'hostsPage.hostPage.navTabs.storage'}}</LinkTo></li>
         </ul>
         <div class="table-flat well">
           {{outlet}}

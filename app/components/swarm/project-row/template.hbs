@@ -4,7 +4,7 @@
   </td>
   <td class="force-wrap">
     <a href="#" {{action "toggleExpand"}}><i class="icon {{if this.expanded 'icon-minus-square' 'icon-plus-square'}}" /></a>
-    {{#link-to "swarm-tab.projects.project" this.model.id}}{{this.model.displayName}}{{/link-to}}
+    <LinkTo @route="swarm-tab.projects.project" @model={{this.model.id}}>{{this.model.displayName}}</LinkTo>
   </td>
   <td>
     {{#if this.model.services.length}}

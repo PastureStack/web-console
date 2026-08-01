@@ -13,6 +13,18 @@ function decodeTerminalData(data) {
   }
 }
 
+function terminalCloseAction(options) {
+  if (options.userClosed || options.destroyed) {
+    return 'ignore';
+  }
+
+  if (!options.hasHello && !options.createAttempted) {
+    return options.entryStatus === 'ended' ? 'ended' : 'create';
+  }
+
+  return options.status === 'ended' ? 'none' : 'reconnect';
+}
+
 export default Ember.Component.extend(ThrottledResize, {
   classNames: ['workspace-terminal'],
   workspace: Ember.inject.service('console-workspace'),
@@ -177,18 +189,25 @@ export default Ember.Component.extend(ThrottledResize, {
 
     socket.onmessage = (message) => this.handleMessage(message.data);
     socket.onclose = () => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+      if (this.get('socket') !== socket) {
         return;
       }
-      this.set('socket', null);
 
-      if (!this.get('hasHello') && !this.get('createAttempted')) {
-        if (this.get('entry.status') === 'ended') {
-          this.set('status', 'ended');
-        } else {
-          this.connect(true);
-        }
-      } else if (this.get('status') !== 'ended') {
+      this.set('socket', null);
+      let action = terminalCloseAction({
+        userClosed: this.get('userClosed'),
+        destroyed: this.isDestroyed || this.isDestroying,
+        hasHello: this.get('hasHello'),
+        createAttempted: this.get('createAttempted'),
+        entryStatus: this.get('entry.status'),
+        status: this.get('status'),
+      });
+
+      if (action === 'ended') {
+        this.set('status', 'ended');
+      } else if (action === 'create') {
+        this.connect(true);
+      } else if (action === 'reconnect') {
         this.setTerminalInputEnabled(false);
         this.set('status', 'disconnected');
         this.get('workspace').updateSession(this.get('entry'), {status: 'disconnected'});
@@ -361,4 +380,4 @@ export default Ember.Component.extend(ThrottledResize, {
   },
 });
 
-export { decodeTerminalData };
+export { decodeTerminalData, terminalCloseAction };

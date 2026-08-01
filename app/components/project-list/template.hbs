@@ -1,6 +1,6 @@
 <section class="header clearfix">
   <h1>{{t 'projectList.index.header'}}</h1>
-  {{#link-to "settings.projects.new" class="btn btn-sm btn-primary"}}{{t 'projectList.index.new'}}{{/link-to}}
+  <LinkTo @route="settings.projects.new" class="btn btn-sm btn-primary">{{t 'projectList.index.new'}}</LinkTo>
 </section>
 <section>
   <div class="well">

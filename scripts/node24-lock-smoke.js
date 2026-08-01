@@ -695,6 +695,8 @@ function expectEmberApiStoreFetchUpgrade() {
 
   const apiStoreDir = path.dirname(require.resolve("ember-api-store/package.json"));
   const apiStoreInfo = packageJsonInfo("ember-api-store");
+  const emberFetchDir = path.dirname(require.resolve("ember-fetch/package.json"));
+  const emberFetchInfo = packageJsonInfo("ember-fetch");
   if (apiStoreInfo.dependencies["ember-network"]) {
     fail("ember-api-store still depends on deprecated ember-network");
   }
@@ -703,6 +705,9 @@ function expectEmberApiStoreFetchUpgrade() {
   }
   if (apiStoreInfo.dependencies["broccoli-file-creator"] !== "^2.1.1") {
     fail(`ember-api-store broccoli-file-creator dependency changed to ${apiStoreInfo.dependencies["broccoli-file-creator"]}`);
+  }
+  if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 2) {
+    fail("ember-fetch browser-global compatibility revision is missing");
   }
 
   for (const filePath of [
@@ -719,7 +724,60 @@ function expectEmberApiStoreFetchUpgrade() {
     }
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 ember-fetch=5.1.3 broccoli-file-creator=2.1.1");
+  const fetchTemplatePath = path.join(emberFetchDir, "assets/browser-fetch.js.t");
+  const fetchTemplate = fs.readFileSync(fetchTemplatePath, "utf8");
+  if (!fetchTemplate.includes("function(exports)") || fetchTemplate.includes("function(self)")) {
+    fail("ember-fetch AMD exports callback shadows the browser global self object");
+  }
+
+  const moduleBody = `
+    var nativeClasses = (function(runtime) {
+      return {
+        NativeAbortSignal: runtime.AbortSignal,
+        NativeAbortController: runtime.AbortController
+      };
+    })(typeof self !== 'undefined' ? self : global);
+    class CompatAbortSignal extends nativeClasses.NativeAbortSignal {}
+    class CompatAbortController extends nativeClasses.NativeAbortController {}
+    global.AbortSignal = CompatAbortSignal;
+    global.AbortController = CompatAbortController;
+    global.fetch = function() { global.fetchCalls++; return Promise.resolve(); };
+  `;
+  const renderedFetch = fetchTemplate.replace("<%= moduleBody %>", moduleBody);
+  const browserGlobal = {
+    Ember: {
+      RSVP: { Promise },
+      Test: { registerWaiter() { fail("production fetch wrapper registered a legacy Ember.Test waiter"); } },
+    },
+    AbortSignal: class NativeAbortSignal {},
+    AbortController: class NativeAbortController {},
+    fetchCalls: 0,
+  };
+  const fetchModules = {};
+  const sandbox = {
+    window: browserGlobal,
+    self: browserGlobal,
+    preferNative: false,
+    define(name, dependencies, factory) {
+      if (name !== "fetch") {
+        return;
+      }
+      const exports = {};
+      factory(exports);
+      fetchModules[name] = exports;
+    },
+  };
+  vm.runInNewContext(renderedFetch, sandbox, { filename: fetchTemplatePath });
+  const fetchPromise = fetchModules.fetch.default("/compatibility-smoke");
+  if (typeof fetchModules.fetch.default !== "function" ||
+      typeof fetchModules.fetch.fetch !== "function" ||
+      typeof fetchModules.fetch.AbortController !== "function" ||
+      !fetchPromise || typeof fetchPromise.then !== "function" ||
+      browserGlobal.fetchCalls !== 1) {
+    fail("ember-fetch browser-global production wrapper smoke failed");
+  }
+
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 ember-fetch=5.1.3 compat_revision=2 browser_global=ok production_waiter=absent broccoli-file-creator=2.1.1");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {
@@ -835,7 +893,7 @@ function expectEmberLtsAndJQueryRuntime() {
     }
   }
   const compat = fs.readFileSync("vendor/ember/ember-global-compat.js", "utf8");
-  for (const marker of ["requireModule('@ember/runloop')", "Ember.NativeArray.apply", "legacyTextInput"]) {
+  for (const marker of ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "root.find(selector)", "legacyTextInput"]) {
     if (!compat.includes(marker)) {
       fail(`Ember global compatibility marker missing: ${marker}`);
     }
@@ -1329,23 +1387,50 @@ function expectEmberPowerSelectSassAssets() {
   const packagePath = "vendor/ember-power-select/package.json";
   const scssPath = "vendor/ember-power-select/app/styles/ember-power-select.scss";
   const variablesPath = "vendor/ember-power-select/app/styles/ember-power-select/variables.scss";
-  for (const file of [packagePath, scssPath, variablesPath]) {
+  const powerSelectLicensePath = "vendor/ember-power-select/LICENSE.md";
+  const powerSelectUpstreamPath = "vendor/ember-power-select/UPSTREAM.md";
+  const basicDropdownScssPath = "vendor/ember-basic-dropdown/app/styles/ember-basic-dropdown.scss";
+  const basicDropdownLicensePath = "vendor/ember-basic-dropdown/LICENSE.md";
+  const basicDropdownUpstreamPath = "vendor/ember-basic-dropdown/UPSTREAM.md";
+  for (const file of [
+    packagePath,
+    scssPath,
+    variablesPath,
+    powerSelectLicensePath,
+    powerSelectUpstreamPath,
+    basicDropdownScssPath,
+    basicDropdownLicensePath,
+    basicDropdownUpstreamPath,
+  ]) {
     if (!fs.existsSync(file)) {
       fail(`ember-power-select style asset missing: ${file}`);
     }
   }
   const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const scss = fs.readFileSync(scssPath, "utf8");
+  const powerSelectUpstream = fs.readFileSync(powerSelectUpstreamPath, "utf8");
+  const basicDropdownScss = fs.readFileSync(basicDropdownScssPath, "utf8");
+  const basicDropdownUpstream = fs.readFileSync(basicDropdownUpstreamPath, "utf8");
   if (packageJson.version !== "1.0.0-beta.19" || packageJson.license !== "MIT") {
     fail(`ember-power-select vendor metadata changed: version=${packageJson.version} license=${packageJson.license}`);
   }
   if (!scss.includes('@use "sass:math";') || !scss.includes("math.is-unitless($ember-power-select-line-height)")) {
     fail("ember-power-select vendored Sass lost math.is-unitless maintenance patch");
   }
-  if (!scss.includes("node_modules/ember-basic-dropdown/app/styles/ember-basic-dropdown")) {
+  if (!scss.includes("../../../ember-basic-dropdown/app/styles/ember-basic-dropdown")) {
     fail("ember-power-select vendored Sass lost explicit ember-basic-dropdown import path");
   }
-  console.log("ember-power-select-sass-assets-smoke-ok vendor=1.0.0-beta.19");
+  if (!basicDropdownScss.includes(".ember-basic-dropdown-content")) {
+    fail("ember-basic-dropdown vendored Sass lost expected content styles");
+  }
+  if (!powerSelectUpstream.includes("Upstream version: `1.0.0-beta.19`")) {
+    fail("ember-power-select provenance version drifted");
+  }
+  if (!basicDropdownUpstream.includes("Upstream version: `0.16.0-beta.4`") ||
+      !basicDropdownUpstream.includes("sha512-MuPZEeMw/r6EOHgoCokY/BjRuzwS7HLGZ0BaFomM0/7tcbZYFJ4g5zj1PIoGQW1Kxpe9rhYdLKOIg3JKmYbPpw==")) {
+    fail("ember-basic-dropdown provenance version or integrity drifted");
+  }
+  console.log("ember-power-select-sass-assets-smoke-ok vendor=1.0.0-beta.19 basic_dropdown=0.16.0-beta.4");
 }
 
 function expectPrismBrowserGlobals() {
@@ -1442,7 +1527,7 @@ expectPackageJsonVersion("ember-intl", "8.4.0");
 expectPackageJsonVersion("@formatjs/icu-messageformat-parser", "3.5.16");
 expectVersion("ember-cli-babel", "8.3.1");
 expectMissing("ember-cli-htmlbars-inline-precompile");
-expectPackageJsonVersion("lacsso", "0.0.60-rc16.0");
+expectPackageJsonVersion("lacsso", "0.0.60-rc16.1");
 expectPackageJsonVersion("ember-cli-pagination", "2.2.4-rc16.0");
 expectPackageJsonVersion("ember-rl-dropdown", "0.8.1-rc16.0");
 expectVersion("ansi_up", "6.0.6");

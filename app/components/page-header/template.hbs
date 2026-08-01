@@ -25,19 +25,18 @@
           {{else if item.submenu.length}}
             {{! Has a submenu }}
             <li class="dropdown">
-              {{#link-to-as-attrs
-                item.route
-                models=item.ctx
-                queryParams=item.queryParams
-                moreCurrentWhen=item.moreCurrentWhen
-                activeParent=true
+              <LinkTo
+                @route={{item.route}}
+                @models={{item.ctx}}
+                @query={{item.queryParams}}
+                @current-when={{item.currentWhen}}
                 class="dropdown-toggle"
                 role="button"
                 aria-haspopup="true"
                 aria-expanded="false"
-              }}
+              >
                 {{#if item.localizedLabel}}{{t item.localizedLabel}}{{else}}{{item.label}}{{/if}} <span class="icon icon-chevron-down hidden-sm hidden-xs"/>
-              {{/link-to-as-attrs}}
+              </LinkTo>
               <ul class="dropdown-menu" data-dropdown-id={{item.id}}>
                 {{#each item.submenu as |subitem|}}
                   {{#if subitem.divider}}
@@ -50,15 +49,14 @@
                     </li>
                   {{else if subitem.route}}
                     <li>
-                      {{#link-to-as-attrs
-                        subitem.route
-                        models=subitem.ctx
-                        queryParams=subitem.queryParams
-                        activeParent=true
-                        moreCurrentWhen=subitem.moreCurrentWhen
-                      }}
+                      <LinkTo
+                        @route={{subitem.route}}
+                        @models={{subitem.ctx}}
+                        @query={{subitem.queryParams}}
+                        @current-when={{subitem.currentWhen}}
+                      >
                         <i class="{{subitem.icon}}"/> {{#if subitem.localizedLabel}}{{t subitem.localizedLabel}}{{else}}{{subitem.label}}{{/if}}
-                      {{/link-to-as-attrs}}
+                      </LinkTo>
                     </li>
                   {{else}}
                     {{! Just a label }}
@@ -70,22 +68,21 @@
               </ul>
               {{#if item.showAlert}}
                 {{#tooltip-element class="tooltip-warning" type='tooltip-warning' tooltipFor="showAlert"}}
-                  {{#link-to item.alertRoute}}!{{/link-to}}
+                  <LinkTo @route={{item.alertRoute}}>!</LinkTo>
                 {{/tooltip-element}}
               {{/if}}
             </li>
           {{else if item.route}}
             {{! No submenu }}
             <li>
-              {{#link-to-as-attrs
-                item.route
-                models=item.ctx
-                queryParams=item.queryParams
-                activeParent=true
-                moreCurrentWhen=item.moreCurrentWhen
-              }}
+              <LinkTo
+                @route={{item.route}}
+                @models={{item.ctx}}
+                @query={{item.queryParams}}
+                @current-when={{item.currentWhen}}
+              >
                 {{#if item.localizedLabel}}{{t item.localizedLabel}}{{else}}{{item.label}}{{/if}}
-              {{/link-to-as-attrs}}
+              </LinkTo>
             </li>
           {{else}}
             {{! Just a label }}

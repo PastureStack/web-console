@@ -146,7 +146,7 @@
             {{check-box nodeId=content.id disabled=(not (array-includes this.selectablePagedContent content))}}
           </td>
         {{/if}}
-        {{#if hasBlock}}
+        {{#if (has-block)}}
           {{yield content 'row' this.dt this.visibleColumnMap}}
         {{else}}
           {{#each this.visibleHeaders as |header|}}
@@ -155,7 +155,7 @@
         {{/if}}
       </tr>
     {{else}}
-      {{#if hasBlock}}
+      {{#if (has-block)}}
         {{yield null (if this.arranged.length 'nomatch' 'norows') this.dt this.visibleColumnMap}}
       {{/if}}
     {{/each}}

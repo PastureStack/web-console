@@ -2,6 +2,6 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   redirect() {
-    this.transitionTo('k8s-tab.dashboard');
+    this.get('router').transitionTo('k8s-tab.dashboard');
   },
 });

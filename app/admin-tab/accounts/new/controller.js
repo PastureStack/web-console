@@ -8,7 +8,7 @@ export default Ember.Controller.extend(NewOrEdit, {
 
   actions: {
     cancel() {
-      this.transitionToRoute('admin-tab.accounts');
+      this.get('router').transitionTo('admin-tab.accounts');
     },
   },
 
@@ -58,6 +58,6 @@ export default Ember.Controller.extend(NewOrEdit, {
   },
 
   doneSaving() {
-    this.transitionToRoute('admin-tab.accounts');
+    this.get('router').transitionTo('admin-tab.accounts');
   }
 });

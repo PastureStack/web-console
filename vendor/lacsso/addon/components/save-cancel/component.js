@@ -1,6 +1,8 @@
 import Ember from 'ember';
+import layout from './template';
 
 export default Ember.Component.extend({
+  layout,
   editing: null,
   createLabel:  'saveCancel.create',
   editLabel:    'saveCancel.edit',

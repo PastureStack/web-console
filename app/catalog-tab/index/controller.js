@@ -37,7 +37,7 @@ export default Ember.Controller.extend({
         return false;
       }
 
-      this.transitionToRoute(this.get('launchRoute'), id);
+      this.get('router').transitionTo(this.get('launchRoute'), id);
     },
 
     update() {
@@ -51,7 +51,7 @@ export default Ember.Controller.extend({
 
     },
     switch(catalog) {
-      this.transitionToRoute(this.get('parentRoute'), this.get('projectId'), {queryParams: catalog.queryParams} );
+      this.get('router').transitionTo(this.get('parentRoute'), this.get('projectId'), {queryParams: catalog.queryParams} );
     }
   },
 

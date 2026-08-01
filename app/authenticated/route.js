@@ -135,7 +135,7 @@ export default Ember.Route.extend(Subscribe, PromiseToCb, {
       return;
     }
 
-    this.replaceWith('settings.projects');
+    this.get('router').replaceWith('settings.projects');
     return ret;
   },
 

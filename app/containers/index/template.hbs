@@ -1,7 +1,7 @@
 <section class="header clearfix">
   <h1>{{t 'containersPage.index.header'}}</h1>
 
-  {{#link-to "containers.new" classNames="btn btn-sm btn-primary"}}{{t 'containersPage.index.linkTo'}}{{/link-to}}
+  <LinkTo @route="containers.new" class="btn btn-sm btn-primary">{{t 'containersPage.index.linkTo'}}</LinkTo>
 
   <div class="btn-group r-mr10 r-mt5" style="float: right;">
     <label style="font-weight: normal;">{{input type="checkbox" checked=this.showSystem}} {{t 'hostsPage.index.showSystem'}}</label>

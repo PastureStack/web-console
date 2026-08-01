@@ -6,7 +6,7 @@
     <span class="banner-head">{{t 'mesosPage.banner.header'}} <i class="icon icon-host"></i></span>
       <span class="banner-content">
         {{t 'mesosPage.banner.content' hosts=this.activeHostCount}}
-        {{#link-to 'hosts' class="r-pl10"}}{{t 'mesosPage.banner.link'}}{{/link-to}}
+        <LinkTo @route="hosts" class="r-pl10">{{t 'mesosPage.banner.link'}}</LinkTo>
       </span>
 </div>
 
@@ -33,7 +33,7 @@
       <h4>{{t 'mesosPage.launch.header'}}</h4>
       <p>{{t 'mesosPage.launch.content'}}</p>
       {{#if this.model.url}}
-        {{#link-to 'catalog-tab' class="btn btn-primary"}}{{t 'mesosPage.launch.button'}}{{/link-to}}
+        <LinkTo @route="catalog-tab" class="btn btn-primary">{{t 'mesosPage.launch.button'}}</LinkTo>
       {{else}}
         <button class="btn btn-primary btn-disabled">{{t 'mesosPage.launch.button'}}</button>
       {{/if}}

@@ -45,7 +45,7 @@ export default Ember.Route.extend({
 
     goBack() {
       if ( this.get('backTo') === 'waiting' ) {
-        this.transitionTo('authenticated.project.waiting');
+        this.get('router').transitionTo('authenticated.project.waiting');
       } else {
         let appRoute = getOwner(this).lookup('route:application');
         let opts     = this.get('previousOpts');
@@ -145,7 +145,7 @@ export default Ember.Route.extend({
 
       if ( params.driver !== targetDriver )
       {
-        this.transitionTo('hosts.new', {queryParams: {driver: targetDriver}});
+        this.get('router').transitionTo('hosts.new', {queryParams: {driver: targetDriver}});
       }
       else
       {

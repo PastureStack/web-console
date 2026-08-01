@@ -9,7 +9,7 @@
         <h3>{{t 'helpPage.environment.header'}}</h3>
         <hr/>
         {{format-html-message 'helpPage.environment.content' appName=this.settings.appName}}
-        {{#link-to 'settings.projects' class="btn btn-primary right-divider-btn"}} {{t 'helpPage.environment.manageLink'}} {{/link-to}}
+        <LinkTo @route="settings.projects" class="btn btn-primary right-divider-btn"> {{t 'helpPage.environment.manageLink'}} </LinkTo>
       </div>
     </div>
 
@@ -18,7 +18,7 @@
         <h3>{{t 'helpPage.host.header'}}</h3>
         <hr/>
         <p>{{t 'helpPage.host.content' appName=this.settings.appName}} <a href="{{this.docsLink}}/hosts/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.host.contentLink'}}</a></p>
-        {{#link-to "hosts.new" class="btn btn-primary"}}{{t 'helpPage.host.addHostLink'}}{{/link-to}}
+        <LinkTo @route="hosts.new" class="btn btn-primary">{{t 'helpPage.host.addHostLink'}}</LinkTo>
       </div>
     </div>
 
@@ -31,12 +31,12 @@
         <p>{{t 'helpPage.stacks.content.paragraph2' appName=this.settings.appName}} <a href="{{this.docsLink}}/services/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.stacks.content.link'}}</a></p>
 
         {{#if this.hasHosts}}
-          {{#link-to "applications-tab" class="btn btn-primary r-mb10"}} {{t 'helpPage.stacks.addServiceLink'}}{{/link-to}}
-          {{#link-to "catalog-tab" class="btn btn-primary"}} {{t 'helpPage.stacks.addCatalogLink'}}{{/link-to}}
+          <LinkTo @route="applications-tab" class="btn btn-primary r-mb10"> {{t 'helpPage.stacks.addServiceLink'}}</LinkTo>
+          <LinkTo @route="catalog-tab" class="btn btn-primary"> {{t 'helpPage.stacks.addCatalogLink'}}</LinkTo>
         {{else}}
           <div class="alert alert-danger">{{t 'helpPage.stacks.noHosts'}}</div>
-          {{#link-to "applications-tab" class="btn btn-primary r-mb10" disabled=true}}{{t 'helpPage.stacks.manageServiceLink'}}{{/link-to}}
-          {{#link-to "catalog-tab" class="btn btn-primary" disabled=true}}{{t 'helpPage.stacks.addCatalogLink'}}{{/link-to}}
+          <LinkTo @route="applications-tab" class="btn btn-primary r-mb10" @disabled={{true}}>{{t 'helpPage.stacks.manageServiceLink'}}</LinkTo>
+          <LinkTo @route="catalog-tab" class="btn btn-primary" @disabled={{true}}>{{t 'helpPage.stacks.addCatalogLink'}}</LinkTo>
         {{/if}}
       </div>
     </div>

@@ -80,7 +80,10 @@ publishing an artifact. Supply credentials through the documented
 `PASTURESTACK_*` environment variables; provide `PASTURESTACK_TOTP_SECRET`
 when the acceptance account has TOTP enabled. The smoke verifies live
 Traditional Chinese and Simplified Chinese switching before returning to
-English. Keep screenshots and output outside the repository.
+English. It rejects an empty rendered body and application `Loading Error`
+console events even when the browser reports them below error severity, so an
+API-store startup exception cannot be mistaken for a successful candidate.
+Keep screenshots and output outside the repository.
 
 For an MFA release, include `/admin/accounts`, `/account/security`, and a
 managed-account `/admin/access/mfa?accountId=...` route in `UI_SMOKE_ROUTES`.
@@ -165,11 +168,80 @@ These no-publish candidates replace Bower delivery paths with pinned npm or revi
 `v1.6.56-pasturestack.37` moves the browser application and build CLI to the
 supported Ember 6.12 LTS line, removes copied Ember runtime binaries, and keeps
 the classic application contract behind a reviewed compatibility boundary.
+The reviewed `ember-fetch@5.1.3` compatibility package retains the upstream MIT
+license, avoids shadowing the browser global `self` object inside its AMD
+exports callback, and re-exports Fetch after the polyfill installs it. The
+production wrapper contains no legacy `Ember.Test` waiter: Ember 6 compatibility
+builds can expose that namespace outside tests, so its presence is not a valid
+environment check. The Node 24 release-lock smoke executes the wrapper with an
+active `Ember.Test` namespace and native `AbortSignal` and `AbortController`
+stand-ins; registration of a test waiter or failure to call the browser Fetch
+implementation blocks the candidate before publication. Distributable archives
+include its exact license and provenance under `licenses/ember-fetch/`.
+The four active lacsso Handlebars templates are compiled deterministically with
+`ember-source@6.12.0` into public `@ember/template-factory` modules. Their
+original markup remains byte-for-byte under `vendor/lacsso/upstream-templates`;
+the production artifact gate rejects the build-only `ember-cli-htmlbars` AMD
+import that otherwise fails at browser startup.
+The application-owned API-store reference boundary preserves the retired
+`denormalizeId` and `denormalizeIdArray` contract while using Ember 6 computed
+properties. It keeps the upstream UI's `Id`/`Ids` singular-type inference,
+including array fields such as `serviceIds`, without forking the Apache-2.0
+store package. Explicit setters retain expanded API relationships such as a
+volume's inline `mounts` list; ID-only payloads still resolve through the store
+and register the upstream reference watches.
+The same compatibility boundary assigns the application owner to records,
+collections, and bulk-loaded schemas through public `getOwner`/`setOwner`
+calls. This replaces the store's obsolete discovery of Ember's former private
+owner key and keeps lazy service descriptors functional on API resources.
+Navigation metadata now uses an application-owned recursive copy boundary in
+place of the removed `Ember.copy` API. Mutable arrays and plain objects are
+isolated for each page-header consumer, Ember array helpers remain available,
+and route callbacks and other non-plain values retain their original identity.
+The reviewed classic-component boundary restores the removed component-scoped
+`this.$()` helper through each component's public `element` and the pinned
+jQuery 3.7.1 runtime. Empty, root, and descendant selections retain the legacy
+contract while application code migrates independently of this runtime update.
+Authenticated navigation now derives its compatibility `currentPath` value from
+the public RouterService `currentRouteName` property. It no longer depends on
+the removed application-controller route state, and existing page-header and
+upgrade-banner consumers keep their string contract.
+The global runloop boundary installs public `@ember/runloop` exports as own
+properties on the classic `Ember.run` function. In particular, `Ember.run.bind`
+can no longer fall through to native `Function.prototype.bind`; WebSocket event
+callbacks therefore retain their socket owner and watchdog state.
+The request-store header mixin uses a native getter instead of the removed
+volatile computed-property API. Every request therefore reads the current
+server-managed CSRF cookie without relying on a cached value or a client-side
+property-change notification.
+The **Owner-backed Initializer Injection** boundary replaces the removed
+`Application#inject` registry API with public owner lookups and service
+injection descriptors on the classic base classes. This preserves the legacy
+`app`, router, shortcut, session, and tab-session properties without private
+registry access. The obsolete growl initializer remains inert so it cannot
+overwrite the authenticated session property with an unrelated service.
+The application also owns a narrow initializer compatibility boundary for
+`ember-api-store@2.8.5`. It retains the addon's public store and model
+registrations, but injects the default, authentication, user, and webhook
+stores with supported service descriptors. The addon's obsolete registry
+injector is never imported or executed by a PastureStack initializer.
 Webpack entry modules generated by `ember-auto-import` use natural IDs because
 their absolute Broccoli staging paths change between otherwise identical clean
 builds. Chunk IDs remain deterministic. A release candidate must be built and
 packaged twice with the same source epoch, and the two complete archives must
 match byte for byte before publication.
+The production packager also removes detached auto-import chunks that contain
+`@ember/test-helpers`. Those chunks are not referenced by the production HTML,
+are not part of the browser runtime, and can embed a random absolute temporary
+build path. A public candidate fails closed if test helpers or `/tmp/` build
+paths remain after packaging.
+
+The Ember CLI 6.12 compatibility build restores the runtime theme output map
+after Ember CLI initializes its default packager. Release artifacts must
+contain non-empty `ui-light.css`, `ui-light.rtl.css`, `ui-dark.css`, and
+`ui-dark.rtl.css` assets. The retained Ember Power Select and Ember Basic
+Dropdown Sass sources keep their exact upstream version and integrity records,
+and their MIT licenses are copied into every distributable under `licenses/`.
 
 The **Ember 6.12 LTS Runtime And CLI** baseline uses
 `ember-source@6.12.0`, Ember CLI 6.12.0, Ember CLI HTMLBars 7.0.1, and
@@ -190,6 +262,21 @@ which is required after the implicit-context fallback was removed from modern
 Ember. The conversion is source-level and keeps helper, component, block
 parameter, and local-variable lookups unchanged. Browser tests compile every
 application and in-tree addon template so an unresolved path blocks release.
+Legacy template actions use a narrow public-API compatibility bridge. Ember's
+template compiler supplies the current context to this legacy helper and
+modifier contract; template source must not add a second explicit `this`
+target. Positional LinkTo invocations, the removed `hasBlock` property, and
+legacy Power Select block syntax are rejected by the source gate. Browser
+validation changes a real storage filter and verifies controller state so a
+bridge that only compiles, but cannot dispatch an action, cannot be released.
+
+The current interactive-select runtime is pinned to
+`ember-power-select@9.0.2`, `ember-basic-dropdown@9.0.0`,
+`ember-concurrency@5.2.0`, and `ember-modifier@4.3.0`. Their exact npm
+integrities, upstream provenance, and MIT license texts are retained under
+`vendor/runtime-licenses/` and copied into every release under
+`licenses/runtime/`. These records are intentionally separate from the older,
+independently pinned Sass sources used to preserve the existing visual theme.
 
 Build-only dependencies are not force-overridden across incompatible major
 versions. Reviewed first-party compatibility packages cover direct project
@@ -201,6 +288,11 @@ the full browser suite.
 The project subscription socket is also the sole owner of its automatic
 reconnect timer. A disconnect observer updates UI state but does not open a
 second socket, preventing duplicate connection attempts after a server restart.
+Terminal sockets ignore delayed close events from superseded connections. If a
+saved broker session closes before its initial handshake, the console creates a
+new broker session; a connection that completed its handshake follows the
+bounded reconnect path instead. Closed-by-user and already-ended sessions never
+reopen automatically.
 If route activation explicitly creates a replacement during the close event,
 the close handler preserves that socket and does not queue another timer. Late
 close events from an older connection are ignored instead of clearing the
@@ -208,6 +300,30 @@ replacement connection.
 Exec and log sessions remain independent: a session that ended on the server is
 not presented as reconnectable, while a newly created session uses a fresh
 session identifier and credential.
+
+The navigation header uses Ember's public `<LinkTo>` component with explicit
+route, model-array, query, and `current-when` arguments. The removed
+`Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
+styling remains attached to the generated anchor, including compact-screen
+dropdown navigation, without mutating a parent element through a jQuery
+observer.
+
+The application router imports the public `@ember/routing/router` module and
+sets both `rootURL` and `location` from the generated environment. Browser
+builds use the registered `history` location explicitly, while tests retain
+the isolated `none` location. The obsolete `auto` registry lookup cannot leave
+production routing without an `onUpdateURL` implementation.
+
+Routes, controllers, components, and API resources receive Ember's public
+Router service. Application navigation uses `router.transitionTo()` or
+`router.replaceWith()` instead of Route and Controller transition methods that
+were removed in Ember 5. The former private `router:main` injection is not part
+of the active application boundary.
+Previous-route and parent-route navigation traverses the public `RouteInfo`
+`parent`, `paramNames`, and `params` fields. It no longer reads private handler
+info arrays or the Router service's internal router instance, so an initial
+route with no settled predecessor remains a valid no-op instead of entering an
+error-transition loop.
 
 The Ember 6.12 migration deliberately keeps AMD compatibility enabled for this
 release because the classic application boundary still depends on the global

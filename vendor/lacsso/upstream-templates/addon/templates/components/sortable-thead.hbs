@@ -1,7 +1,7 @@
 {{#unless this.isActions}}
   {{#if this.sortableEnabled}}
     <button class="btn bg-transparent lacsso">
-      {{#if hasBlock}}{{yield}}{{else}} {{#if this.translationKey}} {{t this.translationKey}} {{else}} {{this.label}} {{/if}}{{/if}}
+      {{#if (has-block)}}{{yield}}{{else}} {{#if this.translationKey}} {{t this.translationKey}} {{else}} {{this.label}} {{/if}}{{/if}}
       <span class="icon-stack" aria-hidden="true">
         {{#if this.activeAscending}}
           <i class="icon icon-sort-down icon-stack-1x"></i>
@@ -15,6 +15,6 @@
       </span>
     </button>
   {{else}}
-    <span>{{#if hasBlock}}{{yield}}{{else}}{{#if this.translationKey}}{{t this.translationKey}}{{else}}{{this.label}}{{/if}}{{/if}}</span>
+    <span>{{#if (has-block)}}{{yield}}{{else}}{{#if this.translationKey}}{{t this.translationKey}}{{else}}{{this.label}}{{/if}}{{/if}}</span>
   {{/if}}
 {{/unless}}

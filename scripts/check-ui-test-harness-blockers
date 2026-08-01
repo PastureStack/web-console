@@ -51,8 +51,109 @@ if module_for_count != 0:
     fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
 if module_for_component_count != 0:
     fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
-if direct_qunit_import_count != 61:
-    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=61)
+if direct_qunit_import_count != 69:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=69)
+
+volatile_computed_count = 0
+for path in Path("app").rglob("*.js"):
+    volatile_computed_count += len(re.findall(r"\.volatile\s*\(", path.read_text(encoding="utf-8")))
+if volatile_computed_count != 0:
+    fail("REMOVED_VOLATILE_COMPUTED_API_REMAINS", actual=volatile_computed_count, expected=0)
+
+removed_ember_copy_count = 0
+for path in Path("app").rglob("*.js"):
+    removed_ember_copy_count += len(re.findall(r"\bEmber\.copy\s*\(", path.read_text(encoding="utf-8")))
+if removed_ember_copy_count != 0:
+    fail("REMOVED_EMBER_COPY_API_REMAINS", actual=removed_ember_copy_count, expected=0)
+
+navigation_tree = Path("app/utils/navigation-tree.js").read_text(encoding="utf-8")
+for marker in ["import { A } from '@ember/array'", "cloneNavigationValue", "Object.getPrototypeOf(value)"]:
+    if marker not in navigation_tree:
+        fail("NAVIGATION_TREE_COPY_BOUNDARY_MARKER_MISSING", marker=marker)
+
+registry_inject_count = 0
+for path in Path("app/initializers").glob("*.js"):
+    registry_inject_count += len(re.findall(r"\bapplication\.inject\s*\(", path.read_text(encoding="utf-8")))
+if registry_inject_count != 0:
+    fail("REMOVED_APPLICATION_REGISTRY_INJECT_REMAINS", actual=registry_inject_count, expected=0)
+
+removed_link_component_count = 0
+for path in Path("app").rglob("*.js"):
+    removed_link_component_count += len(re.findall(r"\bEmber\.LinkComponent\b", path.read_text(encoding="utf-8")))
+if removed_link_component_count != 0:
+    fail("REMOVED_EMBER_LINK_COMPONENT_REMAINS", actual=removed_link_component_count, expected=0)
+
+removed_transition_method_count = 0
+for path in Path("app").rglob("*.js"):
+    source = path.read_text(encoding="utf-8")
+    removed_transition_method_count += len(re.findall(
+        r"\bthis\.(?:transitionTo|replaceWith|transitionToRoute)\s*\(|\.transitionToRoute\s*\(|\.replaceRoute\s*\(",
+        source,
+    ))
+    removed_transition_method_count += len(re.findall(r"\bthis\.transitionTo\.apply\s*\(", source))
+if removed_transition_method_count != 0:
+    fail("REMOVED_ROUTE_OR_CONTROLLER_TRANSITION_METHOD_REMAINS", actual=removed_transition_method_count, expected=0)
+
+router_initializer = Path("app/initializers/inject-router.js").read_text(encoding="utf-8")
+for marker in [
+    "import Controller from '@ember/controller'",
+    "import Route from '@ember/routing/route'",
+    "service('router')",
+    "injectRouter(Component)",
+    "injectRouter(Controller)",
+    "injectRouter(Route)",
+    "injectRouter(Resource)",
+]:
+    if marker not in router_initializer:
+        fail("PUBLIC_ROUTER_SERVICE_INJECTION_MARKER_MISSING", marker=marker)
+if "router:main" in router_initializer:
+    fail("PRIVATE_ROUTER_MAIN_INJECTION_RETURNED")
+
+route_initializer = Path("app/initializers/extend-ember-route.js").read_text(encoding="utf-8")
+for marker in [
+    "this.get('router.currentRoute')",
+    "info.paramNames",
+    "routeInfoArguments(routeInfo)",
+    "parentRouteInfo(routeInfo)",
+]:
+    if marker not in route_initializer:
+        fail("PUBLIC_ROUTE_INFO_NAVIGATION_MARKER_MISSING", marker=marker)
+for private_marker in ["currentHandlerInfos", "this.router.router", "_names"]:
+    if private_marker in route_initializer:
+        fail("PRIVATE_ROUTE_INFO_NAVIGATION_RETURNED", marker=private_marker)
+
+authenticated_controller = Path("app/authenticated/controller.js").read_text(encoding="utf-8")
+if "Ember.computed.alias('router.currentRouteName')" not in authenticated_controller:
+    fail("PUBLIC_CURRENT_ROUTE_NAME_ALIAS_MISSING")
+if "application.currentPath" in authenticated_controller:
+    fail("REMOVED_APPLICATION_CURRENT_PATH_ALIAS_RETURNED")
+
+for legacy_link_path in [
+    Path("app/initializers/extend-ember-link.js"),
+    Path("app/components/link-to-as-attrs/component.js"),
+]:
+    if legacy_link_path.exists():
+        fail("LEGACY_LINK_COMPONENT_BOUNDARY_REMAINS", file=legacy_link_path)
+
+page_header_template = Path("app/components/page-header/template.hbs").read_text(encoding="utf-8")
+for marker in ["<LinkTo", "@models={{", "@query={{", "@current-when={{"]:
+    if marker not in page_header_template:
+        fail("PUBLIC_LINK_TO_MARKER_MISSING", marker=marker)
+if "link-to-as-attrs" in page_header_template:
+    fail("LEGACY_LINK_TO_AS_ATTRS_INVOCATION_REMAINS")
+
+owner_lookup = Path("app/utils/owner-lookup.js")
+if not owner_lookup.is_file():
+    fail("OWNER_LOOKUP_COMPATIBILITY_MISSING", file=owner_lookup)
+else:
+    owner_lookup_text = owner_lookup.read_text(encoding="utf-8")
+    for phrase in ["getOwner(this)", "owner.lookup(fullName)", ".readOnly()"]:
+        if phrase not in owner_lookup_text:
+            fail("OWNER_LOOKUP_COMPATIBILITY_MARKER_MISSING", phrase=phrase)
+
+growl_initializer = Path("app/initializers/growl.js").read_text(encoding="utf-8")
+if re.search(r"['\"]session['\"]\s*,\s*['\"]service:growl['\"]", growl_initializer):
+    fail("GROWL_INITIALIZER_SESSION_COLLISION_RESTORED")
 
 direct_qunit_tests = [
     Path("tests/unit/application/route-test.js"),
@@ -71,7 +172,9 @@ direct_qunit_tests = [
     Path("tests/unit/utils/rolling-rms-test.js"),
     Path("tests/unit/utils/totp-qr-test.js"),
     Path("tests/unit/utils/volume-bulk-remove-test.js"),
+    Path("tests/unit/components/workspace-terminal-test.js"),
     Path("tests/unit/utils/socket-test.js"),
+    Path("tests/unit/utils/owner-lookup-test.js"),
     Path("tests/unit/bulk-action-handler/service-test.js"),
     Path("tests/unit/routes/loading-test.js"),
     Path("tests/unit/routes/index-test.js"),
@@ -92,6 +195,7 @@ direct_qunit_tests = [
     Path("tests/unit/initializers/touch-test.js"),
     Path("tests/unit/pods/hosts/new/route-test.js"),
     Path("tests/unit/mixins/subscribe-test.js"),
+    Path("tests/unit/mixins/store-tweaks-test.js"),
     Path("tests/integration/components/select-tab/component-test.js"),
 ]
 for path in direct_qunit_tests:
@@ -242,6 +346,9 @@ print(
     f"test_files={len(all_test_files)} js_files={len(test_files)} moduleFor={module_for_count} "
     f"moduleForComponent={module_for_component_count} directQunitImports={direct_qunit_import_count} "
     f"directQunitTests={len(direct_qunit_tests)} "
+    f"volatileComputed={volatile_computed_count} removedLinkComponent={removed_link_component_count} "
+    f"removedTransitionMethods={removed_transition_method_count} "
+    f"registryInject={registry_inject_count} "
     f"templates={len(template_files)} "
     "testemCiBrowser=Chrome lockedTemplateCompiler=6.12.0 browserEmberGate=present emberQunitHelpers=removed"
 )

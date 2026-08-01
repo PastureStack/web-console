@@ -9,7 +9,7 @@ export default Ember.Controller.extend(NewOrEdit,{
 
   actions: {
     cancel() {
-      this.transitionToRoute('certificates');
+      this.get('router').transitionTo('certificates');
     },
   },
 
@@ -27,6 +27,6 @@ export default Ember.Controller.extend(NewOrEdit,{
   },
 
   doneSaving() {
-    this.transitionToRoute('certificates');
+    this.get('router').transitionTo('certificates');
   }
 });

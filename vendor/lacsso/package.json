@@ -1,6 +1,6 @@
 {
   "name": "lacsso",
-  "version": "0.0.60-rc16.0",
+  "version": "0.0.60-rc16.1",
   "description": "Unofficial rc16 maintenance vendor of lacsso for Rancher 1.6 UI",
   "repository": {
     "type": "git",
@@ -22,8 +22,8 @@
   "homepage": "https://github.com/rancher/lacsso#readme",
   "rc16Maintenance": {
     "source": "lacsso@0.0.59",
-    "reason": "Remove stale ember-cli-htmlbars-inline-precompile dependency that is not used by lacsso source.",
-    "compatibility": "No source, component, template, style, or runtime API behavior is changed."
+    "reason": "Maintain the supported build chain and precompile active templates with Ember 6.12.",
+    "compatibility": "The upstream Handlebars sources are retained byte-for-byte; only their build representation changes."
   },
   "keywords": [
     "ember-addon"

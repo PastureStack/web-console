@@ -170,7 +170,8 @@ $well-bg: null !default;
       padding: 5px 15px 5px 30px;
     }
 
-    .dropdown-menu > li.active > a {
+    .dropdown-menu > li.active > a,
+    .dropdown-menu > li > a.active {
       font-weight: bold;
       color: white;
     }
@@ -312,7 +313,8 @@ $well-bg: null !default;
       padding: 5px 15px 5px 30px;
     }
 
-    .dropdown-menu > li.active > a {
+    .dropdown-menu > li.active > a,
+    .dropdown-menu > li > a.active {
       font-weight: bold;
       color: white;
     }

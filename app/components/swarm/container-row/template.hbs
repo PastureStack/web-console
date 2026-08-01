@@ -3,7 +3,7 @@
     {{badge-state model=this.model}}
   </td>
   <td class="force-wrap">
-    {{#link-to "container" this.model.id}}{{this.model.displayName}}{{/link-to}}
+    <LinkTo @route="container" @model={{this.model.id}}>{{this.model.displayName}}</LinkTo>
   </td>
   <td class="force-wrap">
     {{this.model.displayImage}}

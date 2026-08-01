@@ -14,6 +14,7 @@ roots = [
     Path("vendor/bootswatch-cosmo"),
     Path("vendor/bootstrap-sass/assets/stylesheets"),
     Path("vendor/ember-power-select/app/styles"),
+    Path("vendor/ember-basic-dropdown/app/styles"),
 ]
 blocked_global_functions = re.compile(
     r"(?<![\w.-])(?:lighten|darken|adjust-hue|transparentize|fade-in|fade-out|fadein|fadeout|opacify|mix|ceil|floor|percentage|red|green|blue|unitless)\s*\("
@@ -61,8 +62,8 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_SASS_DEPRECATION_SOURCE_OK checked=app/styles,vendor/bootswatch-cosmo,vendor/bootstrap-sass/assets/stylesheets,vendor/ember-power-select/app/styles")
-print("Self-owned, Bootswatch, vendored Bootstrap Sass, and vendored Ember Power Select SCSS avoid removed color adjuster globals, channel globals, legacy if(), unitless(), alpha percentage adjustments, ceil/floor/percentage globals, and Sass slash division.")
+print("UI_SASS_DEPRECATION_SOURCE_OK checked=app/styles,vendor/bootswatch-cosmo,vendor/bootstrap-sass/assets/stylesheets,vendor/ember-power-select/app/styles,vendor/ember-basic-dropdown/app/styles")
+print("Self-owned, Bootswatch, vendored Bootstrap Sass, Ember Power Select, and Ember Basic Dropdown SCSS avoid removed color adjuster globals, channel globals, legacy if(), unitless(), alpha percentage adjustments, ceil/floor/percentage globals, and Sass slash division.")
 print("Sass @import entrypoint warnings remain tracked in docs/plan.md for a separate module-load migration.")
 print("failure_count=0")
 PY

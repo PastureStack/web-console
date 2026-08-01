@@ -2,7 +2,7 @@
 
 This directory vendors `lacsso@0.0.59` from the Apache-2.0 Rancher `lacsso` package.
 
-The vendored package is intentionally named `lacsso` so Ember addon resolution remains compatible with Rancher 1.6 UI. The local version is `0.0.60-rc16.0` to make the maintenance patch visible in lockfiles.
+The vendored package is intentionally named `lacsso` so Ember addon resolution remains compatible with the upstream UI. The local version is `0.0.60-rc16.1` to make the maintenance patch visible in lockfiles.
 
 Changes from upstream package metadata:
 
@@ -12,5 +12,14 @@ Changes from upstream package metadata:
 - Pinned `ember-cli-sass` to `10.0.1`, matching the existing Rancher UI Sass replacement path that had already overridden lacsso away from its old Sass stack.
 - Removed lacsso's own development and publishing dependencies from the vendored package metadata. Rancher UI consumes lacsso as an addon dependency only; pulling lacsso's old dummy-app, Gulp, release, JSHint, SRI, live-reload, and Ember test toolchain into the main lockfile would reintroduce EOL build dependencies without affecting runtime behavior.
 - Removed lacsso's packaged `.sass-cache`, `.npmignore`, `.ackrc`, and Gulp release file because they are not runtime addon source.
+- Retained the four upstream-derived Handlebars templates under
+  `upstream-templates/` and generated their active modules with the public
+  `@ember/template-factory` API from `ember-source@6.12.0`. The sortable table
+  templates use Ember's public `(has-block)` helper because Ember 6 no longer
+  resolves the legacy `hasBlock` keyword. Run `scripts/compile-lacsso-templates`
+  after changing one of these maintained template sources. This prevents the
+  production browser bundle from depending on the build-only
+  `ember-cli-htmlbars` module.
 
-No lacsso component, helper, template, style, font, runtime API, or generated asset source is changed in this vendored copy.
+The precompilation boundary does not change component behavior; the documented
+compatibility edits preserve the original block and action targets.

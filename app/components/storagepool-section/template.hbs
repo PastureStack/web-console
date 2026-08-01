@@ -11,14 +11,14 @@
       {{!-- {{#if single}} --}}
         {{!-- <span class="divider clip">{{model.name}}</span> --}}
       {{!-- {{else}} --}}
-        {{!-- <span class="divider clip">{{#link-to "storagepools.detail" model.id}} {{model.name}}{{/link-to}}</span> --}}
+        {{!-- <span class="divider clip"><LinkTo @route="storagepools.detail" @model={{model.id}}> {{model.name}}</LinkTo></span> --}}
       {{!-- {{/if}} --}}
     </h4>
   </div>
 
   <div class="header-right right-divider stack-actions" style="width: auto">
     {{#unless this.single}}
-      {{#link-to "storagepools.new-volume" (query-params driverName=this.model.driverName) classNames="btn btn-primary btn-sm"}}{{t 'storagePoolSection.volumes.add'}}{{/link-to}}
+      <LinkTo @route="storagepools.new-volume" @query={{hash driverName=this.model.driverName}} class="btn btn-primary btn-sm">{{t 'storagePoolSection.volumes.add'}}</LinkTo>
     {{/unless}}
   </div>
 </div>
@@ -30,7 +30,7 @@
     <h6>{{t 'storagePoolSection.hosts.header'}}</h6>
     <div class="clearfix r-p10 hosts">
       {{#each this.hostsByName as |host|}}
-        <div class="r-m10"><i class="icon {{host.stateIcon}} {{host.stateBackground}}"></i> {{#link-to "host" host.id}}{{host.displayName}}{{/link-to}}</div>
+        <div class="r-m10"><i class="icon {{host.stateIcon}} {{host.stateBackground}}"></i> <LinkTo @route="host" @model={{host.id}}>{{host.displayName}}</LinkTo></div>
       {{else}}
         <div class="text-center text-muted">{{t 'storagePoolSection.hosts.none'}}</div>
       {{/each}}
@@ -64,9 +64,9 @@
                   {{#each vol.mounts as |mount|}}
                     <div>
                       {{~#if mount.instance.isVm~}}
-                        {{#link-to "virtualmachine" mount.instanceId}}{{mount.instance.displayName}}{{/link-to}}
+                        <LinkTo @route="virtualmachine" @model={{mount.instanceId}}>{{mount.instance.displayName}}</LinkTo>
                       {{~else~}}
-                        {{#link-to "container" mount.instanceId}}{{mount.instance.displayName}}{{/link-to}}
+                        <LinkTo @route="container" @model={{mount.instanceId}}>{{mount.instance.displayName}}</LinkTo>
                       {{~/if~}}
                       : {{mount.path}}
                       {{#if (eq mount.permissions "ro")}}

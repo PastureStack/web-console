@@ -1,10 +1,10 @@
 <section class="header clearfix">
-  <h1>{{#link-to "containers"}}{{t 'containersPage.containerPage.header'}}{{/link-to}}</h1>
-  {{#power-select options=this.model.primaryHost.arrangedInstances selected=this.model onchange=(action "changeContainer") searchField="displayName" as |obj|}}
+  <h1><LinkTo @route="containers">{{t 'containersPage.containerPage.header'}}</LinkTo></h1>
+  <PowerSelect @options={{this.model.primaryHost.arrangedInstances}} @selected={{this.model}} @onChange={{action "changeContainer"}} @searchField="displayName" as |obj|>
     <span class="clip r-mr15">
       {{select-dot model=obj}}
     </span>
-  {{/power-select}}
+  </PowerSelect>
 
   <div class="pull-right">
     {{action-menu model=this.model  classNames="r-ml5 pull-right"  size="sm"}}
@@ -28,14 +28,14 @@
       {{#if this.model.primaryService}}
           <label class="block">{{t 'containersPage.containerPage.infoMultiStats.stack'}}</label>
 
-          <div>{{#link-to "stack" this.model.primaryService.stackId}}{{this.model.primaryService.stack.displayName}}{{/link-to}}/{{#link-to "service" this.model.primaryService.stackId this.model.primaryService.id}}{{this.model.primaryService.displayName}}{{/link-to}}</div>
+          <div><LinkTo @route="stack" @model={{this.model.primaryService.stackId}}>{{this.model.primaryService.stack.displayName}}</LinkTo>/<LinkTo @route="service" @models={{array this.model.primaryService.stackId this.model.primaryService.id}}>{{this.model.primaryService.displayName}}</LinkTo></div>
         <hr>
       {{/if}}
 
       <div>
         <label class="block">{{t 'containersPage.containerPage.infoMultiStats.host'}}</label>
         {{#if this.model.primaryHost}}
-          {{#link-to "host" this.model.primaryHost.id}}{{this.model.primaryHost.displayName}}{{/link-to}}
+          <LinkTo @route="host" @model={{this.model.primaryHost.id}}>{{this.model.primaryHost.displayName}}</LinkTo>
           {{copy-to-clipboard clipboardText=this.model.primaryHost.displayIp tooltipText=(t 'containersPage.containerPage.infoMultiStats.tooltip.host') size="small"}}
         {{else}}
           <span class="text-muted">{{t 'generic.none'}}</span>
@@ -102,14 +102,14 @@
       </div>
       <div class="row r-p15">
         <ul class="nav nav-tabs nav-tabs-well shadowed">
-          {{#link-to "container.ports" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.ports'}}</a>{{/link-to}}
-          {{#link-to "container.commands" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.command'}}</a>{{/link-to}}
-          {{#link-to "container.volumes" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.volumes'}}</a>{{/link-to}}
-          {{#link-to "container.networking" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.networking'}}</a>{{/link-to}}
-          {{#link-to "container.security" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.security'}}</a>{{/link-to}}
-          {{#link-to "container.healthcheck" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.healthCheck'}}</a>{{/link-to}}
-          {{#link-to "container.labels" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.labels'}}</a>{{/link-to}}
-          {{#link-to "container.scheduling" tagName="li" href=false replace=true}}<a href="#">{{t 'containersPage.containerPage.navTabs.scheduling'}}</a>{{/link-to}}
+          <li><LinkTo @route="container.ports" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.ports'}}</LinkTo></li>
+          <li><LinkTo @route="container.commands" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.command'}}</LinkTo></li>
+          <li><LinkTo @route="container.volumes" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.volumes'}}</LinkTo></li>
+          <li><LinkTo @route="container.networking" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.networking'}}</LinkTo></li>
+          <li><LinkTo @route="container.security" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.security'}}</LinkTo></li>
+          <li><LinkTo @route="container.healthcheck" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.healthCheck'}}</LinkTo></li>
+          <li><LinkTo @route="container.labels" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.labels'}}</LinkTo></li>
+          <li><LinkTo @route="container.scheduling" @replace={{true}}>{{t 'containersPage.containerPage.navTabs.scheduling'}}</LinkTo></li>
         </ul>
         <div class="table-flat well">
           {{outlet}}

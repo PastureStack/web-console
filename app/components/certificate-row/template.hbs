@@ -2,7 +2,7 @@
   {{badge-state model=this.model}}
 </td>
 <td data-title="{{t 'generic.name'}}:" class="force-wrap">
-  {{#link-to "certificates.detail" this.model.id}}{{this.model.displayName}}{{/link-to}}
+  <LinkTo @route="certificates.detail" @model={{this.model.id}}>{{this.model.displayName}}</LinkTo>
 </td>
 <td data-title="{{t 'certificatesPage.table.cn'}}:">
   {{#if this.model.CN}}

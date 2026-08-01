@@ -11,7 +11,7 @@ var RegistryController = Cattle.LegacyTransitioningResourceController.extend({
     },
 
     edit: function() {
-      this.transitionToRoute('registryCredential.edit',this.get('id'));
+      this.get('router').transitionTo('registryCredential.edit',this.get('id'));
     },
   },
 

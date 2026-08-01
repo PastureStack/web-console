@@ -4,7 +4,7 @@
     <div class="r-p20 text-center">
       <p>{{t 'notFoundPage.header'}}</p>
       <div>
-        {{#link-to "authenticated"}}{{t 'notFoundPage.linkTo'}}{{/link-to}}
+        <LinkTo @route="authenticated">{{t 'notFoundPage.linkTo'}}</LinkTo>
       </div>
     </div>
   </div>

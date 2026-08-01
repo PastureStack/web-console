@@ -1,6 +1,6 @@
 <section class="header clearfix">
   <h1>
-    {{#link-to "admin-tab.processes.list"}}{{t 'uiText.process'}}:{{/link-to}}
+    <LinkTo @route="admin-tab.processes.list">{{t 'uiText.process'}}:</LinkTo>
     {{this.model.processInstance.id}}
   </h1>
 </section>

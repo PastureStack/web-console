@@ -1,6 +1,6 @@
 {{log this.service}}
 <div class="content-box col-sm-12 col-md-12">
-  <label class="text-muted">{{t 'externalServicePartial.extService.labelText'}} (<small>{{#link-to 'service' this.service.stackId this.service.id class=''}} {{t 'externalServicePartial.extService.linkTo'}} {{/link-to}}</small>)</label>
+  <label class="text-muted">{{t 'externalServicePartial.extService.labelText'}} (<small><LinkTo @route="service" @models={{array this.service.stackId this.service.id}} class=""> {{t 'externalServicePartial.extService.linkTo'}} </LinkTo></small>)</label>
   <div class="content">
     {{#if this.service.externalIpAddresses}}
       <label class="text-muted">{{t 'externalServicePartial.ips'}}</label>

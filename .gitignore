@@ -30,6 +30,8 @@ testem.log
 *~
 \#.*
 .python-version
+__pycache__/
+*.py[cod]
 \#*
 .\#*
 

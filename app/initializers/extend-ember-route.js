@@ -1,94 +1,91 @@
-import Ember from "ember";
+import { getOwner } from '@ember/application';
+import Route from '@ember/routing/route';
 
-const { getOwner } = Ember;
+export function routeInfoArguments(routeInfo) {
+  let chain = [];
+  let current = routeInfo;
 
-export function initialize(/*application */) {
-  Ember.Route.reopen({
+  while ( current ) {
+    chain.unshift(current);
+    current = current.parent;
+  }
 
-    // Remember the current route (into the application route's previousRoute/Params properties)
+  return chain.reduce((out, info) => {
+    (info.paramNames || []).forEach((name) => {
+      out.push((info.params || {})[name]);
+    });
+
+    return out;
+  }, []);
+}
+
+export function parentRouteInfo(routeInfo) {
+  if ( !routeInfo ) {
+    return null;
+  }
+
+  let parent = routeInfo.parent;
+
+  if ( parent && routeInfo.name === `${parent.name}.index` ) {
+    parent = parent.parent;
+  }
+
+  return parent || null;
+}
+
+export function initialize() {
+  Route.reopen({
+
+    // Remember the currently settled route before a new route begins loading.
     beforeModel: function() {
-      this._super.apply(this,arguments);
+      this._super.apply(this, arguments);
       this.rememberPrevious();
     },
 
     rememberPrevious: function() {
-      var appRoute = getOwner(this).lookup('route:application');
-      var infos = this.router.router.currentHandlerInfos;
-      if ( infos && infos.length )
-      {
-        var params = [];
-        var info;
-        for ( var i = 0 ; i < infos.length ; i++ )
-        {
-          info = infos[i];
-          if ( info._names && info._names.length )
-          {
-            for ( var j = 0 ; j < info._names.length ; j++ )
-            {
-              params.push(info.params[ info._names[j] ]);
-            }
-          }
-        }
+      let appRoute = getOwner(this).lookup('route:application');
+      let routeInfo = this.get('router.currentRoute');
 
-        if ( !info || !info.name.match(/\.?loading$/) )
-        {
-          appRoute.set('previousRoute', info.name);
-          appRoute.set('previousParams', params);
-          //console.log('Set previous route to', info.name, params);
-        }
+      if ( routeInfo && !routeInfo.name.match(/\.?loading$/) ) {
+        appRoute.set('previousRoute', routeInfo.name);
+        appRoute.set('previousParams', routeInfoArguments(routeInfo));
       }
     },
 
     goToPrevious: function(def) {
-      var appRoute = getOwner(this).lookup('route:application');
-      var route = appRoute.get('previousRoute');
-      if ( !route || route === 'loading' )
-      {
-        if ( def )
-        {
-          this.transitionTo(def);
+      let appRoute = getOwner(this).lookup('route:application');
+      let route = appRoute.get('previousRoute');
+
+      if ( !route || route === 'loading' ) {
+        if ( def ) {
+          return this.get('router').transitionTo(def);
         }
-        else
-        {
-          return this.goToParent();
-        }
+
+        return this.goToParent();
       }
 
-      var args = (appRoute.get('previousParams')||[]).slice();
+      let args = (appRoute.get('previousParams') || []).slice();
+
       args.unshift(route);
 
-      this.transitionTo.apply(this,args).catch(() => {
-        this.transitionTo('authenticated');
+      return this.get('router').transitionTo(...args).catch(() => {
+        return this.get('router').transitionTo('authenticated');
       });
     },
 
     goToParent: function() {
-      var infos = this.router.router.currentHandlerInfos;
+      let routeInfo = parentRouteInfo(this.get('router.currentRoute'));
 
-      var args = [];
-      var info;
-      var max = infos.length - 1;
-      if (infos[infos.length - 1].name === infos[infos.length-2].name+'.index' )
-      {
-        max--;
+      if ( !routeInfo ) {
+        return this.get('router').transitionTo('authenticated');
       }
 
-      for ( var i = 0 ; i < max ; i++ )
-      {
-        info = infos[i];
+      let args = routeInfoArguments(routeInfo);
 
-        if ( info._names && info._names.length )
-        {
-          for ( var j = 0 ; j < info._names.length ; j++ )
-          {
-            args.push(info.params[ info._names[j] ]);
-          }
-        }
-      }
+      args.unshift(routeInfo.name);
 
-      args.unshift(info.name);
-      this.transitionTo.apply(this,args).catch(() => {
-        this.transitionTo('authenticated');
+      return this.get('router').transitionTo(...args).catch(() => {
+        return this.get('router').transitionTo('authenticated');
       });
     },
   });

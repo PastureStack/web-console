@@ -1,5 +1,5 @@
 <div class="content-box col-md-3 col-md-height col-md-full-height">
-  <label class="text-muted">{{t 'lbAddtlInfo.info'}} (<small>{{#link-to 'service' this.service.stackId this.service.id class=''}} {{t 'lbAddtlInfo.viewDetails'}} {{/link-to}}</small>)</label>
+  <label class="text-muted">{{t 'lbAddtlInfo.info'}} (<small><LinkTo @route="service" @models={{array this.service.stackId this.service.id}} class=""> {{t 'lbAddtlInfo.viewDetails'}} </LinkTo></small>)</label>
   <div class="content">
     <div class="state">
       {{badge-state model=this.service}}  {{action-menu model=this.service size='xs' class="no-wrap pull-right"}}

@@ -3,10 +3,10 @@
     {{#if this.editing}}
       <h1>{{t 'newCatalog.upgrade'}} <span style="font-weight: normal">{{this.stackResource.name}}</span></h1>
     {{else}}
-      <h1>{{#link-to this.parentRoute}}{{t 'newCatalog.catalog'}}{{/link-to}}</h1>
-      {{#power-select options=this.allTemplates selected=this.templateResource onchange=(action "changeTemplate") searchField="name" as |obj|}}
+      <h1><LinkTo @route={{this.parentRoute}}>{{t 'newCatalog.catalog'}}</LinkTo></h1>
+      <PowerSelect @options={{this.allTemplates}} @selected={{this.templateResource}} @onChange={{action "changeTemplate"}} @searchField="name" as |obj|>
         <span class="clip">{{obj.name}}</span>
-      {{/power-select}}
+      </PowerSelect>
     {{/if}}
   </section>
 {{/if}}

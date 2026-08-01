@@ -14,6 +14,10 @@ module.exports = function(defaults) {
   // Pull in a few useful environment settings for index.html to use
   var appConfig = require('./config/environment')(env).APP;
   var inline    = {};
+  var themeCssOutputPaths = {
+    'app-light': '/assets/ui-light.css',
+    'app-dark': '/assets/ui-dark.css'
+  };
 
   ['version', 'appName', 'baseAssets'].forEach(function(key) {
     var val = appConfig[key];
@@ -38,10 +42,7 @@ module.exports = function(defaults) {
     outputPaths: {
       app: {
         js: '/assets/ui.js',
-        css: {
-          'app-light': '/assets/ui-light.css',
-          'app-dark': '/assets/ui-dark.css'
-        }
+        css: themeCssOutputPaths
       }
     },
     nodeAssets: {
@@ -88,6 +89,17 @@ module.exports = function(defaults) {
       extensions: ['js']
     },
   });
+
+  // Ember CLI 6.12 recreates outputPaths after merging constructor options.
+  // Mutate the active CSS map in place because the default packager and the
+  // Sass preprocessor both retain this exact object reference. Replacing the
+  // object would leave the packager pointing at the empty app.scss output and
+  // silently omit the two runtime theme stylesheets.
+  var activeCssOutputPaths = app.options.outputPaths.app.css;
+  Object.keys(activeCssOutputPaths).forEach(function(entry) {
+    delete activeCssOutputPaths[entry];
+  });
+  Object.assign(activeCssOutputPaths, themeCssOutputPaths);
 
   // Use `app.import` to add additional libraries to the generated
   // output files.
@@ -208,6 +220,37 @@ module.exports = function(defaults) {
     include: ['LICENSE', 'UPSTREAM.md'],
     destDir: 'licenses/ember'
   });
+  var emberFetchLegalSource = new Funnel('vendor/ember-fetch-compat', {
+    include: ['LICENSE.md', 'UPSTREAM.md'],
+    destDir: 'licenses/ember-fetch'
+  });
+  var emberPowerSelectLegalSource = new Funnel('vendor/ember-power-select', {
+    include: ['LICENSE.md', 'UPSTREAM.md'],
+    destDir: 'licenses/ember-power-select'
+  });
+  var emberBasicDropdownLegalSource = new Funnel('vendor/ember-basic-dropdown', {
+    include: ['LICENSE.md', 'UPSTREAM.md'],
+    destDir: 'licenses/ember-basic-dropdown'
+  });
+  var runtimeLegalPackages = [
+    'ember-power-select',
+    'ember-basic-dropdown',
+    'ember-concurrency',
+    'ember-modifier'
+  ];
+  var runtimeLegalSources = runtimeLegalPackages.map(function(packageName) {
+    return new Funnel('vendor/runtime-licenses/' + packageName, {
+      include: ['LICENSE.md', 'UPSTREAM.md'],
+      destDir: 'licenses/runtime/' + packageName
+    });
+  });
 
-  return mergeTrees([app.toTree(), translationJson, emberLegalSource], {overwrite: true});
+  return mergeTrees([
+    app.toTree(),
+    translationJson,
+    emberLegalSource,
+    emberFetchLegalSource,
+    emberPowerSelectLegalSource,
+    emberBasicDropdownLegalSource
+  ].concat(runtimeLegalSources), {overwrite: true});
 };

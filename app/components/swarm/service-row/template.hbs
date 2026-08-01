@@ -4,7 +4,7 @@
   </td>
   <td class="force-wrap" data-title="{{t 'swarm.serviceSection.name'}}:">
     <a href="#" {{action "toggleExpand"}}><i class="icon {{if this.expanded 'icon-minus-square' 'icon-plus-square'}}" /></a>
-    {{#link-to "service" this.model.stackId this.model.id}}{{this.model.displayName}}{{/link-to}}
+    <LinkTo @route="service" @models={{array this.model.stackId this.model.id}}>{{this.model.displayName}}</LinkTo>
   </td>
   <td class="force-wrap service-detail" data-title="{{t 'swarm.serviceSection.ports'}}:">
     {{this.model.displayPorts}}

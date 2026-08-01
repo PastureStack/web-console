@@ -1,7 +1,7 @@
 {{~#if this.link.service.arbitraryString~}}
   <div>{{this.link.service.name}} <label class="text-muted" style="padding: 0 10px;">{{t 'formServiceLinks.asName'}}</label> {{this.link.name}}</div>
 {{~else~}}
-  {{~#link-to 'service' this.link.service.stackId this.link.service.id~}}
+  <LinkTo @route="service" @models={{array this.link.service.stackId this.link.service.id}}>
     {{~#if (eq this.link.service.name this.link.name)~}}
       {{t (if (eq this.link.service.stackId this.stackId) 'serviceLink.noAlias.sameStack' 'serviceLink.noAlias.differentStack')
         stack=this.link.service.displayStack
@@ -22,5 +22,5 @@
         }}
       {{~/if~}}
     {{~/if~}}
-  {{/link-to}}
+  </LinkTo>
 {{~/if~}}

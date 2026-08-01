@@ -1,5 +1,5 @@
 <section class="header clearfix">
-  <h1>{{#link-to "virtualmachines"}}{{t 'virtualMachinePage.header'}}{{/link-to}}</h1>
+  <h1><LinkTo @route="virtualmachines">{{t 'virtualMachinePage.header'}}</LinkTo></h1>
 
   <select class="form-control virtual-machine-select"
     aria-label={{t 'virtualMachinePage.header'}}
@@ -10,7 +10,7 @@
   </select>
 
   {{#if this.model.vm.primaryHost}}
-    <strong class="r-mr5 r-ml5">{{t 'uiText.relationOn'}} {{#link-to "host" this.model.vm.primaryHost.id}}{{this.model.vm.primaryHost.displayName}}{{/link-to}}</strong>
+    <strong class="r-mr5 r-ml5">{{t 'uiText.relationOn'}} <LinkTo @route="host" @model={{this.model.vm.primaryHost.id}}>{{this.model.vm.primaryHost.displayName}}</LinkTo></strong>
   {{/if}}
   <div class="pull-right">
     {{action-menu model=this.model.vm size="sm" classNames="r-ml5 pull-right"}}
@@ -31,7 +31,7 @@
       <div>
         <label>{{t 'virtualMachinePage.multistat.host'}}</label>
         {{#if this.model.vm.primaryHost}}
-          {{#link-to "host" this.model.vm.primaryHost.id}}{{this.model.vm.primaryHost.displayName}}{{/link-to}}
+          <LinkTo @route="host" @model={{this.model.vm.primaryHost.id}}>{{this.model.vm.primaryHost.displayName}}</LinkTo>
         {{else}}
           <span class="text-muted">{{t 'generic.unknown'}}</span>
         {{/if}}
@@ -63,7 +63,7 @@
     <div class="col-md-9">
       <div class="row r-p15">
         <ul class="nav nav-tabs nav-tabs-well shadowed">
-          {{#link-to "virtualmachine.labels" tagName="li" href=false}}<a href="#"><i class="icon icon-tag"></i> {{t 'virtualMachinePage.navTabs.labels'}}</a>{{/link-to}}
+          <li><LinkTo @route="virtualmachine.labels"><i class="icon icon-tag"></i> {{t 'virtualMachinePage.navTabs.labels'}}</LinkTo></li>
         </ul>
         <div class="table-flat well">
           {{outlet}}

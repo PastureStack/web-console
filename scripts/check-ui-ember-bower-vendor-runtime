@@ -83,7 +83,7 @@ if not compat_path.is_file():
     fail("EMBER_GLOBAL_COMPAT_MISSING", file=compat_path)
 else:
     compat = compat_path.read_text(encoding="utf-8")
-    for marker in ["requireModule('@ember/runloop')", "Ember.NativeArray.apply", "legacyTextInput"]:
+    for marker in ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "root.find(selector)", "legacyTextInput"]:
         if marker not in compat:
             fail("EMBER_GLOBAL_COMPAT_MARKER_MISSING", marker=marker)
 
@@ -95,7 +95,22 @@ for marker in [
     "var emberLegalSource = new Funnel('vendor/ember'",
     "include: ['LICENSE', 'UPSTREAM.md']",
     "destDir: 'licenses/ember'",
-    "mergeTrees([app.toTree(), translationJson, emberLegalSource]",
+    "var emberFetchLegalSource = new Funnel('vendor/ember-fetch-compat'",
+    "destDir: 'licenses/ember-fetch'",
+    "var emberPowerSelectLegalSource = new Funnel('vendor/ember-power-select'",
+    "destDir: 'licenses/ember-power-select'",
+    "var emberBasicDropdownLegalSource = new Funnel('vendor/ember-basic-dropdown'",
+    "destDir: 'licenses/ember-basic-dropdown'",
+    "var runtimeLegalPackages = [",
+    "'ember-concurrency'",
+    "'ember-modifier'",
+    "new Funnel('vendor/runtime-licenses/' + packageName",
+    "destDir: 'licenses/runtime/' + packageName",
+    "emberLegalSource,",
+    "emberFetchLegalSource,",
+    "emberPowerSelectLegalSource,",
+    "emberBasicDropdownLegalSource",
+    "].concat(runtimeLegalSources)",
 ]:
     if marker not in build:
         fail("EMBER_DISTRIBUTABLE_LICENSE_COPY_MISSING", marker=marker)
