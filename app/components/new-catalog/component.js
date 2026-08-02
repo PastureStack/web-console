@@ -76,7 +76,7 @@ export default Ember.Component.extend(NewOrEdit, {
         this.templateChanged();
       } else {
         var def = this.get('templateResource.defaultVersion');
-        var links = this.get('versionLinks');
+        var links = this.get('versionLinks') || {};
         if (links[def]) {
           this.set('selectedTemplateUrl', links[def]);
         } else {
@@ -161,7 +161,7 @@ export default Ember.Component.extend(NewOrEdit, {
   }),
 
   sortedVersions: function() {
-    let out = this.get('versionsArray').sort((a,b) => {
+    let out = (this.get('versionsArray') || []).slice().sort((a,b) => {
       return compareVersion(a.version, b.version);
     });
 

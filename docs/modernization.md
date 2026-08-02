@@ -343,6 +343,17 @@ Exec and log sessions remain independent: a session that ended on the server is
 not presented as reconnectable, while a newly created session uses a fresh
 session identifier and credential.
 
+`v1.6.56-pasturestack.42` restores Catalog upgrade target selection on the
+Ember 6 runtime. The Catalog API already returned the installed revision and
+its compatible `upgradeVersionLinks`, but the shared native-select component
+assigned computed-property descriptors to individual instances during
+`init()`. Ember 6 does not install reactive properties through that legacy
+pattern, so only the prompt was rendered. Version choices are now class-level
+reactive computed properties, the launch route reads API resources through
+their public property interface, and tests cover the installed revision plus
+every non-empty upgrade link. The complete contract and formal acceptance
+requirements are recorded in `docs/catalog-upgrade-contract.md`.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
