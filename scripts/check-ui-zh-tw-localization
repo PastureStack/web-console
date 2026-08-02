@@ -20,7 +20,7 @@ const dateStrSource = fs.readFileSync(path.join(repoRoot, 'app', 'helpers', 'dat
 const dateCalendarSource = fs.readFileSync(path.join(repoRoot, 'app', 'helpers', 'date-calendar.js'), 'utf8');
 const dateRecentSource = fs.readFileSync(path.join(repoRoot, 'app', 'helpers', 'date-recent.js'), 'utf8');
 const containerLogsSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'container-logs', 'component.js'), 'utf8');
-const snapshotTooltipSource = fs.readFileSync(path.join(repoRoot, 'app', 'templates', 'tooltip-snapshot-timeline.hbs'), 'utf8');
+const snapshotTooltipSource = fs.readFileSync(path.join(repoRoot, 'app', 'components', 'tooltip-content-snapshot-timeline', 'template.hbs'), 'utf8');
 const stacksNewTemplateSource = fs.readFileSync(path.join(repoRoot, 'app', 'stacks', 'new', 'template.hbs'), 'utf8');
 const moment = require(path.join(repoRoot, 'node_modules', 'moment'));
 require(path.join(repoRoot, 'node_modules', 'moment', 'locale', 'zh-tw'));

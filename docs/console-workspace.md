@@ -43,6 +43,14 @@ Virtual machine console windows retain their list and layout. Their graphical
 connection is re-established when the window is reopened because the legacy
 console protocol does not provide terminal-style output replay.
 
+Before attaching a saved terminal, the browser asks the same-origin broker for
+that session's current status using its random session credential. A broker
+restart therefore recreates a missing upstream terminal through the normal
+container execute action instead of repeatedly opening a stale WebSocket. A
+credential conflict rotates both random identifiers, ended sessions remain
+history, and transport failures stop after four automatic attempts before the
+localized manual reconnect action is offered.
+
 Log windows use themed vertical and horizontal scrollbars. Line wrapping is
 disabled by default so long output remains intact and horizontally scrollable.
 The localized **Wrap lines** option hides the horizontal scrollbar while

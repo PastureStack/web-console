@@ -4,6 +4,7 @@ import { DEFAULT_COMMAND } from 'ui/components/container-shell/component';
 
 const Terminal = window.Terminal;
 const FitAddon = window.FitAddon.FitAddon;
+const MAX_RECONNECT_ATTEMPTS = 4;
 
 function decodeTerminalData(data) {
   try {
@@ -19,10 +20,26 @@ function terminalCloseAction(options) {
   }
 
   if (!options.hasHello && !options.createAttempted) {
-    return options.entryStatus === 'ended' ? 'ended' : 'create';
+    return options.entryStatus === 'ended' ? 'ended' : 'probe';
   }
 
   return options.status === 'ended' ? 'none' : 'reconnect';
+}
+
+function terminalBrokerStatusAction(httpStatus, brokerStatus) {
+  if (httpStatus === 404) {
+    return 'create';
+  }
+  if (httpStatus === 403 || httpStatus === 409) {
+    return 'rotate';
+  }
+  if (typeof httpStatus !== 'number' || httpStatus < 200 || httpStatus >= 300) {
+    return 'error';
+  }
+  if (brokerStatus === 'ended' || brokerStatus === 'error') {
+    return 'ended';
+  }
+  return 'connect';
 }
 
 export default Ember.Component.extend(ThrottledResize, {
@@ -74,6 +91,7 @@ export default Ember.Component.extend(ThrottledResize, {
       this.setProperties({
         hasHello: false,
         createAttempted: false,
+        reconnectAttempts: 0,
         status: 'connecting',
       });
       this.connect(false);
@@ -129,7 +147,50 @@ export default Ember.Component.extend(ThrottledResize, {
       return;
     }
 
-    this.openSocket(this.get('workspace').brokerUrl(this.get('entry')), false);
+    this.probeBrokerSession();
+  },
+
+  probeBrokerSession() {
+    let workspace = this.get('workspace');
+    let entry = this.get('entry');
+
+    this.set('status', 'connecting');
+    workspace.brokerStatus(entry).then((response) => {
+      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+        return;
+      }
+      this.applyBrokerStatusAction(terminalBrokerStatusAction(200, response && response.status));
+    }).catch((error) => {
+      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+        return;
+      }
+      this.applyBrokerStatusAction(terminalBrokerStatusAction(error && error.status, null));
+    });
+  },
+
+  applyBrokerStatusAction(action) {
+    let workspace = this.get('workspace');
+    let entry = this.get('entry');
+
+    if (action === 'create') {
+      workspace.updateSession(entry, {brokerReady: false, status: 'initializing'});
+      this.set('createAttempted', false);
+      this.createBrokerSession();
+    } else if (action === 'rotate') {
+      workspace.rotateBrokerIdentity(entry);
+      this.set('createAttempted', false);
+      this.createBrokerSession();
+    } else if (action === 'ended') {
+      this.setTerminalInputEnabled(false);
+      this.set('status', 'ended');
+      workspace.updateSession(entry, {brokerReady: false, status: 'ended'});
+    } else if (action === 'connect') {
+      this.openSocket(workspace.brokerUrl(entry), false);
+    } else {
+      this.setTerminalInputEnabled(false);
+      this.set('status', 'error');
+      workspace.updateSession(entry, {status: 'error'});
+    }
   },
 
   createBrokerSession() {
@@ -154,8 +215,12 @@ export default Ember.Component.extend(ThrottledResize, {
         return;
       }
       return this.get('workspace').createBrokerSession(this.get('entry'), access);
-    }).then(() => {
+    }).then((response) => {
       if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+        return;
+      }
+      if (terminalBrokerStatusAction(200, response && response.status) === 'ended') {
+        this.applyBrokerStatusAction('ended');
         return;
       }
       this.get('workspace').updateSession(this.get('entry'), {
@@ -205,9 +270,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
       if (action === 'ended') {
         this.set('status', 'ended');
-      } else if (action === 'create') {
-        this.connect(true);
-      } else if (action === 'reconnect') {
+      } else if (action === 'probe' || action === 'reconnect') {
         this.setTerminalInputEnabled(false);
         this.set('status', 'disconnected');
         this.get('workspace').updateSession(this.get('entry'), {status: 'disconnected'});
@@ -334,6 +397,11 @@ export default Ember.Component.extend(ThrottledResize, {
   scheduleReconnect() {
     this.cancelReconnect();
     let attempt = this.incrementProperty('reconnectAttempts');
+    if (attempt > MAX_RECONNECT_ATTEMPTS) {
+      this.set('status', 'error');
+      this.get('workspace').updateSession(this.get('entry'), {status: 'error'});
+      return;
+    }
     let delay = Math.min(10000, 500 * Math.pow(2, Math.min(attempt, 5)));
     this._reconnectTimer = Ember.run.later(this, () => {
       this.set('createAttempted', false);
@@ -380,4 +448,8 @@ export default Ember.Component.extend(ThrottledResize, {
   },
 });
 
-export { decodeTerminalData, terminalCloseAction };
+export {
+  decodeTerminalData,
+  terminalBrokerStatusAction,
+  terminalCloseAction,
+};

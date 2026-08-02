@@ -183,6 +183,16 @@ closure actions, preventing native input events from recursively re-entering
 themselves. Navigation data is also normalized before it reaches Ember 6
 `LinkTo`, whose `@query` argument now requires an object even when a legacy menu
 item has no query parameters.
+
+`v1.6.56-pasturestack.40` gives the embedded OpenID Connect configuration its
+own writable model boundary. This prevents its provider `displayName` field
+from colliding with the read-only display name computed for ordinary runtime
+resources after the Ember 6 upgrade. The same release probes a saved console
+broker session before reconnecting: a missing session is recreated through the
+normal execute action, a credential conflict rotates the random browser-side
+session identity, and a permanently failed WebSocket stops after four bounded
+attempts instead of retrying indefinitely.
+
 The removed Handlebars `partial` helper is replaced by an explicit, audited
 inventory of tagless context components. Each compiled template is attached
 through Ember's public `setComponentTemplate` API, property reads and writes

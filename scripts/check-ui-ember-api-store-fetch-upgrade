@@ -292,7 +292,7 @@ for marker in [
     "this.get('socket') !== socket",
     "action === 'create'",
     "action === 'reconnect'",
-    "replaces a stale broker session before it has completed the handshake",
+    "probes a stale broker session before it has completed the handshake",
     "reconnects only after a live broker session disconnects",
 ]:
     if marker not in terminal_component + terminal_tests:
@@ -302,6 +302,6 @@ deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
     f"version=2.8.5 ember-fetch=5.1.3 fetch_compat_revision=2 initializer_compat_revision=2 reference_compat_revision=2 "
-    f"ember6_template_compat_revision=1 terminal_reconnect_revision=1 "
+    f"ember6_template_compat_revision=1 terminal_reconnect_revision=2 "
     f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )

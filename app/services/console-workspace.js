@@ -511,6 +511,30 @@ export default Ember.Service.extend({
     return brokerWebSocketUrl(entry.get('sessionId'));
   },
 
+  brokerStatus(entry) {
+    let url = `/v1/exec/sessions/${encodeURIComponent(entry.get('sessionId'))}`;
+
+    return Ember.$.ajax({
+      url,
+      method: 'GET',
+      dataType: 'json',
+      headers: {
+        'X-PastureStack-Session-Secret': entry.get('secret'),
+      },
+    });
+  },
+
+  rotateBrokerIdentity(entry) {
+    entry.setProperties({
+      sessionId: workspaceSessionId(),
+      secret: workspaceSecret(),
+      brokerReady: false,
+      status: 'new',
+    });
+    this.saveSessions();
+    this.saveLayouts();
+  },
+
   brokerProtocols(entry) {
     return brokerWebSocketProtocols(entry.get('secret'), this.get('clientId'));
   },

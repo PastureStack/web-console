@@ -1,6 +1,7 @@
 import { module, test } from 'qunit';
 import {
   decodeTerminalData,
+  terminalBrokerStatusAction,
   terminalCloseAction,
 } from 'ui/components/workspace-terminal/component';
 
@@ -13,7 +14,7 @@ test('decodes brokered UTF-8 terminal output', function(assert) {
   assert.equal(decodeTerminalData(encoded), text);
 });
 
-test('replaces a stale broker session before it has completed the handshake', function(assert) {
+test('probes a stale broker session before it has completed the handshake', function(assert) {
   assert.equal(terminalCloseAction({
     userClosed: false,
     destroyed: false,
@@ -21,7 +22,7 @@ test('replaces a stale broker session before it has completed the handshake', fu
     createAttempted: false,
     entryStatus: 'connected',
     status: 'connecting',
-  }), 'create');
+  }), 'probe');
 
   assert.equal(terminalCloseAction({
     userClosed: false,
@@ -31,6 +32,16 @@ test('replaces a stale broker session before it has completed the handshake', fu
     entryStatus: 'ended',
     status: 'connecting',
   }), 'ended');
+});
+
+test('recovers missing or conflicting broker sessions without retrying forever', function(assert) {
+  assert.equal(terminalBrokerStatusAction(200, 'connected'), 'connect');
+  assert.equal(terminalBrokerStatusAction(200, 'ended'), 'ended');
+  assert.equal(terminalBrokerStatusAction(404), 'create');
+  assert.equal(terminalBrokerStatusAction(403), 'rotate');
+  assert.equal(terminalBrokerStatusAction(409), 'rotate');
+  assert.equal(terminalBrokerStatusAction(502), 'error');
+  assert.equal(terminalBrokerStatusAction(undefined), 'error');
 });
 
 test('reconnects only after a live broker session disconnects', function(assert) {

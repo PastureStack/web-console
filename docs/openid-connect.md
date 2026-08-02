@@ -39,6 +39,10 @@ Changing any field invalidates the prior validation and test result.
 Authorization codes are single-use and are never carried from the test flow
 into activation.
 
+The browser treats the embedded provider configuration as a dedicated writable
+resource. Provider labels are configuration data and are not derived from the
+display-name calculation used by infrastructure resources.
+
 ## Private certificate authorities
 
 For a private identity provider, paste the PEM-encoded issuing certificate
