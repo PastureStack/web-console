@@ -51,8 +51,8 @@ if module_for_count != 0:
     fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
 if module_for_component_count != 0:
     fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
-if direct_qunit_import_count != 75:
-    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=75)
+if direct_qunit_import_count != 77:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=77)
 
 volatile_computed_count = 0
 for path in Path("app").rglob("*.js"):
@@ -178,9 +178,11 @@ direct_qunit_tests = [
     Path("tests/unit/utils/volume-bulk-remove-test.js"),
     Path("tests/unit/vendor/legacy-component-action-test.js"),
     Path("tests/unit/components/legacy-context-partial-test.js"),
+    Path("tests/unit/components/new-select-test.js"),
     Path("tests/unit/components/workspace-terminal-test.js"),
     Path("tests/unit/utils/socket-test.js"),
     Path("tests/unit/utils/owner-lookup-test.js"),
+    Path("tests/unit/utils/catalog-version-options-test.js"),
     Path("tests/unit/bulk-action-handler/service-test.js"),
     Path("tests/unit/routes/loading-test.js"),
     Path("tests/unit/routes/index-test.js"),
