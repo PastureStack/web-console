@@ -1,12 +1,12 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.56-pasturestack.40",
+  "version": "1.6.56-pasturestack.41",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@pasturestack/web-console",
-      "version": "1.6.56-pasturestack.40",
+      "version": "1.6.56-pasturestack.41",
       "license": "Apache-2.0",
       "dependencies": {
         "sass": "1.99.0"

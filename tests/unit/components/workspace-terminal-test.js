@@ -36,6 +36,7 @@ test('probes a stale broker session before it has completed the handshake', func
 
 test('recovers missing or conflicting broker sessions without retrying forever', function(assert) {
   assert.equal(terminalBrokerStatusAction(200, 'connected'), 'connect');
+  assert.equal(terminalBrokerStatusAction(200, 'missing'), 'create');
   assert.equal(terminalBrokerStatusAction(200, 'ended'), 'ended');
   assert.equal(terminalBrokerStatusAction(404), 'create');
   assert.equal(terminalBrokerStatusAction(403), 'rotate');

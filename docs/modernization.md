@@ -193,6 +193,13 @@ normal execute action, a credential conflict rotates the random browser-side
 session identity, and a permanently failed WebSocket stops after four bounded
 attempts instead of retrying indefinitely.
 
+`v1.6.56-pasturestack.41` treats an absent console-broker session as a normal
+`missing` state while retaining compatibility with older brokers that return
+HTTP 404. The terminal recreates that state through the existing execute action
+without leaving a failed request in the browser console. The shared terminal
+and log resize control is reduced from 22 by 22 pixels to 11 by 11 pixels, so
+the existing 12-pixel footer inset keeps it clear of the rightmost action.
+
 The removed Handlebars `partial` helper is replaced by an explicit, audited
 inventory of tagless context components. Each compiled template is attached
 through Ember's public `setComponentTemplate` API, property reads and writes

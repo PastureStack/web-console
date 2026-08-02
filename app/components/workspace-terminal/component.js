@@ -36,6 +36,9 @@ function terminalBrokerStatusAction(httpStatus, brokerStatus) {
   if (typeof httpStatus !== 'number' || httpStatus < 200 || httpStatus >= 300) {
     return 'error';
   }
+  if (brokerStatus === 'missing') {
+    return 'create';
+  }
   if (brokerStatus === 'ended' || brokerStatus === 'error') {
     return 'ended';
   }

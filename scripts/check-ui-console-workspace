@@ -47,6 +47,13 @@ grep -F "type: 'claim'" app/components/workspace-terminal/component.js >/dev/nul
 grep -F "type: 'resize'" app/components/workspace-terminal/component.js >/dev/null
 grep -F "console-workspace-resize-handle" \
   app/components/console-workspace-window/template.hbs >/dev/null
+resize_handle_style=$(
+  tr -d '\r' < app/styles/components/_console-workspace.scss |
+    sed -n '/^\.console-workspace-resize-handle {$/,/^}$/p'
+)
+grep -F 'width: 11px;' <<<"$resize_handle_style" >/dev/null
+grep -F 'height: 11px;' <<<"$resize_handle_style" >/dev/null
+grep -F "brokerStatus === 'missing'" app/components/workspace-terminal/component.js >/dev/null
 grep -F "console-workspace-dock" app/components/console-workspace/template.hbs >/dev/null
 grep -F "console-workspace-dock-scroll" app/components/console-workspace/template.hbs >/dev/null
 grep -F "console-workspace-confirm-backdrop" app/components/console-workspace/template.hbs >/dev/null
@@ -134,4 +141,4 @@ if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] && grep -RInF -- "$PASTURESTACK_PRI
 fi
 
 printf 'UI_CONSOLE_WORKSPACE_OK version=%s persistence=%s cross_tab=%s\n' \
-  1.6.56-pasturestack.40 browser-session broker-broadcast
+  1.6.56-pasturestack.41 browser-session broker-broadcast
