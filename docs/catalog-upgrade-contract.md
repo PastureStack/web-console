@@ -28,8 +28,21 @@ Release validation therefore covers both boundaries:
 - mapping a current revision and valid `upgradeVersionLinks` entries into
   version choices;
 - rendering those choices through the shared native-select component and
-  updating them when the source array changes.
+  updating them when the source array changes;
+- rendering primitive Catalog enum values as native `<option>` elements and
+  continuing through every later question in the upgrade form.
+
+Catalog enum templates must not name an `each` block parameter `option` while
+also rendering a native `<option>` element. With the Ember 6 compiler, that
+block parameter shadows the HTML element name and turns each string value into
+a dynamic component definition. The browser then fails with `Invalid value
+used as weak map key`, leaves the enum list empty, and aborts all following
+questions. The source gate compiles this template and rejects dynamic-component
+bytecode at the enum boundary.
 
 Formal acceptance must inspect at least one installed older revision and prove
 that its displayed current version, selectable target, target resource link,
-and post-upgrade external identifier all describe the same Catalog template.
+and prospective post-upgrade external identifier all describe the same Catalog
+template. It must also open a target with primitive enum questions, verify every
+choice and every following field, and stop before submitting unless workload
+upgrade was explicitly requested.

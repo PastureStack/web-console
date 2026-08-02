@@ -41,8 +41,8 @@ with open('package.json', encoding='utf-8') as f:
     print(json.load(f).get('version', ''))
 PY
 )
-if [[ "$version" != "1.6.56-pasturestack.42" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.42"
+if [[ "$version" != "1.6.56-pasturestack.43" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.56-pasturestack.43"
   failures=$((failures + 1))
 fi
 

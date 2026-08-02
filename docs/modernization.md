@@ -354,6 +354,16 @@ their public property interface, and tests cover the installed revision plus
 every non-empty upgrade link. The complete contract and formal acceptance
 requirements are recorded in `docs/catalog-upgrade-contract.md`.
 
+`v1.6.56-pasturestack.43` completes the Catalog upgrade-form repair. The NFS
+target proved that primitive enum questions could still abort rendering even
+after version targets became selectable: an `option` block parameter shadowed
+the native `<option>` element, so Ember 6 treated values such as `nfsvers=4` as
+dynamic component definitions. The block parameter is now unambiguous, and CI
+compiles the enum template to prove that every choice remains a native option
+rather than a dynamic component. Formal browser acceptance covers both NFS
+version choices, both data-removal choices, the following debug setting, and
+does not submit a workload upgrade.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
