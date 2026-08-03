@@ -30,12 +30,36 @@ function createComponent() {
       primaryResource: service,
       primaryService: service,
       isService: true,
-      sendAction() {},
     }, 'component');
   });
 
   return component;
 }
+
+test('preflight closure callback is invoked without legacy sendAction', function(assert) {
+  let received;
+  let component = createComponent();
+
+  Ember.run(() => component.set('preflightChanged', (state) => {
+    received = state;
+  }));
+  Ember.run(() => component.send('portPreflightChanged', {
+    status: 'available',
+    pending: false,
+    blocked: false,
+  }));
+
+  assert.equal(received.status, 'available', 'passes the state to the closure callback');
+
+  Ember.run(() => component.set('preflightChanged', null));
+  Ember.run(() => component.send('portPreflightChanged', {
+    status: 'warning',
+    pending: false,
+    blocked: false,
+  }));
+  assert.ok(true, 'missing optional callback does not throw');
+  destroyOwned(component);
+});
 
 test('primary check disables save only while pending or blocked', function(assert) {
   let component = createComponent();

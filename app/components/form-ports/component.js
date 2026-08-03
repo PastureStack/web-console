@@ -212,6 +212,18 @@ export default Ember.Component.extend({
     },
   },
 
+  invokePassedAction(name, value) {
+    let action = this.get(name);
+
+    if ( typeof action === 'function' ) {
+      return action(value);
+    }
+
+    if ( action ) {
+      return this.sendAction(name, value);
+    }
+  },
+
   portsArrayDidChange: function() {
     let out = [];
     (this.get('portsArray') || []).forEach((row) => {
@@ -252,8 +264,8 @@ export default Ember.Component.extend({
     });
 
     this.set('portsAsStrArray', out);
-    this.sendAction('changed', this.get('portsArray'));
-    this.sendAction('changedStr', this.get('portsAsStrArray'));
+    this.invokePassedAction('changed', this.get('portsArray'));
+    this.invokePassedAction('changedStr', this.get('portsAsStrArray'));
   }.observes('portsArray.@each.{bindAddress,public,private,protocol}'),
 
   validate: function() {
@@ -462,7 +474,7 @@ export default Ember.Component.extend({
       preflightStatusMessage: this.statusMessage(status, messageKey, result),
     });
     this.validate();
-    this.sendAction('preflightChanged', {
+    this.invokePassedAction('preflightChanged', {
       status,
       pending: status === 'checking',
       blocked: status === 'blocked',

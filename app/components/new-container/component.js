@@ -127,7 +127,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
 
     portPreflightChanged(state) {
       this.set('portPreflightState', state || {status: 'idle', pending: false, blocked: false});
-      this.sendAction('preflightChanged', this.get('portPreflightState'));
+      this.invokePassedAction('preflightChanged', this.get('portPreflightState'));
     },
 
     sidekickPortPreflightChanged(key, state) {
@@ -144,6 +144,18 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     cancel() {
       this.sendAction('cancel');
     },
+  },
+
+  invokePassedAction(name, value) {
+    let action = this.get(name);
+
+    if ( typeof action === 'function' ) {
+      return action(value);
+    }
+
+    if ( action ) {
+      return this.sendAction(name, value);
+    }
   },
 
   init() {

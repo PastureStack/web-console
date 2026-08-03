@@ -28,6 +28,9 @@ for (const marker of [
   'stackId',
   'runtimeProbe: true',
   'host_network_ignores_published_port',
+  "this.invokePassedAction('changed'",
+  "this.invokePassedAction('changedStr'",
+  "this.invokePassedAction('preflightChanged'",
 ]) {
   if (!component.includes(marker)) failures.push(`FORM_PORT_PREFLIGHT_MISSING=${marker}`);
 }
@@ -46,6 +49,7 @@ for (const marker of [
   'hasSidekickPortPreflightPending',
   'hasSidekickPortPreflightBlocked',
   'saveDisabled:',
+  "this.invokePassedAction('preflightChanged'",
 ]) {
   if (!parent.includes(marker)) failures.push(`NEW_CONTAINER_PREFLIGHT_MISSING=${marker}`);
 }
@@ -74,6 +78,7 @@ for (const marker of [
   'stopped owner is a warning and does not block saving',
   'host networking checks the container port',
   'a late older response cannot replace the newest result',
+  'closure callbacks are invoked directly and missing optional callbacks are ignored',
 ]) {
   if (!componentTest.includes(marker)) failures.push(`PORT_PREFLIGHT_TEST_MISSING=${marker}`);
 }
@@ -81,6 +86,7 @@ for (const marker of [
 for (const marker of [
   'primary check disables save only while pending or blocked',
   'sidekick checks participate in the parent save lock',
+  'preflight closure callback is invoked without legacy sendAction',
 ]) {
   if (!parentTest.includes(marker)) failures.push(`PORT_PREFLIGHT_PARENT_TEST_MISSING=${marker}`);
 }

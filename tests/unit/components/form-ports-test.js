@@ -38,12 +38,53 @@ function createComponent(project, properties) {
       projects: Ember.Object.create({current: project}),
       initialPorts: Ember.A(),
       schedulePortPreflight() {},
-      sendAction() {},
     }, properties || {}), 'component');
   });
 
   return component;
 }
+
+test('closure callbacks are invoked directly and missing optional callbacks are ignored', function(assert) {
+  let changedRows;
+  let changedSpecs;
+  let preflightState;
+  let component = createComponent(null, {
+    changed(value) {
+      changedRows = value;
+    },
+    changedStr(value) {
+      changedSpecs = value;
+    },
+    preflightChanged(value) {
+      preflightState = value;
+    },
+    sendAction() {
+      assert.ok(false, 'closure callbacks must not be routed through legacy sendAction');
+    },
+  });
+  let row = portRow('8080', '80');
+
+  Ember.run(() => component.set('portsArray', Ember.A([row])));
+  component.portsArrayDidChange();
+  component.applyPreflightState('available', [], null, {
+    eligibleHostCount: 1,
+    availableHostCount: 1,
+  });
+
+  assert.strictEqual(changedRows, component.get('portsArray'), 'passes the live row array');
+  assert.deepEqual(changedSpecs, ['8080:80/tcp'], 'passes the serialized port specs');
+  assert.equal(preflightState.status, 'available', 'passes the preflight result');
+
+  Ember.run(() => component.setProperties({
+    changed: null,
+    changedStr: null,
+    preflightChanged: null,
+  }));
+  component.portsArrayDidChange();
+  component.applyPreflightState('available', [], null, null);
+  assert.ok(true, 'missing optional callbacks do not throw');
+  destroyOwned(component);
+});
 
 function projectWithAction(callback) {
   return Ember.Object.create({
