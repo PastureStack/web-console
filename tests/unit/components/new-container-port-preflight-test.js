@@ -61,6 +61,16 @@ test('preflight closure callback is invoked without legacy sendAction', function
   destroyOwned(component);
 });
 
+test('serialized port changes update the launch config through a named action', function(assert) {
+  let component = createComponent();
+  let ports = Ember.A(['19041:80/tcp']);
+
+  Ember.run(() => component.send('setPorts', ports));
+
+  assert.strictEqual(component.get('launchConfig.ports'), ports, 'stores the serialized port array');
+  destroyOwned(component);
+});
+
 test('primary check disables save only while pending or blocked', function(assert) {
   let component = createComponent();
 

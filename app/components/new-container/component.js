@@ -105,6 +105,10 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
       this.set('launchConfig.imageUuid', uuid);
     },
 
+    setPorts(ports) {
+      this.set('launchConfig.ports', ports);
+    },
+
     setLabels(section,labels) {
       this.set(section+'Labels', labels);
     },

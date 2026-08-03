@@ -68,7 +68,7 @@
     {{form-ports
       initialPorts=this.launchConfig.ports
       errors=this.portErrors
-      changedStr=(action (mut this.launchConfig.ports))
+      changedStr=(action 'setPorts')
       portsAsStrArray=this.launchConfig.ports
       networkMode=this.launchConfig.networkMode
       requestedHostId=this.launchConfig.requestedHostId

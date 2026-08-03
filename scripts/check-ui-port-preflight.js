@@ -49,12 +49,14 @@ for (const marker of [
   'hasSidekickPortPreflightPending',
   'hasSidekickPortPreflightBlocked',
   'saveDisabled:',
+  'setPorts(ports)',
   "this.invokePassedAction('preflightChanged'",
 ]) {
   if (!parent.includes(marker)) failures.push(`NEW_CONTAINER_PREFLIGHT_MISSING=${marker}`);
 }
 
 for (const marker of [
+  "changedStr=(action 'setPorts')",
   "preflightChanged=(action 'portPreflightChanged')",
   "preflightChanged=(action 'sidekickPortPreflightChanged' slc.uiId)",
   'saveDisabled=this.saveDisabled',
@@ -84,11 +86,16 @@ for (const marker of [
 }
 
 for (const marker of [
+  'serialized port changes update the launch config through a named action',
   'primary check disables save only while pending or blocked',
   'sidekick checks participate in the parent save lock',
   'preflight closure callback is invoked without legacy sendAction',
 ]) {
   if (!parentTest.includes(marker)) failures.push(`PORT_PREFLIGHT_PARENT_TEST_MISSING=${marker}`);
+}
+
+if (parentTemplate.includes('(action (mut this.launchConfig.ports))')) {
+  failures.push('NEW_CONTAINER_PORT_MUT_ACTION_FORBIDDEN');
 }
 
 const localeKeys = [
