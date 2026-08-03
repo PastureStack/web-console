@@ -53,6 +53,7 @@ load_css_expected = [
     "app/styles/components/input-service",
     "app/styles/components/hero-add-service",
     "app/styles/components/project-upgrade",
+    "app/styles/components/form-ports",
     "app/styles/pages/loading",
     "app/styles/pages/fail-whale",
     "app/styles/pages/host",
@@ -115,6 +116,7 @@ configured_load_css_expected = {
     "app/styles/components/timeline": ['"lightGray": $lightGray', '"navyTwoDark": $navyTwoDark', '"orangeDark": $orangeDark'],
     "app/styles/components/github-avatar": ['"lightGray": $lightGray'],
     "app/styles/components/catalog-box": ['"accent-one": $accent-one', '"blueTwo": $blueTwo', '"greenTwo": $greenTwo', '"greenTwoDark": $greenTwoDark', '"icon-pasture-stack": $icon-pasture-stack', '"lightTeal": $lightTeal', '"lightTealDark": $lightTealDark', '"primary": $primary', '"primaryDark": $primaryDark', '"table-bg-accent": $table-bg-accent'],
+    "app/styles/components/form-ports": ['"brand-danger": $brand-danger', '"brand-info": $brand-info', '"brand-success": $brand-success', '"brand-warning": $brand-warning', '"table-border-color": $table-border-color', '"text-color": $text-color', '"well-bg": $well-bg'],
     "app/styles/pages/loading": ['"midGray": $midGray', '"yellowDark": $yellowDark'],
     "app/styles/pages/fail-whale": ['"lightTeal": $lightTeal', '"teal": $teal'],
     "app/styles/pages/about": ['"bold-weight": $bold-weight', '"screen-sm-max": $screen-sm-max'],
@@ -323,7 +325,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=51 use_per_entrypoint=7")
+print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=52 use_per_entrypoint=7")
 print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
 print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
 print(f"bootstrap_config_keys={len(bootstrap_config_expected)} bootstrap_default_only_keys={len(bootstrap_default_only_variables)}")

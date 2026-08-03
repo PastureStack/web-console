@@ -1979,9 +1979,57 @@ formPorts:
   error:
     privateRequired: Kinakailangan ang Pribadong Container Port para sa bawat panuntunan sa port.
     publicRequired: Kinakailangan ang Public Host Port kung tinukoy ang Host IP.
+    invalidPort: Ang numero ng port ay dapat buong bilang mula 1 hanggang 65535.
     mixedIpPort: 'Port {ip}:{port}/{proto} ay may higit sa isang pagmamapa.'
     mixedPort: 'Ang port {port}/{proto} ay may higit sa isang pagmamapa.'
   showIpLink: Ipakita ang field ng Host IP.
+  preflight:
+    label: Availability
+    status:
+      checking: Sinusuri ang lahat ng kwalipikadong host para sa salungatan sa port…
+      available: 'Available: magagamit ng {available}/{eligible} kwalipikadong host ang mga port na ito.'
+      warning: 'Available na may babala: nananatiling available ang {available}/{eligible} kwalipikadong host.'
+      unknown: Hindi ganap na nasuri ang estado ng port. Susuriin itong muli ng server kapag nag-save.
+      blocked: 'Hindi available: {available}/{eligible} kwalipikadong host lamang ang makagagamit ng mga port na ito.'
+      unsupported: Hindi sinusuportahan ng server na ito ang live na pagsuri ng port. Isasagawa nito ang huling pagsusuri kapag nag-save.
+      requestFailed: Hindi natapos ang live na pagsusuri. Hindi alam ang estado at susuriin itong muli kapag nag-save.
+    row:
+      checking: Sinusuri ang port na ito…
+      available: Available ang port na ito sa mga kinakailangang host.
+      unknown: Hindi ganap na nasuri ang port na ito.
+    error:
+      blocked: Ayusin ang salungatan sa host port bago mag-save.
+      sidekickChecking: Hintaying matapos ang pagsuri ng port ng sidekick.
+      sidekickBlocked: May salungatan sa host port ang isang sidekick na kailangang ayusin bago mag-save.
+    reason:
+      active_port_conflict: Ginagamit ng tumatakbong workload ang port na ito.
+      active_port_conflict_on_other_host: Ginagamit ang port sa ilang host, ngunit may ibang kwalipikadong host na available.
+      stopped_port_owner: Nakareserba pa rin ang port sa tumigil na workload at maaaring sumalungat kapag muling sinimulan.
+      host_process_conflict: May proseso sa host na nakikinig sa port na ito.
+      external_docker_conflict: Ginagamit ng Docker container sa labas ng proyektong ito ang port na ito.
+      invalid_network_mode_mapping: Hindi maaaring mag-publish ng host port ang network mode na ito.
+      host_network_ignores_published_port: Hindi sinusunod ng host network ang port remapping; dapat magkapareho ang host at container port.
+      duplicate_requested_port: Higit sa isang beses hiniling sa form ang parehong host port.
+      insufficient_eligible_hosts: Kulang ang kwalipikadong host na may available na port na ito.
+      host_unreachable: Hindi maabot ang host para sa live na pagsuri ng port.
+      agent_timeout: Hindi natapos ng Node Agent sa oras ang live na pagsuri ng port.
+      agent_unsupported: Hindi masuri ng Node Agent ang lahat ng host socket kaya hindi alam ang availability.
+      unknown: Hindi matukoy ang estado ng port.
+    detail:
+      endpoint: 'Port: {address}:{port}/{protocol}'
+      host: 'Host: {value}'
+      stack: 'Salansan ng application: {value}'
+      service: 'Serbisyo: {value}'
+      container: 'Container: {value}'
+      state: 'Estado: {value}'
+    state:
+      active: Aktibo
+      running: Tumatakbo
+      stopped: Tumigil
+      stopping: Humihinto
+      created: Nagawa
+      exited: Natapos
+      error: Error
 formScale:
   label: Scale
   global:

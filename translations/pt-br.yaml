@@ -1974,9 +1974,57 @@ formPorts:
   error:
     privateRequired: A Porta de Contêiner Privada é necessária para cada regra de porta.
     publicRequired: A porta de host pública será necessária se Host IP for especificado.
+    invalidPort: Os números de porta devem ser inteiros entre 1 e 65535.
     mixedIpPort: 'A porta {ip}:{port}/{proto} possui mais de um mapeamento.'
     mixedPort: 'A porta {port}/{proto} possui mais de um mapeamento.'
   showIpLink: Mostrar campo Host IP
+  preflight:
+    label: Disponibilidade
+    status:
+      checking: Verificando conflitos de porta em todos os hosts elegíveis…
+      available: 'Disponível: {available}/{eligible} hosts elegíveis podem usar estas portas.'
+      warning: 'Disponível com avisos: {available}/{eligible} hosts elegíveis continuam disponíveis.'
+      unknown: Não foi possível verificar totalmente o estado das portas. O servidor verificará novamente ao salvar.
+      blocked: 'Indisponível: apenas {available}/{eligible} hosts elegíveis podem usar estas portas.'
+      unsupported: Este servidor não oferece verificação de porta em tempo real. A validação final será feita ao salvar.
+      requestFailed: A verificação em tempo real não foi concluída. O estado é desconhecido e será verificado novamente ao salvar.
+    row:
+      checking: Verificando esta porta…
+      available: Esta porta está disponível nos hosts necessários.
+      unknown: Não foi possível verificar totalmente esta porta.
+    error:
+      blocked: Resolva o conflito de porta do host antes de salvar.
+      sidekickChecking: Aguarde a conclusão da verificação de portas do sidekick.
+      sidekickBlocked: Um sidekick tem um conflito de porta do host que deve ser resolvido antes de salvar.
+    reason:
+      active_port_conflict: Uma carga de trabalho em execução está usando esta porta.
+      active_port_conflict_on_other_host: Esta porta está em uso em alguns hosts, mas outro host elegível está disponível.
+      stopped_port_owner: Uma carga de trabalho parada mantém esta porta e pode entrar em conflito ao reiniciar.
+      host_process_conflict: Um processo do host está escutando nesta porta.
+      external_docker_conflict: Um contêiner Docker fora deste projeto está usando esta porta.
+      invalid_network_mode_mapping: Este modo de rede não pode publicar portas do host.
+      host_network_ignores_published_port: A rede do host ignora o remapeamento de portas; as portas do host e do contêiner devem ser iguais.
+      duplicate_requested_port: Este formulário solicita a mesma porta do host mais de uma vez.
+      insufficient_eligible_hosts: Não há hosts elegíveis suficientes com esta porta disponível.
+      host_unreachable: Não foi possível acessar o host para a verificação em tempo real.
+      agent_timeout: O Node Agent não concluiu a verificação em tempo real dentro do prazo.
+      agent_unsupported: O Node Agent não consegue inspecionar todos os sockets do host; a disponibilidade é desconhecida.
+      unknown: Não foi possível determinar o estado desta porta.
+    detail:
+      endpoint: 'Porta: {address}:{port}/{protocol}'
+      host: 'Host: {value}'
+      stack: 'Conjunto de aplicativos: {value}'
+      service: 'Serviço: {value}'
+      container: 'Contêiner: {value}'
+      state: 'Estado: {value}'
+    state:
+      active: Ativo
+      running: Em execução
+      stopped: Parado
+      stopping: Parando
+      created: Criado
+      exited: Encerrado
+      error: Erro
 formScale:
   label: Escala
   global:

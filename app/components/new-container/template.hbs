@@ -70,6 +70,16 @@
       errors=this.portErrors
       changedStr=(action (mut this.launchConfig.ports))
       portsAsStrArray=this.launchConfig.ports
+      networkMode=this.launchConfig.networkMode
+      requestedHostId=this.launchConfig.requestedHostId
+      serviceId=this.preflightServiceId
+      instanceId=this.preflightInstanceId
+      stackId=this.preflightStackId
+      isGlobal=this.isGlobal
+      scale=this.preflightScale
+      batchSize=this.preflightBatchSize
+      startFirst=this.preflightStartFirst
+      preflightChanged=(action 'portPreflightChanged')
     }}
 
     {{#if (and this.isService (not this.isSidekick))}}
@@ -216,14 +226,17 @@
         isService=true
         isSidekick=true
         isUpgrade=this.isUpgrade
+        isGlobal=this.isGlobal
         isVm=(eq slc.kind 'virtualMachine')
         launchConfig=slc
         service=slc
         primaryResource=slc
         primaryService=this.primaryService
         launchConfigIndex=index
+        upgradeOptions=this.upgradeOptions
         allHosts=this.allHosts
         allStoragePools=this.allStoragePools
+        preflightChanged=(action 'sidekickPortPreflightChanged' slc.uiId)
       }}
     </div>
   {{/each}}
@@ -232,7 +245,7 @@
 
 {{#unless this.isSidekick}}
   {{top-errors errors=this.errors}}
-  {{#save-cancel saveDisabled=this.noLaunchConfigsEnabled createLabel=(if this.isUpgrade 'newContainer.saveUpgrade' 'newContainer.saveNew') save="save" cancel="cancel"}}
+  {{#save-cancel saveDisabled=this.saveDisabled createLabel=(if this.isUpgrade 'newContainer.saveUpgrade' 'newContainer.saveNew') save="save" cancel="cancel"}}
     {{#if (and (not this.isUpgrade) (not-eq this.activeLaunchConfigIndex -1))}}
       <button class="btn btn-default" {{action "removeSidekick"}}>{{t 'newContainer.removeSidekick'}}</button>
     {{/if}}

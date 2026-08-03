@@ -1992,9 +1992,57 @@ formPorts:
   error:
     privateRequired: Privát konténer port szükséges minden portszabály számára.
     publicRequired: 'Nyilvános hoszt port kötelező, ha a hoszt IP be van állítva.'
+    invalidPort: A portszámnak 1 és 65535 közötti egész számnak kell lennie.
     mixedIpPort: 'A {ip}: {port}/{proto} portnak egynél több leképezése van.'
     mixedPort: 'A {port}/{proto} portnak egynél több leképezése van.'
   showIpLink: A Host IP mező megjelenítése
+  preflight:
+    label: Elérhetőség
+    status:
+      checking: Portütközések ellenőrzése minden megfelelő hoszton…
+      available: 'Elérhető: {available}/{eligible} megfelelő hoszt használhatja ezeket a portokat.'
+      warning: 'Figyelmeztetéssel elérhető: {available}/{eligible} megfelelő hoszt továbbra is használható.'
+      unknown: A portok állapota nem ellenőrizhető teljesen. A kiszolgáló mentéskor újra ellenőrzi.
+      blocked: 'Nem érhető el: csak {available}/{eligible} megfelelő hoszt használhatja ezeket a portokat.'
+      unsupported: Ez a kiszolgáló nem támogatja az élő portellenőrzést. Mentéskor végső ellenőrzést végez.
+      requestFailed: Az élő ellenőrzés nem fejeződött be. Az állapot ismeretlen, és mentéskor újra ellenőrzésre kerül.
+    row:
+      checking: A port ellenőrzése…
+      available: Ez a port elérhető a szükséges hosztokon.
+      unknown: A port nem volt teljesen ellenőrizhető.
+    error:
+      blocked: Mentés előtt oldja fel a hosztport ütközését.
+      sidekickChecking: Várja meg az oldalkonténer portellenőrzésének végét.
+      sidekickBlocked: Egy oldalkonténer hosztport-ütközéssel rendelkezik, amelyet mentés előtt meg kell oldani.
+    reason:
+      active_port_conflict: Egy futó munkaterhelés használja ezt a portot.
+      active_port_conflict_on_other_host: A port néhány hoszton foglalt, de egy másik megfelelő hoszt elérhető.
+      stopped_port_owner: Egy leállított munkaterhelés megtartja ezt a portot, és újraindításkor ütközést okozhat.
+      host_process_conflict: Egy hosztfolyamat figyel ezen a porton.
+      external_docker_conflict: Egy projekten kívüli Docker-konténer használja ezt a portot.
+      invalid_network_mode_mapping: Ebben a hálózati módban nem tehetők közzé hosztportok.
+      host_network_ignores_published_port: A hoszthálózat figyelmen kívül hagyja a portátirányítást; a hoszt- és konténerportnak egyeznie kell.
+      duplicate_requested_port: Az űrlap ugyanazt a hosztportot többször kéri.
+      insufficient_eligible_hosts: Nincs elegendő megfelelő hoszt, amelyen ez a port elérhető.
+      host_unreachable: A hoszt nem volt elérhető az élő portellenőrzéshez.
+      agent_timeout: A Node Agent nem fejezte be időben az élő portellenőrzést.
+      agent_unsupported: A Node Agent nem tudja ellenőrizni az összes hoszt socketet, ezért az elérhetőség ismeretlen.
+      unknown: A port állapota nem volt meghatározható.
+    detail:
+      endpoint: 'Port: {address}:{port}/{protocol}'
+      host: 'Hoszt: {value}'
+      stack: 'Alkalmazásverem: {value}'
+      service: 'Szolgáltatás: {value}'
+      container: 'Konténer: {value}'
+      state: 'Állapot: {value}'
+    state:
+      active: Aktív
+      running: Fut
+      stopped: Leállítva
+      stopping: Leállítás alatt
+      created: Létrehozva
+      exited: Kilépett
+      error: Hiba
 formScale:
   label: Skála
   global:

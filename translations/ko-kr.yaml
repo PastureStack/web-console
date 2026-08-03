@@ -1884,9 +1884,57 @@ formPorts:
   error:
     privateRequired: 각 포트 규칙에는 개인 컨테이너 포트가 필요합니다.
     publicRequired: HostIP를 지정한 경우 공용 호스트 포트가 필요합니다.
+    invalidPort: 포트 번호는 1부터 65535 사이의 정수여야 합니다.
     mixedIpPort: '포트 {ip}:{port}/{proto}에 둘 이상의 매핑이 있습니다.'
     mixedPort: '포트 {port}/{proto}에 둘 이상의 매핑이 있습니다.'
   showIpLink: 호스트 IP 필드 표시
+  preflight:
+    label: 사용 가능 여부
+    status:
+      checking: 조건에 맞는 모든 호스트에서 포트 충돌을 확인하는 중…
+      available: '사용 가능: 조건에 맞는 호스트 {eligible}대 중 {available}대에서 이 포트를 사용할 수 있습니다.'
+      warning: '경고와 함께 사용 가능: 조건에 맞는 호스트 {eligible}대 중 {available}대가 남아 있습니다.'
+      unknown: 포트 상태를 완전히 확인할 수 없습니다. 저장할 때 서버에서 다시 확인합니다.
+      blocked: '사용 불가: 조건에 맞는 호스트 {eligible}대 중 {available}대에서만 사용할 수 있습니다.'
+      unsupported: 이 서버는 실시간 포트 확인을 지원하지 않습니다. 저장할 때 최종 확인합니다.
+      requestFailed: 실시간 확인을 완료하지 못했습니다. 상태는 알 수 없으며 저장할 때 다시 확인합니다.
+    row:
+      checking: 이 포트를 확인하는 중…
+      available: 필요한 호스트에서 이 포트를 사용할 수 있습니다.
+      unknown: 이 포트의 상태를 완전히 확인할 수 없습니다.
+    error:
+      blocked: 저장하기 전에 호스트 포트 충돌을 해결하십시오.
+      sidekickChecking: 사이드킥 포트 확인이 끝날 때까지 기다리십시오.
+      sidekickBlocked: 사이드킥에 호스트 포트 충돌이 있습니다. 저장하기 전에 해결하십시오.
+    reason:
+      active_port_conflict: 실행 중인 워크로드가 이 포트를 사용하고 있습니다.
+      active_port_conflict_on_other_host: 일부 호스트에서 사용 중이지만 다른 조건 충족 호스트를 사용할 수 있습니다.
+      stopped_port_owner: 중지된 워크로드가 이 포트를 보유하고 있어 다시 시작할 때 충돌할 수 있습니다.
+      host_process_conflict: 호스트 프로세스가 이 포트에서 수신 대기 중입니다.
+      external_docker_conflict: 이 프로젝트 외부의 Docker 컨테이너가 이 포트를 사용하고 있습니다.
+      invalid_network_mode_mapping: 이 네트워크 모드에서는 호스트 포트를 게시할 수 없습니다.
+      host_network_ignores_published_port: 호스트 네트워크는 포트 재매핑을 무시합니다. 호스트와 컨테이너 포트가 같아야 합니다.
+      duplicate_requested_port: 동일한 호스트 포트가 두 번 이상 지정되었습니다.
+      insufficient_eligible_hosts: 이 포트를 사용할 수 있는 적격 호스트가 부족합니다.
+      host_unreachable: 실시간 포트 확인을 위해 호스트에 연결할 수 없습니다.
+      agent_timeout: 노드 Agent가 제한 시간 안에 실시간 확인을 마치지 못했습니다.
+      agent_unsupported: 노드 Agent가 모든 호스트 소켓을 확인할 수 없어 사용 가능 여부를 알 수 없습니다.
+      unknown: 포트 상태를 확인할 수 없습니다.
+    detail:
+      endpoint: '포트: {address}:{port}/{protocol}'
+      host: '호스트: {value}'
+      stack: '애플리케이션 스택: {value}'
+      service: '서비스: {value}'
+      container: '컨테이너: {value}'
+      state: '상태: {value}'
+    state:
+      active: 활성
+      running: 실행 중
+      stopped: 중지됨
+      stopping: 중지 중
+      created: 생성됨
+      exited: 종료됨
+      error: 오류
 formScale:
   label: 규모
   global:

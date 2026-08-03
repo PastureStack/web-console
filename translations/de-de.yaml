@@ -2016,9 +2016,57 @@ formPorts:
   error:
     privateRequired: Für jede Portregel ist ein privater Containerport erforderlich.
     publicRequired: 'Der öffentliche Host-Port ist erforderlich, wenn Host IP angegeben ist.'
+    invalidPort: Portnummern müssen ganze Zahlen zwischen 1 und 65535 sein.
     mixedIpPort: 'Port {ip}:{port}/{proto} verfügt über mehr als eine Zuordnung.'
     mixedPort: 'Port {port}/{proto} verfügt über mehr als eine Zuordnung.'
   showIpLink: Feld Host IP anzeigen
+  preflight:
+    label: Verfügbarkeit
+    status:
+      checking: Alle geeigneten Hosts werden auf Portkonflikte geprüft…
+      available: 'Verfügbar: {available}/{eligible} geeignete Hosts können diese Ports verwenden.'
+      warning: 'Mit Warnungen verfügbar: {available}/{eligible} geeignete Hosts sind weiterhin verfügbar.'
+      unknown: Der Portstatus konnte nicht vollständig geprüft werden. Der Server prüft ihn beim Speichern erneut.
+      blocked: 'Nicht verfügbar: Nur {available}/{eligible} geeignete Hosts können diese Ports verwenden.'
+      unsupported: Dieser Server unterstützt keine Live-Portprüfung. Beim Speichern wird die abschließende Prüfung ausgeführt.
+      requestFailed: Die Live-Prüfung wurde nicht abgeschlossen. Der Status ist unbekannt und wird beim Speichern erneut geprüft.
+    row:
+      checking: Dieser Port wird geprüft…
+      available: Dieser Port ist auf den erforderlichen Hosts verfügbar.
+      unknown: Dieser Port konnte nicht vollständig geprüft werden.
+    error:
+      blocked: Beheben Sie den Host-Portkonflikt vor dem Speichern.
+      sidekickChecking: Warten Sie, bis die Portprüfung des Sidekicks abgeschlossen ist.
+      sidekickBlocked: Ein Sidekick hat einen Host-Portkonflikt, der vor dem Speichern behoben werden muss.
+    reason:
+      active_port_conflict: Eine laufende Arbeitslast verwendet diesen Port.
+      active_port_conflict_on_other_host: Der Port wird auf einigen Hosts verwendet, aber ein anderer geeigneter Host ist verfügbar.
+      stopped_port_owner: Eine gestoppte Arbeitslast behält diesen Port und kann beim Neustart einen Konflikt verursachen.
+      host_process_conflict: Ein Hostprozess lauscht auf diesem Port.
+      external_docker_conflict: Ein Docker-Container außerhalb dieses Projekts verwendet diesen Port.
+      invalid_network_mode_mapping: In diesem Netzwerkmodus können keine Host-Ports veröffentlicht werden.
+      host_network_ignores_published_port: Das Hostnetzwerk ignoriert Port-Neuzuordnungen; Host- und Containerport müssen übereinstimmen.
+      duplicate_requested_port: Derselbe Host-Port wurde in diesem Formular mehrfach angegeben.
+      insufficient_eligible_hosts: Es gibt nicht genügend geeignete Hosts, auf denen dieser Port verfügbar ist.
+      host_unreachable: Der Host war für die Live-Portprüfung nicht erreichbar.
+      agent_timeout: Der Node Agent hat die Live-Portprüfung nicht rechtzeitig abgeschlossen.
+      agent_unsupported: Der Node Agent kann nicht alle Host-Sockets prüfen; die Verfügbarkeit ist daher unbekannt.
+      unknown: Der Portstatus konnte nicht ermittelt werden.
+    detail:
+      endpoint: 'Port: {address}:{port}/{protocol}'
+      host: 'Host: {value}'
+      stack: 'Anwendungs-Stack: {value}'
+      service: 'Dienst: {value}'
+      container: 'Container: {value}'
+      state: 'Status: {value}'
+    state:
+      active: Aktiv
+      running: Wird ausgeführt
+      stopped: Gestoppt
+      stopping: Wird gestoppt
+      created: Erstellt
+      exited: Beendet
+      error: Fehler
 formScale:
   label: Skalieren
   global:

@@ -663,6 +663,7 @@ $bootstrap-config: ("gray-base": $gray-base, "gray-darker": $gray-darker, "gray-
 @include meta.load-css("app/styles/components/input-service");
 @include meta.load-css("app/styles/components/hero-add-service");
 @include meta.load-css("app/styles/components/project-upgrade");
+@include meta.load-css("app/styles/components/form-ports", $with: ("brand-danger": $brand-danger, "brand-info": $brand-info, "brand-success": $brand-success, "brand-warning": $brand-warning, "table-border-color": $table-border-color, "text-color": $text-color, "well-bg": $well-bg));
 
 //******************************************
 // Pages

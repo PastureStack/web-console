@@ -2165,25 +2165,73 @@ formNetwork:
     placeholder: 例如：prod.example.com
     addActionLabel: 新增搜尋域
 formPorts:
-  addAction: 連接埠對應
+  addAction: 新增連接埠對應
   bindAddress:
     label: 公開主機 IP（選填）
-    placeholder: 例如：1.2.3.4; 預設： any
+    placeholder: 例如：1.2.3.4；預設為任意位址
   public:
-    label: 公開主機連接埠
+    label: 主機連接埠
     placeholder: 例如：80
   private:
-    label: 私有容器連接埠
+    label: 容器連接埠
     placeholder: 例如：8080
   protocol:
     label: 通訊協定
-  noPorts: 目前容器沒有連接埠對應
+  noPorts: 此容器沒有連接埠對應。
   error:
-    privateRequired: 每條連接埠規則必須有私有容器連接埠
-    publicRequired: 指定主機 IP 時必須設定公開主機連接埠
-    mixedIpPort: 'Port {ip}:{port}/{proto} 有超過一條對應規則'
-    mixedPort: 'Port {port}/{proto} 有超過一條對應規則'
-  showIpLink: 顯示主機 IP 選項
+    privateRequired: 每一條規則都必須設定容器連接埠。
+    publicRequired: 指定主機 IP 時必須設定主機連接埠。
+    invalidPort: 連接埠必須是 1 到 65535 之間的整數。
+    mixedIpPort: '連接埠 {ip}:{port}/{proto} 有重複的對應規則。'
+    mixedPort: '連接埠 {port}/{proto} 有重複的對應規則。'
+  showIpLink: 顯示主機 IP 欄位
+  preflight:
+    label: 可用狀態
+    status:
+      checking: 正在檢查所有符合條件的主機是否有連接埠衝突…
+      available: '已確認可用：{available}/{eligible} 台符合條件的主機可以使用這組連接埠。'
+      warning: '可以繼續，但有注意事項：目前仍有 {available}/{eligible} 台符合條件的主機可用。'
+      unknown: 無法完整確認所有主機的連接埠狀態；儲存時伺服器會再次驗證。
+      blocked: '無法使用：只有 {available}/{eligible} 台符合條件的主機可用。'
+      unsupported: 目前伺服器不支援即時連接埠檢查；儲存時會執行最後驗證。
+      requestFailed: 即時檢查未完成；目前狀態不明，儲存時伺服器會再次驗證。
+    row:
+      checking: 正在檢查這個連接埠…
+      available: 此連接埠可供需要的主機使用。
+      unknown: 無法完整確認此連接埠的狀態。
+    error:
+      blocked: 請先排除主機連接埠衝突，再儲存設定。
+      sidekickChecking: 請等待附屬容器完成連接埠檢查。
+      sidekickBlocked: 附屬容器有主機連接埠衝突，請先排除後再儲存。
+    reason:
+      active_port_conflict: 執行中的工作負載正在使用這個連接埠。
+      active_port_conflict_on_other_host: 部分主機已使用這個連接埠，但仍有其他符合條件的主機可供排程。
+      stopped_port_owner: 已停止的工作負載仍保留這個連接埠，重新啟動時可能發生衝突。
+      host_process_conflict: 主機上的處理程序正在監聽這個連接埠。
+      external_docker_conflict: 此專案以外的 Docker 容器正在使用這個連接埠。
+      invalid_network_mode_mapping: 目前的網路模式無法發布主機連接埠。
+      host_network_ignores_published_port: 主機網路模式不會套用連接埠重新對應；主機與容器連接埠必須相同。
+      duplicate_requested_port: 此表單重複設定了同一個主機連接埠。
+      insufficient_eligible_hosts: 可使用這個連接埠的合格主機數量不足。
+      host_unreachable: 無法連線至主機以執行即時連接埠檢查。
+      agent_timeout: 節點 Agent 未能在期限內完成即時連接埠檢查。
+      agent_unsupported: 節點 Agent 無法檢查所有主機通訊端，因此目前無法確認可用狀態。
+      unknown: 無法判斷這個連接埠的使用狀態。
+    detail:
+      endpoint: '連接埠：{address}:{port}/{protocol}'
+      host: '主機：{value}'
+      stack: '應用堆疊：{value}'
+      service: '服務：{value}'
+      container: '容器：{value}'
+      state: '狀態：{value}'
+    state:
+      active: 使用中
+      running: 執行中
+      stopped: 已停止
+      stopping: 停止中
+      created: 已建立
+      exited: 已結束
+      error: 發生錯誤
 formScale:
   label: 數量
   global:

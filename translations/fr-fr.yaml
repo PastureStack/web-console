@@ -1983,9 +1983,57 @@ formPorts:
   error:
     privateRequired: Le Port privé de conteneur est requis pour chaque règle de port.
     publicRequired: Le Port hôte public est requis si l’IP de l’hôte est spécifiée.
+    invalidPort: Les numéros de port doivent être des entiers compris entre 1 et 65535.
     mixedIpPort: 'Port {ip}:{port} /{proto} a plus d’une correspondance.'
     mixedPort: 'Le Port {port}/{proto} a plus d’une correspondance.'
   showIpLink: Afficher le champ IP de l'Hôte
+  preflight:
+    label: Disponibilité
+    status:
+      checking: Recherche de conflits de ports sur tous les hôtes éligibles…
+      available: 'Disponible : {available}/{eligible} hôtes éligibles peuvent utiliser ces ports.'
+      warning: 'Disponible avec avertissements : {available}/{eligible} hôtes éligibles restent disponibles.'
+      unknown: L’état des ports n’a pas pu être entièrement vérifié. Le serveur le vérifiera de nouveau lors de l’enregistrement.
+      blocked: 'Indisponible : seuls {available}/{eligible} hôtes éligibles peuvent utiliser ces ports.'
+      unsupported: Ce serveur ne prend pas en charge la vérification en direct des ports. Il effectuera une dernière vérification lors de l’enregistrement.
+      requestFailed: La vérification en direct n’a pas abouti. L’état est inconnu et sera vérifié de nouveau lors de l’enregistrement.
+    row:
+      checking: Vérification de ce port…
+      available: Ce port est disponible sur les hôtes requis.
+      unknown: Ce port n’a pas pu être entièrement vérifié.
+    error:
+      blocked: Résolvez le conflit de port de l’hôte avant d’enregistrer.
+      sidekickChecking: Attendez la fin de la vérification des ports du sidekick.
+      sidekickBlocked: Un sidekick présente un conflit de port d’hôte à résoudre avant l’enregistrement.
+    reason:
+      active_port_conflict: Une charge de travail en cours utilise ce port.
+      active_port_conflict_on_other_host: Ce port est utilisé sur certains hôtes, mais un autre hôte éligible reste disponible.
+      stopped_port_owner: Une charge de travail arrêtée conserve ce port et peut créer un conflit au redémarrage.
+      host_process_conflict: Un processus de l’hôte écoute sur ce port.
+      external_docker_conflict: Un conteneur Docker extérieur à ce projet utilise ce port.
+      invalid_network_mode_mapping: Ce mode réseau ne permet pas de publier des ports d’hôte.
+      host_network_ignores_published_port: Le réseau hôte ignore la réaffectation des ports ; les ports de l’hôte et du conteneur doivent être identiques.
+      duplicate_requested_port: Ce formulaire demande plusieurs fois le même port d’hôte.
+      insufficient_eligible_hosts: Le nombre d’hôtes éligibles disposant de ce port est insuffisant.
+      host_unreachable: L’hôte n’a pas pu être joint pour la vérification en direct.
+      agent_timeout: Le Node Agent n’a pas terminé la vérification en direct à temps.
+      agent_unsupported: Le Node Agent ne peut pas inspecter tous les sockets de l’hôte ; la disponibilité est donc inconnue.
+      unknown: L’état de ce port n’a pas pu être déterminé.
+    detail:
+      endpoint: 'Port : {address}:{port}/{protocol}'
+      host: 'Hôte : {value}'
+      stack: 'Groupe applicatif : {value}'
+      service: 'Service : {value}'
+      container: 'Conteneur : {value}'
+      state: 'État : {value}'
+    state:
+      active: Actif
+      running: En cours
+      stopped: Arrêté
+      stopping: Arrêt en cours
+      created: Créé
+      exited: Terminé
+      error: Erreur
 formScale:
   label: Échelle
   global:

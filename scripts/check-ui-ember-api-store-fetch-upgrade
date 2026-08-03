@@ -259,7 +259,7 @@ for template_path in template_paths:
     template_action_count += len(re.findall(r"(?:\{\{|\()action\s+", template))
     power_select_count += template.count("<PowerSelect")
 
-if template_action_count != 470:
+if template_action_count != 472:
     fail(f"unexpected template action count: {template_action_count}")
 if power_select_count != 7:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")

@@ -1916,9 +1916,57 @@ formPorts:
   error:
     privateRequired: 每条端口规则必须有私有容器端口
     publicRequired: 指定主机IP时必须设置公开主机端口
+    invalidPort: 端口必须是 1 到 65535 之间的整数。
     mixedIpPort: 'Port {ip}:{port}/{proto} 有超过一条映射规则'
     mixedPort: 'Port {port}/{proto} 有超过一条映射规则'
   showIpLink: 显示主机IP选项
+  preflight:
+    label: 可用状态
+    status:
+      checking: 正在检查所有符合条件的主机是否存在端口冲突…
+      available: '已确认可用：{available}/{eligible} 台符合条件的主机可以使用这些端口。'
+      warning: '可以继续，但有警告：仍有 {available}/{eligible} 台符合条件的主机可用。'
+      unknown: 无法完整确认端口状态；保存时服务器会再次验证。
+      blocked: '不可用：仅有 {available}/{eligible} 台符合条件的主机可用。'
+      unsupported: 当前服务器不支持实时端口检查；保存时会执行最终验证。
+      requestFailed: 实时检查未完成；当前状态未知，保存时服务器会再次验证。
+    row:
+      checking: 正在检查此端口…
+      available: 此端口可供所需主机使用。
+      unknown: 无法完整确认此端口的状态。
+    error:
+      blocked: 请先解决主机端口冲突，再保存设置。
+      sidekickChecking: 请等待附属容器完成端口检查。
+      sidekickBlocked: 附属容器存在主机端口冲突，请先解决后再保存。
+    reason:
+      active_port_conflict: 正在运行的工作负载正在使用此端口。
+      active_port_conflict_on_other_host: 部分主机已使用此端口，但仍有其他符合条件的主机可供调度。
+      stopped_port_owner: 已停止的工作负载仍保留此端口，重新启动时可能发生冲突。
+      host_process_conflict: 主机进程正在监听此端口。
+      external_docker_conflict: 此项目之外的 Docker 容器正在使用此端口。
+      invalid_network_mode_mapping: 当前网络模式无法发布主机端口。
+      host_network_ignores_published_port: 主机网络模式会忽略端口重映射；主机端口与容器端口必须相同。
+      duplicate_requested_port: 此表单重复设置了同一个主机端口。
+      insufficient_eligible_hosts: 可使用此端口的合格主机数量不足。
+      host_unreachable: 无法连接主机以执行实时端口检查。
+      agent_timeout: 节点 Agent 未能及时完成实时端口检查。
+      agent_unsupported: 节点 Agent 无法检查全部主机套接字，因此当前可用状态未知。
+      unknown: 无法确定此端口的使用状态。
+    detail:
+      endpoint: '端口：{address}:{port}/{protocol}'
+      host: '主机：{value}'
+      stack: '应用堆栈：{value}'
+      service: '服务：{value}'
+      container: '容器：{value}'
+      state: '状态：{value}'
+    state:
+      active: 使用中
+      running: 运行中
+      stopped: 已停止
+      stopping: 停止中
+      created: 已创建
+      exited: 已退出
+      error: 错误
 formScale:
   label: 数量
   global:

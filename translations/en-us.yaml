@@ -2289,9 +2289,57 @@ formPorts:
   error:
     privateRequired: Private Container Port is required for each port rule.
     publicRequired: Public Host Port is required if Host IP is specified.
+    invalidPort: Port numbers must be whole numbers from 1 through 65535.
     mixedIpPort: "Port {ip}:{port}/{proto} has more than one mapping."
     mixedPort: "Port {port}/{proto} has more than one mapping."
   showIpLink: Show Host IP field
+  preflight:
+    label: Availability
+    status:
+      checking: Checking every eligible host for port conflicts…
+      available: "Available: {available}/{eligible} eligible hosts can use these ports."
+      warning: "Available with warnings: {available}/{eligible} eligible hosts remain available."
+      unknown: The port state could not be fully verified. The server will validate it again when you save.
+      blocked: "Unavailable: only {available}/{eligible} eligible hosts can use these ports."
+      unsupported: This server does not support live port checks. It will perform its final validation when you save.
+      requestFailed: The live check did not complete. The state is unknown and the server will validate it again when you save.
+    row:
+      checking: Checking this port…
+      available: This port is available on the required hosts.
+      unknown: This port could not be fully verified.
+    error:
+      blocked: Resolve the host port conflict before saving.
+      sidekickChecking: Wait for the sidekick port check to finish.
+      sidekickBlocked: A sidekick has a host port conflict that must be resolved before saving.
+    reason:
+      active_port_conflict: A running workload is using this port.
+      active_port_conflict_on_other_host: This port is in use on some hosts, but another eligible host remains available.
+      stopped_port_owner: A stopped workload retains this port and may conflict when restarted.
+      host_process_conflict: A host process is listening on this port.
+      external_docker_conflict: A Docker container outside this project is using this port.
+      invalid_network_mode_mapping: This network mode cannot publish host ports.
+      host_network_ignores_published_port: Host networking ignores published-port remapping; the host and container ports must match.
+      duplicate_requested_port: This form requests the same host port more than once.
+      insufficient_eligible_hosts: There are not enough eligible hosts with this port available.
+      host_unreachable: The host could not be reached for a live port check.
+      agent_timeout: The node agent did not finish the live port check in time.
+      agent_unsupported: The node agent cannot inspect all host sockets, so availability is unknown.
+      unknown: The port state could not be determined.
+    detail:
+      endpoint: "Port: {address}:{port}/{protocol}"
+      host: "Host: {value}"
+      stack: "Application stack: {value}"
+      service: "Service: {value}"
+      container: "Container: {value}"
+      state: "State: {value}"
+    state:
+      active: Active
+      running: Running
+      stopped: Stopped
+      stopping: Stopping
+      created: Created
+      exited: Exited
+      error: Error
 
 formScale:
   label: Scale
