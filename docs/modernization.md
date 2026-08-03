@@ -392,6 +392,16 @@ dark code background in both UI themes, and every normal-size Prism foreground
 color meets WCAG AA contrast. A source gate calculates every reviewed color
 pair and rejects ratios below 4.5:1.
 
+`v1.6.56-pasturestack.47` restores rows in every shared sortable table when an
+API relationship is populated after the component has initialized. The host
+container view exposed the defect because its container relationship starts
+empty and is filled asynchronously: the legacy string-form run-loop callback
+left the filtered result at its initial empty array even though the API and
+statistics sockets were healthy. Content, sorting, and search observers now
+use function references supported by Ember 6 and observe the late-bound body
+directly. A browser test covers empty initialization, late row arrival,
+natural ordering, searching, and clearing the search.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

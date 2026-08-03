@@ -311,13 +311,20 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   }),
 
   filtered: null,
-  _filteredShouldChangeContent: Ember.observer('arranged.[]', function() {
-    // Throttle so it's updated even if continuously changing
-    Ember.run.throttle(this, '_updateFiltered', 100, false);
-  }),
+  _filteredShouldChangeContent: Ember.observer(
+    'body.[]',
+    'arranged.[]',
+    'sortBy',
+    'descending',
+    'sortRevision',
+    function() {
+      // Throttle so it's updated even if continuously changing
+      Ember.run.throttle(this, this._updateFiltered, 100, false);
+    }
+  ),
   _filteredShouldChangeSearch: Ember.observer('searchText', function() {
     // Debounce so it's not updating while typing even if continuously changing
-    Ember.run.debounce(this, '_updateFiltered', 100, false);
+    Ember.run.debounce(this, this._updateFiltered, 100, false);
   }),
 
   _updateFiltered() {

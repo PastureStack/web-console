@@ -1,0 +1,57 @@
+import Ember from 'ember';
+import { module, test } from 'qunit';
+
+import SortableTableComponent from 'lacsso/components/sortable-table';
+import inertRenderer from '../../helpers/inert-renderer';
+import { createOwned, destroyOwned } from '../../helpers/owned-subject';
+
+module('Unit | Component | sortable table');
+
+function afterFilterRefresh(callback) {
+  Ember.run.later(callback, 140);
+}
+
+test('it refreshes rows when a relationship is populated after initialization', function(assert) {
+  assert.expect(5);
+
+  let done = assert.async();
+  let body = Ember.A([]);
+  let component;
+
+  Ember.run(() => {
+    component = createOwned(SortableTableComponent, {
+      renderer: inertRenderer(),
+      prefs: Ember.Object.create(),
+      body,
+      headers: Ember.A([
+        Ember.Object.create({name: 'name', searchField: 'name'}),
+      ]),
+      sortBy: 'name',
+      paging: false,
+    }, 'component');
+  });
+
+  assert.equal(component.get('filtered.length'), 0, 'starts empty');
+
+  Ember.run(() => body.pushObjects([
+    Ember.Object.create({id: '2', name: 'Beta'}),
+    Ember.Object.create({id: '1', name: 'Alpha'}),
+  ]));
+
+  afterFilterRefresh(() => {
+    assert.equal(component.get('filtered.length'), 2, 'late rows become visible');
+    assert.deepEqual(component.get('filtered').mapBy('name'), ['Alpha', 'Beta'], 'late rows retain natural sorting');
+
+    Ember.run(() => component.set('searchText', 'beta'));
+    afterFilterRefresh(() => {
+      assert.deepEqual(component.get('filtered').mapBy('name'), ['Beta'], 'search refreshes through the modern run-loop API');
+
+      Ember.run(() => component.set('searchText', ''));
+      afterFilterRefresh(() => {
+        assert.equal(component.get('filtered.length'), 2, 'clearing search restores every row');
+        destroyOwned(component);
+        done();
+      });
+    });
+  });
+});
