@@ -147,7 +147,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     let requested = parseInt(value, 10);
     let options = this.get('pageSizeOptions') || [];
 
-    if ( !Number.isFinite(requested) || options.indexOf(requested) === -1 ) {
+    if ( !Number.isFinite(requested) || requested < 0 || (requested === 0 && options.indexOf(0) === -1) ) {
       requested = options.indexOf(10) >= 0 ? 10 : (options[0] || 10);
     }
 
