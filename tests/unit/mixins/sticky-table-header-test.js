@@ -13,6 +13,9 @@ function fixture() {
     '    <tr class="fixed-header-actions" style="position:fixed"></tr>',
     '    <tr class="fixed-header" style="position:fixed"><th>Name</th><th>CPU</th></tr>',
     '  </thead>',
+    '  <tbody>',
+    '    <tr><td style="width:600px">container-a</td><td style="width:600px">10%</td></tr>',
+    '  </tbody>',
     '</table>',
   ].join('');
   document.body.appendChild(host);

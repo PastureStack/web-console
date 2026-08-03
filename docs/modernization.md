@@ -438,6 +438,16 @@ size. Host storage batch removal also invalidates the filtered table after
 each successful API response, so rows and the selected count update while the
 bounded request queue is still completing.
 
+`v1.6.56-pasturestack.57` completes the port-preflight upgrade context and
+presentation boundary. Service upgrades submit the exact service, stack,
+scale, batch size, and start-first placement semantics; active conflicts block
+the operation while stopped owners remain explicit warnings. Status indicators
+use the shared accessible tooltip component, and the complete browser suite
+locks both the service-upgrade context and the host-storage live-removal flow.
+The test application also loads the generated light-theme stylesheet instead
+of a retired aggregate filename, so browser regression results include the
+same table layout rules used by production.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

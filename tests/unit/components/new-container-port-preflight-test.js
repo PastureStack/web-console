@@ -124,3 +124,38 @@ test('sidekick checks participate in the parent save lock', function(assert) {
 
   destroyOwned(component);
 });
+
+test('service upgrade exposes the exact service and rolling-update context to preflight', function(assert) {
+  let component = createComponent();
+
+  Ember.run(() => {
+    component.setProperties({
+      isUpgrade: true,
+      'service.id': '1s55',
+      'service.stackId': '1st9',
+      'service.scale': 4,
+    });
+    component.send('setUpgrade', {
+      batchSize: 2,
+      startFirst: true,
+    });
+  });
+
+  assert.equal(component.get('preflightServiceId'), '1s55', 'checks the service being upgraded');
+  assert.equal(component.get('preflightStackId'), '1st9', 'includes the owning stack');
+  assert.equal(component.get('preflightScale'), 4, 'includes the service scale');
+  assert.equal(component.get('preflightBatchSize'), 2, 'includes concurrent upgrade capacity');
+  assert.ok(component.get('preflightStartFirst'), 'includes start-first placement semantics');
+
+  Ember.run(() => component.send('setPorts', Ember.A(['18080:8080/tcp'])));
+  assert.deepEqual(component.get('launchConfig.ports'), ['18080:8080/tcp'], 'retains newly added upgrade ports');
+
+  Ember.run(() => component.send('portPreflightChanged', {
+    status: 'blocked',
+    pending: false,
+    blocked: true,
+  }));
+  assert.ok(component.get('saveDisabled'), 'blocks the upgrade while the new port conflicts');
+
+  destroyOwned(component);
+});

@@ -65,13 +65,22 @@
             </td>
             <td class="text-center" data-title="{{t 'formPorts.preflight.label'}}">
               {{#if port.preflightStatus}}
-                <span
-                  class="port-preflight-indicator {{port.preflightStatusClass}}"
-                  title="{{port.preflightMessage}}"
-                  aria-label="{{port.preflightMessage}}"
-                >
-                  <i class="{{port.preflightIcon}}" aria-hidden="true"></i>
-                </span>
+                {{#tooltip-element
+                  tagName="span"
+                  inlineBlock=true
+                  type="tooltip-basic"
+                  tooltipTemplate="tooltip-static"
+                  tooltipFor="portPreflight"
+                  model=port.preflightMessage
+                }}
+                  <span
+                    class="port-preflight-indicator {{port.preflightStatusClass}}"
+                    title="{{port.preflightMessage}}"
+                    aria-label="{{port.preflightMessage}}"
+                  >
+                    <i class="{{port.preflightIcon}}" aria-hidden="true"></i>
+                  </span>
+                {{/tooltip-element}}
               {{else}}
                 <span class="text-muted">&ndash;</span>
               {{/if}}
