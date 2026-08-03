@@ -20,6 +20,12 @@ for (const marker of [
   "'body.[]'",
   'didReceiveAttrs() {',
   'this._updateFiltered();',
+  "_pagedOptionsShouldChange: Ember.observer('page', 'perPage'",
+  '_syncPagedContent(content) {',
+  "paged.set('content', content);",
+  "paged.set('page', page);",
+  "paged.set('perPage', perPage);",
+  'this._syncPagedContent(out);',
   'Ember.run.throttle(this, this._updateFiltered, 100, false)',
   'Ember.run.debounce(this, this._updateFiltered, 100, false)',
 ]) {
@@ -74,6 +80,12 @@ for (const marker of [
   "component.set('body', Ember.A([",
   'derives initial rows after invocation attributes are received',
   'component.didReceiveAttrs();',
+  'late rows reach the rendered page',
+  'replacement relationship rows reach the rendered page',
+  'received body reaches the first rendered page',
+  'synchronizes page and page size without legacy string bindings',
+  "component.set('page', 2)",
+  'component.setProperties({page: 1, perPage: 2})',
   "component.set('searchText', 'beta')",
   "component.set('searchText', '')",
 ]) {
@@ -92,5 +104,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true body_replacement=true host_relationship=follow_link search=true runloop=function-reference');
+console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true body_replacement=true initial_attrs=true paged_content=explicit_sync pagination=explicit_sync host_relationship=follow_link search=true runloop=function-reference');
 console.log('failure_count=0');

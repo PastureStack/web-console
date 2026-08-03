@@ -422,6 +422,14 @@ collection, in addition to refreshing when an existing collection is populated.
 The regression test starts without a body, assigns a new relationship collection,
 and requires both rows to appear in natural order while the search text is empty.
 
+`v1.6.56-pasturestack.51` fixes the separate pagination bridge exposed by the
+same authenticated acceptance. The filtered relationship already contained
+the correct rows, but the legacy string-binding used by the pagination proxy
+retained its initialization-time empty content. The shared table now explicitly
+synchronizes filtered content, page number, and page size into that proxy.
+Regression tests require late, replacement, and initial relationship rows to
+reach the rendered page and verify page and page-size changes independently.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

@@ -333,6 +333,33 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     Ember.run.debounce(this, this._updateFiltered, 100, false);
   }),
 
+  _pagedOptionsShouldChange: Ember.observer('page', 'perPage', function() {
+    this._syncPagedContent(this.get('filtered') || Ember.A([]));
+  }),
+
+  _syncPagedContent(content) {
+    let paged = this.get('pagedContent');
+
+    if ( !paged ) {
+      return;
+    }
+
+    if ( paged.get('content') !== content ) {
+      paged.set('content', content);
+    }
+
+    let page = this.get('page');
+    let perPage = this.get('perPage');
+
+    if ( paged.get('page') !== page ) {
+      paged.set('page', page);
+    }
+
+    if ( paged.get('perPage') !== perPage ) {
+      paged.set('perPage', perPage);
+    }
+  },
+
   _updateFiltered() {
     let out = this.get('arranged').slice();
     let searchFields = this.get('searchFields');
@@ -359,6 +386,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     }
 
     this.set('filtered', out);
+    this._syncPagedContent(out);
   },
 
   pagedContentChanged: Ember.observer('pagedContent.[]', function() {
