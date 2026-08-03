@@ -7,9 +7,12 @@ export default Ember.Route.extend({
   model() {
     let host = this.modelFor('host').get('host');
 
-    return this.get('store').findAll('instance', {
-      filter: {hostId: host.get('id')},
-    }).then(() => host);
+    return host.followLink('instances').then((instances) => {
+      return Ember.Object.create({
+        host,
+        instances,
+      });
+    });
   },
 
   afterModel() {

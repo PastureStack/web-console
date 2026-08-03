@@ -26,23 +26,32 @@ for (const marker of [
 }
 
 for (const marker of [
-  "findAll('instance', {",
-  "filter: {hostId: host.get('id')}",
-  ".then(() => host)",
+  "host.followLink('instances')",
+  'Ember.Object.create({',
+  'instances,',
 ]) {
   if (!hostRoute.includes(marker)) {
-    failures.push('HOST_CONTAINER_PRELOAD_CONTRACT_MISSING=' + marker);
+    failures.push('HOST_CONTAINER_RELATIONSHIP_CONTRACT_MISSING=' + marker);
   }
 }
 
 for (const marker of [
-  'loads only the selected host instances before rendering',
-  "assert.equal(type, 'instance')",
-  "{filter: {hostId: '1h1'}}",
-  'assert.strictEqual(result, host',
+  'follows the selected host instances relationship before rendering',
+  "assert.equal(name, 'instances'",
+  "result.get('instances')",
+  'does not depend on project-wide Store contents',
 ]) {
   if (!hostRouteTest.includes(marker)) {
-    failures.push('HOST_CONTAINER_PRELOAD_TEST_MISSING=' + marker);
+    failures.push('HOST_CONTAINER_RELATIONSHIP_TEST_MISSING=' + marker);
+  }
+}
+
+for (const forbidden of [
+  "filter: {hostId: host.get('id')}",
+  "findAll('instance', {",
+]) {
+  if (hostRoute.includes(forbidden)) {
+    failures.push('HOST_CONTAINER_UNSUPPORTED_FILTER=' + forbidden);
   }
 }
 
@@ -76,5 +85,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true host_preload=filtered search=true runloop=function-reference');
+console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true host_relationship=follow_link search=true runloop=function-reference');
 console.log('failure_count=0');
