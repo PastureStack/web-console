@@ -383,6 +383,15 @@ latest-response-only, so rapidly changing the selector cannot let a delayed
 request replace the form with questions or Compose data from the wrong
 revision.
 
+`v1.6.56-pasturestack.46` restores readable preformatted content throughout
+the console. CommonMark places the language class on its nested `code` element,
+while the Prism theme previously assigned the dark surface only when the parent
+`pre` carried that class. The result was near-white syntax text on Bootstrap's
+light preformatted background. All preformatted surfaces now use the reviewed
+dark code background in both UI themes, and every normal-size Prism foreground
+color meets WCAG AA contrast. A source gate calculates every reviewed color
+pair and rejects ratios below 4.5:1.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
