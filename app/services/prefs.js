@@ -1,6 +1,28 @@
 import Ember from 'ember';
 import C from 'ui/utils/constants';
 
+function pageSizePreference(preference, options, fallback) {
+  function normalize(value) {
+    let parsed = parseInt(value, 10);
+
+    return options.indexOf(parsed) === -1 ? fallback : parsed;
+  }
+
+  return Ember.computed(preference, {
+    get() {
+      return normalize(this.get(preference));
+    },
+
+    set(key, value) {
+      let normalized = normalize(value);
+
+      this.set(preference, normalized);
+
+      return normalized;
+    },
+  });
+}
+
 export default Ember.Service.extend({
   userStore: Ember.inject.service('user-store'),
 
@@ -79,32 +101,21 @@ export default Ember.Service.extend({
     this.endPropertyChanges();
   },
 
-  tablePerPage: Ember.computed(`${C.PREFS.TABLE_COUNT}`, function() {
-    let out = this.get(`${C.PREFS.TABLE_COUNT}`);
-    if ( C.TABLES.PAGE_SIZES.indexOf(out) === -1 ) {
-      out = C.TABLES.DEFAULT_COUNT;
-    }
+  tablePerPage: pageSizePreference(
+    C.PREFS.TABLE_COUNT,
+    C.TABLES.PAGE_SIZES,
+    C.TABLES.DEFAULT_COUNT
+  ),
 
-    return out;
-  }),
+  statsTablePerPage: pageSizePreference(
+    C.PREFS.STATS_TABLE_COUNT,
+    C.TABLES.STATS_PAGE_SIZES,
+    C.TABLES.DEFAULT_STATS_COUNT
+  ),
 
-  statsTablePerPage: Ember.computed(`${C.PREFS.STATS_TABLE_COUNT}`, function() {
-    let out = this.get(`${C.PREFS.STATS_TABLE_COUNT}`);
-
-    if ( C.TABLES.STATS_PAGE_SIZES.indexOf(out) === -1 ) {
-      out = C.TABLES.DEFAULT_STATS_COUNT;
-    }
-
-    return out;
-  }),
-
-  storageTablePerPage: Ember.computed(`${C.PREFS.STORAGE_TABLE_COUNT}`, function() {
-    let out = this.get(`${C.PREFS.STORAGE_TABLE_COUNT}`);
-
-    if ( C.TABLES.STORAGE_PAGE_SIZES.indexOf(out) === -1 ) {
-      out = C.TABLES.DEFAULT_STORAGE_COUNT;
-    }
-
-    return out;
-  }),
+  storageTablePerPage: pageSizePreference(
+    C.PREFS.STORAGE_TABLE_COUNT,
+    C.TABLES.STORAGE_PAGE_SIZES,
+    C.TABLES.DEFAULT_STORAGE_COUNT
+  ),
 });

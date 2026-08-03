@@ -204,3 +204,43 @@ test('it keeps the invocation page size read-only while selecting all rows', fun
 
   destroyOwned(component);
 });
+
+test('it clamps the current page immediately when live rows are removed', function(assert) {
+  assert.expect(4);
+
+  let body = Ember.A([
+    Ember.Object.create({id: '1', name: 'Volume 1'}),
+    Ember.Object.create({id: '2', name: 'Volume 2'}),
+    Ember.Object.create({id: '3', name: 'Volume 3'}),
+  ]);
+  let component;
+
+  Ember.run(() => {
+    component = createOwned(SortableTableComponent, {
+      renderer: inertRenderer(),
+      prefs: Ember.Object.create(),
+      body,
+      headers: Ember.A([
+        Ember.Object.create({name: 'name', searchField: 'name'}),
+      ]),
+      sortBy: 'name',
+      perPage: 1,
+      paging: true,
+    }, 'component');
+    component.didReceiveAttrs();
+    component.set('page', 3);
+  });
+
+  assert.equal(component.get('page'), 3, 'starts on the last page');
+  assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Volume 3'], 'renders the last row');
+
+  Ember.run(() => {
+    body.removeObjects(body.slice(1));
+    component.didReceiveAttrs();
+  });
+
+  assert.equal(component.get('page'), 1, 'moves to the last valid page synchronously');
+  assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Volume 1'], 'renders the remaining row immediately');
+
+  destroyOwned(component);
+});

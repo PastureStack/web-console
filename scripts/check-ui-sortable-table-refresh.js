@@ -7,11 +7,15 @@ const componentPath = 'vendor/lacsso/addon/components/sortable-table.js';
 const testPath = 'tests/unit/components/sortable-table-test.js';
 const hostRoutePath = 'app/host/containers/route.js';
 const hostRouteTestPath = 'tests/unit/host/containers/route-test.js';
+const prefsPath = 'app/services/prefs.js';
+const prefsTestPath = 'tests/unit/services/prefs-test.js';
 const ciPath = 'scripts/ci';
 const component = fs.readFileSync(componentPath, 'utf8');
 const test = fs.readFileSync(testPath, 'utf8');
 const hostRoute = fs.readFileSync(hostRoutePath, 'utf8');
 const hostRouteTest = fs.readFileSync(hostRouteTestPath, 'utf8');
+const prefs = fs.readFileSync(prefsPath, 'utf8');
+const prefsTest = fs.readFileSync(prefsTestPath, 'utf8');
 const ci = fs.readFileSync(ciPath, 'utf8');
 const failures = [];
 
@@ -31,11 +35,36 @@ for (const marker of [
   "paged.set('page', page);",
   "paged.set('perPage', perPage);",
   'this._syncPagedContent(out);',
+  'this.clampPageToContentLength(out.length);',
+  'clampPageToContentLength(length) {',
   'Ember.run.throttle(this, this._updateFiltered, 100, false)',
   'Ember.run.debounce(this, this._updateFiltered, 100, false)',
 ]) {
   if (!component.includes(marker)) {
     failures.push('SORTABLE_TABLE_REFRESH_CONTRACT_MISSING=' + marker);
+  }
+}
+
+for (const marker of [
+  'function pageSizePreference(preference, options, fallback)',
+  'return Ember.computed(preference, {',
+  'set(key, value) {',
+  'this.set(preference, normalized);',
+  'storageTablePerPage: pageSizePreference(',
+]) {
+  if (!prefs.includes(marker)) {
+    failures.push('PAGE_SIZE_PREFERENCE_CONTRACT_MISSING=' + marker);
+  }
+}
+
+for (const marker of [
+  'page-size computed properties accept legacy two-way binding writes',
+  "service.set('storageTablePerPage', 0)",
+  "assert.equal(service.get('storageTablePerPage'), 0",
+  "records.findBy('name', 'storageTableCount').get('value'), '0'",
+]) {
+  if (!prefsTest.includes(marker)) {
+    failures.push('PAGE_SIZE_PREFERENCE_TEST_MISSING=' + marker);
   }
 }
 
@@ -93,6 +122,7 @@ for (const marker of [
   "component.set('page', 2)",
   'component.setProperties({page: 1, perPage: 2})',
   'keeps the invocation page size read-only while selecting all rows',
+  'clamps the current page immediately when live rows are removed',
   "component.send('changePerPage', '0')",
   "assert.equal(component.get('perPage'), 1, 'does not write through the caller-owned input')",
   "assert.equal(prefs.get('storageTableCount'), 0, 'persists the semantic All preference')",

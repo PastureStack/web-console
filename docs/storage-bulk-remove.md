@@ -26,14 +26,17 @@ sent. Removal uses the public resource action with at most four concurrent
 requests and never mutates a database directly. Progress and per-item failures
 remain visible until the operator closes the result.
 
-The page-size selector treats its invocation value as read-only. The table
-keeps a separate internal effective page size, so choosing All stores the
-semantic preference value `0` without attempting to write through the
-caller's computed preference. This prevents an Ember property-setter failure
-and preserves the same 10, 25, 50, and All behavior for every shared table.
+The page-size selector keeps a separate internal effective page size and the
+preference service exposes normalized read/write computed properties. Choosing
+All stores the semantic preference value `0`; a legacy two-way component
+binding can safely write that value back without reaching an undefined Ember
+setter. Unsupported values normalize to the documented default. This preserves
+the same 10, 25, 50, and All behavior for every shared table.
 
 After each successful remove response, the corresponding row is removed from
 the current model, filtered result, and selected-item list immediately. A
 revision-backed recomputation keeps the visible table and selected count in
-sync while the remaining requests continue. Failed rows stay visible and
-selected so the operator can inspect or retry them.
+sync while the remaining requests continue. If removal empties the current
+page, the table moves to the last valid page before it renders the remaining
+rows. Failed rows stay visible and selected so the operator can inspect or
+retry them.

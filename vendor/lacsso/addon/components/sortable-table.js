@@ -391,8 +391,18 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       }
     }
 
+    this.clampPageToContentLength(out.length);
     this.set('filtered', out);
     this._syncPagedContent(out);
+  },
+
+  clampPageToContentLength(length) {
+    let perPage = this.get('effectivePerPage') || 1;
+    let lastPage = Math.max(1, Math.ceil(length / perPage));
+
+    if ( this.get('page') > lastPage ) {
+      this.set('page', lastPage);
+    }
   },
 
   pagedContentChanged: Ember.observer('pagedContent.[]', function() {
@@ -519,15 +529,8 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   }),
 
   pageCountChanged: Ember.observer('indexFrom', 'filtered.length', function() {
-    // Go to the last page if we end up past the last page
-    let from = this.get('indexFrom');
-    let last = this.get('filtered.length');
-    var perPage = this.get('effectivePerPage');
-
-    if ( this.get('page') > 1 && from > last) {
-      let page = Math.ceil(last/perPage);
-      this.set('page', page);
-    }
+    // Keep the current page valid when live rows are removed.
+    this.clampPageToContentLength(this.get('filtered.length') || 0);
   }),
 
   sortKeyChanged: Ember.observer('sortBy', function() {
