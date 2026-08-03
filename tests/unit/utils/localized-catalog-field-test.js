@@ -4,6 +4,7 @@ import {
   localizedCatalogField,
   localizedCatalogQuestionField,
   localizedCatalogReadme,
+  mergeCatalogLocalizationLabels,
   normalizeCatalogLocale
 } from 'ui/utils/localized-catalog-field';
 
@@ -56,6 +57,28 @@ test('it localizes catalog questions by normalized variable name', function(asse
   assert.equal(
     localizedCatalogQuestionField(labels, ['zh-TW'], 'VAULT_URL', 'label', 'Vault API URL'),
     'Vault API 網址'
+  );
+
+  let cachedLabels = mergeCatalogLocalizationLabels(null, labels);
+  let oldRevisionLabels = mergeCatalogLocalizationLabels(cachedLabels, {});
+  let currentRevisionLabels = mergeCatalogLocalizationLabels(cachedLabels, {
+    'io.pasturestack.catalog.question.vault_url.label.zh-tw': '目前版本的 Vault API 網址'
+  });
+
+  assert.equal(
+    localizedCatalogQuestionField(oldRevisionLabels, ['zh-TW'], 'VAULT_URL', 'label', 'Vault API URL'),
+    'Vault API 網址',
+    'an immutable older revision reuses localized metadata learned from the target revision'
+  );
+  assert.equal(
+    localizedCatalogQuestionField(currentRevisionLabels, ['zh-TW'], 'VAULT_URL', 'label', 'Vault API URL'),
+    '目前版本的 Vault API 網址',
+    'the selected revision overrides cached localization metadata'
+  );
+  assert.equal(
+    labels['io.pasturestack.catalog.question.vault_url.label.zh-tw'],
+    'Vault API 網址',
+    'merging localization metadata does not mutate the source labels'
   );
 });
 

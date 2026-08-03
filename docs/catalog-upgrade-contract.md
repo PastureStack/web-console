@@ -39,6 +39,22 @@ answers. This matters for required enum questions whose YAML options are
 booleans: a default of `false` must be deployable without forcing the operator
 to select the already-selected option again.
 
+Published numeric Catalog revisions are immutable. Older installed revisions
+may predate localized question metadata even when a compatible target revision
+contains complete translations. While an operator compares versions in one
+upgrade form, the console retains localization labels learned from another
+revision of the same template and uses them only as a fallback for matching
+question variables. Labels supplied by the selected revision always take
+precedence, and changing to a different template clears the cache. This keeps
+the current and target forms readable without mutating historical Catalog
+content or changing the values submitted for an upgrade.
+
+Version-resource requests are serialised at the component boundary. If an
+operator changes the selector again before an earlier request completes, only
+the newest response may replace the form model, localization cache, preview,
+or loading state. A delayed response therefore cannot display questions and
+Compose data for a version other than the option currently shown.
+
 Catalog enum templates must not name an `each` block parameter `option` while
 also rendering a native `<option>` element. With the Ember 6 compiler, that
 block parameter shadows the HTML element name and turns each string value into

@@ -373,6 +373,16 @@ application templates, rejects native-element lexical shadowing, verifies all
 supported schema-input controls, and rejects computed descriptors assigned to
 component instances at runtime.
 
+`v1.6.56-pasturestack.45` keeps installed immutable Catalog revisions aligned
+with their selectable update targets. If an older revision predates localized
+question metadata, matching labels learned from a newer revision of the same
+template remain available as a fallback while the operator compares versions;
+the selected revision's own labels always win. The cache is cleared between
+templates and never changes the revision payload. Version fetches are also
+latest-response-only, so rapidly changing the selector cannot let a delayed
+request replace the form with questions or Compose data from the wrong
+revision.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

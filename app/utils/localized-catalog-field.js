@@ -5,6 +5,10 @@ export function normalizeCatalogLocale(locale) {
   return selected;
 }
 
+export function mergeCatalogLocalizationLabels(cachedLabels, currentLabels) {
+  return Object.assign({}, cachedLabels || {}, currentLabels || {});
+}
+
 export function localizedCatalogField(labels, locale, field, fallback) {
   let selected = normalizeCatalogLocale(locale);
 

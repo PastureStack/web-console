@@ -8,8 +8,10 @@ required_files=(
   app/components/new-select/component.js
   app/components/schema/input-enum/template.hbs
   app/utils/catalog-question-answer.js
+  app/utils/localized-catalog-field.js
   app/utils/catalog-version-options.js
   tests/unit/utils/catalog-question-answer-test.js
+  tests/unit/utils/localized-catalog-field-test.js
   tests/unit/components/new-select-test.js
   tests/unit/utils/catalog-version-options-test.js
   docs/catalog-upgrade-contract.md
@@ -27,6 +29,9 @@ grep -F '{{#each this.field.options as |choice|}}' app/components/schema/input-e
 grep -F "isCatalogQuestionAnswerMissing(item.answer)" app/components/new-catalog/component.js >/dev/null
 grep -F "isCatalogQuestionAnswerMissing(false)" tests/unit/utils/catalog-question-answer-test.js >/dev/null
 grep -F "isCatalogQuestionAnswerMissing(0)" tests/unit/utils/catalog-question-answer-test.js >/dev/null
+grep -F "mergeCatalogLocalizationLabels(" app/components/new-catalog/component.js >/dev/null
+grep -F "this.get('templateRequestSerial') !== requestSerial" app/components/new-catalog/component.js >/dev/null
+grep -F "an immutable older revision reuses localized metadata learned from the target revision" tests/unit/utils/localized-catalog-field-test.js >/dev/null
 
 if grep -F '{{#each this.field.options as |option|}}' app/components/schema/input-enum/template.hbs; then
   echo 'Catalog enum choices still shadow the native option element in Ember templates' >&2
@@ -61,4 +66,4 @@ if (compiled.includes('[8,[30,1]')) {
 }
 NODE
 
-printf 'UI_CATALOG_VERSION_SELECT_OK mapping=upgradeVersionLinks rendering=reactive-native-select enum=native-options\n'
+printf 'UI_CATALOG_VERSION_SELECT_OK mapping=upgradeVersionLinks rendering=reactive-native-select enum=native-options localization=immutable-revision-fallback requests=latest-only\n'
