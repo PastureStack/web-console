@@ -25,3 +25,15 @@ The confirmation dialog previews the selected names before any request is
 sent. Removal uses the public resource action with at most four concurrent
 requests and never mutates a database directly. Progress and per-item failures
 remain visible until the operator closes the result.
+
+The page-size selector treats its invocation value as read-only. The table
+keeps a separate internal effective page size, so choosing All stores the
+semantic preference value `0` without attempting to write through the
+caller's computed preference. This prevents an Ember property-setter failure
+and preserves the same 10, 25, 50, and All behavior for every shared table.
+
+After each successful remove response, the corresponding row is removed from
+the current model, filtered result, and selected-item list immediately. A
+revision-backed recomputation keeps the visible table and selected count in
+sync while the remaining requests continue. Failed rows stay visible and
+selected so the operator can inspect or retry them.

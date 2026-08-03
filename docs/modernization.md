@@ -430,6 +430,14 @@ synchronizes filtered content, page number, and page size into that proxy.
 Regression tests require late, replacement, and initial relationship rows to
 reach the rendered page and verify page and page-size changes independently.
 
+`v1.6.56-pasturestack.52` separates the caller-owned `perPage`
+input from the table's writable effective page size. Selecting All no longer
+writes through a read-only computed preference under Ember 6; it persists the
+semantic `0` value while the pagination proxy receives the internal expanded
+size. Host storage batch removal also invalidates the filtered table after
+each successful API response, so rows and the selected count update while the
+bounded request queue is still completing.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

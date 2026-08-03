@@ -53,6 +53,12 @@ export default ModalBase.extend({
       runWithConcurrency(volumes, 4, (volume) => {
         return volume.doAction('remove', {}, {catchGrowl: false}).then(() => {
           this.get('successful').pushObject(volume);
+
+          let onRemoved = this.get('opts.onRemoved');
+          if ( typeof onRemoved === 'function' )
+          {
+            onRemoved(volume);
+          }
         }).catch(() => {
           this.get('failed').pushObject({
             name: displayName(volume),

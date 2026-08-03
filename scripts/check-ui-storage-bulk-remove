@@ -13,6 +13,7 @@ sortable_component=vendor/lacsso/addon/components/sortable-table.js
 sortable_template=vendor/lacsso/upstream-templates/addon/templates/components/sortable-table.hbs
 styles=app/styles/components/_modals.scss
 test_file=tests/unit/utils/volume-bulk-remove-test.js
+controller_test=tests/unit/host/storage/controller-test.js
 documentation=docs/storage-bulk-remove.md
 
 required_files=(
@@ -25,6 +26,7 @@ required_files=(
   "$sortable_template"
   "$styles"
   "$test_file"
+  "$controller_test"
   "$documentation"
 )
 
@@ -70,6 +72,9 @@ require_fixed "$controller" "['all', 'active', 'detached']" 'supported storage s
 reject_fixed "$controller" "'removable'" 'retired duplicate state filter'
 require_fixed "$controller" "return String(this.get('selectedVolumes.length') || 0)" 'visible zero selection count'
 require_fixed "$controller" "toggleModal('confirm-remove-selected-volumes'" 'selection confirmation dialog'
+require_fixed "$controller" '_removeSuccessfulVolumes(volumes)' 'successful-row refresh helper'
+require_fixed "$controller" 'storageTableRevision' 'explicit table refresh revision'
+require_fixed "$controller" 'onRemoved: (volume)' 'per-success table refresh callback'
 require_fixed "$page" 'count=this.selectedVolumeCount' 'zero-safe localized selection count'
 require_fixed "$page" 'bulkActions=true' 'checkbox selection column'
 require_fixed "$page" 'selectionFilter=this.selectableVolume' 'non-removable row selection guard'
@@ -81,16 +86,21 @@ reject_fixed "$page" 'filters.removable' 'retired duplicate state-filter transla
 require_fixed "$sortable_component" 'selectablePagedContent' 'page-scoped selectable rows'
 require_fixed "$sortable_component" 'selectionChanged' 'selection callback'
 require_fixed "$sortable_component" 'parsed === 0' 'All page-size sentinel'
+require_fixed "$sortable_component" 'effectivePerPage' 'internal writable page-size state'
+reject_fixed "$sortable_component" "perPage: parsed === 0 ? this.get('allPageSizeValue') : parsed" 'caller-owned page-size mutation'
 require_fixed "$sortable_template" "t 'pagination.all'" 'localized All option'
 require_fixed "$sortable_template" 'disabled=(not (array-includes this.selectablePagedContent content))' 'disabled active-row checkbox'
 require_fixed "$component" 'runWithConcurrency(volumes, 4' 'bounded request concurrency'
 require_fixed "$component" "doAction('remove', {}, {catchGrowl: false})" 'public resource action'
+require_fixed "$component" "this.get('opts.onRemoved')" 'per-success refresh dispatch'
 require_fixed "$modal" 'bulkRemove.preview' 'selection preview'
 require_fixed "$modal" 'bulkRemove.progress' 'progress reporting'
 require_fixed "$modal" 'bulkRemove.failed' 'failure reporting'
 require_fixed "$test_file" 'it allows the operator to select any detached removable volume' 'operator-selection unit coverage'
 require_fixed "$test_file" 'it filters by visible state' 'state-filter unit coverage'
 require_fixed "$test_file" 'concurrency is bounded' 'concurrency unit coverage'
+require_fixed "$controller_test" 'successful removals immediately refresh rows and selection' 'live table refresh coverage'
+require_fixed "$controller_test" 'completion is idempotent after live removal' 'idempotent completion coverage'
 
 if grep -RInE \
   'TEST_MARKER|PROTECTED_MARKER|isUnusedTestVolume|classifyUnusedVolumes' \
@@ -119,4 +129,4 @@ if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] &&
   exit 1
 fi
 
-echo 'UI_STORAGE_BULK_REMOVE_OK selection=operator zero_count=visible filters=all,active,detached search=enabled paging=10,25,50,all select_all=current_page concurrency=4'
+echo 'UI_STORAGE_BULK_REMOVE_OK selection=operator zero_count=visible filters=all,active,detached search=enabled paging=10,25,50,all page_size_input=read_only select_all=current_page concurrency=4 live_row_refresh=per_success'

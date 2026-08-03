@@ -20,7 +20,10 @@ for (const marker of [
   "'body.[]'",
   'didReceiveAttrs() {',
   'this._updateFiltered();',
-  "_pagedOptionsShouldChange: Ember.observer('page', 'perPage'",
+  'effectivePerPage:  null',
+  '_applyRequestedPageSize(value) {',
+  'perPageBinding:  "effectivePerPage"',
+  "_pagedOptionsShouldChange: Ember.observer('page', 'effectivePerPage'",
   '_syncPagedContent(content) {',
   "paged.set('content', content);",
   "paged.set('page', page);",
@@ -67,6 +70,7 @@ for (const forbidden of [
 for (const forbidden of [
   "Ember.run.throttle(this, '_updateFiltered'",
   "Ember.run.debounce(this, '_updateFiltered'",
+  "perPage: parsed === 0 ? this.get('allPageSizeValue') : parsed",
 ]) {
   if (component.includes(forbidden)) {
     failures.push('SORTABLE_TABLE_LEGACY_RUNLOOP_CALL=' + forbidden);
@@ -86,6 +90,10 @@ for (const marker of [
   'synchronizes page and page size without legacy string bindings',
   "component.set('page', 2)",
   'component.setProperties({page: 1, perPage: 2})',
+  'keeps the invocation page size read-only while selecting all rows',
+  "component.send('changePerPage', '0')",
+  "assert.equal(component.get('perPage'), 1, 'does not write through the caller-owned input')",
+  "assert.equal(prefs.get('storageTableCount'), 0, 'persists the semantic All preference')",
   "component.set('searchText', 'beta')",
   "component.set('searchText', '')",
 ]) {
@@ -104,5 +112,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true body_replacement=true initial_attrs=true paged_content=explicit_sync pagination=explicit_sync host_relationship=follow_link search=true runloop=function-reference');
+console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true body_replacement=true initial_attrs=true paged_content=explicit_sync pagination=explicit_sync page_size_input=read_only effective_page_size=internal all_preference=semantic_zero host_relationship=follow_link search=true runloop=function-reference');
 console.log('failure_count=0');

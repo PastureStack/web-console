@@ -163,3 +163,44 @@ test('it synchronizes page and page size without legacy string bindings', functi
 
   destroyOwned(component);
 });
+
+test('it keeps the invocation page size read-only while selecting all rows', function(assert) {
+  assert.expect(6);
+
+  let prefs = Ember.Object.create();
+  let body = Ember.A([
+    Ember.Object.create({id: '1', name: 'Volume 1'}),
+    Ember.Object.create({id: '2', name: 'Volume 2'}),
+    Ember.Object.create({id: '3', name: 'Volume 3'}),
+  ]);
+  let component;
+
+  Ember.run(() => {
+    component = createOwned(SortableTableComponent, {
+      renderer: inertRenderer(),
+      prefs,
+      body,
+      headers: Ember.A([
+        Ember.Object.create({name: 'name', searchField: 'name'}),
+      ]),
+      sortBy: 'name',
+      perPage: 1,
+      pageSizeOptions: [1, 2, 0],
+      perPagePreference: 'storageTableCount',
+      paging: true,
+    }, 'component');
+    component.didReceiveAttrs();
+  });
+
+  assert.equal(component.get('perPage'), 1, 'retains the caller-owned input value');
+  assert.equal(component.get('effectivePerPage'), 1, 'uses the initial input internally');
+
+  Ember.run(() => component.send('changePerPage', '0'));
+
+  assert.equal(component.get('perPage'), 1, 'does not write through the caller-owned input');
+  assert.equal(component.get('selectedPageSize'), 0, 'keeps All selected in the control');
+  assert.equal(component.get('pagedContent.length'), 3, 'renders every filtered row');
+  assert.equal(prefs.get('storageTableCount'), 0, 'persists the semantic All preference');
+
+  destroyOwned(component);
+});

@@ -12,6 +12,7 @@ export default Ember.Controller.extend({
   sortBy: 'displayUri',
   storageFilter: 'all',
   selectedVolumes: null,
+  storageTableRevision: 0,
   storagePageSizes: C.TABLES.STORAGE_PAGE_SIZES,
   storageTablePreferenceKey: C.PREFS.STORAGE_TABLE_COUNT,
   selectableVolume: isBulkRemovableVolume,
@@ -26,7 +27,7 @@ export default Ember.Controller.extend({
       return !volume.get('instanceId') &&
         ['removing', 'removed', 'purging', 'purged'].indexOf(volume.get('state')) === -1;
     });
-  }.property('model.@each.{instanceId,state}'),
+  }.property('model.[]', 'model.@each.{instanceId,state}', 'storageTableRevision'),
 
   filteredVolumes: Ember.computed(
     'storageFilter',
@@ -41,6 +42,28 @@ export default Ember.Controller.extend({
   selectedVolumeCount: Ember.computed('selectedVolumes.length', function() {
     return String(this.get('selectedVolumes.length') || 0);
   }),
+
+  _removeSuccessfulVolumes(volumes) {
+    let successful = Ember.A((volumes || []).slice());
+    let model = this.get('model');
+    let selected = this.get('selectedVolumes');
+    let changed = false;
+
+    successful.forEach((volume) => {
+      if ( model && model.includes(volume) ) {
+        model.removeObject(volume);
+        changed = true;
+      }
+
+      if ( selected && selected.includes(volume) ) {
+        selected.removeObject(volume);
+      }
+    });
+
+    if ( changed ) {
+      this.incrementProperty('storageTableRevision');
+    }
+  },
 
   headers: [
     {
@@ -104,10 +127,12 @@ export default Ember.Controller.extend({
       this.get('modalService').toggleModal('confirm-remove-selected-volumes', {
         volumes: selected.slice(),
         escToClose: true,
+        onRemoved: (volume) => {
+          Ember.run(() => this._removeSuccessfulVolumes([volume]));
+        },
         onComplete: (successful) => {
           Ember.run(() => {
-            this.get('model').removeObjects(successful);
-            this.get('selectedVolumes').removeObjects(successful);
+            this._removeSuccessfulVolumes(successful);
           });
         },
       });

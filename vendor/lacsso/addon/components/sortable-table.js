@@ -35,6 +35,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   bulkActionsList:   null,
   bulkActionCallee:  null,
   perPage:           10,
+  effectivePerPage:  null,
 
   availableActions:  null,
   selectedNodes:     null,
@@ -99,20 +100,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       this.set('pageSizeOptions', [10, 25, 50, 100]);
     }
 
-    let requestedPageSize = parseInt(this.get('perPage'), 10);
-
-    if ( requestedPageSize === 0 ) {
-      this.setProperties({
-        selectedPageSize: 0,
-        perPage: this.get('allPageSizeValue'),
-      });
-    } else {
-      this.set('selectedPageSize', requestedPageSize);
-    }
-
-    if ( !this.get('paging') ) {
-      this.set('perPage', 100000);
-    }
+    this._applyRequestedPageSize(this.get('perPage'));
 
     this.set('selectedNodes', []);
     this._updateFiltered();
@@ -140,18 +128,24 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   },
 
   normalizeRequestedPageSize: Ember.observer('perPage', function() {
-    let requested = parseInt(this.get('perPage'), 10);
+    this._applyRequestedPageSize(this.get('perPage'));
+  }),
+
+  _applyRequestedPageSize(value) {
+    let requested = parseInt(value, 10);
     let options = this.get('pageSizeOptions') || [];
 
-    if ( requested === 0 ) {
-      this.setProperties({
-        selectedPageSize: 0,
-        perPage: this.get('allPageSizeValue'),
-      });
-    } else if ( options.indexOf(requested) >= 0 ) {
-      this.set('selectedPageSize', requested);
+    if ( !Number.isFinite(requested) || options.indexOf(requested) === -1 ) {
+      requested = options.indexOf(10) >= 0 ? 10 : (options[0] || 10);
     }
-  }),
+
+    this.setProperties({
+      selectedPageSize: requested,
+      effectivePerPage: this.get('paging') ?
+        (requested === 0 ? this.get('allPageSizeValue') : requested) :
+        100000,
+    });
+  },
 
   actions: {
     clearSearch() {
@@ -188,7 +182,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
 
       this.setProperties({
         page: 1,
-        perPage: parsed === 0 ? this.get('allPageSizeValue') : parsed,
+        effectivePerPage: parsed === 0 ? this.get('allPageSizeValue') : parsed,
         selectedPageSize: parsed,
       });
 
@@ -232,7 +226,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   // Flow: body [-> sortableContent] -> arranged -> filtered -> pagedContent
   // -----
   sortableContent: Ember.computed.alias('body'),
-  pagedContent: pagedArray('filtered', {pageBinding:  "page", perPageBinding:  "perPage"}),
+  pagedContent: pagedArray('filtered', {pageBinding:  "page", perPageBinding:  "effectivePerPage"}),
 
   selectablePagedContent: Ember.computed(
     'pagedContent.[]',
@@ -333,7 +327,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     Ember.run.debounce(this, this._updateFiltered, 100, false);
   }),
 
-  _pagedOptionsShouldChange: Ember.observer('page', 'perPage', function() {
+  _pagedOptionsShouldChange: Ember.observer('page', 'effectivePerPage', function() {
     this._syncPagedContent(this.get('filtered') || Ember.A([]));
   }),
 
@@ -349,7 +343,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     }
 
     let page = this.get('page');
-    let perPage = this.get('perPage');
+    let perPage = this.get('effectivePerPage');
 
     if ( paged.get('page') !== page ) {
       paged.set('page', page);
@@ -486,14 +480,14 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     });
   },
 
-  indexFrom: Ember.computed('page','perPage', function() {
+  indexFrom: Ember.computed('page','effectivePerPage', function() {
     var current =  this.get('page');
-    var perPage =  this.get('perPage');
+    var perPage =  this.get('effectivePerPage');
     return Math.max(0, 1 + perPage*(current-1));
   }),
 
-  indexTo: Ember.computed('indexFrom','perPage','filtered.length', function() {
-    return Math.min(this.get('filtered.length'), this.get('indexFrom') + this.get('perPage') - 1);
+  indexTo: Ember.computed('indexFrom','effectivePerPage','filtered.length', function() {
+    return Math.min(this.get('filtered.length'), this.get('indexFrom') + this.get('effectivePerPage') - 1);
   }),
 
   pageCountContent: Ember.computed('indexFrom','indexTo','pagedContent.totalPages', function() {
@@ -516,7 +510,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     // Go to the last page if we end up past the last page
     let from = this.get('indexFrom');
     let last = this.get('filtered.length');
-    var perPage = this.get('perPage');
+    var perPage = this.get('effectivePerPage');
 
     if ( this.get('page') > 1 && from > last) {
       let page = Math.ceil(last/perPage);
