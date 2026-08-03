@@ -134,6 +134,11 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     });
   },
 
+  didReceiveAttrs() {
+    this._super(...arguments);
+    this._updateFiltered();
+  },
+
   normalizeRequestedPageSize: Ember.observer('perPage', function() {
     let requested = parseInt(this.get('perPage'), 10);
     let options = this.get('pageSizeOptions') || [];
@@ -312,6 +317,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
 
   filtered: null,
   _filteredShouldChangeContent: Ember.observer(
+    'body',
     'body.[]',
     'arranged.[]',
     'sortBy',

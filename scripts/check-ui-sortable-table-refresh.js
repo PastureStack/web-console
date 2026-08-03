@@ -16,7 +16,10 @@ const ci = fs.readFileSync(ciPath, 'utf8');
 const failures = [];
 
 for (const marker of [
+  "'body',",
   "'body.[]'",
+  'didReceiveAttrs() {',
+  'this._updateFiltered();',
   'Ember.run.throttle(this, this._updateFiltered, 100, false)',
   'Ember.run.debounce(this, this._updateFiltered, 100, false)',
 ]) {
@@ -67,6 +70,10 @@ for (const forbidden of [
 for (const marker of [
   'relationship is populated after initialization',
   "body.pushObjects([",
+  'relationship collection replaces the initial body',
+  "component.set('body', Ember.A([",
+  'derives initial rows after invocation attributes are received',
+  'component.didReceiveAttrs();',
   "component.set('searchText', 'beta')",
   "component.set('searchText', '')",
 ]) {
@@ -85,5 +92,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true host_relationship=follow_link search=true runloop=function-reference');
+console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true body_replacement=true host_relationship=follow_link search=true runloop=function-reference');
 console.log('failure_count=0');

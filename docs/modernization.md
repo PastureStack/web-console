@@ -415,6 +415,13 @@ unrelated containers, or infer membership from a non-filterable field. A route
 test locks the relationship name, exact collection identity, host identity,
 and independence from project-wide Store contents.
 
+`v1.6.56-pasturestack.50` fixes the remaining table lifecycle boundary found
+by authenticated production acceptance. A sortable table now refreshes its
+filtered rows when its `body` reference is replaced by a resolved relationship
+collection, in addition to refreshing when an existing collection is populated.
+The regression test starts without a body, assigns a new relationship collection,
+and requires both rows to appear in natural order while the search text is empty.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
