@@ -10,6 +10,7 @@ fi
 
 ./scripts/check-modernization-blockers
 ./scripts/check-ui-catalog-version-select
+node ./scripts/check-ui-catalog-form-contract.js
 node ./scripts/check-ui-zh-tw-localization
 node ./scripts/check-ui-localization-quality
 ./scripts/check-ui-resizable-table-columns

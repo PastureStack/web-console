@@ -8,6 +8,7 @@ import {
   localizedCatalogQuestionField,
   localizedCatalogReadme
 } from 'ui/utils/localized-catalog-field';
+import { isCatalogQuestionAnswerMissing } from 'ui/utils/catalog-question-answer';
 
 export default Ember.Component.extend(NewOrEdit, {
   intl: Ember.inject.service(),
@@ -286,7 +287,7 @@ export default Ember.Component.extend(NewOrEdit, {
 
     if (this.get('selectedTemplateModel.questions')) {
       this.get('selectedTemplateModel.questions').forEach((item) => {
-        if (item.required && item.type !== 'boolean' && !item.answer) {
+        if (item.required && isCatalogQuestionAnswerMissing(item.answer)) {
           errors.push(`${item.label} is required`);
         }
       });

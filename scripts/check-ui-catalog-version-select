@@ -7,7 +7,9 @@ cd "$repo_root"
 required_files=(
   app/components/new-select/component.js
   app/components/schema/input-enum/template.hbs
+  app/utils/catalog-question-answer.js
   app/utils/catalog-version-options.js
+  tests/unit/utils/catalog-question-answer-test.js
   tests/unit/components/new-select-test.js
   tests/unit/utils/catalog-version-options-test.js
   docs/catalog-upgrade-contract.md
@@ -22,6 +24,9 @@ grep -F "groupedContent: Ember.computed(" app/components/new-select/component.js
 grep -F "catalogVersionOptions(links, currentOption)" app/catalog-tab/launch/route.js >/dev/null
 grep -F "resourceValue(results.upgrade, 'upgradeVersionLinks') || {}" app/catalog-tab/launch/route.js >/dev/null
 grep -F '{{#each this.field.options as |choice|}}' app/components/schema/input-enum/template.hbs >/dev/null
+grep -F "isCatalogQuestionAnswerMissing(item.answer)" app/components/new-catalog/component.js >/dev/null
+grep -F "isCatalogQuestionAnswerMissing(false)" tests/unit/utils/catalog-question-answer-test.js >/dev/null
+grep -F "isCatalogQuestionAnswerMissing(0)" tests/unit/utils/catalog-question-answer-test.js >/dev/null
 
 if grep -F '{{#each this.field.options as |option|}}' app/components/schema/input-enum/template.hbs; then
   echo 'Catalog enum choices still shadow the native option element in Ember templates' >&2

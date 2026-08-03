@@ -364,6 +364,15 @@ rather than a dynamic component. Formal browser acceptance covers both NFS
 version choices, both data-removal choices, the following debug setting, and
 does not submit a workload upgrade.
 
+`v1.6.56-pasturestack.44` closes the remaining Catalog required-answer edge
+case. Required fields now reject only values that are actually empty; boolean
+`false` and numeric `0` remain valid answers. This prevents a required enum
+whose YAML default is `false` from being rejected unless the operator manually
+reselects the already-selected value. The Catalog form gate now compiles all
+application templates, rejects native-element lexical shadowing, verifies all
+supported schema-input controls, and rejects computed descriptors assigned to
+component instances at runtime.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

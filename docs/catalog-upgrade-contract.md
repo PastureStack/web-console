@@ -32,6 +32,13 @@ Release validation therefore covers both boundaries:
 - rendering primitive Catalog enum values as native `<option>` elements and
   continuing through every later question in the upgrade form.
 
+Required-answer validation is value-aware rather than truthiness-based. Empty
+strings, whitespace-only strings, `null`, `undefined`, and empty arrays are
+missing answers. The boolean value `false` and numeric value `0` are valid
+answers. This matters for required enum questions whose YAML options are
+booleans: a default of `false` must be deployable without forcing the operator
+to select the already-selected option again.
+
 Catalog enum templates must not name an `each` block parameter `option` while
 also rendering a native `<option>` element. With the Ember 6 compiler, that
 block parameter shadows the HTML element name and turns each string value into
@@ -40,9 +47,23 @@ used as weak map key`, leaves the enum list empty, and aborts all following
 questions. The source gate compiles this template and rejects dynamic-component
 bytecode at the enum boundary.
 
+The broader Catalog form gate compiles every application template, rejects a
+lexical block parameter that shadows any native HTML or SVG element, verifies
+the native controls used by every supported Catalog input component, and scans
+application JavaScript for computed-property descriptors assigned to component
+instances at runtime. Unit coverage also fixes the required-answer boundary for
+`false` and `0`.
+
 Formal acceptance must inspect at least one installed older revision and prove
 that its displayed current version, selectable target, target resource link,
 and prospective post-upgrade external identifier all describe the same Catalog
 template. It must also open a target with primitive enum questions, verify every
 choice and every following field, and stop before submitting unless workload
 upgrade was explicitly requested.
+
+For a release candidate, acceptance also opens the default revision of every
+available Catalog template and compares the rendered control counts with the
+Catalog question schema. The matrix must cover boolean, enum, integer,
+multiline, password, secret, and string controls; no select may contain an
+unlabelled option, and a control interaction must not remove any later
+question.
