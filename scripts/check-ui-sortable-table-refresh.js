@@ -21,6 +21,8 @@ for (const marker of [
   'didReceiveAttrs() {',
   'this._updateFiltered();',
   'effectivePerPage:  null',
+  '_syncRequestedPageSize() {',
+  'this._lastRequestedPageSizeInput = value;',
   '_applyRequestedPageSize(value) {',
   'perPageBinding:  "effectivePerPage"',
   "_pagedOptionsShouldChange: Ember.observer('page', 'effectivePerPage'",

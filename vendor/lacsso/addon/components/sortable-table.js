@@ -100,7 +100,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       this.set('pageSizeOptions', [10, 25, 50, 100]);
     }
 
-    this._applyRequestedPageSize(this.get('perPage'));
+    this._syncRequestedPageSize();
 
     this.set('selectedNodes', []);
     this._updateFiltered();
@@ -124,12 +124,24 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
 
   didReceiveAttrs() {
     this._super(...arguments);
+    this._syncRequestedPageSize();
     this._updateFiltered();
   },
 
   normalizeRequestedPageSize: Ember.observer('perPage', function() {
-    this._applyRequestedPageSize(this.get('perPage'));
+    this._syncRequestedPageSize();
   }),
+
+  _syncRequestedPageSize() {
+    let value = this.get('perPage');
+
+    if ( this._lastRequestedPageSizeInput === value ) {
+      return;
+    }
+
+    this._lastRequestedPageSizeInput = value;
+    this._applyRequestedPageSize(value);
+  },
 
   _applyRequestedPageSize(value) {
     let requested = parseInt(value, 10);
