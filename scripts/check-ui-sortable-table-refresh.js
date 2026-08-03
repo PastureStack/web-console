@@ -5,9 +5,13 @@ const fs = require('fs');
 
 const componentPath = 'vendor/lacsso/addon/components/sortable-table.js';
 const testPath = 'tests/unit/components/sortable-table-test.js';
+const hostRoutePath = 'app/host/containers/route.js';
+const hostRouteTestPath = 'tests/unit/host/containers/route-test.js';
 const ciPath = 'scripts/ci';
 const component = fs.readFileSync(componentPath, 'utf8');
 const test = fs.readFileSync(testPath, 'utf8');
+const hostRoute = fs.readFileSync(hostRoutePath, 'utf8');
+const hostRouteTest = fs.readFileSync(hostRouteTestPath, 'utf8');
 const ci = fs.readFileSync(ciPath, 'utf8');
 const failures = [];
 
@@ -18,6 +22,27 @@ for (const marker of [
 ]) {
   if (!component.includes(marker)) {
     failures.push('SORTABLE_TABLE_REFRESH_CONTRACT_MISSING=' + marker);
+  }
+}
+
+for (const marker of [
+  "findAll('instance', {",
+  "filter: {hostId: host.get('id')}",
+  ".then(() => host)",
+]) {
+  if (!hostRoute.includes(marker)) {
+    failures.push('HOST_CONTAINER_PRELOAD_CONTRACT_MISSING=' + marker);
+  }
+}
+
+for (const marker of [
+  'loads only the selected host instances before rendering',
+  "assert.equal(type, 'instance')",
+  "{filter: {hostId: '1h1'}}",
+  'assert.strictEqual(result, host',
+]) {
+  if (!hostRouteTest.includes(marker)) {
+    failures.push('HOST_CONTAINER_PRELOAD_TEST_MISSING=' + marker);
   }
 }
 
@@ -51,5 +76,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true search=true runloop=function-reference');
+console.log('UI_SORTABLE_TABLE_REFRESH_OK late_body=true host_preload=filtered search=true runloop=function-reference');
 console.log('failure_count=0');

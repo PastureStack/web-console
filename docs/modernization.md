@@ -402,6 +402,17 @@ use function references supported by Ember 6 and observe the late-bound body
 directly. A browser test covers empty initialization, late row arrival,
 natural ordering, searching, and clearing the search.
 
+`v1.6.56-pasturestack.48` completes the direct host-container route repair.
+The host resource exposes container IDs, while its denormalized `instances`
+property intentionally resolves only records already present in the API Store.
+Opening or reloading a host-container URL did not run the project-wide host
+list route that normally preloads those records, so the table correctly
+received an empty array even though the backend containers were running. The
+route now requests only instances matching the selected `hostId` before it
+renders. This follows the existing API Store relationship design without
+loading every project container or starting statistics streams for off-page
+rows. A route test locks the filtered request and host identity contract.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

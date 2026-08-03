@@ -5,7 +5,11 @@ export default Ember.Route.extend({
   statsSocket: null,
 
   model() {
-    return this.modelFor('host').get('host');
+    let host = this.modelFor('host').get('host');
+
+    return this.get('store').findAll('instance', {
+      filter: {hostId: host.get('id')},
+    }).then(() => host);
   },
 
   afterModel() {
