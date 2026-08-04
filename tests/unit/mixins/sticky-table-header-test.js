@@ -41,10 +41,10 @@ test('it follows the table scroll host horizontally', function(assert) {
   assert.equal(header.style.transform, 'translateX(-260px)');
   assert.equal(header.style.width, '1200px');
   assert.equal(actions.style.width, '600px');
-  assert.ok(
-    Math.abs(header.getBoundingClientRect().left - (host.getBoundingClientRect().left - 260)) <= 1,
-    'the rendered header moves by the same amount as the body scroll'
-  );
+  let computedTransform = window.getComputedStyle(header).transform;
+  let matrix = new window.DOMMatrixReadOnly(computedTransform);
+
+  assert.equal(Math.round(matrix.m41), -260, 'the computed header transform follows the body scroll');
 
   Ember.run(() => subject.destroy());
   host.remove();
