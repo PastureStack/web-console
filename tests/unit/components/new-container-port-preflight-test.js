@@ -61,6 +61,38 @@ test('preflight closure callback is invoked without legacy sendAction', function
   destroyOwned(component);
 });
 
+test('combined preflight status ignores idle and keeps the most important result', function(assert) {
+  let received;
+  let component = createComponent();
+
+  Ember.run(() => component.set('preflightChanged', (state) => {
+    received = state;
+  }));
+
+  Ember.run(() => component.send('portPreflightChanged', {
+    status: 'available',
+    pending: false,
+    blocked: false,
+  }));
+  assert.equal(received.status, 'available', 'an idle volume check does not hide an available port result');
+
+  Ember.run(() => component.send('volumePreflightChanged', {
+    status: 'warning',
+    pending: false,
+    blocked: false,
+  }));
+  assert.equal(received.status, 'warning', 'a warning takes precedence over an available result');
+
+  Ember.run(() => component.send('portPreflightChanged', {
+    status: 'blocked',
+    pending: false,
+    blocked: true,
+  }));
+  assert.equal(received.status, 'blocked', 'a blocking result takes precedence over every non-blocking result');
+
+  destroyOwned(component);
+});
+
 test('serialized port changes update the launch config through a named action', function(assert) {
   let component = createComponent();
   let ports = Ember.A(['19041:80/tcp']);

@@ -173,9 +173,21 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
   publishPreflightState() {
     let port = this.get('portPreflightState') || {};
     let volume = this.get('volumePreflightState') || {};
+    let statuses = [port.status, volume.status];
+    let status = 'idle';
+
+    if ( port.blocked || volume.blocked || statuses.indexOf('blocked') >= 0 ) {
+      status = 'blocked';
+    } else if ( port.pending || volume.pending || statuses.indexOf('checking') >= 0 ) {
+      status = 'checking';
+    } else if ( statuses.indexOf('warning') >= 0 ) {
+      status = 'warning';
+    } else if ( statuses.indexOf('available') >= 0 ) {
+      status = 'available';
+    }
+
     let state = {
-      status: port.blocked || volume.blocked ? 'blocked' :
-        (port.pending || volume.pending ? 'checking' : (volume.status || port.status || 'idle')),
+      status,
       pending: !!port.pending || !!volume.pending,
       blocked: !!port.blocked || !!volume.blocked,
     };
