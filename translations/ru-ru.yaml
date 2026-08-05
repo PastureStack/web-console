@@ -2300,6 +2300,8 @@ formVolumes:
       environment: Среда
       unknown: Другая
     coverage: '{scope}; охват хостов {covered}/{total}'
+    accessMode: 'Режим доступа: {value}'
+    unknownAccessMode: Не указан
     unavailable:
       inactive: Драйвер не активен.
       noPool: Нет доступного активного пула хранения.
@@ -2312,6 +2314,7 @@ formVolumes:
       suggested: Рекомендация
       current: Текущая форма
       existing: Существующий том
+      existingMount: Существующее подключение сервиса
   noLaunchConfigs: 'В этом сервисе нет других конфигураций запуска, с которыми можно было бы совместно использовать тома.'
   noHostContainers: 'На этом хосте нет контейнеров, из которых можно было бы использовать тома.'
   onlySingleHost: Доступно только при добавлении контейнера к определенному хосту.

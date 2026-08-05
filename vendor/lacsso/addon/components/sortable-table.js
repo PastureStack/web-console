@@ -30,6 +30,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   paging:            true,
   pageSizeOptions:   null,
   perPagePreference: null,
+  pageSizeChanged:   null,
   onPageContentChange: null,
   animateLiveSort:   false,
   bulkActionsList:   null,
@@ -202,6 +203,11 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
 
       if ( preference ) {
         this.get('prefs').set(preference, parsed);
+      }
+
+      let changed = this.get('pageSizeChanged');
+      if ( typeof changed === 'function' ) {
+        changed(parsed);
       }
     },
 

@@ -2277,6 +2277,8 @@ formVolumes:
       environment: Environnement
       unknown: Autre
     coverage: '{scope} ; couverture des hôtes {covered}/{total}'
+    accessMode: 'Mode d’accès : {value}'
+    unknownAccessMode: Non indiqué
     unavailable:
       inactive: Le pilote n’est pas actif.
       noPool: Aucun pool de stockage actif n’est disponible.
@@ -2289,6 +2291,7 @@ formVolumes:
       suggested: Suggestion
       current: Formulaire actuel
       existing: Volume existant
+      existingMount: Montage de service existant
   noLaunchConfigs: Il n’y a aucune autres configurations de lancement de ce service pour partager des volumes avec celui-ci.
   noHostContainers: Cet hôte n’a aucun conteneurs ayant des volumes sur lesquels se connecter.
   onlySingleHost: Disponible uniquement lorsque vous ajoutez un conteneur à un hôte particulier.

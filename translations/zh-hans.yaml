@@ -2206,6 +2206,8 @@ formVolumes:
       environment: 环境
       unknown: 其他
     coverage: '范围：{scope}；主机覆盖 {covered}/{total}'
+    accessMode: '访问模式：{value}'
+    unknownAccessMode: 未报告
     unavailable:
       inactive: 驱动未处于活动状态。
       noPool: 没有可用的活动存储池。
@@ -2218,6 +2220,7 @@ formVolumes:
       suggested: 建议
       current: 当前表单
       existing: 现有卷
+      existingMount: 现有服务挂载
   noLaunchConfigs: 此服务下没有可共享卷的启动配置.
   noHostContainers: 该主机没有可以提供共享卷的容器.
   onlySingleHost: 仅当添加容器到特定主机时适用.

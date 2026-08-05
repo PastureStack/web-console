@@ -98,3 +98,28 @@ test('Tab completes the active candidate and preserves normal focus movement', f
   assert.notOk(component.get('isOpen'));
   destroyOwned(component);
 });
+
+test('mouse selection accepts the highlighted candidate', function(assert) {
+  let changed;
+  let prevented = false;
+  let component = createOwned(VolumePathAutocomplete, {
+    renderer: inertRenderer(),
+    value: 'sha',
+    suggestions: Ember.A([{value: 'shared:/srv/shared', source: 'existing'}]),
+    changed(value) {
+      changed = value;
+    },
+  }, 'component');
+
+  Ember.run(() => component.set('isOpen', true));
+  component.send('chooseSuggestion', component.get('activeSuggestion'), {
+    preventDefault() {
+      prevented = true;
+    },
+  });
+
+  assert.ok(prevented, 'keeps the input focused during mouse selection');
+  assert.equal(changed, 'shared:/srv/shared');
+  assert.notOk(component.get('isOpen'));
+  destroyOwned(component);
+});

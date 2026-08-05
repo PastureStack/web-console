@@ -60,3 +60,20 @@ test('successful removals immediately refresh rows and selection', function(asse
 
   destroyOwned(controller);
 });
+
+test('All page size is kept in writable controller state', function(assert) {
+  let controller = StorageController.create({
+    prefs: Ember.Object.create({storageTablePerPage: 25}),
+    modalService: Ember.Object.create(),
+  });
+
+  assert.equal(controller.get('storageTablePerPage'), 25, 'starts from the saved preference');
+
+  controller.send('storagePageSizeChanged', '0');
+  assert.equal(controller.get('storageTablePerPage'), 0, 'accepts the semantic All value without mutating a computed input');
+
+  controller.send('storagePageSizeChanged', '999');
+  assert.equal(controller.get('storageTablePerPage'), 0, 'ignores unsupported page sizes');
+
+  destroyOwned(controller);
+});

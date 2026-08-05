@@ -1,7 +1,7 @@
 import Ember from 'ember';
 import { parseVolumeSpec } from 'ui/utils/volume-spec';
 
-const PREFLIGHT_DELAY = 350;
+const PREFLIGHT_DELAY = 300;
 const ACTIVE_HOST_STATES = ['active', 'activating', 'updating-active'];
 const ACTIVE_POOL_STATES = ['active', 'activating', 'updating-active'];
 const VALID_PREFLIGHT_STATUSES = ['available', 'warning', 'unknown', 'blocked'];
@@ -73,6 +73,7 @@ export default Ember.Component.extend({
   allStorageDrivers   : null,
   allStoragePools     : null,
   allVolumes          : null,
+  allServices         : null,
   serviceId           : null,
   instanceId          : null,
   stackId             : null,
@@ -379,6 +380,9 @@ export default Ember.Component.extend({
           covered: coveredCount,
           total: hostIds.length,
         });
+        let accessModeLabel = accessMode || intl.t('formVolumes.volumeDriver.unknownAccessMode');
+
+        detail = `${detail} — ${intl.t('formVolumes.volumeDriver.accessMode', {value: accessModeLabel})}`;
         if ( disabledReason ) {
           detail = `${detail} — ${intl.t(`formVolumes.volumeDriver.unavailable.${disabledReason}`)}`;
         }
@@ -455,6 +459,7 @@ export default Ember.Component.extend({
     'intl._locale',
     'instance.volumeDriver',
     'volumesArray.@each.value',
+    'allServices.@each.{launchConfig,secondaryLaunchConfigs}',
     'allVolumes.@each.{name,driver,storageDriverId,removed}',
     'allStorageDrivers.@each.{id,name}',
     function() {
@@ -463,6 +468,7 @@ export default Ember.Component.extend({
       let suggestedSource = intl.t('formVolumes.autocomplete.source.suggested');
       let currentSource = intl.t('formVolumes.autocomplete.source.current');
       let existingSource = intl.t('formVolumes.autocomplete.source.existing');
+      let existingMountSource = intl.t('formVolumes.autocomplete.source.existingMount');
       let currentDriver = String(this.get('instance.volumeDriver') || '');
       let driverById = {};
 
@@ -470,15 +476,19 @@ export default Ember.Component.extend({
         driverById[String(value(driver, 'id') || '')] = value(driver, 'name');
       });
 
-      ['/data', '/config', '/var/lib/app', '/var/log/app'].forEach((path) => {
-        suggestions.push({value: path, source: suggestedSource});
-      });
+      asArray(this.get('allServices')).forEach((service) => {
+        let launchConfigs = [value(service, 'launchConfig')]
+          .concat(asArray(value(service, 'secondaryLaunchConfigs')))
+          .filter(Boolean);
 
-      asArray(this.get('volumesArray')).forEach((row) => {
-        let current = String(value(row, 'value') || '').trim();
-        if ( current ) {
-          suggestions.push({value: current, source: currentSource});
-        }
+        launchConfigs.forEach((launchConfig) => {
+          asArray(value(launchConfig, 'dataVolumes')).forEach((spec) => {
+            let existing = String(spec || '').trim();
+            if ( existing ) {
+              suggestions.push({value: existing, source: existingMountSource, priority: 0});
+            }
+          });
+        });
       });
 
       asArray(this.get('allVolumes')).forEach((volume) => {
@@ -492,7 +502,18 @@ export default Ember.Component.extend({
           return;
         }
 
-        suggestions.push({value: `${name}:/data`, source: existingSource});
+        suggestions.push({value: `${name}:/data`, source: existingSource, priority: 1});
+      });
+
+      asArray(this.get('volumesArray')).forEach((row) => {
+        let current = String(value(row, 'value') || '').trim();
+        if ( current ) {
+          suggestions.push({value: current, source: currentSource, priority: 2});
+        }
+      });
+
+      ['/data', '/config', '/var/lib/app', '/var/log/app'].forEach((path) => {
+        suggestions.push({value: path, source: suggestedSource, priority: 3});
       });
 
       return Ember.A(suggestions);

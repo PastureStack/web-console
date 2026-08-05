@@ -2167,6 +2167,8 @@ formVolumes:
       environment: 환경
       unknown: 기타
     coverage: '{scope}, 호스트 적용 범위 {covered}/{total}'
+    accessMode: '액세스 모드: {value}'
+    unknownAccessMode: 보고되지 않음
     unavailable:
       inactive: 드라이버가 활성 상태가 아닙니다.
       noPool: 사용 가능한 활성 저장소 풀이 없습니다.
@@ -2179,6 +2181,7 @@ formVolumes:
       suggested: 추천
       current: 현재 양식
       existing: 기존 볼륨
+      existingMount: 기존 서비스 마운트
   noLaunchConfigs: 이 서비스에는 볼륨을 공유할 다른 시작 구성이 없습니다.
   noHostContainers: 이 호스트에는 볼륨을 사용할 컨테이너가 없습니다.
   onlySingleHost: 특정 호스트에 컨테이너를 추가하는 경우에만 사용할 수 있습니다.

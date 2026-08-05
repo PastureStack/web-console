@@ -37,9 +37,10 @@
   selectionChanged=(action "selectionChanged")
   search=true
   paging=true
-  perPage=this.prefs.storageTablePerPage
+  perPage=this.storageTablePerPage
   pageSizeOptions=this.storagePageSizes
   perPagePreference=this.storageTablePreferenceKey
+  pageSizeChanged=(action "storagePageSizeChanged")
   headers=this.headers as |volume kind|}}
   {{#if (eq kind "row")}}
     {{volume-row model=volume}}

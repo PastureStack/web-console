@@ -2279,6 +2279,8 @@ formVolumes:
       environment: Környezet
       unknown: Egyéb
     coverage: '{scope}; gazdagéplefedettség {covered}/{total}'
+    accessMode: 'Hozzáférési mód: {value}'
+    unknownAccessMode: Nincs megadva
     unavailable:
       inactive: Az illesztőprogram nem aktív.
       noPool: Nem érhető el aktív tárolókészlet.
@@ -2291,6 +2293,7 @@ formVolumes:
       suggested: Javaslat
       current: Jelenlegi űrlap
       existing: Meglévő kötet
+      existingMount: Meglévő szolgáltatáscsatolás
   noLaunchConfigs: 'Ebben a szolgáltatásban nincs más indítási konfiguráció, amellyel megoszthatná a köteteket.'
   noHostContainers: Ennek a gazdagépnek nincsenek tárolói a kötetek használatához.
   onlySingleHost: 'Csak akkor érhető el, ha egy Konténer hozzá van adva egy megadott hoszthoz.'

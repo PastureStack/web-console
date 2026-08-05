@@ -74,6 +74,8 @@ require_fixed "$controller" "return String(this.get('selectedVolumes.length') ||
 require_fixed "$controller" "toggleModal('confirm-remove-selected-volumes'" 'selection confirmation dialog'
 require_fixed "$controller" '_removeSuccessfulVolumes(volumes)' 'successful-row refresh helper'
 require_fixed "$controller" 'storageTableRevision' 'explicit table refresh revision'
+require_fixed "$controller" 'storageTablePerPage: C.TABLES.DEFAULT_STORAGE_COUNT' 'writable controller-owned page size'
+require_fixed "$controller" 'storagePageSizeChanged(value)' 'semantic page-size callback'
 require_fixed "$controller" 'onRemoved: (volume)' 'per-success table refresh callback'
 require_fixed "$page" 'count=this.selectedVolumeCount' 'zero-safe localized selection count'
 require_fixed "$page" 'bulkActions=true' 'checkbox selection column'
@@ -81,12 +83,15 @@ require_fixed "$page" 'selectionFilter=this.selectableVolume' 'non-removable row
 require_fixed "$page" 'search=true' 'storage search'
 require_fixed "$page" 'paging=true' 'storage pagination'
 require_fixed "$page" 'storagePageSizes' '10, 25, 50, and All page sizes'
+require_fixed "$page" 'perPage=this.storageTablePerPage' 'controller-owned writable page-size input'
+require_fixed "$page" 'pageSizeChanged=(action "storagePageSizeChanged")' 'page-size callback wiring'
 reject_fixed "$page" 'value="removable"' 'retired duplicate state-filter option'
 reject_fixed "$page" 'filters.removable' 'retired duplicate state-filter translation'
 require_fixed "$sortable_component" 'selectablePagedContent' 'page-scoped selectable rows'
 require_fixed "$sortable_component" 'selectionChanged' 'selection callback'
 require_fixed "$sortable_component" 'parsed === 0' 'All page-size sentinel'
 require_fixed "$sortable_component" 'effectivePerPage' 'internal writable page-size state'
+require_fixed "$sortable_component" 'pageSizeChanged' 'caller page-size notification'
 reject_fixed "$sortable_component" "perPage: parsed === 0 ? this.get('allPageSizeValue') : parsed" 'caller-owned page-size mutation'
 require_fixed "$sortable_template" "t 'pagination.all'" 'localized All option'
 require_fixed "$sortable_template" 'disabled=(not (array-includes this.selectablePagedContent content))' 'disabled active-row checkbox'
@@ -101,6 +106,7 @@ require_fixed "$test_file" 'it filters by visible state' 'state-filter unit cove
 require_fixed "$test_file" 'concurrency is bounded' 'concurrency unit coverage'
 require_fixed "$controller_test" 'successful removals immediately refresh rows and selection' 'live table refresh coverage'
 require_fixed "$controller_test" 'completion is idempotent after live removal' 'idempotent completion coverage'
+require_fixed "$controller_test" 'All page size is kept in writable controller state' 'All page-size regression coverage'
 
 if grep -RInE \
   'TEST_MARKER|PROTECTED_MARKER|isUnusedTestVolume|classifyUnusedVolumes' \
@@ -129,4 +135,4 @@ if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] &&
   exit 1
 fi
 
-echo 'UI_STORAGE_BULK_REMOVE_OK selection=operator zero_count=visible filters=all,active,detached search=enabled paging=10,25,50,all page_size_input=read_only select_all=current_page concurrency=4 live_row_refresh=per_success'
+echo 'UI_STORAGE_BULK_REMOVE_OK selection=operator zero_count=visible filters=all,active,detached search=enabled paging=10,25,50,all page_size_input=controller_owned select_all=current_page concurrency=4 live_row_refresh=per_success'

@@ -2270,6 +2270,8 @@ formVolumes:
       environment: Kapaligiran
       unknown: Iba pa
     coverage: '{scope}; saklaw ng host {covered}/{total}'
+    accessMode: 'Access mode: {value}'
+    unknownAccessMode: Hindi iniulat
     unavailable:
       inactive: Hindi aktibo ang driver.
       noPool: Walang available na aktibong storage pool.
@@ -2282,6 +2284,7 @@ formVolumes:
       suggested: Iminungkahi
       current: Kasalukuyang form
       existing: Kasalukuyang volume
+      existingMount: Kasalukuyang service mount
   noLaunchConfigs: Walang iba pang mga launch config sa serbisyong ito na ibabahagi ng volume.
   noHostContainers: Ang host na ito ay walang container kung saan magagamit ang mga volume.
   onlySingleHost: Available lang kapag nagdaragdag ng container sa isang partikular na host.

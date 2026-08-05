@@ -11,7 +11,7 @@
         <button class="btn-circle-text" {{action "addVolume"}}><i class="icon icon-plus-circle"/> <span>{{t 'formVolumes.addActionLabel'}}</span></button>
       </div>
       {{#if this.volumesArray.length}}
-        <table class="table fixed no-lines no-top-padding tight">
+        <table class="table fixed no-lines no-top-padding tight volume-path-table">
           {{#each this.volumesArray as |vol|}}
             <tr>
               <td>

@@ -2239,6 +2239,8 @@ formVolumes:
       environment: 環境
       unknown: その他
     coverage: '{scope}、ホスト対応数 {covered}/{total}'
+    accessMode: 'アクセスモード：{value}'
+    unknownAccessMode: 未報告
     unavailable:
       inactive: ドライバーが有効ではありません。
       noPool: 利用可能なアクティブなストレージプールがありません。
@@ -2251,6 +2253,7 @@ formVolumes:
       suggested: 候補
       current: 現在のフォーム
       existing: 既存のボリューム
+      existingMount: 既存サービスのマウント
   noLaunchConfigs: このサービスにはボリュームを共有するための起動設定がありません。
   noHostContainers: このホストには他コンテナのボリュームを利用するためのコンテナがありません。
   onlySingleHost: 特定ホストにコンテナを追加した場合のみ利用できます

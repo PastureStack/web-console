@@ -11,6 +11,7 @@ export default Ember.Route.extend({
       store.findAll('storageDriver'),
       store.findAll('storagePool'),
       store.findAll('volume'),
+      store.findAll('service'),
     ];
 
     if ( params.serviceId )
@@ -28,7 +29,8 @@ export default Ember.Route.extend({
       var allStorageDrivers = results[1];
       var allStoragePools = results[2];
       var allVolumes = results[3];
-      var serviceOrContainer = results[4];
+      var allServices = results[4];
+      var serviceOrContainer = results[5];
       var serviceLinks = [];
       var secondaryLaunchConfigs = [];
 
@@ -40,6 +42,7 @@ export default Ember.Route.extend({
           allStorageDrivers,
           allStoragePools,
           allVolumes,
+          allServices,
         });
       }
 
@@ -109,6 +112,7 @@ export default Ember.Route.extend({
         allStorageDrivers,
         allStoragePools,
         allVolumes,
+        allServices,
       });
     });
   },

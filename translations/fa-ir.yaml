@@ -2222,6 +2222,8 @@ formVolumes:
       environment: محیط
       unknown: سایر
     coverage: '{scope}؛ پوشش میزبان {covered}/{total}'
+    accessMode: 'حالت دسترسی: {value}'
+    unknownAccessMode: گزارش نشده
     unavailable:
       inactive: درایور فعال نیست.
       noPool: هیچ مخزن ذخیره‌سازی فعالی در دسترس نیست.
@@ -2234,6 +2236,7 @@ formVolumes:
       suggested: پیشنهادی
       current: فرم کنونی
       existing: حجم موجود
+      existingMount: اتصال سرویس موجود
   noLaunchConfigs: هیچ پیکربندی راه اندازی دیگری در این سرویس برای اشتراک گذاری حجم ها وجود ندارد.
   noHostContainers: این میزبان محفظه ای برای استفاده از حجم ها ندارد.
   onlySingleHost: فقط هنگام اضافه کردن یک کانتینر به یک میزبان خاص در دسترس است.

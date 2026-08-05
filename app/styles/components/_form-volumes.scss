@@ -12,6 +12,13 @@ $text-muted: null !default;
   position: relative;
 }
 
+.volume-path-table,
+.volume-path-table > tbody,
+.volume-path-table > tbody > tr,
+.volume-path-table > tbody > tr > td {
+  overflow: visible;
+}
+
 .volume-path-autocomplete-shell {
   position: relative;
 }

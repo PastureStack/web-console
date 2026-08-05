@@ -26,12 +26,14 @@ sent. Removal uses the public resource action with at most four concurrent
 requests and never mutates a database directly. Progress and per-item failures
 remain visible until the operator closes the result.
 
-The page-size selector keeps a separate internal effective page size and the
-preference service exposes normalized read/write computed properties. Choosing
-All stores the semantic preference value `0`; a legacy two-way component
-binding can safely write that value back without reaching an undefined Ember
-setter. Unsupported values normalize to the documented default. This preserves
-the same 10, 25, 50, and All behavior for every shared table.
+The page-size selector keeps a separate internal effective page size. The host
+storage controller owns a plain writable copy of the selected value and passes
+it to the shared table. Choosing All reports the semantic value `0` through an
+explicit callback and persists it under the base preference key. It never
+writes through the derived `storageTablePerPage` computed property, which
+avoids Ember argument-setter failures. Unsupported values normalize to the
+documented default. This preserves the same 10, 25, 50, and All behavior for
+every shared table.
 
 After each successful remove response, the corresponding row is removed from
 the current model, filtered result, and selected-item list immediately. A

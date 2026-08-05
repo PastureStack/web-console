@@ -165,7 +165,7 @@ test('it synchronizes page and page size without legacy string bindings', functi
 });
 
 test('it keeps the invocation page size read-only while selecting all rows', function(assert) {
-  assert.expect(6);
+  assert.expect(7);
 
   let prefs = Ember.Object.create();
   let body = Ember.A([
@@ -174,6 +174,7 @@ test('it keeps the invocation page size read-only while selecting all rows', fun
     Ember.Object.create({id: '3', name: 'Volume 3'}),
   ]);
   let component;
+  let changedPageSize;
 
   Ember.run(() => {
     component = createOwned(SortableTableComponent, {
@@ -187,6 +188,9 @@ test('it keeps the invocation page size read-only while selecting all rows', fun
       perPage: 1,
       pageSizeOptions: [1, 2, 0],
       perPagePreference: 'storageTableCount',
+      pageSizeChanged(value) {
+        changedPageSize = value;
+      },
       paging: true,
     }, 'component');
     component.didReceiveAttrs();
@@ -201,6 +205,7 @@ test('it keeps the invocation page size read-only while selecting all rows', fun
   assert.equal(component.get('selectedPageSize'), 0, 'keeps All selected in the control');
   assert.equal(component.get('pagedContent.length'), 3, 'renders every filtered row');
   assert.equal(prefs.get('storageTableCount'), 0, 'persists the semantic All preference');
+  assert.equal(changedPageSize, 0, 'reports the semantic value to the caller-owned writable state');
 
   destroyOwned(component);
 });

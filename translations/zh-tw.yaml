@@ -2461,7 +2461,7 @@ formVolumes:
   volumes: 路徑
   volumesFrom: 沿用其他容器的磁碟區
   volumeDriver:
-    label: 磁碟區驅動程式
+    label: 儲存驅動程式
     placeholder: 例如：pasturestack-nfs
     local: 本機儲存空間
     localDetail: 使用所選主機上的 Docker 本機儲存空間。
@@ -2471,6 +2471,8 @@ formVolumes:
       environment: 整個環境
       unknown: 其他
     coverage: '範圍：{scope}；主機涵蓋 {covered}/{total}'
+    accessMode: '存取模式：{value}'
+    unknownAccessMode: 未回報
     unavailable:
       inactive: 驅動程式尚未啟用。
       noPool: 沒有可用的儲存集區。
@@ -2483,6 +2485,7 @@ formVolumes:
       suggested: 建議路徑
       current: 目前表單
       existing: 既有磁碟區
+      existingMount: 既有服務掛載
   noLaunchConfigs: 此服務下沒有可共享磁碟區的啟動設定。
   noHostContainers: 該主機沒有可以提供共享磁碟區的容器。
   onlySingleHost: 僅當新增容器到特定主機時適用。
@@ -3446,7 +3449,7 @@ newContainer:
     disks: 磁碟
     userData: 使用者資料
     command: 命令
-    volumes: 磁碟區
+    volumes: 路徑
     networking: 網路
     security: 安全/主機
     healthCheck: 健康檢查

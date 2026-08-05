@@ -9,6 +9,7 @@ export default Ember.Route.extend({
       allStorageDrivers: store.findAll('storageDriver'),
       allStoragePools: store.findAll('storagePool'),
       allVolumes: store.findAll('volume'),
+      allServices: store.findAll('service'),
     };
 
     if ( params.containerId )
@@ -67,6 +68,7 @@ export default Ember.Route.extend({
         allStorageDrivers: results.allStorageDrivers,
         allStoragePools: results.allStoragePools,
         allVolumes: results.allVolumes,
+        allServices: results.allServices,
       });
     });
   },

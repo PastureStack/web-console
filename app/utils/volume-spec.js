@@ -114,14 +114,13 @@ export function parseVolumeSpec(input) {
 export function rankedVolumeSuggestions(suggestions, input, limit=8) {
   let query = String(input || '').trim().toLowerCase();
   let unique = {};
-  let values = [];
 
   (suggestions || []).forEach((item) => {
     let suggestion = typeof item === 'string' ? {value: item} : item;
     let value = String((suggestion && suggestion.value) || '').trim();
     let normalized = value.toLowerCase();
 
-    if ( !value || normalized === query || unique[normalized] ) {
+    if ( !value || normalized === query ) {
       return;
     }
 
@@ -130,16 +129,24 @@ export function rankedVolumeSuggestions(suggestions, input, limit=8) {
       return;
     }
 
-    unique[normalized] = true;
-    values.push({
+    let parsedPriority = parseInt(suggestion.priority, 10);
+    let candidate = {
       value,
       source: suggestion.source || null,
+      priority: Number.isFinite(parsedPriority) ? parsedPriority : 99,
       rank: position === 0 ? 0 : 1,
       suffix: position === 0 ? value.slice(query.length) : '',
-    });
+    };
+    let previous = unique[normalized];
+
+    if ( !previous || candidate.priority < previous.priority ) {
+      unique[normalized] = candidate;
+    }
   });
 
-  values.sort((left, right) => left.rank - right.rank || naturalCompare(left.value, right.value));
+  let values = Object.keys(unique).map((key) => unique[key]);
+  values.sort((left, right) => left.rank - right.rank ||
+    left.priority - right.priority || naturalCompare(left.value, right.value));
   return values.slice(0, Math.max(1, Math.min(8, parseInt(limit, 10) || 8)));
 }
 

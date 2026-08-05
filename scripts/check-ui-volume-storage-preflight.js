@@ -10,6 +10,7 @@ const formTemplate = fs.readFileSync('app/components/form-volumes/template.hbs',
 const autocomplete = fs.readFileSync('app/components/volume-path-autocomplete/component.js', 'utf8');
 const autocompleteTemplate = fs.readFileSync('app/components/volume-path-autocomplete/template.hbs', 'utf8');
 const parser = fs.readFileSync('app/utils/volume-spec.js', 'utf8');
+const styles = fs.readFileSync('app/styles/components/_form-volumes.scss', 'utf8');
 const parent = fs.readFileSync('app/components/new-container/component.js', 'utf8');
 const parentTemplate = fs.readFileSync('app/components/new-container/template.hbs', 'utf8');
 const serviceRoute = fs.readFileSync('app/service/new/route.js', 'utf8');
@@ -21,7 +22,7 @@ const ci = fs.readFileSync('scripts/ci', 'utf8');
 const failures = [];
 
 for (const marker of [
-  'const PREFLIGHT_DELAY = 350;',
+  'const PREFLIGHT_DELAY = 300;',
   "project.hasAction('volumepreflight')",
   "project.doAction('volumepreflight'",
   'sequence !== this._preflightSequence',
@@ -29,6 +30,9 @@ for (const marker of [
   "name === 'pasturestack-nfs'",
   "scope !== 'environment'",
   "accessMode !== 'multiHostRW'",
+  "formVolumes.volumeDriver.accessMode",
+  "formVolumes.autocomplete.source.existingMount",
+  "priority: 0",
   'host_pool_missing',
   'volume_driver_mismatch',
   'existing_volume_unusable',
@@ -42,6 +46,7 @@ for (const marker of [
   'content=this.storageDriverChoices',
   'optionDisabledPath="disabled"',
   'this.preflightIssueMessages',
+  'volume-path-table',
 ]) {
   if (!formTemplate.includes(marker)) failures.push(`VOLUME_TEMPLATE_MISSING=${marker}`);
 }
@@ -80,8 +85,13 @@ for (const marker of [
   "result.errors.push('unsafeSource')",
   "result.errors.push('invalidMode')",
   'Math.min(8',
+  'left.priority - right.priority',
 ]) {
   if (!parser.includes(marker)) failures.push(`VOLUME_PARSER_MISSING=${marker}`);
+}
+
+if (!styles.includes('.volume-path-table > tbody > tr > td')) {
+  failures.push('VOLUME_AUTOCOMPLETE_OVERFLOW_GUARD_MISSING');
 }
 
 for (const marker of [
@@ -97,13 +107,14 @@ for (const marker of [
   'allStorageDrivers=this.allStorageDrivers',
   'allStoragePools=this.allStoragePools',
   'allVolumes=this.allVolumes',
+  'allServices=this.allServices',
   'preflightChanged=(action "volumePreflightChanged")',
 ]) {
   if (!parentTemplate.includes(marker)) failures.push(`VOLUME_PARENT_TEMPLATE_MISSING=${marker}`);
 }
 
 for (const source of [serviceRoute, containerRoute]) {
-  for (const marker of ["findAll('storageDriver')", "findAll('storagePool')", "findAll('volume')"]) {
+  for (const marker of ["findAll('storageDriver')", "findAll('storagePool')", "findAll('volume')", "findAll('service')"]) {
     if (!source.includes(marker)) failures.push(`VOLUME_ROUTE_INVENTORY_MISSING=${marker}`);
   }
 }
@@ -112,6 +123,8 @@ for (const marker of [
   'driver choices hide secret drivers and disable incomplete NFS coverage',
   'validation rejects duplicate targets and unavailable selected drivers',
   'late preflight responses cannot overwrite the newest result',
+  'pasturestack-nfs requires environment scope and multi-host read-write access',
+  'autocomplete candidates include existing service mounts before generated paths',
 ]) {
   if (!componentTest.includes(marker)) failures.push(`VOLUME_FORM_TEST_MISSING=${marker}`);
 }
@@ -119,6 +132,7 @@ for (const marker of [
   'arrow keys select and Enter completes',
   'Escape closes the candidate list',
   'Tab completes the active candidate',
+  'mouse selection accepts the highlighted candidate',
 ]) {
   if (!autocompleteTest.includes(marker)) failures.push(`VOLUME_AUTOCOMPLETE_TEST_MISSING=${marker}`);
 }
@@ -126,6 +140,7 @@ for (const marker of [
   'it parses anonymous, named, bind and read-only volume paths',
   "parseVolumeSpec('/data:execute')",
   'stable eight-item limit',
+  'preserves source priority and removes duplicate candidates',
 ]) {
   if (!parserTest.includes(marker)) failures.push(`VOLUME_PARSER_TEST_MISSING=${marker}`);
 }
@@ -134,8 +149,11 @@ const localeKeys = [
   'formVolumes.volumes',
   'formVolumes.volumeDriver.local',
   'formVolumes.volumeDriver.coverage',
+  'formVolumes.volumeDriver.accessMode',
+  'formVolumes.volumeDriver.unknownAccessMode',
   'formVolumes.volumeDriver.unavailable.invalidNfsContract',
   'formVolumes.autocomplete.source.existing',
+  'formVolumes.autocomplete.source.existingMount',
   'formVolumes.errors.invalidFormat',
   'formVolumes.errors.driverUnavailable',
   'formVolumes.errors.preflightBlocked',
@@ -164,6 +182,9 @@ for (const file of localeFiles) {
 const traditionalChinese = fs.readFileSync('translations/zh-tw.yaml', 'utf8');
 if (traditionalChinese.includes('捲')) failures.push('ZH_TW_VOLUME_TERM_FORBIDDEN=捲');
 if (!traditionalChinese.includes('  volumes: 路徑')) failures.push('ZH_TW_VOLUME_PATH_LABEL_MISSING');
+if (!traditionalChinese.includes('newContainer:') || !/newContainer:[\s\S]*?tabs:[\s\S]*?volumes: 路徑/u.test(traditionalChinese)) {
+  failures.push('ZH_TW_VOLUME_TAB_PATH_LABEL_MISSING');
+}
 
 if (!ci.includes('node ./scripts/check-ui-volume-storage-preflight.js')) {
   failures.push('VOLUME_PREFLIGHT_CI_GATE_MISSING');
@@ -175,5 +196,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log(`UI_VOLUME_STORAGE_PREFLIGHT_OK drivers=select secrets=hidden nfs=validated autocomplete=max8 keyboard=complete server_check=last_response_wins locales=${localeFiles.length}`);
+console.log(`UI_VOLUME_STORAGE_PREFLIGHT_OK drivers=select secrets=hidden access_mode=visible nfs=validated autocomplete=max8 sources=environment-mounts,driver-volumes,current-form,suggestions keyboard=complete server_check=last_response_wins locales=${localeFiles.length}`);
 console.log('failure_count=0');

@@ -55,3 +55,20 @@ test('it ranks prefix matches before contains matches with a stable eight-item l
   assert.ok(result.every((item) => item.value.toLowerCase().indexOf('data') >= 0));
   assert.equal(result[0].suffix, '1:/data', 'exposes the inline completion suffix');
 });
+
+test('it preserves source priority and removes duplicate candidates', function(assert) {
+  let result = rankedVolumeSuggestions([
+    {value: 'shared:/data', source: 'suggested', priority: 3},
+    {value: 'shared:/data', source: 'existing mount', priority: 0},
+    {value: 'shared2:/data', source: 'current form', priority: 2},
+    {value: 'shared1:/data', source: 'existing volume', priority: 1},
+  ], 'shared', 8);
+
+  assert.deepEqual(result.map((item) => item.value), [
+    'shared:/data',
+    'shared1:/data',
+    'shared2:/data',
+  ]);
+  assert.equal(result.find((item) => item.value === 'shared:/data').source, 'existing mount', 'the highest-priority source remains authoritative during deduplication');
+  assert.deepEqual(result.map((item) => item.priority), [0, 1, 2], 'source priority is applied after the exact prefix match');
+});

@@ -14,6 +14,9 @@ function intlStub() {
       if ( values && values.path ) {
         return `${key}:${values.path}`;
       }
+      if ( values && values.value ) {
+        return `${key}:${values.value}`;
+      }
       return key;
     },
   });
@@ -43,6 +46,7 @@ function createComponent(properties) {
       allStorageDrivers: Ember.A(),
       allStoragePools: Ember.A(),
       allVolumes: Ember.A(),
+      allServices: Ember.A(),
       scheduleVolumePreflight() {},
     }, properties || {}), 'component');
   });
@@ -89,6 +93,58 @@ test('driver choices hide secret drivers and disable incomplete NFS coverage', f
 
   Ember.run(() => pools[0].set('hostIds', Ember.A(['1h1', '1h2'])));
   assert.notOk(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabled, 'enables NFS after every active host is covered');
+  assert.ok(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').detail.includes('multiHostRW'), 'shows the access mode in driver details');
+  destroyOwned(component);
+});
+
+test('pasturestack-nfs requires environment scope and multi-host read-write access', function(assert) {
+  let hosts = Ember.A([resource({id: '1h1', state: 'active'})]);
+  let nfs = resource({
+    id: '1sd4',
+    name: 'pasturestack-nfs',
+    state: 'active',
+    scope: 'local',
+    volumeAccessMode: 'singleHostRW',
+    volumeCapabilities: Ember.A(),
+  });
+  let pools = Ember.A([resource({
+    state: 'active',
+    storageDriverId: '1sd4',
+    driverName: 'pasturestack-nfs',
+    hostIds: Ember.A(['1h1']),
+  })]);
+  let component = createComponent({
+    allHosts: hosts,
+    allStorageDrivers: Ember.A([nfs]),
+    allStoragePools: pools,
+  });
+
+  assert.equal(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabledReason, 'invalidNfsContract');
+
+  Ember.run(() => nfs.setProperties({scope: 'environment', volumeAccessMode: 'singleHostRW'}));
+  assert.equal(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabledReason, 'invalidNfsContract');
+
+  Ember.run(() => nfs.set('volumeAccessMode', 'multiHostRW'));
+  assert.notOk(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabled);
+  destroyOwned(component);
+});
+
+test('autocomplete candidates include existing service mounts before generated paths', function(assert) {
+  let service = resource({
+    launchConfig: resource({dataVolumes: Ember.A(['shared:/srv/shared', '/etc/app:/config:ro'])}),
+    secondaryLaunchConfigs: Ember.A([
+      resource({dataVolumes: Ember.A(['sidekick-data:/data'])}),
+    ]),
+  });
+  let component = createComponent({allServices: Ember.A([service])});
+  let suggestions = component.get('volumePathSuggestions');
+
+  assert.deepEqual(
+    suggestions.filterBy('priority', 0).mapBy('value'),
+    ['shared:/srv/shared', '/etc/app:/config:ro', 'sidekick-data:/data'],
+    'collects primary and sidekick mount specifications from the current environment'
+  );
+  assert.ok(suggestions.findBy('value', '/data').priority > 0, 'keeps generic paths at lower priority');
   destroyOwned(component);
 });
 

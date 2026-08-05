@@ -13,13 +13,20 @@ export default Ember.Controller.extend({
   storageFilter: 'all',
   selectedVolumes: null,
   storageTableRevision: 0,
+  storageTablePerPage: C.TABLES.DEFAULT_STORAGE_COUNT,
   storagePageSizes: C.TABLES.STORAGE_PAGE_SIZES,
   storageTablePreferenceKey: C.PREFS.STORAGE_TABLE_COUNT,
   selectableVolume: isBulkRemovableVolume,
 
   init() {
     this._super(...arguments);
-    this.set('selectedVolumes', Ember.A());
+    let savedPageSize = this.get('prefs.storageTablePerPage');
+
+    this.setProperties({
+      selectedVolumes: Ember.A(),
+      storageTablePerPage: C.TABLES.STORAGE_PAGE_SIZES.indexOf(savedPageSize) >= 0 ?
+        savedPageSize : C.TABLES.DEFAULT_STORAGE_COUNT,
+    });
   },
 
   nonRootVolumes: function() {
@@ -114,6 +121,14 @@ export default Ember.Controller.extend({
 
     selectionChanged(volumes) {
       this.set('selectedVolumes', Ember.A((volumes || []).slice()));
+    },
+
+    storagePageSizeChanged(value) {
+      let parsed = parseInt(value, 10);
+
+      if ( C.TABLES.STORAGE_PAGE_SIZES.indexOf(parsed) >= 0 ) {
+        this.set('storageTablePerPage', parsed);
+      }
     },
 
     promptRemoveSelected() {

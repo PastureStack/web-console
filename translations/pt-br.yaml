@@ -2273,6 +2273,8 @@ formVolumes:
       environment: Ambiente
       unknown: Outro
     coverage: '{scope}; cobertura de hosts {covered}/{total}'
+    accessMode: 'Modo de acesso: {value}'
+    unknownAccessMode: Não informado
     unavailable:
       inactive: O driver não está ativo.
       noPool: Não há um pool de armazenamento ativo disponível.
@@ -2285,6 +2287,7 @@ formVolumes:
       suggested: Sugestão
       current: Formulário atual
       existing: Volume existente
+      existingMount: Montagem de serviço existente
   noLaunchConfigs: Não há outras configurações de inicialização neste serviço para compartilhar volumes.
   noHostContainers: Este host não possui contêineres para usar os volumes.
   onlySingleHost: Disponível apenas ao adicionar um contêiner a um host específico.

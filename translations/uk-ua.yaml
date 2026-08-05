@@ -2310,6 +2310,8 @@ formVolumes:
       environment: Середовище
       unknown: Інша
     coverage: '{scope}; охоплення хостів {covered}/{total}'
+    accessMode: 'Режим доступу: {value}'
+    unknownAccessMode: Не вказано
     unavailable:
       inactive: Драйвер не активний.
       noPool: Немає доступного активного пулу сховища.
@@ -2322,6 +2324,7 @@ formVolumes:
       suggested: Рекомендація
       current: Поточна форма
       existing: Наявний том
+      existingMount: Наявне підключення сервісу
   noLaunchConfigs: 'У цій службі немає інших конфігурацій запуску, з якими можна ділитися томами.'
   noHostContainers: Цей хост не має контейнерів для використання томів.
   onlySingleHost: Доступно тільки при додаванні контейнера до певного хосту.
