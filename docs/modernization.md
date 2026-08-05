@@ -455,6 +455,18 @@ inspect every eligible host. The other-host blocking message is corrected in
 all 13 supported locales and no longer implies that deployment may continue on
 another host.
 
+`v1.6.56-pasturestack.59` replaces the free-text volume driver field with a
+capability-filtered selector and adds a keyboard-accessible path completer with
+prefix ranking, natural ordering, and an eight-item limit. The form checks
+absolute paths, safe path segments, duplicate targets, mount modes, existing
+volume ownership, driver state, storage pools, and required-host coverage.
+`pasturestack-nfs` additionally requires environment scope, `multiHostRW`, and
+coverage on every active host. A server preflight result is shown before save,
+while the final create and upgrade requests repeat the same validation to close
+the race window. All 13 production locales use the same field and validation
+contract; Traditional Chinese labels the editable values as paths and contains
+no ambiguous volume translation.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

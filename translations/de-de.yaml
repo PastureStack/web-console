@@ -2300,17 +2300,93 @@ formVolumes:
   pathPlaceholder: 'z.B. [Volume-Name: oder /path/on/host:]/path/in/container[:ro]'
   value:
     prompt: Einen Container auswählen...
-  volumes: Datenspeicher
+  volumes: Pfade
   volumesFrom: Volumes von
   volumeDriver:
     label: Lautstärketreiber
     placeholder: z.B. pasturestack-nfs
+    local: Lokaler Speicher
+    localDetail: Verwendet den lokalen Docker-Speicher auf dem ausgewählten Host.
+    scope:
+      local: Host
+      custom: Benutzerdefiniert
+      environment: Umgebung
+      unknown: Sonstiges
+    coverage: '{scope}; Host-Abdeckung {covered}/{total}'
+    unavailable:
+      inactive: Der Treiber ist nicht aktiv.
+      noPool: Es ist kein aktiver Speicherpool verfügbar.
+      incompleteCoverage: Nicht jeder aktive Host verfügt über einen verfügbaren Speicherpool.
+      requestedHostUnavailable: Der ausgewählte Host verfügt über keinen verfügbaren Speicherpool.
+      invalidNfsContract: pasturestack-nfs muss den Bereich „Umgebung“ und den Zugriff multiHostRW verwenden.
+      legacy: Vorhandener, nicht verfügbarer Treiber; wählen Sie vor dem Speichern einen anderen Treiber aus.
+  autocomplete:
+    source:
+      suggested: Vorschlag
+      current: Aktuelles Formular
+      existing: Vorhandenes Volume
   noLaunchConfigs: 'Keine anderen Start-Configs in diesem Dienst, um Datenspeicher zu teilen.'
   noHostContainers: 'Dieser Host verfügt über keine Container, aus denen die Volumes verwendet werden könnten.'
   onlySingleHost: 'Nur verfügbar, wenn Sie einen Container zu einem bestimmten Host hinzufügen.'
-  addActionLabel: Volumen hinzufügen
+  addActionLabel: Pfad hinzufügen
   errors:
+    required: Geben Sie einen Containerpfad ein.
+    tooLong: Die Volume-Pfadangabe ist zu lang.
+    controlCharacter: Die Volume-Pfadangabe enthält ein Steuerzeichen.
+    invalidFormat: Verwenden Sie [Volume-Name: oder /Pfad/auf/Host:]/Pfad/im/Container[:Modus].
+    absoluteTarget: Der Containerpfad muss absolut sein und mit / beginnen.
+    unsafeTarget: Der Containerpfad darf //, /./ oder /../ nicht enthalten.
     invalidName: 'Datenträgernamen dürfen nur Buchstaben, Zahlen, Bindestriche, Unterstriche und Punkte enthalten.'
+    absoluteSource: Der Quellpfad auf dem Host muss absolut sein und mit / beginnen.
+    unsafeSource: Der Quellpfad auf dem Host darf //, /./ oder /../ nicht enthalten.
+    invalidMode: Als Modus sind nur ro, rw, z, Z oder nocopy ohne Wiederholungen zulässig.
+    duplicateTarget: 'Der Containerpfad {path} ist mehrmals eingehängt.'
+    driverUnavailable: Wählen Sie einen aktiven Volume-Treiber aus, der auf allen erforderlichen Hosts verfügbar ist.
+    preflightBlocked: Der Server hat eine nicht verfügbare Volume- oder Speichertreiberkonfiguration erkannt.
+    preflightChecking: Warten Sie, bis die Prüfung des Volumes und Speichertreibers abgeschlossen ist.
+  warnings:
+    anonymousDriver: Ein unbenannter Pfad erstellt mit dem ausgewählten Treiber ein neues Volume.
+    bindIgnoresDriver: Eine Host-Pfadbindung verwendet den ausgewählten Volume-Treiber nicht.
+  preflight:
+    unsupported: Dieser Server unterstützt keine sofortige Volume-Prüfung. Beim Speichern erfolgt die abschließende Prüfung.
+    requestFailed: Die sofortige Volume-Prüfung wurde nicht abgeschlossen. Beim Speichern prüft der Server erneut.
+    checking: Pfade, vorhandene Volumes, Speicherpools und geeignete Hosts werden geprüft…
+    available: '{driver} ist auf {available}/{eligible} geeigneten Hosts einsatzbereit.'
+    warning: '{driver} ist auf {available}/{eligible} geeigneten Hosts verfügbar; beachten Sie die Hinweise unten.'
+    unknown: Der Volume-Status konnte nicht vollständig geprüft werden. Beim Speichern prüft der Server erneut.
+    blocked: '{driver} kann die angeforderten Pfade nicht auf allen erforderlichen Hosts bereitstellen.'
+    reason:
+      volume_path_required: Ein Containerpfad ist erforderlich.
+      volume_path_too_long: Die Volume-Pfadangabe ist zu lang.
+      volume_path_control_character: Die Volume-Pfadangabe enthält ein Steuerzeichen.
+      invalid_volume_format: Das Format des Volume-Pfads ist ungültig.
+      target_path_must_be_absolute: Der Containerpfad muss absolut sein.
+      unsafe_target_path: Der Containerpfad enthält ein unsicheres Segment.
+      invalid_volume_name: Der Volume-Name ist ungültig.
+      source_path_must_be_absolute: Der Quellpfad auf dem Host muss absolut sein.
+      unsafe_source_path: Der Quellpfad auf dem Host enthält ein unsicheres Segment.
+      invalid_volume_mode: Der Volume-Modus ist ungültig.
+      driver_not_found: Der ausgewählte Volume-Treiber wurde nicht gefunden.
+      duplicate_driver_name: Mehrere Volume-Treiber verwenden diesen Namen.
+      driver_inactive: Der ausgewählte Volume-Treiber ist nicht aktiv.
+      reserved_secrets_driver: Ein Geheimnistreiber kann nicht als Volume-Treiber verwendet werden.
+      no_active_storage_pool: Für den Volume-Treiber ist kein aktiver Speicherpool vorhanden.
+      host_pool_missing: Auf einem erforderlichen Host fehlt ein Speicherpool für diesen Treiber.
+      no_eligible_hosts: Für diese Arbeitslast sind keine geeigneten Hosts vorhanden.
+      nfs_requires_environment_scope: pasturestack-nfs benötigt den Bereich „Umgebung“.
+      nfs_requires_multi_host_rw: pasturestack-nfs benötigt den Zugriff multiHostRW.
+      nfs_incomplete_host_coverage: pasturestack-nfs ist nicht auf allen aktiven Hosts einsatzbereit.
+      duplicate_target_path: Derselbe Containerpfad ist mehrmals eingehängt.
+      anonymous_volume_with_driver: Ein unbenannter Pfad erstellt ein neues, vom Treiber verwaltetes Volume.
+      bind_mount_ignores_driver: Eine Host-Pfadbindung ignoriert den ausgewählten Volume-Treiber.
+      ambiguous_existing_volume: Mehrere vorhandene Volumes verwenden diesen Namen.
+      volume_driver_mismatch: Das vorhandene Volume gehört zu einem anderen Treiber.
+      existing_volume_unusable: Das vorhandene Volume wird entfernt oder befindet sich in einem Fehlerzustand.
+      unknown: Der Server hat ein unbekanntes Volume-Problem gemeldet.
+    detail:
+      host: 'Host: {value}'
+      path: 'Pfad: {value}'
+      driver: 'Treiber: {value}'
 heroAddService:
   infra:
     header: Infrastruktur-Stacks hinzufügen

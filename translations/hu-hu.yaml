@@ -2266,17 +2266,93 @@ formVolumes:
   pathPlaceholder: 'pl. [kötetnév: vagy /path/on/host:]/elérési út/in/container[:ro]'
   value:
     prompt: Konténer kiválasztása...
-  volumes: Kötetek
+  volumes: Elérési utak
   volumesFrom: Kötet innen
   volumeDriver:
     label: Kötet illesztőprogramja
-    placeholder: pl. legelőstack-nfs
+    placeholder: pl. pasturestack-nfs
+    local: Helyi tárhely
+    localDetail: A kiválasztott gazdagép helyi Docker-tárhelyét használja.
+    scope:
+      local: Gazdagép
+      custom: Egyéni
+      environment: Környezet
+      unknown: Egyéb
+    coverage: '{scope}; gazdagéplefedettség {covered}/{total}'
+    unavailable:
+      inactive: Az illesztőprogram nem aktív.
+      noPool: Nem érhető el aktív tárolókészlet.
+      incompleteCoverage: Nem minden aktív gazdagépen érhető el tárolókészlet.
+      requestedHostUnavailable: A kiválasztott gazdagépen nem érhető el tárolókészlet.
+      invalidNfsContract: A pasturestack-nfs Környezet hatókört és multiHostRW hozzáférést igényel.
+      legacy: Meglévő, nem elérhető illesztőprogram; mentés előtt válasszon másikat.
+  autocomplete:
+    source:
+      suggested: Javaslat
+      current: Jelenlegi űrlap
+      existing: Meglévő kötet
   noLaunchConfigs: 'Ebben a szolgáltatásban nincs más indítási konfiguráció, amellyel megoszthatná a köteteket.'
   noHostContainers: Ennek a gazdagépnek nincsenek tárolói a kötetek használatához.
   onlySingleHost: 'Csak akkor érhető el, ha egy Konténer hozzá van adva egy megadott hoszthoz.'
-  addActionLabel: Kötet hozzáadása
+  addActionLabel: Elérési út hozzáadása
   errors:
+    required: Adja meg a konténer elérési útját.
+    tooLong: A kötet elérésiút-meghatározása túl hosszú.
+    controlCharacter: A kötet elérésiút-meghatározása vezérlőkaraktert tartalmaz.
+    invalidFormat: Használja a [kötetnév: vagy /gazdagép/elérési/út:]/konténer/elérési/út[:mód] formátumot.
+    absoluteTarget: A konténer elérési útjának abszolútnak és / jellel kezdődőnek kell lennie.
+    unsafeTarget: A konténer elérési útja nem tartalmazhat //, /./ vagy /../ részt.
     invalidName: 'A Kötetnevek csak betűket, számokat, kötőjelet, aláhúzást és pontot tartalmazhatnak.'
+    absoluteSource: A gazdagép forrásútvonalának abszolútnak és / jellel kezdődőnek kell lennie.
+    unsafeSource: A gazdagép forrásútvonala nem tartalmazhat //, /./ vagy /../ részt.
+    invalidMode: A mód csak ro, rw, z, Z vagy nocopy lehet, ismétlés nélkül.
+    duplicateTarget: 'A(z) {path} konténerútvonal többször van csatlakoztatva.'
+    driverUnavailable: Válasszon minden szükséges gazdagépen elérhető aktív kötetillesztőt.
+    preflightBlocked: A kiszolgáló nem elérhető kötet- vagy tárolóillesztő-konfigurációt talált.
+    preflightChecking: Várja meg a kötet és a tárolóillesztő ellenőrzésének befejezését.
+  warnings:
+    anonymousDriver: A névtelen elérési út új kötetet hoz létre a kiválasztott illesztővel.
+    bindIgnoresDriver: A gazdagép elérési útjának csatolása nem használja a kiválasztott kötetillesztőt.
+  preflight:
+    unsupported: Ez a kiszolgáló nem támogatja az azonnali kötetellenőrzést. A végső ellenőrzés mentéskor történik.
+    requestFailed: Az azonnali kötetellenőrzés nem fejeződött be. A kiszolgáló mentéskor újra ellenőrzi.
+    checking: Elérési utak, meglévő kötetek, tárolókészletek és megfelelő gazdagépek ellenőrzése…
+    available: 'A(z) {driver} elérhető {available}/{eligible} megfelelő gazdagépen.'
+    warning: 'A(z) {driver} elérhető {available}/{eligible} megfelelő gazdagépen, az alábbi megjegyzésekkel.'
+    unknown: A kötet állapota nem volt teljesen ellenőrizhető. A kiszolgáló mentéskor újra ellenőrzi.
+    blocked: 'A(z) {driver} nem tudja biztosítani a kért elérési utakat minden szükséges gazdagépen.'
+    reason:
+      volume_path_required: A konténer elérési útja kötelező.
+      volume_path_too_long: A kötet elérésiút-meghatározása túl hosszú.
+      volume_path_control_character: A kötet elérésiút-meghatározása vezérlőkaraktert tartalmaz.
+      invalid_volume_format: A kötet elérésiút-formátuma érvénytelen.
+      target_path_must_be_absolute: A konténer elérési útjának abszolútnak kell lennie.
+      unsafe_target_path: A konténer elérési útja nem biztonságos szakaszt tartalmaz.
+      invalid_volume_name: A kötet neve érvénytelen.
+      source_path_must_be_absolute: A gazdagép forrásútvonalának abszolútnak kell lennie.
+      unsafe_source_path: A gazdagép forrásútvonala nem biztonságos szakaszt tartalmaz.
+      invalid_volume_mode: A kötet módja érvénytelen.
+      driver_not_found: A kiválasztott kötetillesztő nem található.
+      duplicate_driver_name: Több kötetillesztő használja ezt a nevet.
+      driver_inactive: A kiválasztott kötetillesztő nem aktív.
+      reserved_secrets_driver: Titokillesztő nem használható kötetillesztőként.
+      no_active_storage_pool: A kötetillesztőhöz nincs aktív tárolókészlet.
+      host_pool_missing: Egy szükséges gazdagépen nincs tárolókészlet ehhez az illesztőhöz.
+      no_eligible_hosts: Ehhez a munkaterheléshez nincs megfelelő gazdagép.
+      nfs_requires_environment_scope: A pasturestack-nfs Környezet hatókört igényel.
+      nfs_requires_multi_host_rw: A pasturestack-nfs multiHostRW hozzáférést igényel.
+      nfs_incomplete_host_coverage: A pasturestack-nfs nem áll készen minden aktív gazdagépen.
+      duplicate_target_path: Ugyanaz a konténerútvonal többször van csatlakoztatva.
+      anonymous_volume_with_driver: A névtelen elérési út új, illesztő által kezelt kötetet hoz létre.
+      bind_mount_ignores_driver: A gazdagép elérési útjának csatolása figyelmen kívül hagyja a kiválasztott kötetillesztőt.
+      ambiguous_existing_volume: Több meglévő kötet használja ezt a nevet.
+      volume_driver_mismatch: A meglévő kötet másik illesztőhöz tartozik.
+      existing_volume_unusable: A meglévő kötet eltávolítás alatt áll vagy hibás állapotú.
+      unknown: A kiszolgáló ismeretlen kötetproblémát jelzett.
+    detail:
+      host: 'Gazdagép: {value}'
+      path: 'Elérési út: {value}'
+      driver: 'Illesztő: {value}'
 heroAddService:
   infra:
     header: Infrastuktúra Kötegek hozzáadása

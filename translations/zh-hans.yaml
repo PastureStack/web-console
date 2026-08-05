@@ -2193,17 +2193,93 @@ formVolumes:
   pathPlaceholder: '例如[卷名称: 或 /path/on/host:]/path/in/container[:ro]'
   value:
     prompt: 选择一个容器...
-  volumes: 卷
+  volumes: 路径
   volumesFrom: 卷来自
   volumeDriver:
     label: 卷驱动
-    placeholder: 例如牧场堆栈 NFS
+    placeholder: 例如：pasturestack-nfs
+    local: 本地存储
+    localDetail: 使用所选主机上的 Docker 本地存储。
+    scope:
+      local: 主机
+      custom: 自定义
+      environment: 环境
+      unknown: 其他
+    coverage: '范围：{scope}；主机覆盖 {covered}/{total}'
+    unavailable:
+      inactive: 驱动未处于活动状态。
+      noPool: 没有可用的活动存储池。
+      incompleteCoverage: 并非每台活动主机都有可用的存储池。
+      requestedHostUnavailable: 所选主机没有可用的存储池。
+      invalidNfsContract: pasturestack-nfs 必须使用环境范围和 multiHostRW 访问模式。
+      legacy: 现有驱动当前不可用；保存前请选择其他驱动。
+  autocomplete:
+    source:
+      suggested: 建议
+      current: 当前表单
+      existing: 现有卷
   noLaunchConfigs: 此服务下没有可共享卷的启动配置.
   noHostContainers: 该主机没有可以提供共享卷的容器.
   onlySingleHost: 仅当添加容器到特定主机时适用.
-  addActionLabel: 添加卷
+  addActionLabel: 添加路径
   errors:
+    required: 请输入容器路径。
+    tooLong: 卷路径定义过长。
+    controlCharacter: 卷路径定义包含控制字符。
+    invalidFormat: '请使用 [卷名称: 或 /主机路径:]/容器路径[:模式] 格式。'
+    absoluteTarget: 容器路径必须是以 / 开头的绝对路径。
+    unsafeTarget: 容器路径不能包含 //、/./ 或 /../。
     invalidName: 卷名称只能包含字母、数字、-、_和.
+    absoluteSource: 主机源路径必须是以 / 开头的绝对路径。
+    unsafeSource: 主机源路径不能包含 //、/./ 或 /../。
+    invalidMode: 模式只能使用 ro、rw、z、Z 或 nocopy，且不能重复。
+    duplicateTarget: '容器路径 {path} 被挂载了多次。'
+    driverUnavailable: 请选择在所有必需主机上可用的活动卷驱动。
+    preflightBlocked: 服务器发现不可用的卷或存储驱动配置。
+    preflightChecking: 请等待卷和存储驱动检查完成。
+  warnings:
+    anonymousDriver: 未命名路径会使用所选驱动创建新卷。
+    bindIgnoresDriver: 主机路径绑定挂载不会使用所选卷驱动。
+  preflight:
+    unsupported: 当前服务器不支持实时卷检查；保存时会执行最终验证。
+    requestFailed: 实时卷检查未完成；保存时服务器会再次验证。
+    checking: 正在检查路径、现有卷、存储池和符合条件的主机…
+    available: '已确认 {driver} 可供 {available}/{eligible} 台符合条件的主机使用。'
+    warning: '{driver} 可供 {available}/{eligible} 台符合条件的主机使用，但有以下注意事项。'
+    unknown: 无法完整确认卷状态；保存时服务器会再次验证。
+    blocked: '{driver} 无法在所有必需主机上满足请求的路径配置。'
+    reason:
+      volume_path_required: 必须输入容器路径。
+      volume_path_too_long: 卷路径定义过长。
+      volume_path_control_character: 卷路径定义包含控制字符。
+      invalid_volume_format: 卷路径格式无效。
+      target_path_must_be_absolute: 容器路径必须是绝对路径。
+      unsafe_target_path: 容器路径包含不安全的路径片段。
+      invalid_volume_name: 卷名称无效。
+      source_path_must_be_absolute: 主机源路径必须是绝对路径。
+      unsafe_source_path: 主机源路径包含不安全的路径片段。
+      invalid_volume_mode: 卷模式无效。
+      driver_not_found: 找不到所选卷驱动。
+      duplicate_driver_name: 多个卷驱动使用相同名称。
+      driver_inactive: 所选卷驱动未处于活动状态。
+      reserved_secrets_driver: 机密信息驱动不能用作卷驱动。
+      no_active_storage_pool: 卷驱动没有活动存储池。
+      host_pool_missing: 必需主机缺少此驱动的存储池。
+      no_eligible_hosts: 没有符合此工作负载条件的主机。
+      nfs_requires_environment_scope: pasturestack-nfs 需要环境范围。
+      nfs_requires_multi_host_rw: pasturestack-nfs 需要 multiHostRW 访问模式。
+      nfs_incomplete_host_coverage: pasturestack-nfs 尚未覆盖所有活动主机。
+      duplicate_target_path: 同一容器路径被挂载了多次。
+      anonymous_volume_with_driver: 未命名路径会创建由驱动管理的新卷。
+      bind_mount_ignores_driver: 主机路径绑定挂载会忽略所选卷驱动。
+      ambiguous_existing_volume: 多个现有卷使用相同名称。
+      volume_driver_mismatch: 现有卷属于其他驱动。
+      existing_volume_unusable: 现有卷正在移除或处于错误状态。
+      unknown: 服务器返回了无法识别的卷问题。
+    detail:
+      host: '主机：{value}'
+      path: '路径：{value}'
+      driver: '驱动：{value}'
 heroAddService:
   infra:
     header: 添加基础设施应用

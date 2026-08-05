@@ -15,7 +15,12 @@
           {{#each this.volumesArray as |vol|}}
             <tr>
               <td>
-                {{input type="text" class="form-control volume-path" value=vol.value placeholder=(t 'formVolumes.pathPlaceholder')}}
+                {{volume-path-autocomplete
+                  value=vol.value
+                  suggestions=this.volumePathSuggestions
+                  placeholder=(t 'formVolumes.pathPlaceholder')
+                  changed=(action "volumeValueChanged" vol)
+                }}
               </td>
               <td width="30" class="text-right">
                 <button class="btn btn-primary btn-sm" {{action "removeVolume" vol}}><i class="icon icon-minus"/></button>
@@ -23,6 +28,26 @@
             </tr>
           {{/each}}
         </table>
+      {{/if}}
+      {{#if this.volumeWarnings.length}}
+        <ul class="volume-validation-warnings text-warning">
+          {{#each this.volumeWarnings as |warning|}}<li>{{warning}}</li>{{/each}}
+        </ul>
+      {{/if}}
+      {{#if this.preflightMessage}}
+        <div class="volume-preflight-summary is-{{this.preflightStatus}}" role="status" aria-live="polite">
+          {{#if (eq this.preflightStatus "checking")}}<i class="icon icon-spinner icon-spin" aria-hidden="true"></i>
+          {{else if (eq this.preflightStatus "available")}}<i class="icon icon-check" aria-hidden="true"></i>
+          {{else}}<i class="icon icon-alert" aria-hidden="true"></i>{{/if}}
+          <span>{{this.preflightMessage}}</span>
+        </div>
+      {{/if}}
+      {{#if this.preflightIssueMessages.length}}
+        <ul class="volume-preflight-issues">
+          {{#each this.preflightIssueMessages as |issue|}}
+            <li class={{issue.className}}>{{issue.text}}</li>
+          {{/each}}
+        </ul>
       {{/if}}
     </div>
   </div>
@@ -93,7 +118,18 @@
     </div>
 
     <div class="col-sm-12 col-md-8">
-      {{input type="text" class="form-control" value=this.instance.volumeDriver placeholder=(t 'formVolumes.volumeDriver.placeholder')}}
+      {{new-select
+        classNames="form-control"
+        content=this.storageDriverChoices
+        value=this.instance.volumeDriver
+        action=(action "driverChanged")
+        optionValuePath="value"
+        optionLabelPath="label"
+        optionDisabledPath="disabled"
+      }}
+      {{#if this.selectedDriverChoice.detail}}
+        <div class="volume-driver-option-detail">{{this.selectedDriverChoice.detail}}</div>
+      {{/if}}
     </div>
   </div>
 {{/if}}

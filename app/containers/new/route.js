@@ -6,6 +6,9 @@ export default Ember.Route.extend({
 
     var dependencies = {
       allHosts: store.findAll('host'), // Need inactive ones in case a link points to an inactive host
+      allStorageDrivers: store.findAll('storageDriver'),
+      allStoragePools: store.findAll('storagePool'),
+      allVolumes: store.findAll('volume'),
     };
 
     if ( params.containerId )
@@ -61,6 +64,9 @@ export default Ember.Route.extend({
       return Ember.Object.create({
         instance: instance,
         allHosts: results.allHosts,
+        allStorageDrivers: results.allStorageDrivers,
+        allStoragePools: results.allStoragePools,
+        allVolumes: results.allVolumes,
       });
     });
   },

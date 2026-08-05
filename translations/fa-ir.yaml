@@ -2209,17 +2209,93 @@ formVolumes:
   pathPlaceholder: 'به عنوان مثال [volume-name: or /path/on/host:]/path/in/container[:ro]'
   value:
     prompt: یک کانتینر انتخاب کنید...
-  volumes: حجم ها
+  volumes: مسیرها
   volumesFrom: جلدها از
   volumeDriver:
     label: درایور حجم
-    placeholder: به عنوان مثال چراگاه-nfs
+    placeholder: به عنوان مثال pasturestack-nfs
+    local: فضای ذخیره‌سازی محلی
+    localDetail: از فضای ذخیره‌سازی محلی Docker روی میزبان انتخاب‌شده استفاده می‌کند.
+    scope:
+      local: میزبان
+      custom: سفارشی
+      environment: محیط
+      unknown: سایر
+    coverage: '{scope}؛ پوشش میزبان {covered}/{total}'
+    unavailable:
+      inactive: درایور فعال نیست.
+      noPool: هیچ مخزن ذخیره‌سازی فعالی در دسترس نیست.
+      incompleteCoverage: همه میزبان‌های فعال مخزن ذخیره‌سازی در دسترس ندارند.
+      requestedHostUnavailable: میزبان انتخاب‌شده مخزن ذخیره‌سازی در دسترس ندارد.
+      invalidNfsContract: pasturestack-nfs باید از محدوده محیط و دسترسی multiHostRW استفاده کند.
+      legacy: درایور موجود در دسترس نیست؛ پیش از ذخیره، درایور دیگری انتخاب کنید.
+  autocomplete:
+    source:
+      suggested: پیشنهادی
+      current: فرم کنونی
+      existing: حجم موجود
   noLaunchConfigs: هیچ پیکربندی راه اندازی دیگری در این سرویس برای اشتراک گذاری حجم ها وجود ندارد.
   noHostContainers: این میزبان محفظه ای برای استفاده از حجم ها ندارد.
   onlySingleHost: فقط هنگام اضافه کردن یک کانتینر به یک میزبان خاص در دسترس است.
-  addActionLabel: افزودن حجم
+  addActionLabel: افزودن مسیر
   errors:
+    required: مسیر کانتینر را وارد کنید.
+    tooLong: مشخصات مسیر حجم بیش از حد طولانی است.
+    controlCharacter: مشخصات مسیر حجم دارای نویسه کنترلی است.
+    invalidFormat: از قالب [نام-حجم: یا /مسیر/روی/میزبان:]/مسیر/در/کانتینر[:حالت] استفاده کنید.
+    absoluteTarget: مسیر کانتینر باید مطلق باشد و با / آغاز شود.
+    unsafeTarget: مسیر کانتینر نمی‌تواند شامل //، /./ یا /../ باشد.
     invalidName: نام جلد فقط می تواند شامل حروف، اعداد، خط فاصله، خط زیر و نقطه باشد.
+    absoluteSource: مسیر مبدأ روی میزبان باید مطلق باشد و با / آغاز شود.
+    unsafeSource: مسیر مبدأ روی میزبان نمی‌تواند شامل //، /./ یا /../ باشد.
+    invalidMode: حالت باید بدون تکرار یکی از ro، rw، z، Z یا nocopy باشد.
+    duplicateTarget: 'مسیر کانتینر {path} بیش از یک بار سوار شده است.'
+    driverUnavailable: یک درایور حجم فعال انتخاب کنید که روی همه میزبان‌های لازم در دسترس باشد.
+    preflightBlocked: سرور پیکربندی حجم یا درایور ذخیره‌سازی غیرقابل استفاده‌ای پیدا کرد.
+    preflightChecking: تا پایان بررسی حجم و درایور ذخیره‌سازی منتظر بمانید.
+  warnings:
+    anonymousDriver: مسیر بدون نام با درایور انتخاب‌شده یک حجم جدید ایجاد می‌کند.
+    bindIgnoresDriver: اتصال مسیر میزبان از درایور حجم انتخاب‌شده استفاده نمی‌کند.
+  preflight:
+    unsupported: این سرور از بررسی فوری حجم پشتیبانی نمی‌کند. اعتبارسنجی نهایی هنگام ذخیره انجام می‌شود.
+    requestFailed: بررسی فوری حجم کامل نشد. سرور هنگام ذخیره دوباره بررسی می‌کند.
+    checking: در حال بررسی مسیرها، حجم‌های موجود، مخزن‌های ذخیره‌سازی و میزبان‌های واجد شرایط…
+    available: '{driver} روی {available}/{eligible} میزبان واجد شرایط آماده است.'
+    warning: '{driver} روی {available}/{eligible} میزبان واجد شرایط در دسترس است؛ به موارد زیر توجه کنید.'
+    unknown: وضعیت حجم به‌طور کامل قابل بررسی نبود. سرور هنگام ذخیره دوباره بررسی می‌کند.
+    blocked: '{driver} نمی‌تواند مسیرهای درخواست‌شده را روی همه میزبان‌های لازم فراهم کند.'
+    reason:
+      volume_path_required: مسیر کانتینر الزامی است.
+      volume_path_too_long: مشخصات مسیر حجم بیش از حد طولانی است.
+      volume_path_control_character: مشخصات مسیر حجم دارای نویسه کنترلی است.
+      invalid_volume_format: قالب مسیر حجم نامعتبر است.
+      target_path_must_be_absolute: مسیر کانتینر باید مطلق باشد.
+      unsafe_target_path: مسیر کانتینر دارای بخش ناامن است.
+      invalid_volume_name: نام حجم نامعتبر است.
+      source_path_must_be_absolute: مسیر مبدأ روی میزبان باید مطلق باشد.
+      unsafe_source_path: مسیر مبدأ روی میزبان دارای بخش ناامن است.
+      invalid_volume_mode: حالت حجم نامعتبر است.
+      driver_not_found: درایور حجم انتخاب‌شده پیدا نشد.
+      duplicate_driver_name: بیش از یک درایور حجم از این نام استفاده می‌کند.
+      driver_inactive: درایور حجم انتخاب‌شده فعال نیست.
+      reserved_secrets_driver: درایور اسرار را نمی‌توان به‌عنوان درایور حجم استفاده کرد.
+      no_active_storage_pool: درایور حجم هیچ مخزن ذخیره‌سازی فعالی ندارد.
+      host_pool_missing: یکی از میزبان‌های لازم مخزن ذخیره‌سازی این درایور را ندارد.
+      no_eligible_hosts: هیچ میزبان واجد شرایطی برای این بار کاری وجود ندارد.
+      nfs_requires_environment_scope: pasturestack-nfs به محدوده محیط نیاز دارد.
+      nfs_requires_multi_host_rw: pasturestack-nfs به دسترسی multiHostRW نیاز دارد.
+      nfs_incomplete_host_coverage: pasturestack-nfs روی همه میزبان‌های فعال آماده نیست.
+      duplicate_target_path: یک مسیر کانتینر بیش از یک بار سوار شده است.
+      anonymous_volume_with_driver: مسیر بدون نام یک حجم جدید تحت مدیریت درایور ایجاد می‌کند.
+      bind_mount_ignores_driver: اتصال مسیر میزبان درایور حجم انتخاب‌شده را نادیده می‌گیرد.
+      ambiguous_existing_volume: بیش از یک حجم موجود از این نام استفاده می‌کند.
+      volume_driver_mismatch: حجم موجود متعلق به درایور دیگری است.
+      existing_volume_unusable: حجم موجود در حال حذف است یا وضعیت خطا دارد.
+      unknown: سرور یک مشکل ناشناخته حجم گزارش کرد.
+    detail:
+      host: 'میزبان: {value}'
+      path: 'مسیر: {value}'
+      driver: 'درایور: {value}'
 heroAddService:
   infra:
     header: افزودن پشته‌های زیرساخت

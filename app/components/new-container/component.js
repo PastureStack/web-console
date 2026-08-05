@@ -18,7 +18,9 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
   launchConfig              : null,
   service                   : null,
   allHosts                  : null,
+  allStorageDrivers         : null,
   allStoragePools           : null,
+  allVolumes                : null,
 
   serviceLinksArray         : null,
   isGlobal                  : null,
@@ -27,6 +29,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
   launchConfigIndex         : -1,
   upgradeOptions            : null,
   portPreflightState        : null,
+  volumePreflightState      : null,
   sidekickPortPreflightStates: null,
 
   // Errors from components
@@ -131,7 +134,12 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
 
     portPreflightChanged(state) {
       this.set('portPreflightState', state || {status: 'idle', pending: false, blocked: false});
-      this.invokePassedAction('preflightChanged', this.get('portPreflightState'));
+      this.publishPreflightState();
+    },
+
+    volumePreflightChanged(state) {
+      this.set('volumePreflightState', state || {status: 'idle', pending: false, blocked: false});
+      this.publishPreflightState();
     },
 
     sidekickPortPreflightChanged(key, state) {
@@ -162,11 +170,25 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     }
   },
 
+  publishPreflightState() {
+    let port = this.get('portPreflightState') || {};
+    let volume = this.get('volumePreflightState') || {};
+    let state = {
+      status: port.blocked || volume.blocked ? 'blocked' :
+        (port.pending || volume.pending ? 'checking' : (volume.status || port.status || 'idle')),
+      pending: !!port.pending || !!volume.pending,
+      blocked: !!port.blocked || !!volume.blocked,
+    };
+
+    this.invokePassedAction('preflightChanged', state);
+  },
+
   init() {
     this._super(...arguments);
 
     this.setProperties({
       portPreflightState: {status: 'idle', pending: false, blocked: false},
+      volumePreflightState: {status: 'idle', pending: false, blocked: false},
       sidekickPortPreflightStates: {},
     });
 
@@ -299,12 +321,15 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
   saveDisabled: Ember.computed(
     'noLaunchConfigsEnabled',
     'portPreflightState.{pending,blocked}',
+    'volumePreflightState.{pending,blocked}',
     'hasSidekickPortPreflightPending',
     'hasSidekickPortPreflightBlocked',
     function() {
       return this.get('noLaunchConfigsEnabled') ||
         !!this.get('portPreflightState.pending') ||
         !!this.get('portPreflightState.blocked') ||
+        !!this.get('volumePreflightState.pending') ||
+        !!this.get('volumePreflightState.blocked') ||
         this.get('hasSidekickPortPreflightPending') ||
         this.get('hasSidekickPortPreflightBlocked');
     }
@@ -440,6 +465,10 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
 
     if ( this.get('hasSidekickPortPreflightBlocked') ) {
       errors.push(this.get('intl').t('formPorts.preflight.error.sidekickBlocked'));
+    }
+
+    if ( this.get('volumePreflightState.pending') ) {
+      errors.push(this.get('intl').t('formVolumes.errors.preflightChecking'));
     }
 
 

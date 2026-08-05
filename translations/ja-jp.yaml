@@ -2226,17 +2226,93 @@ formVolumes:
   pathPlaceholder: '例：[ボリューム名: または /ホスト上のパス:]/コンテナ内のパス[:ro]'
   value:
     prompt: コンテナを選択してください...
-  volumes: ボリューム
+  volumes: パス
   volumesFrom: 他コンテナのボリューム
   volumeDriver:
     label: ボリュームドライバー
     placeholder: 例：pasturestack-nfs
+    local: ローカルストレージ
+    localDetail: 選択したホスト上の Docker ローカルストレージを使用します。
+    scope:
+      local: ホスト
+      custom: カスタム
+      environment: 環境
+      unknown: その他
+    coverage: '{scope}、ホスト対応数 {covered}/{total}'
+    unavailable:
+      inactive: ドライバーが有効ではありません。
+      noPool: 利用可能なアクティブなストレージプールがありません。
+      incompleteCoverage: すべてのアクティブなホストに利用可能なストレージプールがあるわけではありません。
+      requestedHostUnavailable: 選択したホストに利用可能なストレージプールがありません。
+      invalidNfsContract: pasturestack-nfs には環境スコープと multiHostRW アクセスが必要です。
+      legacy: 既存の利用できないドライバーです。保存する前に別のドライバーを選択してください。
+  autocomplete:
+    source:
+      suggested: 候補
+      current: 現在のフォーム
+      existing: 既存のボリューム
   noLaunchConfigs: このサービスにはボリュームを共有するための起動設定がありません。
   noHostContainers: このホストには他コンテナのボリュームを利用するためのコンテナがありません。
   onlySingleHost: 特定ホストにコンテナを追加した場合のみ利用できます
-  addActionLabel: ボリュームを追加
+  addActionLabel: パスを追加
   errors:
+    required: コンテナのパスを入力してください。
+    tooLong: ボリュームのパス指定が長すぎます。
+    controlCharacter: ボリュームのパス指定に制御文字が含まれています。
+    invalidFormat: '[ボリューム名: または /ホスト上のパス:]/コンテナ内のパス[:モード] の形式を使用してください。'
+    absoluteTarget: コンテナのパスは / で始まる絶対パスにする必要があります。
+    unsafeTarget: コンテナのパスに //、/./、または /../ を含めることはできません。
     invalidName: ボリューム名は、文字、数字、ハイフン、アンダー スコア、およびドットのみ含めることができます。
+    absoluteSource: ホストのソースパスは / で始まる絶対パスにする必要があります。
+    unsafeSource: ホストのソースパスに //、/./、または /../ を含めることはできません。
+    invalidMode: モードは重複なく ro、rw、z、Z、または nocopy を指定してください。
+    duplicateTarget: 'コンテナのパス {path} が複数回マウントされています。'
+    driverUnavailable: 必要なすべてのホストで利用できるアクティブなボリュームドライバーを選択してください。
+    preflightBlocked: 利用できないボリュームまたはストレージドライバーの設定がサーバーで検出されました。
+    preflightChecking: ボリュームとストレージドライバーの確認が完了するまでお待ちください。
+  warnings:
+    anonymousDriver: 名前のないパスでは、選択したドライバーを使用して新しいボリュームが作成されます。
+    bindIgnoresDriver: ホストパスのバインドマウントでは、選択したボリュームドライバーは使用されません。
+  preflight:
+    unsupported: このサーバーは即時のボリューム確認に対応していません。保存時に最終確認を行います。
+    requestFailed: 即時のボリューム確認が完了しませんでした。保存時にサーバーが再確認します。
+    checking: パス、既存のボリューム、ストレージプール、および対象ホストを確認しています…
+    available: '{driver} は対象ホスト {available}/{eligible} 台で利用できます。'
+    warning: '{driver} は対象ホスト {available}/{eligible} 台で利用できますが、以下の注意事項があります。'
+    unknown: ボリュームの状態を完全には確認できませんでした。保存時にサーバーが再確認します。
+    blocked: '{driver} は必要なすべてのホストで要求されたパスを提供できません。'
+    reason:
+      volume_path_required: コンテナのパスが必要です。
+      volume_path_too_long: ボリュームのパス指定が長すぎます。
+      volume_path_control_character: ボリュームのパス指定に制御文字が含まれています。
+      invalid_volume_format: ボリュームのパス形式が正しくありません。
+      target_path_must_be_absolute: コンテナのパスは絶対パスにする必要があります。
+      unsafe_target_path: コンテナのパスに安全でない区切りが含まれています。
+      invalid_volume_name: ボリューム名が正しくありません。
+      source_path_must_be_absolute: ホストのソースパスは絶対パスにする必要があります。
+      unsafe_source_path: ホストのソースパスに安全でない区切りが含まれています。
+      invalid_volume_mode: ボリュームのモードが正しくありません。
+      driver_not_found: 選択したボリュームドライバーが見つかりません。
+      duplicate_driver_name: 複数のボリュームドライバーが同じ名前を使用しています。
+      driver_inactive: 選択したボリュームドライバーが有効ではありません。
+      reserved_secrets_driver: シークレット用ドライバーをボリュームドライバーとして使用することはできません。
+      no_active_storage_pool: ボリュームドライバーにアクティブなストレージプールがありません。
+      host_pool_missing: 必要なホストにこのドライバーのストレージプールがありません。
+      no_eligible_hosts: このワークロードの対象となるホストがありません。
+      nfs_requires_environment_scope: pasturestack-nfs には環境スコープが必要です。
+      nfs_requires_multi_host_rw: pasturestack-nfs には multiHostRW アクセスが必要です。
+      nfs_incomplete_host_coverage: pasturestack-nfs はすべてのアクティブなホストで利用できる状態ではありません。
+      duplicate_target_path: 同じコンテナのパスが複数回マウントされています。
+      anonymous_volume_with_driver: 名前のないパスでは、ドライバー管理の新しいボリュームが作成されます。
+      bind_mount_ignores_driver: ホストパスのバインドマウントでは、選択したボリュームドライバーが無視されます。
+      ambiguous_existing_volume: 複数の既存ボリュームが同じ名前を使用しています。
+      volume_driver_mismatch: 既存のボリュームは別のドライバーに属しています。
+      existing_volume_unusable: 既存のボリュームは削除中またはエラー状態です。
+      unknown: サーバーから不明なボリュームの問題が返されました。
+    detail:
+      host: 'ホスト：{value}'
+      path: 'パス：{value}'
+      driver: 'ドライバー：{value}'
 heroAddService:
   infra:
     header: インフラストラクチャ スタックを追加

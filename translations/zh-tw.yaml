@@ -1341,7 +1341,7 @@ storagePoolsPage:
   index:
     noData: 沒有儲存驅動程式
   newVolume:
-    header: 新增捲
+    header: 新增磁碟區
     form:
       driverOptions: 驅動程式選項
       addActionLabel: 新增選項
@@ -2455,20 +2455,96 @@ formVirtualMachines:
   memory: 記憶體
 formVolumes:
   windowsUnsupported: Windows 目前不支援磁碟區。
-  pathPlaceholder: '例如：[磁碟區名稱: 或 /主機上的路徑:]/容器內的路徑[:ro]'
+  pathPlaceholder: '例如：[磁碟區名稱: 或 /主機路徑:]/容器路徑[:模式]'
   value:
     prompt: 選擇一個容器…
-  volumes: 磁碟區
-  volumesFrom: 捲來自
+  volumes: 路徑
+  volumesFrom: 沿用其他容器的磁碟區
   volumeDriver:
     label: 磁碟區驅動程式
     placeholder: 例如：pasturestack-nfs
+    local: 本機儲存空間
+    localDetail: 使用所選主機上的 Docker 本機儲存空間。
+    scope:
+      local: 單一主機
+      custom: 自訂
+      environment: 整個環境
+      unknown: 其他
+    coverage: '範圍：{scope}；主機涵蓋 {covered}/{total}'
+    unavailable:
+      inactive: 驅動程式尚未啟用。
+      noPool: 沒有可用的儲存集區。
+      incompleteCoverage: 並非每台使用中的主機都有可用的儲存集區。
+      requestedHostUnavailable: 所選主機沒有可用的儲存集區。
+      invalidNfsContract: pasturestack-nfs 必須使用「整個環境」範圍與 multiHostRW 存取模式。
+      legacy: 既有但目前無法使用的驅動程式；儲存前請改選其他驅動程式。
+  autocomplete:
+    source:
+      suggested: 建議路徑
+      current: 目前表單
+      existing: 既有磁碟區
   noLaunchConfigs: 此服務下沒有可共享磁碟區的啟動設定。
   noHostContainers: 該主機沒有可以提供共享磁碟區的容器。
   onlySingleHost: 僅當新增容器到特定主機時適用。
-  addActionLabel: 新增捲
+  addActionLabel: 新增路徑
   errors:
+    required: 請輸入容器路徑。
+    tooLong: 磁碟區路徑設定過長。
+    controlCharacter: 磁碟區路徑設定含有控制字元。
+    invalidFormat: '請使用 [磁碟區名稱: 或 /主機路徑:]/容器路徑[:模式] 格式。'
+    absoluteTarget: 容器路徑必須是以 / 開頭的絕對路徑。
+    unsafeTarget: 容器路徑不可包含重複斜線（//）、目前目錄（/./）或上層目錄（/../）。
     invalidName: 磁碟區名稱只能包含英文字母、數字、連字號（-）、底線（_）與句點（.）。
+    absoluteSource: 主機來源路徑必須是以 / 開頭的絕對路徑。
+    unsafeSource: 主機來源路徑不可包含重複斜線（//）、目前目錄（/./）或上層目錄（/../）。
+    invalidMode: 模式只能使用 ro、rw、z、Z 或 nocopy，且不可重複。
+    duplicateTarget: '容器路徑 {path} 被掛載超過一次。'
+    driverUnavailable: 請選擇已啟用且可供所有必要主機使用的磁碟區驅動程式。
+    preflightBlocked: 伺服器發現無法使用的磁碟區或儲存驅動程式設定。
+    preflightChecking: 請等待磁碟區與儲存驅動程式檢查完成。
+  warnings:
+    anonymousDriver: 未命名路徑會透過所選驅動程式建立新的磁碟區。
+    bindIgnoresDriver: 主機路徑掛載不會使用所選的磁碟區驅動程式。
+  preflight:
+    unsupported: 目前伺服器不支援即時磁碟區檢查；儲存時會執行最後驗證。
+    requestFailed: 即時磁碟區檢查未完成；儲存時伺服器會再次驗證。
+    checking: 正在檢查路徑、既有磁碟區、儲存集區與可用主機…
+    available: '已確認 {driver} 可供 {available}/{eligible} 台符合條件的主機使用。'
+    warning: '{driver} 可供 {available}/{eligible} 台符合條件的主機使用，但有下列注意事項。'
+    unknown: 無法完整確認磁碟區狀態；儲存時伺服器會再次驗證。
+    blocked: '{driver} 無法在所有必要主機上滿足要求的路徑設定。'
+    reason:
+      volume_path_required: 必須輸入容器路徑。
+      volume_path_too_long: 磁碟區路徑設定過長。
+      volume_path_control_character: 磁碟區路徑設定含有控制字元。
+      invalid_volume_format: 磁碟區路徑格式不正確。
+      target_path_must_be_absolute: 容器路徑必須是絕對路徑。
+      unsafe_target_path: 容器路徑含有不安全的路徑片段。
+      invalid_volume_name: 磁碟區名稱格式不正確。
+      source_path_must_be_absolute: 主機來源路徑必須是絕對路徑。
+      unsafe_source_path: 主機來源路徑含有不安全的路徑片段。
+      invalid_volume_mode: 磁碟區掛載模式不正確。
+      driver_not_found: 找不到所選的磁碟區驅動程式。
+      duplicate_driver_name: 有多個磁碟區驅動程式使用相同名稱。
+      driver_inactive: 所選的磁碟區驅動程式尚未啟用。
+      reserved_secrets_driver: 機密資料驅動程式不能當作磁碟區驅動程式使用。
+      no_active_storage_pool: 這個磁碟區驅動程式沒有使用中的儲存集區。
+      host_pool_missing: 必要主機缺少這個驅動程式的儲存集區。
+      no_eligible_hosts: 沒有符合這項工作負載條件的主機。
+      nfs_requires_environment_scope: pasturestack-nfs 必須使用「整個環境」範圍。
+      nfs_requires_multi_host_rw: pasturestack-nfs 必須使用 multiHostRW 存取模式。
+      nfs_incomplete_host_coverage: pasturestack-nfs 尚未涵蓋所有使用中的主機。
+      duplicate_target_path: 同一個容器路徑被掛載超過一次。
+      anonymous_volume_with_driver: 未命名路徑會建立由驅動程式管理的新磁碟區。
+      bind_mount_ignores_driver: 主機路徑掛載會略過所選的磁碟區驅動程式。
+      ambiguous_existing_volume: 有多個既有磁碟區使用相同名稱。
+      volume_driver_mismatch: 既有磁碟區屬於另一個驅動程式。
+      existing_volume_unusable: 既有磁碟區正在移除或處於錯誤狀態。
+      unknown: 伺服器回報無法辨識的磁碟區問題。
+    detail:
+      host: '主機：{value}'
+      path: '路徑：{value}'
+      driver: '驅動程式：{value}'
 heroAddService:
   infra:
     header: 新增基礎架構堆疊
@@ -3620,7 +3696,7 @@ storagePoolSection:
     none: 無主機
   volumes:
     header: 磁碟區
-    add: 新增捲
+    add: 新增磁碟區
     none: 無資料磁碟區
   models:
     table:
@@ -3849,7 +3925,7 @@ action:
   restore: 恢復
   retry: 重試
   rollback: 復原
-  revertToSnapshot: 恢復捲到快照
+  revertToSnapshot: 將磁碟區還原至快照
   restoreFromBackup: 從備份恢復磁碟區
   setDefault: 設定為預設
   snapshot: 快照

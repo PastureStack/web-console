@@ -2287,17 +2287,93 @@ formVolumes:
   pathPlaceholder: 'например [имя-тома: или /path/on/host:]/путь/в/контейнер[:ro]'
   value:
     prompt: Выберите контейнер...
-  volumes: Диски
+  volumes: Пути
   volumesFrom: Диск от
   volumeDriver:
     label: Драйвер Диска
-    placeholder: например Pasturestack-NFS
+    placeholder: например pasturestack-nfs
+    local: Локальное хранилище
+    localDetail: Использует локальное хранилище Docker на выбранном хосте.
+    scope:
+      local: Хост
+      custom: Пользовательская
+      environment: Среда
+      unknown: Другая
+    coverage: '{scope}; охват хостов {covered}/{total}'
+    unavailable:
+      inactive: Драйвер не активен.
+      noPool: Нет доступного активного пула хранения.
+      incompleteCoverage: Не на каждом активном хосте есть доступный пул хранения.
+      requestedHostUnavailable: На выбранном хосте нет доступного пула хранения.
+      invalidNfsContract: pasturestack-nfs должен использовать область «Среда» и доступ multiHostRW.
+      legacy: Существующий недоступный драйвер; выберите другой драйвер перед сохранением.
+  autocomplete:
+    source:
+      suggested: Рекомендация
+      current: Текущая форма
+      existing: Существующий том
   noLaunchConfigs: 'В этом сервисе нет других конфигураций запуска, с которыми можно было бы совместно использовать тома.'
   noHostContainers: 'На этом хосте нет контейнеров, из которых можно было бы использовать тома.'
   onlySingleHost: Доступно только при добавлении контейнера к определенному хосту.
-  addActionLabel: Добавить раздел
+  addActionLabel: Добавить путь
   errors:
+    required: Введите путь в контейнере.
+    tooLong: Спецификация пути тома слишком длинная.
+    controlCharacter: Спецификация пути тома содержит управляющий символ.
+    invalidFormat: Используйте формат [имя-тома: или /путь/на/хосте:]/путь/в/контейнере[:режим].
+    absoluteTarget: Путь в контейнере должен быть абсолютным и начинаться с /.
+    unsafeTarget: Путь в контейнере не может содержать //, /./ или /../.
     invalidName: 'Имена томов могут содержать только буквы, цифры, дефис, подчеркивание и точку.'
+    absoluteSource: Исходный путь на хосте должен быть абсолютным и начинаться с /.
+    unsafeSource: Исходный путь на хосте не может содержать //, /./ или /../.
+    invalidMode: Режим должен быть ro, rw, z, Z или nocopy без повторений.
+    duplicateTarget: 'Путь в контейнере {path} подключён более одного раза.'
+    driverUnavailable: Выберите активный драйвер тома, доступный на всех необходимых хостах.
+    preflightBlocked: Сервер обнаружил недоступную конфигурацию тома или драйвера хранения.
+    preflightChecking: Дождитесь завершения проверки тома и драйвера хранения.
+  warnings:
+    anonymousDriver: Путь без имени создаст новый том с помощью выбранного драйвера.
+    bindIgnoresDriver: Привязка пути хоста не использует выбранный драйвер тома.
+  preflight:
+    unsupported: Этот сервер не поддерживает оперативную проверку томов. Окончательная проверка будет выполнена при сохранении.
+    requestFailed: Оперативная проверка тома не завершена. Сервер повторит проверку при сохранении.
+    checking: Проверяются пути, существующие тома, пулы хранения и подходящие хосты…
+    available: '{driver} готов на {available}/{eligible} подходящих хостах.'
+    warning: '{driver} доступен на {available}/{eligible} подходящих хостах с указанными ниже замечаниями.'
+    unknown: Не удалось полностью проверить состояние тома. Сервер повторит проверку при сохранении.
+    blocked: '{driver} не может предоставить запрошенные пути на всех необходимых хостах.'
+    reason:
+      volume_path_required: Необходимо указать путь в контейнере.
+      volume_path_too_long: Спецификация пути тома слишком длинная.
+      volume_path_control_character: Спецификация пути тома содержит управляющий символ.
+      invalid_volume_format: Формат пути тома неверен.
+      target_path_must_be_absolute: Путь в контейнере должен быть абсолютным.
+      unsafe_target_path: Путь в контейнере содержит небезопасный сегмент.
+      invalid_volume_name: Имя тома неверно.
+      source_path_must_be_absolute: Исходный путь на хосте должен быть абсолютным.
+      unsafe_source_path: Исходный путь на хосте содержит небезопасный сегмент.
+      invalid_volume_mode: Режим тома неверен.
+      driver_not_found: Выбранный драйвер тома не найден.
+      duplicate_driver_name: Несколько драйверов томов используют это имя.
+      driver_inactive: Выбранный драйвер тома не активен.
+      reserved_secrets_driver: Драйвер секретов нельзя использовать как драйвер тома.
+      no_active_storage_pool: У драйвера тома нет активного пула хранения.
+      host_pool_missing: На необходимом хосте нет пула хранения для этого драйвера.
+      no_eligible_hosts: Для этой рабочей нагрузки нет подходящих хостов.
+      nfs_requires_environment_scope: pasturestack-nfs требует область «Среда».
+      nfs_requires_multi_host_rw: pasturestack-nfs требует доступ multiHostRW.
+      nfs_incomplete_host_coverage: pasturestack-nfs не готов на каждом активном хосте.
+      duplicate_target_path: Один и тот же путь в контейнере подключён более одного раза.
+      anonymous_volume_with_driver: Путь без имени создаст новый том под управлением драйвера.
+      bind_mount_ignores_driver: Привязка пути хоста игнорирует выбранный драйвер тома.
+      ambiguous_existing_volume: Несколько существующих томов используют это имя.
+      volume_driver_mismatch: Существующий том принадлежит другому драйверу.
+      existing_volume_unusable: Существующий том удаляется или находится в состоянии ошибки.
+      unknown: Сервер сообщил о неизвестной проблеме тома.
+    detail:
+      host: 'Хост: {value}'
+      path: 'Путь: {value}'
+      driver: 'Драйвер: {value}'
 heroAddService:
   infra:
     header: Добавьте стеки инфраструктуры

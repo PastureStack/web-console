@@ -2260,17 +2260,93 @@ formVolumes:
   pathPlaceholder: 'por exemplo [nome do volume: ou /path/on/host:]/caminho/in/container[:ro]'
   value:
     prompt: Selecione um Contêiner...
-  volumes: Volumes
+  volumes: Caminhos
   volumesFrom: Volumes de
   volumeDriver:
     label: Driver de volume
     placeholder: por exemplo pasturestack-nfs
+    local: Armazenamento local
+    localDetail: Usa o armazenamento local do Docker no host selecionado.
+    scope:
+      local: Host
+      custom: Personalizado
+      environment: Ambiente
+      unknown: Outro
+    coverage: '{scope}; cobertura de hosts {covered}/{total}'
+    unavailable:
+      inactive: O driver não está ativo.
+      noPool: Não há um pool de armazenamento ativo disponível.
+      incompleteCoverage: Nem todos os hosts ativos têm um pool de armazenamento disponível.
+      requestedHostUnavailable: O host selecionado não tem um pool de armazenamento disponível.
+      invalidNfsContract: pasturestack-nfs deve usar o escopo Ambiente e o acesso multiHostRW.
+      legacy: Driver existente indisponível; selecione outro driver antes de salvar.
+  autocomplete:
+    source:
+      suggested: Sugestão
+      current: Formulário atual
+      existing: Volume existente
   noLaunchConfigs: Não há outras configurações de inicialização neste serviço para compartilhar volumes.
   noHostContainers: Este host não possui contêineres para usar os volumes.
   onlySingleHost: Disponível apenas ao adicionar um contêiner a um host específico.
-  addActionLabel: Adicionar volume
+  addActionLabel: Adicionar caminho
   errors:
+    required: Informe um caminho do contêiner.
+    tooLong: A especificação do caminho do volume é muito longa.
+    controlCharacter: A especificação do caminho do volume contém um caractere de controle.
+    invalidFormat: Use [nome-do-volume: ou /caminho/no/host:]/caminho/no/contêiner[:modo].
+    absoluteTarget: O caminho do contêiner deve ser absoluto e começar com /.
+    unsafeTarget: O caminho do contêiner não pode conter //, /./ ou /../.
     invalidName: 'Os nomes dos volumes só podem conter letras, números, hífen, sublinhado e ponto.'
+    absoluteSource: O caminho de origem no host deve ser absoluto e começar com /.
+    unsafeSource: O caminho de origem no host não pode conter //, /./ ou /../.
+    invalidMode: O modo deve ser ro, rw, z, Z ou nocopy, sem repetições.
+    duplicateTarget: 'O caminho do contêiner {path} está montado mais de uma vez.'
+    driverUnavailable: Selecione um driver de volume ativo disponível em todos os hosts necessários.
+    preflightBlocked: O servidor encontrou uma configuração de volume ou driver de armazenamento indisponível.
+    preflightChecking: Aguarde a conclusão da verificação do volume e do driver de armazenamento.
+  warnings:
+    anonymousDriver: Um caminho sem nome criará um novo volume com o driver selecionado.
+    bindIgnoresDriver: Uma montagem de caminho do host não usa o driver de volume selecionado.
+  preflight:
+    unsupported: Este servidor não oferece verificação imediata de volumes. A validação final ocorrerá ao salvar.
+    requestFailed: A verificação imediata do volume não foi concluída. O servidor verificará novamente ao salvar.
+    checking: Verificando caminhos, volumes existentes, pools de armazenamento e hosts elegíveis…
+    available: '{driver} está pronto em {available}/{eligible} hosts elegíveis.'
+    warning: '{driver} está disponível em {available}/{eligible} hosts elegíveis, com as observações abaixo.'
+    unknown: Não foi possível verificar completamente o estado do volume. O servidor verificará novamente ao salvar.
+    blocked: '{driver} não consegue fornecer os caminhos solicitados em todos os hosts necessários.'
+    reason:
+      volume_path_required: É necessário informar um caminho do contêiner.
+      volume_path_too_long: A especificação do caminho do volume é muito longa.
+      volume_path_control_character: A especificação do caminho do volume contém um caractere de controle.
+      invalid_volume_format: O formato do caminho do volume é inválido.
+      target_path_must_be_absolute: O caminho do contêiner deve ser absoluto.
+      unsafe_target_path: O caminho do contêiner contém um segmento inseguro.
+      invalid_volume_name: O nome do volume é inválido.
+      source_path_must_be_absolute: O caminho de origem no host deve ser absoluto.
+      unsafe_source_path: O caminho de origem no host contém um segmento inseguro.
+      invalid_volume_mode: O modo do volume é inválido.
+      driver_not_found: O driver de volume selecionado não foi encontrado.
+      duplicate_driver_name: Mais de um driver de volume usa esse nome.
+      driver_inactive: O driver de volume selecionado não está ativo.
+      reserved_secrets_driver: Um driver de segredos não pode ser usado como driver de volume.
+      no_active_storage_pool: O driver de volume não tem um pool de armazenamento ativo.
+      host_pool_missing: Um host necessário não tem um pool de armazenamento para este driver.
+      no_eligible_hosts: Não há hosts elegíveis para esta carga de trabalho.
+      nfs_requires_environment_scope: pasturestack-nfs exige o escopo Ambiente.
+      nfs_requires_multi_host_rw: pasturestack-nfs exige o acesso multiHostRW.
+      nfs_incomplete_host_coverage: pasturestack-nfs não está pronto em todos os hosts ativos.
+      duplicate_target_path: O mesmo caminho do contêiner está montado mais de uma vez.
+      anonymous_volume_with_driver: Um caminho sem nome criará um novo volume gerenciado pelo driver.
+      bind_mount_ignores_driver: Uma montagem de caminho do host ignora o driver de volume selecionado.
+      ambiguous_existing_volume: Mais de um volume existente usa esse nome.
+      volume_driver_mismatch: O volume existente pertence a outro driver.
+      existing_volume_unusable: O volume existente está sendo removido ou está em estado de erro.
+      unknown: O servidor retornou um problema de volume desconhecido.
+    detail:
+      host: 'Host: {value}'
+      path: 'Caminho: {value}'
+      driver: 'Driver: {value}'
 heroAddService:
   infra:
     header: Adicionar stacks de infraestrutura

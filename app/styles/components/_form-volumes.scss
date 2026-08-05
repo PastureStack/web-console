@@ -1,0 +1,122 @@
+$brand-danger: null !default;
+$brand-info: null !default;
+$brand-success: null !default;
+$brand-warning: null !default;
+$dropdown-bg: null !default;
+$link-color: null !default;
+$table-border-color: null !default;
+$text-color: null !default;
+$text-muted: null !default;
+
+.volume-path-autocomplete {
+  position: relative;
+}
+
+.volume-path-autocomplete-shell {
+  position: relative;
+}
+
+.volume-path-autocomplete-shell .volume-path {
+  position: relative;
+  z-index: 1;
+  font-family: Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}
+
+.volume-path-autocomplete-ghost {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 12px;
+  bottom: 0;
+  left: 12px;
+  overflow: hidden;
+  color: $text-muted;
+  font-family: Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  line-height: 34px;
+  pointer-events: none;
+  white-space: pre;
+}
+
+.volume-path-autocomplete-prefix {
+  color: transparent;
+}
+
+.volume-path-autocomplete-list {
+  position: absolute;
+  z-index: 1050;
+  right: 0;
+  left: 0;
+  max-height: 264px;
+  margin: 2px 0 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  color: $text-color;
+  background: $dropdown-bg;
+  border: 1px solid $table-border-color;
+  border-radius: 3px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .2);
+}
+
+.volume-path-autocomplete-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 31px;
+  padding: 6px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.volume-path-autocomplete-list li.is-active {
+  color: #fff;
+  background: $link-color;
+}
+
+.volume-path-autocomplete-list code {
+  overflow: hidden;
+  color: inherit;
+  background: transparent;
+  text-overflow: ellipsis;
+}
+
+.volume-path-autocomplete-source {
+  flex: 0 0 auto;
+  color: $text-muted;
+  font-size: 12px;
+}
+
+.volume-path-autocomplete-list li.is-active .volume-path-autocomplete-source {
+  color: rgba(255, 255, 255, .82);
+}
+
+.volume-driver-help,
+.volume-preflight-summary,
+.volume-preflight-issues,
+.volume-validation-warnings {
+  margin-top: 8px;
+}
+
+.volume-preflight-issues {
+  margin-bottom: 0;
+  padding-left: 22px;
+}
+
+.volume-preflight-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 8px 10px;
+  border-left: 3px solid $brand-info;
+}
+
+.volume-preflight-summary.is-available { border-color: $brand-success; }
+.volume-preflight-summary.is-warning { border-color: $brand-warning; }
+.volume-preflight-summary.is-blocked { border-color: $brand-danger; }
+
+.volume-driver-option-detail {
+  margin-top: 4px;
+  color: $text-muted;
+  font-size: 12px;
+}

@@ -2154,17 +2154,93 @@ formVolumes:
   pathPlaceholder: '예: [볼륨-이름: 또는 /호스트/경로:]/컨테이너/내/경로[:ro]'
   value:
     prompt: 컨테이너를 선택하세요...
-  volumes: 볼륨
+  volumes: 경로
   volumesFrom: '볼륨:'
   volumeDriver:
     label: 볼륨 드라이버
     placeholder: '예: pasturestack-nfs'
+    local: 로컬 저장소
+    localDetail: 선택한 호스트의 Docker 로컬 저장소를 사용합니다.
+    scope:
+      local: 호스트
+      custom: 사용자 지정
+      environment: 환경
+      unknown: 기타
+    coverage: '{scope}, 호스트 적용 범위 {covered}/{total}'
+    unavailable:
+      inactive: 드라이버가 활성 상태가 아닙니다.
+      noPool: 사용 가능한 활성 저장소 풀이 없습니다.
+      incompleteCoverage: 일부 활성 호스트에 사용 가능한 저장소 풀이 없습니다.
+      requestedHostUnavailable: 선택한 호스트에 사용 가능한 저장소 풀이 없습니다.
+      invalidNfsContract: pasturestack-nfs는 환경 범위와 multiHostRW 액세스를 사용해야 합니다.
+      legacy: 기존의 사용할 수 없는 드라이버입니다. 저장하기 전에 다른 드라이버를 선택하세요.
+  autocomplete:
+    source:
+      suggested: 추천
+      current: 현재 양식
+      existing: 기존 볼륨
   noLaunchConfigs: 이 서비스에는 볼륨을 공유할 다른 시작 구성이 없습니다.
   noHostContainers: 이 호스트에는 볼륨을 사용할 컨테이너가 없습니다.
   onlySingleHost: 특정 호스트에 컨테이너를 추가하는 경우에만 사용할 수 있습니다.
-  addActionLabel: 볼륨 추가
+  addActionLabel: 경로 추가
   errors:
+    required: 컨테이너 경로를 입력하세요.
+    tooLong: 볼륨 경로 지정이 너무 깁니다.
+    controlCharacter: 볼륨 경로 지정에 제어 문자가 포함되어 있습니다.
+    invalidFormat: '[볼륨 이름: 또는 /호스트/경로:]/컨테이너/경로[:모드] 형식을 사용하세요.'
+    absoluteTarget: 컨테이너 경로는 /로 시작하는 절대 경로여야 합니다.
+    unsafeTarget: 컨테이너 경로에는 //, /./ 또는 /../를 포함할 수 없습니다.
     invalidName: '볼륨 이름에는 문자, 숫자, 하이픈, 밑줄, 점만 포함할 수 있습니다.'
+    absoluteSource: 호스트 원본 경로는 /로 시작하는 절대 경로여야 합니다.
+    unsafeSource: 호스트 원본 경로에는 //, /./ 또는 /../를 포함할 수 없습니다.
+    invalidMode: 모드는 중복 없이 ro, rw, z, Z 또는 nocopy여야 합니다.
+    duplicateTarget: '컨테이너 경로 {path}가 두 번 이상 마운트되어 있습니다.'
+    driverUnavailable: 필요한 모든 호스트에서 사용할 수 있는 활성 볼륨 드라이버를 선택하세요.
+    preflightBlocked: 서버에서 사용할 수 없는 볼륨 또는 저장소 드라이버 설정을 발견했습니다.
+    preflightChecking: 볼륨 및 저장소 드라이버 검사가 완료될 때까지 기다리세요.
+  warnings:
+    anonymousDriver: 이름 없는 경로는 선택한 드라이버로 새 볼륨을 만듭니다.
+    bindIgnoresDriver: 호스트 경로 바인드 마운트는 선택한 볼륨 드라이버를 사용하지 않습니다.
+  preflight:
+    unsupported: 이 서버는 실시간 볼륨 검사를 지원하지 않습니다. 저장할 때 최종 검사를 수행합니다.
+    requestFailed: 실시간 볼륨 검사가 완료되지 않았습니다. 저장할 때 서버에서 다시 검사합니다.
+    checking: 경로, 기존 볼륨, 저장소 풀 및 적합한 호스트를 검사하는 중…
+    available: '{driver}을(를) 적합한 호스트 {available}/{eligible}대에서 사용할 수 있습니다.'
+    warning: '{driver}을(를) 적합한 호스트 {available}/{eligible}대에서 사용할 수 있지만 아래 참고 사항이 있습니다.'
+    unknown: 볼륨 상태를 완전히 확인할 수 없습니다. 저장할 때 서버에서 다시 검사합니다.
+    blocked: '{driver}이(가) 필요한 모든 호스트에서 요청한 경로를 제공할 수 없습니다.'
+    reason:
+      volume_path_required: 컨테이너 경로가 필요합니다.
+      volume_path_too_long: 볼륨 경로 지정이 너무 깁니다.
+      volume_path_control_character: 볼륨 경로 지정에 제어 문자가 포함되어 있습니다.
+      invalid_volume_format: 볼륨 경로 형식이 잘못되었습니다.
+      target_path_must_be_absolute: 컨테이너 경로는 절대 경로여야 합니다.
+      unsafe_target_path: 컨테이너 경로에 안전하지 않은 구간이 포함되어 있습니다.
+      invalid_volume_name: 볼륨 이름이 잘못되었습니다.
+      source_path_must_be_absolute: 호스트 원본 경로는 절대 경로여야 합니다.
+      unsafe_source_path: 호스트 원본 경로에 안전하지 않은 구간이 포함되어 있습니다.
+      invalid_volume_mode: 볼륨 모드가 잘못되었습니다.
+      driver_not_found: 선택한 볼륨 드라이버를 찾을 수 없습니다.
+      duplicate_driver_name: 두 개 이상의 볼륨 드라이버가 같은 이름을 사용합니다.
+      driver_inactive: 선택한 볼륨 드라이버가 활성 상태가 아닙니다.
+      reserved_secrets_driver: 보안 정보 드라이버를 볼륨 드라이버로 사용할 수 없습니다.
+      no_active_storage_pool: 볼륨 드라이버에 활성 저장소 풀이 없습니다.
+      host_pool_missing: 필요한 호스트에 이 드라이버의 저장소 풀이 없습니다.
+      no_eligible_hosts: 이 워크로드에 적합한 호스트가 없습니다.
+      nfs_requires_environment_scope: pasturestack-nfs에는 환경 범위가 필요합니다.
+      nfs_requires_multi_host_rw: pasturestack-nfs에는 multiHostRW 액세스가 필요합니다.
+      nfs_incomplete_host_coverage: pasturestack-nfs를 모든 활성 호스트에서 사용할 수 없습니다.
+      duplicate_target_path: 같은 컨테이너 경로가 두 번 이상 마운트되어 있습니다.
+      anonymous_volume_with_driver: 이름 없는 경로는 드라이버에서 관리하는 새 볼륨을 만듭니다.
+      bind_mount_ignores_driver: 호스트 경로 바인드 마운트는 선택한 볼륨 드라이버를 무시합니다.
+      ambiguous_existing_volume: 두 개 이상의 기존 볼륨이 같은 이름을 사용합니다.
+      volume_driver_mismatch: 기존 볼륨이 다른 드라이버에 속해 있습니다.
+      existing_volume_unusable: 기존 볼륨이 제거 중이거나 오류 상태입니다.
+      unknown: 서버에서 알 수 없는 볼륨 문제를 반환했습니다.
+    detail:
+      host: '호스트: {value}'
+      path: '경로: {value}'
+      driver: '드라이버: {value}'
 heroAddService:
   infra:
     header: 인프라 스택 추가

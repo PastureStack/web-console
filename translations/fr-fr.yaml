@@ -2264,17 +2264,93 @@ formVolumes:
   pathPlaceholder: "par ex. [nom-volume\_: ou /path/on/host:]/path/in/container[:ro]"
   value:
     prompt: Sélectionnez un Conteneur...
-  volumes: Volumes
+  volumes: Chemins
   volumesFrom: Volumes Depuis
   volumeDriver:
     label: Pilote de Volume
-    placeholder: par ex. pâturagestack-nfs
+    placeholder: par ex. pasturestack-nfs
+    local: Stockage local
+    localDetail: Utilise le stockage Docker local de l’hôte sélectionné.
+    scope:
+      local: Hôte
+      custom: Personnalisée
+      environment: Environnement
+      unknown: Autre
+    coverage: '{scope} ; couverture des hôtes {covered}/{total}'
+    unavailable:
+      inactive: Le pilote n’est pas actif.
+      noPool: Aucun pool de stockage actif n’est disponible.
+      incompleteCoverage: Tous les hôtes actifs ne disposent pas d’un pool de stockage disponible.
+      requestedHostUnavailable: L’hôte sélectionné ne dispose d’aucun pool de stockage disponible.
+      invalidNfsContract: pasturestack-nfs doit utiliser la portée Environnement et l’accès multiHostRW.
+      legacy: Pilote existant indisponible ; sélectionnez un autre pilote avant d’enregistrer.
+  autocomplete:
+    source:
+      suggested: Suggestion
+      current: Formulaire actuel
+      existing: Volume existant
   noLaunchConfigs: Il n’y a aucune autres configurations de lancement de ce service pour partager des volumes avec celui-ci.
   noHostContainers: Cet hôte n’a aucun conteneurs ayant des volumes sur lesquels se connecter.
   onlySingleHost: Disponible uniquement lorsque vous ajoutez un conteneur à un hôte particulier.
-  addActionLabel: Ajouter un Volume
+  addActionLabel: Ajouter un chemin
   errors:
+    required: Saisissez un chemin de conteneur.
+    tooLong: La définition du chemin du volume est trop longue.
+    controlCharacter: La définition du chemin du volume contient un caractère de contrôle.
+    invalidFormat: Utilisez [nom-volume: ou /chemin/sur/hôte:]/chemin/dans/conteneur[:mode].
+    absoluteTarget: Le chemin du conteneur doit être absolu et commencer par /.
+    unsafeTarget: Le chemin du conteneur ne peut pas contenir //, /./ ou /../.
     invalidName: 'Les noms de volume peuvent uniquement contenir des lettres, chiffres, traits d’union, tirets bas et des points.'
+    absoluteSource: Le chemin source de l’hôte doit être absolu et commencer par /.
+    unsafeSource: Le chemin source de l’hôte ne peut pas contenir //, /./ ou /../.
+    invalidMode: Le mode doit être ro, rw, z, Z ou nocopy, sans doublon.
+    duplicateTarget: 'Le chemin de conteneur {path} est monté plusieurs fois.'
+    driverUnavailable: Sélectionnez un pilote de volume actif disponible sur tous les hôtes requis.
+    preflightBlocked: Le serveur a détecté une configuration de volume ou de pilote de stockage indisponible.
+    preflightChecking: Attendez la fin de la vérification du volume et du pilote de stockage.
+  warnings:
+    anonymousDriver: Un chemin sans nom créera un nouveau volume avec le pilote sélectionné.
+    bindIgnoresDriver: Un montage de chemin de l’hôte n’utilise pas le pilote de volume sélectionné.
+  preflight:
+    unsupported: Ce serveur ne prend pas en charge la vérification immédiate des volumes. La validation finale aura lieu lors de l’enregistrement.
+    requestFailed: La vérification immédiate du volume n’a pas abouti. Le serveur vérifiera de nouveau lors de l’enregistrement.
+    checking: Vérification des chemins, des volumes existants, des pools de stockage et des hôtes admissibles…
+    available: '{driver} est prêt sur {available}/{eligible} hôtes admissibles.'
+    warning: '{driver} est disponible sur {available}/{eligible} hôtes admissibles, avec les remarques ci-dessous.'
+    unknown: L’état du volume n’a pas pu être entièrement vérifié. Le serveur vérifiera de nouveau lors de l’enregistrement.
+    blocked: '{driver} ne peut pas fournir les chemins demandés sur tous les hôtes requis.'
+    reason:
+      volume_path_required: Un chemin de conteneur est requis.
+      volume_path_too_long: La définition du chemin du volume est trop longue.
+      volume_path_control_character: La définition du chemin du volume contient un caractère de contrôle.
+      invalid_volume_format: Le format du chemin du volume est incorrect.
+      target_path_must_be_absolute: Le chemin du conteneur doit être absolu.
+      unsafe_target_path: Le chemin du conteneur contient un segment non sûr.
+      invalid_volume_name: Le nom du volume est incorrect.
+      source_path_must_be_absolute: Le chemin source de l’hôte doit être absolu.
+      unsafe_source_path: Le chemin source de l’hôte contient un segment non sûr.
+      invalid_volume_mode: Le mode du volume est incorrect.
+      driver_not_found: Le pilote de volume sélectionné est introuvable.
+      duplicate_driver_name: Plusieurs pilotes de volume portent ce nom.
+      driver_inactive: Le pilote de volume sélectionné n’est pas actif.
+      reserved_secrets_driver: Un pilote de secrets ne peut pas servir de pilote de volume.
+      no_active_storage_pool: Le pilote de volume ne dispose d’aucun pool de stockage actif.
+      host_pool_missing: Un hôte requis ne dispose d’aucun pool de stockage pour ce pilote.
+      no_eligible_hosts: Aucun hôte n’est admissible pour cette charge de travail.
+      nfs_requires_environment_scope: pasturestack-nfs nécessite la portée Environnement.
+      nfs_requires_multi_host_rw: pasturestack-nfs nécessite l’accès multiHostRW.
+      nfs_incomplete_host_coverage: pasturestack-nfs n’est pas prêt sur tous les hôtes actifs.
+      duplicate_target_path: Le même chemin de conteneur est monté plusieurs fois.
+      anonymous_volume_with_driver: Un chemin sans nom créera un volume géré par le pilote.
+      bind_mount_ignores_driver: Un montage de chemin de l’hôte ignore le pilote de volume sélectionné.
+      ambiguous_existing_volume: Plusieurs volumes existants portent ce nom.
+      volume_driver_mismatch: Le volume existant appartient à un autre pilote.
+      existing_volume_unusable: Le volume existant est en cours de suppression ou en état d’erreur.
+      unknown: Le serveur a signalé un problème de volume inconnu.
+    detail:
+      host: 'Hôte : {value}'
+      path: 'Chemin : {value}'
+      driver: 'Pilote : {value}'
 heroAddService:
   infra:
     header: Ajouter des Stacks d’Infrastructure
