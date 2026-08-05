@@ -448,6 +448,13 @@ The test application also loads the generated light-theme stylesheet instead
 of a retired aggregate filename, so browser regression results include the
 same table layout rules used by production.
 
+`v1.6.56-pasturestack.58` makes managed-network port ownership explicitly
+environment-wide even when a container is pinned to one host. Bridge and host
+networking remain scoped to the requested host, while managed runtime probes
+inspect every eligible host. The other-host blocking message is corrected in
+all 13 supported locales and no longer implies that deployment may continue on
+another host.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

@@ -1971,7 +1971,7 @@ formPorts:
       sidekickBlocked: サイドキックにホストポートの競合があります。保存前に解消してください。
     reason:
       active_port_conflict: 実行中のワークロードがこのポートを使用しています。
-      active_port_conflict_on_other_host: 一部のホストでは使用中ですが、別の対象ホストを利用できます。
+      active_port_conflict_on_other_host: この環境の別のホストが、この管理ネットワークポートをすでに使用しています。
       stopped_port_owner: 停止中のワークロードがこのポートを保持しており、再起動時に競合する可能性があります。
       host_process_conflict: ホスト上のプロセスがこのポートを待ち受けています。
       external_docker_conflict: このプロジェクト外の Docker コンテナがこのポートを使用しています。

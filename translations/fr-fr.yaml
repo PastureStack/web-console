@@ -2007,7 +2007,7 @@ formPorts:
       sidekickBlocked: Un sidekick présente un conflit de port d’hôte à résoudre avant l’enregistrement.
     reason:
       active_port_conflict: Une charge de travail en cours utilise ce port.
-      active_port_conflict_on_other_host: Ce port est utilisé sur certains hôtes, mais un autre hôte éligible reste disponible.
+      active_port_conflict_on_other_host: Un autre hôte de cet environnement utilise déjà ce port du réseau géré.
       stopped_port_owner: Une charge de travail arrêtée conserve ce port et peut créer un conflit au redémarrage.
       host_process_conflict: Un processus de l’hôte écoute sur ce port.
       external_docker_conflict: Un conteneur Docker extérieur à ce projet utilise ce port.

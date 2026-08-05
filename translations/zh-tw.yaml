@@ -2205,7 +2205,7 @@ formPorts:
       sidekickBlocked: 附屬容器有主機連接埠衝突，請先排除後再儲存。
     reason:
       active_port_conflict: 執行中的工作負載正在使用這個連接埠。
-      active_port_conflict_on_other_host: 部分主機已使用這個連接埠，但仍有其他符合條件的主機可供排程。
+      active_port_conflict_on_other_host: 此環境中的另一台主機已使用這個託管網路連接埠。
       stopped_port_owner: 已停止的工作負載仍保留這個連接埠，重新啟動時可能發生衝突。
       host_process_conflict: 主機上的處理程序正在監聽這個連接埠。
       external_docker_conflict: 此專案以外的 Docker 容器正在使用這個連接埠。

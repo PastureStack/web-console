@@ -2003,7 +2003,7 @@ formPorts:
       sidekickBlocked: May salungatan sa host port ang isang sidekick na kailangang ayusin bago mag-save.
     reason:
       active_port_conflict: Ginagamit ng tumatakbong workload ang port na ito.
-      active_port_conflict_on_other_host: Ginagamit ang port sa ilang host, ngunit may ibang kwalipikadong host na available.
+      active_port_conflict_on_other_host: Ginagamit na ng ibang host sa environment na ito ang managed-network port na ito.
       stopped_port_owner: Nakareserba pa rin ang port sa tumigil na workload at maaaring sumalungat kapag muling sinimulan.
       host_process_conflict: May proseso sa host na nakikinig sa port na ito.
       external_docker_conflict: Ginagamit ng Docker container sa labas ng proyektong ito ang port na ito.

@@ -98,7 +98,7 @@ function projectWithAction(callback) {
   });
 }
 
-test('running owner blocks saving and identifies the workload', function(assert) {
+test('managed owner on another host blocks saving and identifies the workload', function(assert) {
   let captured;
   let project = projectWithAction((name, payload) => {
     captured = {name, payload};
@@ -108,7 +108,7 @@ test('running owner blocks saving and identifies the workload', function(assert)
       availableHostCount: 0,
       conflicts: Ember.A([Ember.Object.create({
         severity: 'blocked',
-        reasonCode: 'active_port_conflict',
+        reasonCode: 'active_port_conflict_on_other_host',
         hostName: 'node-a',
         stackName: 'payments',
         serviceName: 'api',
@@ -145,6 +145,7 @@ test('running owner blocks saving and identifies the workload', function(assert)
     assert.equal(component.get('preflightStatus'), 'blocked', 'marks the form blocked');
     assert.equal(row.get('preflightStatus'), 'blocked', 'marks the conflicting row blocked');
     assert.ok(component.get('errors').includes('formPorts.preflight.error.blocked'), 'publishes a blocking validation error');
+    assert.ok(component.get('preflightConflictMessages.firstObject.text').includes('active_port_conflict_on_other_host'), 'uses the managed environment-wide conflict message');
     assert.ok(component.get('preflightConflictMessages.firstObject.text').includes('node-a'), 'shows the host');
     assert.ok(component.get('preflightConflictMessages.firstObject.text').includes('payments'), 'shows the stack');
     assert.ok(component.get('preflightConflictMessages.firstObject.text').includes('api-1'), 'shows the container');

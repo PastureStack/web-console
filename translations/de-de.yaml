@@ -2040,7 +2040,7 @@ formPorts:
       sidekickBlocked: Ein Sidekick hat einen Host-Portkonflikt, der vor dem Speichern behoben werden muss.
     reason:
       active_port_conflict: Eine laufende Arbeitslast verwendet diesen Port.
-      active_port_conflict_on_other_host: Der Port wird auf einigen Hosts verwendet, aber ein anderer geeigneter Host ist verfügbar.
+      active_port_conflict_on_other_host: Ein anderer Host in dieser Umgebung verwendet diesen Port bereits im verwalteten Netzwerk.
       stopped_port_owner: Eine gestoppte Arbeitslast behält diesen Port und kann beim Neustart einen Konflikt verursachen.
       host_process_conflict: Ein Hostprozess lauscht auf diesem Port.
       external_docker_conflict: Ein Docker-Container außerhalb dieses Projekts verwendet diesen Port.

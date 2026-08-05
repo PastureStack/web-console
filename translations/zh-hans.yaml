@@ -1940,7 +1940,7 @@ formPorts:
       sidekickBlocked: 附属容器存在主机端口冲突，请先解决后再保存。
     reason:
       active_port_conflict: 正在运行的工作负载正在使用此端口。
-      active_port_conflict_on_other_host: 部分主机已使用此端口，但仍有其他符合条件的主机可供调度。
+      active_port_conflict_on_other_host: 此环境中的另一台主机已使用这个托管网络端口。
       stopped_port_owner: 已停止的工作负载仍保留此端口，重新启动时可能发生冲突。
       host_process_conflict: 主机进程正在监听此端口。
       external_docker_conflict: 此项目之外的 Docker 容器正在使用此端口。

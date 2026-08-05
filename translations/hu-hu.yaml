@@ -2016,7 +2016,7 @@ formPorts:
       sidekickBlocked: Egy oldalkonténer hosztport-ütközéssel rendelkezik, amelyet mentés előtt meg kell oldani.
     reason:
       active_port_conflict: Egy futó munkaterhelés használja ezt a portot.
-      active_port_conflict_on_other_host: A port néhány hoszton foglalt, de egy másik megfelelő hoszt elérhető.
+      active_port_conflict_on_other_host: A környezet egy másik hosztja már használja ezt a felügyelt hálózati portot.
       stopped_port_owner: Egy leállított munkaterhelés megtartja ezt a portot, és újraindításkor ütközést okozhat.
       host_process_conflict: Egy hosztfolyamat figyel ezen a porton.
       external_docker_conflict: Egy projekten kívüli Docker-konténer használja ezt a portot.

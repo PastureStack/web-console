@@ -1908,7 +1908,7 @@ formPorts:
       sidekickBlocked: 사이드킥에 호스트 포트 충돌이 있습니다. 저장하기 전에 해결하십시오.
     reason:
       active_port_conflict: 실행 중인 워크로드가 이 포트를 사용하고 있습니다.
-      active_port_conflict_on_other_host: 일부 호스트에서 사용 중이지만 다른 조건 충족 호스트를 사용할 수 있습니다.
+      active_port_conflict_on_other_host: 이 환경의 다른 호스트가 이 관리형 네트워크 포트를 이미 사용하고 있습니다.
       stopped_port_owner: 중지된 워크로드가 이 포트를 보유하고 있어 다시 시작할 때 충돌할 수 있습니다.
       host_process_conflict: 호스트 프로세스가 이 포트에서 수신 대기 중입니다.
       external_docker_conflict: 이 프로젝트 외부의 Docker 컨테이너가 이 포트를 사용하고 있습니다.

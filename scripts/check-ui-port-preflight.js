@@ -76,7 +76,7 @@ for (const marker of [
 }
 
 for (const marker of [
-  'running owner blocks saving and identifies the workload',
+  'managed owner on another host blocks saving and identifies the workload',
   'stopped owner is a warning and does not block saving',
   'host networking checks the container port',
   'a late older response cannot replace the newest result',
@@ -115,6 +115,7 @@ const localeKeys = [
   'formPorts.preflight.error.sidekickChecking',
   'formPorts.preflight.error.sidekickBlocked',
   'formPorts.preflight.reason.active_port_conflict',
+  'formPorts.preflight.reason.active_port_conflict_on_other_host',
   'formPorts.preflight.reason.stopped_port_owner',
   'formPorts.preflight.reason.agent_unsupported',
   'formPorts.preflight.detail.host',

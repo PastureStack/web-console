@@ -2313,7 +2313,7 @@ formPorts:
       sidekickBlocked: A sidekick has a host port conflict that must be resolved before saving.
     reason:
       active_port_conflict: A running workload is using this port.
-      active_port_conflict_on_other_host: This port is in use on some hosts, but another eligible host remains available.
+      active_port_conflict_on_other_host: Another host in this environment already uses this managed-network port.
       stopped_port_owner: A stopped workload retains this port and may conflict when restarted.
       host_process_conflict: A host process is listening on this port.
       external_docker_conflict: A Docker container outside this project is using this port.
