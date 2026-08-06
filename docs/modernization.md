@@ -467,6 +467,14 @@ the race window. All 13 production locales use the same field and validation
 contract; Traditional Chinese labels the editable values as paths and contains
 no ambiguous volume translation.
 
+`v1.6.56-pasturestack.61` removes the final save-time dependency on Ember's
+retired String prototype extensions. Schema validation now converts camel-case,
+acronym, underscore, and space-separated field names through a native utility,
+so creating a container or service cannot become stuck while formatting a
+validation label. A focused unit regression and a fail-closed source gate keep
+this path independent from `String.prototype.dasherize` while the supported
+Array compatibility boundary remains explicit.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

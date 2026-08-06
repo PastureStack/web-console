@@ -66,6 +66,7 @@ node ./scripts/check-ui-localization-quality
 ./scripts/check-ui-novnc-vendor-bower-removal
 ./scripts/check-ui-position-calculator-vendor
 ./scripts/check-ui-ember-shortcuts-replacement
+./scripts/check-ui-string-prototype-compat
 ./scripts/check-ui-unused-ember-bower-helper-removal
 ./scripts/check-ui-ember-bower-vendor-runtime
 ./scripts/check-ui-browserify-removal
