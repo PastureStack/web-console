@@ -14,6 +14,16 @@ export default Ember.Controller.extend({
   allowOther  : true,
 
   actions: {
+    // Bubble these closure actions to the route.  This preserves the machine
+    // driver component contract without the unmaintained route-action addon.
+    cancel() {
+      return true;
+    },
+
+    goBack() {
+      return true;
+    },
+
     switchDriver(name) {
       if (this.get('hostId')) {
         this.set('hostId', null);

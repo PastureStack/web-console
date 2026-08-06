@@ -9,11 +9,11 @@ export default Ember.Controller.extend({
 
   actions: {
     done() {
-      this.transitionToRoute('settings.projects');
+      this.get('router').transitionTo('settings.projects');
     },
 
     cancel() {
-      this.transitionToRoute('settings.projects');
+      this.get('router').transitionTo('settings.projects');
     },
   },
 });

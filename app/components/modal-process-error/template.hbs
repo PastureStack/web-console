@@ -6,8 +6,8 @@
       <label>{{t 'modalProcessError.cause'}}</label>
     </div>
     <div class="col-sm-12 col-md-8 text-muted">
-      {{#if exception.cause}}
-        {{exception.cause}}
+      {{#if this.exception.cause}}
+        {{this.exception.cause}}
       {{else}}
         {{t 'modalProcessError.none'}}
       {{/if}}
@@ -18,7 +18,7 @@
       <label>{{t 'modalProcessError.stackTrace'}}</label>
     </div>
     <div class="col-sm-12 col-md-12">
-      {{code-block language="yaml" code=exception.stackTrace}}
+      {{code-block language="yaml" code=this.exception.stackTrace}}
     </div>
   </div>
   <div class="r-mb15">

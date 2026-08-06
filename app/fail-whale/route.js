@@ -21,7 +21,7 @@ export default Ember.Route.extend({
     if ( model ) {
       this.get('storeReset').reset();
     } else {
-      this.transitionTo('authenticated');
+      this.get('router').transitionTo('authenticated');
     }
   }
 });

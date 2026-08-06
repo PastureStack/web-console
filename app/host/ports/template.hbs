@@ -8,14 +8,14 @@
     </tr>
   </thead>
   <tbody>
-    {{#each arranged as |port|}}
+    {{#each this.arranged as |port|}}
       <tr>
         <td>{{port.ipAddress}}</td>
         <td>{{port.port}}</td>
         <td>
           {{#if port.service}}
             <i class="{{port.service.stateIcon}} {{port.service.stateColor}}" />
-            {{#link-to "service" port.service.stackId port.service.id}}{{port.service.displayName}}{{/link-to}}
+            <LinkTo @route="service" @models={{array port.service.stackId port.service.id}}>{{port.service.displayName}}</LinkTo>
           {{else}}
             <span class="text-muted">-</span>
           {{/if}}
@@ -24,9 +24,9 @@
           {{#if port.instance}}
             <i class="{{port.instance.stateIcon}} {{port.instance.stateColor}}" />
             {{#if (eq port.instance.kind "virtualMachine")}}
-              {{#link-to "virtualmachine" port.instance.id}}{{port.instance.displayName}}{{/link-to}}
+              <LinkTo @route="virtualmachine" @model={{port.instance.id}}>{{port.instance.displayName}}</LinkTo>
             {{else}}
-              {{#link-to "container" port.instance.id}}{{port.instance.displayName}}{{/link-to}}
+              <LinkTo @route="container" @model={{port.instance.id}}>{{port.instance.displayName}}</LinkTo>
             {{/if}}
           {{else}}
             <span class="text-muted">-</span>

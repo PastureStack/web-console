@@ -1,8 +1,8 @@
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 
 <section class="horizontal-form">
   <div class="container-fluid">
-    {{partial "host/add-common"}}
+    {{host-add-common context=this}}
 
     <div class="over-hr r-mt20 r-mb20">
       <span>{{t 'machine.driverRackspace.accountSection'}}</span>
@@ -13,7 +13,7 @@
         <label class="form-control-static">{{t 'machine.driverRackspace.username.label'}}*</label>
       </div>
       <div class="col-md-10">
-        {{input type="text" value=rackspaceConfig.username classNames="form-control" placeholder=(t 'machine.driverRackspace.username.placeholder')}}
+        {{input type="text" value=this.rackspaceConfig.username classNames="form-control" placeholder=(t 'machine.driverRackspace.username.placeholder')}}
       </div>
     </div>
 
@@ -22,7 +22,7 @@
         <label class="form-control-static">{{t 'machine.driverRackspace.apiKey.label'}}*</label>
       </div>
       <div class="col-md-10">
-        {{input type="password" value=rackspaceConfig.apiKey classNames="form-control" placeholder=(t 'machine.driverRackspace.apiKey.placeholder')}}
+        {{input type="password" value=this.rackspaceConfig.apiKey classNames="form-control" placeholder=(t 'machine.driverRackspace.apiKey.placeholder')}}
         <p class="help-block">{{t 'machine.driverRackspace.accountHelp'}}</p>
       </div>
     </div>
@@ -36,9 +36,9 @@
         <label class="form-control-static">{{t 'machine.driverRackspace.region.label'}}</label>
       </div>
       <div class="col-md-10">
-        <select class="form-control" onchange={{action (mut rackspaceConfig.region) value="target.value"}}>
-          {{#each regionChoices as |choice|}}
-            <option value={{choice.value}} selected={{eq rackspaceConfig.region choice.value}}>{{choice.label}}</option>
+        <select class="form-control" onchange={{action (mut this.rackspaceConfig.region) value="target.value"}}>
+          {{#each this.regionChoices as |choice|}}
+            <option value={{choice.value}} selected={{eq this.rackspaceConfig.region choice.value}}>{{choice.label}}</option>
           {{/each}}
         </select>
       </div>
@@ -53,15 +53,15 @@
         <label class="form-control-static">{{t 'machine.driverRackspace.flavor.label'}}</label>
       </div>
       <div class="col-md-10">
-        <select class="form-control" onchange={{action (mut rackspaceConfig.flavorId) value="target.value"}}>
-          {{#each flavorChoices as |choice|}}
-            <option value={{choice.value}} selected={{eq rackspaceConfig.flavorId choice.value}}>{{choice.label}}</option>
+        <select class="form-control" onchange={{action (mut this.rackspaceConfig.flavorId) value="target.value"}}>
+          {{#each this.flavorChoices as |choice|}}
+            <option value={{choice.value}} selected={{eq this.rackspaceConfig.flavorId choice.value}}>{{choice.label}}</option>
           {{/each}}
         </select>
       </div>
     </div>
 
-    {{partial "host/add-options"}}
+    {{host-add-options context=this}}
   </div>
 
   {{save-cancel save="save" cancel="cancel"}}

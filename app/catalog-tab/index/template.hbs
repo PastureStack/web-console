@@ -1,12 +1,12 @@
 <section class="header clearfix">
-  <h1>{{t 'catalogPage.index.header'}} <span class="text-capitalize">{{catalogId}}</span></h1>
+  <h1>{{t 'catalogPage.index.header'}} <span class="text-capitalize">{{if (eq this.catalogId "all") (t "nav.catalog.all") this.catalogId}}</span></h1>
 
   <div class="pull-right">
-    <button type="button" class="btn btn-default btn-sm" disabled={{eq updating 'yes'}} {{action "update"}}>
-      {{#if (eq updating "yes")}}
+    <button type="button" class="btn btn-default btn-sm" disabled={{eq this.updating 'yes'}} {{action "update"}}>
+      {{#if (eq this.updating "yes")}}
         <i class="icon icon-spinner icon-spin"></i>
       {{else}}
-        {{#if (eq updating "error")}}
+        {{#if (eq this.updating "error")}}
           <i class="icon icon-spinner icon-alert"></i>
         {{else}}
           <i class="icon icon-refresh"></i>
@@ -19,17 +19,17 @@
   </div>
 
   <div class="btn-group pull-right r-ml10">
-    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t 'catalogPage.index.category'}} <span class="text-capitalize">{{category}}</span> <i class="icon icon-chevron-down"></i></button>
+    <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t 'catalogPage.index.category'}} <span class="text-capitalize">{{if (eq this.category "all") (t "nav.catalog.all") this.category}}</span> <i class="icon icon-chevron-down"></i></button>
     <ul class="dropdown-menu dropdown-menu-right">
-      {{#each categories as |opt|}}
+      {{#each this.categories as |opt|}}
         {{#if (eq opt "all")}}
-          <li class="text-capitalize {{if (eq category opt) 'active'}}">{{#link-to parentRoute (query-params category=opt)}}{{opt}}{{/link-to}}</li>
+          <li class="text-capitalize {{if (eq this.category opt) 'active'}}"><LinkTo @route={{this.parentRoute}} @query={{hash category=opt}}>{{t "nav.catalog.all"}}</LinkTo></li>
           <li class="divider"></li>
         {{else}}
-          <li class="{{if (eq category opt) 'active'}}">
-            {{#link-to parentRoute (query-params category=opt)}}
+          <li class="{{if (eq this.category opt) 'active'}}">
+            <LinkTo @route={{this.parentRoute}} @query={{hash category=opt}}>
               {{opt}}
-            {{/link-to}}
+            </LinkTo>
           </li>
         {{/if}}
       {{/each}}
@@ -38,13 +38,13 @@
 
   <div class="btn-group searchable pull-right">
     <i class="icon icon-search"></i>
-    {{input placeholder=(t 'catalogPage.index.search.placeholder') class="form-control input-sm" value=search}}
+    {{input placeholder=(t 'catalogPage.index.search.placeholder') class="form-control input-sm" value=this.search}}
   </div>
 </section>
 
 <section class="r-plr15 clearfix">
-  {{#each arrangedContent as |catalogItem|}}
-    {{#catalog-box model=catalogItem showSource=showCatalogDropdown as |section|}}
+  {{#each this.arrangedContent as |catalogItem|}}
+    {{#catalog-box model=catalogItem showSource=this.showCatalogDropdown as |section|}}
       {{#if (eq section 'footer')}}
         {{#if (eq catalogItem.templateBase 'infra')}}
           {{#if catalogItem.exists}}
@@ -61,7 +61,7 @@
     {{/catalog-box}}
   {{else}}
     <div class="text-muted r-mt20">
-      {{#if showCatalogDropdown}}
+      {{#if this.showCatalogDropdown}}
         {{t 'catalogPage.index.noData.plural'}}
       {{else}}
         {{t 'catalogPage.index.noData.singular'}}

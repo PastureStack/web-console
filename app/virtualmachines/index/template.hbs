@@ -1,7 +1,7 @@
 <section class="header clearfix">
   <h1>{{t 'virtualMachinesPage.header'}}</h1>
 
-  {{#link-to "virtualmachines.new" classNames="btn btn-sm btn-primary"}}{{t 'virtualMachinesPage.linkTo'}}{{/link-to}}
+  <LinkTo @route="virtualmachines.new" class="btn btn-sm btn-primary">{{t 'virtualMachinesPage.linkTo'}}</LinkTo>
 </section>
 
 <section class="well instances">
@@ -16,7 +16,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each arranged as |instance|}}
+      {{#each this.arranged as |instance|}}
         {{container-row model=instance showCommand="no" tagName="tr" showActions=true}}
       {{else}}
         <tr><td colspan="5" class="text-center text-muted">{{t 'virtualMachinesPage.table.body.noData'}}</td></tr>

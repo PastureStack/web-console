@@ -1,0 +1,144 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+failures = []
+
+
+def fail(code, **fields):
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    failures.append(f"{code} {details}".rstrip())
+
+
+def canonical_sha256(path):
+    data = Path(path).read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock = json.loads(Path("package-lock.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+deps = package.get("devDependencies", {}) or {}
+
+expected_direct = {
+    "ember-cli": "6.12.0",
+    "ember-cli-htmlbars": "7.0.1",
+    "ember-resolver": "13.2.0",
+    "ember-source": "6.12.0",
+}
+for name, expected in expected_direct.items():
+    actual = deps.get(name)
+    if actual != expected:
+        fail("EMBER_DIRECT_VERSION_DRIFT", package=name, actual=actual, expected=expected)
+
+if (package.get("overrides", {}) or {}).get("ember-cli-htmlbars") != "7.0.1":
+    fail("EMBER_HTMLBARS_RECURSIVE_OVERRIDE_MISSING")
+
+if bower.get("dependencies"):
+    fail("BOWER_DEPENDENCIES_REMAIN", actual=",".join(sorted(bower["dependencies"])))
+
+packages = lock.get("packages", {}) or {}
+root = packages.get("", {}) or {}
+if (root.get("devDependencies", {}) or {}).get("ember-source") != "6.12.0":
+    fail("EMBER_LOCK_ROOT_DRIFT")
+
+ember = packages.get("node_modules/ember-source", {}) or {}
+expected_ember = {
+    "version": "6.12.0",
+    "resolved": "https://registry.npmjs.org/ember-source/-/ember-source-6.12.0.tgz",
+    "integrity": "sha512-cApfEKxltl2VWt0o24XISsdkpyqqtT8wG0/EWokjeyqBPRCOIej2PMzRkLAu3A5AWpuWoJ//yq04mDix7axA7w==",
+}
+for field, expected in expected_ember.items():
+    actual = ember.get(field)
+    if actual != expected:
+        fail("EMBER_LOCK_PROVENANCE_DRIFT", field=field, actual=actual, expected=expected)
+
+removed_runtime_files = [
+    "vendor/ember/ember.debug.js",
+    "vendor/ember/ember.prod.js",
+    "vendor/ember/ember-testing.js",
+    "vendor/ember/ember-template-compiler.js",
+    "vendor/ember/ember-module-shim.js",
+]
+for path in removed_runtime_files:
+    if Path(path).exists():
+        fail("EOL_EMBER_VENDOR_FILE_REMAINS", file=path)
+
+license_path = Path("vendor/ember/LICENSE")
+if not license_path.is_file():
+    fail("EMBER_LICENSE_MISSING", file=license_path)
+elif canonical_sha256(license_path) != "84e97eb6663fa5fa07f36661e6040ab8a557b165c13860e2e72c1a692ca3c2a0":
+    fail("EMBER_LICENSE_DRIFT")
+
+compat_path = Path("vendor/ember/ember-global-compat.js")
+if not compat_path.is_file():
+    fail("EMBER_GLOBAL_COMPAT_MISSING", file=compat_path)
+else:
+    compat = compat_path.read_text(encoding="utf-8")
+    for marker in ["requireModule('@ember/runloop')", "Object.prototype.hasOwnProperty.call(Ember.run, name)", "Ember.NativeArray.apply", "Ember.Component.reopen", "legacySendAction", "this._target", "target.send.apply", "root.find(selector)", "legacyTextInput"]:
+        if marker not in compat:
+            fail("EMBER_GLOBAL_COMPAT_MARKER_MISSING", marker=marker)
+
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+environment = Path("config/environment.js").read_text(encoding="utf-8")
+if "app.import('vendor/ember/ember-global-compat.js')" not in build:
+    fail("EMBER_GLOBAL_COMPAT_IMPORT_MISSING")
+for marker in [
+    "var emberLegalSource = new Funnel('vendor/ember'",
+    "include: ['LICENSE', 'UPSTREAM.md']",
+    "destDir: 'licenses/ember'",
+    "var emberFetchLegalSource = new Funnel('vendor/ember-fetch-compat'",
+    "destDir: 'licenses/ember-fetch'",
+    "var emberPowerSelectLegalSource = new Funnel('vendor/ember-power-select'",
+    "destDir: 'licenses/ember-power-select'",
+    "var emberBasicDropdownLegalSource = new Funnel('vendor/ember-basic-dropdown'",
+    "destDir: 'licenses/ember-basic-dropdown'",
+    "var runtimeLegalPackages = [",
+    "'ember-concurrency'",
+    "'ember-modifier'",
+    "new Funnel('vendor/runtime-licenses/' + packageName",
+    "destDir: 'licenses/runtime/' + packageName",
+    "emberLegalSource,",
+    "emberFetchLegalSource,",
+    "emberPowerSelectLegalSource,",
+    "emberBasicDropdownLegalSource",
+    "].concat(runtimeLegalSources)",
+]:
+    if marker not in build:
+        fail("EMBER_DISTRIBUTABLE_LICENSE_COPY_MISSING", marker=marker)
+for forbidden in ["ember.debug.js", "ember.prod.js", "ember-testing.js", "ember-module-shim.js"]:
+    if forbidden in build:
+        fail("EOL_EMBER_BUILD_REFERENCE_REMAINS", marker=forbidden)
+if "templateCompilerPath" in environment:
+    fail("EOL_TEMPLATE_COMPILER_OVERRIDE_REMAINS")
+
+jquery_path = Path("vendor/jquery/jquery.js")
+if not jquery_path.is_file() or "jQuery JavaScript Library v3.7.1" not in jquery_path.read_text(encoding="utf-8", errors="replace"):
+    fail("JQUERY_RUNTIME_VERSION_DRIFT")
+
+docs = Path("docs/modernization.md").read_text(encoding="utf-8")
+for phrase in [
+    "Ember 6.12 LTS Runtime And CLI",
+    "ember-source@6.12.0",
+    "Ember CLI 6.12.0",
+    "classic bundle boundary",
+]:
+    if phrase not in docs:
+        fail("EMBER_LTS_DOC_MISSING", phrase=phrase)
+
+if failures:
+    print("\n".join(failures))
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print("ui-ember-runtime-provenance-ok ember=6.12.0 ember_cli=6.12.0 jquery=3.7.1 bower_dependencies=0 vendored_runtime=absent")
+print("failure_count=0")
+PY

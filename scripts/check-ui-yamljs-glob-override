@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+if (package.get("devDependencies", {}) or {}).get("yamljs") != "0.3.0":
+    fail("YAMLJS_DIRECT_VERSION_UNEXPECTED", actual=(package.get("devDependencies", {}) or {}).get("yamljs"), expected="0.3.0")
+
+override = (package.get("overrides", {}) or {}).get("yamljs")
+if override is not None:
+    fail("YAMLJS_UNSAFE_OVERRIDE_PRESENT", actual=override)
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    yamljs = packages.get("node_modules/yamljs", {})
+    if yamljs.get("version") != "0.3.0":
+        fail("YAMLJS_LOCK_VERSION_UNEXPECTED", actual=yamljs.get("version"), expected="0.3.0")
+    expected_build_debt = {
+        "node_modules/yamljs/node_modules/glob": "7.2.3",
+        "node_modules/yamljs/node_modules/inflight": "1.0.6",
+    }
+    actual_build_debt = {
+        path: meta.get("version")
+        for path, meta in packages.items()
+        if path.startswith("node_modules/yamljs/node_modules/")
+        and path.rsplit("/", 1)[-1] in {"glob", "inflight"}
+    }
+    if actual_build_debt != expected_build_debt:
+        fail("YAMLJS_BUILD_DEBT_INVENTORY_DRIFT", actual=actual_build_debt, expected=expected_build_debt)
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_YAMLJS_BUILD_DEBT_RECORDED yamljs=0.3.0 glob=7.2.3 inflight=1.0.6 lockfile={lock_path} package_count={package_count}")
+print("The legacy YAML parser remains build-only. Its declared dependency graph is fail-closed here and in the exact P1 deprecation inventory instead of being force-overridden across incompatible APIs.")
+print("failure_count=0")
+PY

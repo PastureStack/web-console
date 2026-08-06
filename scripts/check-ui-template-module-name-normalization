@@ -1,0 +1,64 @@
+#!/usr/bin/env node
+'use strict';
+
+var assert = require('assert');
+var path = require('path');
+var babel = require('@babel/core');
+var normalizePlugin = require(path.join(__dirname, '..', 'lib', 'normalize-template-module-name-babel-plugin'));
+var webpackPlugin = require(path.join(__dirname, '..', 'lib', 'normalize-template-module-name-webpack-plugin'));
+
+assert.strictEqual(
+  normalizePlugin.normalizeModuleName('/tmp/build-a/node_modules/example-addon/dist/component.js'),
+  'node_modules/example-addon/dist/component.js'
+);
+assert.strictEqual(
+  normalizePlugin.normalizeModuleName('C:\\workspace\\node_modules\\example-addon\\index.js'),
+  'node_modules/example-addon/index.js'
+);
+assert.strictEqual(
+  normalizePlugin.normalizeModuleName('node_modules/example-addon/index.js'),
+  'node_modules/example-addon/index.js'
+);
+
+function compile(filename) {
+  return babel.transformSync([
+    "import { precompileTemplate } from '@ember/template-compilation';",
+    "export default precompileTemplate('Hello');"
+  ].join('\n'), {
+    filename: filename,
+    configFile: false,
+    babelrc: false,
+    plugins: [
+      normalizePlugin,
+      [
+        require.resolve('babel-plugin-ember-template-compilation'),
+        {
+          compilerPath: require.resolve('ember-source/dist/ember-template-compiler.js'),
+          enableLegacyModules: []
+        },
+        'ember-cli-htmlbars:inline-precompile'
+      ]
+    ]
+  }).code;
+}
+
+var filename = '/tmp/build-a/node_modules/example-addon/dist/component.js';
+var compiled = compile(filename);
+var independentlyCompiled = compile('/tmp/build-b/node_modules/example-addon/dist/component.js');
+
+assert(compiled.includes('"moduleName": "node_modules/example-addon/dist/component.js"'));
+assert(!compiled.includes(filename));
+assert.strictEqual(independentlyCompiled, compiled);
+
+var rules = [
+  { use: { loader: 'babel-loader-8', options: { plugins: [] } } },
+  { use: { loader: '/workspace/node_modules/babel-loader/lib/index.js', options: {} } },
+  { use: { loader: 'css-loader', options: {} } }
+];
+assert.strictEqual(webpackPlugin.injectNormalizer(rules), 2);
+assert.strictEqual(webpackPlugin.injectNormalizer(rules), 0);
+assert.strictEqual(rules[0].use.options.plugins[0], webpackPlugin.babelPluginPath);
+assert.strictEqual(rules[1].use.options.plugins[0], webpackPlugin.babelPluginPath);
+assert.deepStrictEqual(rules[2].use.options.plugins, undefined);
+
+console.log('UI_TEMPLATE_MODULE_NAME_NORMALIZATION_OK cases=8 failure_count=0');

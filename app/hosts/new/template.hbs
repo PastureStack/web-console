@@ -1,48 +1,48 @@
 <section class="header clearfix">
   <h1>
-    {{#link-to "infrastructure-tab"}}{{t 'hostsPage.new.header.linkTo'}}{{/link-to}}
+    <LinkTo @route="infrastructure-tab">{{t 'hostsPage.new.header.linkTo'}}</LinkTo>
     {{t 'hostsPage.new.header.text'}}
   </h1>
 </section>
 
-{{#if model.apiHostSet}}
-  {{#if (or showPicker showManage)}}
+{{#if this.model.apiHostSet}}
+  {{#if (or this.showPicker this.showManage)}}
     <section class="well r-mb0">
-      {{#if showPicker}}
+      {{#if this.showPicker}}
         <div class="nav nav-boxes checked-active">
 
-          {{#if allowCustom}}
-            <a {{action "switchDriver" "custom"}} alt="custom" class="nav-box-item driver machine-driver custom {{if (eq driver 'custom') 'active'}}" href="#"></a>
+          {{#if this.allowCustom}}
+            <a {{action "switchDriver" "custom"}} aria-label="{{t 'hostsPage.new.customDriver'}}" class="nav-box-item driver machine-driver custom {{if (eq this.driver 'custom') 'active'}}" href="#"></a>
           {{/if}}
 
-          {{#each sortedDrivers as |choice|}}
+          {{#each this.sortedDrivers as |choice|}}
             {{#if choice.hasUi}}
-              <a {{action "switchDriver" choice.name}} alt={{choice.name}} class="nav-box-item driver machine-driver {{choice.name}} {{if (eq choice.name driver) 'active'}}" href="#"></a>
+              <a {{action "switchDriver" choice.name}} aria-label={{choice.name}} class="nav-box-item driver machine-driver {{choice.name}}{{if (eq choice.name this.driver) 'active'}}" href="#"></a>
             {{/if}}
           {{/each}}
 
-          {{#if (and allowOther hasOther)}}
-            <a {{action "switchDriver" "other"}} alt="other" class="nav-box-item driver machine-driver other {{if (eq driver 'other') 'active'}}" href="#"></a>
+          {{#if (and this.allowOther this.hasOther)}}
+            <a {{action "switchDriver" "other"}} aria-label="{{t 'hostsPage.new.otherDriver'}}" class="nav-box-item driver machine-driver other {{if (eq this.driver 'other') 'active'}}" href="#"></a>
           {{/if}}
         </div>
       {{/if}}
-      {{#if showManage}}
+      {{#if this.showManage}}
         <p class="text-center small r-m0">
-          {{#link-to "admin-tab.machine"}}{{t 'hostsPage.new.manageLink'}}{{/link-to}}
+          <LinkTo @route="admin-tab.machine">{{t 'hostsPage.new.manageLink'}}</LinkTo>
         </p>
       {{/if}}
     </section>
   {{/if}}
 
-  {{#if driver}}
-    {{component (if (or (not driverObj) driverObj.hasUi) (concat "machine/driver-" driver) 'machine/driver-other')
-      cancel=(route-action 'cancel')
-      goBack=(route-action 'goBack')
-      clonedModel=model.clonedModel
-      driver=(concat driver 'Config')
-      schemas=model.schemas
-      typeDocumentations=model.typeDocumentations
-      availableDrivers=model.availableDrivers
+  {{#if this.driver}}
+    {{component (if (or (not this.driverObj) this.driverObj.hasUi) (concat "machine/driver-" this.driver) 'machine/driver-other')
+      cancel=(action "cancel")
+      goBack=(action "goBack")
+      clonedModel=this.model.clonedModel
+      driver=(concat this.driver 'Config')
+      schemas=this.model.schemas
+      typeDocumentations=this.model.typeDocumentations
+      availableDrivers=this.model.availableDrivers
     }}
   {{/if}}
 {{else}}

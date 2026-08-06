@@ -3,7 +3,7 @@ import Resource from 'ember-api-store/models/resource';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 import C from 'ui/utils/constants';
 import { download } from 'ui/utils/util';
-import { denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import { denormalizeIdArray } from 'ui/utils/api-store-references';
 
 export function activeIcon(stack)
 {
@@ -102,11 +102,11 @@ var Stack = Resource.extend({
     },
 
     viewCode: function() {
-      this.get('application').transitionToRoute('stack.code', this.get('id'));
+      this.get('router').transitionTo('stack.code', this.get('id'));
     },
 
     viewGraph: function() {
-      this.get('application').transitionToRoute('stack.graph', this.get('id'));
+      this.get('router').transitionTo('stack.graph', this.get('id'));
     },
 
     delete: function() {

@@ -1,5 +1,30 @@
 import Ember from 'ember';
 
+export function ungroupedSelectContent(content, groupPath='group') {
+  return (content || []).filter((option) => !Ember.get(option, groupPath));
+}
+
+export function groupedSelectContent(content, groupPath='group') {
+  let groups = [];
+
+  (content || []).forEach((option) => {
+    let key = Ember.get(option, groupPath);
+    if ( !key ) {
+      return;
+    }
+
+    let group = groups.find((item) => item.group === key);
+    if ( !group ) {
+      group = {group: key, options: []};
+      groups.push(group);
+    }
+
+    group.options.push(option);
+  });
+
+  return groups.sort((a, b) => String(a.group).localeCompare(String(b.group)));
+}
+
 export default Ember.Component.extend({
   tagName: 'select',
   // possible passed-in values with their defaults:
@@ -15,8 +40,13 @@ export default Ember.Component.extend({
   disabled: false,
   attributeBindings: ['disabled'],
 
-  ungroupedContent: null,
-  groupedContent: null,
+  ungroupedContent: Ember.computed('content.[]', 'content.@each.group', 'optionGroupPath', function() {
+    return ungroupedSelectContent(this.get('content'), this.get('optionGroupPath'));
+  }),
+
+  groupedContent: Ember.computed('content.[]', 'content.@each.group', 'optionGroupPath', function() {
+    return groupedSelectContent(this.get('content'), this.get('optionGroupPath'));
+  }),
 
   // shadow the passed-in `selection` to avoid
   // leaking changes to it via a 2-way binding
@@ -27,42 +57,6 @@ export default Ember.Component.extend({
     if (!this.get('content')) {
       this.set('content', []);
     }
-
-    this.set('ungroupedContent', Ember.computed('content.@each.'+this.get('optionGroupPath'), () => {
-      var groupPath = this.get('optionGroupPath');
-      var out = [];
-      (this.get('content')||[]).forEach((opt) => {
-        var key = Ember.get(opt, groupPath);
-        if ( !key )
-        {
-          out.push(opt);
-        }
-      });
-
-      return out;
-    }));
-
-    this.set('groupedContent', Ember.computed('content.@each.'+this.get('optionGroupPath'), () => {
-      var groupPath = this.get('optionGroupPath');
-      var out = [];
-
-      (this.get('content')||[]).forEach((opt) => {
-        var key = Ember.get(opt, groupPath);
-        if ( key )
-        {
-          var group = out.filterBy('group', key)[0];
-          if ( !group )
-          {
-            group = {group: key, options: []};
-            out.push(group);
-          }
-
-          group.options.push(opt);
-        }
-      });
-
-      return out.sortBy(groupPath);
-    }));
 
     this.on('change', this, this._change);
   },

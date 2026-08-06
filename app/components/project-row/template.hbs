@@ -1,25 +1,25 @@
 <td data-title="{{t 'generic.state'}}:" class="state">
-  {{badge-state model=model}}
+  {{badge-state model=this.model}}
 </td>
 <td data-title="{{t 'generic.name'}}:">
-  {{#link-to "settings.projects.detail" model.id (query-params editing=false)}}{{model.displayName}}{{/link-to}}
+  <LinkTo @route="settings.projects.detail" @model={{this.model.id}} @query={{hash editing=false}}>{{this.model.displayName}}</LinkTo>
 </td>
 <td data-title="{{t 'generic.description'}}:">
-  {{#if model.description}}{{model.description}}{{else}}<span class="text-muted">{{t 'projectRow.none'}}</span>{{/if}}
+  {{#if this.model.description}}{{this.model.description}}{{else}}<span class="text-muted">{{t 'projectRow.none'}}</span>{{/if}}
 </td>
 <td data-title="{{t 'projectRow.orchestration'}}:">
-  {{#if model.projectTemplate}}
-    {{model.projectTemplate.displayName}}
+  {{#if this.model.projectTemplate}}
+    {{this.model.projectTemplate.displayName}}
   {{else}}
     <span class="text-muted">{{t 'generic.none'}}</span>
   {{/if}}
 </td>
 <td data-title="{{t 'projectRow.orchestration'}}:">
-  {{model.displayOrchestration}}
+  {{this.model.displayOrchestration}}
 </td>
 <td data-title="{{t 'generic.default'}}:">
-  {{#if model.isDefault}}<i class="icon icon-check"></i>{{else}}<span class="text-muted">&ndash;</span>{{/if}}
+  {{#if this.model.isDefault}}<i class="icon icon-check"></i>{{else}}<span class="text-muted">&ndash;</span>{{/if}}
 </td>
 <td data-title="{{t 'generic.actions'}}:"class="actions">
-  {{action-menu model=model}}
+  {{action-menu model=this.model}}
 </td>

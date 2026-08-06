@@ -7,6 +7,7 @@ export default Ember.Route.extend({
   github         : Ember.inject.service(),
   language       : Ember.inject.service('user-language'),
   modal          : Ember.inject.service(),
+  oidc           : Ember.inject.service(),
   settings       : Ember.inject.service(),
 
   previousParams : null,
@@ -14,49 +15,67 @@ export default Ember.Route.extend({
   loadingShown   : false,
   loadingId      : 0,
   hideTimer      : null,
+  loadingWatchdog: null,
+  loadingTimeout : 30000,
   previousLang   : null,
 
+  init() {
+    this._super(...arguments);
+    this.registerShortcuts();
+  },
+
+  willDestroy() {
+    Ember.run.cancel(this.get('hideTimer'));
+    Ember.run.cancel(this.get('loadingWatchdog'));
+    this.hideLoadingOverlay();
+    this.unregisterShortcuts();
+    this._super(...arguments);
+  },
+
+  registerShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.register === 'function') {
+      manager.register(this, this.get('shortcuts'));
+    }
+  },
+
+  unregisterShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.unregister === 'function') {
+      manager.unregister(this);
+    }
+  },
+
   actions: {
+    didTransition() {
+      // The initial loading overlay is visible in the static HTML.  A fast
+      // route can complete without entering the loading substate, so always
+      // reconcile the overlay after the first successful render.
+      this.scheduleLoadingOverlayHide(this.get('loadingId'));
+      return true;
+    },
+
     loading(transition) {
       this.incrementProperty('loadingId');
       let id = this.get('loadingId');
-      Ember.run.cancel(this.get('hideTimer'));
+      this.showLoadingOverlay(id);
 
-      //console.log('Loading', id);
-      if ( !this.get('loadingShown') ) {
-        this.set('loadingShown', true);
-        //console.log('Loading Show', id);
-
-        $('#loading-underlay').stop().show().fadeIn({duration: 100, queue: false, easing: 'linear', complete: function() {
-          $('#loading-overlay').stop().show().fadeIn({duration: 200, queue: false, easing: 'linear'});
-        }});
+      let settled = () => this.scheduleLoadingOverlayHide(id);
+      if ( transition && typeof transition.then === 'function' ) {
+        // Handle both fulfilled and rejected/aborted transitions.  Supplying
+        // both callbacks also prevents an ignored finally() promise from
+        // becoming an unhandled rejection in modern Ember.
+        transition.then(settled, settled);
+      } else {
+        settled();
       }
-
-      transition.finally(() => {
-        var self = this;
-        function hide() {
-          //console.log('Loading hide', id);
-          self.set('loadingShown', false);
-          $('#loading-overlay').stop().fadeOut({duration: 200, queue: false, easing: 'linear', complete: function() {
-            $('#loading-underlay').stop().fadeOut({duration: 100, queue: false, easing: 'linear'});
-          }});
-        }
-
-        if ( this.get('loadingId') === id ) {
-          if ( transition.isAborted ) {
-            //console.log('Loading aborted', id, this.get('loadingId'));
-            this.set('hideTimer', Ember.run.next(hide));
-          } else {
-            //console.log('Loading finished', id, this.get('loadingId'));
-            hide();
-          }
-        }
-      });
 
       return true;
     },
 
     error(err, transition) {
+      this.hideLoadingOverlay();
+
       /*if we dont abort the transition we'll call the model calls again and fail transition correctly*/
       transition.abort();
 
@@ -67,7 +86,7 @@ export default Ember.Route.extend({
       }
 
       this.controllerFor('application').set('error',err);
-      this.transitionTo('failWhale');
+      this.get('router').transitionTo('failWhale');
 
       console.log('Application Error', (err ? err.stack : undefined));
     },
@@ -109,7 +128,7 @@ export default Ember.Route.extend({
           params.queryParams.errorMsg = errorMsg;
         }
 
-        this.transitionTo('login', params);
+        this.get('router').transitionTo('login', params);
       });
     },
 
@@ -129,6 +148,53 @@ export default Ember.Route.extend({
     'shift+l': 'langToggle',
   },
 
+  showLoadingOverlay(id) {
+    Ember.run.cancel(this.get('hideTimer'));
+    Ember.run.cancel(this.get('loadingWatchdog'));
+    this.setProperties({
+      hideTimer      : null,
+      loadingShown   : true,
+      loadingWatchdog: Ember.run.later(this, function() {
+        this.hideLoadingOverlay(id);
+      }, this.get('loadingTimeout')),
+    });
+
+    // Stop both layers independently.  The previous nested fade callback
+    // could re-show the overlay after a newer transition had already hidden
+    // it, leaving the application permanently blocked.
+    Ember.$('#loading-underlay, #loading-overlay')
+      .stop(true, true)
+      .css('opacity', 1)
+      .show();
+  },
+
+  scheduleLoadingOverlayHide(id) {
+    if ( id !== this.get('loadingId') ) {
+      return;
+    }
+
+    Ember.run.cancel(this.get('hideTimer'));
+    this.set('hideTimer', Ember.run.scheduleOnce('afterRender', this, function() {
+      this.hideLoadingOverlay(id);
+    }));
+  },
+
+  hideLoadingOverlay(expectedId) {
+    if ( expectedId !== undefined && expectedId !== this.get('loadingId') ) {
+      return;
+    }
+
+    Ember.run.cancel(this.get('hideTimer'));
+    Ember.run.cancel(this.get('loadingWatchdog'));
+    this.setProperties({
+      hideTimer      : null,
+      loadingShown   : false,
+      loadingWatchdog: null,
+    });
+
+    Ember.$('#loading-overlay, #loading-underlay').stop(true, true).hide();
+  },
+
   finishLogin() {
     let session = this.get('session');
 
@@ -139,21 +205,23 @@ export default Ember.Route.extend({
       console.log('Going back to', backTo);
       window.location.href = backTo;
     } else {
-      this.replaceWith('authenticated');
+      this.get('router').replaceWith('authenticated');
     }
   },
 
   model(params, transition) {
     let github   = this.get('github');
     let stateMsg = 'Authorization state did not match, please try again.';
+    let isOidcCallback = transition.targetName === 'login.oidc-auth';
 
-    this.get('language').initLanguage();
+    let languagePromise = this.get('language').initLanguage();
 
     transition.finally(() => {
       this.controllerFor('application').setProperties({
         state: null,
         code: null,
         error_description: null,
+        oidcError: null,
         redirectTo: null,
       });
     });
@@ -169,7 +237,42 @@ export default Ember.Route.extend({
       this.controllerFor('application').set('isPopup', true);
     }
 
-    if ( params.isTest ) {
+    if ( isOidcCallback && (params.code || params.oidcError) ) {
+      if ( window.opener && !window.opener.closed && typeof window.opener.onOidcTest === 'function' ) {
+        window.opener.onOidcTest(params.oidcError, params.error_description, params.code, params.state);
+        transition.abort();
+        setTimeout(function() {
+          window.close();
+        }, 250);
+        return Ember.RSVP.reject('oidcTest');
+      }
+
+      let oidcCode;
+      try {
+        oidcCode = this.get('oidc').consumeAuthorization({
+          code: params.code,
+          error: params.oidcError,
+          errorDescription: params.error_description,
+          state: params.state,
+        });
+      } catch (err) {
+        transition.abort();
+        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
+        return Ember.RSVP.reject(err);
+      }
+
+      return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
+        transition.abort();
+        if ( xhr.body && xhr.body.mfaRequired ) {
+          this.get('router').transitionTo('login');
+        } else {
+          this.finishLogin();
+        }
+      }).catch((err) => {
+        transition.abort();
+        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
+      });
+    } else if ( !isOidcCallback && params.isTest ) {
       if ( github.stateMatches(params.state) ) {
         reply(params.error_description, params.code);
       } else {
@@ -180,19 +283,23 @@ export default Ember.Route.extend({
 
       return Ember.RSVP.reject('isTest');
 
-    } else if ( params.code ) {
+    } else if ( !isOidcCallback && params.code ) {
 
       if ( github.stateMatches(params.state) ) {
-        return this.get('access').login(params.code).then(() => {
+        return languagePromise.then(() => this.get('access').login(params.code)).then((xhr) => {
           // Abort the orignial transition that was coming in here since
           // we'll redirect the user manually in finishLogin
           // if we dont then model hook runs twice to finish the transition itself
           transition.abort();
           // Can't call this.send() here because the initial transition isn't done yet
-          this.finishLogin();
+          if ( xhr.body && xhr.body.mfaRequired ) {
+            this.get('router').transitionTo('login');
+          } else {
+            this.finishLogin();
+          }
         }).catch((err) => {
           transition.abort();
-          this.transitionTo('login', {queryParams: { errorMsg: err.message}});
+          this.get('router').transitionTo('login', {queryParams: { errorMsg: err.message}});
         }).finally(() => {
           this.controllerFor('application').setProperties({
             state: null,
@@ -209,6 +316,8 @@ export default Ember.Route.extend({
         return Ember.RSVP.reject(obj);
       }
     }
+
+    return languagePromise;
 
     function reply(err,code) {
       try {
@@ -233,7 +342,7 @@ export default Ember.Route.extend({
     let agent = window.navigator.userAgent.toLowerCase();
 
     if ( agent.indexOf('msie ') >= 0 || agent.indexOf('trident/') >= 0 ) {
-      this.replaceWith('ie');
+      this.get('router').replaceWith('ie');
       return;
     }
 

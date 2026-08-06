@@ -814,12 +814,11 @@ WebUtil.dirObj = function (obj, depth, parent) {
             // Recurse attributes that are objects
             msg += WebUtil.dirObj(obj[i], depth - 1, parent + "." + i);
         } else {
-            //val = new String(obj[i]).replace("\n", " ");
             var val = "";
             if (typeof(obj[i]) === "undefined") {
                 val = "undefined";
             } else {
-                val = obj[i].toString().replace("\n", " ");
+                val = obj[i].toString().replace(/[\r\n]+/g, " ");
             }
             if (val.length > 30) {
                 val = val.substr(0, 30) + "...";

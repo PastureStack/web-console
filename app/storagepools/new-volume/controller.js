@@ -21,7 +21,7 @@ export default Ember.Controller.extend(NewOrEdit, {
   },
 
   doneSaving() {
-    this.transitionToRoute('storagepools');
+    this.get('router').transitionTo('storagepools');
   },
 
   actions: {

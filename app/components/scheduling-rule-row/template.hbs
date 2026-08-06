@@ -1,85 +1,85 @@
 <td><div class="form-control-static input-sm">{{t 'schedulingRuleRow.theHost'}}</div></td>
 <td>
-  {{#if editing}}
+  {{#if this.editing}}
     {{new-select
       classNames="form-control input-sm"
-      content=schedulingRuleSuffixChoices
+      content=this.schedulingRuleSuffixChoices
       localizedLabel=true
-      value=suffix
+      value=this.suffix
     }}
   {{else}}
-    <div><strong>{{getSuffixLabel}}</strong></div>
+    <div><strong>{{this.getSuffixLabel}}</strong></div>
   {{/if}}
 </td>
 <td><div class="form-control-static text-center input-sm">{{t 'schedulingRuleRow.haveA'}}</div></td>
 <td>
-  {{#if editing}}
+  {{#if this.editing}}
     {{new-select
       classNames="form-control input-sm"
-      content=schedulingRuleKindChoices
+      content=this.schedulingRuleKindChoices
       localizedLabel=true
-      value=kind
+      value=this.kind
     }}
   {{else}}
-    <div><strong>{{kind}}</strong></div>
+    <div><strong>{{this.kind}}</strong></div>
   {{/if}}
 </td>
 <td>
-  {{#if (not (or (eq kind "service_name") (eq kind "container_name")))}}
+  {{#if (not (or (eq this.kind "service_name") (eq this.kind "container_name")))}}
     <div class="form-control-static text-center input-sm">{{t 'schedulingRuleRow.of'}}</div>
   {{/if}}
 </td>
 <td>
-  {{#if (eq kind "host_label")}}
-    {{#if editing}}
+  {{#if (eq this.kind "host_label")}}
+    {{#if this.editing}}
       <div class="input-group">
-        {{input type="text" class="form-control input-sm" value=userKey}}
+        {{input type="text" class="form-control input-sm" value=this.userKey}}
         <div class="input-group-btn">
           <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu">
-            {{#each hostLabelKeyChoices as |key|}}
+            {{#each this.hostLabelKeyChoices as |key|}}
               <li><a {{action "setKey" key}}>{{key}}</a></li>
             {{/each}}
           </ul>
         </div>
       </div>
     {{else}}
-      <div><strong>{{userKey}}</strong></div>
+      <div><strong>{{this.userKey}}</strong></div>
     {{/if}}
   {{/if}}
-  {{#if (eq kind "container_label")}}
-    {{#if editing}}
+  {{#if (eq this.kind "container_label")}}
+    {{#if this.editing}}
       <div class="input-group">
-        {{input type="text" class="form-control input-sm" value=userKey}}
+        {{input type="text" class="form-control input-sm" value=this.userKey}}
         <div class="input-group-btn">
           <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu">
-            {{#each containerLabelKeyChoices as |key|}}
+            {{#each this.containerLabelKeyChoices as |key|}}
               <li><a {{action "setKey" key}}>{{key}}</a></li>
             {{/each}}
           </ul>
         </div>
       </div>
     {{else}}
-      <div><strong>{{userKey}}</strong></div>
+      <div><strong>{{this.userKey}}</strong></div>
     {{/if}}
   {{/if}}
 </td>
 <td>
-  {{#if (not (or (eq kind "service_name") (eq kind "container_name")))}}
+  {{#if (not (or (eq this.kind "service_name") (eq this.kind "container_name")))}}
     <div class="form-control-static text-center input-sm">=</div>
   {{/if}}
 </td>
 <td>
-  {{#if (eq kind "host_label")}}
-    {{#if editing}}
-      <div class="{{if hostLabelValueChoices 'input-group'}}">
-        {{input type="text" class="form-control input-sm" value=userValue}}
-        {{#if hostLabelValueChoices.length}}
+  {{#if (eq this.kind "host_label")}}
+    {{#if this.editing}}
+      <div class="{{if this.hostLabelValueChoices 'input-group'}}">
+        {{input type="text" class="form-control input-sm" value=this.userValue}}
+        {{#if this.hostLabelValueChoices.length}}
           <div class="input-group-btn">
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-              {{#each hostLabelValueChoices as |value|}}
+              {{#each this.hostLabelValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
             </ul>
@@ -87,18 +87,18 @@
         {{/if}}
       </div>
     {{else}}
-      <div><strong>{{userValue}}</strong></div>
+      <div><strong>{{this.userValue}}</strong></div>
     {{/if}}
   {{/if}}
-  {{#if (eq kind "container_label")}}
-    {{#if editing}}
-      <div class="{{if containerLabelValueChoices 'input-group'}}">
-        {{input type="text" class="form-control input-sm" value=userValue}}
-        {{#if containerLabelValueChoices.length}}
+  {{#if (eq this.kind "container_label")}}
+    {{#if this.editing}}
+      <div class="{{if this.containerLabelValueChoices 'input-group'}}">
+        {{input type="text" class="form-control input-sm" value=this.userValue}}
+        {{#if this.containerLabelValueChoices.length}}
           <div class="input-group-btn">
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-              {{#each containerLabelValueChoices as |value|}}
+              {{#each this.containerLabelValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
             </ul>
@@ -106,18 +106,18 @@
         {{/if}}
       </div>
     {{else}}
-      <div><strong>{{userValue}}</strong></div>
+      <div><strong>{{this.userValue}}</strong></div>
     {{/if}}
   {{/if}}
-  {{#if (eq kind "service_name")}}
-    {{#if editing}}
-      <div class="{{if serviceValueChoices 'input-group'}}">
-        {{input type="text" class="form-control input-sm" value=userValue}}
-         {{#if serviceValueChoices.length}}
+  {{#if (eq this.kind "service_name")}}
+    {{#if this.editing}}
+      <div class="{{if this.serviceValueChoices 'input-group'}}">
+        {{input type="text" class="form-control input-sm" value=this.userValue}}
+         {{#if this.serviceValueChoices.length}}
           <div class="input-group-btn">
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-              {{#each serviceValueChoices as |value|}}
+              {{#each this.serviceValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
             </ul>
@@ -125,18 +125,18 @@
         {{/if}}
       </div>
     {{else}}
-      <div><strong>{{userValue}}</strong></div>
+      <div><strong>{{this.userValue}}</strong></div>
     {{/if}}
   {{/if}}
-  {{#if (eq kind "container_name")}}
-    {{#if editing}}
-      <div class="{{if containerValueChoices 'input-group'}}">
-        {{input type="text" class="form-control input-sm" value=userValue}}
-         {{#if containerValueChoices.length}}
+  {{#if (eq this.kind "container_name")}}
+    {{#if this.editing}}
+      <div class="{{if this.containerValueChoices 'input-group'}}">
+        {{input type="text" class="form-control input-sm" value=this.userValue}}
+         {{#if this.containerValueChoices.length}}
           <div class="input-group-btn">
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu dropdown-menu-right" role="menu">
-              {{#each containerValueChoices as |value|}}
+              {{#each this.containerValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
             </ul>
@@ -144,11 +144,11 @@
         {{/if}}
       </div>
     {{else}}
-      <div><strong>{{userValue}}</strong></div>
+      <div><strong>{{this.userValue}}</strong></div>
     {{/if}}
   {{/if}}
 </td>
-{{#if editing}}
+{{#if this.editing}}
   <td class="text-right">
     <button class="btn btn-primary btn-sm" {{action "remove"}}><i class="icon icon-minus"/></button>
   </td>

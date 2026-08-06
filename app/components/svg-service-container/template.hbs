@@ -1,26 +1,26 @@
-<rect width="{{width}}" height="{{height}}" style="opacity: .1;"/>
-<foreignObject width="{{width}}" height="{{height}}">
+<rect width="{{this.width}}" height="{{this.height}}" style="opacity: .1;" />
+<foreignObject width="{{this.width}}" height="{{this.height}}">
   {{#if true}}
     {{! This seemingly useless if makes the foreignObject work for reasons unknown}}
     <body>
-      <div class="node container" style="height:{{height}}px;width:{{width}}px" xmlns="http://www.w3.org/1999/xhtml">
-        <div class="state {{stateBackground}}"></div>
+      <div class="node container" style="height:{{this.height}}px;width:{{this.width}}px" xmlns="http://www.w3.org/1999/xhtml">
+        <div class="state {{this.stateBackground}}"></div>
         <div class="row">
-          <div class="badge pull-right"><i class="icon icon-container"></i> {{containerCount}}</div>
-          {{#if node.service.secondaryLaunchConfigs}}
-            <span class="label label-default label-sidekick pull-right">{{t svgServiceContainer.sidekicks}}</span>
+          <div class="badge pull-right"><i class="icon icon-container"></i> {{this.containerCount}}</div>
+          {{#if this.node.service.secondaryLaunchConfigs}}
+            <span class="label label-default label-sidekick pull-right">{{t this.svgServiceContainer.sidekicks}}</span>
           {{/if}}
         </div>
         <div class="row title">
-          <h5>{{node.service.name}}</h5>
+          <h5>{{this.node.service.name}}</h5>
         </div>
         <div class="row actions">
-          {{action-menu model=node.service size='xs'}}
+          {{action-menu model=this.node.service size='xs'}}
         </div>
-        {{#if (not-eq node.service.displayType 'Service')}}
+        {{#if (not-eq this.node.service.displayType 'Service')}}
           <div class="container-badge">
             <div class="badge service">
-              {{node.service.displayType}}
+              {{this.node.service.displayType}}
             </div>
           </div>
         {{/if}}

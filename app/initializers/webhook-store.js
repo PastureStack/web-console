@@ -1,6 +1,6 @@
-import initializer from 'ember-api-store/initializers/store';
+import initializeApiStore from 'ui/utils/initialize-api-store';
 
 export default {
   name: 'webhook-store',
-  initialize: initializer('webhook-store','webhookStore')
+  initialize: initializeApiStore('webhook-store','webhookStore')
 };

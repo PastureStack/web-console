@@ -12,7 +12,7 @@ export default Ember.Controller.extend({
       if ( this.get('upgrade') ) {
         this.send('goToPrevious','stacks');
       } else {
-        return this.transitionToRoute('stack', this.get('model.service.stackId'));
+        return this.get('router').transitionTo('stack', this.get('model.service.stackId'));
       }
     },
 

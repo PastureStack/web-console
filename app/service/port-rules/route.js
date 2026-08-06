@@ -4,7 +4,7 @@ export default Ember.Route.extend({
   model: function() {
     let service = this.modelFor('service').get('service');
     if ( service.get('type').toLowerCase() !== 'loadbalancerservice' ) {
-      this.transitionTo('service.ports');
+      this.get('router').transitionTo('service.ports');
       return;
     }
 

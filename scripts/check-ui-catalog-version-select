@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+cd "$repo_root"
+
+required_files=(
+  app/components/new-select/component.js
+  app/components/schema/input-enum/template.hbs
+  app/utils/catalog-question-answer.js
+  app/utils/localized-catalog-field.js
+  app/utils/catalog-version-options.js
+  tests/unit/utils/catalog-question-answer-test.js
+  tests/unit/utils/localized-catalog-field-test.js
+  tests/unit/components/new-select-test.js
+  tests/unit/utils/catalog-version-options-test.js
+  docs/catalog-upgrade-contract.md
+)
+
+for path in "${required_files[@]}"; do
+  test -f "$path"
+done
+
+grep -F "ungroupedContent: Ember.computed(" app/components/new-select/component.js >/dev/null
+grep -F "groupedContent: Ember.computed(" app/components/new-select/component.js >/dev/null
+grep -F "catalogVersionOptions(links, currentOption)" app/catalog-tab/launch/route.js >/dev/null
+grep -F "resourceValue(results.upgrade, 'upgradeVersionLinks') || {}" app/catalog-tab/launch/route.js >/dev/null
+grep -F '{{#each this.field.options as |choice|}}' app/components/schema/input-enum/template.hbs >/dev/null
+grep -F "isCatalogQuestionAnswerMissing(item.answer)" app/components/new-catalog/component.js >/dev/null
+grep -F "isCatalogQuestionAnswerMissing(false)" tests/unit/utils/catalog-question-answer-test.js >/dev/null
+grep -F "isCatalogQuestionAnswerMissing(0)" tests/unit/utils/catalog-question-answer-test.js >/dev/null
+grep -F "mergeCatalogLocalizationLabels(" app/components/new-catalog/component.js >/dev/null
+grep -F "this.get('templateRequestSerial') !== requestSerial" app/components/new-catalog/component.js >/dev/null
+grep -F "an immutable older revision reuses localized metadata learned from the target revision" tests/unit/utils/localized-catalog-field-test.js >/dev/null
+
+if grep -F '{{#each this.field.options as |option|}}' app/components/schema/input-enum/template.hbs; then
+  echo 'Catalog enum choices still shadow the native option element in Ember templates' >&2
+  exit 1
+fi
+
+if grep -F "this.set('ungroupedContent', Ember.computed" app/components/new-select/component.js; then
+  echo 'Catalog choices still depend on an unsupported instance-level computed descriptor' >&2
+  exit 1
+fi
+
+if grep -F "this.set('groupedContent', Ember.computed" app/components/new-select/component.js; then
+  echo 'Grouped choices still depend on an unsupported instance-level computed descriptor' >&2
+  exit 1
+fi
+
+node <<'NODE'
+const fs = require('fs');
+const compiler = require('./node_modules/ember-source/dist/ember-template-compiler.js');
+
+const source = fs.readFileSync('app/components/schema/input-enum/template.hbs', 'utf8');
+const compiled = compiler.precompile(source, {
+  moduleName: 'ui/components/schema/input-enum/template.hbs',
+});
+
+if (!compiled.includes('[10,\\"option\\"]')) {
+  throw new Error('CATALOG_ENUM_NATIVE_OPTION_NOT_COMPILED');
+}
+
+if (compiled.includes('[8,[30,1]')) {
+  throw new Error('CATALOG_ENUM_CHOICE_COMPILED_AS_DYNAMIC_COMPONENT');
+}
+NODE
+
+printf 'UI_CATALOG_VERSION_SELECT_OK mapping=upgradeVersionLinks rendering=reactive-native-select enum=native-options localization=immutable-revision-fallback requests=latest-only\n'

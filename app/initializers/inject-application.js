@@ -1,7 +1,10 @@
-export function initialize(application) {
-  // Injects all Ember components & models (for actions) with the application controler, for modals
-  application.inject('component', 'application', 'controller:application');
-  application.inject('model',     'application', 'controller:application');
+import Component from '@ember/component';
+import Resource from 'ember-api-store/models/resource';
+import ownerLookup from 'ui/utils/owner-lookup';
+
+export function initialize() {
+  Component.reopen({ application: ownerLookup('controller:application') });
+  Resource.reopen({ application: ownerLookup('controller:application') });
 }
 
 export default {
