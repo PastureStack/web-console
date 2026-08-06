@@ -153,9 +153,9 @@ export default Ember.Mixin.create({
     this.set('connected', false);
 
     console.log('Subscribe disconnected ' + this.forStr());
-    if ( this.get('reconnect') ) {
-      this.connectSubscribe();
-    }
+    // Socket owns the reconnect timer. Starting another connection from this
+    // callback races Socket._closed(), leaving two connection attempts that
+    // compete for the same _socket slot after a server restart.
   },
 
   subscribePing: function() {

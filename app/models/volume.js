@@ -1,6 +1,6 @@
 import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
-import { denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import { denormalizeIdArray } from 'ui/utils/api-store-references';
 
 var Volume = Resource.extend({
   type: 'volume',

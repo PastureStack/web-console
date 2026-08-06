@@ -1,0 +1,8 @@
+{
+  "name": "exists-sync",
+  "version": "1.0.0-rc16.0",
+  "private": true,
+  "description": "RC16 compatibility wrapper for exists-sync using fs.existsSync.",
+  "license": "ISC",
+  "main": "index.js"
+}

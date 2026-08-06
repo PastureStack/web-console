@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+from pathlib import Path
+
+util = Path("app/utils/util.js").read_text()
+test = Path("tests/unit/utils/util-test.js").read_text()
+environment = Path("config/environment.js").read_text()
+
+if ".dasherize()" in util:
+    raise SystemExit("camelToTitle must not depend on a String prototype extension")
+
+for marker in (
+    ".replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')",
+    ".replace(/([a-z\\d])([A-Z])/g, '$1-$2')",
+    ".toLowerCase()",
+    ".filter((part) => part.length > 0)",
+):
+    if marker not in util:
+        raise SystemExit(f"native camelToTitle normalization missing marker: {marker}")
+
+for marker in (
+    "camelToTitle does not depend on legacy String prototype extensions",
+    "util.camelToTitle('volumeDriver')",
+    "util.camelToTitle('HTTPServerURL')",
+):
+    if marker not in test:
+        raise SystemExit(f"camelToTitle regression test missing marker: {marker}")
+
+if "EXTEND_PROTOTYPES: {\n        Array: true\n      }" not in environment:
+    raise SystemExit("Ember prototype compatibility boundary changed unexpectedly")
+PY_CHECK
+
+echo "UI_STRING_PROTOTYPE_COMPAT_OK camel_to_title=native ember_string_prototype=disabled"

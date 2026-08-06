@@ -10,7 +10,7 @@ export default Ember.Controller.extend({
 
   actions: {
     done() {
-      return this.transitionToRoute('stack', this.get('model.service.stackId'));
+      return this.get('router').transitionTo('stack', this.get('model.service.stackId'));
     },
 
     cancel() {

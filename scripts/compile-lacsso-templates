@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+"use strict";
+
+const fs = require("fs");
+const path = require("path");
+const { precompile } = require("ember-source/dist/ember-template-compiler.js");
+
+const repoRoot = path.resolve(__dirname, "..");
+const vendorRoot = path.join(repoRoot, "vendor", "lacsso");
+const sourceRoot = path.join(vendorRoot, "upstream-templates");
+const templates = [
+  "addon/components/save-cancel/template.hbs",
+  "addon/templates/components/modal-root.hbs",
+  "addon/templates/components/sortable-table.hbs",
+  "addon/templates/components/sortable-thead.hbs",
+];
+
+for (const relativePath of templates) {
+  const sourcePath = path.join(sourceRoot, relativePath);
+  const outputPath = path.join(vendorRoot, relativePath.replace(/\.hbs$/, ".js"));
+  const moduleName = `lacsso/${relativePath.replace(/^addon\//, "")}`;
+  const compiled = precompile(fs.readFileSync(sourcePath, "utf8"), { moduleName });
+  const output = [
+    "// Generated from the maintained upstream-derived template by ember-source 6.12.0.",
+    "import { createTemplateFactory } from '@ember/template-factory';",
+    "",
+    `export default createTemplateFactory(${compiled});`,
+    "",
+  ].join("\n");
+
+  fs.writeFileSync(outputPath, output, "utf8");
+  process.stdout.write(`compiled ${relativePath} -> ${path.relative(repoRoot, outputPath)}\n`);
+}

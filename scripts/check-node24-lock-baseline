@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="package-lock.json"
+node_image=${PASTURESTACK_NODE24_IMAGE:-node:24-bookworm}
+
+if ! command -v docker >/dev/null 2>&1; then
+  echo "NODE24_LOCK_BASELINE_DOCKER_MISSING image=$node_image"
+  exit 1
+fi
+
+if [[ ! -f "$lock_path" ]]; then
+  echo "NODE24_LOCK_BASELINE_MISSING file=$lock_path"
+  exit 1
+fi
+
+if [[ ! -f scripts/node24-lock-smoke.js ]]; then
+  echo "NODE24_LOCK_SMOKE_MISSING file=scripts/node24-lock-smoke.js"
+  exit 1
+fi
+
+docker run --rm \
+  -v "$repo_root:/work:ro" \
+  -w /work \
+  "$node_image" \
+  bash -lc '
+    set -euo pipefail
+    tmpdir=$(mktemp -d)
+    cp package.json "$tmpdir/package.json"
+    cp package-lock.json "$tmpdir/package-lock.json"
+    cp scripts/node24-lock-smoke.js "$tmpdir/node24-lock-smoke.js"
+    mkdir -p "$tmpdir/public/licenses"
+    cp public/licenses/qrcode-generator-MIT.txt "$tmpdir/public/licenses/qrcode-generator-MIT.txt"
+    mkdir -p "$tmpdir/vendor"
+    cp vendor/novnc.js "$tmpdir/vendor/novnc.js"
+    cp vendor/position-calculator.js "$tmpdir/vendor/position-calculator.js"
+    mkdir -p "$tmpdir/vendor/bootstrap-multiselect"
+    cp vendor/bootstrap-multiselect/bootstrap-multiselect.js "$tmpdir/vendor/bootstrap-multiselect/bootstrap-multiselect.js"
+    cp vendor/bootstrap-multiselect/bootstrap-multiselect.css "$tmpdir/vendor/bootstrap-multiselect/bootstrap-multiselect.css"
+    mkdir -p "$tmpdir/vendor/dagre-d3"
+    cp vendor/dagre-d3/dagre-d3.core.js "$tmpdir/vendor/dagre-d3/dagre-d3.core.js"
+    mkdir -p "$tmpdir/vendor/bootstrap-sass"
+    cp -a vendor/bootstrap-sass/package.json vendor/bootstrap-sass/LICENSE vendor/bootstrap-sass/UPSTREAM.md vendor/bootstrap-sass/assets "$tmpdir/vendor/bootstrap-sass/"
+    mkdir -p "$tmpdir/vendor/ember-power-select"
+    cp -a vendor/ember-power-select/package.json vendor/ember-power-select/LICENSE.md vendor/ember-power-select/UPSTREAM.md vendor/ember-power-select/app "$tmpdir/vendor/ember-power-select/"
+    mkdir -p "$tmpdir/vendor/ember-basic-dropdown"
+    cp -a vendor/ember-basic-dropdown/LICENSE.md vendor/ember-basic-dropdown/UPSTREAM.md vendor/ember-basic-dropdown/app "$tmpdir/vendor/ember-basic-dropdown/"
+    mkdir -p "$tmpdir/vendor/ember" "$tmpdir/vendor/jquery"
+    cp vendor/ember/ember-global-compat.js "$tmpdir/vendor/ember/ember-global-compat.js"
+    cp vendor/ember/LICENSE vendor/ember/UPSTREAM.md "$tmpdir/vendor/ember/"
+    cp vendor/jquery/jquery.js "$tmpdir/vendor/jquery/jquery.js"
+    mkdir -p "$tmpdir/vendor/ansi-up" "$tmpdir/vendor/semver" "$tmpdir/vendor/shell-quote"
+    cp vendor/ansi-up/ansi-up-global.js "$tmpdir/vendor/ansi-up/ansi-up-global.js"
+    cp vendor/semver/semver-global.js "$tmpdir/vendor/semver/semver-global.js"
+    cp vendor/shell-quote/shell-quote-global.js "$tmpdir/vendor/shell-quote/shell-quote-global.js"
+    cp -a vendor/lacsso "$tmpdir/vendor/lacsso"
+    cp -a vendor/ember-cli-pagination "$tmpdir/vendor/ember-cli-pagination"
+    cp -a vendor/ember-rl-dropdown "$tmpdir/vendor/ember-rl-dropdown"
+    cp -a vendor/core-js-compat "$tmpdir/vendor/core-js-compat"
+    cp -a vendor/ember-api-store-compat "$tmpdir/vendor/ember-api-store-compat"
+    cp -a vendor/ember-fetch-compat "$tmpdir/vendor/ember-fetch-compat"
+    cp -a vendor/exists-sync-compat "$tmpdir/vendor/exists-sync-compat"
+    cp -a vendor/glob-cjs-default-compat "$tmpdir/vendor/glob-cjs-default-compat"
+    cp -a vendor/inflight-compat "$tmpdir/vendor/inflight-compat"
+    cp -a vendor/lodash-template-compat "$tmpdir/vendor/lodash-template-compat"
+    cp -a vendor/osenv-compat "$tmpdir/vendor/osenv-compat"
+    cp -a vendor/rimraf-callback-compat "$tmpdir/vendor/rimraf-callback-compat"
+    cp -a vendor/sort-package-json-compat "$tmpdir/vendor/sort-package-json-compat"
+    cp -a vendor/source-map-url-compat "$tmpdir/vendor/source-map-url-compat"
+    cd "$tmpdir"
+    npm ci --ignore-scripts --no-audit --no-fund
+    ./node_modules/.bin/ember --version
+    ./node_modules/.bin/testem --version
+    node node24-lock-smoke.js
+  '
+
+echo "UI_NODE24_RELEASE_LOCK_INSTALL_OK image=$node_image lockfile=$lock_path"
+echo "The tracked release lock is restorable with npm ci on Node 24 and passes Sass, clean-css, ansi_up, serialize-javascript, xterm, XML, Ember 6.12 LTS and Ember CLI 6.12, lacsso vendor-chain checks, reviewed first-party compatibility packages, exact addon-owned P1 build-debt checks, ember-cli-terser replacement, and socket.io transport smoke checks, plus reviewed noVNC, PositionCalculator, bootstrap-multiselect, bootstrap-sass, ember-power-select and ember-basic-dropdown Sass, dagre, graphlib, jQuery, ansi_up, semver, and shell-quote browser-source smokes."
+echo "failure_count=0"

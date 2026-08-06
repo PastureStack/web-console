@@ -1,3 +1,10 @@
+$accent-two: null !default;
+$brand-info: null !default;
+$link-color: null !default;
+$screen-xs-max: null !default;
+$table-border-color: null !default;
+$well-bg: null !default;
+
 /*0-694*/
 @media (max-width: $screen-xs-max) {
   HEADER #navbar LI {
@@ -163,7 +170,8 @@
       padding: 5px 15px 5px 30px;
     }
 
-    .dropdown-menu > li.active > a {
+    .dropdown-menu > li.active > a,
+    .dropdown-menu > li > a.active {
       font-weight: bold;
       color: white;
     }
@@ -305,7 +313,8 @@
       padding: 5px 15px 5px 30px;
     }
 
-    .dropdown-menu > li.active > a {
+    .dropdown-menu > li.active > a,
+    .dropdown-menu > li > a.active {
       font-weight: bold;
       color: white;
     }

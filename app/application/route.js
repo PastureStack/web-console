@@ -7,6 +7,7 @@ export default Ember.Route.extend({
   github         : Ember.inject.service(),
   language       : Ember.inject.service('user-language'),
   modal          : Ember.inject.service(),
+  oidc           : Ember.inject.service(),
   settings       : Ember.inject.service(),
 
   previousParams : null,
@@ -16,7 +17,39 @@ export default Ember.Route.extend({
   hideTimer      : null,
   previousLang   : null,
 
+  init() {
+    this._super(...arguments);
+    this.registerShortcuts();
+  },
+
+  willDestroy() {
+    this.unregisterShortcuts();
+    this._super(...arguments);
+  },
+
+  registerShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.register === 'function') {
+      manager.register(this, this.get('shortcuts'));
+    }
+  },
+
+  unregisterShortcuts() {
+    let manager = this.get('shortcutManager');
+    if (manager && typeof manager.unregister === 'function') {
+      manager.unregister(this);
+    }
+  },
+
   actions: {
+    didTransition() {
+      // The initial loading overlay is visible in the static HTML.  A fast
+      // route can complete without entering the loading substate, so always
+      // reconcile the overlay after the first successful render.
+      Ember.run.scheduleOnce('afterRender', this, this.hideLoadingOverlay);
+      return true;
+    },
+
     loading(transition) {
       this.incrementProperty('loadingId');
       let id = this.get('loadingId');
@@ -67,7 +100,7 @@ export default Ember.Route.extend({
       }
 
       this.controllerFor('application').set('error',err);
-      this.transitionTo('failWhale');
+      this.get('router').transitionTo('failWhale');
 
       console.log('Application Error', (err ? err.stack : undefined));
     },
@@ -109,7 +142,7 @@ export default Ember.Route.extend({
           params.queryParams.errorMsg = errorMsg;
         }
 
-        this.transitionTo('login', params);
+        this.get('router').transitionTo('login', params);
       });
     },
 
@@ -129,6 +162,13 @@ export default Ember.Route.extend({
     'shift+l': 'langToggle',
   },
 
+  hideLoadingOverlay() {
+    Ember.run.cancel(this.get('hideTimer'));
+    this.set('loadingShown', false);
+    $('#loading-overlay').stop(true, true).hide();
+    $('#loading-underlay').stop(true, true).hide();
+  },
+
   finishLogin() {
     let session = this.get('session');
 
@@ -139,21 +179,23 @@ export default Ember.Route.extend({
       console.log('Going back to', backTo);
       window.location.href = backTo;
     } else {
-      this.replaceWith('authenticated');
+      this.get('router').replaceWith('authenticated');
     }
   },
 
   model(params, transition) {
     let github   = this.get('github');
     let stateMsg = 'Authorization state did not match, please try again.';
+    let isOidcCallback = transition.targetName === 'login.oidc-auth';
 
-    this.get('language').initLanguage();
+    let languagePromise = this.get('language').initLanguage();
 
     transition.finally(() => {
       this.controllerFor('application').setProperties({
         state: null,
         code: null,
         error_description: null,
+        oidcError: null,
         redirectTo: null,
       });
     });
@@ -169,7 +211,42 @@ export default Ember.Route.extend({
       this.controllerFor('application').set('isPopup', true);
     }
 
-    if ( params.isTest ) {
+    if ( isOidcCallback && (params.code || params.oidcError) ) {
+      if ( window.opener && !window.opener.closed && typeof window.opener.onOidcTest === 'function' ) {
+        window.opener.onOidcTest(params.oidcError, params.error_description, params.code, params.state);
+        transition.abort();
+        setTimeout(function() {
+          window.close();
+        }, 250);
+        return Ember.RSVP.reject('oidcTest');
+      }
+
+      let oidcCode;
+      try {
+        oidcCode = this.get('oidc').consumeAuthorization({
+          code: params.code,
+          error: params.oidcError,
+          errorDescription: params.error_description,
+          state: params.state,
+        });
+      } catch (err) {
+        transition.abort();
+        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
+        return Ember.RSVP.reject(err);
+      }
+
+      return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
+        transition.abort();
+        if ( xhr.body && xhr.body.mfaRequired ) {
+          this.get('router').transitionTo('login');
+        } else {
+          this.finishLogin();
+        }
+      }).catch((err) => {
+        transition.abort();
+        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
+      });
+    } else if ( !isOidcCallback && params.isTest ) {
       if ( github.stateMatches(params.state) ) {
         reply(params.error_description, params.code);
       } else {
@@ -180,19 +257,23 @@ export default Ember.Route.extend({
 
       return Ember.RSVP.reject('isTest');
 
-    } else if ( params.code ) {
+    } else if ( !isOidcCallback && params.code ) {
 
       if ( github.stateMatches(params.state) ) {
-        return this.get('access').login(params.code).then(() => {
+        return languagePromise.then(() => this.get('access').login(params.code)).then((xhr) => {
           // Abort the orignial transition that was coming in here since
           // we'll redirect the user manually in finishLogin
           // if we dont then model hook runs twice to finish the transition itself
           transition.abort();
           // Can't call this.send() here because the initial transition isn't done yet
-          this.finishLogin();
+          if ( xhr.body && xhr.body.mfaRequired ) {
+            this.get('router').transitionTo('login');
+          } else {
+            this.finishLogin();
+          }
         }).catch((err) => {
           transition.abort();
-          this.transitionTo('login', {queryParams: { errorMsg: err.message}});
+          this.get('router').transitionTo('login', {queryParams: { errorMsg: err.message}});
         }).finally(() => {
           this.controllerFor('application').setProperties({
             state: null,
@@ -209,6 +290,8 @@ export default Ember.Route.extend({
         return Ember.RSVP.reject(obj);
       }
     }
+
+    return languagePromise;
 
     function reply(err,code) {
       try {
@@ -233,7 +316,7 @@ export default Ember.Route.extend({
     let agent = window.navigator.userAgent.toLowerCase();
 
     if ( agent.indexOf('msie ') >= 0 || agent.indexOf('trident/') >= 0 ) {
-      this.replaceWith('ie');
+      this.get('router').replaceWith('ie');
       return;
     }
 

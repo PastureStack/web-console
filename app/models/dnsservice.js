@@ -1,7 +1,8 @@
 import Ember from 'ember';
 import Service from 'ui/models/service';
+import escapeHtml from 'ui/utils/escape-html';
 
-const esc = Ember.Handlebars.Utils.escapeExpression;
+const esc = escapeHtml;
 
 var DnsService = Service.extend({
   type: 'dnsService',

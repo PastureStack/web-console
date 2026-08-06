@@ -3,7 +3,7 @@ import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 const { getOwner } = Ember;
 
-function proxifyUrl(url, proxyBase) {
+export function proxifyUrl(url, proxyBase) {
   let parsed = Util.parseUrl(url);
 
   if ( parsed.hostname.indexOf('.') === -1  || // No dot, local name like localhost
@@ -45,7 +45,7 @@ export default Ember.Route.extend({
 
     goBack() {
       if ( this.get('backTo') === 'waiting' ) {
-        this.transitionTo('authenticated.project.waiting');
+        this.get('router').transitionTo('authenticated.project.waiting');
       } else {
         let appRoute = getOwner(this).lookup('route:application');
         let opts     = this.get('previousOpts');
@@ -145,7 +145,7 @@ export default Ember.Route.extend({
 
       if ( params.driver !== targetDriver )
       {
-        this.transitionTo('hosts.new', {queryParams: {driver: targetDriver}});
+        this.get('router').transitionTo('hosts.new', {queryParams: {driver: targetDriver}});
       }
       else
       {

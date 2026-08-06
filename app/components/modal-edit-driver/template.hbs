@@ -1,19 +1,19 @@
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 
-<h2>{{t (if editing 'modalEditDriver.header.edit' 'modalEditDriver.header.create')}}</h2>
+<h2>{{t (if this.editing 'modalEditDriver.header.edit' 'modalEditDriver.header.create')}}</h2>
 
 <div class="form-group">
   <label>{{t 'modalEditDriver.url.label'}}*</label>
-  {{input class="form-control" value=originalModel.url }}
+  {{input class="form-control" value=this.originalModel.url }}
   <span class="help-block">{{t 'modalEditDriver.url.help'}}</span>
 </div>
 
 <div class="form-group">
   <label>{{t 'modalEditDriver.uiUrl.label'}}</label>
-  {{input class="form-control" value=originalModel.uiUrl }}
+  {{input class="form-control" value=this.originalModel.uiUrl }}
   <span class="help-block">
     {{t 'modalEditDriver.uiUrl.help'}}
-    {{#if settings.isRancher}}
+    {{#if this.settings.isRancher}}
       {{format-html-message 'modalEditDriver.uiUrl.link'}}
     {{/if}}
   </span>
@@ -21,8 +21,8 @@
 
 <div class="form-group">
   <label>{{t 'modalEditDriver.checksum.label'}}</label>
-  {{input class="form-control" value=originalModel.checksum }}
+  {{input class="form-control" value=this.originalModel.checksum }}
   <span class="help-block">{{t 'modalEditDriver.checksum.help'}}</span>
 </div>
 
-{{save-cancel editing=editing save="save" cancel="cancel"}}
+{{save-cancel editing=this.editing save="save" cancel="cancel"}}

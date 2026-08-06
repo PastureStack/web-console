@@ -1,15 +1,15 @@
-{{arranged.length}}
+{{this.arranged.length}}
 {{#sortable-table
   classNames="lacsso grid sortable-table"
   prefix=true
   bulkActions=false
   paging=true
   search=true
-  sortBy=sortBy
-  descending=descending
-  headers=headers
-  body=model.processInstances
-  perPage=prefs.tablePerPage
+  sortBy=this.sortBy
+  descending=this.descending
+  headers=this.headers
+  body=this.model.processInstances
+  perPage=this.prefs.tablePerPage
   as |row kind dt|
 }}
   {{#if (eq kind "row")}}
@@ -18,14 +18,14 @@
     </td>
 
     <td data-title="{{dt.processName}}" class="clip">
-      {{#link-to 'admin-tab.process' row.id classNames='hand'}}{{row.processName}}{{/link-to}}
+      <LinkTo @route="admin-tab.process" @model={{row.id}} class="hand">{{row.processName}}</LinkTo>
     </td>
 
     <td data-title="{{dt.resource}}" class="clip">
       {{process-link model=row}}
     </td>
 
-    {{#if (or (eq which "delayed") (eq which "completed"))}}
+    {{#if (or (eq this.which "delayed") (eq this.which "completed"))}}
       <td data-title="{{dt.exitReason}}">
         {{row.exitReason}}
       </td>
@@ -39,7 +39,7 @@
       {{/if}}
     </td>
 
-    {{#if (eq which "completed")}}
+    {{#if (eq this.which "completed")}}
       <td data-title="{{dt.endTime}}">
         {{#if row.endTime}}
           {{date-calendar row.endTime}}
@@ -49,7 +49,7 @@
       </td>
     {{/if}}
 
-    {{#if (eq which "delayed")}}
+    {{#if (eq this.which "delayed")}}
       <td data-title="{{dt.runAfter}}">
         {{date-calendar row.runAfter}}
       </td>
@@ -63,8 +63,8 @@
       {{action-menu model=row showPrimary=false}}
     </td>
   {{else if (eq kind "nomatch")}}
-    <td colspan="{{headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.list.noMatch'}}</td>
+    <td colspan="{{this.headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.list.noMatch'}}</td>
   {{else if (eq kind "norows")}}
-    <td colspan="{{headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.list.noData' which=which}}</td>
+    <td colspan="{{this.headers.length}}" class="text-center text-muted lacsso pt-20 pb-20">{{t 'processesPage.list.noData' which=this.which}}</td>
   {{/if}}
 {{/sortable-table}}

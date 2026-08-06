@@ -1,13 +1,13 @@
 {{yield}}
-{{#if avatar}}
+{{#if this.avatar}}
   <div class="gh-avatar">
-    {{#if avatarSrc}}
-      {{#if (and url link)}}
-        <a href="{{url}}" target="_blank">
-          <img src="{{avatarSrc}}" width="{{size}}" height="{{size}}">
+    {{#if this.avatarSrc}}
+      {{#if (and this.url this.link)}}
+        <a href="{{this.url}}" target="_blank">
+          <img src="{{this.avatarSrc}}" width="{{this.size}}" height="{{this.size}}">
         </a>
       {{else}}
-        <img src="{{avatarSrc}}" width="{{size}}" height="{{size}}">
+        <img src="{{this.avatarSrc}}" width="{{this.size}}" height="{{this.size}}">
       {{/if}}
     {{else}}
       <div class="gh-placeholder"></div>
@@ -16,14 +16,14 @@
 {{/if}}
 <div class="gh-block-content">
   <div class="clip gh-block-name">
-    {{#if loading}}
+    {{#if this.loading}}
       {{t 'identityBlock.loading'}}
     {{else}}
-      {{#if (and url link)}}
-        <a href="{{url}}" target="_blank">{{login}}</a>
+      {{#if (and this.url this.link)}}
+        <a href="{{this.url}}" target="_blank">{{this.login}}</a>
       {{else}}
-        {{#if login}}
-          {{login}}
+        {{#if this.login}}
+          {{this.login}}
         {{else}}
           &nbsp;
         {{/if}}
@@ -31,8 +31,8 @@
     {{/if}}
   </div>
   <div class="gh-block-detail clip">
-    {{#if displayDescription}}
-      {{displayDescription}}
+    {{#if this.displayDescription}}
+      {{this.displayDescription}}
     {{else}}
       &nbsp;
     {{/if}}

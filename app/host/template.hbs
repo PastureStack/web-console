@@ -1,33 +1,33 @@
 <section class="header clearfix">
-  <h1>{{#link-to "hosts"}}{{t 'hostsPage.hostPage.header.linkTo'}}{{/link-to}}</h1>
+  <h1><LinkTo @route="hosts">{{t 'hostsPage.hostPage.header.linkTo'}}</LinkTo></h1>
 
-  {{#power-select options=model.all selected=host onchange=(action "changeHost") searchField="displayName" as |obj|}}
+  <PowerSelect @options={{this.model.all}} @selected={{this.host}} @onChange={{action "changeHost"}} @searchField="displayName" as |obj|>
     {{select-dot model=obj}}
-  {{/power-select}}
+  </PowerSelect>
 
   <div class="pull-right">
-    {{#action-menu model=host size="sm" classNames="r-ml10 pull-right"}}
-      {{#link-to "containers.new" (query-params hostId=host.id) classNames="btn btn-sm btn-primary"}}{{t 'hostsPage.hostPage.addContainer.linkTo'}}{{/link-to}}
+    {{#action-menu model=this.host size="sm" classNames="r-ml10 pull-right"}}
+      <LinkTo @route="containers.new" @query={{hash hostId=this.host.id}} class="btn btn-sm btn-primary">{{t 'hostsPage.hostPage.addContainer.linkTo'}}</LinkTo>
     {{/action-menu}}
 
-    {{header-state model=host classNames="pull-right"}}
+    {{header-state model=this.host classNames="pull-right"}}
   </div>
 </section>
 
 <section>
   <div class="row">
     <div class="col-md-3 r-mb15">
-      {{#if host.description}}
+      {{#if this.host.description}}
         <div>
           <label>{{t 'hostsPage.hostPage.infoMultiStats.description'}} </label>
-          <div>{{host.description}}</div>
+          <div>{{this.host.description}}</div>
         </div>
         <hr>
       {{/if}}
 
       <div>
         <label>{{t 'hostsPage.hostPage.infoMultiStats.ip'}}</label>
-        <div>{{copy-ip ip=host.displayIp}}</div>
+        <div>{{copy-ip ip=this.host.displayIp}}</div>
       </div>
 
       <hr>
@@ -36,16 +36,16 @@
         <label>{{t 'hostsPage.hostPage.infoMultiStats.cpu'}}</label>
         <div class="row">
           <div class="col-md-6 r-p0">
-            {{#if host.milliCpu}}{{t 'generic.total'}}{{/if}}: {{host.cpuBlurb}}
-            {{#if host.cpuTooltip}}
-              {{#tooltip-element type='tooltip-basic' model=host tooltipTemplate='tooltip-cpu' tooltipFor="tooltipCPU"}}
+            {{#if this.host.milliCpu}}{{t 'generic.total'}}{{/if}}: {{this.host.cpuBlurb}}
+            {{#if this.host.cpuTooltip}}
+              {{#tooltip-element type='tooltip-basic' model=this.host tooltipTemplate='tooltip-cpu' tooltipFor="tooltipCPU"}}
                 <i class="icon icon-info"></i>
               {{/tooltip-element}}
             {{/if}}
           </div>
-          {{#if host.milliCpu}}
+          {{#if this.host.milliCpu}}
             <div class="col-md-6 r-p0">
-              {{t 'generic.limit'}}: {{host.milliCpu}} {{t 'hostsPage.hostPage.infoMultiStats.milliCpu.labelText'}}
+              {{t 'generic.limit'}}: {{this.host.milliCpu}} {{t 'hostsPage.hostPage.infoMultiStats.milliCpu.labelText'}}
             </div>
           {{/if}}
         </div>
@@ -57,16 +57,16 @@
         <label>{{t 'hostsPage.hostPage.infoMultiStats.memory'}}</label>
         <div class="row">
           <div class="col-md-6 r-p0">
-            {{#if host.memory}}{{t 'generic.total'}}{{/if}}:
-            {{#if host.memoryBlurb}}
-              {{host.memoryBlurb}}
+            {{#if this.host.memory}}{{t 'generic.total'}}{{/if}}:
+            {{#if this.host.memoryBlurb}}
+              {{this.host.memoryBlurb}}
             {{else}}
               <span class="text-muted">{{t 'generic.unknown'}}</span>
             {{/if}}
           </div>
-          {{#if host.memory}}
+          {{#if this.host.memory}}
             <div class="col-md-6 r-p0">
-              {{t 'generic.limit'}}: {{host.memoryLimitBlurb}}
+              {{t 'generic.limit'}}: {{this.host.memoryLimitBlurb}}
             </div>
           {{/if}}
         </div>
@@ -77,9 +77,9 @@
       <div>
         <label>{{t 'hostsPage.hostPage.infoMultiStats.storage'}}</label>
         <div class="row">
-          {{#if host.diskBlurb}}
-            {{#if host.diskDetail}}
-              {{#each host.diskDetail as |disk|}}
+          {{#if this.host.diskBlurb}}
+            {{#if this.host.diskDetail}}
+              {{#each this.host.diskDetail as |disk|}}
                 <div class="col-md-6 r-p0">{{disk.value}}
                   {{#tooltip-element type='tooltip-basic' tooltipTemplate='tooltip-basic-literal' model=disk tooltipFor="hostDisk"}}
                     <i class="icon icon-info"></i>
@@ -87,10 +87,10 @@
                </div>
               {{/each}}
             {{else}}
-              <div class="col-md-6 r-p0">{{host.diskBlurb}} (total)</div>
+              <div class="col-md-6 r-p0">{{this.host.diskBlurb}} ({{t 'generic.total'}})</div>
             {{/if}}
             <div class="col-md-6 r-p0">
-              {{t 'hostsPage.hostPage.infoMultiStats.localStorageMb.labelText'}}: {{host.localStorageBlurb}}
+              {{t 'hostsPage.hostPage.infoMultiStats.localStorageMb.labelText'}}: {{this.host.localStorageBlurb}}
             </div>
           {{else}}
             <div class="text-muted">{{t 'generic.unknown'}}</div>
@@ -102,8 +102,8 @@
 
       <div>
         <label>{{t 'hostsPage.hostPage.infoMultiStats.provider.labelText'}}</label>
-        {{#if host.driver}}
-          <div>{{host.driver}}</div>
+        {{#if this.host.driver}}
+          <div>{{this.host.driver}}</div>
         {{else}}
           <div class="text-muted">{{t 'hostsPage.hostPage.infoMultiStats.provider.noHost'}}</div>
         {{/if}}
@@ -113,15 +113,15 @@
 
       <div>
         <label>{{t 'hostsPage.hostPage.infoMultiStats.kernel'}}</label>
-        <div>{{host.info.osInfo.kernelVersion}}</div>
+        <div>{{this.host.info.osInfo.kernelVersion}}</div>
       </div>
 
       <hr>
 
       <div>
         <label>{{t 'hostsPage.hostPage.infoMultiStats.docker'}}</label>
-        {{#if host.dockerEngineVersion}}
-          <div>{{host.dockerEngineVersion}}</div>
+        {{#if this.host.dockerEngineVersion}}
+          <div>{{this.host.dockerEngineVersion}}</div>
         {{else}}
           <div class="text-muted">{{t 'generic.unknown'}}</div>
         {{/if}}
@@ -131,8 +131,8 @@
 
       <div>
         <label>{{t 'hostsPage.hostPage.infoMultiStats.os'}}</label>
-        {{#if host.osDetail}}
-          <div>{{host.osDetail}}</div>
+        {{#if this.host.osDetail}}
+          <div>{{this.host.osDetail}}</div>
         {{else}}
           <div class="text-muted">{{t 'generic.unknown'}}</div>
         {{/if}}
@@ -141,14 +141,14 @@
     </div>
     <div class="col-md-9">
       <div class="row">
-        {{info-multi-stats model=host linkName="hostStats" single=true}}
+        {{info-multi-stats model=this.host linkName="hostStats" single=true}}
       </div>
       <div class="row r-p15">
         <ul class="nav nav-tabs nav-tabs-well shadowed" role="tablist">
-          {{#link-to "host.containers" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.containers'}}</a>{{/link-to}}
-          {{#link-to "host.ports" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.ports'}}</a>{{/link-to}}
-          {{#link-to "host.labels" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.labels'}}</a>{{/link-to}}
-          {{#link-to "host.storage" tagName="li" href=false}}<a href="#">{{t 'hostsPage.hostPage.navTabs.storage'}}</a>{{/link-to}}
+          <li><LinkTo @route="host.containers">{{t 'hostsPage.hostPage.navTabs.containers'}}</LinkTo></li>
+          <li><LinkTo @route="host.ports">{{t 'hostsPage.hostPage.navTabs.ports'}}</LinkTo></li>
+          <li><LinkTo @route="host.labels">{{t 'hostsPage.hostPage.navTabs.labels'}}</LinkTo></li>
+          <li><LinkTo @route="host.storage">{{t 'hostsPage.hostPage.navTabs.storage'}}</LinkTo></li>
         </ul>
         <div class="table-flat well">
           {{outlet}}

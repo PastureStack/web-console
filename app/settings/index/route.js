@@ -2,6 +2,6 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   redirect: function() {
-    this.transitionTo('authenticated.index');
+    this.get('router').transitionTo('authenticated.index');
   }
 });

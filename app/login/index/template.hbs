@@ -1,36 +1,231 @@
-<div style="max-width: 360px; margin: 100px auto 0 auto;">
-  <div class="farm-box login top-colors">
-    <h1>
-      {{format-html-message 'loginPage.greeting' appName=settings.appName}}
-      <div class="logo"></div>
-    </h1>
-    <section class="r-pb0">
-      {{language-dropdown login=true class='r-mt10 r-mb10'}}
-      <br/>
-      {{#if isGithub}}
-        <p>{{t 'loginPage.githubMessage' appName=settings.appName}}</p>
-        <br/>
+<main class="login-shell" data-testid="login-shell">
+  <div class="login-backdrop" aria-hidden="true">
+    <span class="login-orb login-orb-one"></span>
+    <span class="login-orb login-orb-two"></span>
+    <span class="login-orb login-orb-three"></span>
+  </div>
+  <div class="farm-box login login-card {{if (or this.isMfaPending this.hasNewRecoveryCodes) 'login-card--wide'}}">
+    <header class="login-hero top-colors">
+      <div class="login-brand-mark" aria-hidden="true">
+        <span class="logo"></span>
+      </div>
+      <h1>{{format-html-message 'loginPage.greeting' appName=this.settings.appName}}</h1>
+    </header>
+    <section class="login-panel">
+      <div class="login-language-row">
+        {{language-dropdown login=true}}
+      </div>
+      <div class="login-auth-region">
+      {{#if this.hasNewRecoveryCodes}}
+        <div class="alert alert-warning" role="alert">
+          <strong>{{t 'loginPage.mfa.recoveryCodes.header'}}</strong>
+          <p>{{t 'loginPage.mfa.recoveryCodes.help'}}</p>
+        </div>
+        <div class="well">
+          {{#each this.newRecoveryCodes as |code|}}
+            <div><code>{{code}}</code></div>
+          {{/each}}
+        </div>
+        <div class="text-center">
+          {{copy-to-clipboard
+            class="r-mr10"
+            buttonText="loginPage.mfa.recoveryCodes.copy"
+            clipboardText=this.recoveryCodesText}}
+          <button type="button" class="btn btn-primary" {{action "acknowledgeRecoveryCodes"}}>
+            {{t 'loginPage.mfa.recoveryCodes.saved'}}
+          </button>
+        </div>
+      {{else if this.isMfaPending}}
+        <h3 class="text-center">{{t 'loginPage.mfa.header'}}</h3>
+
+        {{#if this.infoMsg}}
+          <div class="alert alert-danger" role="alert">{{this.infoMsg}}</div>
+        {{/if}}
+
+        {{#if this.mfaChallenge.mfaEnrollmentRequired}}
+          <div class="alert alert-warning" role="status">
+            {{t 'loginPage.mfa.enrollmentRequired'}}
+          </div>
+        {{/if}}
+        {{#if this.hasUnavailablePasskeyMethod}}
+          <div class="alert alert-info" role="status">
+            {{t 'loginPage.mfa.passkey.secureContextRequired'}}
+          </div>
+        {{/if}}
+
+        {{#if this.showMfaRecoveryOptions}}
+          <div class="alert alert-info" role="status">
+            <strong>{{t 'loginPage.mfa.recoveryOptions.header'}}</strong>
+            <p class="r-mb0">{{t 'loginPage.mfa.recoveryOptions.help'}}</p>
+          </div>
+          <div class="btn-group btn-group-justified r-mb15" role="group">
+            {{#each this.recoveryMfaMethods as |method|}}
+              <a href="#" role="button"
+                 class="btn {{if (eq this.activeMfaMethod method) 'btn-primary' 'btn-default'}}"
+                 {{action "selectMfaMethod" method}}>
+                {{t (concat 'loginPage.mfa.methods.' method)}}
+              </a>
+            {{/each}}
+          </div>
+        {{else if (gt this.primaryMfaMethods.length 1)}}
+          <div class="btn-group btn-group-justified r-mb15" role="group">
+            {{#each this.primaryMfaMethods as |method|}}
+              <a href="#" role="button"
+                 class="btn {{if (eq this.activeMfaMethod method) 'btn-primary' 'btn-default'}}"
+                 {{action "selectMfaMethod" method}}>
+                {{t (concat 'loginPage.mfa.methods.' method)}}
+              </a>
+            {{/each}}
+          </div>
+        {{/if}}
+
+        {{#if this.isMfaEnrollment}}
+          <p>{{t 'loginPage.mfa.totp.enrollHelp'}}</p>
+          {{#if this.totpEnrollmentQrSvg}}
+            <div class="mfa-totp-qr text-center" data-testid="mfa-login-totp-qr">
+              {{{this.totpEnrollmentQrSvg}}}
+            </div>
+          {{/if}}
+          <label>{{t 'loginPage.mfa.totp.secret'}}</label>
+          <div class="well text-center"><code>{{this.mfaChallenge.totpSecret}}</code></div>
+        {{/if}}
+
+        {{#if this.isMfaTotp}}
+          <label for="mfa-code">{{t 'loginPage.mfa.totp.code'}}</label>
+          {{input id="mfa-code" value=this.mfaCode class="form-control input-lg text-center" maxlength="6" autocomplete="one-time-code" placeholder=(t 'loginPage.mfa.totp.placeholder')}}
+          <button type="button" class="btn btn-primary btn-block r-mt15"
+                  disabled={{this.waiting}} {{action "verifyMfa"}}>
+            {{#if this.waiting}}<i class="icon icon-spinner icon-spin"></i>{{/if}}
+            {{t 'loginPage.mfa.verify'}}
+          </button>
+        {{/if}}
+
+        {{#if this.isMfaPasskey}}
+          <p>
+            {{#if this.isMfaPasskeyEnrollment}}
+              {{t 'loginPage.mfa.passkey.enrollHelp'}}
+            {{else}}
+              {{t 'loginPage.mfa.passkey.help'}}
+            {{/if}}
+          </p>
+          <button type="button" class="btn btn-primary btn-block"
+                  data-testid="mfa-login-passkey"
+                  disabled={{this.waiting}} {{action "verifyPasskey"}}>
+            {{#if this.waiting}}<i class="icon icon-spinner icon-spin"></i>{{else}}<i class="icon icon-key"></i>{{/if}}
+            {{#if this.isMfaPasskeyEnrollment}}
+              {{t 'loginPage.mfa.passkey.enrollAction'}}
+            {{else}}
+              {{t 'loginPage.mfa.passkey.action'}}
+            {{/if}}
+          </button>
+        {{/if}}
+
+        {{#if this.isMfaRecoveryCode}}
+          <p>{{t 'loginPage.mfa.recoveryCode.help'}}</p>
+          {{input value=this.recoveryCode class="form-control input-lg text-center" autocomplete="one-time-code" placeholder=(t 'loginPage.mfa.recoveryCode.placeholder')}}
+          <button type="button" class="btn btn-primary btn-block r-mt15"
+                  disabled={{this.waiting}} {{action "verifyMfa"}}>
+            {{t 'loginPage.mfa.verify'}}
+          </button>
+        {{/if}}
+
+        {{#if this.isMfaEmailRecovery}}
+          <div class="alert alert-warning" role="status">
+            {{t 'loginPage.mfa.emailRecovery.warning'}}
+          </div>
+          <p>{{t 'loginPage.mfa.emailRecovery.destination' email=this.mfaChallenge.recoveryEmailMasked}}</p>
+          {{#if this.emailCodeSent}}
+            {{input value=this.emailCode class="form-control input-lg text-center" maxlength="6" autocomplete="one-time-code" placeholder=(t 'loginPage.mfa.emailRecovery.placeholder')}}
+            <button type="button" class="btn btn-danger btn-block r-mt15"
+                    disabled={{this.waiting}} {{action "verifyMfa"}}>
+              {{t 'loginPage.mfa.emailRecovery.complete'}}
+            </button>
+          {{else}}
+            <button type="button" class="btn btn-warning btn-block"
+                    disabled={{this.waiting}} {{action "verifyMfa"}}>
+              {{t 'loginPage.mfa.emailRecovery.send'}}
+            </button>
+          {{/if}}
+        {{/if}}
+
+        {{#if this.hasMfaRecoveryMethods}}
+          {{#if this.showMfaRecoveryOptions}}
+            <p class="text-center r-mt10">
+              <button type="button" class="btn btn-link" {{action "showMfaPrimaryOptions"}}>
+                <i class="icon icon-chevron-left"></i>
+                {{t 'loginPage.mfa.recoveryOptions.back'}}
+              </button>
+            </p>
+          {{else}}
+            <p class="text-center r-mt15">
+              <button type="button" class="btn btn-link" {{action "showMfaRecoveryOptions"}}>
+                <i class="icon icon-life-ring"></i>
+                {{t 'loginPage.mfa.recoveryOptions.show'}}
+              </button>
+            </p>
+          {{/if}}
+        {{/if}}
+
+        <p class="text-center r-mt15">
+          <button type="button" class="btn btn-link" {{action "cancelMfa"}}>
+            <i class="icon icon-chevron-left"></i>
+            {{t 'loginPage.mfa.cancel'}}
+          </button>
+        </p>
+      {{else}}
+      {{#if this.useLocalRecovery}}
+        <div class="alert alert-info" role="status">
+          <strong>{{t 'loginPage.localRecovery.header'}}</strong>
+          <p class="r-mb0">{{t 'loginPage.localRecovery.help'}}</p>
+        </div>
+      {{else if this.isGithub}}
+        <p class="login-provider-message">{{t 'loginPage.githubMessage' appName=this.settings.appName}}</p>
       {{/if}}
 
-     {{#if isShibboleth}}
-        <p>{{t 'loginPage.shibbolethMessage' appName=settings.appName}}</p>
-        <br/>
+      {{#if this.isShibboleth}}
+        <p class="login-provider-message">{{t 'loginPage.shibbolethMessage' appName=this.settings.appName}}</p>
       {{/if}}
 
-      {{#if infoMsg}}
-        <div class="alert {{if errorMsg 'alert-danger' 'alert-warning'}}" role="alert">{{infoMsg}}</div>
+      {{#if this.isOidc}}
+        <p class="login-provider-message">{{t 'loginPage.oidcMessage' appName=this.settings.appName providerName=this.oidcProviderName}}</p>
       {{/if}}
 
-      {{#if (or isLocal isActiveDirectory isOpenLdap isAzureAd)}}
-        {{login-user-pass action="authenticate" waiting=waiting}}
+      {{#if this.infoMsg}}
+        <div class="alert {{if this.errorMsg 'alert-danger' 'alert-warning'}}" role="alert">{{this.infoMsg}}</div>
       {{/if}}
-      {{#if isGithub}}
-        {{login-github action="started" waiting=waiting}}
+
+      {{#if (or this.useLocalRecovery this.isLocal this.isActiveDirectory this.isOpenLdap this.isAzureAd)}}
+        {{login-user-pass action="authenticate" waiting=this.waiting}}
       {{/if}}
-      {{#if isShibboleth}}
-        {{login-shibboleth action="started" waiting=waiting}}
+      {{#unless this.useLocalRecovery}}
+        {{#if this.isGithub}}
+          {{login-github action="started" waiting=this.waiting}}
+        {{/if}}
+        {{#if this.isShibboleth}}
+          {{login-shibboleth action="started" waiting=this.waiting}}
+        {{/if}}
+        {{#if this.isOidc}}
+          {{login-oidc action="started" errorAction="oidcError" waiting=this.waiting providerName=this.oidcProviderName}}
+        {{/if}}
+      {{/unless}}
+
+      {{#if this.canLocalRecovery}}
+        <p class="text-center login-recovery-actions">
+          {{#if this.useLocalRecovery}}
+            <button type="button" class="btn btn-link" {{action "usePrimaryLogin"}}>
+              <i class="icon icon-chevron-left"></i>
+              {{t 'loginPage.localRecovery.back'}}
+            </button>
+          {{else}}
+            <button type="button" class="btn btn-link" {{action "useRecoveryLogin"}}>
+              <i class="icon icon-life-ring"></i>
+              {{t 'loginPage.localRecovery.action'}}
+            </button>
+          {{/if}}
+        </p>
       {{/if}}
-      <span style="color: white">{{access.provider}}</span>
+      {{/if}}
+      </div>
     </section>
   </div>
-</div>
+</main>

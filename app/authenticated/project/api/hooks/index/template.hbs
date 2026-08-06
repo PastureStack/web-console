@@ -2,7 +2,7 @@
   <div class="lacsso banner-icon" style="width: 68px;"><span class="icon icon-2x icon-notification"></span></div>
   <div class="lacsso banner-message">
     <p class="lacsso mt-15 mb-15">
-      Experimental: More webhook features will be added in future releases, and the existing capabilities may change.
+      {{t 'uiText.webhookExperimental'}}
     </p>
   </div>
 </div>
@@ -10,11 +10,11 @@
 <section class="header clearfix">
   <h1>{{t 'hookPage.receiver.header'}}</h1>
 
-  {{#link-to "authenticated.project.api.hooks.new-receiver" class="btn btn-sm btn-primary"}}{{t 'hookPage.receiver.buttonText'}}{{/link-to}}
+  <LinkTo @route="authenticated.project.api.hooks.new-receiver" class="btn btn-sm btn-primary">{{t 'hookPage.receiver.buttonText'}}</LinkTo>
 </section>
 
 <section class="well">
-  <p>{{t 'hookPage.receiver.content' appName=settings.appName}}</p>
+  <p>{{t 'hookPage.receiver.content' appName=this.settings.appName}}</p>
   <table class="grid fixed r-mb0 r-mt10">
     <thead>
       <tr>
@@ -27,7 +27,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each arranged as |row|}}
+      {{#each this.arranged as |row|}}
         {{hook-row model=row}}
       {{else}}
         <tr><td colspan="6" class="text-center text-muted">{{t 'hookPage.receiver.noData'}}</td></tr>
