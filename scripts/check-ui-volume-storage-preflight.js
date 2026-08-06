@@ -16,6 +16,7 @@ const parentTemplate = fs.readFileSync('app/components/new-container/template.hb
 const serviceRoute = fs.readFileSync('app/service/new/route.js', 'utf8');
 const containerRoute = fs.readFileSync('app/containers/new/route.js', 'utf8');
 const componentTest = fs.readFileSync('tests/unit/components/form-volumes-test.js', 'utf8');
+const parentTest = fs.readFileSync('tests/unit/components/new-container-port-preflight-test.js', 'utf8');
 const autocompleteTest = fs.readFileSync('tests/unit/components/volume-path-autocomplete-test.js', 'utf8');
 const parserTest = fs.readFileSync('tests/unit/utils/volume-spec-test.js', 'utf8');
 const ci = fs.readFileSync('scripts/ci', 'utf8');
@@ -127,6 +128,12 @@ for (const marker of [
   'autocomplete candidates include existing service mounts before generated paths',
 ]) {
   if (!componentTest.includes(marker)) failures.push(`VOLUME_FORM_TEST_MISSING=${marker}`);
+}
+if (!parentTest.includes('a transient volume recheck cannot become a stale save error')) {
+  failures.push('VOLUME_SAVE_RACE_REGRESSION_TEST_MISSING');
+}
+if (/volumePreflightState\.pending'[\s\S]{0,160}preflightChecking/u.test(parent)) {
+  failures.push('VOLUME_SAVE_RACE_STALE_ERROR_FORBIDDEN');
 }
 for (const marker of [
   'arrow keys select and Enter completes',

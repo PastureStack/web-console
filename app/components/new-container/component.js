@@ -480,11 +480,6 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
       errors.push(this.get('intl').t('formPorts.preflight.error.sidekickBlocked'));
     }
 
-    if ( this.get('volumePreflightState.pending') ) {
-      errors.push(this.get('intl').t('formVolumes.errors.preflightChecking'));
-    }
-
-
     errors = errors.uniq();
 
     if ( errors.get('length') )

@@ -18,6 +18,9 @@ function createComponent() {
     scale: 1,
     launchConfig,
     secondaryLaunchConfigs: Ember.A(),
+    validationErrors() {
+      return Ember.A();
+    },
   });
   let component;
 
@@ -128,6 +131,22 @@ test('primary check disables save only while pending or blocked', function(asser
     blocked: false,
   }));
   assert.notOk(component.get('saveDisabled'), 'allows a stopped-owner warning');
+
+  destroyOwned(component);
+});
+
+test('a transient volume recheck cannot become a stale save error', function(assert) {
+  let component = createComponent();
+
+  Ember.run(() => component.send('volumePreflightChanged', {
+    status: 'checking',
+    pending: true,
+    blocked: false,
+  }));
+
+  assert.ok(component.get('saveDisabled'), 'the button remains disabled while the live check is pending');
+  assert.ok(component.validate(), 'server-side save validation remains authoritative if a recheck races with the click');
+  assert.notOk(component.get('errors'), 'does not leave a stale checking error after the live result is available');
 
   destroyOwned(component);
 });

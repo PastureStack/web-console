@@ -475,6 +475,13 @@ validation label. A focused unit regression and a fail-closed source gate keep
 this path independent from `String.prototype.dasherize` while the supported
 Array compatibility boundary remains explicit.
 
+`v1.6.56-pasturestack.62` closes the remaining live-volume-check save race.
+The Create button stays disabled while an ordinary preflight request is in
+progress, but a same-tick recheck can no longer become a stale client-side
+validation error after the user has already clicked Create. The authoritative
+create or upgrade request still repeats the complete volume validation on the
+server, so the race is removed without weakening storage safety.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
