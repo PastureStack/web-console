@@ -1,15 +1,24 @@
-/*jshint node:true*/
 /* global require, module */
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
+var BroccoliFunnel = require('broccoli-funnel');
+var BroccoliMergeTrees = require('broccoli-merge-trees');
+var Funnel   = BroccoliFunnel.default || BroccoliFunnel;
+var mergeTrees = BroccoliMergeTrees.default || BroccoliMergeTrees;
 var util     = require('util');
 var env      = EmberApp.env();
-var nodeSass = require('node-sass');
+var dartSass = require('sass');
+var TranslationJsonTree = require('./lib/translation-json-tree');
+var NormalizeTemplateModuleNameWebpackPlugin = require('./lib/normalize-template-module-name-webpack-plugin');
 
 
 module.exports = function(defaults) {
   // Pull in a few useful environment settings for index.html to use
   var appConfig = require('./config/environment')(env).APP;
   var inline    = {};
+  var themeCssOutputPaths = {
+    'app-light': '/assets/ui-light.css',
+    'app-dark': '/assets/ui-dark.css'
+  };
 
   ['version', 'appName', 'baseAssets'].forEach(function(key) {
     var val = appConfig[key];
@@ -22,34 +31,46 @@ module.exports = function(defaults) {
   });
 
   var app = new EmberApp(defaults, {
-    babel: {
-      includePolyfill: true,
-    },
+    // The legacy Ember application resolves internal imports through the neutral
+    // `ui/` module prefix. Keep that runtime contract while package metadata uses
+    // the public @pasturestack/web-console identity.
+    name: 'ui',
     storeConfigInMeta: false,
     inlineContent: inline,
     sassOptions: {
-      implementation: nodeSass
+      implementation: dartSass
     },
     outputPaths: {
       app: {
-        css: {
-          'app-light': '/assets/ui-light.css',
-          'app-dark': '/assets/ui-dark.css'
-        }
+        js: '/assets/ui.js',
+        css: themeCssOutputPaths
       }
     },
     nodeAssets: {
-      'xterm': {
-        import: ['dist/xterm.css']
-      },
       'lacsso': {
         import: ['lacsso.css']
       }
     },
 
-    SRI: {
-      enabled: false,
+    // ember-auto-import stages two generated entry modules in a temporary
+    // Broccoli directory. Webpack's production default hashes those absolute
+    // paths into module IDs, so identical clean builds can receive different
+    // chunk fingerprints. Natural entry-module IDs are stable for an identical
+    // graph, while deterministic chunk IDs retain cache-safe output names.
+    autoImport: {
+      webpack: {
+        // Inline-template compilation otherwise records the absolute build
+        // workspace in module metadata. Inject the normalizer after Ember Auto
+        // Import assembles its strict Babel rules so clean production builds are
+        // byte-for-byte reproducible and do not disclose a builder path.
+        plugins: [new NormalizeTemplateModuleNameWebpackPlugin()],
+        optimization: {
+          moduleIds: 'natural',
+          chunkIds: 'deterministic'
+        }
+      }
     },
+
 
     fingerprint: {
       exclude: [
@@ -67,10 +88,24 @@ module.exports = function(defaults) {
     },
 
     sourcemaps: {
-      enabled: true,
+      // Production artifacts are public and must not expose application source.
+      // Keep maps for development and tests, where they remain useful for
+      // diagnostics, and omit them from release candidates.
+      enabled: env !== 'production',
       extensions: ['js']
     },
   });
+
+  // Ember CLI 6.12 recreates outputPaths after merging constructor options.
+  // Mutate the active CSS map in place because the default packager and the
+  // Sass preprocessor both retain this exact object reference. Replacing the
+  // object would leave the packager pointing at the empty app.scss output and
+  // silently omit the two runtime theme stylesheets.
+  var activeCssOutputPaths = app.options.outputPaths.app.css;
+  Object.keys(activeCssOutputPaths).forEach(function(entry) {
+    delete activeCssOutputPaths[entry];
+  });
+  Object.assign(activeCssOutputPaths, themeCssOutputPaths);
 
   // Use `app.import` to add additional libraries to the generated
   // output files.
@@ -84,45 +119,81 @@ module.exports = function(defaults) {
   // modules that you would like to import into your application
   // please specify an object with the list of modules as keys
   // along with the exports of each module as its value.
-  app.import('bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js');
-  app.import('bower_components/jgrowl/jquery.jgrowl.js');
-  app.import('bower_components/jgrowl/jquery.jgrowl.css');
-  app.import('bower_components/jquery.cookie/jquery.cookie.js');
-  app.import('bower_components/d3/d3.js');
-  app.import('bower_components/c3/c3.js');
-  app.import('bower_components/c3/c3.css');
+  // Tests now bundle QUnit directly instead of pulling the legacy
+  // ember-cli-qunit -> ember-qunit -> ember-test-helpers chain.
+  app.import('vendor/jquery/jquery.js');
+  app.import('node_modules/qunit/qunit/qunit.css', { type: 'test' });
+  app.import('node_modules/qunit/qunit/qunit.js', { type: 'test' });
+  app.import('vendor/qunit-module-shim.js', { type: 'test' });
+  app.import('vendor/ember/ember-global-compat.js');
+  app.import('node_modules/@xterm/xterm/css/xterm.css');
+  app.import('node_modules/@xterm/xterm/lib/xterm.js');
+  app.import('node_modules/@xterm/addon-fit/lib/addon-fit.js');
+  // Bootstrap 3 is out of support.  Keep its reviewed styles during the
+  // compatibility migration, but only ship the two JavaScript behaviours the
+  // console still uses.  In particular, do not re-introduce button.js,
+  // tooltip.js, popover.js, or the aggregate bootstrap.js bundle.
+  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js');
+  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js');
+  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js');
+  app.import('node_modules/jgrowl/jquery.jgrowl.js');
+  app.import('node_modules/jgrowl/jquery.jgrowl.css');
+  app.import('node_modules/jquery.cookie/jquery.cookie.js');
+  app.import('node_modules/d3/d3.js');
+  app.import('node_modules/c3/c3.js');
+  app.import('node_modules/c3/c3.css');
   //app.import('vendor/term.js/src/term.js');
   //app.import('bower_components/xterm.js/src/xterm.css');
-  app.import('bower_components/bootstrap-multiselect/dist/js/bootstrap-multiselect.js');
-  app.import('bower_components/bootstrap-multiselect/dist/css/bootstrap-multiselect.css');
-  app.import('bower_components/prism/prism.js');
-  app.import('bower_components/prism/components/prism-yaml.js');
-  app.import('bower_components/prism/components/prism-bash.js');
-  app.import('bower_components/lodash/lodash.js');
-  app.import('bower_components/graphlib/dist/graphlib.core.js');
-  app.import('bower_components/dagre/dist/dagre.core.js');
-  //app.import('bower_components/dagre-d3/dist/dagre-d3.core.js');
-  app.import('bower_components/async/dist/async.js');
-  app.import('bower_components/position-calculator/dist/position-calculator.js');
+  app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.js');
+  app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.css');
+  app.import('node_modules/prismjs/prism.js');
+  app.import('node_modules/prismjs/components/prism-yaml.js');
+  app.import('node_modules/prismjs/components/prism-bash.js');
+  app.import('node_modules/lodash/lodash.js');
+  app.import('node_modules/graphlib/dist/graphlib.core.js');
+  app.import('node_modules/dagre/dist/dagre.core.js');
+  app.import('node_modules/async/dist/async.js');
+  app.import('vendor/position-calculator.js');
   app.import('vendor/aws-sdk-ec2.js');
-  app.import('bower_components/identicon.js/pnglib.js');
-  app.import('bower_components/identicon.js/identicon.js');
-  app.import('bower_components/md5-jkmyers/md5.js');
+  app.import('node_modules/identicon.js/pnglib.js');
+  app.import('node_modules/identicon.js/identicon.js');
+  app.import('node_modules/md5-jkmyers/md5.js');
   app.import('vendor/dagre-d3/dagre-d3.core.js');
   app.import('vendor/novnc.js');
-  app.import('bower_components/commonmark/dist/commonmark.js');
-  app.import('bower_components/momentjs/moment.js');
-  app.import('bower_components/ember-shortcuts/ember-shortcuts.js');
+  app.import('node_modules/commonmark/dist/commonmark.js');
+  // Generate TOTP enrollment QR codes entirely in the browser.  The
+  // provisioning secret never leaves the PastureStack origin.
+  app.import('node_modules/qrcode-generator/dist/qrcode.js');
+  app.import('node_modules/moment/moment.js');
+  app.import('node_modules/moment/locale/de.js');
+  app.import('node_modules/moment/locale/fa.js');
+  app.import('node_modules/moment/locale/fr.js');
+  app.import('node_modules/moment/locale/hu.js');
+  app.import('node_modules/moment/locale/ja.js');
+  app.import('node_modules/moment/locale/ko.js');
+  app.import('node_modules/moment/locale/pt-br.js');
+  app.import('node_modules/moment/locale/ru.js');
+  app.import('node_modules/moment/locale/tl-ph.js');
+  app.import('node_modules/moment/locale/uk.js');
+  app.import('node_modules/moment/locale/zh-cn.js');
+  app.import('node_modules/moment/locale/zh-tw.js');
+  app.import('vendor/moment-default-locale.js');
+  app.import('vendor/ansi-up/ansi-up-global.js');
+  app.import('vendor/semver/semver-global.js');
+  app.import('vendor/shell-quote/shell-quote-global.js');
 
 
   app.import('vendor/icons/style.css');
-  app.import('vendor/icons/fonts/rancher-icons.svg', {
+  app.import('vendor/icons/fonts/pasturestack-icons.svg', {
     destDir: 'assets/fonts'
   });
-  app.import('vendor/icons/fonts/rancher-icons.ttf', {
+  app.import('vendor/icons/fonts/pasturestack-icons.ttf', {
     destDir: 'assets/fonts'
   });
-  app.import('vendor/icons/fonts/rancher-icons.woff', {
+  app.import('vendor/icons/fonts/pasturestack-icons.woff', {
+    destDir: 'assets/fonts'
+  });
+  app.import('vendor/icons/fonts/pasturestack-icons.woff2', {
     destDir: 'assets/fonts'
   });
 
@@ -147,5 +218,45 @@ module.exports = function(defaults) {
     destDir: 'assets/fonts'
   });
 
-  return app.toTree();
+  var translationSource = new Funnel('translations', {
+    include: ['*.yaml']
+  });
+  var translationJson = new TranslationJsonTree(translationSource);
+  var emberLegalSource = new Funnel('vendor/ember', {
+    include: ['LICENSE', 'UPSTREAM.md'],
+    destDir: 'licenses/ember'
+  });
+  var emberFetchLegalSource = new Funnel('vendor/ember-fetch-compat', {
+    include: ['LICENSE.md', 'UPSTREAM.md'],
+    destDir: 'licenses/ember-fetch'
+  });
+  var emberPowerSelectLegalSource = new Funnel('vendor/ember-power-select', {
+    include: ['LICENSE.md', 'UPSTREAM.md'],
+    destDir: 'licenses/ember-power-select'
+  });
+  var emberBasicDropdownLegalSource = new Funnel('vendor/ember-basic-dropdown', {
+    include: ['LICENSE.md', 'UPSTREAM.md'],
+    destDir: 'licenses/ember-basic-dropdown'
+  });
+  var runtimeLegalPackages = [
+    'ember-power-select',
+    'ember-basic-dropdown',
+    'ember-concurrency',
+    'ember-modifier'
+  ];
+  var runtimeLegalSources = runtimeLegalPackages.map(function(packageName) {
+    return new Funnel('vendor/runtime-licenses/' + packageName, {
+      include: ['LICENSE.md', 'UPSTREAM.md'],
+      destDir: 'licenses/runtime/' + packageName
+    });
+  });
+
+  return mergeTrees([
+    app.toTree(),
+    translationJson,
+    emberLegalSource,
+    emberFetchLegalSource,
+    emberPowerSelectLegalSource,
+    emberBasicDropdownLegalSource
+  ].concat(runtimeLegalSources), {overwrite: true});
 };

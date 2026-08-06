@@ -1,0 +1,144 @@
+{{#if this.workspace.clientReady}}
+  {{#each this.workspace.visibleWindows as |entry|}}
+    {{console-workspace-window entry=entry}}
+  {{/each}}
+
+  {{#if this.workspace.menuOpen}}
+    <section class="console-workspace-menu" aria-label="{{t 'consoleWorkspace.dock.label'}}">
+    <header>
+      <strong>{{t 'consoleWorkspace.dock.sessions' count=this.workspace.sessionCount}}</strong>
+      <button type="button" class="btn btn-link" {{action "toggleMenu"}} aria-label="{{t 'generic.closeModal'}}">
+        <i class="icon icon-x" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <div class="console-workspace-menu-list">
+      {{#each this.workspace.sessions as |entry|}}
+        <article class="console-workspace-menu-item">
+          <button type="button" class="console-workspace-session-main" {{action "open" entry}}>
+            {{#if entry.isLogs}}
+              <i class="icon icon-file" aria-hidden="true"></i>
+            {{else if entry.isVm}}
+              <i class="icon icon-vm" aria-hidden="true"></i>
+            {{else}}
+              <i class="icon icon-terminal" aria-hidden="true"></i>
+            {{/if}}
+            <span>
+              <strong>{{entry.resourceTitle}}</strong>
+              <small>
+                {{t
+                  'consoleWorkspace.context.title'
+                  environment=entry.environmentTitle
+                  stack=(if entry.stackTitle entry.stackTitle (t 'consoleWorkspace.context.noStack'))
+                  resource=entry.resourceTitle
+                }}
+              </small>
+              <small>
+                {{#if entry.isLogs}}
+                  {{t 'consoleWorkspace.session.logs'}}
+                {{else if entry.isVm}}
+                  {{t 'consoleWorkspace.session.vm'}}
+                {{else}}
+                  {{t 'consoleWorkspace.session.terminal'}}
+                {{/if}}
+                · {{t (concat-str 'consoleWorkspace.session.status.' entry.status character='')}}
+              </small>
+            </span>
+          </button>
+
+          {{#if (eq entry.status "ended")}}
+            <button type="button" class="btn btn-link text-muted" {{action "remove" entry}} title="{{t 'consoleWorkspace.session.removeHistory'}}">
+              <i class="icon icon-trash" aria-hidden="true"></i>
+            </button>
+          {{else if (not entry.isVm)}}
+            <button type="button" class="btn btn-link text-danger" {{action "terminate" entry}} title="{{t 'consoleWorkspace.window.terminate'}}">
+              <svg class="console-workspace-power-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 2v10"></path>
+                <path d="M6.34 4.93a8 8 0 1 0 11.32 0"></path>
+              </svg>
+            </button>
+          {{/if}}
+        </article>
+      {{else}}
+        <div class="console-workspace-empty">{{t 'consoleWorkspace.dock.empty'}}</div>
+      {{/each}}
+    </div>
+    </section>
+  {{/if}}
+
+  {{#if this.workspace.sessionCount}}
+    <nav class="console-workspace-dock" aria-label="{{t 'consoleWorkspace.dock.label'}}">
+      <div class="console-workspace-dock-scroll">
+        {{#each this.workspace.sessions as |entry|}}
+          {{#unless (eq entry.windowState "closed")}}
+            <button
+              type="button"
+              class="console-workspace-dock-item {{if (eq entry.windowState "open") 'active'}}"
+              {{action "open" entry}}
+              title="{{t
+                'consoleWorkspace.context.title'
+                environment=entry.environmentTitle
+                stack=(if entry.stackTitle entry.stackTitle (t 'consoleWorkspace.context.noStack'))
+                resource=entry.resourceTitle
+              }}"
+            >
+              {{#if entry.isLogs}}
+                <i class="icon icon-file" aria-hidden="true"></i>
+              {{else if entry.isVm}}
+                <i class="icon icon-vm" aria-hidden="true"></i>
+              {{else}}
+                <i class="icon icon-terminal" aria-hidden="true"></i>
+              {{/if}}
+              <span class="sr-only">{{entry.resourceTitle}}</span>
+            </button>
+          {{/unless}}
+        {{/each}}
+
+        <button
+          type="button"
+          class="console-workspace-dock-item console-workspace-dock-menu"
+          {{action "toggleMenu"}}
+          title="{{t 'consoleWorkspace.dock.sessions' count=this.workspace.sessionCount}}"
+        >
+          <i class="icon icon-thumbnails" aria-hidden="true"></i>
+          <span class="console-workspace-count">{{this.workspace.sessionCount}}</span>
+        </button>
+      </div>
+    </nav>
+  {{/if}}
+
+  {{#if this.workspace.terminationEntry}}
+    <div class="console-workspace-confirm-backdrop">
+      <section
+        class="console-workspace-confirm"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="console-workspace-confirm-title"
+        aria-describedby="console-workspace-confirm-message"
+      >
+        <svg class="console-workspace-confirm-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M12 2v10"></path>
+          <path d="M6.34 4.93a8 8 0 1 0 11.32 0"></path>
+        </svg>
+        <h3 id="console-workspace-confirm-title">{{t 'consoleWorkspace.session.confirmTerminateTitle'}}</h3>
+        <p id="console-workspace-confirm-message">{{t 'consoleWorkspace.session.confirmTerminate'}}</p>
+        <p class="console-workspace-confirm-resource">
+          {{t
+            'consoleWorkspace.context.title'
+            environment=this.workspace.terminationEntry.environmentTitle
+            stack=(if this.workspace.terminationEntry.stackTitle this.workspace.terminationEntry.stackTitle (t 'consoleWorkspace.context.noStack'))
+            resource=this.workspace.terminationEntry.resourceTitle
+          }}
+        </p>
+        <div class="console-workspace-confirm-actions">
+          <button type="button" class="btn btn-default" {{action "cancelTerminate"}} autofocus>
+            {{t 'generic.noo'}}
+          </button>
+          <button type="button" class="btn btn-danger" {{action "confirmTerminate"}}>
+            {{t 'generic.yess'}}
+          </button>
+        </div>
+      </section>
+    </div>
+  {{/if}}
+{{/if}}

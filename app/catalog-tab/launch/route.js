@@ -1,5 +1,18 @@
 import Ember from 'ember';
 import C from 'ui/utils/constants';
+import { catalogVersionOptions } from 'ui/utils/catalog-version-options';
+
+function resourceValue(resource, path) {
+  if ( !resource ) {
+    return undefined;
+  }
+
+  if ( typeof resource.get === 'function' ) {
+    return resource.get(path);
+  }
+
+  return Ember.get(resource, path);
+}
 
 export default Ember.Route.extend({
   catalog: Ember.inject.service(),
@@ -38,27 +51,18 @@ export default Ember.Route.extend({
       var links;
       if ( results.upgrade )
       {
-        links = results.upgrade.upgradeVersionLinks;
+        links = resourceValue(results.upgrade, 'upgradeVersionLinks') || {};
       }
       else
       {
-        links = results.tpl.versionLinks;
+        links = resourceValue(results.tpl, 'versionLinks') || {};
       }
 
-      var verArr = Object.keys(links).filter((key) => {
-        // Filter out empty values for rancher/rancher#5494
-        return !!links[key];
-      }).map((key) => {
-        return {version: key, link: links[key]};
-      });
-
-      if ( results.upgrade )
-      {
-        verArr.unshift({
-          version: results.upgrade.version + ' (current)',
-          link: results.upgrade.links.self
-        });
-      }
+      let currentOption = results.upgrade ? {
+        version: `${resourceValue(results.upgrade, 'version')} (current)`,
+        link: resourceValue(results.upgrade, 'links.self'),
+      } : null;
+      let verArr = catalogVersionOptions(links, currentOption);
 
       return Ember.Object.create({
         stack: results.stack,

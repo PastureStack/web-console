@@ -9,7 +9,7 @@ export default Ember.Route.extend({
     return this.get('language').initUnauthed().then(() => {
       if ( !this.get('access.enabled') && !transition.queryParams.shibbolethTest)
       {
-        this.transitionTo('authenticated');
+        this.get('router').transitionTo('authenticated');
       }
     });
   },

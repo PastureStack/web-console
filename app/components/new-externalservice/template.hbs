@@ -4,7 +4,7 @@
 
 <section class="horizontal-form container-fluid well">
   {{form-name-description
-    model=service
+    model=this.service
     namePlaceholder="editExternalService.name.placeholder"
     descriptionPlaceholder="editExternalService.description.placeholder"
   }}
@@ -12,7 +12,7 @@
 
 <section class="horizontal-form container-fluid well">
   {{form-target-ip
-    service=service
+    service=this.service
   }}
 </section>
 
@@ -20,10 +20,10 @@
   {{form-healthcheck
     isService=true
     showStrategy=false
-    healthCheck=service.healthCheck
+    healthCheck=this.service.healthCheck
   }}
   <div class="alert alert-info">{{t 'newExternalService.alert'}}</div>
 </section>
 
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 {{save-cancel save="save" cancel="cancel"}}

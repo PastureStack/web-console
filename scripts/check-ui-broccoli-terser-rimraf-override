@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+if "broccoli-terser-sourcemap" in (package.get("overrides", {}) or {}):
+    fail("BROCCOLI_TERSER_UNSAFE_OVERRIDE_REMAINS", actual=package.get("overrides", {}).get("broccoli-terser-sourcemap"))
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    plugin = packages.get("node_modules/broccoli-terser-sourcemap", {})
+    if plugin.get("version") != "4.1.1":
+        fail("BROCCOLI_TERSER_LOCK_VERSION_UNEXPECTED", actual=plugin.get("version"), expected="4.1.1")
+    if "rimraf" in (plugin.get("dependencies", {}) or {}):
+        fail("BROCCOLI_TERSER_DIRECT_RIMRAF_RETURNED", actual=plugin.get("dependencies", {}).get("rimraf"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(
+    "UI_BROCCOLI_TERSER_RIMRAF_OVERRIDE_OK "
+    f"broccoli-terser-sourcemap=4.1.1 direct_rimraf=absent lockfile={lock_path} package_count={package_count}"
+)
+print("The active Terser plugin has no direct rimraf dependency; unrelated nested build debt remains in the fail-closed P1 inventory.")
+print("failure_count=0")
+PY

@@ -4,14 +4,14 @@
 
 <section class="horizontal-form container-fluid well">
   {{form-name-description
-    model=primaryResource
+    model=this.primaryResource
     nameRequired=true
     namePlaceholder="certificatesPage.new.form.name.placeholder"
     descriptionPlaceholder="certificatesPage.new.form.description.placeholder"
   }}
 
-  {{input-certificate model=model}}
+  {{input-certificate model=this.model}}
 </section>
 
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 {{save-cancel editing=true save="save" cancel="cancel"}}

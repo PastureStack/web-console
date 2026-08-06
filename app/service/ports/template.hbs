@@ -1,4 +1,4 @@
-{{#if model.isActive}}
+{{#if this.model.isActive}}
   <table class="grid fixed">
     <thead>
       <tr>
@@ -7,7 +7,7 @@
       </tr>
     </thead>
     <tbody>
-      {{#each model.endpointsByPort as |obj|}}
+      {{#each this.model.endpointsByPort as |obj|}}
         <tr>
           <td>
             {{obj.port}}

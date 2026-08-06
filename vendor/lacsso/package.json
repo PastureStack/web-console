@@ -1,0 +1,42 @@
+{
+  "name": "lacsso",
+  "version": "0.0.60-rc16.1",
+  "description": "Unofficial rc16 maintenance vendor of lacsso for Rancher 1.6 UI",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rancher/lacsso.git"
+  },
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {},
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "author": "Rancher Labs, Inc.",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/rancher/lacsso/issues"
+  },
+  "homepage": "https://github.com/rancher/lacsso#readme",
+  "rc16Maintenance": {
+    "source": "lacsso@0.0.59",
+    "reason": "Maintain the supported build chain and precompile active templates with Ember 6.12.",
+    "compatibility": "The upstream Handlebars sources are retained byte-for-byte; only their build representation changes."
+  },
+  "keywords": [
+    "ember-addon"
+  ],
+  "dependencies": {
+    "ember-cli-babel": "8.3.1",
+    "ember-cli-htmlbars": "7.0.1",
+    "ember-cli-pagination": "file:../ember-cli-pagination",
+    "ember-cli-sass": "10.0.1",
+    "ember-rl-dropdown": "file:../ember-rl-dropdown",
+    "ember-truth-helpers": "5.0.0"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config"
+  }
+}

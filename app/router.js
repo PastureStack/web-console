@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import EmberRouter from '@ember/routing/router';
 import config from './config/environment';
 import {applyRoutes, clearRoutes} from 'ui/utils/additional-routes';
 
-const Router = Ember.Router.extend({
-  location: config.locationType
+const Router = EmberRouter.extend({
+  location: config.locationType,
+  rootURL: config.rootURL,
 });
 
 Router.map(function() {
@@ -14,12 +15,14 @@ Router.map(function() {
 
   this.route('login', function() {
     this.route('index', {path: '/'});
+    this.route('oidc-auth');
     this.route('shibboleth-auth');
   });
   this.route('logout');
   this.route('authenticated', {path: '/'}, function() {
 
     this.route('dummy-dev', {path: '/dev'});
+    this.route('account-security', {path: '/account/security', resetNamespace: true});
     // Settings
     this.route('settings', {resetNamespace: true}, function() {
       this.route('projects', {path: '/env'}, function() {
@@ -39,6 +42,8 @@ Router.map(function() {
         this.route('github');
         this.route('openldap');
         this.route('localauth', {path: 'local'});
+        this.route('mfa');
+        this.route('oidc');
         this.route('shibboleth');
       });
 

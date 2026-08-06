@@ -1,0 +1,30 @@
+{{log this.service}}
+<div class="content-box col-sm-12 col-md-12">
+  <label class="text-muted">{{t 'externalServicePartial.extService.labelText'}} (<small><LinkTo @route="service" @models={{array this.service.stackId this.service.id}} class=""> {{t 'externalServicePartial.extService.linkTo'}} </LinkTo></small>)</label>
+  <div class="content">
+    {{#if this.service.externalIpAddresses}}
+      <label class="text-muted">{{t 'externalServicePartial.ips'}}</label>
+      {{#if this.service.externalIpAddresses.length}}
+        <ul class="list-unstyled" style="mergin:0 auto;">
+          {{#each this.service.externalIpAddresses as |ip|}}
+            <li style="display: inline-block;vertical-align: top;margin: 15px 10px;">
+              <i class="icon icon-link"></i> {{ip}}
+            </li>
+          {{/each}}
+        </ul>
+      {{/if}}
+    {{/if}}
+    {{#if this.service.hostname}}
+      <label class="text-muted">{{t 'externalServicePartial.hostname'}} </label>
+      <div>
+        {{this.service.hostname}}
+      </div>
+    {{/if}}
+    {{#if this.service.description}}
+      <label class="text-muted r-mt10">{{t 'externalServicePartial.description'}}</label>
+      <div>
+        {{this.service.description}}
+      </div>
+    {{/if}}
+  </div>
+</div>

@@ -1,186 +1,174 @@
-/*Rancher Branded*/
-.loader {
-  position: relative;
+$midGray: null !default;
+$yellowDark: null !default;
+
+/* PastureStack branded loading state */
+.pasturestack-loader {
+  color: #fff;
+  left: 50%;
+  position: absolute;
   text-align: center;
-  width: 300px;
-  height: 300px;
-  margin: 0 auto;
+  top: 50%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  width: 210px;
   -webkit-tap-highlight-color: transparent;
 }
 
-.orbit {
-  position          : absolute;
-  top: 0;
+.pasturestack-loader__stage {
+  height: 156px;
+  margin: 0 auto 18px;
+  position: relative;
+  width: 156px;
+}
+
+.pasturestack-loader__ring {
+  border-radius: 50%;
+  box-sizing: border-box;
+  position: absolute;
+}
+
+.pasturestack-loader__ring--outer {
+  -webkit-animation: pasturestack-loader-spin 1.6s linear infinite;
+  animation: pasturestack-loader-spin 1.6s linear infinite;
+  border: 2px solid rgba(255,255,255,.18);
+  border-right-color: rgba(232,166,43,.52);
+  border-top-color: #e8a62b;
+  height: 156px;
   left: 0;
-  margin            : 0 auto;
-  width             : 281px;
-  height            : 281px;
-  border            : dotted rgba(255,255,255,.25) 3px;
-  border-radius     : 50%;
-  -webkit-animation: orbit 20s linear infinite; /* Safari 4+ */ /* Fx 5+ */ /* Opera 12+ */
-  animation:         orbit 20s linear infinite; /* IE 10+, Fx 29+ */
+  top: 0;
+  width: 156px;
+}
+
+.pasturestack-loader__ring--inner {
+  -webkit-animation: pasturestack-loader-spin-reverse 1.15s linear infinite;
+  animation: pasturestack-loader-spin-reverse 1.15s linear infinite;
+  border: 2px solid rgba(255,255,255,.12);
+  border-bottom-color: #72b65b;
+  border-left-color: rgba(114,182,91,.58);
+  height: 128px;
+  left: 14px;
+  top: 14px;
+  width: 128px;
+}
+
+.pasturestack-loader__mark-shell {
+  -webkit-animation: pasturestack-loader-pulse 1.8s ease-in-out infinite;
+  animation: pasturestack-loader-pulse 1.8s ease-in-out infinite;
+  -webkit-align-items: center;
+  align-items: center;
+  background: rgba(255,255,255,.96);
+  border: 1px solid rgba(255,255,255,.72);
+  border-radius: 28px;
+  box-shadow: 0 16px 38px rgba(0,0,0,.28), 0 0 0 7px rgba(255,255,255,.06);
+  display: -webkit-flex;
+  display: flex;
+  height: 96px;
+  -webkit-justify-content: center;
+  justify-content: center;
+  left: 30px;
+  position: absolute;
+  top: 30px;
+  width: 96px;
+}
+
+.pasturestack-loader__mark {
+  display: block;
+  height: 64px;
+  width: 64px;
+}
+
+.pasturestack-loader__progress {
+  background: rgba(255,255,255,.16);
+  border-radius: 4px;
+  height: 4px;
+  margin: 0 auto;
+  overflow: hidden;
+  width: 132px;
+}
+
+.pasturestack-loader__progress > span {
+  -webkit-animation: pasturestack-loader-sweep 1.35s ease-in-out infinite;
+  animation: pasturestack-loader-sweep 1.35s ease-in-out infinite;
+  background: -webkit-linear-gradient(left, #72b65b, #e8a62b);
+  background: linear-gradient(90deg, #72b65b, #e8a62b);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+  width: 46%;
+}
+
+.pasturestack-loader__label {
+  display: block;
+  font-size: 14px;
+  letter-spacing: .06em;
+  margin-top: 12px;
+  text-shadow: 0 1px 2px rgba(0,0,0,.32);
 }
 
 .i-hate-spinners {
-  .orbit,
-  .loadfield,
+  .pasturestack-loader__ring,
+  .pasturestack-loader__mark-shell,
+  .pasturestack-loader__progress > span,
   .icon-spin {
+    -webkit-animation: none;
     animation: none;
-    -webkit-animation:: none;
+  }
+
+  .pasturestack-loader__progress > span {
+    opacity: .72;
+    width: 100%;
   }
 }
 
-.sun {
-  background : $yellowDark;
-  top        : 110px;
-  left       : -25px;
+@-webkit-keyframes pasturestack-loader-spin {
+  to { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
 }
 
-.moon {
-  background : $midGray;
-  bottom     : 110px;
-  right      : -25px;
+@keyframes pasturestack-loader-spin {
+  to { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
 }
 
-.moon,
-.sun {
-  position      : absolute;
-  width         : 50px;
-  height        : 50px;
-  border-radius : 50%;
+@-webkit-keyframes pasturestack-loader-spin-reverse {
+  to { -webkit-transform: rotate(-360deg); transform: rotate(-360deg); }
 }
 
-
-.grass {
-  content             : "";
-  background          : -webkit-linear-gradient(135deg, #a5c63b 5px, transparent 0), -webkit-linear-gradient(45deg, #a5c63b 5px, transparent 0);
-  background          : linear-gradient(-45deg, #a5c63b 5px, transparent 0), linear-gradient(45deg, #a5c63b 5px, transparent 0);
-  background-position : left-bottom;
-  background-repeat   : repeat-x;
-  background-size     : 10px 10px;
-  display             : block;
-  position            : absolute;
-  bottom              : 50%;
-  left                : 0px;
-  width               : 100%;
-  height              : 10px;
+@keyframes pasturestack-loader-spin-reverse {
+  to { -webkit-transform: rotate(-360deg); transform: rotate(-360deg); }
 }
 
-.loadfield {
-  position          : absolute;
-  top: 0;
-  left: 0;
-  width             : 200px;
-  height            : 200px;
-  margin            : 40px;
-  background        : -moz-linear-gradient(top, #d3edf8 0%, #d3edf8 50%, #a5c63b 50%, #a5c63b 100%);
-  background        : -webkit-linear-gradient(top, #d3edf8 0%, #d3edf8 50%, #a5c63b 50%, #a5c63b 100%);
-  background        : linear-gradient(top, #d3edf8 0%, #d3edf8 50%, #a5c63b 50%, #a5c63b 100%);
-  border-radius     : 50%;
- -webkit-animation: fade 30s ease-in-out infinite; /* Safari 4+ */ /* Fx 5+ */ /* Opera 12+ */
-  animation:         fade 30s ease-in-out infinite; /* IE 10+, Fx 29+ */
+@-webkit-keyframes pasturestack-loader-pulse {
+  0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+  50% { -webkit-transform: scale(1.045); transform: scale(1.045); }
 }
 
-.cow {
-  height: 65px;
-  margin     : 60px auto;
-  position   : relative;
-  z-index    : 5;
+@keyframes pasturestack-loader-pulse {
+  0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+  50% { -webkit-transform: scale(1.045); transform: scale(1.045); }
 }
 
-.head {
-  fill   : #0A75A8;
-  stroke : rgba(0, 0, 0, .25);
-  margin : 0 auto;
+@-webkit-keyframes pasturestack-loader-sweep {
+  0% { -webkit-transform: translateX(-110%); transform: translateX(-110%); }
+  50% { -webkit-transform: translateX(118%); transform: translateX(118%); }
+  100% { -webkit-transform: translateX(245%); transform: translateX(245%); }
 }
 
-.body {
-  fill   : #0A75A8;
-  margin : 0 auto;
+@keyframes pasturestack-loader-sweep {
+  0% { -webkit-transform: translateX(-110%); transform: translateX(-110%); }
+  50% { -webkit-transform: translateX(118%); transform: translateX(118%); }
+  100% { -webkit-transform: translateX(245%); transform: translateX(245%); }
 }
 
-.head {
-  -webkit-animation                 : head ease-in-out 4s;
-  animation                         : head ease-in-out 4s;
-  -webkit-animation-iteration-count : infinite;
-  animation-iteration-count         : infinite;
-  -webkit-transform-origin          : 50% 50%;
-  transform-origin                  : 50% 50%;
-  -webkit-animation-fill-mode       : forwards;
-  animation-fill-mode               : forwards;
-  /*when the spec is finished*/
-  -webkit-animation                 : head ease-in-out 4s;
-  -webkit-animation-iteration-count : infinite;
-  -webkit-transform-origin          : 50% 50%;
-  -webkit-animation-fill-mode       : forwards;
-  /*Chrome 16+, Safari 4+*/
-  -moz-animation                    : head ease-in-out 4s;
-  -moz-animation-iteration-count    : infinite;
-  -moz-transform-origin             : 50% 50%;
-  -moz-animation-fill-mode          : forwards;
-  /*FF 5+*/
-  -o-animation                      : head ease-in-out 4s;
-  -o-animation-iteration-count      : infinite;
-  -o-transform-origin               : 50% 50%;
-  -o-animation-fill-mode            : forwards;
-  /*Not implemented yet*/
-  -ms-animation                     : head ease-in-out 4s;
-  -ms-animation-iteration-count     : infinite;
-  -ms-transform-origin              : 50% 50%;
-  -ms-animation-fill-mode           : forwards;
-  /*IE 10+*/
-}
-
-@-webkit-keyframes fade {
-  0% {
-    filter: url('data:image/svg+xml;charset=utf-8,#filter');
-    -moz-filter: brightness(1) grayscale(0%);
-    -webkit-filter: brightness(1) grayscale(0%);
-            filter: brightness(1) grayscale(0%);
+@media (prefers-reduced-motion: reduce) {
+  .pasturestack-loader__ring,
+  .pasturestack-loader__mark-shell,
+  .pasturestack-loader__progress > span {
+    -webkit-animation: none;
+    animation: none;
   }
-  50% {
-    filter: url('data:image/svg+xml;charset=utf-8,#filter');
-    -moz-filter: brightness(0.3) grayscale(1);
-    -webkit-filter: brightness(0.3) grayscale(1);
-    filter: brightness(0.3) grayscale(1);
-  }
-  100% {
-   filter: url('data:image/svg+xml;charset=utf-8,#filter');
-   -moz-filter: brightness(1) grayscale(0%);
-   -webkit-filter: brightness(1) grayscale(0%);
-    filter: brightness(1) grayscale(0%);
-  }
-}
 
-@keyframes fade {
-  0% {
-    filter: url('data:image/svg+xml;charset=utf-8,#filter');
-    -webkit-filter: brightness(1) grayscale(0%);
-            filter: brightness(1) grayscale(0%);
-  }
-  50% {
-    filter: url('data:image/svg+xml;charset=utf-8,#filter');
-    -webkit-filter: brightness(0.3) grayscale(1);
-            filter: brightness(0.3) grayscale(1);
-  }
-  100% {
-   filter: url('data:image/svg+xml;charset=utf-8,#filter');
-   -webkit-filter: brightness(1) grayscale(0%);
-           filter: brightness(1) grayscale(0%);
-  }
-}
-
-@-webkit-keyframes orbit {
-  100% {
-    -webkit-transform: rotateZ(360deg);
-    transform: rotateZ(360deg);
-  }
-}
-
-@keyframes orbit {
-  100% {
-    -webkit-transform: rotateZ(360deg);
-    transform: rotateZ(360deg);
+  .pasturestack-loader__progress > span {
+    opacity: .72;
+    width: 100%;
   }
 }
 

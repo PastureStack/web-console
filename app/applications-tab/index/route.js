@@ -4,15 +4,15 @@ export default Ember.Route.extend({
   redirect: function() {
     if ( this.controllerFor('authenticated').get('hasKubernetes') )
     {
-      this.transitionTo('k8s-tab');
+      this.get('router').transitionTo('k8s-tab');
     }
     else if ( this.controllerFor('authenticated').get('hasSwarm') )
     {
-      this.transitionTo('swarm-tab.projects');
+      this.get('router').transitionTo('swarm-tab.projects');
     }
     else
     {
-      this.transitionTo('stacks');
+      this.get('router').transitionTo('stacks');
     }
   }
 });

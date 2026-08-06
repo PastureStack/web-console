@@ -12,14 +12,14 @@
   <div class="col-md-5">
     <label>{{t 'reservationParameters.memory.labelText'}}</label>
     <div class="input-group">
-      {{input-integer min="4" step="1" value=memoryLimit classNames="form-control" placeholder=(t 'reservationParameters.memory.placeholder')}}
+      {{input-integer min="4" step="1" value=this.memoryLimit classNames="form-control" placeholder=(t 'reservationParameters.memory.placeholder')}}
       <div class="input-group-addon">{{t 'reservationParameters.memory.unit'}}</div>
     </div>
   </div>
   <div class="col-md-5">
     <label>{{t 'reservationParameters.milliCpu.labelText'}}</label>
     <div class="input-group">
-      {{input type="text" value=model.milliCpu classNames="form-control" placeholder=(t 'reservationParameters.milliCpu.placeholder')}}
+      {{input type="text" value=this.model.milliCpu classNames="form-control" placeholder=(t 'reservationParameters.milliCpu.placeholder')}}
       <div class="input-group-addon">{{t 'reservationParameters.milliCpu.unit'}}</div>
     </div>
   </div>

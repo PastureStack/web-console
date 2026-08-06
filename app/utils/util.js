@@ -329,7 +329,19 @@ export function uniqKeys(data, field=undefined) {
 }
 
 export function camelToTitle(str) {
-  return (str||'').dasherize().split('-').map((str) => { return ucFirst(str); }).join(' ');
+  let value = str === null || str === undefined ? '' : String(str);
+
+  return value
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1-$2')
+    .replace(/([a-z\d])([A-Z])/g, '$1-$2')
+    .replace(/[ _]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+    .split('-')
+    .filter((part) => part.length > 0)
+    .map((part) => ucFirst(part))
+    .join(' ');
 }
 
 var Util = {

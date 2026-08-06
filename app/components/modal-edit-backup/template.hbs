@@ -1,10 +1,10 @@
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 
-<h2>{{t (if editing 'modalEditBackup.edit' 'modalEditBackup.create')}}</h2>
+<h2>{{t (if this.editing 'modalEditBackup.edit' 'modalEditBackup.create')}}</h2>
 
 <div class="form-group">
   <label>{{t 'modalEditBackup.nameLabel'}}*</label>
-  {{input class="form-control" value=backupName }}
+  {{input class="form-control" value=this.backupName }}
 </div>
 
 <div class="form-group">
@@ -12,12 +12,12 @@
     {{new-select
       classNames="form-control"
       prompt="modalEditBackup.backupTargetPlaceholder"
-      content=backupTargets
+      content=this.backupTargets
       optionValuePath="id"
       optionLabelPath="name"
-      value=backupTarget
+      value=this.backupTarget
     }}
 </div>
 
 
-{{save-cancel editing=editing save="saveBackup" cancel="cancel"}}
+{{save-cancel editing=this.editing save="saveBackup" cancel="cancel"}}

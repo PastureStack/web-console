@@ -10,6 +10,7 @@ export default Ember.Service.extend({
   userStore: Ember.inject.service('user-store'),
 
   token: null,
+  mfaChallenge: null,
   loadedVersion: null,
 
   // These are set by authenticated/route
@@ -107,32 +108,22 @@ export default Ember.Service.extend({
     return rv;
   },
 
-  login(code) {
-    var session = this.get('session');
-
+  login(code, providerOverride, options) {
+    let request = Object.assign({
+      code: code,
+      authProvider: providerOverride || this.get('provider'),
+    }, options || {});
     return this.get('userStore').rawRequest({
       url: 'token',
       method: 'POST',
-      data: {
-        code: code,
-        authProvider: this.get('provider'),
-      },
+      data: request,
     }).then((xhr) => {
-      var auth = xhr.body;
-      var interesting = {};
-      C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
-        if ( typeof auth[key] !== 'undefined' )
-        {
-          interesting[key] = auth[key];
-        }
-      });
-
-      this.get('cookies').setWithOptions(C.COOKIE.TOKEN, auth['jwt'], {
-        path: '/',
-        secure: window.location.protocol === 'https:'
-      });
-
-      session.setProperties(interesting);
+      if ( xhr.body && xhr.body.mfaRequired ) {
+        this.set('mfaChallenge', xhr.body);
+      } else {
+        this.set('mfaChallenge', null);
+        this.acceptLogin(xhr.body);
+      }
       return xhr;
     }).catch((res) => {
       let err;
@@ -143,6 +134,57 @@ export default Ember.Service.extend({
       }
       return Ember.RSVP.reject(err);
     });
+  },
+
+  completeMfa(data) {
+    return this.get('userStore').rawRequest({
+      url: 'token',
+      method: 'POST',
+      data: Object.assign({
+        authProvider: 'mfa',
+      }, data || {}),
+    }).then((xhr) => {
+      if ( xhr.body && xhr.body.mfaRequired ) {
+        let current = this.get('mfaChallenge');
+        let sameChallenge = current && current.mfaChallengeId &&
+          current.mfaChallengeId === xhr.body.mfaChallengeId;
+        this.set('mfaChallenge', sameChallenge ?
+          Object.assign({}, current, xhr.body) : xhr.body);
+      } else {
+        this.set('mfaChallenge', null);
+        this.acceptLogin(xhr.body);
+      }
+      return xhr;
+    }).catch((res) => {
+      let err;
+      try {
+        err = res.body;
+      } catch(e) {
+        err = {type: 'error', message: 'Error verifying the security factor'};
+      }
+      return Ember.RSVP.reject(err);
+    });
+  },
+
+  cancelMfa() {
+    this.set('mfaChallenge', null);
+  },
+
+  acceptLogin(auth) {
+    var session = this.get('session');
+    var interesting = {};
+    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
+      if ( typeof auth[key] !== 'undefined' )
+      {
+        interesting[key] = auth[key];
+      }
+    });
+
+    this.get('cookies').setWithOptions(C.COOKIE.TOKEN, auth['jwt'], {
+      path: '/',
+      secure: window.location.protocol === 'https:'
+    });
+    session.setProperties(interesting);
   },
 
   clearToken() {
@@ -170,6 +212,36 @@ export default Ember.Service.extend({
     }
 
     this.get('cookies').remove(C.COOKIE.TOKEN);
+  },
+
+  suspendSession() {
+    let session = this.get('session');
+    let values = {};
+
+    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
+      values[key] = session.get(key);
+    });
+
+    let snapshot = {
+      token: this.get('cookies').get(C.COOKIE.TOKEN),
+      values: values,
+    };
+
+    this.clearSessionKeys();
+    return snapshot;
+  },
+
+  restoreSession(snapshot) {
+    snapshot = snapshot || {};
+    this.clearSessionKeys();
+    this.get('session').setProperties(snapshot.values || {});
+
+    if ( snapshot.token ) {
+      this.get('cookies').setWithOptions(C.COOKIE.TOKEN, snapshot.token, {
+        path: '/',
+        secure: window.location.protocol === 'https:'
+      });
+    }
   },
 
   isLoggedIn() {

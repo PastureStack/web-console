@@ -1,5 +1,5 @@
 import Resource from 'ember-api-store/models/resource';
-import { denormalizeId, denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import { denormalizeId, denormalizeIdArray } from 'ui/utils/api-store-references';
 
 export default Resource.extend({
   type: 'lbConfig',

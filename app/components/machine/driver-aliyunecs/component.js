@@ -1,5 +1,6 @@
 import Ember from 'ember';
 import Driver from 'ui/mixins/driver';
+import { isValidAliyunHostname } from 'ui/utils/aliyun-hostname';
 import { validateHostname } from 'ui/utils/validate-dns';
 
 let ioOptimized=[
@@ -558,7 +559,7 @@ export default Ember.Component.extend(Driver, {
         errors.push(this.get('intl').t('machine.driverAliyunecs.errors.nameTooShort'));
       }
       //check '.','-' can not be used as the first letter and the last letter
-      if (!/^[a-zA-Z]([\.]?[a-zA-Z0-9\-]+[\.]?)*[a-zA-Z0-9]$/.test(name)){
+      if (!isValidAliyunHostname(name)){
         errors.push(this.get('intl').t('machine.driverAliyunecs.errors.nameNotValid'));
       }
       //windows hostname can not have more than 15 letter. And we should not use windows image to setup a host, so we don't need to validate name for windows hostname.

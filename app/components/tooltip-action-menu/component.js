@@ -1,6 +1,7 @@
 import Ember from 'ember';
 import Tooltip from 'ui/mixins/tooltip';
 import StrippedName from 'ui/mixins/stripped-name';
+import { resolveTooltipContentComponent } from 'ui/utils/tooltip-content-component';
 
 export default Ember.Component.extend(Tooltip, StrippedName, {
   resourceActions:  Ember.inject.service('resource-actions'),
@@ -8,12 +9,11 @@ export default Ember.Component.extend(Tooltip, StrippedName, {
   model:            Ember.computed.alias('tooltipService.tooltipOpts.model'),
   actionsOpen:      Ember.computed.alias('resourceActions.open'),
   inTooltip:        false,
-  layoutName:       'tooltip-action-menu',
+  contentComponent: Ember.computed('tooltipTemplate', function() {
+    return resolveTooltipContentComponent(this.get('tooltipTemplate'), 'tooltip-action-menu');
+  }),
 
   init: function() {
-    if (this.get('tooltipTemplate')) {
-      this.set('layoutName', this.get('tooltipTemplate'));
-    }
     this._super(...arguments);
     // Just so openChanged is ready to go, otherwise you have to chain on('init') on openChanged
     // which because of the context menu click on container dot can cause some issues with checking

@@ -1,4 +1,3 @@
-/* jshint node: true */
 var pkg  = require('../package.json');
 var fs   = require('fs');
 var YAML = require('yamljs');
@@ -51,9 +50,18 @@ module.exports = function(environment) {
     modulePrefix: 'ui',
     environment: environment,
     exportApplicationGlobal: true,
-    baseURL: '/',
-    locationType: 'auto',
+    rootURL: '/',
+    // Ember 6 registers history, hash, and none locations. Use the modern
+    // history default explicitly; the removed auto registry entry would leave
+    // the production router without an onUpdateURL implementation.
+    locationType: 'history',
     EmberENV: {
+      // Ember 6.12 still supports the legacy Array convenience methods used by
+      // the classic console. Keep this explicit during the staged native-array
+      // migration; Ember 7 removes this compatibility switch.
+      EXTEND_PROTOTYPES: {
+        Array: true
+      },
       FEATURES: {
         // Here you can enable experimental features on an ember canary build
         // e.g. 'with-controller': true
@@ -70,12 +78,12 @@ module.exports = function(environment) {
 
     contentSecurityPolicy: {
       // Allow the occasional <elem style="blah">...
-      'style-src':  "'self' releases.rancher.com localhost:3000 'unsafe-inline'",
-      'font-src':   "'self' releases.rancher.com",
-      'script-src': "'self' releases.rancher.com localhost:3000",
-      'object-src': "'self' releases.rancher.com",
-      'img-src':    "'self' releases.rancher.com avatars.githubusercontent.com gravatar.com localhost:3000 data:",
-      'frame-src':  "'self' releases.rancher.com",
+      'style-src':  "'self' localhost:3000 'unsafe-inline'",
+      'font-src':   "'self'",
+      'script-src': "'self' localhost:3000",
+      'object-src': "'none'",
+      'img-src':    "'self' avatars.githubusercontent.com gravatar.com localhost:3000 data:",
+      'frame-src':  "'self'",
 
       // Allow connect to anywhere, for console and event stream socket
       'connect-src': '*'
@@ -85,7 +93,7 @@ module.exports = function(environment) {
       // Here you can pass flags/options to your application instance
       // when it is created
       version: pkg.version,
-      appName: 'Rancher',
+      appName: 'PastureStack',
       apiServer: 'http://localhost:8080',
       legacyApiEndpoint: '/v1',
       apiEndpoint: '/v2-beta',
@@ -122,7 +130,7 @@ module.exports = function(environment) {
 
   if (environment === 'test') {
     // Testem prefers this...
-    ENV.baseURL = '/';
+    ENV.rootURL = '/';
     ENV.locationType = 'none';
 
     // keep test console output quieter
@@ -133,10 +141,11 @@ module.exports = function(environment) {
   }
 
   if (process.env.BASE_URL) {
-    ENV.baseURL = process.env.BASE_URL;
+    ENV.rootURL = process.env.BASE_URL;
   }
 
-  ENV.APP.baseURL = ENV.baseURL;
+  ENV.APP.rootURL = ENV.rootURL;
+  ENV.APP.baseURL = ENV.rootURL;
 
   if (process.env.FINGERPRINT) {
     ENV.APP.fingerprint = process.env.FINGERPRINT;
@@ -146,8 +155,8 @@ module.exports = function(environment) {
     ENV.APP.baseAssets = process.env.BASE_ASSETS;
   }
 
-  // Override the Rancher server/endpoint with environment var
-  var server = process.env.RANCHER;
+  // PLATFORM_SERVER is preferred; RANCHER remains a build-time compatibility alias.
+  var server = process.env.PLATFORM_SERVER || process.env.RANCHER;
   if ( server )
   {
     ENV.APP.apiServer = normalizeHost(server,8080);
@@ -175,7 +184,7 @@ module.exports = function(environment) {
   }
   else
   {
-    ENV.APP.pl = 'rancher';
+    ENV.APP.pl = 'pasturestack';
   }
 
   return ENV;
