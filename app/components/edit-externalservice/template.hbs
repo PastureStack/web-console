@@ -1,16 +1,16 @@
 <section class="horizontal-form container-fluid">
   <h2>{{t 'editExternalService.title'}}</h2>
-  {{top-errors errors=errors}}
+  {{top-errors errors=this.errors}}
 
   {{form-name-description
-    model=service
+    model=this.service
     namePlaceholder="editExternalService.name.placeholder"
     descriptionPlaceholder="editExternalService.description.placeholder"
   }}
 
   {{form-target-ip
-    service=service
+    service=this.service
   }}
 </section>
 
-{{save-cancel editing=editing save="save" cancel="cancel"}}
+{{save-cancel editing=this.editing save="save" cancel="cancel"}}

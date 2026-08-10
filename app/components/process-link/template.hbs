@@ -1,5 +1,5 @@
-{{#if inApp}}
-  <a href="#" {{action "showInApp"}}>{{model.typeAndId}} <i class="icon icon-vm"/></a>
+{{#if this.inApp}}
+  <a href="#" {{action "showInApp"}}>{{this.model.typeAndId}} <i class="icon icon-vm"/></a>
 {{else}}
-  <a href={{resourceLink}} target="_blank">{{model.typeAndId}}</a>
+  <a href={{this.resourceLink}} target="_blank">{{this.model.typeAndId}}</a>
 {{/if}}

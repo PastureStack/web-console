@@ -6,7 +6,7 @@ export default Ember.Controller.extend({
   settings    : Ember.inject.service(),
   prefs       : Ember.inject.service(),
   projects    : Ember.inject.service(),
-  currentPath : Ember.computed.alias('application.currentPath'),
+  currentPath : Ember.computed.alias('router.currentRouteName'),
   error       : null,
 
   isPopup: Ember.computed.alias('application.isPopup'),

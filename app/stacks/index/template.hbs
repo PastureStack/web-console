@@ -1,34 +1,34 @@
 <section class="header clearfix">
   <h1>
-    {{t pageHeader name=which tags=tags}}
+    {{t this.pageHeader name=this.which tags=this.tags}}
   </h1>
 
-  {{#if (eq which "infra")}}
-    {{#link-to "catalog-tab" projects.current.id (query-params catalogId="all" templateBase="infra") classNames="btn btn-sm btn-primary"}}{{t 'stacksPage.catalogButton'}}{{/link-to}}
+  {{#if (eq this.which "infra")}}
+    <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all" templateBase="infra"}} class="btn btn-sm btn-primary">{{t 'stacksPage.catalogButton'}}</LinkTo>
   {{else}}
-    {{#link-to "stacks.new" classNames="btn btn-sm btn-primary"}}{{t 'stacksPage.actionButton'}}{{/link-to}}
-    {{#if arranged.length}}
-      {{#link-to "catalog-tab" projects.current.id (query-params catalogId="all") classNames="btn btn-sm btn-primary"}}{{t 'stacksPage.catalogButton'}}{{/link-to}}
+    <LinkTo @route="stacks.new" class="btn btn-sm btn-primary">{{t 'stacksPage.actionButton'}}</LinkTo>
+    {{#if this.arranged.length}}
+      <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all"}} class="btn btn-sm btn-primary">{{t 'stacksPage.catalogButton'}}</LinkTo>
     {{/if}}
   {{/if}}
 
   <div class="pull-right">
     <label class="text-muted r-pr5" style="font-size: 13px;">{{t 'stacksPage.sort.label'}}: </label>
     <div class="btn-group r-pr0" role="group" aria-label="{{t 'stacksPage.sort.label'}}">
-      <button {{action 'sortResults' 'state'}} type="button" class="btn btn-sm btn-default {{if (eq sortBy "state") 'active'}}">{{t 'stacksPage.sort.state'}}</button>
-      <button {{action 'sortResults' 'name'}}  type="button" class="btn btn-sm btn-default {{if (eq sortBy "name") 'active'}}">{{t 'stacksPage.sort.name'}}</button>
+      <button {{action 'sortResults' 'state'}} type="button" class="btn btn-sm btn-default {{if (eq this.sortBy "state") 'active'}}">{{t 'stacksPage.sort.state'}}</button>
+      <button {{action 'sortResults' 'name'}}  type="button" class="btn btn-sm btn-default {{if (eq this.sortBy "name") 'active'}}">{{t 'stacksPage.sort.name'}}</button>
     </div>
   </div>
 </section>
 
 <section class="stacks-wrap r-pl0 r-pr0">
   <div>
-    {{#each arranged as |stack|}}
+    {{#each this.arranged as |stack|}}
       {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(not stack.system)}}
     {{else}}
-      {{#if (and model.stacks.length tags)}}
+      {{#if (and this.model.stacks.length this.tags)}}
         <div class="r-m20 text-center text-muted">{{t 'stacksPage.noMatch'}}</div>
-      {{else if (eq which "infra")}}
+      {{else if (eq this.which "infra")}}
         <div class="r-m20 text-center text-muted">{{t 'stacksPage.noInfra'}}</div>
       {{else}}
         {{hero-add-service}}
@@ -37,4 +37,4 @@
   </div>
 </section>
 
-{{service-addtl-info service=selectedService dismiss='dismiss' show=showAddtlInfo}}
+{{service-addtl-info service=this.selectedService dismiss='dismiss' show=this.showAddtlInfo}}

@@ -8,19 +8,19 @@ export default Ember.Route.extend({
 
     if ( orch === 'kubernetes' )
     {
-      this.replaceWith('k8s-tab');
+      this.get('router').replaceWith('k8s-tab');
     }
     else if ( orch === 'swarm' )
     {
-      this.replaceWith('swarm-tab');
+      this.get('router').replaceWith('swarm-tab');
     }
     else if ( orch === 'mesos' )
     {
-      this.replaceWith('mesos-tab');
+      this.get('router').replaceWith('mesos-tab');
     }
     else
     {
-      this.replaceWith('applications-tab');
+      this.get('router').replaceWith('applications-tab');
     }
   },
 });

@@ -1,7 +1,11 @@
 import Ember from 'ember';
 import C from 'ui/utils/constants';
-import {get as getTree} from 'ui/utils/navigation-tree';
+import {
+  get as getTree,
+  normalizeNavigationQueryParams
+} from 'ui/utils/navigation-tree';
 import HoverDropdown from 'ui/mixins/hover-dropdowns';
+import linkCurrentWhen from 'ui/utils/link-current-when';
 
 function fnOrValue(val, ctx) {
   if ( typeof val === 'function' )
@@ -93,9 +97,11 @@ export default Ember.Component.extend(HoverDropdown, {
       item.localizedLabel = fnOrValue(item.localizedLabel, this);
       item.label = fnOrValue(item.label, this);
       item.route = fnOrValue(item.route, this);
+      item.currentWhen = linkCurrentWhen(item.route, item.moreCurrentWhen);
       item.ctx = (item.ctx||[]).map((prop) => {
         return fnOrValue(prop, this);
       });
+      item.queryParams = normalizeNavigationQueryParams(fnOrValue(item.queryParams, this));
       item.submenu = fnOrValue(item.submenu, this);
 
       item.showAlert = false;
@@ -111,9 +117,11 @@ export default Ember.Component.extend(HoverDropdown, {
         subitem.localizedLabel = fnOrValue(subitem.localizedLabel, this);
         subitem.label = fnOrValue(subitem.label, this);
         subitem.route = fnOrValue(subitem.route, this);
+        subitem.currentWhen = linkCurrentWhen(subitem.route, subitem.moreCurrentWhen);
         subitem.ctx = (subitem.ctx||[]).map((prop) => {
           return fnOrValue(prop, this);
         });
+        subitem.queryParams = normalizeNavigationQueryParams(fnOrValue(subitem.queryParams, this));
 
         return true;
       });

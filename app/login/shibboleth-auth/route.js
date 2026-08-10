@@ -35,13 +35,13 @@ export default Ember.Route.extend({
       }
 
       transition.abort();
-      this.transitionTo('login', {queryParams: { errorMsg: errMessage}});
+      this.get('router').transitionTo('login', {queryParams: { errorMsg: errMessage}});
 
     } else {
       if (this.get('shibbolethAuth.hasToken')) {
-        this.transitionTo('authenticated');
+        this.get('router').transitionTo('authenticated');
       } else {
-        this.transitionTo('login');
+        this.get('router').transitionTo('login');
       }
 
     }

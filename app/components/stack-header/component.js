@@ -8,7 +8,7 @@ export default Ember.Component.extend({
   actions: {
     changeStack(stack) {
       var app = this.get('application');
-      app.transitionToRoute(app.get('currentRouteName'), stack.get('id'));
+      this.get('router').transitionTo(app.get('currentRouteName'), stack.get('id'));
       this.sendAction('hideAddtlInfo');
     }
   },

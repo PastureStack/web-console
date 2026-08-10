@@ -9,7 +9,7 @@ export default Ember.Controller.extend({
 
   actions: {
     newContainer(hostId) {
-      this.transitionToRoute('containers.new', {queryParams: {hostId: hostId}});
+      this.get('router').transitionTo('containers.new', {queryParams: {hostId: hostId}});
     },
 
   },

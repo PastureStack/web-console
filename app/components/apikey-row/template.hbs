@@ -1,18 +1,18 @@
 <td data-title="{{t 'apiPage.table.state'}}:">
-  {{badge-state model=model}}
+  {{badge-state model=this.model}}
 </td>
 <td data-title="{{t 'apiPage.table.name'}}:">
-  {{#if model.name}}{{model.displayName}}{{else}}<span class="text-muted">{{t 'apiPage.table.noName'}}</span>{{/if}}
+  {{#if this.model.name}}{{this.model.displayName}}{{else}}<span class="text-muted">{{t 'apiPage.table.noName'}}</span>{{/if}}
 </td>
 <td data-title="{{t 'apiPage.table.description'}}:">
-  {{#if model.description}}{{model.description}}{{else}}<span class="text-muted">{{t 'apiPage.table.noDescription'}}</span>{{/if}}
+  {{#if this.model.description}}{{this.model.description}}{{else}}<span class="text-muted">{{t 'apiPage.table.noDescription'}}</span>{{/if}}
 </td>
 <td data-title="{{t 'apiPage.table.publicValue'}}:">
-  {{#if model.publicValue}}{{model.publicValue}}{{else}}<span class="text-muted">{{t 'apiPage.table.noPublicValue'}}</span>{{/if}}
+  {{#if this.model.publicValue}}{{this.model.publicValue}}{{else}}<span class="text-muted">{{t 'apiPage.table.noPublicValue'}}</span>{{/if}}
 </td>
 <td data-title="{{t 'apiPage.table.created'}}:">
-  <div class="text-muted">{{date-calendar model.created}}</div>
+  <div class="text-muted">{{date-calendar this.model.created}}</div>
 </td>
 <td data-title="{{t 'generic.actions'}}:" class="actions">
-  {{action-menu model=model}}
+  {{action-menu model=this.model}}
 </td>

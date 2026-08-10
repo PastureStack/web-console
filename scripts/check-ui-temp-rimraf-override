@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+failures = 0
+
+
+def fail(code, **fields):
+    global failures
+    failures += 1
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    print(f"{code} {details}".rstrip())
+
+
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+if "temp" in (package.get("overrides", {}) or {}):
+    fail("TEMP_RETIRED_OVERRIDE_REMAINS", actual=package.get("overrides", {}).get("temp"))
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+if not lock_path.is_file():
+    fail("MISSING_SASS_REPLACEMENT_LOCK", file=lock_path)
+else:
+    lock = json.loads(lock_path.read_text(encoding="utf-8"))
+    packages = lock.get("packages", {}) or {}
+    if "node_modules/temp" in packages:
+        fail("TEMP_RETIRED_PACKAGE_REMAINS", actual=packages["node_modules/temp"].get("version"))
+    package_count = len(packages)
+
+if failures:
+    print(f"failure_count={failures}")
+    sys.exit(1)
+
+print(f"UI_TEMP_REMOVAL_OK temp=absent lockfile={lock_path} package_count={package_count}")
+print("The Ember 6.12 graph no longer resolves the retired temp package or its cleanup override.")
+print("failure_count=0")
+PY

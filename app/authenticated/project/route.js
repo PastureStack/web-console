@@ -9,14 +9,14 @@ export default Ember.Route.extend({
 
     if ( !project )
     {
-      this.replaceWith('settings.projects');
+      this.get('router').replaceWith('settings.projects');
       return;
     }
 
     // If the project ID in the URL is out of sync somehow, bail & try again
     if ( project.get('id') !== params.project_id )
     {
-      this.replaceWith('authenticated');
+      this.get('router').replaceWith('authenticated');
       return;
     }
 
@@ -32,7 +32,7 @@ export default Ember.Route.extend({
       return;
     }
 
-    this.transitionTo('authenticated');
+    this.get('router').transitionTo('authenticated');
     return ret;
   },
 });

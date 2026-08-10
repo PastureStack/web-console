@@ -4,9 +4,34 @@
  * @author ocodia
  */
 
+:root {
+  --prism-code-foreground: #f8f8f2;
+  --prism-code-background: #272822;
+  --prism-code-border: #3e3d32;
+  --prism-code-comment: #a7b1bd;
+  --prism-code-accent: #ff5c8a;
+  --prism-code-number: #ae81ff;
+  --prism-code-string: #a6e22e;
+  --prism-code-function: #e6db74;
+  --prism-code-keyword: #66d9ef;
+  --prism-code-important: #fd971f;
+}
+
+/*
+ * CommonMark puts the language class on the nested code element while the
+ * code-block component puts it on both pre and code. Keep every preformatted
+ * block on the same high-contrast surface so either valid DOM shape remains
+ * readable in light and dark themes.
+ */
+pre {
+  background: var(--prism-code-background);
+  border-color: var(--prism-code-border);
+  color: var(--prism-code-foreground);
+}
+
 code[class*="language-"],
 pre[class*="language-"] {
-  color: #f8f8f2;
+  color: var(--prism-code-foreground);
   background: none;
   text-shadow: 0 1px rgba(0, 0, 0, 0.3);
   font-family: Consolas, Monaco, 'Andale Mono', monospace;
@@ -38,7 +63,7 @@ pre[class*="language-"] {
 
 :not(pre) > code[class*="language-"],
 pre[class*="language-"] {
-  background: #272822;
+  background: var(--prism-code-background);
 }
 
 /* Inline code */
@@ -52,11 +77,11 @@ pre[class*="language-"] {
 .token.prolog,
 .token.doctype,
 .token.cdata {
-  color: slategray;
+  color: var(--prism-code-comment);
 }
 
 .token.punctuation {
-  color: #f8f8f2;
+  color: var(--prism-code-foreground);
 }
 
 .namespace {
@@ -68,12 +93,12 @@ pre[class*="language-"] {
 .token.constant,
 .token.symbol,
 .token.deleted {
-  color: #f92672;
+  color: var(--prism-code-accent);
 }
 
 .token.boolean,
 .token.number {
-  color: #ae81ff;
+  color: var(--prism-code-number);
 }
 
 .token.selector,
@@ -82,7 +107,7 @@ pre[class*="language-"] {
 .token.char,
 .token.builtin,
 .token.inserted {
-  color: #a6e22e;
+  color: var(--prism-code-string);
 }
 
 .token.operator,
@@ -91,22 +116,22 @@ pre[class*="language-"] {
 .language-css .token.string,
 .style .token.string,
 .token.variable {
-  color: #f8f8f2;
+  color: var(--prism-code-foreground);
 }
 
 .token.atrule,
 .token.attr-value,
 .token.function {
-  color: #e6db74;
+  color: var(--prism-code-function);
 }
 
 .token.keyword {
-  color: #66d9ef;
+  color: var(--prism-code-keyword);
 }
 
 .token.regex,
 .token.important {
-  color: #fd971f;
+  color: var(--prism-code-important);
 }
 
 .token.important,

@@ -1179,7 +1179,7 @@ function edgeToId(e) {
 
 var ID_DELIM = /:/g;
 function escapeId(str) {
-  return str ? String(str).replace(ID_DELIM, "\\:") : "";
+  return str ? String(str).replace(/\\/g, "\\\\").replace(ID_DELIM, "\\:") : "";
 }
 
 function applyStyle(dom, styleFn) {

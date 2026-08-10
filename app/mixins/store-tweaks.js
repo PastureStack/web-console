@@ -7,7 +7,7 @@ export default Ember.Mixin.create({
   defaultPageSize: -1,
   removeAfterDelete: false,
 
-  headers: function() {
+  get headers() {
     let out = {
       [C.HEADER.ACTIONS]: C.HEADER.ACTIONS_VALUE,
       [C.HEADER.NO_CHALLENGE]: C.HEADER.NO_CHALLENGE_VALUE
@@ -19,5 +19,5 @@ export default Ember.Mixin.create({
     }
 
     return out;
-  }.property().volatile(),
+  },
 });

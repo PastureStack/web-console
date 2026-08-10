@@ -2,7 +2,7 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   redirect: function() {
-    this.replaceWith('host.containers');
+    this.get('router').replaceWith('host.containers');
   },
 
   model: function() {

@@ -1,0 +1,24 @@
+{
+  "name": "ember-fetch",
+  "version": "5.1.3",
+  "description": "Reviewed native Fetch compatibility package for the PastureStack web console.",
+  "typings": "./index.d.ts",
+  "keywords": [
+    "ember-addon"
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/ember-cli/ember-fetch",
+  "pasturestackCompatibility": {
+    "revision": 4,
+    "reason": "Use native Fetch APIs without the obsolete Babel 6 and Rollup 0 graph while declaring the supported Ember CLI Babel preprocessor required by the retained add-on modules."
+  },
+  "dependencies": {
+    "ember-cli-babel": "8.3.1"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config"
+  }
+}

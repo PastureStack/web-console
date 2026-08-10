@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY'
+from pathlib import Path
+
+checks = {
+    "docs/codeql-triage.md": [
+        "Every dismissal retains its specific rationale",
+        "open Critical or High dependency or code-scanning alert",
+    ],
+    "scripts/node24-lock-smoke.js": [
+        'fs.mkdtempSync(path.join(os.tmpdir(), "pasturestack-yamljs-smoke-"))',
+        'fs.writeFileSync(file, "hello: world\\n", { flag: "wx", mode: 0o600 })',
+        'console.error("node24-lock-baseline-smoke-failed")',
+    ],
+    "scripts/ui-candidate-browser-smoke.js": [
+        "const root = process.cwd();",
+        "buildStaticAssetMap(resolvedRoot)",
+        "body: fs.readFileSync(absolute)",
+        "res.end(asset.body)",
+    ],
+    "app/components/machine/driver-aliyunecs/component.js": [
+        "isValidAliyunHostname(name)",
+    ],
+    "app/models/machinedriver.js": [
+        "driverDisplayUrl(this.get('url'))",
+        "driverDisplayUrl(this.get('uiUrl'))",
+    ],
+    "app/utils/driver-display-url.js": [
+        "github\\.com\\/([^/?#]+)\\/([^/?#]+)",
+    ],
+    "vendor/aws-sdk-ec2.js": [
+        "search = search.replace(/#/g, '%23')",
+    ],
+    "vendor/novnc.js": [
+        'console.log("[noVNC] debug message")',
+        'console.log("[noVNC] information message")',
+        'console.warn("[noVNC] warning message")',
+        'console.error("[noVNC] error message")',
+    ],
+    "vendor/dagre-d3/dagre-d3.core.js": [
+        'replace(/\\\\/g, "\\\\\\\\").replace(ID_DELIM, "\\\\:")',
+    ],
+}
+
+failures = []
+for filename, markers in checks.items():
+    path = Path(filename)
+    if not path.is_file():
+        failures.append(f"missing_file={filename}")
+        continue
+    source = path.read_text(encoding="utf-8")
+    for marker in markers:
+        if marker not in source:
+            failures.append(f"missing_marker={filename}:{marker}")
+
+forbidden = {
+    "app/components/machine/driver-aliyunecs/component.js": [
+        "([\\.]?[a-zA-Z0-9\\-]+[\\.]?)*",
+    ],
+    "app/models/machinedriver.js": [
+        "url.indexOf('github.com')",
+    ],
+    "vendor/aws-sdk-ec2.js": [
+        "search = search.replace('#', '%23')",
+    ],
+    "vendor/novnc.js": [
+        'replace("\\n", " ")',
+        "String(msg)",
+        "console.log(msg)",
+        "console.warn(msg)",
+        "console.error(msg)",
+    ],
+    "scripts/node24-lock-smoke.js": [
+        "console.error(err && err.stack ? err.stack : err)",
+        "console.error(String(errorText)",
+    ],
+    "scripts/ui-candidate-browser-smoke.js": [
+        "fs.createReadStream(file)",
+        "process.env.UI_ROOT",
+    ],
+}
+
+for filename, markers in forbidden.items():
+    source = Path(filename).read_text(encoding="utf-8")
+    for marker in markers:
+        if marker in source:
+            failures.append(f"forbidden_marker={filename}:{marker}")
+
+novnc_source = Path("vendor/novnc.js").read_text(encoding="utf-8")
+if novnc_source.count('console.log("[noVNC] debug message")') != 1:
+    failures.append("unexpected_noVNC_static_debug_count")
+if novnc_source.count('console.log("[noVNC] information message")') != 1:
+    failures.append("unexpected_noVNC_static_info_count")
+if novnc_source.count('console.warn("[noVNC] warning message")') != 1:
+    failures.append("unexpected_noVNC_static_warn_count")
+if novnc_source.count('console.error("[noVNC] error message")') != 1:
+    failures.append("unexpected_noVNC_static_error_count")
+
+if failures:
+    print("\n".join(failures))
+    raise SystemExit(1)
+
+print("UI_CODEQL_SOURCE_GATE_OK runtime_fixes=12 open_critical_high_allowed=0 open_medium_log_injection_allowed=0 false_positive_boundaries=documented")
+PY

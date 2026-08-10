@@ -1,5 +1,5 @@
 <section class="horizontal-form container-fluid">
-  <h2>{{t (if editing 'newReceiver.title.edit' 'newReceiver.title.add')}}</h2>
+  <h2>{{t (if this.editing 'newReceiver.title.edit' 'newReceiver.title.add')}}</h2>
 
   <div class="row form-group">
     <div class="col-md-6 col-md-offset-3">
@@ -7,7 +7,7 @@
         <label>{{t 'generic.name'}}*</label>
       </div>
       <div>
-        {{input type="text" value=model.name classNames="form-control" placeholder=(t 'newReceiver.name.placeholder')}}
+        {{input type="text" value=this.model.name classNames="form-control" placeholder=(t 'newReceiver.name.placeholder')}}
       </div>
     </div>
   </div>
@@ -19,24 +19,24 @@
       </div>
       <div>
         <select class="form-control" onchange={{action "changeDriver"}}>
-          <option value="scaleService" selected={{eq model.driver 'scaleService'}} >{{t 'hookPage.scaleService.label'}}</option>
-          {{#if (not projects.current.isWindows)}}
-          <option value="scaleHost" selected={{eq model.driver 'scaleHost'}} >{{t 'hookPage.scaleHost.label'}}</option>
+          <option value="scaleService" selected={{eq this.model.driver 'scaleService'}} >{{t 'hookPage.scaleService.label'}}</option>
+          {{#if (not this.projects.current.isWindows)}}
+          <option value="scaleHost" selected={{eq this.model.driver 'scaleHost'}} >{{t 'hookPage.scaleHost.label'}}</option>
           {{/if}}
-          <option value="serviceUpgrade" selected={{eq model.driver 'serviceUpgrade'}} >{{t 'hookPage.serviceUpgrade.label'}}</option>
+          <option value="serviceUpgrade" selected={{eq this.model.driver 'serviceUpgrade'}} >{{t 'hookPage.serviceUpgrade.label'}}</option>
         </select>
       </div>
     </div>
   </div>
 
-  {{#if (eq model.driver "scaleService")}}
-    {{webhook/scale-service-config model=model.scaleServiceConfig}}
-  {{else if (eq model.driver "scaleHost")}}
-    {{webhook/scale-host-config model=model.scaleHostConfig}}
-  {{else if (eq model.driver "serviceUpgrade")}}
-    {{webhook/service-upgrade-config model=model.serviceUpgradeConfig}}
+  {{#if (eq this.model.driver "scaleService")}}
+    {{webhook/scale-service-config model=this.model.scaleServiceConfig}}
+  {{else if (eq this.model.driver "scaleHost")}}
+    {{webhook/scale-host-config model=this.model.scaleHostConfig}}
+  {{else if (eq this.model.driver "serviceUpgrade")}}
+    {{webhook/service-upgrade-config model=this.model.serviceUpgradeConfig}}
   {{/if}}
 </section>
 
-{{top-errors errors=errors}}
-{{save-cancel editing=editing save="save" cancel="cancel"}}
+{{top-errors errors=this.errors}}
+{{save-cancel editing=this.editing save="save" cancel="cancel"}}

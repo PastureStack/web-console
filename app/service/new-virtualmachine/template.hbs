@@ -1,13 +1,13 @@
 {{new-container
   isService=true
-  isUpgrade=upgrade
+  isUpgrade=this.upgrade
   isSidekick=false
   isVm=true
-  launchConfig=model.service.launchConfig
-  service=model.service
-  primaryResource=model.service
-  allHosts=model.allHosts
-  allStoragePools=model.allStoragePools
+  launchConfig=this.model.service.launchConfig
+  service=this.model.service
+  primaryResource=this.model.service
+  allHosts=this.model.allHosts
+  allStoragePools=this.model.allStoragePools
   done=(action 'done')
   cancel=(action 'cancel')
 }}

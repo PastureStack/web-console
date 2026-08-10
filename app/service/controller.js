@@ -13,7 +13,7 @@ export default Ember.Controller.extend({
         transitionTo = 'service.links';
       }
 
-      this.transitionToRoute(transitionTo, service.get('id'));
+      this.get('router').transitionTo(transitionTo, service.get('id'));
     }
   }
 });

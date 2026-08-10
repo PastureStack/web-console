@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+bower = json.loads(Path("bower.json").read_text())
+if "position-calculator" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on position-calculator")
+
+vendor = Path("vendor/position-calculator.js")
+text = vendor.read_text()
+required = [
+    "jQuery.PositionCalculator",
+    "v1.1.2 - 2014-07-01",
+    "License: MIT",
+    "define(\"position-calculator\"",
+]
+for marker in required:
+    if marker not in text:
+        raise SystemExit(f"vendor/position-calculator.js missing marker: {marker}")
+PY_CHECK
+
+if grep -R "bower_components/position-calculator" -n ember-cli-build.js app tests docs 2>/dev/null; then
+  echo "PositionCalculator must be imported from vendor/position-calculator.js, not Bower" >&2
+  exit 1
+fi
+
+grep -q "app.import('vendor/position-calculator.js')" ember-cli-build.js
+grep -q "expectPositionCalculatorVendorGlobal" scripts/node24-lock-smoke.js
+
+echo "ui-position-calculator-vendor-ok"

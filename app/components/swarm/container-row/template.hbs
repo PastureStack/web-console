@@ -1,14 +1,14 @@
 <tr>
   <td class="force-wrap">
-    {{badge-state model=model}}
+    {{badge-state model=this.model}}
   </td>
   <td class="force-wrap">
-    {{#link-to "container" model.id}}{{model.displayName}}{{/link-to}}
+    <LinkTo @route="container" @model={{this.model.id}}>{{this.model.displayName}}</LinkTo>
   </td>
   <td class="force-wrap">
-    {{model.displayImage}}
+    {{this.model.displayImage}}
   </td>
   <td class="actions">
-    {{action-menu model=model}}
+    {{action-menu model=this.model}}
   </td>
 </tr>

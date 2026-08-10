@@ -1,7 +1,7 @@
-<i class="icon {{model.stateIcon}}"></i>
-{{model.displayState~}}
-{{#if model.showTransitioningMessage}}
+<i class="icon {{this.model.stateIcon}}"></i>
+{{this.model.displayState~}}
+{{#if this.model.showTransitioningMessage}}
   <small class="force-wrap">
-    ({{model.transitioningMessage}})
+    ({{this.model.transitioningMessage}})
   </small>
 {{/if}}

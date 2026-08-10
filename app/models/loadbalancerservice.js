@@ -3,8 +3,9 @@ import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { parsePortSpec } from 'ui/utils/parse-port';
+import escapeHtml from 'ui/utils/escape-html';
 
-const esc = Ember.Handlebars.Utils.escapeExpression;
+const esc = escapeHtml;
 
 function portToStr(spec) {
   var parts = parsePortSpec(spec,'http');

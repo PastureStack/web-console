@@ -1,13 +1,31 @@
 <section class="header clearfix">
   <h1>{{t 'authPage.root.header'}}</h1>
+  <div class="right-buttons">
+    <LinkTo @route="admin-tab.auth.mfa" class="btn btn-primary">
+      <i class="icon icon-shield"></i>
+      {{t 'authPage.mfa.navigation'}}
+    </LinkTo>
+  </div>
 </section>
 
-{{#unless access.enabled}}
+{{#unless this.access.enabled}}
   <section class="well">
     <div class="nav nav-boxes checked-active">
-      {{#each drivers as |driver|}}
+      {{#each this.drivers as |driver|}}
         {{#if driver.available}}
-          {{#link-to driver.route alt=driver.label classNames=(concat "nav-box-item driver auth-driver " driver.css) href=false}}{{/link-to}}
+          <LinkTo @route={{driver.route}} aria-label={{driver.label}} title={{driver.label}} class={{concat "nav-box-item driver auth-driver " driver.css}}></LinkTo>
+        {{/if}}
+      {{/each}}
+    </div>
+  </section>
+{{else}}
+  <section class="well">
+    <div class="nav nav-boxes checked-active">
+      {{#each this.drivers as |driver|}}
+        {{#if driver.safeWhileEnabled}}
+          {{#if driver.available}}
+            <LinkTo @route={{driver.route}} aria-label={{driver.label}} title={{driver.label}} class={{concat "nav-box-item driver auth-driver " driver.css}}></LinkTo>
+          {{/if}}
         {{/if}}
       {{/each}}
     </div>

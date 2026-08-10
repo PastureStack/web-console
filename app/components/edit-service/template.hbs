@@ -1,4 +1,4 @@
-{{#liquid-if loading}}
+{{#if this.loading}}
   <div class="text-center">
     <p>
       <i class="icon icon-spinner icon-spin"></i> {{t 'generic.loading'}}
@@ -10,23 +10,23 @@
 
     {{form-scale
       editing=true
-      initialLabels=service.launchConfig.labels
-      initialScale=service.scale
+      initialLabels=this.service.launchConfig.labels
+      initialScale=this.service.scale
       setScale=(action 'setScale')
     }}
 
     {{form-name-description
-      model=service
+      model=this.service
       namePlaceholder="servicePage.new.form.name.placeholder"
       descriptionPlaceholder="servicePage.new.form.description.placeholder"
     }}
 
     {{form-service-links
-      service=service
+      service=this.service
       changed=(action 'setServiceLinks')
     }}
   </section>
 
-  {{top-errors errors=errors}}
-  {{save-cancel editing=editing save="save" cancel="cancel"}}
-{{/liquid-if}}
+  {{top-errors errors=this.errors}}
+  {{save-cancel editing=this.editing save="save" cancel="cancel"}}
+{{/if}}

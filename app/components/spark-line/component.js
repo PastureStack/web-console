@@ -37,19 +37,24 @@ export default Ember.Component.extend({
   tooltipModel: null,
 
   init() {
-    window.spark = this;
     this._super();
+    this.set('gradientId', `${this.get('type') || 'metric'}-gradient-${Ember.guidFor(this)}`);
   },
 
   didInsertElement() {
     this._super();
+    this.createIfReady();
   },
 
   hasData: function() {
-    if (this.get('data.length') > 0 && !this.get('svg')) {
+    this.createIfReady();
+  }.observes('data.length'),
+
+  createIfReady() {
+    if ( this.get('data.length') > 0 && !this.get('svg') && this.get('element') ) {
       this.create();
     }
-  }.observes('data.length'),
+  },
 
   cssSize: function() {
     return new Ember.String.htmlSafe('width: ' + this.get('width') + 'px; height: ' + this.get('height') + 'px');
@@ -87,7 +92,7 @@ export default Ember.Component.extend({
 
     var gradient = svg.append('svg:defs')
       .append("svg:linearGradient")
-      .attr('id', `${this.get('type')}-gradient`)
+      .attr('id', this.get('gradientId'))
       .attr('x1', '0%')
       .attr('y1', '0%')
       .attr('x2', '100%')
@@ -125,6 +130,7 @@ export default Ember.Component.extend({
       .attr('class', `spark-path ${this.get('type')}-path`)
       .attr('d', line(this.get('data')));
 
+    this.update();
   },
 
   typePath: function() {
@@ -182,7 +188,7 @@ export default Ember.Component.extend({
       //console.log('update', data[data.length-2], data[data.length-1], x.domain(), x.range(), y.domain(), y.range());
       svg.selectAll('path')
         .data([data])
-        .style('fill', `url(${window.location.pathname}#${this.get('type')}-gradient)`)
+        .style('fill', `url(${window.location.pathname}#${this.get('gradientId')})`)
         .attr('d', line);
     }
   }.observes('data', 'data.[]'),

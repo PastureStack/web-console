@@ -1,6 +1,6 @@
-import initializer from 'ember-api-store/initializers/store';
+import initializeApiStore from 'ui/utils/initialize-api-store';
 
 export default {
   name: 'auth-store',
-  initialize: initializer('auth-store','authStore')
+  initialize: initializeApiStore('auth-store','authStore')
 };
