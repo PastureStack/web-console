@@ -8,6 +8,10 @@ export default Ember.Route.extend({
 
     var dependencies = [
       store.findAll('host'), // Need inactive ones in case a link points to an inactive host
+      store.findAll('storageDriver'),
+      store.findAll('storagePool'),
+      store.findAll('volume'),
+      store.findAll('service'),
     ];
 
     if ( params.serviceId )
@@ -22,7 +26,11 @@ export default Ember.Route.extend({
     return Ember.RSVP.all(dependencies, 'Load container dependencies').then((results) => {
       var store = this.get('store');
       var allHosts = results[0];
-      var serviceOrContainer = results[1];
+      var allStorageDrivers = results[1];
+      var allStoragePools = results[2];
+      var allVolumes = results[3];
+      var allServices = results[4];
+      var serviceOrContainer = results[5];
       var serviceLinks = [];
       var secondaryLaunchConfigs = [];
 
@@ -31,6 +39,10 @@ export default Ember.Route.extend({
         return Ember.Object.create({
           service: serviceOrContainer.clone(),
           allHosts: allHosts,
+          allStorageDrivers,
+          allStoragePools,
+          allVolumes,
+          allServices,
         });
       }
 
@@ -97,6 +109,10 @@ export default Ember.Route.extend({
       return Ember.Object.create({
         service: service,
         allHosts: allHosts,
+        allStorageDrivers,
+        allStoragePools,
+        allVolumes,
+        allServices,
       });
     });
   },

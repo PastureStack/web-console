@@ -1,0 +1,29 @@
+.mfa-status-summary {
+  strong {
+    font-size: 1.35em;
+  }
+}
+
+.mfa-totp-qr {
+  display: inline-flex;
+  width: 100%;
+  max-width: 290px;
+  margin: 0 0 15px;
+  padding: 12px;
+  border-radius: 4px;
+  background: #fff;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
+
+.mfa-secret-value {
+  overflow-x: auto;
+
+  code {
+    white-space: nowrap;
+  }
+}

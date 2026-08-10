@@ -1,14 +1,14 @@
-{{#if (or showAdd (and hasSidekicks enabledChoices.length))}}
+{{#if (or this.showAdd (and this.hasSidekicks this.enabledChoices.length))}}
   <div class="over-hr r-mt5">
     <span style="text-transform: none;">
       <nav>
         <ul class="pagination pagination-sm r-m0">
-          {{#each enabledChoices as |choice|}}
-            <li class="{{if (eq index choice.index) 'active'}}"><a href="#" {{action "switch" choice.index}}>{{choice.name}}</a></li>
+          {{#each this.enabledChoices as |choice|}}
+            <li class="{{if (eq this.index choice.index) 'active'}}"><a href="#" {{action "switch" choice.index}}>{{choice.name}}</a></li>
           {{/each}}
-          {{#if showAdd}}
+          {{#if this.showAdd}}
             <li class="hand"><a {{action "add"}}><i class="icon icon-plus"/> {{t 'newContainer.addSidekickContainer'}}</a></li>
-            {{#if hasVm}}
+            {{#if this.hasVm}}
               <li class="hand"><a {{action "add" true}}><i class="icon icon-plus"/> {{t 'newContainer.addSidekickVm'}}</a></li>
             {{/if}}
           {{/if}}

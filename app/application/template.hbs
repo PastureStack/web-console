@@ -1,17 +1,27 @@
 <div id="underlay" class="underlay hide"></div>
 <div id="loading-underlay" class="underlay"></div>
 <div id="loading-overlay" class="loading-overlay">
-  {{#if settings.isRancher}}
-    <div class="loader">
-      <div class="orbit">
-        <div class="sun"></div>
-        <div class="moon"></div>
+  {{#if this.settings.isRancher}}
+    <div class="pasturestack-loader" role="status" aria-live="polite">
+      <div class="pasturestack-loader__stage" aria-hidden="true">
+        <div class="pasturestack-loader__panel">
+          <div class="pasturestack-loader__brand">
+            <div class="pasturestack-loader__mark-shell">
+              <img class="pasturestack-loader__mark" src="{{this.app.baseAssets}}assets/images/logos/pasturestack-mark.svg" alt="">
+            </div>
+            <span class="pasturestack-loader__product">{{this.settings.appName}}</span>
+          </div>
+          <div class="pasturestack-loader__stack">
+            <span class="pasturestack-loader__layer pasturestack-loader__layer--one"></span>
+            <span class="pasturestack-loader__layer pasturestack-loader__layer--two"></span>
+            <span class="pasturestack-loader__layer pasturestack-loader__layer--three"></span>
+          </div>
+        </div>
       </div>
-
-      <div class="loadfield">
-        <div class="grass"></div>
-        <img class="cow" src="{{app.baseAssets}}assets/images/logos/main-loading.svg" />
+      <div class="pasturestack-loader__progress" aria-hidden="true">
+        <span></span>
       </div>
+      <span class="pasturestack-loader__label">{{t "generic.loading"}}</span>
     </div>
   {{else}}
     <div class="whiteboxloader">
@@ -23,15 +33,13 @@
   {{/if}}
 </div>
 
-{{outlet "overlay"}}
-{{outlet "error"}}
 <div id="application">
   {{outlet}}
 
   <div class="dropdown" id="resource-actions-parent">
     <ul role="menu" id="resource-actions" class="hide resource-actions global-actions dropdown-menu dropdown-menu-right">
-      <li class="resource-actions-tabbable"><a tabindex="-1" id="resource-actions-first" aria-label="Select an Action below"></a></li>
-      {{#each resourceActions.activeActions as |item|}}
+      <li class="resource-actions-tabbable"><a tabindex="-1" id="resource-actions-first" aria-label="{{t 'generic.selectActionBelow'}}"></a></li>
+      {{#each this.resourceActions.activeActions as |item|}}
         {{#if item.divider}}
           <li class="divider"></li>
         {{else}}
@@ -46,11 +54,11 @@
           </li>
         {{/if}}
       {{else}}
-        <li><a href="#" onclick="return false;" disabled="true">No actions available</a></li>
+        <li><a href="#" onclick="return false;" disabled="true">{{t 'generic.noActionsAvailable'}}</a></li>
       {{/each}}
     </ul>
   </div>
 </div>
 
-{{component tooltip tooltipTemplate=tooltipTemplate class="container-tooltip" id="tooltip-base" role="tooltip" aria-hidden="false"}}
+{{component this.tooltip tooltipTemplate=this.tooltipTemplate class="container-tooltip" id="tooltip-base" role="tooltip" aria-hidden="false"}}
 {{modal-root}}

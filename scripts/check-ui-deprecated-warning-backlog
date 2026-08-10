@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json"
+
+python3 - <<'PY'
+import json
+import hashlib
+import sys
+from pathlib import Path
+
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+
+expected_count = 133
+expected_sha256 = "7521d899c8854e4d4225d5fa5c3d9ed5ffd98eed83c793391e512e9b7215d287"
+hits = []
+for package_path, meta in sorted(lock.get("packages", {}).items()):
+    if not package_path or not meta.get("deprecated"):
+        continue
+    version = str(meta.get("version", ""))
+    hits.append(f"{package_path}\t{version}\t{meta.get('deprecated')}")
+
+actual_sha256 = hashlib.sha256("\n".join(hits).encode("utf-8")).hexdigest()
+if len(hits) != expected_count or actual_sha256 != expected_sha256:
+    print(
+        "UI_DEPRECATED_WARNING_BACKLOG_DRIFT "
+        f"actual_count={len(hits)} expected_count={expected_count} "
+        f"actual_sha256={actual_sha256} expected_sha256={expected_sha256}"
+    )
+    print("Removing deprecated paths is permitted only when this reviewed baseline is deliberately regenerated with the smaller graph.")
+    print("failure_count=1")
+    sys.exit(1)
+
+by_name = {}
+for row in hits:
+    package_path = row.split("\t", 1)[0]
+    name = package_path.rsplit("node_modules/", 1)[-1]
+    by_name[name] = by_name.get(name, 0) + 1
+
+summary = ",".join(f"{name}:{count}" for name, count in sorted(by_name.items()))
+print(f"UI_DEPRECATED_WARNING_BACKLOG_OK current_deprecated_paths={len(hits)} inventory_sha256={actual_sha256} lockfile={lock_path}")
+print(f"known_deprecated_warning_families={summary}")
+print("The exact Ember 6.12 build-only deprecation inventory is fail-closed; P1 supply-chain work must reduce and deliberately re-baseline it.")
+print("failure_count=0")
+PY

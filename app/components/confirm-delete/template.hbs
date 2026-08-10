@@ -1,21 +1,21 @@
-<div class="protip">{{t 'confirmDelete.protip' key=alternateLabel}}</div>
+<div class="protip">{{t 'confirmDelete.protip' key=this.alternateLabel}}</div>
 <hr>
 <div class="container-header-text">
   {{t 'confirmDelete.title'}}:
   <div class="display-name">
-    {{#if (lte resources.length 10)}}
-      {{#each resources as |resource|}}
+    {{#if (lte this.resources.length 10)}}
+      {{#each this.resources as |resource|}}
           <div>{{resource.displayName}}</div>
       {{/each}}
     {{else}}
-      <div>{{largeDeleteText}}</div>
+      <div>{{this.largeDeleteText}}</div>
     {{/if}}
   </div>
 </div>
 
-{{#if isEnvironment}}
+{{#if this.isEnvironment}}
   <div class="r-mb15">
-    {{t 'confirmDelete.environmentNote' appName=settings.appName}}
+    {{t 'confirmDelete.environmentNote' appName=this.settings.appName}}
   </div>
 {{/if}}
 

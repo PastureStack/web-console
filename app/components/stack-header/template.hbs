@@ -1,19 +1,19 @@
 <section class="header clearfix">
-  <h1>{{#link-to "stacks"}}{{t 'stackHeader.backLink'}}{{/link-to}}</h1>
+  <h1><LinkTo @route="stacks">{{t 'stackHeader.backLink'}}</LinkTo></h1>
 
-  {{#power-select options=all selected=model onchange=(action "changeStack") searchField="displayName" as |obj|}}
+  <PowerSelect @options={{this.all}} @selected={{this.model}} @onChange={{action "changeStack"}} @searchField="displayName" as |obj|>
       {{select-dot model=obj}}
-  {{/power-select}}
+  </PowerSelect>
 
 
   <div class="pull-right">
-    {{#if outputs.length}}
+    {{#if this.outputs.length}}
       <div class="btn-group">
         <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           {{t 'stackHeader.outputs'}} <i class="icon icon-chevron-down"></i>
         </button>
         <ul class="dropdown-menu dropdown-menu-right">
-          {{#each outputs as |obj|}}
+          {{#each this.outputs as |obj|}}
             <li><a href="{{obj.value}}" target="_blank">{{obj.key}}</a></li>
           {{/each}}
         </ul>
@@ -21,34 +21,34 @@
     {{/if}}
 
     <div class="btn-group r-ml10">
-      {{#link-to "service.new" (query-params stackId=model.id) classNames="btn btn-primary btn-sm"}}{{t 'stackHeader.add.service'}}{{/link-to}}
+      <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-primary btn-sm">{{t 'stackHeader.add.service'}}</LinkTo>
         <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
           <i class="icon icon-chevron-down"></i>
           <span class="sr-only">{{t 'nav.srToggleNav'}}</span>
         </button>
         <ul class="dropdown-menu dropdown-menu-right" role="menu">
-          {{#unless projects.current.isWindows}}
-          <li>{{#link-to "service.new-balancer" (query-params stackId=model.id)}}{{t 'stackHeader.add.balancer'}}{{/link-to}}</li>
+          {{#unless this.projects.current.isWindows}}
+          <li><LinkTo @route="service.new-balancer" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.balancer'}}</LinkTo></li>
           {{/unless}}
-          <li>{{#link-to "service.new-alias" (query-params stackId=model.id)}}{{t 'stackHeader.add.alias'}}{{/link-to}}</li>
-          <li>{{#link-to "service.new-external" (query-params stackId=model.id)}}{{t 'stackHeader.add.external'}}{{/link-to}}</li>
-          {{#if (and hasVm (not projects.current.isWindows))}}
-            <li>{{#link-to "service.new-virtualmachine" (query-params stackId=model.id)}}{{t 'stackHeader.add.vm'}}{{/link-to}}</li>
+          <li><LinkTo @route="service.new-alias" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.alias'}}</LinkTo></li>
+          <li><LinkTo @route="service.new-external" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.external'}}</LinkTo></li>
+          {{#if (and this.hasVm (not this.projects.current.isWindows))}}
+            <li><LinkTo @route="service.new-virtualmachine" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.vm'}}</LinkTo></li>
           {{/if}}
         </ul>
     </div>
 
-    {{action-menu model=model classNames="r-ml10 pull-right" size="sm"}}
-    {{header-state model=model classNames="pull-right"}}
+    {{action-menu model=this.model classNames="r-ml10 pull-right" size="sm"}}
+    {{header-state model=this.model classNames="pull-right"}}
 
     <div class="btn-group r-ml10">
-      {{#link-to "stack.index" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-tasks" text=(t 'tooltipLink.list') options=listLinkOptions}}{{/link-to}}
-      {{#link-to "stack.graph" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-share" text=(t 'tooltipLink.linkGraph') options=graphLinkOptions}}{{/link-to}}
-      {{#if model.canViewConfig}}
-        {{#link-to "stack.code" classNames="btn btn-sm btn-default"}}{{tooltip-link icon="icon-file" text=(t 'tooltipLink.composeYaml') options=yamlLinkOptions}}{{/link-to}}
+      <LinkTo @route="stack.index" class="btn btn-sm btn-default">{{tooltip-link icon="icon-tasks" text=(t 'tooltipLink.list') options=this.listLinkOptions}}</LinkTo>
+      <LinkTo @route="stack.graph" class="btn btn-sm btn-default">{{tooltip-link icon="icon-share" text=(t 'tooltipLink.linkGraph') options=this.graphLinkOptions}}</LinkTo>
+      {{#if this.model.canViewConfig}}
+        <LinkTo @route="stack.code" class="btn btn-sm btn-default">{{tooltip-link icon="icon-file" text=(t 'tooltipLink.composeYaml') options=this.yamlLinkOptions}}</LinkTo>
       {{/if}}
     </div>
 
-    {{upgrade-btn model=model classNames="r-ml10"}}
+    {{upgrade-btn model=this.model classNames="r-ml10"}}
   </div>
 </section>

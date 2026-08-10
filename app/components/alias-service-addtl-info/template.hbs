@@ -1,0 +1,22 @@
+<div class="content-box col-sm-12 col-md-12">
+  <label class="text-muted">{{t 'aliasServicePartial.serviceLinks.labelText'}} (<small><LinkTo @route="service" @models={{array this.service.stackId this.service.id}} class=""> {{t 'aliasServicePartial.serviceLinks.linkTo'}} </LinkTo></small>)</label>
+  <div class="content">
+    <label class="text-muted">{{t 'aliasServicePartial.links'}}</label>
+    <ul class="list-unstyled">
+      {{#each this.service.consumedServicesWithNames as |link|}}
+        <li>
+          <LinkTo @route="service" @models={{array link.service.stackId link.service.id}}>
+            {{#if (not (eq link.service.stackId this.service.stackId))}}{{link.service.displayStack}}/{{/if}}
+            {{~link.service.displayName~}}
+          </LinkTo>
+        </li>
+      {{else}}
+        <li class="text-muted">{{t 'aliasServicePartial.noLinks'}}</li>
+      {{/each}}
+    </ul>
+    {{#if this.service.description}}
+      <label class="text-muted r-mt10">{{t 'aliasServicePartial.description'}}</label>
+      {{this.service.description}}
+    {{/if}}
+  </div>
+</div>

@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+bower = json.loads(Path("bower.json").read_text())
+if "bootstrap-multiselect" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on bootstrap-multiselect")
+
+js = Path("vendor/bootstrap-multiselect/bootstrap-multiselect.js").read_text()
+css = Path("vendor/bootstrap-multiselect/bootstrap-multiselect.css").read_text()
+required_js_markers = [
+    "Bootstrap Multiselect",
+    "Dual licensed under the BSD-3-Clause and the Apache License, Version 2.0.",
+    "$.fn.multiselect",
+    "Constructor = Multiselect",
+]
+for marker in required_js_markers:
+    if marker not in js:
+        raise SystemExit(f"bootstrap-multiselect vendor JS missing marker: {marker}")
+if ".multiselect-container" not in css:
+    raise SystemExit("bootstrap-multiselect vendor CSS missing multiselect-container marker")
+PY_CHECK
+
+if grep -R "bower_components/bootstrap-multiselect" -n ember-cli-build.js app tests 2>/dev/null; then
+  echo "bootstrap-multiselect must be imported from vendor/bootstrap-multiselect, not Bower" >&2
+  exit 1
+fi
+
+grep -q "app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.js')" ember-cli-build.js
+grep -q "app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.css')" ember-cli-build.js
+grep -q "expectBootstrapMultiselectVendorGlobal" scripts/node24-lock-smoke.js
+
+echo "ui-bootstrap-multiselect-vendor-ok"

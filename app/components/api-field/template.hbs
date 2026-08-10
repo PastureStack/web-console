@@ -1,17 +1,17 @@
 <div class="col-md-2 form-label">
-  <label class="form-control-static">{{fieldDef.name}}{{if fieldDef.required '*'}}</label>
+  <label class="form-control-static">{{this.fieldDef.name}}{{if this.fieldDef.required '*'}}</label>
 </div>
-<div class="col-md-4 {{if (eq fieldDef.type 'boolean') 'form-control-static'}}">
-  {{#if (eq fieldDef.type 'boolean')}}
-    {{input type="checkbox" checked=value}}
-  {{else if (eq fieldDef.type 'float')}}
-    {{input type="number" value=value classNames="form-control" placeholder=placeholder min=fieldDef.min max=fieldDef.max}}
-  {{else if (eq fieldDef.type 'int')}}
-    {{input-integer value=value classNames="form-control" placeholder=placeholder min=fieldDef.min max=fieldDef.max}}
+<div class="col-md-4 {{if (eq this.fieldDef.type 'boolean') 'form-control-static'}}">
+  {{#if (eq this.fieldDef.type 'boolean')}}
+    {{input type="checkbox" checked=this.value}}
+  {{else if (eq this.fieldDef.type 'float')}}
+    {{input type="number" value=this.value classNames="form-control" placeholder=this.placeholder min=this.fieldDef.min max=this.fieldDef.max}}
+  {{else if (eq this.fieldDef.type 'int')}}
+    {{input-integer value=this.value classNames="form-control" placeholder=this.placeholder min=this.fieldDef.min max=this.fieldDef.max}}
   {{else}}
-    {{input type="text" value=value classNames="form-control" placeholder=fieldDef.placeholder}}
+    {{input type="text" value=this.value classNames="form-control" placeholder=this.fieldDef.placeholder}}
   {{/if}}
 </div>
 <div class="col-sm-12 col-md-4">
-  <p class="form-control-static help-block">{{fieldDef.description}}</p>
+  <p class="form-control-static help-block">{{this.fieldDef.description}}</p>
 </div>

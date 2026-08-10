@@ -1,23 +1,23 @@
-{{~#if project~}}
-  <li class="btn dropdown project-btn r-p0 {{if hasKubernetes 'alt'}}">
+{{~#if this.project~}}
+  <li class="btn dropdown project-btn r-p0 {{if this.hasKubernetes 'alt'}}">
     <a href="#" id='environment-dropdown' role="button" class="btn btn-link dropdown-toggle text-left" aria-haspopup="true" aria-expanded="false" aria-label="{{t 'nav.environment.label'}}">
       <label>{{t 'nav.environment.label'}}</label>
       <span class="clip">
-        <i class="{{project.icon}} project-icon icon-fw"></i>&nbsp;{{project.displayName}}
+        <i class="{{this.project.icon}} project-icon icon-fw"></i>&nbsp;{{this.project.displayName}}
       </span>
       <i class="icon icon-chevron-down project-chevron"></i>
       <span class="sr-only">{{t 'nav.srToggleDropdown'}}</span>
     </a>
     <ul class="dropdown-menu dropdown-menu-right project-menu" role="menu" data-dropdown-id="enviroment">
-      {{#if projectChoices.length}}
+      {{#if this.projectChoices.length}}
         <li role="presentation" class="dropdown-header">
-          {{#if accessEnabled}}
+          {{#if this.accessEnabled}}
             {{t 'nav.environment.your'}}
           {{else}}
             {{t 'nav.environment.all'}}
           {{/if}}
         </li>
-        {{#each projectChoices as |p|}}
+        {{#each this.projectChoices as |p|}}
           <li class="{{if p.active 'active selected'}}">
             <a href="#" {{action "switchProject" p.id}} class="clip">
               <i class="icon {{p.icon}}"></i>
@@ -27,24 +27,24 @@
           </li>
         {{/each}}
       {{/if}}
-      {{#if projectChoices.length}}
+      {{#if this.projectChoices.length}}
         <li role="presentation" class="divider"></li>
       {{/if}}
-      {{#if projectIsMissing}}
+      {{#if this.projectIsMissing}}
         <li role="presentation" class="dropdown-header">{{t 'nav.environment.selected'}}</li>
-        <li class="{{if project.active 'active selected'}}">
-          <a href="#" {{action "switchProject" project.id}} class="clip">
-            <i class="icon {{project.icon}}"></i>
+        <li class="{{if this.project.active 'active selected'}}">
+          <a href="#" {{action "switchProject" this.project.id}} class="clip">
+            <i class="icon {{this.project.icon}}"></i>
             &nbsp;
-            {{project.displayName}}
+            {{this.project.displayName}}
           </a>
         </li>
         <li role="presentation" class="divider"></li>
       {{/if}}
-      {{#if (and canEdit projects.current)}}
-        <li>{{#link-to "settings.projects.detail" projects.current.id (query-params editing="true")}}{{t 'nav.environment.edit' name=projects.current.displayName}}{{/link-to}}</li>
+      {{#if (and this.canEdit this.projects.current)}}
+        <li><LinkTo @route="settings.projects.detail" @model={{this.projects.current.id}} @query={{hash editing="true"}}>{{t 'nav.environment.edit' name=this.projects.current.displayName}}</LinkTo></li>
       {{/if}}
-      <li>{{#link-to "settings.projects"}}{{t 'nav.environment.manage'}}{{/link-to}}</li>
+      <li><LinkTo @route="settings.projects">{{t 'nav.environment.manage'}}</LinkTo></li>
     </ul>
   </li>
 {{~/if~}}

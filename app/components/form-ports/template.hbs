@@ -1,16 +1,16 @@
 <div class="row form-group">
   <div class="col-sm-12 col-md-12">
-    {{#unless editing}}
+    {{#unless this.editing}}
       <div class="over-hr r-p10">
         <span>
           <button class="btn-circle" {{action "addPort"}}><i class="icon icon-plus-circle"/> {{t 'formPorts.addAction'}}</button>
         </span>
       </div>
     {{/unless}}
-    {{#if portsArray.length}}
+    {{#if this.portsArray.length}}
       <table class="table fixed no-lines no-top-padding tight small">
         <tr class="text-muted hidden-sm">
-          {{#if showIp}}
+          {{#if this.showIp}}
             <th>{{t 'formPorts.bindAddress.label'}}</th>
             <th class="hidden-sm" width="30">&nbsp;</th>
           {{/if}}
@@ -19,12 +19,13 @@
           <th>{{t 'formPorts.private.label'}}</th>
           <th class="hidden-sm" width="30">&nbsp;</th>
           <th width="100">{{t 'formPorts.protocol.label'}}</th>
+          <th class="text-center" width="105">{{t 'formPorts.preflight.label'}}</th>
           <th class="hidden-sm" width="40">&nbsp;</th>
         </tr>
-        {{#each portsArray as |port|}}
-          <tr>
-            {{#if showIp}}
-              <td data-title="{{t 'formPorts.public.label'}}">
+        {{#each this.portsArray as |port|}}
+          <tr class="{{port.preflightRowClass}}">
+            {{#if this.showIp}}
+              <td data-title="{{t 'formPorts.bindAddress.label'}}">
                 {{#if port.existing}}
                   {{#if port.bindAddress}}
                     {{port.bindAddress}}
@@ -58,8 +59,30 @@
               {{else}}
                 {{new-select
                   class="form-control input-sm"
-                  content=protocolOptions
+                  content=this.protocolOptions
                   value=port.protocol}}
+              {{/if}}
+            </td>
+            <td class="text-center" data-title="{{t 'formPorts.preflight.label'}}">
+              {{#if port.preflightStatus}}
+                {{#tooltip-element
+                  tagName="span"
+                  inlineBlock=true
+                  type="tooltip-basic"
+                  tooltipTemplate="tooltip-static"
+                  tooltipFor="portPreflight"
+                  model=port.preflightMessage
+                }}
+                  <span
+                    class="port-preflight-indicator {{port.preflightStatusClass}}"
+                    title="{{port.preflightMessage}}"
+                    aria-label="{{port.preflightMessage}}"
+                  >
+                    <i class="{{port.preflightIcon}}" aria-hidden="true"></i>
+                  </span>
+                {{/tooltip-element}}
+              {{else}}
+                <span class="text-muted">&ndash;</span>
               {{/if}}
             </td>
             <td class="text-right">
@@ -72,7 +95,28 @@
           </tr>
         {{/each}}
       </table>
-      {{#unless showIp}}
+      {{#if this.preflightStatusMessage}}
+        <div
+          class="port-preflight-summary {{this.preflightSummaryClass}}"
+          data-testid="port-preflight-summary"
+          role="status"
+          aria-live="polite"
+        >
+          <i class="{{this.preflightIcon}}" aria-hidden="true"></i>
+          <span>{{this.preflightStatusMessage}}</span>
+        </div>
+      {{/if}}
+      {{#if this.preflightConflictMessages.length}}
+        <ul class="port-preflight-conflicts list-unstyled" data-testid="port-preflight-conflicts">
+          {{#each this.preflightConflictMessages as |conflict|}}
+            <li class="{{conflict.statusClass}}">
+              <i class="{{conflict.icon}}" aria-hidden="true"></i>
+              <span>{{conflict.text}}</span>
+            </li>
+          {{/each}}
+        </ul>
+      {{/if}}
+      {{#unless this.showIp}}
         <p class="help-block">
           <a href="#" {{action "showIp"}}>
             {{t 'formPorts.showIpLink'}}
@@ -80,7 +124,7 @@
         </p>
       {{/unless}}
     {{else}}
-      {{#if editing}}
+      {{#if this.editing}}
         <span class="text-center text-muted">{{t 'formPorts.noPorts'}}</span>
       {{/if}}
     {{/if}}

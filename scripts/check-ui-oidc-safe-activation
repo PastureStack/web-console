@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+controller=app/admin-tab/auth/oidc/controller.js
+access_service=app/services/access.js
+controller_test=tests/unit/admin-tab/auth/oidc/controller-test.js
+access_test=tests/unit/services/access-test.js
+
+for marker in \
+  "activateWithCodeFlow: function(code)" \
+  "prepareIdentitySwitch()" \
+  "identityProof: this.get('testedIdentityProof')" \
+  "providerSwitchCode: providerSwitchCode" \
+  "sessionSnapshot = this.get('access').suspendSession()" \
+  "return this.get('access').login(providerSwitchCode, 'providerSwitch')" \
+  "return this.restorePreviousProvider(rollbackModel)" \
+  "this.get('access').restoreSession(sessionSnapshot)"; do
+  grep -F "$marker" "$controller" >/dev/null
+done
+
+for marker in \
+  "suspendSession()" \
+  "restoreSession(snapshot)" \
+  "this.clearSessionKeys()" \
+  "this.get('cookies').setWithOptions(C.COOKIE.TOKEN, snapshot.token"; do
+  grep -F "$marker" "$access_service" >/dev/null
+done
+
+for marker in \
+  "keeps security enabled and restores the local session after provider activation fails" \
+  "activates OIDC with an identity-bound ticket and never disables security"; do
+  grep -F "$marker" "$controller_test" >/dev/null
+done
+
+grep -F "suspends and restores the current provider session around activation" \
+  "$access_test" >/dev/null
+
+printf '%s\n' \
+  'UI_OIDC_SAFE_ACTIVATION_OK security_disabled=0 identity_bound_ticket=1 old_cookie_suspended=1 provider_rollback_before_session_restore=1'

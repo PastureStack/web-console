@@ -5,31 +5,41 @@ const { get, makeArray } = Ember;
 export function initialize(instance) {
   var intl = instance.lookup('service:intl');
 
-  intl.reopen({
-    // calling findTranslationByKey with a null key explodes, make it return something
-    _findTranslationByKey: intl.findTranslationByKey,
-    findTranslationByKey(key, locales) {
-      locales = makeArray(locales || get(this, '_locale'));
+  // Keep the narrow legacy call surface while the application moves to the
+  // public Ember Intl 8 API. New code should call t(), exists(), locales, and
+  // formatMessage() directly.
+  intl.findTranslationByKey = function(key, locales) {
+    locales = makeArray(locales || get(this, '_locale'));
+    key = key || 'generic.missing';
 
-      if (locales[0] === 'none') {
-        return missingMessage(key, locales);
-      } else if ( key ) {
-        return this._findTranslationByKey(...arguments);
-      }else {
-        return this._findTranslationByKey('generic.missing', locales);
-      }
-    },
-
-    tHtml(key, ...args) {
-      const [ options ] = args;
-      const translation = this.findTranslationByKey(key, options && options.locale);
-      return this.formatHtmlMessage(translation, ...args);
+    if (locales[0] === 'none') {
+      return missingMessage(key, locales);
     }
-  });
+
+    for (let locale of locales) {
+      let translation = this.getTranslation(key, locale);
+      if (translation !== undefined) {
+        return translation;
+      }
+    }
+
+    return missingMessage(key, locales);
+  };
+
+  intl.formatHtmlMessage = function(message, options) {
+    return this.formatMessage(message, Object.assign({}, options, {htmlSafe: true}));
+  };
+
+  intl.tHtml = function(key, options) {
+    return this.t(key, Object.assign({}, options, {htmlSafe: true}));
+  };
+
+  intl.getLocalesByTranslations = function() {
+    return this.locales.slice();
+  };
 }
 
 export default {
-  name: 'intl',
-  after: 'ember-intl',
+  name: 'intl-compatibility',
   initialize: initialize
 };

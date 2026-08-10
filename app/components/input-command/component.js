@@ -1,5 +1,5 @@
 import Ember from 'ember';
-import ShellQuote from 'npm:shell-quote';
+import ShellQuote from 'ui/utils/shell-quote';
 
 export const OPS = ['||','&&',';;','|&','&',';','(',')','|','<','>'];
 export function reop(xs) {

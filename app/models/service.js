@@ -2,7 +2,7 @@ import Resource from 'ember-api-store/models/resource';
 import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
-import { denormalizeId, denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import { denormalizeId, denormalizeIdArray } from 'ui/utils/api-store-references';
 
 var Service = Resource.extend({
   type: 'service',
@@ -88,7 +88,7 @@ var Service = Resource.extend({
         route = 'service.new-balancer';
       }
 
-      this.get('application').transitionToRoute(route, {queryParams: {
+      this.get('router').transitionTo(route, {queryParams: {
         serviceId: this.get('id'),
         upgrade: true,
         upgradeImage: upgradeImage,
@@ -116,7 +116,7 @@ var Service = Resource.extend({
         default: return void this.send('error','Unknown service type: ' + this.get('type'));
       }
 
-      this.get('application').transitionToRoute(route, {queryParams: {
+      this.get('router').transitionTo(route, {queryParams: {
         serviceId: this.get('id'),
         stackId: this.get('stackId'),
       }});

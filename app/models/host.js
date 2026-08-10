@@ -3,7 +3,7 @@ import Util from 'ui/utils/util';
 import Resource from 'ember-api-store/models/resource';
 import { formatMib, formatSi } from 'ui/utils/util';
 import C from 'ui/utils/constants';
-import { denormalizeIdArray } from 'ember-api-store/utils/denormalize';
+import { denormalizeIdArray } from 'ui/utils/api-store-references';
 import { satisfies, compare } from 'ui/utils/parse-version';
 
 var Host = Resource.extend({
@@ -40,11 +40,11 @@ var Host = Resource.extend({
     },
 
     newContainer: function() {
-      this.get('application').transitionToRoute('containers.new', {queryParams: {hostId: this.get('model.id')}});
+      this.get('router').transitionTo('containers.new', {queryParams: {hostId: this.get('model.id')}});
     },
 
     clone: function() {
-      this.get('application').transitionToRoute('hosts.new', {queryParams: {hostId: this.get('id'), driver: this.get('driver')}});
+      this.get('router').transitionTo('hosts.new', {queryParams: {hostId: this.get('id'), driver: this.get('driver')}});
     },
 
     edit: function() {

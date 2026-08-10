@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cd "$(dirname "$0")/.."
+
+python3 - <<'PY_CHECK'
+import json
+from pathlib import Path
+
+bower = json.loads(Path("bower.json").read_text())
+if "dagre" in bower.get("dependencies", {}):
+    raise SystemExit("bower.json must not depend on dagre")
+
+package = json.loads(Path("package.json").read_text())
+dependencies = package.get("devDependencies", {})
+if dependencies.get("dagre") != "0.8.5":
+    raise SystemExit("package.json must pin dagre 0.8.5")
+if dependencies.get("graphlib") != "2.1.8":
+    raise SystemExit("package.json must pin graphlib 2.1.8")
+PY_CHECK
+
+if grep -R "bower_components/graphlib\|bower_components/dagre" -n ember-cli-build.js app tests 2>/dev/null; then
+  echo "dagre/graphlib must be imported from npm paths, not Bower" >&2
+  exit 1
+fi
+
+grep -q "app.import('node_modules/graphlib/dist/graphlib.core.js')" ember-cli-build.js
+grep -q "app.import('node_modules/dagre/dist/dagre.core.js')" ember-cli-build.js
+grep -q "expectDagreGraphlibBrowserGlobals" scripts/node24-lock-smoke.js
+grep -q "sandbox.dagre.layout(graph)" scripts/node24-lock-smoke.js
+grep -q "dagre layout smoke failed" scripts/node24-lock-smoke.js
+grep -q "sandbox.dagreD3.dagre.layout(renderGraph)" scripts/node24-lock-smoke.js
+grep -q "dagre-d3 stack graph layout smoke failed" scripts/node24-lock-smoke.js
+
+if ! grep -q "setDefaultEdgeLabel(function()" app/components/stack-graph/component.js; then
+  echo "stack graph must define a default dagre edge label for compatibility with disconnected service graphs" >&2
+  exit 1
+fi
+
+
+echo "ui-dagre-graphlib-vendor-ok"

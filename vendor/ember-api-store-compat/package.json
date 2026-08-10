@@ -1,0 +1,40 @@
+{
+  "name": "ember-api-store",
+  "version": "2.8.5",
+  "description": "Reviewed PastureStack compatibility package for the Ember API store runtime.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PastureStack/web-console.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Original contributors and PastureStack maintainers",
+  "keywords": [
+    "ember-addon"
+  ],
+  "files": [
+    "addon",
+    "app",
+    "config",
+    "index.js",
+    "LICENSE",
+    "UPSTREAM.md"
+  ],
+  "dependencies": {
+    "ember-auto-import": "2.13.1",
+    "ember-cli-babel": "8.3.1",
+    "ember-fetch": "^5.1.1",
+    "set-cookie-parser": "2.7.2"
+  },
+  "ember-addon": {
+    "configPath": "tests/dummy/config"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "pasturestackCompatibility": {
+    "revision": 1,
+    "upstreamPackage": "ember-api-store",
+    "upstreamVersion": "2.8.5",
+    "upstreamIntegrity": "sha512-YvnBZfdNGG7hB25hecEENHObXNN+186Bbkd1wAIL7qtRXqboQsQxTU05xxP7axgW6TPYfUYMxZ+GgbHgD14g2A=="
+  }
+}

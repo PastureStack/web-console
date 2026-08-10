@@ -23,20 +23,20 @@ export default Ember.Component.extend({
     kubernetesReady() {
       this.get('k8s').allNamespaces().then(() => {
         this.get('projects').updateOrchestrationState().then(() => {
-          this.transitionToRoute('k8s-tab');
+          this.get('router').transitionTo('k8s-tab');
         });
       });
     },
 
     swarmReady() {
       this.get('projects').updateOrchestrationState().then(() => {
-        this.transitionToRoute('swarm-tab');
+        this.get('router').transitionTo('swarm-tab');
       });
     },
 
     mesosReady() {
       this.get('projects').updateOrchestrationState().then(() => {
-        this.transitionToRoute('mesos-tab');
+        this.get('router').transitionTo('mesos-tab');
       });
     },
   },

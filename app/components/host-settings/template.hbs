@@ -1,35 +1,35 @@
 <h3>{{t 'hostSettings.header'}}</h3>
 <hr>
-<h5>{{t 'hostSettings.subtext' appName=settings.appName}}</h5>
+<h5>{{t 'hostSettings.subtext' appName=this.settings.appName}}</h5>
 
 <div class="r-mt15">
-  <label style="width: 150px;">{{radio-button selection=customRadio value="no"}}&nbsp;{{t 'hostSettings.hostUrl.local'}}&nbsp;&nbsp;</label>
-  <code class="form-control-static r-pl20 r-pr20">{{thisPage}}</code>
+  <label style="width: 150px;">{{radio-button selection=this.customRadio value="no"}}&nbsp;{{t 'hostSettings.hostUrl.local'}}&nbsp;&nbsp;</label>
+  <code class="form-control-static r-pl20 r-pr20">{{this.thisPage}}</code>
 </div>
 
 <div class="r-mt10">
-  <label style="width: 150px;">{{radio-button selection=customRadio value="yes"}}&nbsp;{{t 'hostSettings.hostUrl.new.labelText'}}&nbsp;&nbsp;</label>
-  {{input type="text" class="form-control" value=customValue placeholder=(t 'hostSettings.hostUrl.new.placeholder') safeStyle="width: calc(100% - 170px); display: inline-block;  min-width: 300px;"}}
+  <label style="width: 150px;">{{radio-button selection=this.customRadio value="yes"}}&nbsp;{{t 'hostSettings.hostUrl.new.labelText'}}&nbsp;&nbsp;</label>
+  {{input type="text" class="form-control" value=this.customValue placeholder=(t 'hostSettings.hostUrl.new.placeholder') safeStyle="width: calc(100% - 170px); display: inline-block;  min-width: 300px;"}}
   <p class="help-block">
     {{format-html-message 'hostSettings.helpText.static1'}}
-    {{#if settings.isRancher}}
-      {{format-html-message 'hostSettings.helpText.isRancher' docsBase=settings.docsBase}}
+    {{#if this.settings.isRancher}}
+      {{format-html-message 'hostSettings.helpText.isRancher' docsBase=this.settings.docsBase}}
     {{else}}
       {{t 'hostSettings.helpText.sslTerm'}}
     {{/if}}
-    {{format-html-message 'hostSettings.helpText.static2' appName=settings.appName}}
+    {{format-html-message 'hostSettings.helpText.static2' appName=this.settings.appName}}
   </p>
 </div>
 
-{{#unless looksPublic}}
+{{#unless this.looksPublic}}
   <div class="alert alert-info" style="margin-top: 30px;">
     <i class="icon icon-info" style="font-size: 35px; float: left;"></i>
     <p style="margin-left: 50px;">
-      {{format-html-message 'hostSettings.notPublic.alert' activeValue=activeValue}}
+      {{format-html-message 'hostSettings.notPublic.alert' activeValue=this.activeValue}}
     </p>
   </div>
 {{/unless}}
 
-{{top-errors errors=errors}}
+{{top-errors errors=this.errors}}
 
 {{save-cancel cancelDisabled=true editing=true save="save"}}

@@ -2,6 +2,7 @@
 
 # compiled output
 /dist
+/build
 /tmp
 
 # dependencies
@@ -14,7 +15,6 @@
 /coverage/*
 /libpeerconnection.log
 npm-debug.log
-package-lock.json
 testem.log
 .DS_Store
 .tern-port
@@ -31,7 +31,12 @@ testem.log
 *~
 \#.*
 .python-version
+__pycache__/
+*.py[cod]
 \#*
 .\#*
 
 *.org
+
+# Local development private keys must be generated locally.
+/ssl/server.key

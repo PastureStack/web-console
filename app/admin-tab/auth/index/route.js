@@ -12,11 +12,11 @@ export default Ember.Route.extend({
 
     if ( this.get('access.enabled') )
     {
-      this.replaceWith('admin-tab.auth.' + route);
+      this.get('router').replaceWith('admin-tab.auth.' + route);
     }
     else
     {
-      this.replaceWith('admin-tab.auth.github');
+      this.get('router').replaceWith('admin-tab.auth.github');
     }
   },
 });
