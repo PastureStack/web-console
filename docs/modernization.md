@@ -502,12 +502,16 @@ transition can no longer re-display or hide the overlay owned by a newer
 transition. A bounded fallback also prevents a stalled route promise from
 blocking the entire console indefinitely.
 
-`1.6.65` replaces the inherited landscape-and-orbit loading artwork with a
-PastureStack-native transition. The fixed, viewport-centred status indicator
-uses the project mark, two independent activity rings, a bounded progress
-track, localized loading text, and reduced-motion support. The obsolete field,
-grass, celestial-body, and product-specific animation structure is no longer
-rendered.
+`1.6.65` removed the inherited landscape-and-orbit markup. Its first replacement
+still retained a circular, rotating silhouette that was too visually close to
+the retired transition.
+
+`1.6.66` replaces that silhouette with a distinctly PastureStack-native loading
+panel. The fixed, viewport-centred status indicator uses a rectangular brand
+panel, the full-colour project mark, three independently highlighted stack
+layers, a bounded progress track, localized loading text, and reduced-motion
+support. Field, grass, celestial-body, circular-orbit, and rotating-ring
+structures are neither rendered nor retained in the active style sheet.
 
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed

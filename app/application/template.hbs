@@ -4,10 +4,18 @@
   {{#if this.settings.isRancher}}
     <div class="pasturestack-loader" role="status" aria-live="polite">
       <div class="pasturestack-loader__stage" aria-hidden="true">
-        <div class="pasturestack-loader__ring pasturestack-loader__ring--outer"></div>
-        <div class="pasturestack-loader__ring pasturestack-loader__ring--inner"></div>
-        <div class="pasturestack-loader__mark-shell">
-          <img class="pasturestack-loader__mark" src="{{this.app.baseAssets}}assets/images/logos/pasturestack-mark.svg" alt="">
+        <div class="pasturestack-loader__panel">
+          <div class="pasturestack-loader__brand">
+            <div class="pasturestack-loader__mark-shell">
+              <img class="pasturestack-loader__mark" src="{{this.app.baseAssets}}assets/images/logos/pasturestack-mark.svg" alt="">
+            </div>
+            <span class="pasturestack-loader__product">{{this.settings.appName}}</span>
+          </div>
+          <div class="pasturestack-loader__stack">
+            <span class="pasturestack-loader__layer pasturestack-loader__layer--one"></span>
+            <span class="pasturestack-loader__layer pasturestack-loader__layer--two"></span>
+            <span class="pasturestack-loader__layer pasturestack-loader__layer--three"></span>
+          </div>
         </div>
       </div>
       <div class="pasturestack-loader__progress" aria-hidden="true">

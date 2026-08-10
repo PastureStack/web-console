@@ -41,8 +41,8 @@ with open('package.json', encoding='utf-8') as f:
     print(json.load(f).get('version', ''))
 PY
 )
-if [[ "$version" != "1.6.65" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.65"
+if [[ "$version" != "1.6.66" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.66"
   failures=$((failures + 1))
 fi
 
@@ -53,6 +53,20 @@ require_no_pattern 'rancher/dind|deb\.nodesource\.com/setup_6|setup_6\.x|phantom
 require_no_pattern 'class="(loader|orbit|loadfield|grass|sun|moon)"' \
   'legacy product loading artwork returned to the application transition' \
   app/application/template.hbs
+
+require_no_pattern 'pasturestack-loader__ring|pasturestack-loader-(spin|spin-reverse|pulse)' \
+  'circular or orbit-like loading silhouette returned to the branded transition' \
+  app/application/template.hbs app/styles/pages/_loading.scss
+
+for marker in \
+  'pasturestack-loader__panel' \
+  'pasturestack-loader__stack' \
+  'pasturestack-loader__layer--three'; do
+  if ! grep -qF "$marker" app/application/template.hbs; then
+    echo "MISSING_BRANDED_LOADING_MARKER marker=$marker"
+    failures=$((failures + 1))
+  fi
+done
 
 if [[ $failures -ne 0 ]]; then
   echo "failure_count=$failures"
