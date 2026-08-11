@@ -176,8 +176,19 @@ export default Ember.Object.extend(Ember.Evented, {
     this._log('error');
   },
 
-  _closed() {
-    console.log(`Socket ${this.get('_closingId')} closed`);
+  _closed(event) {
+    let closedSocket = event && event.target;
+    let activeSocket = this.get('_socket');
+
+    // A delayed close event from an older connection must never tear down a
+    // replacement socket that is already connecting or connected.
+    if ( closedSocket && activeSocket && closedSocket !== activeSocket ) {
+      console.log(`Socket ${closedSocket.__sockId} closed after replacement`);
+      return;
+    }
+
+    let closedId = (closedSocket && closedSocket.__sockId) || this.get('_closingId');
+    console.log(`Socket ${closedId} closed`);
 
     this.set('_closingId', null);
     this.set('_socket', null);
@@ -211,6 +222,14 @@ export default Ember.Object.extend(Ember.Evented, {
         safariWarningShown = true;
         window.l('service:growl').error('Error connecting to WebSocket','Safari does not support WebSockets connecting to a self-signed or unrecognized certificate.  Use http:// instead of https:// or reconfigure the server with a valid certificate from a recognized certificate authority.  Streaming stats, logs, shell/console, and auto-updating of the state of resources in the UI will not work until this is resolved.');
       }
+    }
+    // A disconnected listener can explicitly start a replacement connection
+    // (for example while a route is activating).  In that case it owns the
+    // new socket and its state; this close handler must not queue a competing
+    // timer or overwrite the replacement state.
+    else if ( this.get('_socket') )
+    {
+      return;
     }
     else if ( this.get('autoReconnect') )
     {

@@ -1,15 +1,15 @@
-{{#if showEngineUrl}}
+{{#if this.showEngineUrl}}
   <div class="row form-group">
     <div class="col-md-2 form-label">
       <label class="form-control-static">{{t 'formEngineOpts.engineInstallUrl.label'}}</label>
     </div>
     <div class="col-md-10">
       <div class="input-group">
-        {{input type="text" value=machine.engineInstallUrl classNames="form-control" placeholder=(t 'formEngineOpts.engineInstallUrl.placeholder')}}
+        {{input type="text" value=this.machine.engineInstallUrl classNames="form-control" placeholder=(t 'formEngineOpts.engineInstallUrl.placeholder')}}
         <div class="input-group-btn">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
           <ul class="dropdown-menu dropdown-menu-right" role="menu" style="min-width: 250px; max-height: 300px; overflow-y: auto;">
-            {{#each engineUrlChoices as |choice|}}
+            {{#each this.engineUrlChoices as |choice|}}
               <li><a href="#" {{action "setEngine" choice.value}}>{{choice.label}}</a></li>
             {{/each}}
           </ul>
@@ -24,7 +24,7 @@
     <label class="form-control-static">{{t 'formEngineOpts.engineStorageDriver.label'}}</label>
   </div>
   <div class="col-md-10">
-    {{input type="text" value=machine.engineStorageDriver classNames="form-control" placeholder=(t 'formEngineOpts.engineStorageDriver.placeholder')}}
+    {{input type="text" value=this.machine.engineStorageDriver classNames="form-control" placeholder=(t 'formEngineOpts.engineStorageDriver.placeholder')}}
   </div>
 </div>
 
@@ -34,8 +34,8 @@
   </div>
   <div class="col-md-10">
     {{form-key-value
-      initialMap=machine.engineOpt
-      changed=(action (mut machine.engineOpt))
+      initialMap=this.machine.engineOpt
+      changed=(action (mut this.machine.engineOpt))
       addActionLabel="formEngineOpts.engineOpts.addActionLabel"
       keyPlaceholder="formEngineOpts.engineOpts.keyPlaceholder"
       valuePlaceholder="formEngineOpts.engineOpts.valuePlaceholder"
@@ -49,8 +49,8 @@
   </div>
   <div class="col-md-10">
     {{form-key-value
-      initialMap=machine.engineLabel
-      changed=(action (mut machine.engineLabel))
+      initialMap=this.machine.engineLabel
+      changed=(action (mut this.machine.engineLabel))
       addActionLabel="formEngineOpts.engineLabels.addActionLabel"
       keyLabel="formEngineOpts.engineLabels.keyLabel"
     }}
@@ -63,8 +63,8 @@
   </div>
   <div class="col-md-10">
     {{form-key-value
-      initialMap=machine.engineEnv
-      changed=(action (mut machine.engineEnv))
+      initialMap=this.machine.engineEnv
+      changed=(action (mut this.machine.engineEnv))
       addActionLabel="formEngineOpts.engineEnv.addActionLabel"
       keyLabel="formEngineOpts.engineEnv.keyLabel"
       keyPlaceholder="formEngineOpts.engineEnv.keyPlaceholder"
@@ -79,8 +79,8 @@
   </div>
   <div class="col-md-10">
     {{form-value-array
-      initialValues=machine.engineInsecureRegistry
-      changed=(action (mut machine.engineInsecureRegistry))
+      initialValues=this.machine.engineInsecureRegistry
+      changed=(action (mut this.machine.engineInsecureRegistry))
       addActionLabel="formEngineOpts.engineInsecureRegistry.addActionLabel"
       valueLabel="formEngineOpts.engineInsecureRegistry.valueLabel"
       valuePlaceholder="formEngineOpts.engineInsecureRegistry.valuePlaceholder"
@@ -94,8 +94,8 @@
   </div>
   <div class="col-md-10">
     {{form-value-array
-      initialValues=machine.engineRegistryMirror
-      changed=(action (mut machine.engineRegistryMirror))
+      initialValues=this.machine.engineRegistryMirror
+      changed=(action (mut this.machine.engineRegistryMirror))
       addActionLabel="formEngineOpts.engineRegistryMirror.addActionLabel"
       valueLabel="formEngineOpts.engineRegistryMirror.valueLabel"
       valuePlaceholder="formEngineOpts.engineRegistryMirror.valuePlaceholder"

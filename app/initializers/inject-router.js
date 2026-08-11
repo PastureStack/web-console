@@ -1,7 +1,18 @@
-export function initialize(application) {
-  // Injects all Ember components & models (for actions) with a router object:
-  application.inject('component', 'router', 'router:main');
-  application.inject('model',     'router', 'router:main');
+import Component from '@ember/component';
+import Controller from '@ember/controller';
+import Route from '@ember/routing/route';
+import { service } from '@ember/service';
+import Resource from 'ember-api-store/models/resource';
+
+function injectRouter(Factory) {
+  Factory.reopen({ router: service('router') });
+}
+
+export function initialize() {
+  injectRouter(Component);
+  injectRouter(Controller);
+  injectRouter(Route);
+  injectRouter(Resource);
 }
 
 export default {

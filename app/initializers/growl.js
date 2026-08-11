@@ -1,8 +1,6 @@
-export function initialize(application) {
-  application.inject('controller',  'session', 'service:growl');
-  application.inject('route',       'session', 'service:growl');
-  application.inject('model',       'session', 'service:growl');
-  application.inject('component',   'session', 'service:growl');
+export function initialize() {
+  // Consumers inject service:growl explicitly.  The former global initializer
+  // accidentally overwrote `session` with the growl service.
 }
 
 export default {

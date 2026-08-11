@@ -154,7 +154,7 @@ export default Ember.Mixin.create({
     {
       let templateId = this.get('model.externalIdInfo.templateId');
       let versionId = this.get('upgradeInfo.id');
-      this.get('application').transitionToRoute('catalog-tab.launch', templateId, {queryParams: {
+      this.get('router').transitionTo('catalog-tab.launch', templateId, {queryParams: {
         stackId: this.get('model.id'),
         upgrade: versionId
       }});

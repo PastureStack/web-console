@@ -4,7 +4,7 @@ import NewOrEdit from 'ui/mixins/new-or-edit';
 export default Ember.Controller.extend(NewOrEdit, {
 
   doneSaving() {
-    this.transitionToRoute('backuptargets');
+    this.get('router').transitionTo('backuptargets');
   },
 
   actions: {

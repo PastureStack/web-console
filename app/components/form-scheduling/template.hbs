@@ -1,10 +1,10 @@
-<div class="{{if editing 'form-group' ''}}">
-  {{#if editing}}
-    {{#if canRequestHost}}
+<div class="{{if this.editing 'form-group' ''}}">
+  {{#if this.editing}}
+    {{#if this.canRequestHost}}
       <div class="radio r-mb0">
-        <label class="form-control-static">{{radio-button selection=isRequestedHost value=true}}
-          {{#if isService}}
-            {{#if (eq isVm 'virtual machines')}}
+        <label class="form-control-static">{{radio-button selection=this.isRequestedHost value=true}}
+          {{#if this.isService}}
+            {{#if (eq this.isVm 'virtual machines')}}
               {{format-html-message 'formScheduling.canRequestHost.vm'}}
             {{else}}
               {{format-html-message 'formScheduling.canRequestHost.containers'}}
@@ -13,25 +13,25 @@
             {{t 'formScheduling.runSpecific'}}
           {{/if}}
         </label>
-          {{#if isRequestedHost}}
+          {{#if this.isRequestedHost}}
             {{new-select
               class="form-control r-mb15"
-              content=hostChoices
-              value=requestedHostId
+              content=this.hostChoices
+              value=this.requestedHostId
               optionValuePath="id"
               optionLabelPath="name"
-              disabled=(not isRequestedHost)
+              disabled=(not this.isRequestedHost)
               style="display: inline-block; width: auto;"
             }}
           {{/if}}
       </div>
 
       <div class="radio r-mb0">
-        <label>{{radio-button selection=isRequestedHost value=false}}
-          {{#if isService}}
-            {{#if isGlobal}}
+        <label>{{radio-button selection=this.isRequestedHost value=false}}
+          {{#if this.isService}}
+            {{#if this.isGlobal}}
               {{t 'formScheduling.autoRun'}}
-            {{else if (eq isVm 'virtual machines')}}
+            {{else if (eq this.isVm 'virtual machines')}}
               {{t 'formScheduling.autoPick.vm'}}
             {{else}}
               {{t 'formScheduling.autoPick.container'}}
@@ -42,10 +42,10 @@
         </label>
       </div>
     {{else}}
-      {{#if isService}}
-        {{#if isGlobal}}
+      {{#if this.isService}}
+        {{#if this.isGlobal}}
           {{t 'formScheduling.autoRun'}}
-        {{else if isVm}}
+        {{else if this.isVm}}
             {{t 'formScheduling.autoPick.vm'}}
         {{else}}
           {{t 'formScheduling.autoPick.container'}}
@@ -54,14 +54,14 @@
         {{t 'formScheduling.autoPick.host'}}
       {{/if}}
     {{/if}}
-  {{else if isGlobal}}
+  {{else if this.isGlobal}}
     {{t 'formScheduling.autoRun'}}
-  {{else if requestedHostId}}
+  {{else if this.requestedHostId}}
     <div class="component-static">
       <div class="row">
         <label class="form-control-static">
-          {{#if isService}}
-            {{#if (eq isVm 'virtual machines')}}
+          {{#if this.isService}}
+            {{#if (eq this.isVm 'virtual machines')}}
               {{format-html-message 'formScheduling.canRequestHost.vm'}}
             {{else}}
               {{format-html-message 'formScheduling.canRequestHost.containers'}}
@@ -70,22 +70,22 @@
             {{t 'formScheduling.runSpecific'}}
           {{/if}}
         </label>
-        <span class="form-static-control">{{selectedChoice.name}}</span>
+        <span class="form-static-control">{{this.selectedChoice.name}}</span>
       </div>
     </div>
-  {{else if (eq isVm 'virtual machines')}}
+  {{else if (eq this.isVm 'virtual machines')}}
     {{t 'formScheduling.autoPick.vm'}}
   {{else}}
     {{t 'formScheduling.autoPick.container'}}
   {{/if}}
 
-  {{#unless isRequestedHost}}
-    {{#if editing}}
+  {{#unless this.isRequestedHost}}
+    {{#if this.editing}}
       <div class="form-control-static">
         <button class="btn-circle-text" {{action "addSchedulingRule"}}><i class="icon icon-plus-circle"/> <span>{{t 'formScheduling.addRule'}}</span></button>
       </div>
     {{/if}}
-    {{#if affinityLabelArray.length}}
+    {{#if this.affinityLabelArray.length}}
       <table class="table fixed no-lines">
         <thead>
           <tr class="text-muted">
@@ -101,13 +101,13 @@
           </tr>
         </thead>
         <tbody>
-          {{#each labelArray as |rule|}}
+          {{#each this.labelArray as |rule|}}
             {{#if (eq rule.type "affinity")}}
               {{scheduling-rule-row
-                editing=editing
+                editing=this.editing
                 rule=rule
                 remove="removeSchedulingRule"
-                isGlobal=isGlobal}}
+                isGlobal=this.isGlobal}}
             {{/if}}
           {{/each}}
         </tbody>

@@ -2,27 +2,10 @@ import Ember from 'ember';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 import C from 'ui/utils/constants';
+import { driverDisplayUrl } from 'ui/utils/driver-display-url';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 
 const builtInUi = ['amazonec2','azure','digitalocean','exoscale','packet','rackspace','ubiquity','vmwarevsphere','aliyunecs','otc'];
-
-function displayUrl(url) {
-  url = url||'';
-  let parts = url.split('/');
-  let out    = null;
-
-  if ( parts.length < 2 )
-  {
-    return url;
-  }
-
-  if (url.indexOf('github.com') >= 0) {
-    out = `.../${parts[parts.length-2]}/${parts[parts.length-1]}`;
-  } else {
-    out = url;
-  }
-  return out;
-}
 
 var machineDriver = Resource.extend(PolledResource, {
   type: 'machineDriver',
@@ -69,7 +52,7 @@ var machineDriver = Resource.extend(PolledResource, {
   }),
 
   displayUrl: function() {
-    return displayUrl(this.get('url'));
+    return driverDisplayUrl(this.get('url'));
   }.property('url'),
 
   displayChecksum: Ember.computed('checksum', function() {
@@ -77,7 +60,7 @@ var machineDriver = Resource.extend(PolledResource, {
   }),
 
   displayUiUrl: function() {
-    return displayUrl(this.get('uiUrl'));
+    return driverDisplayUrl(this.get('uiUrl'));
   }.property('uiUrl'),
 
   hasBuiltinUi: function() {

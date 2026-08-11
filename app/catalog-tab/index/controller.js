@@ -37,7 +37,7 @@ export default Ember.Controller.extend({
         return false;
       }
 
-      this.transitionToRoute(this.get('launchRoute'), id);
+      this.get('router').transitionTo(this.get('launchRoute'), id);
     },
 
     update() {
@@ -51,7 +51,7 @@ export default Ember.Controller.extend({
 
     },
     switch(catalog) {
-      this.transitionToRoute(this.get('parentRoute'), this.get('projectId'), {queryParams: catalog.queryParams} );
+      this.get('router').transitionTo(this.get('parentRoute'), this.get('projectId'), {queryParams: catalog.queryParams} );
     }
   },
 
@@ -77,7 +77,10 @@ export default Ember.Controller.extend({
     }
 
     this.get('model.catalog').forEach((item) => {
-      if (item.name.toUpperCase().indexOf(search) >= 0 || item.description.toUpperCase().indexOf(search) >= 0) {
+      let name = item.get('localizedName') || '';
+      let description = item.get('localizedDescription') || '';
+
+      if (name.toUpperCase().indexOf(search) >= 0 || description.toUpperCase().indexOf(search) >= 0) {
         result.push(item);
       }
     });

@@ -1,0 +1,44 @@
+<div class="volume-path-autocomplete-shell">
+  <input
+    type="text"
+    class="form-control volume-path"
+    value={{this.inputValue}}
+    placeholder={{this.placeholder}}
+    autocomplete="off"
+    spellcheck="false"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-expanded={{if this.isOpen "true" "false"}}
+    aria-controls={{this.listboxId}}
+    aria-activedescendant={{this.activeOptionId}}
+    oninput={{action "inputChanged" value="target.value"}}
+    onfocus={{action "focusInput"}}
+    onblur={{action "blurInput"}}
+    onkeydown={{action "keyDown"}}
+  >
+  {{#if this.inlineCompletion}}
+    <div class="volume-path-autocomplete-ghost" aria-hidden="true">
+      <span class="volume-path-autocomplete-prefix">{{this.inlineCompletion.prefix}}</span><span>{{this.inlineCompletion.suffix}}</span>
+    </div>
+  {{/if}}
+</div>
+
+{{#if (and this.isOpen this.visibleSuggestions.length)}}
+  <ul id={{this.listboxId}} class="volume-path-autocomplete-list" role="listbox">
+    {{#each this.visibleSuggestions as |suggestion index|}}
+      <li
+        id="{{this.listboxId}}-option-{{index}}"
+        class={{if (eq index this.activeIndex) "is-active"}}
+        role="option"
+        aria-selected={{if (eq index this.activeIndex) "true" "false"}}
+        onmouseenter={{action "highlightSuggestion" index}}
+        onmousedown={{action "chooseSuggestion" suggestion}}
+      >
+        <code>{{suggestion.value}}</code>
+        {{#if suggestion.source}}
+          <span class="volume-path-autocomplete-source">{{suggestion.source}}</span>
+        {{/if}}
+      </li>
+    {{/each}}
+  </ul>
+{{/if}}

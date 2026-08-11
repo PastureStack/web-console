@@ -8,35 +8,35 @@
 </div>
 <div class="row">
   <div class="">
-    {{#if targetsArray.length}}
+    {{#if this.targetsArray.length}}
       <table class="grid no-lines no-top-padding tight" style="margin-bottom: 0;">
         <thead>
           <tr>
-            {{#if isAdvanced}}
+            {{#if this.isAdvanced}}
               <th>{{t 'formTargets.hostname.label'}}</th>
               <th width="90">{{t 'formTargets.srcPort.label'}}</th>
               <th>{{t 'formTargets.path.label'}}</th>
               <th width="30">&nbsp;</th>
             {{/if}}
-            {{#if isBalancer}}
+            {{#if this.isBalancer}}
               <th>{{t 'formTargets.value.label'}}*</th>
             {{else}}
               <th>&nbsp;</th>
             {{/if}}
-            {{#if isAdvanced}}
+            {{#if this.isAdvanced}}
               <th width="90">{{t 'formTargets.dstPort.label'}}</th>
             {{/if}}
             <th width="30">&nbsp;</th>
           </tr>
         </thead>
         <tbody>
-          {{#each targetsArray as |tgt|}}
+          {{#each this.targetsArray as |tgt|}}
             {{form-target-row
               remove="removeTarget"
               tgt=tgt
-              exclude=exclude
-              isAdvanced=isAdvanced
-              isBalancer=isBalancer
+              exclude=this.exclude
+              isAdvanced=this.isAdvanced
+              isBalancer=this.isBalancer
             }}
           {{/each}}
         </tbody>
@@ -44,7 +44,7 @@
     {{/if}}
   </div>
 </div>
-{{#if isAdvanced}}
+{{#if this.isAdvanced}}
   <div class="row">
       <div class="">
       <p class="help-block">{{t 'formTargets.advanced.help1'}}</p>
@@ -52,7 +52,7 @@
     </div>
   </div>
 {{else}}
-  {{#if (and isBalancer targetsArray.length)}}
+  {{#if (and this.isBalancer this.targetsArray.length)}}
     <div class="row">
           <div class="">
         <button {{action "setAdvanced"}} class="btn btn-link btn-sm r-p0" type="button">{{t 'formTargets.advanced.toggle'}}</button><small>&ndash; {{t 'formTargets.advanced.detail'}}</small>

@@ -9,6 +9,7 @@ export default Ember.Controller.extend({
   confirmDisable    : false,
   errors            : null,
   testing           : false,
+  switching         : false,
   error             : null,
 
   adminName         : '',
@@ -16,10 +17,23 @@ export default Ember.Controller.extend({
   adminSecretValue  : '',
   adminSecretValue2 : '',
 
+  isLocalActive: function() {
+    return this.get('access.enabled') &&
+      (this.get('access.provider') || '').toLowerCase() === 'localauthconfig';
+  }.property('access.enabled', 'access.provider'),
+
+  isExternalActive: function() {
+    return this.get('access.enabled') && !this.get('isLocalActive');
+  }.property('access.enabled', 'isLocalActive'),
+
   createDisabled: function() {
     var ok = this.get('adminPublicValue.length') && this.get('adminSecretValue.length') && (this.get('adminSecretValue') === this.get('adminSecretValue2'));
-    return !ok;
-  }.property('adminPublicValue','adminSecretValue','adminSecretValue2'),
+    if ( this.get('isExternalActive') ) {
+      ok = this.get('adminPublicValue.length') && this.get('adminSecretValue.length');
+    }
+    return !ok || this.get('testing') || this.get('switching');
+  }.property('adminPublicValue','adminSecretValue','adminSecretValue2',
+    'isExternalActive', 'testing', 'switching'),
 
   validateDescription: Ember.computed(function() {
     return this.get('settings').get(C.SETTING.AUTH_LOCAL_VALIDATE_DESC) || null;
@@ -93,6 +107,56 @@ export default Ember.Controller.extend({
       });
     },
 
+    switchToLocal: function() {
+      if ( !this.get('adminPublicValue') || !this.get('adminSecretValue') ) {
+        this.send('showError', this.get('intl').t('authPage.localAuth.switch.validation'));
+        return;
+      }
+
+      this.send('clearError');
+      this.set('switching', true);
+      let username = this.get('adminPublicValue');
+      let password = this.get('adminSecretValue');
+
+      this.get('userStore').createRecord({
+        type: 'authIdentityOperation',
+        operation: 'switchToLocal',
+        localUsername: username,
+        localPassword: password,
+      }).save().then((result) => {
+        let providerSwitchCode = Ember.get(result, 'providerSwitchCode');
+        if ( !providerSwitchCode ) {
+          throw new Error(this.get('intl').t('authPage.localAuth.switch.missingTicket'));
+        }
+
+        this.get('access').suspendSession();
+        return new Ember.RSVP.Promise((resolve) => {
+          Ember.run.later(this, resolve, 1200);
+        }).then(() => {
+          return this.get('access').login(providerSwitchCode, 'providerSwitch');
+        }).catch(() => {
+          // If the settings refresh took longer than the one-use ticket
+          // request, the already verified local credential is the safe
+          // fallback. Access control remains enabled throughout.
+          return this.get('access').login(`${username}:${password}`, 'localAuthConfig');
+        });
+      }).then(() => {
+        this.setProperties({
+          adminSecretValue: '',
+          adminSecretValue2: '',
+        });
+        this.get('access').setProperties({
+          enabled: true,
+          provider: 'localauthconfig',
+        });
+        this.send('waitAndRefresh');
+      }).catch((err) => {
+        this.send('gotError', err);
+      }).finally(() => {
+        this.set('switching', false);
+      });
+    },
+
     waitAndRefresh: function(url) {
       $('#loading-underlay, #loading-overlay').removeClass('hide').show();
       setTimeout(function() {
@@ -118,6 +182,7 @@ export default Ember.Controller.extend({
       }
 
       this.set('testing', false);
+      this.set('switching', false);
       this.set('saving', false);
     },
 
@@ -151,11 +216,12 @@ export default Ember.Controller.extend({
       });
     },
   },
-  headerText: Ember.computed('access.enabled', function() {
+  headerText: Ember.computed('isLocalActive', 'isExternalActive', 'intl._locale', function() {
     let out = this.get('intl').findTranslationByKey('authPage.localAuth.header.disabled');
-    if (this.get('access.enabled')) {
+    if (this.get('isLocalActive')) {
       out = this.get('intl').findTranslationByKey('authPage.localAuth.header.enabled');
-
+    } else if (this.get('isExternalActive')) {
+      out = this.get('intl').findTranslationByKey('authPage.localAuth.header.recovery');
     }
     return this.get('intl').formatHtmlMessage(out);
   }),

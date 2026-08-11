@@ -1,4 +1,5 @@
 import Ember from 'ember';
+import { A } from '@ember/array';
 import C from 'ui/utils/constants';
 import { tagChoices } from 'ui/models/stack';
 import { uniqKeys } from 'ui/utils/util';
@@ -368,8 +369,36 @@ export function removeId(id) {
   }
 }
 
+export function cloneNavigationValue(value) {
+  if (Array.isArray(value)) {
+    return A(value.map((entry) => cloneNavigationValue(entry)));
+  }
+
+  if (value && typeof value === 'object') {
+    const prototype = Object.getPrototypeOf(value);
+
+    if (prototype === Object.prototype || prototype === null) {
+      return Object.keys(value).reduce((copy, key) => {
+        copy[key] = cloneNavigationValue(value[key]);
+
+        return copy;
+      }, {});
+    }
+  }
+
+  return value;
+}
+
+export function normalizeNavigationQueryParams(value) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value;
+  }
+
+  return {};
+}
+
 export function get() {
-  return Ember.copy(navTree,true);
+  return cloneNavigationValue(navTree);
 }
 
 function getStacksSubtree() {

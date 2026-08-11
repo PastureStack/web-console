@@ -1,4 +1,4 @@
-{{#if projects.orchestrationState.swarmReady}}
+{{#if this.projects.orchestrationState.swarmReady}}
   <section class="header clearfix">
     <h1>{{t 'swarmTab.dashboard.header'}}</h1>
   </section>
@@ -7,10 +7,10 @@
     <div class="text-center col-md-6 col-md-offset-3 gutter">
       <div class="well">
         <div class="row">
-          <img height="100" src="{{app.baseAssets}}assets/images/portainer.png" />
+          <img height="100" src="{{this.app.baseAssets}}assets/images/portainer.png" />
         </div>
         <p>{{t 'swarmTab.dashboard.dashboard.content'}}</p>
-        {{#if model.dashboardUrl}}
+        {{#if this.model.dashboardUrl}}
           <a {{action "openDashboard"}} class="btn btn-primary">{{t 'swarmTab.dashboard.dashboard.button'}}</a>
         {{else}}
           <button class="btn btn-primary btn-disabled">{{t 'swarmTab.dashboard.dashboard.button'}}</button>

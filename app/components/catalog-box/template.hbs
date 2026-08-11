@@ -1,24 +1,30 @@
 {{yield 'header'}}
-{{#if model.certified}}
-  <div class="{{model.certifiedClass}}">
-    <strong>{{model.certified}}</strong>
+{{#if this.model.isUpstreamFirstParty}}
+  <div class="badge-pasturestack">
+    <strong>{{this.model.catalogBrandBadge}}</strong>
   </div>
+{{else}}
+  {{#if this.model.certified}}
+    <div class="{{this.model.certifiedClass}}">
+      <strong>{{this.model.certified}}</strong>
+    </div>
+  {{/if}}
 {{/if}}
-{{#if showIcon}}
+{{#if this.showIcon}}
   <div class="catalog-icon">
-    <img src="{{model.links.icon}}"/>
+    <img src="{{this.model.links.icon}}" />
   </div>
 {{/if}}
 <div class="itemwrap">
   <h5>
-    {{model.name}}
+    {{this.model.catalogDisplayName}}
   </h5>
-  {{#if showSource}}
-    <span class="small">in <span class="text-capitalize">{{model.catalogId}}</span></span>
+  {{#if this.showSource}}
+    <span class="small">{{t 'catalogBox.sourcePrefix'}} <span class="text-capitalize">{{this.model.catalogId}}</span></span>
   {{/if}}
-  {{#if showDescription}}
+  {{#if this.showDescription}}
     <hr class="r-m10" />
-    <div class="r-mt10 description">{{model.description}}</div>
+    <div class="r-mt10 description">{{this.model.localizedDescription}}</div>
   {{/if}}
 </div>
 <div class="footer">

@@ -6,7 +6,7 @@ export default Ember.Controller.extend({
 
   actions: {
     changeHost(host) {
-      this.get('application').transitionToRoute('host', host.get('id'));
+      this.get('router').transitionTo('host', host.get('id'));
     },
   }
 });

@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import hashlib
+import json
+import re
+import sys
+from pathlib import Path
+
+package_path = Path("package.json")
+lock_path = Path("package-lock.json")
+baseline_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+ci_path = Path("scripts/ci")
+failures = []
+
+
+def fail(message):
+    failures.append(message)
+
+
+def version_tuple(value):
+    match = re.match(r"^(\d+)\.(\d+)\.(\d+)", value or "")
+    if not match:
+        return None
+    return tuple(int(part) for part in match.groups())
+
+
+def package_name(path):
+    if "node_modules/" not in path:
+        return ""
+    tail = path.rsplit("node_modules/", 1)[1]
+    parts = tail.split("/")
+    if parts[0].startswith("@") and len(parts) > 1:
+        return "/".join(parts[:2])
+    return parts[0]
+
+
+for required in (package_path, lock_path, baseline_path, ci_path):
+    if not required.is_file():
+        fail(f"missing required dependency evidence: {required}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_CRITICAL_HIGH_DEPENDENCY_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    raise SystemExit(1)
+
+package = json.loads(package_path.read_text(encoding="utf-8"))
+ci_source = ci_path.read_text(encoding="utf-8")
+if "npm audit --audit-level=high" not in ci_source:
+    fail("live npm Critical/High audit gate is missing from scripts/ci")
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.1.tgz"
+lock_bytes = lock_path.read_bytes()
+baseline_bytes = baseline_path.read_bytes()
+if lock_bytes != baseline_bytes:
+    fail(
+        "tracked package-lock and reviewed Node 24 baseline differ "
+        f"package_lock_sha256={hashlib.sha256(lock_bytes).hexdigest()} "
+        f"baseline_sha256={hashlib.sha256(baseline_bytes).hexdigest()}"
+    )
+
+lock = json.loads(lock_bytes)
+packages = lock.get("packages", {})
+root = packages.get("", {})
+if package.get("version") != "1.6.70":
+    fail(f"unexpected Web Console version: {package.get('version')}")
+if root.get("version") != package.get("version"):
+    fail(f"lock root version differs: {root.get('version')}")
+if package.get("devDependencies", {}).get("@babel/core") != "7.29.7":
+    fail("@babel/core must be pinned to 7.29.7")
+if "ember-route-action-helper" in package.get("devDependencies", {}):
+    fail("ember-route-action-helper returned to package.json")
+if package.get("devDependencies", {}).get("ember-api-store") != api_store_compat_spec:
+    fail("ember-api-store must use the reviewed local compatibility archive")
+
+overrides = package.get("overrides", {})
+if overrides.get("rtlcss") != "4.3.0":
+    fail(f"rtlcss override drifted: {overrides.get('rtlcss')}")
+if overrides.get("tmp") != "0.2.7":
+    fail(f"tmp override drifted: {overrides.get('tmp')}")
+if overrides.get("nanoid") != "3.3.17":
+    fail(f"nanoid override drifted: {overrides.get('nanoid')}")
+api_store = packages.get("node_modules/ember-api-store", {})
+if api_store.get("resolved") != api_store_compat_spec:
+    fail(f"lock resolves unreviewed ember-api-store source: {api_store.get('resolved')}")
+if api_store.get("dependencies", {}).get("ember-auto-import") != "2.13.1":
+    fail("ember-api-store no longer pins the reviewed Ember Auto Import 2 release")
+
+forbidden_names = {
+    "babel-core",
+    "babel-traverse",
+    "broccoli-rollup",
+    "ember-route-action-helper",
+    "rollup-plugin-babel",
+}
+minimums = {
+    "braces": (3, 0, 3),
+    "json5": (1, 0, 2),
+    "lodash": (4, 18, 0),
+    "lodash-real": (4, 18, 0),
+    "nanoid": (3, 3, 17),
+    "postcss": (8, 5, 23),
+    "rollup": (2, 80, 0),
+    "tmp": (0, 2, 6),
+}
+checked = {name: 0 for name in minimums}
+for path, metadata in packages.items():
+    name = package_name(path)
+    if not name:
+        continue
+    if name in forbidden_names:
+        fail(f"forbidden obsolete build package remains: {path}@{metadata.get('version')}")
+    if name not in minimums:
+        continue
+    version = metadata.get("version")
+    parsed = version_tuple(version)
+    checked[name] += 1
+    if parsed is None or parsed < minimums[name]:
+        minimum = ".".join(str(part) for part in minimums[name])
+        fail(f"vulnerable {name} remains: {path}@{version}; minimum={minimum}")
+
+for required_name in ("braces", "json5", "lodash", "nanoid", "postcss", "tmp"):
+    if checked[required_name] == 0:
+        fail(f"expected dependency disappeared without review: {required_name}")
+
+route_template = Path("app/hosts/new/template.hbs").read_text(encoding="utf-8")
+route_controller = Path("app/hosts/new/controller.js").read_text(encoding="utf-8")
+if "route-action" in route_template:
+    fail("route-action helper remains in the host creation template")
+for marker in ('cancel=(action "cancel")', 'goBack=(action "goBack")'):
+    if marker not in route_template:
+        fail(f"host action closure marker missing: {marker}")
+for marker in ("cancel() {", "goBack() {"):
+    if marker not in route_controller:
+        fail(f"controller action-bubbling marker missing: {marker}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_CRITICAL_HIGH_DEPENDENCY_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print(
+    "UI_CRITICAL_HIGH_DEPENDENCIES_OK "
+    "critical_babel_traverse=absent high_build_chain=patched "
+    + " ".join(f"{name}={count}" for name, count in sorted(checked.items()))
+)
+print("failure_count=0")
+PY

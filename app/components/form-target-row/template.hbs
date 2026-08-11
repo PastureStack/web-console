@@ -1,12 +1,12 @@
-{{#if isAdvanced}}
+{{#if this.isAdvanced}}
   <td data-title="{{t 'formTargets.hostname.label'}}">
-    {{input classNames="form-control input-sm" value=tgt.hostname placeholder=(t 'formTargets.hostname.placeholder')}}
+    {{input classNames="form-control input-sm" value=this.tgt.hostname placeholder=(t 'formTargets.hostname.placeholder')}}
   </td>
   <td data-title="{{t 'formTargets.srcPort.label'}}">
-    {{input classNames="form-control input-sm" value=tgt.srcPort placeholder=(t 'formTargets.srcPort.placeholder')}}
+    {{input classNames="form-control input-sm" value=this.tgt.srcPort placeholder=(t 'formTargets.srcPort.placeholder')}}
   </td>
   <td data-title="{{t 'formTargets.path.label'}}">
-    {{input classNames="form-control input-sm" value=tgt.path placeholder=(t 'formTargets.path.placeholder')}}
+    {{input classNames="form-control input-sm" value=this.tgt.path placeholder=(t 'formTargets.path.placeholder')}}
   </td>
   <td class="text-center">
     <div class="form-control-static input-sm"><i class="icon icon-chevron-right"></i></div>
@@ -15,14 +15,14 @@
 <td data-title="{{t 'formTargets.value.label'}}">
   {{schema/input-service
     selectClass="form-control input-sm lb-target"
-    selected=tgt.value
-    canBalanceTo=isBalancer
-    exclude=exclude
+    selected=this.tgt.value
+    canBalanceTo=this.isBalancer
+    exclude=this.exclude
   }}
 </td>
-{{#if isAdvanced}}
+{{#if this.isAdvanced}}
   <td data-title="{{t 'formTargets.dstPort.label'}}">
-    {{input classNames="form-control input-sm" value=tgt.dstPort placeholder=(t 'formTargets.dstPort.placeholder')}}
+    {{input classNames="form-control input-sm" value=this.tgt.dstPort placeholder=(t 'formTargets.dstPort.placeholder')}}
   </td>
 {{/if}}
 <td class="text-right">

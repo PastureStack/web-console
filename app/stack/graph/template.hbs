@@ -1,11 +1,11 @@
-{{stack-header model=model.stack all=model.all.stacks hideAddtlInfo="dismiss"}}
+{{stack-header model=this.model.stack all=this.model.all.stacks hideAddtlInfo="dismiss"}}
 
-{{#if noServices}}
+{{#if this.noServices}}
   <div class="stack-section r-mt20">
     <div class="text-muted text-center r-p10">{{t 'stackSection.none'}}</div>
   </div>
 {{/if}}
-{{stack-graph model=model setNoServices='setNoServices'}}
+{{stack-graph model=this.model setNoServices='setNoServices'}}
 {{! The graph container isn't actually in this template because it needs to be higher up in the DOM...}}
 
-{{service-addtl-info service=selectedService show=showServiceInfo dismiss='dismiss'}}
+{{service-addtl-info service=this.selectedService show=this.showServiceInfo dismiss='dismiss'}}

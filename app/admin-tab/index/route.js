@@ -2,6 +2,6 @@ import Ember from 'ember';
 
 export default Ember.Route.extend({
   redirect: function() {
-    this.transitionTo('admin-tab.audit-logs');
+    this.get('router').transitionTo('admin-tab.audit-logs');
   }
 });

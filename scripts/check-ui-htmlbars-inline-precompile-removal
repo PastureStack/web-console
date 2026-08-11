@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root=$(cd "$(dirname "$0")/.." && pwd)
+cd "$repo_root"
+
+python3 - <<'PY'
+import json
+import sys
+from pathlib import Path
+
+package_name = "ember-cli-htmlbars-inline-precompile"
+package_path = Path("package.json")
+lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
+
+package = json.loads(package_path.read_text(encoding="utf-8"))
+failures = []
+
+manifest_paths = [
+    package_path,
+    Path("vendor/lacsso/package.json"),
+    Path("vendor/ember-cli-pagination/package.json"),
+    Path("vendor/ember-rl-dropdown/package.json"),
+]
+for manifest_path in manifest_paths:
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    for section in ("dependencies", "devDependencies", "optionalDependencies", "peerDependencies"):
+        if package_name in manifest.get(section, {}):
+            failures.append(f"{manifest_path} {section} still declares {package_name}")
+
+overrides = package.get("overrides", {})
+if package_name in overrides:
+    failures.append(f"package.json overrides still declares {package_name}")
+
+lock = json.loads(lock_path.read_text(encoding="utf-8"))
+for path in sorted(lock.get("packages", {})):
+    if package_name in path:
+        failures.append(f"lockfile still resolves {path}")
+
+lacsso_root = Path("vendor/lacsso")
+compiled_templates = [
+    ("addon/templates/components/modal-root.js", "upstream-templates/addon/templates/components/modal-root.hbs"),
+    ("addon/templates/components/sortable-thead.js", "upstream-templates/addon/templates/components/sortable-thead.hbs"),
+    ("addon/templates/components/sortable-table.js", "upstream-templates/addon/templates/components/sortable-table.hbs"),
+    ("addon/components/save-cancel/template.js", "upstream-templates/addon/components/save-cancel/template.hbs"),
+]
+active_hbs = sorted((lacsso_root / "addon").rglob("*.hbs"))
+if active_hbs:
+    failures.append(f"lacsso active addon templates remain build-time hbs modules: {active_hbs}")
+for compiled_relative, upstream_relative in compiled_templates:
+    compiled_path = lacsso_root / compiled_relative
+    upstream_path = lacsso_root / upstream_relative
+    if not compiled_path.is_file():
+        failures.append(f"lacsso precompiled template missing: {compiled_path}")
+        continue
+    if not upstream_path.is_file():
+        failures.append(f"lacsso retained upstream template missing: {upstream_path}")
+    compiled_text = compiled_path.read_text(encoding="utf-8")
+    for marker in ["createTemplateFactory", "ember-source 6.12.0"]:
+        if marker not in compiled_text:
+            failures.append(f"lacsso precompiled template marker missing: {compiled_path} marker={marker}")
+    if "ember-cli-htmlbars" in compiled_text:
+        failures.append(f"lacsso active template imports build-only ember-cli-htmlbars: {compiled_path}")
+
+save_cancel = (lacsso_root / "addon/components/save-cancel/component.js").read_text(encoding="utf-8")
+for marker in ["import layout from './template'", "layout,"]:
+    if marker not in save_cancel:
+        failures.append(f"lacsso save-cancel precompiled layout marker missing: {marker}")
+
+if failures:
+    for failure in failures:
+        print(f"UI_HTMLBARS_INLINE_PRECOMPILE_REMOVAL_FAIL {failure}")
+    print(f"failure_count={len(failures)}")
+    sys.exit(1)
+
+print(f"UI_HTMLBARS_INLINE_PRECOMPILE_REMOVAL_OK package={package_name} lockfile={lock_path} lacsso_templates={len(compiled_templates)}")
+print("The deprecated inline-precompile addon is absent and active lacsso templates use @ember/template-factory modules.")
+print("failure_count=0")
+PY

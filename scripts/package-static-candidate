@@ -1,0 +1,284 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 022
+
+if [[ $# -lt 1 || $# -gt 3 ]]; then
+  cat >&2 <<'USAGE'
+Usage: scripts/package-static-candidate VERSION [DIST_DIR] [OUT_TARBALL]
+
+Packages an already-built PastureStack Web Console dist directory into the legacy artifact
+layout expected by PastureStack Server:
+
+  VERSION/
+    VERSION.txt
+    index.html
+    assets/...
+
+The output is intentionally a candidate artifact. It does not publish or update
+the server Dockerfile.
+USAGE
+  exit 2
+fi
+
+version=$1
+dist_dir=${2:-dist}
+out_tar=${3:-build/ui/${version}.tar.gz}
+source_date_epoch=${SOURCE_DATE_EPOCH:-}
+
+if [[ -z "$source_date_epoch" ]] && command -v git >/dev/null 2>&1; then
+  source_date_epoch=$(git log -1 --format=%ct 2>/dev/null || true)
+fi
+
+case "$source_date_epoch" in
+  '' | *[!0-9]*)
+    echo "SOURCE_DATE_EPOCH_INVALID value=${source_date_epoch:-empty}" >&2
+    exit 1
+    ;;
+esac
+
+case "$version" in
+  *[!0-9.]* | .* | *..* | *.)
+    echo "INVALID_UI_VERSION version=$version" >&2
+    exit 1
+    ;;
+esac
+
+if [[ ! -f "$dist_dir/index.html" ]]; then
+  echo "DIST_INDEX_MISSING file=$dist_dir/index.html" >&2
+  exit 1
+fi
+
+if [[ ! -d "$dist_dir/assets" ]]; then
+  echo "DIST_ASSETS_MISSING dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+if ! find "$dist_dir/assets" -type f \( -name 'ui*.js' -o -name 'web-console*.js' \) | grep -q .; then
+  echo "DIST_UI_JS_MISSING dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' | grep -q .; then
+  echo "DIST_VENDOR_JS_MISSING dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+for theme_asset in ui-light.css ui-light.rtl.css ui-dark.css ui-dark.rtl.css; do
+  if [[ ! -s "$dist_dir/assets/$theme_asset" ]]; then
+    echo "DIST_THEME_CSS_MISSING_OR_EMPTY file=$dist_dir/assets/$theme_asset" >&2
+    exit 1
+  fi
+done
+
+ember_license="$dist_dir/licenses/ember/LICENSE"
+ember_upstream="$dist_dir/licenses/ember/UPSTREAM.md"
+ember_license_sha256=84e97eb6663fa5fa07f36661e6040ab8a557b165c13860e2e72c1a692ca3c2a0
+if [[ ! -s "$ember_license" ]] || [[ ! -s "$ember_upstream" ]]; then
+  echo "DIST_EMBER_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember" >&2
+  exit 1
+fi
+if [[ "$(sha256sum "$ember_license" | awk 'NR == 1 {print $1}')" != "$ember_license_sha256" ]]; then
+  echo "DIST_EMBER_LICENSE_DRIFT file=$ember_license" >&2
+  exit 1
+fi
+if ! grep -Fx -- '- Distribution: `ember-source@6.12.0`' "$ember_upstream" >/dev/null; then
+  echo "DIST_EMBER_PROVENANCE_DRIFT file=$ember_upstream" >&2
+  exit 1
+fi
+
+ember_fetch_license="$dist_dir/licenses/ember-fetch/LICENSE.md"
+ember_fetch_upstream="$dist_dir/licenses/ember-fetch/UPSTREAM.md"
+ember_fetch_license_sha256=bae5cb45df11b4fa8e894ae3b9b13595e154ade61ee6c57d5cfcd422771153a7
+if [[ ! -s "$ember_fetch_license" ]] || [[ ! -s "$ember_fetch_upstream" ]]; then
+  echo "DIST_EMBER_FETCH_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember-fetch" >&2
+  exit 1
+fi
+if [[ "$(sha256sum "$ember_fetch_license" | awk 'NR == 1 {print $1}')" != "$ember_fetch_license_sha256" ]]; then
+  echo "DIST_EMBER_FETCH_LICENSE_DRIFT file=$ember_fetch_license" >&2
+  exit 1
+fi
+if ! grep -Fx -- '- Upstream version: `5.1.3`' "$ember_fetch_upstream" >/dev/null; then
+  echo "DIST_EMBER_FETCH_PROVENANCE_DRIFT file=$ember_fetch_upstream" >&2
+  exit 1
+fi
+
+ember_power_select_license="$dist_dir/licenses/ember-power-select/LICENSE.md"
+ember_power_select_upstream="$dist_dir/licenses/ember-power-select/UPSTREAM.md"
+ember_power_select_license_sha256=0c454de6bb0a94445b9fe315cdad6830e317ca6aa9fb04d0b84fe000d04a5c90
+if [[ ! -s "$ember_power_select_license" ]] || [[ ! -s "$ember_power_select_upstream" ]]; then
+  echo "DIST_EMBER_POWER_SELECT_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember-power-select" >&2
+  exit 1
+fi
+if [[ "$(sha256sum "$ember_power_select_license" | awk 'NR == 1 {print $1}')" != "$ember_power_select_license_sha256" ]]; then
+  echo "DIST_EMBER_POWER_SELECT_LICENSE_DRIFT file=$ember_power_select_license" >&2
+  exit 1
+fi
+if ! grep -F -- '- Upstream version: `1.0.0-beta.19`' "$ember_power_select_upstream" >/dev/null; then
+  echo "DIST_EMBER_POWER_SELECT_PROVENANCE_DRIFT file=$ember_power_select_upstream" >&2
+  exit 1
+fi
+
+ember_basic_dropdown_license="$dist_dir/licenses/ember-basic-dropdown/LICENSE.md"
+ember_basic_dropdown_upstream="$dist_dir/licenses/ember-basic-dropdown/UPSTREAM.md"
+ember_basic_dropdown_license_sha256=c3cd4817d1568725ab93dced4bd46f0dceaeace8c6badb9d12e2239fced7e810
+if [[ ! -s "$ember_basic_dropdown_license" ]] || [[ ! -s "$ember_basic_dropdown_upstream" ]]; then
+  echo "DIST_EMBER_BASIC_DROPDOWN_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember-basic-dropdown" >&2
+  exit 1
+fi
+if [[ "$(sha256sum "$ember_basic_dropdown_license" | awk 'NR == 1 {print $1}')" != "$ember_basic_dropdown_license_sha256" ]]; then
+  echo "DIST_EMBER_BASIC_DROPDOWN_LICENSE_DRIFT file=$ember_basic_dropdown_license" >&2
+  exit 1
+fi
+if ! grep -F -- '- Upstream version: `0.16.0-beta.4`' "$ember_basic_dropdown_upstream" >/dev/null; then
+  echo "DIST_EMBER_BASIC_DROPDOWN_PROVENANCE_DRIFT file=$ember_basic_dropdown_upstream" >&2
+  exit 1
+fi
+
+runtime_legal_packages=(ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
+runtime_legal_versions=(9.0.2 9.0.0 5.2.0 4.3.0)
+runtime_legal_hashes=(
+  fee7ff7079edfdbac1c78d0329da16ae9b6ef73405cec197ed6136ddf1d70117
+  fee7ff7079edfdbac1c78d0329da16ae9b6ef73405cec197ed6136ddf1d70117
+  c7543891093cb613eeb5a90c16a18fa25b8708a0c7c1c67691202384ff9b6567
+  0390d452d98169895ab1ca8c14d35471642759366d51e1cfd014ded8bb10c51d
+)
+for index in "${!runtime_legal_packages[@]}"; do
+  package_name=${runtime_legal_packages[$index]}
+  package_version=${runtime_legal_versions[$index]}
+  expected_hash=${runtime_legal_hashes[$index]}
+  legal_dir="$dist_dir/licenses/runtime/$package_name"
+  license_file="$legal_dir/LICENSE.md"
+  upstream_file="$legal_dir/UPSTREAM.md"
+  if [[ ! -s "$license_file" ]] || [[ ! -s "$upstream_file" ]]; then
+    echo "DIST_RUNTIME_LEGAL_FILES_MISSING package=$package_name dir=$legal_dir" >&2
+    exit 1
+  fi
+  if [[ "$(sha256sum "$license_file" | awk 'NR == 1 {print $1}')" != "$expected_hash" ]]; then
+    echo "DIST_RUNTIME_LICENSE_DRIFT package=$package_name file=$license_file" >&2
+    exit 1
+  fi
+  if ! grep -Fx -- "- Upstream version: \`$package_version\`" "$upstream_file" >/dev/null; then
+    echo "DIST_RUNTIME_PROVENANCE_DRIFT package=$package_name file=$upstream_file" >&2
+    exit 1
+  fi
+done
+
+for required_signature in bs.collapse bs.dropdown; do
+  if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
+      -exec grep -lF "$required_signature" {} + | grep -q .; then
+    echo "DIST_REQUIRED_BOOTSTRAP_RUNTIME_MISSING signature=$required_signature" >&2
+    exit 1
+  fi
+done
+
+for forbidden_signature in bs.button bs.tooltip bs.popover data-loading-text; do
+  if find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
+      -exec grep -lF "$forbidden_signature" {} + | grep -q .; then
+    echo "DIST_VULNERABLE_BOOTSTRAP_RUNTIME_PRESENT signature=$forbidden_signature" >&2
+    exit 1
+  fi
+done
+
+if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.js' \
+    -exec grep -laF '["exports","ember-cli-htmlbars"]' {} + | grep -q .; then
+  echo "DIST_BUILD_ONLY_HTMLBARS_RUNTIME_IMPORT_PRESENT dir=$dist_dir/assets" >&2
+  exit 1
+fi
+
+tmpdir=$(mktemp -d)
+out_tmp="${out_tar}.tmp.$$"
+cleanup() {
+  rm -rf "$tmpdir"
+  rm -f "$out_tmp"
+}
+trap cleanup EXIT
+
+root="$tmpdir/$version"
+mkdir -p "$root" "$(dirname "$out_tar")"
+cp -a "$dist_dir"/. "$root"/
+
+# ember-auto-import can emit a detached test bundle even for a production
+# build.  It is not referenced by index.html, contains @ember/test-helpers,
+# and embeds the temporary absolute build path.  Never publish test-only
+# chunks or their non-reproducible build-host paths with the browser runtime.
+test_only_chunk_count=0
+shopt -s nullglob
+for chunk in "$root"/assets/chunk.*.js; do
+  if grep -aF '@ember/test-helpers' "$chunk" >/dev/null; then
+    rm -f "$chunk" "${chunk}.LICENSE.txt"
+    test_only_chunk_count=$((test_only_chunk_count + 1))
+  fi
+done
+shopt -u nullglob
+
+if find "$root" -type f -exec grep -aFl '@ember/test-helpers' {} + | grep -q .; then
+  echo "DIST_TEST_HELPER_RUNTIME_PRESENT dir=$root" >&2
+  exit 1
+fi
+if find "$root" -type f -exec grep -aFl '/tmp/' {} + | grep -q .; then
+  echo "DIST_TEMP_BUILD_PATH_PRESENT dir=$root" >&2
+  exit 1
+fi
+
+# Third-party Intl assets can include source maps even when Ember production
+# source maps are disabled. Candidate artifacts intentionally omit all maps.
+find "$root" -type f -name '*.map' -delete
+# `none` is a development-only pseudo-locale and is not offered by production.
+rm -f "$root/translations/none.json"
+printf '%s\n' "$version" > "$root/VERSION.txt"
+
+find "$root" -type d -exec chmod 0755 {} +
+find "$root" -type f -exec chmod 0644 {} +
+find "$root" -exec touch -h -d "@${source_date_epoch}" {} +
+
+tar --sort=name \
+  --mtime="@${source_date_epoch}" \
+  --owner=0 \
+  --group=0 \
+  --numeric-owner \
+  --format=gnu \
+  -C "$tmpdir" \
+  -cf - "$version" | gzip -n > "$out_tmp"
+mv "$out_tmp" "$out_tar"
+out_dir=$(dirname "$out_tar")
+out_name=$(basename "$out_tar")
+(
+  cd "$out_dir"
+  checksum=$(sha256sum "$out_name" | awk 'NR == 1 {print $1}')
+  printf '%s  %s\n' "$checksum" "$out_name" > "${out_name}.sha256"
+)
+
+tar_list="$tmpdir/tar.list"
+tar -tzf "$out_tar" > "$tar_list"
+grep -qx "${version}/index.html" "$tar_list"
+grep -qx "${version}/VERSION.txt" "$tar_list"
+for theme_asset in ui-light.css ui-light.rtl.css ui-dark.css ui-dark.rtl.css; do
+  grep -qx "${version}/assets/${theme_asset}" "$tar_list"
+done
+grep -Eq "^${version}/assets/(ui[^/]*|@pasturestack/web-console[^/]*)\\.js$" "$tar_list"
+grep -Eq "^${version}/assets/vendor.*\\.js$" "$tar_list"
+grep -qx "${version}/licenses/ember/LICENSE" "$tar_list"
+grep -qx "${version}/licenses/ember/UPSTREAM.md" "$tar_list"
+grep -qx "${version}/licenses/ember-fetch/LICENSE.md" "$tar_list"
+grep -qx "${version}/licenses/ember-fetch/UPSTREAM.md" "$tar_list"
+grep -qx "${version}/licenses/ember-power-select/LICENSE.md" "$tar_list"
+grep -qx "${version}/licenses/ember-power-select/UPSTREAM.md" "$tar_list"
+grep -qx "${version}/licenses/ember-basic-dropdown/LICENSE.md" "$tar_list"
+grep -qx "${version}/licenses/ember-basic-dropdown/UPSTREAM.md" "$tar_list"
+for package_name in "${runtime_legal_packages[@]}"; do
+  grep -qx "${version}/licenses/runtime/${package_name}/LICENSE.md" "$tar_list"
+  grep -qx "${version}/licenses/runtime/${package_name}/UPSTREAM.md" "$tar_list"
+done
+
+if grep -Eq '\.map$' "$tar_list"; then
+  echo "SOURCE_MAP_PRESENT tarball=$out_tar" >&2
+  exit 1
+fi
+
+if grep -Eq '/translations/none\.json$' "$tar_list"; then
+  echo "DEVELOPMENT_LOCALE_PRESENT tarball=$out_tar" >&2
+  exit 1
+fi
+
+echo "UI_STATIC_CANDIDATE_PACKAGED version=$version source_date_epoch=$source_date_epoch test_only_chunks_removed=$test_only_chunk_count tarball=$out_tar"
+cat "${out_tar}.sha256"

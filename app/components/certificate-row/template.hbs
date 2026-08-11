@@ -1,24 +1,24 @@
 <td data-title="{{t 'generic.state'}}:">
-  {{badge-state model=model}}
+  {{badge-state model=this.model}}
 </td>
 <td data-title="{{t 'generic.name'}}:" class="force-wrap">
-  {{#link-to "certificates.detail" model.id}}{{model.displayName}}{{/link-to}}
+  <LinkTo @route="certificates.detail" @model={{this.model.id}}>{{this.model.displayName}}</LinkTo>
 </td>
 <td data-title="{{t 'certificatesPage.table.cn'}}:">
-  {{#if model.CN}}
-    {{model.CN}}
-    {{#if model.countableSans.length}}
-      + {{model.countableSans.length}} other{{if (eq model.countableSans.length 1) "" "s"}}
+  {{#if this.model.CN}}
+    {{this.model.CN}}
+    {{#if this.model.countableSans.length}}
+      + {{t 'certificatesPage.table.otherNames' count=this.model.countableSans.length}}
     {{/if}}
   {{else}}
-    <span class="text-muted">None</span>
+    <span class="text-muted">{{t 'certificatesPage.table.noCn'}}</span>
   {{/if}}
 </td>
-<td data-title="certificatesPage.table.expiresDate:">
-  <span class="{{if model.expiresSoon "text-bold text-danger"}}">
-    {{date-from-now model.expiresDate}}
+<td data-title="{{t 'certificatesPage.table.expiresDate'}}:">
+  <span class="{{if this.model.expiresSoon "text-bold text-danger"}}">
+    {{date-from-now this.model.expiresDate}}
   </span>
 </td>
 <td data-title="{{t 'generic.actions'}}:" class="actions">
-  {{action-menu model=model}}
+  {{action-menu model=this.model}}
 </td>

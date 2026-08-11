@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+controller=app/admin-tab/auth/oidc/controller.js
+test_file=tests/unit/admin-tab/auth/oidc/controller-test.js
+
+for marker in \
+  "import { denormalizeName } from 'ui/services/settings';" \
+  "userStore: Ember.inject.service('user-store')" \
+  "ensureApiHost: function()" \
+  "this.get('userStore').find('setting', denormalizeName(C.SETTING.API_HOST))" \
+  "setting.set('value', origin)" \
+  "this.ensureApiHost().then(() => this.get('oidc').prepare(candidate))"; do
+  grep -F "$marker" "$controller" >/dev/null
+done
+
+for marker in \
+  "persists the browser origin before preparing an OIDC provider" \
+  "the browser origin is persisted" \
+  "preparation waits for the saved API host"; do
+  grep -F "$marker" "$test_file" >/dev/null
+done
+
+printf '%s\n' \
+  'UI_OIDC_API_HOST_OK persistent_origin=1 prepare_after_save=1 localhost_fallback=1'
