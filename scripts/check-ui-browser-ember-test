@@ -4,7 +4,7 @@ set -euo pipefail
 repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
 
-node_image=${PASTURESTACK_NODE24_IMAGE:-node:24.18.1-bookworm@sha256:19cd848a0e073d34bd8cd5545a1b6b4d28489b3e3b607366621ced442bd5f6b4}
+node_image=${PASTURESTACK_NODE24_IMAGE:-node:24.19.0-bookworm@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f6687167ca405e6584}
 launcher=${PASTURESTACK_UI_TESTEM_LAUNCHER:-chromium}
 chromium_package=${PASTURESTACK_CHROMIUM_APT_PACKAGE:-chromium}
 
@@ -33,8 +33,9 @@ docker run --rm \
     cp -a /src/. "$tmpdir/"
     cd "$tmpdir"
     cp docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json package-lock.json
-    test "$(node --version)" = v24.18.1
-    test "$(npm --version)" = 11.16.0
+    test "$(node --version)" = v24.19.0
+    npm install --global --ignore-scripts --no-audit --no-fund npm@12.0.2 >/dev/null
+    test "$(npm --version)" = 12.0.2
 
     node <<'"'"'NODE'"'"'
 const fs = require("fs");

@@ -526,10 +526,10 @@ console messages and thrown test values therefore cannot forge additional log
 records. The source gate rejects restoration of any reviewed raw sink, and the
 numeric artifact version remains the only version exposed by the package.
 
-`1.6.70` pins the reviewed build toolchain to Node.js `24.18.1` LTS and its
-bundled npm `11.16.0`, including an immutable official container manifest and
+`1.6.70` pins the reviewed build toolchain to Node.js `24.19.0` LTS and npm
+`12.0.2`, including an immutable official container manifest and
 verified Node archive checksums. It also overrides the transitive build-only
-`nanoid` dependency to patched version `3.3.17` for
+`nanoid` dependency to patched version `3.3.18` for
 `GHSA-2v37-7h3g-55p8` / `CVE-2026-67213`. The dependency gate rejects an older
 version, a missing override, or drift in the exact toolchain declarations, and
 the release CI fails closed when the current npm advisory service reports a new

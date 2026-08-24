@@ -1813,13 +1813,13 @@
       }
     },
     "node_modules/@babel/runtime": {
-      "version": "7.12.18",
-      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.12.18.tgz",
-      "integrity": "sha512-BogPQ7ciE6SYAUPtlm9tWbgI9+2AgqSam6QivMgXgAT+fKbgppaj4ZX15MHeLC1PVF5sNk70huBu20XxWOs8Cg==",
+      "version": "7.29.7",
+      "resolved": "https://registry.npmjs.org/@babel/runtime/-/runtime-7.29.7.tgz",
+      "integrity": "sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==",
       "dev": true,
       "license": "MIT",
-      "dependencies": {
-        "regenerator-runtime": "^0.13.4"
+      "engines": {
+        "node": ">=6.9.0"
       }
     },
     "node_modules/@babel/template": {
@@ -1902,95 +1902,129 @@
       "license": "MIT"
     },
     "node_modules/@ember-tooling/blueprint-model": {
-      "version": "0.5.0",
-      "resolved": "https://registry.npmjs.org/@ember-tooling/blueprint-model/-/blueprint-model-0.5.0.tgz",
-      "integrity": "sha512-2zAebSmmzpUO2wt6EyfX5TlcmvB9cTkteuZ3QhPmXLMthUpU5nUifcz3hlYcXPK7WM0HdO9qL4GdGQCoxhzaGg==",
+      "version": "0.7.1",
+      "resolved": "https://registry.npmjs.org/@ember-tooling/blueprint-model/-/blueprint-model-0.7.1.tgz",
+      "integrity": "sha512-UqibAm7MWkSNdAnBfq2i36jaQpUjCvhdcRFiT+oWWXer5WgaoYFVJ+kHs5Ux2i42kCWjsztercepOEm+BhOyQw==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "chalk": "^4.1.2",
-        "diff": "^7.0.0",
-        "isbinaryfile": "^5.0.4",
-        "lodash": "^4.17.21",
+        "babel-remove-types": "^2.0.0",
+        "chalk": "^5.6.2",
+        "content-tag": "^4.0.0",
+        "core-object": "^3.1.5",
+        "diff": "^8.0.4",
+        "ember-cli-normalize-entity-name": "^1.0.0",
+        "ember-cli-string-utils": "^1.1.0",
+        "fs-extra": "^11.3.4",
+        "heimdalljs-logger": "^0.1.10",
+        "inflection": "^3.0.2",
+        "isbinaryfile": "^5.0.7",
+        "lodash": "^4.17.23",
+        "markdown-it": "^14.1.0",
+        "markdown-it-terminal": "^0.4.0",
+        "minimatch": "^10.1.1",
         "promise.hash.helper": "^1.0.8",
-        "quick-temp": "^0.1.8",
-        "silent-error": "^1.1.1"
+        "quick-temp": "^0.1.9",
+        "silent-error": "^1.1.1",
+        "walk-sync": "^4.0.0"
       }
     },
-    "node_modules/@ember-tooling/blueprint-model/node_modules/ansi-styles": {
-      "version": "4.3.0",
-      "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-4.3.0.tgz",
-      "integrity": "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==",
+    "node_modules/@ember-tooling/blueprint-model/node_modules/babel-remove-types": {
+      "version": "2.0.0",
+      "resolved": "https://registry.npmjs.org/babel-remove-types/-/babel-remove-types-2.0.0.tgz",
+      "integrity": "sha512-HHLQOs/c2h//gl7f5VDa/r1Nd2gIk0kgzC1v01BSCEK5IJu1Zc4/fUj5uYCzC8Q0NWiucCgWKr9a43qmHkY6oA==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "color-convert": "^2.0.1"
+        "@babel/core": "^7.29.0",
+        "@babel/plugin-syntax-decorators": "^7.28.6",
+        "@babel/plugin-transform-typescript": "^7.28.6",
+        "prettier": "^3.8.1"
+      }
+    },
+    "node_modules/@ember-tooling/blueprint-model/node_modules/balanced-match": {
+      "version": "4.0.4",
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+      "integrity": "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==",
+      "dev": true,
+      "license": "MIT",
+      "engines": {
+        "node": "18 || 20 || >=22"
+      }
+    },
+    "node_modules/@ember-tooling/blueprint-model/node_modules/brace-expansion": {
+      "version": "5.0.9",
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.9.tgz",
+      "integrity": "sha512-ScQ4IuvIEF1TMlP7Zt+vjJ//9zlPb2SDcxWxM3bk8s6t6GGdJ7KO1dCcTidOPJKePW30LE/2cT7wCyPho9/Wxg==",
+      "dev": true,
+      "license": "MIT",
+      "dependencies": {
+        "balanced-match": "^4.0.2"
       },
       "engines": {
-        "node": ">=8"
+        "node": "20 || >=22"
+      }
+    },
+    "node_modules/@ember-tooling/blueprint-model/node_modules/fs-extra": {
+      "version": "11.4.0",
+      "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-11.4.0.tgz",
+      "integrity": "sha512-EQsFzMUJkCKGr1ePqlYADkIUmHW1s3ZXr5Yqy6wbGrfUCphpl2maM/kyOIRA2HpP3AaFQTZXD4ldjek+nccddA==",
+      "dev": true,
+      "license": "MIT",
+      "dependencies": {
+        "graceful-fs": "^4.2.0",
+        "jsonfile": "^6.0.1",
+        "universalify": "^2.0.0"
+      },
+      "engines": {
+        "node": ">=14.14"
+      }
+    },
+    "node_modules/@ember-tooling/blueprint-model/node_modules/minimatch": {
+      "version": "10.2.6",
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
+      "integrity": "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==",
+      "dev": true,
+      "license": "BlueOak-1.0.0",
+      "dependencies": {
+        "brace-expansion": "^5.0.8"
+      },
+      "engines": {
+        "node": "18 || 20 || >=22"
       },
       "funding": {
-        "url": "https://github.com/chalk/ansi-styles?sponsor=1"
+        "url": "https://github.com/sponsors/isaacs"
       }
     },
-    "node_modules/@ember-tooling/blueprint-model/node_modules/chalk": {
-      "version": "4.1.2",
-      "resolved": "https://registry.npmjs.org/chalk/-/chalk-4.1.2.tgz",
-      "integrity": "sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==",
+    "node_modules/@ember-tooling/blueprint-model/node_modules/prettier": {
+      "version": "3.9.6",
+      "resolved": "https://registry.npmjs.org/prettier/-/prettier-3.9.6.tgz",
+      "integrity": "sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==",
       "dev": true,
       "license": "MIT",
-      "dependencies": {
-        "ansi-styles": "^4.1.0",
-        "supports-color": "^7.1.0"
+      "bin": {
+        "prettier": "bin/prettier.cjs"
       },
       "engines": {
-        "node": ">=10"
+        "node": ">=14"
       },
       "funding": {
-        "url": "https://github.com/chalk/chalk?sponsor=1"
+        "url": "https://github.com/prettier/prettier?sponsor=1"
       }
     },
-    "node_modules/@ember-tooling/blueprint-model/node_modules/color-convert": {
-      "version": "2.0.1",
-      "resolved": "https://registry.npmjs.org/color-convert/-/color-convert-2.0.1.tgz",
-      "integrity": "sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==",
+    "node_modules/@ember-tooling/blueprint-model/node_modules/walk-sync": {
+      "version": "4.0.2",
+      "resolved": "https://registry.npmjs.org/walk-sync/-/walk-sync-4.0.2.tgz",
+      "integrity": "sha512-SPRy/z6vC+Fb20XQDzagaSVVNzX77EcLLPnBJsqNy0CFQgBS6cexbYP62kzRSqNdyIDdRGc7SOCybRrpkf+Pmg==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "color-name": "~1.1.4"
+        "ensure-posix-path": "^1.1.1",
+        "matcher-collection": "^2.0.1",
+        "minimatch": "^10.0.3"
       },
       "engines": {
-        "node": ">=7.0.0"
-      }
-    },
-    "node_modules/@ember-tooling/blueprint-model/node_modules/color-name": {
-      "version": "1.1.4",
-      "resolved": "https://registry.npmjs.org/color-name/-/color-name-1.1.4.tgz",
-      "integrity": "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==",
-      "dev": true,
-      "license": "MIT"
-    },
-    "node_modules/@ember-tooling/blueprint-model/node_modules/diff": {
-      "version": "7.0.0",
-      "resolved": "https://registry.npmjs.org/diff/-/diff-7.0.0.tgz",
-      "integrity": "sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==",
-      "dev": true,
-      "license": "BSD-3-Clause",
-      "engines": {
-        "node": ">=0.3.1"
-      }
-    },
-    "node_modules/@ember-tooling/blueprint-model/node_modules/supports-color": {
-      "version": "7.2.0",
-      "resolved": "https://registry.npmjs.org/supports-color/-/supports-color-7.2.0.tgz",
-      "integrity": "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==",
-      "dev": true,
-      "license": "MIT",
-      "dependencies": {
-        "has-flag": "^4.0.0"
-      },
-      "engines": {
-        "node": ">=8"
+        "node": ">= 20.*"
       }
     },
     "node_modules/@ember-tooling/classic-build-addon-blueprint": {
@@ -18117,9 +18151,9 @@
       }
     },
     "node_modules/nanoid": {
-      "version": "3.3.17",
-      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.17.tgz",
-      "integrity": "sha512-xQLf0A3HOMlgHq0n247/LRuAOYmB7dXJ/DvAxGvsSBij45XtBSmQycu+F8ODbHwns/XyFZagyL1+J0Offw1E0g==",
+      "version": "3.3.18",
+      "resolved": "https://registry.npmjs.org/nanoid/-/nanoid-3.3.18.tgz",
+      "integrity": "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w==",
       "dev": true,
       "funding": [
         {
