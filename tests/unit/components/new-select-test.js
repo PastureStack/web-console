@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { A } from '@ember/array';
 import { module, test } from 'qunit';
 
 import NewSelectComponent, {
@@ -11,13 +12,13 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 module('Unit | Component | new select');
 
 test('it exposes catalog version options through class-level computed properties', function(assert) {
-  let content = Ember.A([
+  let content = A([
     {version: 'v0.3.15 (current)', link: '/templates/healthcheck:0'},
     {version: 'v0.3.16-pasturestack.1', link: '/templates/healthcheck:1'},
   ]);
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(NewSelectComponent, {
       renderer: inertRenderer(),
       content: content,
@@ -32,7 +33,7 @@ test('it exposes catalog version options through class-level computed properties
   );
   assert.deepEqual(component.get('groupedContent'), []);
 
-  Ember.run(() => content.pushObject({version: 'v0.3.17', link: '/templates/healthcheck:2'}));
+  run(() => content.pushObject({version: 'v0.3.17', link: '/templates/healthcheck:2'}));
   assert.equal(component.get('ungroupedContent.length'), 3, 'updates when a version is added');
 
   destroyOwned(component);

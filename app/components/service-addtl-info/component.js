@@ -1,9 +1,9 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 import C from 'ui/utils/constants';
 
 
-export default Ember.Component.extend(ManageLabels, {
+export default Component.extend(ManageLabels, {
   service: null,
   show: false,
   activeTab: '',

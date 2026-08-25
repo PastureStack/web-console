@@ -1,5 +1,4 @@
 import Service from 'ui/models/service';
-import Ember from 'ember';
 import escapeHtml from 'ui/utils/escape-html';
 
 const esc = escapeHtml;

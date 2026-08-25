@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { sort } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend({
-  access: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  projects: Ember.inject.service(),
+export default Controller.extend({
+  access: service(),
+  settings: service(),
+  projects: service(),
 
   queryParams : ['backTo', 'driver', 'hostId'],
   backTo      : null,
@@ -57,6 +59,6 @@ export default Ember.Controller.extend({
     return !this.get('projects.current.isWindows') && this.get('access.admin');
   }.property('access.admin','projects.current.isWindows'),
 
-  sortedDrivers: Ember.computed.sort('model.availableDrivers','sortBy'),
+  sortedDrivers: sort('model.availableDrivers','sortBy'),
   sortBy: ['name'],
 });

@@ -27,8 +27,8 @@
       <div class="input-group">
         {{input type="text" value=this.primaryResource.group classNames="form-control" placeholder=(t 'editStack.group.placeholder')}}
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu dropdown-menu-right" role="menu">
+          <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu">
             {{#each this.tagChoices as |key|}}
               <li><a {{action "addTag" key}}>{{key}}</a></li>
             {{/each}}

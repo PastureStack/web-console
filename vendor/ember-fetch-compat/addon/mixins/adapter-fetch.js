@@ -1,12 +1,8 @@
-import Ember from 'ember';
 import Mixin from '@ember/object/mixin';
-import { assign, merge } from '@ember/polyfills'
 import RSVP from 'rsvp';
 import fetch from 'fetch';
 
-const {
-  Logger: { warn }
-} = Ember;
+const warn = console.warn.bind(console);
 
 const RBRACKET = /\[\]$/;
 
@@ -95,7 +91,7 @@ export function headersToObject(headers) {
  */
 export function mungOptionsForFetch(_options, adapter) {
   // This allows this mixin to be backward compatible with Ember < 2.5.
-  const combineObjs = (assign || merge);
+  const combineObjs = Object.assign;
   const options = combineObjs({
     credentials: 'same-origin',
   }, _options);

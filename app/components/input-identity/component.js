@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
-  access: Ember.inject.service(),
-  intl: Ember.inject.service(),
+export default Component.extend({
+  access: service(),
+  intl: service(),
   allowTeams: true,
   checking: false,
   addInput: '',

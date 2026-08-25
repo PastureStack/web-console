@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import StrippedName from 'ui/mixins/stripped-name';
 
-export default Ember.Component.extend(StrippedName, {
+export default Component.extend(StrippedName, {
   model: null,
   children: null,
   groupHasChildren: false,

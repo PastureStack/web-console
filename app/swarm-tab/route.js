@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import ApplicationsTabRoute from 'ui/applications-tab/route';
 
 export default ApplicationsTabRoute.extend({
-  projects: Ember.inject.service(),
+  projects: service(),
 
   beforeModel() {
     this._super(...arguments);

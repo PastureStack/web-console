@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
 import { normalizeType } from '../utils/normalize';
 
 function _getReference(store, referencedType, referencedId, thisType, thisId, computedKey) {
@@ -53,7 +53,7 @@ export function reference(field, referencedType=null, storeName="store") {
     referencedType = field.replace(/Id$/,'');
   }
 
-  return Ember.computed(field, {
+  return computed(field, {
     get(computedKey) {
       const store = this.get(storeName);
       const thisType = this.get('type');
@@ -71,7 +71,7 @@ export function arrayOfReferences(field=null, referencedType=null, storeName="st
     referencedType = field.replace(/Id$/,'');
   }
 
-  return Ember.computed(field+'.[]', {
+  return computed(field+'.[]', {
     get(computedKey) {
       const store = this.get(storeName);
       const thisType = this.get('type');
@@ -96,7 +96,7 @@ export function arrayOfReferences(field=null, referencedType=null, storeName="st
 export function hasMany(matchField, targetType, targetField, storeName="store", additionalFilter=null, sourceStoreName=null) {
   targetType = normalizeType(targetType);
 
-  return Ember.computed({
+  return computed({
     get(computedKey) {
       let store = this.get(storeName);
       let sourceStore;

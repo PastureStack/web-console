@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import EmberObject, { computed } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Util from 'ui/utils/util';
 import Resource from 'ember-api-store/models/resource';
 import { formatMib, formatSi } from 'ui/utils/util';
@@ -8,8 +10,8 @@ import { satisfies, compare } from 'ui/utils/parse-version';
 
 var Host = Resource.extend({
   type: 'host',
-  modalService: Ember.inject.service('modal'),
-  settings: Ember.inject.service(),
+  modalService: service('modal'),
+  settings: service(),
 
   instances: denormalizeIdArray('instanceIds'),
   arrangedInstances: function() {
@@ -84,7 +86,7 @@ var Host = Resource.extend({
     return out;
   }.property('actionLinks.{activate,deactivate,evacuate,remove,purge,update}','links.config','driver'),
 
-  displayIp: Ember.computed.alias('agentIpAddress'),
+  displayIp: alias('agentIpAddress'),
 
   displayName: function() {
     return this.get('name') || this.get('hostname') || '('+this.get('id')+')';
@@ -106,7 +108,7 @@ var Host = Resource.extend({
     return out;
   }.property('info.osInfo.operatingSystem','labels'),
 
-  osDetail: Ember.computed.alias('info.osInfo.operatingSystem'),
+  osDetail: alias('info.osInfo.operatingSystem'),
 
   dockerEngineVersion: function() {
     if ( this.get('info.osInfo') )
@@ -133,7 +135,7 @@ var Host = Resource.extend({
     }
   }.property('dockerEngineVersion',`settings.${C.SETTING.SUPPORTED_DOCKER}`,`settings.${C.SETTING.NEWEST_DOCKER}`),
 
-  dockerDetail: Ember.computed.alias('info.osInfo.operatingSystem'),
+  dockerDetail: alias('info.osInfo.operatingSystem'),
 
   kernelBlurb: function() {
     if ( this.get('info.osInfo') )
@@ -158,7 +160,7 @@ var Host = Resource.extend({
     }
   }.property('info.cpuInfo.{count,mhz}'),
 
-  cpuTooltip: Ember.computed.alias('info.cpuInfo.modelName'),
+  cpuTooltip: alias('info.cpuInfo.modelName'),
 
   memoryBlurb: function() {
     if ( this.get('info.memoryInfo') )
@@ -167,14 +169,14 @@ var Host = Resource.extend({
     }
   }.property('info.memoryInfo.memTotal'),
 
-  memoryLimitBlurb: Ember.computed('memory', function() {
+  memoryLimitBlurb: computed('memory', function() {
     if ( this.get('memory') )
     {
       return formatSi(this.get('memory'), 1024, 'iB', 'B');
     }
   }),
 
-  localStorageBlurb: Ember.computed('localStorageMb', function() {
+  localStorageBlurb: computed('localStorageMb', function() {
     if (this.get('localStorageMb')) {
       return formatSi(this.get('localStorageMb'), 1024, 'iB', 'B', 2 /*start at 1024^2==MB */);
     }
@@ -212,7 +214,7 @@ var Host = Resource.extend({
       var out = [];
       var fses = this.get('info.diskInfo.fileSystems')||[];
       Object.keys(fses).forEach((fs) => {
-        out.pushObject(Ember.Object.create({label: fs, value: formatMib(fses[fs].capacity)}));
+        out.pushObject(EmberObject.create({label: fs, value: formatMib(fses[fs].capacity)}));
       });
 
       return out;

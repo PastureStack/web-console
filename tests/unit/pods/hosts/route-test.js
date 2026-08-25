@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import HostsRoute from 'ui/hosts/route';
 import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
 
@@ -9,7 +9,7 @@ module('Unit | Route | hosts');
 test('it exists', function(assert) {
   var route = HostsRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('model returns hosts after loading instances', function(assert) {

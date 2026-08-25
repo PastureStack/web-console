@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
 import ActiveDirectory from 'ui/admin-tab/auth/activedirectory/controller';
 
 import C from 'ui/utils/constants';
@@ -8,7 +8,7 @@ export default ActiveDirectory.extend({
   isOpenLdap:   true,
   userType:     C.PROJECT.TYPE_OPENLDAP_USER,
   groupType:    C.PROJECT.TYPE_OPENLDAP_GROUP,
-  ldapConfig:   Ember.computed.alias('model'),
+  ldapConfig:   alias('model'),
   actions: {
     test: function() {
       this.send('clearError');

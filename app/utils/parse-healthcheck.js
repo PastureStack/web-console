@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
 import Util from 'ui/utils/util';
 
 export function parseRequestLine(str) {
@@ -52,7 +52,7 @@ export function parseHeaders(strOrArray) {
   var out = {};
 
   var ary;
-  if ( Ember.isArray(strOrArray) )
+  if ( isArray(strOrArray) )
   {
     ary = strOrArray;
   }

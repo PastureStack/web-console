@@ -86,7 +86,8 @@ function expectModernGlobDevServerPath() {
     fail("glob modern sync API is missing");
   }
   const matches = globSync("vendor/**/*.js", { cwd: process.cwd() });
-  if (!Array.isArray(matches) || !matches.includes("vendor/novnc.js")) {
+  const portableMatches = Array.isArray(matches) ? matches.map((item) => item.replace(/\\/g, "/")) : [];
+  if (!portableMatches.includes("vendor/novnc.js")) {
     fail("glob modern sync smoke did not find vendored UI files");
   }
   console.log("glob-dev-server-smoke-ok version=13.0.6");
@@ -224,7 +225,7 @@ function expectEmberCliBabelRimrafOverride() {
   if (!emberCliBabel || typeof emberCliBabel !== "object") {
     fail("ember-cli-babel export changed");
   }
-  console.log("ember-cli-babel-export-smoke-ok version=8.3.1");
+  console.log("ember-cli-babel-export-smoke-ok version=8.3.2");
 }
 
 async function expectRimrafCallbackCompat() {
@@ -452,7 +453,7 @@ async function expectInflightCompat() {
     try {
       fs.mkdirSync(path.join(dir, "nested"));
       fs.writeFileSync(path.join(dir, "nested", "fixture.js"), "module.exports = true;\n");
-      const syncHits = oldGlob.sync("**/*.js", { cwd: dir }).sort();
+      const syncHits = oldGlob.sync("**/*.js", { cwd: dir }).map((item) => item.replace(/\\/g, "/")).sort();
       if (JSON.stringify(syncHits) !== JSON.stringify(["nested/fixture.js"])) {
         reject(new Error(`legacy glob sync mismatch after inflight wrapper: ${JSON.stringify(syncHits)}`));
         return;
@@ -463,7 +464,7 @@ async function expectInflightCompat() {
             reject(err);
             return;
           }
-          asyncHits = asyncHits.sort();
+          asyncHits = asyncHits.map((item) => item.replace(/\\/g, "/")).sort();
           if (JSON.stringify(asyncHits) !== JSON.stringify(["nested/fixture.js"])) {
             reject(new Error(`legacy glob async mismatch after inflight wrapper: ${JSON.stringify(asyncHits)}`));
             return;
@@ -582,10 +583,10 @@ function expectSortPackageJsonCompat() {
   if (!emberCli) {
     fail("ember-cli require smoke failed after sort-package-json compatibility wrapper");
   }
-  const emberBin = path.join(process.cwd(), "node_modules", ".bin", "ember");
+  const emberBin = path.join(process.cwd(), "node_modules", "ember-cli", "bin", "ember");
   const addonWorkDir = fs.mkdtempSync(path.join(os.tmpdir(), "rc16-sort-addon-smoke-"));
   try {
-    childProcess.execFileSync(emberBin, [
+    childProcess.execFileSync(process.execPath, [emberBin,
       "addon",
       "rc16-sort-compat-smoke",
       "--skip-npm",
@@ -700,10 +701,10 @@ function expectEmberApiStoreFetchUpgrade() {
   if (JSON.stringify(apiStoreInfo.dependencies) !== JSON.stringify(expectedApiStoreDependencies)) {
     fail(`ember-api-store reviewed dependency boundary changed: ${JSON.stringify(apiStoreInfo.dependencies)}`);
   }
-  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 1) {
+  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 2) {
     fail("ember-api-store compatibility revision is missing");
   }
-  if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 4) {
+  if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 6) {
     fail("ember-fetch native compatibility revision is missing");
   }
   if (JSON.stringify(emberFetchInfo.dependencies || {}) !== JSON.stringify({ "ember-cli-babel": "8.3.1" })) {
@@ -789,7 +790,7 @@ function expectEmberApiStoreFetchUpgrade() {
     fail("ember-fetch native production wrapper smoke failed");
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=1 ember-fetch=5.1.3 fetch_compat_revision=4 native_fetch=ok legacy_build_graph=absent");
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=2 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {
@@ -882,9 +883,9 @@ function expectVendoredFileSha256(file, expected) {
   }
 }
 
-function expectEmberLtsAndJQueryRuntime() {
-  expectPackageJsonVersion("ember-source", "6.12.0");
-  expectPackageJsonVersion("ember-cli", "6.12.0");
+function expectCurrentEmberAndJQueryRuntime() {
+  expectPackageJsonVersion("ember-source", "7.2.0");
+  expectPackageJsonVersion("ember-cli", "7.2.0");
   expectPackageJsonVersion("ember-cli-htmlbars", "7.0.1");
   const expected = {
     "vendor/ember/LICENSE": "84e97eb6663fa5fa07f36661e6040ab8a557b165c13860e2e72c1a692ca3c2a0",
@@ -914,7 +915,7 @@ function expectEmberLtsAndJQueryRuntime() {
   if (!jquery.includes("jQuery JavaScript Library v3.7.1")) {
     fail("vendored jQuery version header changed");
   }
-  console.log("ember-lts-runtime-smoke-ok ember=6.12.0 ember-cli=6.12.0 jquery=3.7.1 vendored-runtime=absent");
+  console.log("ember-current-runtime-smoke-ok ember=7.2.0 ember-cli=7.2.0 jquery=3.7.1 vendored-runtime=absent");
 }
 
 function expectBrowserifyReplacementVendorGlobals() {
@@ -1141,17 +1142,16 @@ function createMinimalBrowserSandbox() {
   return sandbox;
 }
 
-function expectC3D3BrowserGlobals() {
-  const sandbox = createMinimalBrowserSandbox();
-  vm.runInNewContext(fs.readFileSync("node_modules/d3/d3.js", "utf8"), sandbox, { filename: "node_modules/d3/d3.js" });
-  vm.runInNewContext(fs.readFileSync("node_modules/c3/c3.js", "utf8"), sandbox, { filename: "node_modules/c3/c3.js" });
-  if (!sandbox.d3 || sandbox.d3.version !== "3.5.17" || typeof sandbox.d3.behavior.zoom !== "function" || typeof sandbox.d3.svg.area !== "function") {
-    fail("d3 browser global smoke failed");
+async function expectModernChartModules() {
+  const [d3, billboardModule] = await Promise.all([import("d3"), import("billboard.js")]);
+  const bb = billboardModule.default || billboardModule.bb || billboardModule;
+  if (typeof d3.scaleLinear !== "function" || typeof d3.area !== "function" || typeof d3.zoom !== "function") {
+    fail("d3 7 module smoke failed");
   }
-  if (!sandbox.c3 || sandbox.c3.version !== "0.4.24" || typeof sandbox.c3.generate !== "function") {
-    fail("c3 browser global smoke failed");
+  if (!bb || typeof bb.generate !== "function") {
+    fail("billboard module smoke failed");
   }
-  console.log("c3-d3-global-smoke-ok d3=3.5.17 c3=0.4.24");
+  console.log("modern-chart-module-smoke-ok d3=7.9.0 billboard=4.0.3");
 }
 
 
@@ -1265,30 +1265,15 @@ function expectNoVNCVendorGlobal() {
 
 
 
-function expectDagreGraphlibBrowserGlobals() {
-  const sandbox = { console, window: {}, self: {}, exports: undefined, module: undefined, define: undefined };
-  sandbox.window = sandbox;
-  sandbox.self = sandbox;
-  sandbox.global = sandbox;
-  sandbox.globalThis = sandbox;
-  vm.createContext(sandbox);
-  for (const file of [
-    "node_modules/lodash/lodash.js",
-    "node_modules/graphlib/dist/graphlib.core.js",
-    "node_modules/dagre/dist/dagre.core.js",
-  ]) {
-    vm.runInContext(fs.readFileSync(file, "utf8"), sandbox, { filename: file });
+async function expectDagreD3ESModules() {
+  const [dagreD3, dagreLayout] = await Promise.all([
+    import("dagre-d3-es"),
+    import("dagre-d3-es/src/dagre/index.js"),
+  ]);
+  if (typeof dagreD3.render !== "function" || typeof dagreD3.graphlib.Graph !== "function" || typeof dagreLayout.layout !== "function") {
+    fail("dagre-d3-es module exports are incomplete");
   }
-  if (!sandbox._ || sandbox._.VERSION !== "4.18.1") {
-    fail("dagre/graphlib smoke lost lodash global");
-  }
-  if (!sandbox.graphlib || typeof sandbox.graphlib.Graph !== "function") {
-    fail("graphlib browser global smoke failed");
-  }
-  if (!sandbox.dagre || typeof sandbox.dagre.layout !== "function") {
-    fail("dagre browser global smoke failed");
-  }
-  const graph = new sandbox.graphlib.Graph({ multigraph: true, compound: true }).setGraph({
+  const graph = new dagreD3.graphlib.Graph({ multigraph: true, compound: true }).setGraph({
     rankdir: "TB",
   });
   graph.setDefaultEdgeLabel(() => ({}));
@@ -1296,37 +1281,15 @@ function expectDagreGraphlibBrowserGlobals() {
   graph.setNode("b", { width: 10, height: 10 });
   graph.setEdge("a", "b", { weight: 1, minlen: 1 });
   if (!graph.hasNode("a")) {
-    fail("graphlib Graph smoke failed");
+    fail("dagre-d3-es graphlib Graph smoke failed");
   }
-  sandbox.dagre.layout(graph);
+  dagreLayout.layout(graph);
   const a = graph.node("a");
   const b = graph.node("b");
   if (!a || !b || typeof a.x !== "number" || typeof a.y !== "number" || typeof b.x !== "number" || typeof b.y !== "number") {
-    fail("dagre layout smoke failed");
-  }
-  if (sandbox.dagre.version !== "0.8.5" || sandbox.graphlib.version !== "2.1.8") {
-    fail(`dagre/graphlib version mismatch dagre=${sandbox.dagre.version} graphlib=${sandbox.graphlib.version}`);
-  }
-
-  for (const file of [
-    "node_modules/d3/d3.js",
-    "vendor/dagre-d3/dagre-d3.core.js",
-  ]) {
-    vm.runInContext(fs.readFileSync(file, "utf8"), sandbox, { filename: file });
-  }
-  if (!sandbox.dagreD3 || sandbox.dagreD3.version !== "0.4.11-pre") {
-    fail("dagre-d3 browser global smoke failed");
-  }
-  const renderGraph = new sandbox.dagreD3.graphlib.Graph().setGraph({ rankdir: "TB" });
-  renderGraph.setDefaultEdgeLabel(() => ({}));
-  renderGraph.setNode("service-a", { width: 40, height: 20 });
-  renderGraph.setNode("service-b", { width: 40, height: 20 });
-  renderGraph.setEdge("service-a", "service-b", {});
-  sandbox.dagreD3.dagre.layout(renderGraph);
-  if (typeof renderGraph.node("service-a").x !== "number" || typeof renderGraph.node("service-b").y !== "number") {
     fail("dagre-d3 stack graph layout smoke failed");
   }
-  console.log(`dagre-graphlib-browser-global-smoke-ok dagre=${sandbox.dagre.version} graphlib=${sandbox.graphlib.version} layout=ok ax=${a.x} bx=${b.x}`);
+  console.log(`dagre-d3-es-module-smoke-ok version=7.0.14 layout=ok ax=${a.x} bx=${b.x}`);
 }
 
 function expectBootstrapMultiselectVendorGlobal() {
@@ -1353,64 +1316,58 @@ function expectBootstrapMultiselectVendorGlobal() {
   sandbox.global = sandbox;
   sandbox.globalThis = sandbox;
   vm.createContext(sandbox);
-  vm.runInContext(fs.readFileSync("vendor/bootstrap-multiselect/bootstrap-multiselect.js", "utf8"), sandbox, { filename: "vendor/bootstrap-multiselect/bootstrap-multiselect.js" });
+  const sourcePath = "node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.js";
+  vm.runInContext(fs.readFileSync(sourcePath, "utf8"), sandbox, { filename: sourcePath });
   if (typeof JQuery.fn.multiselect !== "function" || typeof JQuery.fn.multiselect.Constructor !== "function") {
-    fail("bootstrap-multiselect vendor browser global smoke failed");
+    fail("bootstrap-multiselect browser global smoke failed");
   }
-  console.log("bootstrap-multiselect-vendor-smoke-ok tag=v0.9.10");
+  expectPackageJsonVersion("bootstrap-multiselect", "2.0.0");
+  if (fs.existsSync("vendor/bootstrap-multiselect")) {
+    fail("obsolete vendored bootstrap-multiselect source is present");
+  }
+  console.log("bootstrap-multiselect-runtime-smoke-ok version=2.0.0 bootstrap=5");
 }
 
-function expectBootstrapSassAssets() {
-  const packagePath = "vendor/bootstrap-sass/package.json";
-  const jsPath = "vendor/bootstrap-sass/assets/javascripts/bootstrap.js";
-  const transitionPath = "vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js";
-  const collapsePath = "vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js";
-  const dropdownPath = "vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js";
-  const scssPath = "vendor/bootstrap-sass/assets/stylesheets/_bootstrap.scss";
-  const variablesPath = "vendor/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss";
-  const fontPath = "vendor/bootstrap-sass/assets/fonts/bootstrap/glyphicons-halflings-regular.woff2";
-  for (const file of [packagePath, jsPath, transitionPath, collapsePath, dropdownPath, scssPath, variablesPath, fontPath]) {
+function expectBootstrapRuntime() {
+  const info = packageJsonInfo("bootstrap");
+  const jsPath = "node_modules/bootstrap/dist/js/bootstrap.bundle.js";
+  const cssPath = "node_modules/bootstrap/dist/css/bootstrap.css";
+  if (info.version !== "5.3.8" || info.license !== "MIT") {
+    fail(`bootstrap metadata changed: version=${info.version} license=${info.license}`);
+  }
+  for (const file of [jsPath, cssPath]) {
     if (!fs.existsSync(file)) {
-      fail(`bootstrap-sass asset missing: ${file}`);
+      fail(`bootstrap runtime asset missing: ${file}`);
     }
   }
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
-  if (packageJson.version !== "3.4.3" || packageJson.license !== "MIT") {
-    fail(`bootstrap-sass vendor metadata changed: version=${packageJson.version} license=${packageJson.license}`);
-  }
   const js = fs.readFileSync(jsPath, "utf8");
-  const transition = fs.readFileSync(transitionPath, "utf8");
-  const collapse = fs.readFileSync(collapsePath, "utf8");
-  const dropdown = fs.readFileSync(dropdownPath, "utf8");
-  const scss = fs.readFileSync(scssPath, "utf8");
-  if (!js.includes("VERSION  = '3.4.1'") || !js.includes("$.fn.modal") || !js.includes("$.fn.dropdown")) {
-    fail("bootstrap-sass JavaScript asset does not look like Bootstrap 3.4.x");
+  for (const marker of ["Bootstrap v5.3.8", "bs.button", "bs.collapse", "bs.dropdown", "class Tooltip", "class Popover"]) {
+    if (!js.includes(marker)) {
+      fail(`bootstrap runtime marker missing: ${marker}`);
+    }
   }
-  if (!transition.includes("emulateTransitionEnd") || !collapse.includes("bs.collapse") || !dropdown.includes("bs.dropdown")) {
-    fail("bootstrap-sass runtime allowlist modules lost expected behavior");
+  if (fs.existsSync("vendor/bootstrap-sass")) {
+    fail("obsolete vendored Bootstrap 3 source is present");
   }
-  if (!scss.includes("bootstrap/variables") || !scss.includes("bootstrap/mixins")) {
-    fail("bootstrap-sass SCSS entrypoint lost expected imports");
-  }
-  console.log("bootstrap-sass-assets-smoke-ok vendor=3.4.3 bootstrap-js=3.4.1 runtime=transition,collapse,dropdown");
+  console.log("bootstrap-runtime-smoke-ok version=5.3.8 runtime=button,collapse,dropdown,tooltip,popover");
 }
 
 function expectEmberPowerSelectSassAssets() {
-  const packagePath = "vendor/ember-power-select/package.json";
-  const scssPath = "vendor/ember-power-select/app/styles/ember-power-select.scss";
-  const variablesPath = "vendor/ember-power-select/app/styles/ember-power-select/variables.scss";
-  const powerSelectLicensePath = "vendor/ember-power-select/LICENSE.md";
-  const powerSelectUpstreamPath = "vendor/ember-power-select/UPSTREAM.md";
-  const basicDropdownScssPath = "vendor/ember-basic-dropdown/app/styles/ember-basic-dropdown.scss";
-  const basicDropdownLicensePath = "vendor/ember-basic-dropdown/LICENSE.md";
-  const basicDropdownUpstreamPath = "vendor/ember-basic-dropdown/UPSTREAM.md";
+  const scssPath = "node_modules/ember-power-select/ember-power-select.scss";
+  const basePath = "node_modules/ember-power-select/scss/base.scss";
+  const basicDropdownScssPath = "node_modules/ember-basic-dropdown/ember-basic-dropdown.scss";
+  const basicDropdownBasePath = "node_modules/ember-basic-dropdown/scss/base.scss";
+  const powerSelectLicensePath = "vendor/runtime-licenses/ember-power-select/LICENSE.md";
+  const powerSelectUpstreamPath = "vendor/runtime-licenses/ember-power-select/UPSTREAM.md";
+  const basicDropdownLicensePath = "vendor/runtime-licenses/ember-basic-dropdown/LICENSE.md";
+  const basicDropdownUpstreamPath = "vendor/runtime-licenses/ember-basic-dropdown/UPSTREAM.md";
   for (const file of [
-    packagePath,
     scssPath,
-    variablesPath,
+    basePath,
     powerSelectLicensePath,
     powerSelectUpstreamPath,
     basicDropdownScssPath,
+    basicDropdownBasePath,
     basicDropdownLicensePath,
     basicDropdownUpstreamPath,
   ]) {
@@ -1418,31 +1375,36 @@ function expectEmberPowerSelectSassAssets() {
       fail(`ember-power-select style asset missing: ${file}`);
     }
   }
-  const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8"));
   const scss = fs.readFileSync(scssPath, "utf8");
+  const base = fs.readFileSync(basePath, "utf8");
   const powerSelectUpstream = fs.readFileSync(powerSelectUpstreamPath, "utf8");
   const basicDropdownScss = fs.readFileSync(basicDropdownScssPath, "utf8");
+  const basicDropdownBase = fs.readFileSync(basicDropdownBasePath, "utf8");
   const basicDropdownUpstream = fs.readFileSync(basicDropdownUpstreamPath, "utf8");
-  if (packageJson.version !== "1.0.0-beta.19" || packageJson.license !== "MIT") {
-    fail(`ember-power-select vendor metadata changed: version=${packageJson.version} license=${packageJson.license}`);
+  expectPackageJsonVersion("ember-power-select", "9.0.2");
+  expectPackageJsonVersion("ember-basic-dropdown", "9.0.0");
+  if (!scss.includes('@use "scss/base.scss";') || !base.includes('@use "sass:math";') || scss.includes("@import") || base.includes("@import")) {
+    fail("ember-power-select maintained Sass module boundary changed");
   }
-  if (!scss.includes('@use "sass:math";') || !scss.includes("math.is-unitless($ember-power-select-line-height)")) {
-    fail("ember-power-select vendored Sass lost math.is-unitless maintenance patch");
+  if (!basicDropdownScss.includes('@use "scss/base.scss";') || basicDropdownScss.includes("@import") || basicDropdownBase.includes("@import")) {
+    fail("ember-basic-dropdown maintained Sass module boundary changed");
   }
-  if (!scss.includes("../../../ember-basic-dropdown/app/styles/ember-basic-dropdown")) {
-    fail("ember-power-select vendored Sass lost explicit ember-basic-dropdown import path");
-  }
-  if (!basicDropdownScss.includes(".ember-basic-dropdown-content")) {
+  if (!basicDropdownBase.includes(".ember-basic-dropdown-content")) {
     fail("ember-basic-dropdown vendored Sass lost expected content styles");
   }
-  if (!powerSelectUpstream.includes("Upstream version: `1.0.0-beta.19`")) {
+  if (!powerSelectUpstream.includes("Upstream version: `9.0.2`")) {
     fail("ember-power-select provenance version drifted");
   }
-  if (!basicDropdownUpstream.includes("Upstream version: `0.16.0-beta.4`") ||
-      !basicDropdownUpstream.includes("sha512-MuPZEeMw/r6EOHgoCokY/BjRuzwS7HLGZ0BaFomM0/7tcbZYFJ4g5zj1PIoGQW1Kxpe9rhYdLKOIg3JKmYbPpw==")) {
+  if (!basicDropdownUpstream.includes("Upstream version: `9.0.0`") ||
+      !basicDropdownUpstream.includes("sha512-v14n7srtuHyZEgy+uESN/sN5UtavfnCrZ70i+iUlzfTgMc/Mq0U9pteilNVftn6CSiHvV8o2SRaRauvKYNJFBA==")) {
     fail("ember-basic-dropdown provenance version or integrity drifted");
   }
-  console.log("ember-power-select-sass-assets-smoke-ok vendor=1.0.0-beta.19 basic_dropdown=0.16.0-beta.4");
+  for (const legacyDir of ["vendor/ember-power-select", "vendor/ember-basic-dropdown"]) {
+    if (fs.existsSync(legacyDir)) {
+      fail(`legacy select style source remains: ${legacyDir}`);
+    }
+  }
+  console.log("ember-power-select-sass-assets-smoke-ok power_select=9.0.2 basic_dropdown=9.0.0 module_system=use");
 }
 
 function expectPrismBrowserGlobals() {
@@ -1533,37 +1495,37 @@ if (!serialized.includes('new RegExp("abc", "gi")')) {
 expectMissing("dompurify");
 expectMissing("xmldom");
 expectVersion("xmlhttprequest-ssl", "4.0.0");
-expectPackageJsonVersion("ember-cli", "6.12.0");
+expectPackageJsonVersion("ember-cli", "7.2.0");
 expectPackageJsonVersion("ember-resolver", "13.2.0");
-expectPackageJsonVersion("ember-intl", "8.4.0");
-expectPackageJsonVersion("@formatjs/icu-messageformat-parser", "3.5.16");
-expectVersion("ember-cli-babel", "8.3.1");
+expectPackageJsonVersion("ember-intl", "9.0.0");
+expectPackageJsonVersion("@formatjs/icu-messageformat-parser", "3.5.17");
+expectVersion("ember-cli-babel", "8.3.2");
 expectMissing("ember-cli-htmlbars-inline-precompile");
 expectPackageJsonVersion("lacsso", "0.0.60-rc16.1");
 expectPackageJsonVersion("ember-cli-pagination", "2.2.4-rc16.0");
 expectPackageJsonVersion("ember-rl-dropdown", "0.8.1-rc16.0");
 expectVersion("ansi_up", "6.0.6");
-expectVersion("serialize-javascript", "7.0.5");
+expectVersion("serialize-javascript", "7.1.0");
 expectMissing("clean-css");
 expectMissing("clean-css-promise");
 expectVersion("raw-body", "2.5.3");
-expectPackageJsonVersion("uuid", "11.1.1");
+expectPackageJsonVersion("uuid", "14.0.2");
 expectVersion("testem", "3.20.0");
 expectVersion("socket.io", "4.8.3");
 expectVersion("socket.io-client", "4.8.3");
 expectVersion("websocket-driver", "0.7.5");
-expectPackageJsonVersion("jgrowl", "1.4.2");
+expectPackageJsonVersion("jgrowl", "1.5.1");
 expectPackageJsonVersion("identicon.js", "2.3.3");
 expectPackageJsonVersion("md5-jkmyers", "0.0.1");
 expectVersion("async", "3.2.6");
 expectVersion("prismjs", "1.30.0");
 expectVersion("lodash", "4.18.1");
 expectVersion("shell-quote", "1.10.0");
-expectVersion("dagre", "0.8.5");
-expectVersion("graphlib", "2.1.8");
+expectVersion("dagre-d3-es", "7.0.14");
 expectVersion("commonmark", "0.31.2");
-expectVersion("c3", "0.4.24");
-expectVersion("d3", "3.5.17");
+expectPackageJsonVersion("billboard.js", "4.0.3");
+expectVersion("d3", "7.9.0");
+expectMissing("c3");
 expectVersion("merge", "2.1.1");
 expectVersion("yamljs", "0.3.0");
 expectMissing("request");
@@ -1628,11 +1590,11 @@ function runSocketSmoke(label, transport) {
   expectShortcutManagerSemantics();
   expectPositionCalculatorVendorGlobal();
   expectNoVNCVendorGlobal();
-  expectBootstrapSassAssets();
+  expectBootstrapRuntime();
   expectEmberPowerSelectSassAssets();
   expectBootstrapMultiselectVendorGlobal();
-  expectDagreGraphlibBrowserGlobals();
-  expectEmberLtsAndJQueryRuntime();
+  await expectDagreD3ESModules();
+  expectCurrentEmberAndJQueryRuntime();
   expectBrowserifyReplacementVendorGlobals();
   expectJGrowlBrowserGlobal("node_modules/jgrowl/jquery.jgrowl.js");
   expectMd5IdenticonBrowserGlobals();
@@ -1642,7 +1604,7 @@ function runSocketSmoke(label, transport) {
   expectQrCodeGeneratorRuntime();
   expectBrowserGlobalBundle("node_modules/lodash/lodash.js", "_", "4.18.1");
   expectCommonmarkBrowserGlobal("node_modules/commonmark/dist/commonmark.js");
-  expectC3D3BrowserGlobals();
+  await expectModernChartModules();
   expectModernGlobDevServerPath();
   expectModuleResolverGlobCompat();
   expectBodyRawBodyOverride();
@@ -1666,6 +1628,6 @@ function runSocketSmoke(label, transport) {
   await runSocketSmoke("polling", "polling");
   console.log("node24-lock-baseline-smoke-ok");
 })().catch((err) => {
-  console.error("node24-lock-baseline-smoke-failed");
+  console.error("node24-lock-baseline-smoke-failed", err && err.stack ? err.stack : err);
   process.exit(1);
 });

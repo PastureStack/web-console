@@ -1,28 +1,27 @@
-import Ember from 'ember';
+import ArrayProxy from '@ember/array/proxy';
+import { getOwner, setOwner } from '@ember/application';
 import Serializable from '../mixins/serializable';
 import ApiError from '../models/error';
 import { normalizeType } from '../utils/normalize';
 import { applyHeaders } from '../utils/apply-headers';
 import fetch from 'ember-api-store/utils/fetch';
 import { urlOptions } from '../utils/url-options';
-import { get, set } from '@ember/object';
-import { reject } from 'rsvp';
-import { inject as service } from '@ember/service';
+import { get, set, computed, getProperties } from '@ember/object';
+import { reject, resolve, defer } from 'rsvp';
+import Service, { service } from '@ember/service';
 import { isArray } from '@ember/array';
 import { parse as setCookieParser } from 'set-cookie-parser';
 
-const { getOwner } = Ember;
-
 function getOwnerKey() {
   const x = {};
-  Ember.setOwner(x);
+  setOwner(x);
   return Object.keys(x)[0];
 }
 const ownerKey = getOwnerKey();
 
 export const defaultMetaKeys = ['actionLinks','createDefaults','createTypes','filters','links','pagination','resourceType','sort','sortLinks','type'];
 
-var Store = Ember.Service.extend({
+var Store = Service.extend({
   cookies: service(),
 
   defaultTimeout: 30000,
@@ -33,7 +32,7 @@ var Store = Ember.Service.extend({
   dropKeys: null,
   headers: null,
 
-  arrayProxyClass: Ember.ArrayProxy,
+  arrayProxyClass: ArrayProxy,
   arrayProxyKey: 'content',
   arrayProxyOptions: null,
 
@@ -41,8 +40,8 @@ var Store = Ember.Service.extend({
   removeAfterDelete: true,
 
 
-  fastboot: Ember.computed(function() {
-    return Ember.getOwner(this).lookup('service:fastboot');
+  fastboot: computed(function() {
+    return getOwner(this).lookup('service:fastboot');
   }),
 
   init() {
@@ -158,7 +157,7 @@ var Store = Ember.Service.extend({
     }
 
     if ( !type ) {
-      return Ember.RSVP.reject(ApiError.create({detail: 'type not specified'}));
+      return reject(ApiError.create({detail: 'type not specified'}));
     }
 
     // If this is a request for all of the items of [type], then we'll remember that and not ask again for a subsequent request
@@ -168,11 +167,11 @@ var Store = Ember.Service.extend({
     // See if we already have this resource, unless forceReload is on.
     if ( opt.forceReload !== true ) {
       if ( opt.isForAll && this._state.foundAll[type] ) {
-        return Ember.RSVP.resolve(this.all(type),'Cached find all '+type);
+        return resolve(this.all(type),'Cached find all '+type);
       } else if ( isCacheable && id ) {
         var existing = this.getById(type,id);
         if ( existing ) {
-          return Ember.RSVP.resolve(existing,'Cached find '+type+':'+id);
+          return resolve(existing,'Cached find '+type+':'+id);
         }
       }
     }
@@ -191,7 +190,7 @@ var Store = Ember.Service.extend({
           }
         }
 
-        return Ember.RSVP.reject(ApiError.create({detail: 'Unable to find schema for "' + type + '"'}));
+        return reject(ApiError.create({detail: 'Unable to find schema for "' + type + '"'}));
       });
     }
   },
@@ -214,7 +213,7 @@ var Store = Ember.Service.extend({
     opt = opt || {};
 
     if ( this.haveAll(type) && this.isCacheable(opt) ) {
-      return Ember.RSVP.resolve(this.all(type),'All '+ type + ' already cached');
+      return resolve(this.all(type),'All '+ type + ' already cached');
     } else {
       return this.find(type, undefined, opt).then(() => {
         return this.all(type);
@@ -445,7 +444,7 @@ var Store = Ember.Service.extend({
     if (queue[queueKey]) {
       // get the filterd promise object
       var filteredPromise = queue[queueKey];
-      let defer = Ember.RSVP.defer();
+      let defer = defer();
       filteredPromise.push(defer);
       later = defer.promise;
 
@@ -477,7 +476,7 @@ var Store = Ember.Service.extend({
         return result;
       }, (reason) => {
         this._finishFind(queueKey, reason, 'reject');
-        return Ember.RSVP.reject(reason);
+        return reject(reason);
       });
 
       // set the queue array to empty indicating we've had 1 promise already
@@ -513,11 +512,9 @@ var Store = Ember.Service.extend({
     }
 
     if ( xhr.body && typeof xhr.body === 'object' ) {
-      Ember.beginPropertyChanges();
       let response = this._typeify(xhr.body);
       delete xhr.body;
       Object.defineProperty(response, 'xhr', {value: xhr, configurable: true});
-      Ember.endPropertyChanges();
 
       // Depaginate
       if ( opt.depaginate && typeof response.depaginate === 'function' ) {
@@ -555,9 +552,7 @@ var Store = Ember.Service.extend({
 
       return finish(body);
     } else if ( xhr.body && typeof xhr.body === 'object' ) {
-      Ember.beginPropertyChanges();
       let out = finish(this._typeify(xhr.body));
-      Ember.endPropertyChanges();
 
       return out;
     } else {
@@ -576,7 +571,7 @@ var Store = Ember.Service.extend({
 
       delete xhr.body;
       Object.defineProperty(body, 'xhr', {value: xhr, configurable: true});
-      return Ember.RSVP.reject(body);
+      return reject(body);
     }
   },
 
@@ -765,7 +760,7 @@ var Store = Ember.Service.extend({
       opt = {applyDefaults: false};
     }
 
-    let type = Ember.get(input,'type');
+    let type = get(input,'type');
     if ( isArray(input) ) {
       // Recurse over arrays
       return input.map(x => this._typeify(x, opt));
@@ -854,7 +849,6 @@ var Store = Ember.Service.extend({
 
   // Create a collection: {key: 'data'}
   createCollection(input, opt) {
-    Ember.beginPropertyChanges();
     let key = (opt && opt.key ? opt.key : 'data');
     var cls = getOwner(this).lookup('model:collection');
     var content = input[key].map(x => this._typeify(x, opt));
@@ -862,8 +856,7 @@ var Store = Ember.Service.extend({
 
     Object.defineProperty(output, 'store', { value: this, configurable: true });
 
-    output.setProperties(Ember.getProperties(input, get(this, 'metaKeys')));
-    Ember.endPropertyChanges();
+    output.setProperties(getProperties(input, get(this, 'metaKeys')));
     return output;
   },
 
@@ -899,7 +892,7 @@ var Store = Ember.Service.extend({
   // Create a record: {applyDefaults: false}
   createRecord(data, opt) {
     opt = opt || {};
-    let type = normalizeType(Ember.get(opt,'type')||Ember.get(data,'type')||'', this);
+    let type = normalizeType(get(opt,'type')||get(data,'type')||'', this);
 
     let cls;
     if ( type ) {
@@ -935,7 +928,7 @@ var Store = Ember.Service.extend({
       }
     }
     var output = cons.create(input);
-    Object.defineProperty(output, ownerKey, {enumerable: false, value: Ember.getOwner(this)})
+    Object.defineProperty(output, ownerKey, {enumerable: false, value: getOwner(this)})
 
     Object.defineProperty(output, 'store', {enumerable: false, value: this, configurable: true});
     return output;

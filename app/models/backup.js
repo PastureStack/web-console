@@ -1,5 +1,5 @@
 import Resource from 'ember-api-store/models/resource';
-import { denormalizeId} from 'ui/utils/api-store-references';
+import { denormalizeId } from 'ui/utils/api-store-references';
 
 var Backup = Resource.extend({
   type: 'backup',

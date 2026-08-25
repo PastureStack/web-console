@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { A } from '@ember/array';
+import { later, run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 import SortableTableComponent from 'lacsso/components/sortable-table';
@@ -8,23 +10,23 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 module('Unit | Component | sortable table');
 
 function afterFilterRefresh(callback) {
-  Ember.run.later(callback, 140);
+  later(callback, 140);
 }
 
 test('it refreshes rows when a relationship is populated after initialization', function(assert) {
   assert.expect(8);
 
   let done = assert.async();
-  let body = Ember.A([]);
+  let body = A([]);
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(SortableTableComponent, {
       renderer: inertRenderer(),
-      prefs: Ember.Object.create(),
+      prefs: EmberObject.create(),
       body,
-      headers: Ember.A([
-        Ember.Object.create({name: 'name', searchField: 'name'}),
+      headers: A([
+        EmberObject.create({name: 'name', searchField: 'name'}),
       ]),
       sortBy: 'name',
       paging: false,
@@ -34,9 +36,9 @@ test('it refreshes rows when a relationship is populated after initialization', 
   assert.equal(component.get('filtered.length'), 0, 'starts empty');
   assert.equal(component.get('pagedContent.length'), 0, 'starts with an empty rendered page');
 
-  Ember.run(() => body.pushObjects([
-    Ember.Object.create({id: '2', name: 'Beta'}),
-    Ember.Object.create({id: '1', name: 'Alpha'}),
+  run(() => body.pushObjects([
+    EmberObject.create({id: '2', name: 'Beta'}),
+    EmberObject.create({id: '1', name: 'Alpha'}),
   ]));
 
   afterFilterRefresh(() => {
@@ -44,12 +46,12 @@ test('it refreshes rows when a relationship is populated after initialization', 
     assert.equal(component.get('pagedContent.length'), 2, 'late rows reach the rendered page');
     assert.deepEqual(component.get('filtered').mapBy('name'), ['Alpha', 'Beta'], 'late rows retain natural sorting');
 
-    Ember.run(() => component.set('searchText', 'beta'));
+    run(() => component.set('searchText', 'beta'));
     afterFilterRefresh(() => {
       assert.deepEqual(component.get('filtered').mapBy('name'), ['Beta'], 'search refreshes through the modern run-loop API');
       assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Beta'], 'search refreshes the rendered page');
 
-      Ember.run(() => component.set('searchText', ''));
+      run(() => component.set('searchText', ''));
       afterFilterRefresh(() => {
         assert.equal(component.get('filtered.length'), 2, 'clearing search restores every row');
         destroyOwned(component);
@@ -65,12 +67,12 @@ test('it refreshes rows when the relationship collection replaces the initial bo
   let done = assert.async();
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(SortableTableComponent, {
       renderer: inertRenderer(),
-      prefs: Ember.Object.create(),
-      headers: Ember.A([
-        Ember.Object.create({name: 'name', searchField: 'name'}),
+      prefs: EmberObject.create(),
+      headers: A([
+        EmberObject.create({name: 'name', searchField: 'name'}),
       ]),
       sortBy: 'name',
       paging: false,
@@ -80,9 +82,9 @@ test('it refreshes rows when the relationship collection replaces the initial bo
   assert.equal(component.get('filtered.length'), 0, 'starts without a relationship collection');
   assert.equal(component.get('pagedContent.length'), 0, 'rendered page starts without relationship rows');
 
-  Ember.run(() => component.set('body', Ember.A([
-    Ember.Object.create({id: '12', name: 'Container 12'}),
-    Ember.Object.create({id: '2', name: 'Container 2'}),
+  run(() => component.set('body', A([
+    EmberObject.create({id: '12', name: 'Container 12'}),
+    EmberObject.create({id: '2', name: 'Container 2'}),
   ])));
 
   afterFilterRefresh(() => {
@@ -102,23 +104,23 @@ test('it derives initial rows after invocation attributes are received', functio
   assert.expect(3);
 
   let component;
-  let body = Ember.A([
-    Ember.Object.create({id: '9', name: 'Container 9'}),
-    Ember.Object.create({id: '1', name: 'Container 1'}),
+  let body = A([
+    EmberObject.create({id: '9', name: 'Container 9'}),
+    EmberObject.create({id: '1', name: 'Container 1'}),
   ]);
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(SortableTableComponent, {
       renderer: inertRenderer(),
-      prefs: Ember.Object.create(),
+      prefs: EmberObject.create(),
       body,
-      headers: Ember.A([
-        Ember.Object.create({name: 'name', searchField: 'name'}),
+      headers: A([
+        EmberObject.create({name: 'name', searchField: 'name'}),
       ]),
       sortBy: 'name',
       paging: false,
     }, 'component');
-    component.set('filtered', Ember.A([]));
+    component.set('filtered', A([]));
     component.didReceiveAttrs();
   });
 
@@ -132,19 +134,19 @@ test('it synchronizes page and page size without legacy string bindings', functi
   assert.expect(3);
 
   let component;
-  let body = Ember.A([
-    Ember.Object.create({id: '1', name: 'Container 1'}),
-    Ember.Object.create({id: '2', name: 'Container 2'}),
-    Ember.Object.create({id: '3', name: 'Container 3'}),
+  let body = A([
+    EmberObject.create({id: '1', name: 'Container 1'}),
+    EmberObject.create({id: '2', name: 'Container 2'}),
+    EmberObject.create({id: '3', name: 'Container 3'}),
   ]);
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(SortableTableComponent, {
       renderer: inertRenderer(),
-      prefs: Ember.Object.create(),
+      prefs: EmberObject.create(),
       body,
-      headers: Ember.A([
-        Ember.Object.create({name: 'name', searchField: 'name'}),
+      headers: A([
+        EmberObject.create({name: 'name', searchField: 'name'}),
       ]),
       sortBy: 'name',
       perPage: 1,
@@ -155,10 +157,10 @@ test('it synchronizes page and page size without legacy string bindings', functi
 
   assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Container 1'], 'first page uses the requested page size');
 
-  Ember.run(() => component.set('page', 2));
+  run(() => component.set('page', 2));
   assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Container 2'], 'changing page updates rendered rows');
 
-  Ember.run(() => component.setProperties({page: 1, perPage: 2}));
+  run(() => component.setProperties({page: 1, perPage: 2}));
   assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Container 1', 'Container 2'], 'changing page size updates rendered rows');
 
   destroyOwned(component);
@@ -167,22 +169,22 @@ test('it synchronizes page and page size without legacy string bindings', functi
 test('it keeps the invocation page size read-only while selecting all rows', function(assert) {
   assert.expect(7);
 
-  let prefs = Ember.Object.create();
-  let body = Ember.A([
-    Ember.Object.create({id: '1', name: 'Volume 1'}),
-    Ember.Object.create({id: '2', name: 'Volume 2'}),
-    Ember.Object.create({id: '3', name: 'Volume 3'}),
+  let prefs = EmberObject.create();
+  let body = A([
+    EmberObject.create({id: '1', name: 'Volume 1'}),
+    EmberObject.create({id: '2', name: 'Volume 2'}),
+    EmberObject.create({id: '3', name: 'Volume 3'}),
   ]);
   let component;
   let changedPageSize;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(SortableTableComponent, {
       renderer: inertRenderer(),
       prefs,
       body,
-      headers: Ember.A([
-        Ember.Object.create({name: 'name', searchField: 'name'}),
+      headers: A([
+        EmberObject.create({name: 'name', searchField: 'name'}),
       ]),
       sortBy: 'name',
       perPage: 1,
@@ -199,7 +201,7 @@ test('it keeps the invocation page size read-only while selecting all rows', fun
   assert.equal(component.get('perPage'), 1, 'retains the caller-owned input value');
   assert.equal(component.get('effectivePerPage'), 1, 'uses the initial input internally');
 
-  Ember.run(() => component.send('changePerPage', '0'));
+  run(() => component.send('changePerPage', '0'));
 
   assert.equal(component.get('perPage'), 1, 'does not write through the caller-owned input');
   assert.equal(component.get('selectedPageSize'), 0, 'keeps All selected in the control');
@@ -213,20 +215,20 @@ test('it keeps the invocation page size read-only while selecting all rows', fun
 test('it clamps the current page immediately when live rows are removed', function(assert) {
   assert.expect(4);
 
-  let body = Ember.A([
-    Ember.Object.create({id: '1', name: 'Volume 1'}),
-    Ember.Object.create({id: '2', name: 'Volume 2'}),
-    Ember.Object.create({id: '3', name: 'Volume 3'}),
+  let body = A([
+    EmberObject.create({id: '1', name: 'Volume 1'}),
+    EmberObject.create({id: '2', name: 'Volume 2'}),
+    EmberObject.create({id: '3', name: 'Volume 3'}),
   ]);
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(SortableTableComponent, {
       renderer: inertRenderer(),
-      prefs: Ember.Object.create(),
+      prefs: EmberObject.create(),
       body,
-      headers: Ember.A([
-        Ember.Object.create({name: 'name', searchField: 'name'}),
+      headers: A([
+        EmberObject.create({name: 'name', searchField: 'name'}),
       ]),
       sortBy: 'name',
       perPage: 1,
@@ -239,7 +241,7 @@ test('it clamps the current page immediately when live rows are removed', functi
   assert.equal(component.get('page'), 3, 'starts on the last page');
   assert.deepEqual(component.get('pagedContent').mapBy('name'), ['Volume 3'], 'renders the last row');
 
-  Ember.run(() => {
+  run(() => {
     body.removeObjects(body.slice(1));
     component.didReceiveAttrs();
   });

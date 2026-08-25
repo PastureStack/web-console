@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import { isAlternate } from 'ui/utils/platform';
 
-export default Ember.Component.extend({
-  resourceActions : Ember.inject.service('resource-actions'),
+export default Component.extend({
+  resourceActions : service('resource-actions'),
   icon            : 'icon-help',
   label           : '',
   prefix          : null,

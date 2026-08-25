@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { debouncedObserver } from 'ui/utils/debounce';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
-  swarm       : Ember.inject.service(),
+export default Component.extend({
+  swarm       : service(),
 
   currentStep : 0,
   subStep     : 0,

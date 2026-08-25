@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   errors: null,
 
   classNames: ['top-errors','alert','alert-danger'],
@@ -9,7 +10,7 @@ export default Ember.Component.extend({
   errorsDidChange: function() {
     if ( this.get('errors.length') )
     {
-      Ember.run.later(() => {
+      later(() => {
         this.$().scrollIntoView();
       },100);
     }

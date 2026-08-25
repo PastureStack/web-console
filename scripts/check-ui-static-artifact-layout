@@ -22,7 +22,7 @@ fi
 
 grep -F "plugins: [new NormalizeTemplateModuleNameWebpackPlugin()]" ember-cli-build.js >/dev/null
 grep -F "normalize-template-module-name-webpack-plugin" ember-cli-build.js >/dev/null
-./scripts/check-ui-template-module-name-normalization
+"${NODE_BINARY:-node}" ./scripts/check-ui-template-module-name-normalization
 
 tmpdir=$(mktemp -d)
 cleanup() {
@@ -33,9 +33,7 @@ trap cleanup EXIT
 mkdir -p "$tmpdir/dist/assets"
 mkdir -p "$tmpdir/dist/licenses/ember"
 mkdir -p "$tmpdir/dist/licenses/ember-fetch"
-mkdir -p "$tmpdir/dist/licenses/ember-power-select"
-mkdir -p "$tmpdir/dist/licenses/ember-basic-dropdown"
-runtime_legal_packages=(ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
+runtime_legal_packages=(bootstrap-multiselect ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
 for package_name in "${runtime_legal_packages[@]}"; do
   mkdir -p "$tmpdir/dist/licenses/runtime/$package_name"
 done
@@ -45,7 +43,7 @@ cat >"$tmpdir/dist/index.html" <<'HTML'
 <script src="assets/vendor-test.js"></script>
 <script src="assets/ui-test.js"></script>
 HTML
-printf 'vendor bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'Bootstrap v5.3.8 vendor bs.button bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
 printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
 for theme_asset in ui-light.css ui-light.rtl.css ui-dark.css ui-dark.rtl.css; do
   printf 'body { color: #123456; }\n' >"$tmpdir/dist/assets/$theme_asset"
@@ -58,27 +56,23 @@ cp vendor/ember/LICENSE "$tmpdir/dist/licenses/ember/LICENSE"
 cp vendor/ember/UPSTREAM.md "$tmpdir/dist/licenses/ember/UPSTREAM.md"
 cp vendor/ember-fetch-compat/LICENSE.md "$tmpdir/dist/licenses/ember-fetch/LICENSE.md"
 cp vendor/ember-fetch-compat/UPSTREAM.md "$tmpdir/dist/licenses/ember-fetch/UPSTREAM.md"
-cp vendor/ember-power-select/LICENSE.md "$tmpdir/dist/licenses/ember-power-select/LICENSE.md"
-cp vendor/ember-power-select/UPSTREAM.md "$tmpdir/dist/licenses/ember-power-select/UPSTREAM.md"
-cp vendor/ember-basic-dropdown/LICENSE.md "$tmpdir/dist/licenses/ember-basic-dropdown/LICENSE.md"
-cp vendor/ember-basic-dropdown/UPSTREAM.md "$tmpdir/dist/licenses/ember-basic-dropdown/UPSTREAM.md"
 for package_name in "${runtime_legal_packages[@]}"; do
   cp "vendor/runtime-licenses/$package_name/LICENSE.md" "$tmpdir/dist/licenses/runtime/$package_name/LICENSE.md"
   cp "vendor/runtime-licenses/$package_name/UPSTREAM.md" "$tmpdir/dist/licenses/runtime/$package_name/UPSTREAM.md"
 done
 
-printf 'vendor bs.collapse bs.dropdown bs.tooltip\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'Bootstrap v5.3.8 Bootstrap v3.3.7 vendor bs.button bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
 if SOURCE_DATE_EPOCH=1700000000 bash ./scripts/package-static-candidate \
     9.9.9 "$tmpdir/dist" "$tmpdir/unsafe.tar.gz" >"$tmpdir/unsafe.out" 2>&1; then
   echo "VULNERABLE_BOOTSTRAP_RUNTIME_ACCEPTED"
   exit 1
 fi
-if ! grep -q 'DIST_VULNERABLE_BOOTSTRAP_RUNTIME_PRESENT signature=bs.tooltip' "$tmpdir/unsafe.out"; then
+if ! grep -q 'DIST_LEGACY_BOOTSTRAP_RUNTIME_PRESENT signature=Bootstrap v3.' "$tmpdir/unsafe.out"; then
   cat "$tmpdir/unsafe.out"
   echo "VULNERABLE_BOOTSTRAP_REJECTION_REASON_UNEXPECTED"
   exit 1
 fi
-printf 'vendor bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'Bootstrap v5.3.8 vendor bs.button bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
 
 out="$tmpdir/9.9.9.tar.gz"
 out_repeat="$tmpdir/9.9.9-repeat.tar.gz"
@@ -106,10 +100,6 @@ grep -qx '9.9.9/licenses/ember/LICENSE' "$tar_list"
 grep -qx '9.9.9/licenses/ember/UPSTREAM.md' "$tar_list"
 grep -qx '9.9.9/licenses/ember-fetch/LICENSE.md' "$tar_list"
 grep -qx '9.9.9/licenses/ember-fetch/UPSTREAM.md' "$tar_list"
-grep -qx '9.9.9/licenses/ember-power-select/LICENSE.md' "$tar_list"
-grep -qx '9.9.9/licenses/ember-power-select/UPSTREAM.md' "$tar_list"
-grep -qx '9.9.9/licenses/ember-basic-dropdown/LICENSE.md' "$tar_list"
-grep -qx '9.9.9/licenses/ember-basic-dropdown/UPSTREAM.md' "$tar_list"
 for package_name in "${runtime_legal_packages[@]}"; do
   grep -qx "9.9.9/licenses/runtime/${package_name}/LICENSE.md" "$tar_list"
   grep -qx "9.9.9/licenses/runtime/${package_name}/UPSTREAM.md" "$tar_list"
@@ -165,20 +155,6 @@ expected_ember_fetch_license=bae5cb45df11b4fa8e894ae3b9b13595e154ade61ee6c57d5cf
 actual_ember_fetch_license=$(sha256sum "$extract/9.9.9/licenses/ember-fetch/LICENSE.md" | awk 'NR == 1 {print $1}')
 if [[ "$actual_ember_fetch_license" != "$expected_ember_fetch_license" ]]; then
   echo "EMBER_FETCH_LICENSE_ARCHIVE_DRIFT actual=$actual_ember_fetch_license expected=$expected_ember_fetch_license"
-  exit 1
-fi
-
-expected_ember_power_select_license=0c454de6bb0a94445b9fe315cdad6830e317ca6aa9fb04d0b84fe000d04a5c90
-actual_ember_power_select_license=$(sha256sum "$extract/9.9.9/licenses/ember-power-select/LICENSE.md" | awk 'NR == 1 {print $1}')
-if [[ "$actual_ember_power_select_license" != "$expected_ember_power_select_license" ]]; then
-  echo "EMBER_POWER_SELECT_LICENSE_ARCHIVE_DRIFT actual=$actual_ember_power_select_license expected=$expected_ember_power_select_license"
-  exit 1
-fi
-
-expected_ember_basic_dropdown_license=c3cd4817d1568725ab93dced4bd46f0dceaeace8c6badb9d12e2239fced7e810
-actual_ember_basic_dropdown_license=$(sha256sum "$extract/9.9.9/licenses/ember-basic-dropdown/LICENSE.md" | awk 'NR == 1 {print $1}')
-if [[ "$actual_ember_basic_dropdown_license" != "$expected_ember_basic_dropdown_license" ]]; then
-  echo "EMBER_BASIC_DROPDOWN_LICENSE_ARCHIVE_DRIFT actual=$actual_ember_basic_dropdown_license expected=$expected_ember_basic_dropdown_license"
   exit 1
 fi
 

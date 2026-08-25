@@ -13,7 +13,7 @@ from pathlib import Path
 
 lock_path = Path(sys.argv[1])
 failures = 0
-expected = "11.1.1"
+expected = "14.0.2"
 
 
 def fail(code, **fields):
@@ -50,7 +50,7 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_UUID11_OVERRIDES_OK version={expected} lockfile={lock_path}")
-print("All CommonJS uuid.v4 call sites resolve the supported uuid 11 release through the locked root dependency.")
+print(f"UI_UUID_CURRENT_OVERRIDES_OK version={expected} lockfile={lock_path}")
+print("All CommonJS uuid.v4 call sites resolve the current uuid release through the locked root dependency.")
 print("failure_count=0")
 PY

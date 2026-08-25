@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
+import TextField from '@ember/legacy-built-in-components/components/text-field';
 import ShellQuote from 'ui/utils/shell-quote';
 
 export const OPS = ['||','&&',';;','|&','&',';','(',')','|','<','>'];
@@ -34,14 +35,14 @@ export function unparse(xs) {
 }
 
 
-export default Ember.TextField.extend({
+export default TextField.extend({
   type: 'text',
 
   init() {
     this._super(...arguments);
 
     let initial = this.get('initialValue')||'';
-    if ( Ember.isArray(initial) )
+    if ( isArray(initial) )
     {
       this.set('value', unparse(reop(initial)));
     }

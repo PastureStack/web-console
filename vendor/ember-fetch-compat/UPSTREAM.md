@@ -22,8 +22,15 @@ message instead of silently running an unmaintained build-time polyfill chain.
 
 Compatibility revision 4 declares Ember CLI Babel 8.3.1 as the JavaScript
 preprocessor for the two retained add-on modules. This is required by Ember CLI
-6.12 during a clean production or test build and does not restore any Babel 6
+7.2 during a clean production or test build and does not restore any Babel 6
 or legacy Rollup dependency.
+
+Compatibility revision 5 removes the last `Ember.Logger` aggregate-module
+dependency and delegates warnings to the browser console while preserving the
+native Fetch request contract.
+
+Compatibility revision 6 replaces the removed `@ember/polyfills` assignment
+fallback with the evergreen-browser baseline's native `Object.assign`.
 
 The original MIT license is retained in `LICENSE.md`. No upstream source is
 claimed as PastureStack-authored work.

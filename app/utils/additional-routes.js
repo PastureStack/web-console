@@ -1,5 +1,5 @@
-import Ember from 'ember';
 var list = {};
+const instrumentedRouteDsl = new WeakSet();
 
 /* Usage: In your Addon:
  *
@@ -68,27 +68,52 @@ export function clearRoutes() {
   list = null;
 }
 
-// Monkey patch route() so that additional routes can be added by an addon
-Ember.RouterDSL.prototype._route = Ember.RouterDSL.prototype.route;
-Ember.RouterDSL.prototype.route = function( name, options, callback ) {
-  if (arguments.length === 1) {
-    options = {};
-  }
-  else if (arguments.length === 2 && typeof options === 'function') {
-    callback = options;
-    options = {};
+export function composeRouteCallbacks(additionalCallback, standardCallback) {
+  if ( !additionalCallback && !standardCallback ) {
+    return null;
   }
 
-  var key = `${this.parent}.${name}`;
+  return function() {
+    installAdditionalRouteSupport(this);
+    if ( additionalCallback ) {
+      additionalCallback.apply(this);
+    }
+    if ( standardCallback ) {
+      standardCallback.apply(this);
+    }
+  };
+}
 
-  // Add all the standard routes to the aditional routes table
-  addRoutes(callback, key);
+// Instrument only the Router.map DSL instance and each child DSL it creates.
+// This keeps addon route composition without mutating Ember's global prototype.
+export function installAdditionalRouteSupport(dsl) {
+  if ( !dsl || typeof dsl.route !== 'function' ) {
+    throw new TypeError('A Router.map DSL instance is required');
+  }
+  if ( instrumentedRouteDsl.has(dsl) ) {
+    return dsl;
+  }
 
-  // Create a new DSL fn that contains both the stadnard and addon routes
-  let newCallback = applyRoutes(key);
+  const originalRoute = dsl.route;
+  dsl.route = function(name, options, callback) {
+    if ( arguments.length === 1 ) {
+      options = {};
+    } else if ( arguments.length === 2 && typeof options === 'function' ) {
+      callback = options;
+      options = {};
+    } else {
+      options = options || {};
+    }
 
-  // Call the original route() with the new DSL Fn
-  this._route(name, options, newCallback);
-};
-// End: Monkey patch
+    const key = `${this.parent}.${name}`;
+    const combinedCallback = composeRouteCallbacks(applyRoutes(key), callback);
+    if ( combinedCallback ) {
+      return originalRoute.call(this, name, options, combinedCallback);
+    }
+    return originalRoute.call(this, name, options);
+  };
+
+  instrumentedRouteDsl.add(dsl);
+  return dsl;
+}
 

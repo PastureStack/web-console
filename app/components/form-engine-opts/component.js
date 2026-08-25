@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
+export default Component.extend({
   machine: null,
-  settings: Ember.inject.service(),
-  intl: Ember.inject.service(),
+  settings: service(),
+  intl: service(),
   showEngineUrl: null,
 
   didReceiveAttrs() {

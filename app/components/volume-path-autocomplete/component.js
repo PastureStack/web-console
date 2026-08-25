@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import { cancel, later } from '@ember/runloop';
+import { A } from '@ember/array';
+import { computed } from '@ember/object';
+import Component from '@ember/component';
 import { rankedVolumeSuggestions } from 'ui/utils/volume-spec';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['volume-path-autocomplete'],
 
   value: '',
@@ -30,16 +33,16 @@ export default Ember.Component.extend({
     }
   },
 
-  listboxId: Ember.computed('elementId', function() {
+  listboxId: computed('elementId', function() {
     return `${this.get('elementId')}-listbox`;
   }),
 
-  visibleSuggestions: Ember.computed(
+  visibleSuggestions: computed(
     'suggestions.[]',
     'inputValue',
     'maxSuggestions',
     function() {
-      return Ember.A(rankedVolumeSuggestions(
+      return A(rankedVolumeSuggestions(
         this.get('suggestions'),
         this.get('inputValue'),
         this.get('maxSuggestions')
@@ -47,15 +50,15 @@ export default Ember.Component.extend({
     }
   ),
 
-  activeSuggestion: Ember.computed('visibleSuggestions.[]', 'activeIndex', function() {
+  activeSuggestion: computed('visibleSuggestions.[]', 'activeIndex', function() {
     return this.get('visibleSuggestions').objectAt(this.get('activeIndex')) || null;
   }),
 
-  activeOptionId: Ember.computed('activeSuggestion', 'activeIndex', 'listboxId', function() {
+  activeOptionId: computed('activeSuggestion', 'activeIndex', 'listboxId', function() {
     return this.get('activeSuggestion') ? `${this.get('listboxId')}-option-${this.get('activeIndex')}` : null;
   }),
 
-  inlineCompletion: Ember.computed('activeSuggestion.{value,suffix}', 'inputValue', function() {
+  inlineCompletion: computed('activeSuggestion.{value,suffix}', 'inputValue', function() {
     let suggestion = this.get('activeSuggestion');
 
     if ( !suggestion || !suggestion.suffix ) {
@@ -109,10 +112,10 @@ export default Ember.Component.extend({
 
     blurInput() {
       if ( this._blurTimer ) {
-        Ember.run.cancel(this._blurTimer);
+        cancel(this._blurTimer);
       }
 
-      this._blurTimer = Ember.run.later(this, function() {
+      this._blurTimer = later(this, function() {
         if ( !this.get('isDestroyed') && !this.get('isDestroying') ) {
           this.set('isOpen', false);
         }
@@ -161,7 +164,7 @@ export default Ember.Component.extend({
 
   willDestroyElement() {
     if ( this._blurTimer ) {
-      Ember.run.cancel(this._blurTimer);
+      cancel(this._blurTimer);
       this._blurTimer = null;
     }
 

@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 import ContainerSparkStats from 'ui/mixins/container-spark-stats';
 
-export default Ember.Controller.extend(ContainerSparkStats, {
-  prefs: Ember.inject.service(),
-  sparkInstances: Ember.computed.alias('model.instances'),
+export default Controller.extend(ContainerSparkStats, {
+  prefs: service(),
+  sparkInstances: alias('model.instances'),
   sortBy: 'name',
   liveSortFields: ['cpuRms', 'memoryRms', 'networkRms', 'storageRms'],
   statsPageSizes: C.TABLES.STATS_PAGE_SIZES,

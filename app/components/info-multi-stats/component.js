@@ -1,6 +1,15 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import bb from 'billboard.js';
+import * as d3 from 'd3';
 import MultiStatsSocket from 'ui/utils/multi-stats';
-import { formatPercent, formatMib, formatKbps } from 'ui/utils/util';
+import {
+  formatPercent,
+  formatMib,
+  formatKbps
+} from 'ui/utils/util';
 
 const MAX_POINTS = 60;
 const TICK_COUNT = 6;
@@ -26,8 +35,8 @@ const GRADIENT_COLORS = [
   },
 ];
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
+export default Component.extend({
+  intl: service(),
   model: null,
   linkName: 'containerStats',
   single: true,
@@ -37,9 +46,9 @@ export default Ember.Component.extend({
   renderSeconds: null,
 
   statsSocket: null,
-  available: Ember.computed.alias('statsSocket.available'),
-  active: Ember.computed.alias('statsSocket.active'),
-  loading: Ember.computed.alias('statsSocket.loading'),
+  available: alias('statsSocket.available'),
+  active: alias('statsSocket.active'),
+  loading: alias('statsSocket.loading'),
 
   cpuCanvas: '#cpuGraph',
   cpuGraph: null,
@@ -76,7 +85,7 @@ export default Ember.Component.extend({
 
   // The SVG gradients have the path name in them, so they have to be updated when the route changes.
   routeChanged: function() {
-    Ember.run.next(() => {
+    next(() => {
       let graphs = [this.get('cpuGraph'), this.get('memoryGraph'), this.get('storageGraph'), this.get('networkGraph')];
       graphs.forEach((graph) => {
         try {
@@ -110,7 +119,7 @@ export default Ember.Component.extend({
   }.observes('active'),
 
   connect() {
-    Ember.run.next(() => {
+    next(() => {
       try {
         var stats = MultiStatsSocket.create({
           resource: this.get('model'),
@@ -371,7 +380,7 @@ setupMarkers: function() {
     this.set('cpuData', [x]);
     this.set('cpuD3Data', [x]);
 
-    var cpuGraph = c3.generate({
+    var cpuGraph = bb.generate({
       padding: {
         top: 5,
         left: 75
@@ -437,7 +446,7 @@ setupMarkers: function() {
     }
     this.set('memoryData', [x]);
 
-    var memoryGraph = c3.generate({
+    var memoryGraph = bb.generate({
       padding: {
         top: 5,
         left: 75
@@ -500,7 +509,7 @@ setupMarkers: function() {
     }
     this.set('storageData', [x]);
 
-    var storageGraph = c3.generate({
+    var storageGraph = bb.generate({
       padding: {
         top: 5,
         left: 75
@@ -567,7 +576,7 @@ setupMarkers: function() {
     this.set('networkData', [x]);
     this.set('networkD3Data', z);
 
-    var networkGraph = c3.generate({
+    var networkGraph = bb.generate({
       padding: {
         top: 5,
         left: 75

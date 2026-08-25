@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Controller from '@ember/controller';
 import MfaAccountManager from 'ui/mixins/mfa-account-manager';
 
-export default Ember.Controller.extend(MfaAccountManager, {
+export default Controller.extend(MfaAccountManager, {
   queryParams: ['accountId'],
   accountId: null,
   settingsForm: null,
@@ -92,7 +93,7 @@ export default Ember.Controller.extend(MfaAccountManager, {
   reloadSettings() {
     return this.get('userStore').find('mfaSettings', null, {forceReload: true}).then((items) => {
       let settings = items.get('firstObject');
-      this.set('settingsForm', Ember.Object.create(settings ? settings.serialize() : {}));
+      this.set('settingsForm', EmberObject.create(settings ? settings.serialize() : {}));
     });
   },
 });

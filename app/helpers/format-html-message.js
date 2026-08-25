@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Helper from '@ember/component/helper';
 
 export function formatHtmlMessage(intl, params, namedOptions) {
   let key = params[0] || 'generic.missing';
@@ -10,8 +11,8 @@ export function formatHtmlMessage(intl, params, namedOptions) {
   return intl.t(key, options);
 }
 
-export default Ember.Helper.extend({
-  intl: Ember.inject.service(),
+export default Helper.extend({
+  intl: service(),
 
   compute(params, namedOptions) {
     return formatHtmlMessage(this.get('intl'), params, namedOptions);

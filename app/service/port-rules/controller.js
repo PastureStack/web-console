@@ -1,5 +1,6 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  rules: Ember.computed.alias('model.lbConfig.portRules'),
+export default Controller.extend({
+  rules: alias('model.lbConfig.portRules'),
 });

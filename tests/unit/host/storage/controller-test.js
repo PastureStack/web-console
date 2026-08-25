@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { A } from '@ember/array';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 
 import StorageController from 'ui/host/storage/controller';
@@ -7,12 +9,12 @@ import { destroyOwned } from '../../../helpers/owned-subject';
 module('Unit | Controller | host | storage');
 
 function removableVolume(id) {
-  return Ember.Object.create({
+  return EmberObject.create({
     id,
     state: 'detached',
     removed: false,
     instanceId: null,
-    mounts: Ember.A(),
+    mounts: A(),
     actionLinks: {remove: `/v1/volumes/${id}?action=remove`},
   });
 }
@@ -22,23 +24,23 @@ test('successful removals immediately refresh rows and selection', function(asse
 
   let first = removableVolume('1v1');
   let second = removableVolume('1v2');
-  let model = Ember.A([first, second]);
+  let model = A([first, second]);
   let modalOptions;
   let controller = StorageController.create({
-    modalService: Ember.Object.create({
+    modalService: EmberObject.create({
       toggleModal(name, options) {
         assert.equal(name, 'confirm-remove-selected-volumes', 'opens the batch confirmation');
         modalOptions = options;
       },
     }),
-    prefs: Ember.Object.create(),
+    prefs: EmberObject.create(),
   });
 
-  Ember.run(() => {
+  run(() => {
     controller.setProperties({
       model,
       storageFilter: 'detached',
-      selectedVolumes: Ember.A([first, second]),
+      selectedVolumes: A([first, second]),
     });
   });
 
@@ -63,8 +65,8 @@ test('successful removals immediately refresh rows and selection', function(asse
 
 test('All page size is kept in writable controller state', function(assert) {
   let controller = StorageController.create({
-    prefs: Ember.Object.create({storageTablePerPage: 25}),
-    modalService: Ember.Object.create(),
+    prefs: EmberObject.create({storageTablePerPage: 25}),
+    modalService: EmberObject.create(),
   });
 
   assert.equal(controller.get('storageTablePerPage'), 25, 'starts from the saved preference');

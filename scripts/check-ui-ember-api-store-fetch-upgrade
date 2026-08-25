@@ -12,8 +12,8 @@ lock_path = repo / "docs/baselines/npm-package-lock.sass-replacement.node24-igno
 package = json.loads(package_path.read_text(encoding="utf-8"))
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
-compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.4.tgz"
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.1.tgz"
+compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.6.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.2.tgz"
 
 
 def fail(message):
@@ -70,14 +70,14 @@ if "node_modules/ember-api-store/node_modules/ember-auto-import" in packages:
 
 compat_dir = repo / "vendor/ember-fetch-compat"
 runtime_path = compat_dir / "vendor/ember-fetch.js"
-archive_path = compat_dir / "ember-fetch-5.1.3-pasturestack.4.tgz"
+archive_path = compat_dir / "ember-fetch-5.1.3-pasturestack.6.tgz"
 license_path = compat_dir / "LICENSE.md"
 upstream_path = compat_dir / "UPSTREAM.md"
 for required in [runtime_path, archive_path, license_path, upstream_path]:
     if not required.is_file():
         fail(f"reviewed ember-fetch compatibility file missing: {required.relative_to(repo)}")
 
-if hashlib.sha256(archive_path.read_bytes()).hexdigest() != "362ba71279f2346d54db3dce3be46242d56c809241b7f621637f1453c15382ca":
+if hashlib.sha256(archive_path.read_bytes()).hexdigest() != "0a504cb75b7ce5bcc68329b32d3fae1e9434233b3f243560d09a484c248ede02":
     fail("reviewed ember-fetch compatibility archive hash changed")
 if hashlib.sha256(license_path.read_bytes()).hexdigest() != "bae5cb45df11b4fa8e894ae3b9b13595e154ade61ee6c57d5cfcd422771153a7":
     fail("ember-fetch upstream MIT license changed")
@@ -110,21 +110,21 @@ with tarfile.open(archive_path, "r:gz") as archive:
         fail("ember-fetch compatibility source and install archive differ")
 
 api_store_compat_dir = repo / "vendor/ember-api-store-compat"
-api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.1.tgz"
+api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.2.tgz"
 api_store_package_path = api_store_compat_dir / "package.json"
 api_store_license_path = api_store_compat_dir / "LICENSE"
 api_store_upstream_path = api_store_compat_dir / "UPSTREAM.md"
 for required in [api_store_archive, api_store_package_path, api_store_license_path, api_store_upstream_path]:
     if not required.is_file():
         fail(f"reviewed ember-api-store compatibility file missing: {required.relative_to(repo)}")
-if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "ed26e822bc7d7fb153189048ec1e6ca4b04efddb83c4174132a93f93d6f83efa":
+if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "91fedcf4e3d950567c4fd323cf31f1dac64948220fae9f29f63c76872b405453":
     fail("reviewed ember-api-store compatibility archive hash changed")
 if hashlib.sha256(api_store_license_path.read_bytes()).hexdigest() != "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594":
     fail("ember-api-store upstream Apache-2.0 license changed")
 api_store_package = json.loads(api_store_package_path.read_text(encoding="utf-8"))
 if api_store_package.get("dependencies") != expected_api_store_deps:
     fail("ember-api-store compatibility source metadata changed")
-if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 1:
+if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 2:
     fail("ember-api-store compatibility revision marker is missing")
 with tarfile.open(api_store_archive, "r:gz") as archive:
     for relative in ["package.json", "LICENSE", "UPSTREAM.md"]:
@@ -216,6 +216,12 @@ if len(reference_models) != 13:
     fail(f"unexpected API-store reference model count: {len(reference_models)}")
 
 runtime_packages = {
+    "bootstrap-multiselect": {
+        "version": "2.0.0",
+        "integrity": "sha512-m8dTwF+mLlpt8PtXfAXyERJLOGNuNrVuU9aQi2WMfwfwSzhgN+LbTaRuTk8Y15NZiMzy2m/FPfhKKgOOJxk2WQ==",
+        "license_sha256": "e87a389b5937ef5ba537318b1502d80dbe9748617d853e7ea2bb4bd1451ccde5",
+        "license": "Apache License, Version 2.0 OR BSD 3-Clause License",
+    },
     "ember-power-select": {
         "version": "9.0.2",
         "integrity": "sha512-XsbvnIhdeL/HJSThsLgJCMgYKJIn6HFLgWRARJffsMfUE1hsW5XAL8pQkGA5iBpl69cZ3RA5U5ljttZDQoR/rg==",
@@ -251,7 +257,8 @@ for package_name, expected in runtime_packages.items():
         fail(f"lock resolves unreviewed {package_name} source {runtime_entry.get('resolved')}")
     if runtime_entry.get("integrity") != expected["integrity"]:
         fail(f"lock integrity changed for {package_name}")
-    if runtime_entry.get("license") != "MIT":
+    expected_license = expected.get("license", "MIT")
+    if runtime_entry.get("license") != expected_license:
         fail(f"lock license changed for {package_name}: {runtime_entry.get('license')}")
 
     legal_dir = repo / "vendor" / "runtime-licenses" / package_name
@@ -261,7 +268,7 @@ for package_name, expected in runtime_packages.items():
         if not required.is_file():
             fail(f"runtime legal file missing: {required.relative_to(repo)}")
     if hashlib.sha256(runtime_license.read_bytes()).hexdigest() != expected["license_sha256"]:
-        fail(f"runtime MIT license changed for {package_name}")
+        fail(f"runtime license changed for {package_name}")
     upstream_text = runtime_upstream.read_text(encoding="utf-8")
     for marker in [
         f"- Upstream package: `{package_name}`",
@@ -351,7 +358,7 @@ for marker in [
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.8.5 api_store_compat_revision=1 ember-fetch=5.1.3 fetch_compat_revision=4 initializer_compat_revision=2 reference_compat_revision=2 "
+    f"version=2.8.5 api_store_compat_revision=2 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
     f"ember6_template_compat_revision=1 terminal_reconnect_revision=2 "
     f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )

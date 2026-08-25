@@ -386,7 +386,7 @@ function collectArguments(ast, result = new Set()) {
 }
 
 function messageArguments(message) {
-  // Ember Intl 8 deliberately formats legacy HTML-bearing messages with
+  // Ember Intl 9 deliberately formats legacy HTML-bearing messages with
   // ignoreTag=true. Mirror the runtime contract so <br> and first-party HTML
   // fragments are treated as message text while ICU arguments remain audited.
   return [...collectArguments(messageParser.parse(message, { ignoreTag: true }))].sort();

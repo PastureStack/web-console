@@ -7,8 +7,8 @@
       <div class="input-group">
         {{input type="text" value=this.machine.engineInstallUrl classNames="form-control" placeholder=(t 'formEngineOpts.engineInstallUrl.placeholder')}}
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu dropdown-menu-right" role="menu" style="min-width: 250px; max-height: 300px; overflow-y: auto;">
+          <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu" style="min-width: 250px; max-height: 300px; overflow-y: auto;">
             {{#each this.engineUrlChoices as |choice|}}
               <li><a href="#" {{action "setEngine" choice.value}}>{{choice.label}}</a></li>
             {{/each}}

@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  k8s: Ember.inject.service(),
+export default Component.extend({
+  projects: service(),
+  settings: service(),
+  k8s: service(),
 
   hosts: null,
 

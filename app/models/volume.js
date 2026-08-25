@@ -1,15 +1,16 @@
-import Ember from 'ember';
+import { notEmpty } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import { denormalizeIdArray } from 'ui/utils/api-store-references';
 
 var Volume = Resource.extend({
   type: 'volume',
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   mounts: denormalizeIdArray('mountIds'),
   snapshots: denormalizeIdArray('snapshotIds'),
 
-  isRoot: Ember.computed.notEmpty('instanceId'),
+  isRoot: notEmpty('instanceId'),
 
   actions: {
     snapshot() {

@@ -9,7 +9,7 @@
         <div class="input-group r-mr5">
           <span class="input-group-btn">
             {{input class="form-control input-sm pull-right" value=this.filters.resourceId placeholder=(t "auditLogsPage.form.resourceId.placeholder") disabled=this.resourceIdReady}}
-            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{if this.filters.resourceType this.filters.resourceType (t "auditLogsPage.form.resourceType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
+            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{if this.filters.resourceType this.filters.resourceType (t "auditLogsPage.form.resourceType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
             <ul class="dropdown-menu" role="menu">
               <li role="presentation" class="dropdown-header">
                 {{t 'auditLogsPage.form.resourceType.dropdownPlaceholder'}}
@@ -24,7 +24,7 @@
         </div>
         {{input class="form-control input-sm r-mr5" value=this.filters.clientIp placeholder=(t "auditLogsPage.form.requestIp.placeholder")}}
         <span class="dropdown">
-          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{if this.authTypeReadable this.authTypeReadable (t "auditLogsPage.form.authType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
+          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{if this.authTypeReadable this.authTypeReadable (t "auditLogsPage.form.authType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
           <ul class="dropdown-menu" role="menu">
             <li role="presentation" class="dropdown-header">
               {{t 'auditLogsPage.form.authType.dropdownPlaceholder'}}

@@ -1,6 +1,7 @@
-import Ember from 'ember';
-export default Ember.Controller.extend({
-  projects: Ember.inject.service(),
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
+export default Controller.extend({
+  projects: service(),
 
   actions: {
     kubernetesReady() {

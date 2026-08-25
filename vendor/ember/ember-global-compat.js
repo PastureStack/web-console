@@ -3,23 +3,34 @@
     return;
   }
 
-  var emberModule = requireModule('ember');
-  var Ember = global.Ember || (emberModule && (emberModule.default || emberModule));
-
-  if (!Ember) {
-    return;
+  if (typeof define === 'function' && global.jQuery) {
+    define('jquery', ['exports'], function(exports) {
+      Object.defineProperty(exports, '__esModule', { value: true });
+      exports.default = global.jQuery;
+    });
   }
 
+  var objectModule = requireModule('@ember/object');
+  var componentModule = requireModule('@ember/component');
+  var arrayModule = requireModule('@ember/array');
+  var computedModule = requireModule('@ember/object/computed');
+  var runloopModule = requireModule('@ember/runloop');
+  var templateModule = requireModule('@ember/template');
+  var Ember = global.Ember || {};
+
+  Ember.Object = Ember.Object || objectModule.default;
+  Ember.Component = Ember.Component || componentModule.default;
+  Ember.NativeArray = Ember.NativeArray || arrayModule.NativeArray;
+  Ember.computed = Ember.computed || objectModule.computed;
+  Ember.run = Ember.run || runloopModule.run;
   global.Ember = Ember;
 
-  var computedModule = requireModule('@ember/object/computed');
   Object.keys(computedModule).forEach(function(name) {
     if (name !== 'default' && Ember.computed[name] === undefined) {
       Ember.computed[name] = computedModule[name];
     }
   });
 
-  var runloopModule = requireModule('@ember/runloop');
   Object.keys(runloopModule).forEach(function(name) {
     // Ember.run is itself a function. `bind` therefore resolves to the native
     // Function.prototype method unless the public runloop export is installed
@@ -29,7 +40,6 @@
     }
   });
 
-  var templateModule = requireModule('@ember/template');
   Ember.String = Ember.String || {};
 
   function decamelize(value) {
@@ -136,7 +146,6 @@
     });
   }
 
-  var objectModule = requireModule('@ember/object');
   var eventedModule = requireModule('@ember/object/evented');
 
   function installFunctionDecorator(name, decorator) {

@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { reject, Promise, hash, resolve } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 import {
   isAvailable as isWebAuthnAvailable,
   register as registerPasskey,
@@ -6,12 +9,12 @@ import {
 import { totpProvisioningQr } from 'ui/utils/totp-qr';
 import { localizedMfaError, mfaErrorCode } from 'ui/utils/mfa-error';
 
-export default Ember.Mixin.create({
-  access: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
-  session: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Mixin.create({
+  access: service(),
+  intl: service(),
+  modalService: service('modal'),
+  session: service(),
+  userStore: service('user-store'),
 
   busy: false,
   errors: null,
@@ -36,7 +39,7 @@ export default Ember.Mixin.create({
     return this.get('selectedAccountId') === this.get('session.accountId');
   }.property('selectedAccountId', 'session.accountId'),
 
-  webAuthnPolicyConfigured: Ember.computed.alias('status.webAuthnConfigured'),
+  webAuthnPolicyConfigured: alias('status.webAuthnConfigured'),
 
   webAuthnEnvironmentSupported: function() {
     return isWebAuthnAvailable();
@@ -222,10 +225,10 @@ export default Ember.Mixin.create({
   withSecurityConfirmation(executor) {
     return executor(null).catch((err) => {
       if ( mfaErrorCode(err) !== 'MfaReauthenticationRequired' ) {
-        return Ember.RSVP.reject(err);
+        return reject(err);
       }
 
-      return new Ember.RSVP.Promise((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         this.get('modalService').toggleModal('mfa-security-confirmation', {
           closeWithOutsideClick: false,
           escToClose: false,
@@ -240,7 +243,7 @@ export default Ember.Mixin.create({
 
   reloadAccount() {
     let accountId = this.get('selectedAccountId');
-    return Ember.RSVP.hash({
+    return hash({
       factors: this.get('userStore').find('mfaFactor', null, {
         filter: {accountId: accountId}, forceReload: true,
       }),
@@ -258,7 +261,7 @@ export default Ember.Mixin.create({
   afterSessionRevocation() {
     if ( this.get('isCurrentAccount') ) {
       this.set('reauthenticationRequired', true);
-      return Ember.RSVP.resolve();
+      return resolve();
     }
     return this.reloadAccount();
   },

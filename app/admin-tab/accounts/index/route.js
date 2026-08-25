@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function() {
     return this.get('userStore').find('password').then(() => {
       return this.get('userStore').find('account', null, {filter: {'kind_ne': ['service','agent']}, forceReload: true});

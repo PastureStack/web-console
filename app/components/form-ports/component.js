@@ -1,4 +1,19 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import {
+  next,
+  scheduleOnce,
+  cancel,
+  debounce
+} from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import { isArray, A } from '@ember/array';
+import EmberObject, {
+  get,
+  observer,
+  setProperties,
+  set
+} from '@ember/object';
 import { parsePortSpec } from 'ui/utils/parse-port';
 
 const PREFLIGHT_DELAY = 350;
@@ -51,7 +66,7 @@ function value(target, key) {
     return target.get(key);
   }
 
-  return Ember.get(target, key);
+  return get(target, key);
 }
 
 function asArray(items) {
@@ -63,7 +78,7 @@ function asArray(items) {
     return items.toArray();
   }
 
-  return Ember.isArray(items) ? items : [];
+  return isArray(items) ? items : [];
 }
 
 function portNumber(input) {
@@ -96,9 +111,9 @@ function statusForConflict(conflict, overallStatus) {
   return STATUS_META[status] ? status : 'unknown';
 }
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
-  projects: Ember.inject.service(),
+export default Component.extend({
+  intl: service(),
+  projects: service(),
 
   // The initial ports to show, as an array of objects
   initialPorts: null,
@@ -135,8 +150,8 @@ export default Ember.Component.extend({
     this._preflightSequence = 0;
     this._preflightTimer = null;
     this.setProperties({
-      preflightConflicts: Ember.A(),
-      preflightConflictMessages: Ember.A(),
+      preflightConflicts: A(),
+      preflightConflictMessages: A(),
     });
 
     let out = [];
@@ -151,10 +166,10 @@ export default Ember.Component.extend({
           }
 
           if ( value(port, 'bindAddress') ) {
-            Ember.run.next(() => this.send('showIp'));
+            next(() => this.send('showIp'));
           }
 
-          out.push(Ember.Object.create({
+          out.push(EmberObject.create({
             existing,
             obj: port,
             bindAddress: value(port, 'bindAddress') || null,
@@ -166,10 +181,10 @@ export default Ember.Component.extend({
           let parsed = parsePortSpec(port, 'tcp');
 
           if ( parsed.hostIp ) {
-            Ember.run.next(() => this.send('showIp'));
+            next(() => this.send('showIp'));
           }
 
-          out.push(Ember.Object.create({
+          out.push(EmberObject.create({
             existing: false,
             bindAddress: parsed.hostIp,
             public: parsed.hostPort,
@@ -182,12 +197,12 @@ export default Ember.Component.extend({
       });
     }
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       if ( this.get('isDestroyed') || this.get('isDestroying') ) {
         return;
       }
 
-      this.set('portsArray', Ember.A(out));
+      this.set('portsArray', A(out));
       this.portsArrayDidChange();
       this.validate();
       this.schedulePortPreflight();
@@ -196,7 +211,7 @@ export default Ember.Component.extend({
 
   actions: {
     addPort() {
-      this.get('portsArray').pushObject(Ember.Object.create({
+      this.get('portsArray').pushObject(EmberObject.create({
         public: '',
         private: '',
         protocol: 'tcp',
@@ -309,10 +324,10 @@ export default Ember.Component.extend({
       errors.push(this.get('intl').t('formPorts.preflight.error.blocked'));
     }
 
-    this.set('errors', Ember.A(errors).uniq());
+    this.set('errors', A(errors).uniq());
   }.observes('portsArray.@each.{bindAddress,public,private,protocol}', 'preflightStatus'),
 
-  preflightInputsDidChange: Ember.observer(
+  preflightInputsDidChange: observer(
     'portsArray.@each.{bindAddress,public,private,protocol}',
     'networkMode',
     'requestedHostId',
@@ -391,7 +406,7 @@ export default Ember.Component.extend({
     let entries = this.portEntries();
 
     if ( this._preflightTimer ) {
-      Ember.run.cancel(this._preflightTimer);
+      cancel(this._preflightTimer);
       this._preflightTimer = null;
     }
 
@@ -401,20 +416,20 @@ export default Ember.Component.extend({
     }
 
     this.applyPreflightState('checking', [], null, null);
-    this._preflightTimer = Ember.run.debounce(this, this.runPortPreflight, sequence, PREFLIGHT_DELAY);
+    this._preflightTimer = debounce(this, this.runPortPreflight, sequence, PREFLIGHT_DELAY);
   },
 
   runPortPreflight(sequence) {
     this._preflightTimer = null;
 
     if ( sequence !== this._preflightSequence || this.get('isDestroyed') || this.get('isDestroying') ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     let entries = this.portEntries();
     if ( entries.length === 0 ) {
       this.applyPreflightState('idle', [], null, null);
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     let project = this.get('projects.current');
@@ -425,7 +440,7 @@ export default Ember.Component.extend({
 
     if ( !supported || typeof project.doAction !== 'function' ) {
       this.applyPreflightState('unknown', [], 'formPorts.preflight.status.unsupported', null);
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     let request;
@@ -433,10 +448,10 @@ export default Ember.Component.extend({
       request = project.doAction('portpreflight', this.buildPreflightInput(entries), {catchGrowl: false});
     } catch (error) {
       this.applyPreflightState('unknown', [], 'formPorts.preflight.status.requestFailed', null);
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
-    return Ember.RSVP.resolve(request).then((result) => {
+    return resolve(request).then((result) => {
       if ( sequence !== this._preflightSequence || this.get('isDestroyed') || this.get('isDestroying') ) {
         return;
       }
@@ -456,8 +471,8 @@ export default Ember.Component.extend({
 
   applyPreflightState(status, conflicts, messageKey, result) {
     let meta = STATUS_META[status] || null;
-    let conflictList = Ember.A((conflicts || []).slice());
-    let messages = Ember.A(conflictList.map((conflict) => Ember.Object.create({
+    let conflictList = A((conflicts || []).slice());
+    let messages = A(conflictList.map((conflict) => EmberObject.create({
       status: statusForConflict(conflict, status),
       statusClass: STATUS_META[statusForConflict(conflict, status)].statusClass,
       icon: STATUS_META[statusForConflict(conflict, status)].icon,
@@ -486,7 +501,7 @@ export default Ember.Component.extend({
     let entries = this.portEntries();
 
     (this.get('portsArray') || []).forEach((row) => {
-      Ember.setProperties(row, {
+      setProperties(row, {
         preflightIcon: null,
         preflightMessage: null,
         preflightRowClass: null,
@@ -542,13 +557,13 @@ export default Ember.Component.extend({
     if ( current && STATUS_RANK[current] > STATUS_RANK[status] ) {
       let previous = value(row, 'preflightMessage');
       if ( previous && message && previous.indexOf(message) === -1 ) {
-        Ember.set(row, 'preflightMessage', `${previous}\n${message}`);
+        set(row, 'preflightMessage', `${previous}\n${message}`);
       }
       return;
     }
 
     let meta = STATUS_META[status] || STATUS_META.unknown;
-    Ember.setProperties(row, {
+    setProperties(row, {
       preflightIcon: meta.icon,
       preflightMessage: message,
       preflightRowClass: meta.rowClass,
@@ -627,7 +642,7 @@ export default Ember.Component.extend({
   willDestroyElement() {
     this._preflightSequence += 1;
     if ( this._preflightTimer ) {
-      Ember.run.cancel(this._preflightTimer);
+      cancel(this._preflightTimer);
       this._preflightTimer = null;
     }
 

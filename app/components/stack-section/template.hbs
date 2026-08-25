@@ -22,10 +22,10 @@
     {{#if this.outputs.length}}
       <div class="header-left">
         <div class="btn-group r-ml10">
-          <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{t 'stackSection.outputs'}} <i class="icon icon-chevron-down"></i>
           </button>
-          <ul class="dropdown-menu dropdown-menu-right" role="dropdown">
+          <ul class="dropdown-menu dropdown-menu-end" role="dropdown">
             {{#each this.outputs as |obj|}}
               <li><a href="{{obj.value}}" target="_blank">{{obj.key}}</a></li>
             {{/each}}
@@ -54,11 +54,11 @@
         <div class="btn-group">
           <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-default btn-sm">{{t 'stackSection.add.service'}}</LinkTo>
 
-            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="true">
               <i class="icon icon-fw icon-chevron-down"></i>
               <span class="sr-only">{{t 'nav.srToggleDropdown'}}</span>
             </button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
               {{#unless this.projects.current.isWindows}}
               <li><LinkTo @route="service.new-balancer" @query={{hash stackId=this.model.id}}>{{t 'stackSection.add.loadBalancer'}}</LinkTo></li>
               {{/unless}}

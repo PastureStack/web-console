@@ -1,4 +1,9 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { htmlSafe } from '@ember/template';
+import { guidFor } from '@ember/object/internals';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import * as d3 from 'd3';
 import {
   formatPercent, formatMib, formatKbps
 }
@@ -13,12 +18,12 @@ const formatters = {
   kbps: formatKbps
 };
 
-export default Ember.Component.extend({
+export default Component.extend({
   attributeBindings: ['cssSize:style', 'tooltip'],
   tagName       : 'span',
   classNames    : ['spark-line'],
 
-  intl          : Ember.inject.service(),
+  intl          : service(),
   data          : null,
   width         : null,
   height        : 20,
@@ -38,7 +43,7 @@ export default Ember.Component.extend({
 
   init() {
     this._super();
-    this.set('gradientId', `${this.get('type') || 'metric'}-gradient-${Ember.guidFor(this)}`);
+    this.set('gradientId', `${this.get('type') || 'metric'}-gradient-${guidFor(this)}`);
   },
 
   didInsertElement() {
@@ -57,7 +62,7 @@ export default Ember.Component.extend({
   },
 
   cssSize: function() {
-    return new Ember.String.htmlSafe('width: ' + this.get('width') + 'px; height: ' + this.get('height') + 'px');
+    return new htmlSafe('width: ' + this.get('width') + 'px; height: ' + this.get('height') + 'px');
   }.property('width', 'height'),
 
   lastValue: function() {
@@ -79,7 +84,7 @@ export default Ember.Component.extend({
       out = ` ${formatters[this.get('formatter')](this.get('lastValue'))}`;
     }
 
-    Ember.run.next(() => {
+    next(() => {
       this.set('tooltipModel', out);
     });
   }.property('prefix', 'lastValue', 'formatter'),
@@ -110,10 +115,10 @@ export default Ember.Component.extend({
       .attr('stop-opacity', '.1');
 
     this.set('svg', svg);
-    this.set('x', d3.scale.linear());
-    this.set('y', d3.scale.linear());
+    this.set('x', d3.scaleLinear());
+    this.set('y', d3.scaleLinear());
 
-    var line = d3.svg.area()
+    var line = d3.area()
       .x((d, i) => {
         return this.get('x')(i);
       })
@@ -161,7 +166,7 @@ export default Ember.Component.extend({
     var interp = this.get('interpolation');
 
     if (line) {
-      line.interpolate(interp);
+      line.curve(interp === 'step-after' ? d3.curveStepAfter : d3.curveLinear);
     }
 
   }.observes('interpolation'),

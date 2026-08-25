@@ -56,7 +56,7 @@ for compiled_relative, upstream_relative in compiled_templates:
     if not upstream_path.is_file():
         failures.append(f"lacsso retained upstream template missing: {upstream_path}")
     compiled_text = compiled_path.read_text(encoding="utf-8")
-    for marker in ["createTemplateFactory", "ember-source 6.12.0"]:
+    for marker in ["createTemplateFactory", "ember-source 7.2.0"]:
         if marker not in compiled_text:
             failures.append(f"lacsso precompiled template marker missing: {compiled_path} marker={marker}")
     if "ember-cli-htmlbars" in compiled_text:

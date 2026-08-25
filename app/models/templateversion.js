@@ -1,9 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
 
 export default Resource.extend({
-  projects: Ember.inject.service(),
+  projects: service(),
 
   headers: function() {
     return {

@@ -1,11 +1,17 @@
-import Ember from 'ember';
+import { observer } from '@ember/object';
+import $ from 'jquery';
+import { later, once, throttle } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import * as d3 from 'd3';
+import * as dagreD3 from 'dagre-d3-es';
 import Util from 'ui/utils/util';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 import { activeIcon } from 'ui/models/service';
 
-export default Ember.Component.extend(ThrottledResize, {
+export default Component.extend(ThrottledResize, {
   classNames: ['stack-graph'],
-  tooltipService: Ember.inject.service('tooltip'),
+  tooltipService: service('tooltip'),
   graphZoom: null,
   graphInner: null,
   graphOuter: null,
@@ -24,7 +30,7 @@ export default Ember.Component.extend(ThrottledResize, {
     this.set('stackId', this.get('model.stack.id'));
 
     if (this.get('model.stack.services.length')) {
-      Ember.run.later(this,'initGraph',100);
+      later(this,'initGraph',100);
     } else {
       this.sendAction('setNoServices', true);
     }
@@ -49,9 +55,8 @@ export default Ember.Component.extend(ThrottledResize, {
   initGraph: function() {
     var outer = d3.select("#stack-svg svg");  // SVG must be lowercase!   This is case sensitive in not-Chrome
     var inner = outer.select("g");
-    var zoom = d3.behavior.zoom().on("zoom", function() {
-       inner.attr("transform", "translate(" + d3.event.translate + ")" +
-                                   "scale(" + d3.event.scale + ")");
+    var zoom = d3.zoom().on("zoom", function(event) {
+       inner.attr("transform", event.transform);
     });
 
     outer.call(zoom);
@@ -214,9 +219,8 @@ export default Ember.Component.extend(ThrottledResize, {
 
         var edgeOpts = {
           arrowhead: 'vee',
-          customMarkerURL: window.location.pathname,
-          customMarkerClass: markerColor,
-          lineInterpolate: 'bundle',
+          arrowheadClass: markerColor,
+          curve: d3.curveBundle.beta(1),
           class: color,
         };
 
@@ -250,7 +254,7 @@ export default Ember.Component.extend(ThrottledResize, {
   addTooltip: function () {
     let svc = this.get('tooltipService');
     $(".stack-graph-tooltip").mouseenter(function (e) {
-      let node = Ember.$(e.target);
+      let node = $(e.target);
       let out = {
         type: 'tooltip-basic',
         eventPosition: node.offset(),
@@ -271,16 +275,14 @@ export default Ember.Component.extend(ThrottledResize, {
     var g = this.get('graph');
 
     // Zoom and scale to fit
-    var zoomScale = zoom.scale();
     var graphWidth = g.graph().width;
     var graphHeight = g.graph().height;
     var width = $('#stack-svg svg').width();
     var height = $('#stack-svg svg').height();
-    zoomScale = Math.min(scaleFactor, Math.min(width / graphWidth, height / graphHeight));
+    var zoomScale = Math.min(scaleFactor, Math.min(width / graphWidth, height / graphHeight));
     var translate = [(width/2) - ((graphWidth*zoomScale)/2), (height/2) - ((graphHeight*zoomScale)/2)];
-    zoom.translate(translate);
-    zoom.scale(zoomScale);
-    zoom.event(outer);
+    var transform = d3.zoomIdentity.translate(translate[0], translate[1]).scale(zoomScale);
+    outer.call(zoom.transform, transform);
   },
 
   renderGraph: function() {
@@ -297,19 +299,19 @@ export default Ember.Component.extend(ThrottledResize, {
     this.addTooltip();
   },
 
-  stackIdObserver: Ember.observer('model.stack.id', function() {
+  stackIdObserver: observer('model.stack.id', function() {
     if (this.get('model.stack.id') !== this.get('stackId')) {
       this.tearDown();
-      Ember.run.once(() => {
+      once(() => {
         this.sendAction('setNoServices', false);
       });
-      Ember.run.later(this,'bootstrap',100);
+      later(this,'bootstrap',100);
     }
   }),
 
   throttledUpdateGraph: function() {
     if (this.get('model.stack.id') === this.get('stackId')) {
-      Ember.run.throttle(this,'updateGraph',250);
+      throttle(this,'updateGraph',250);
     }
   }.observes('model.stack.services.@each.{id,name,displayState,consumedServicesWithNames}','crosslinkServices.@each.{id,name,displayState,displayStack}'),
 

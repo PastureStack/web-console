@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 import OidcConfig from 'ui/models/oidcconfig';
@@ -15,5 +15,5 @@ test('keeps the provider display name writable on the shared resource runtime', 
   config.set('displayName', 'OpenID Connect');
   assert.equal(config.get('displayName'), 'OpenID Connect');
 
-  Ember.run(() => config.destroy());
+  run(() => config.destroy());
 });

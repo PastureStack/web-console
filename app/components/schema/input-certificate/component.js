@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   field   : null,
   value   : null,
 
   choices : null,
-  default : Ember.computed.alias('field.default'),
+  default : alias('field.default'),
   loading : true,
 
   init() {

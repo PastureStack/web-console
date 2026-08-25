@@ -1,16 +1,18 @@
-import Ember from "ember";
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  settings: Ember.inject.service(),
+export default Controller.extend({
+  settings: service(),
 
   // GitHub auth params
   queryParams     : ['error_description','state','code','isTest', 'isPopup','redirectTo', {oidcError: 'error'}],
 
-  resourceActions : Ember.inject.service('resource-actions'),
-  tooltipService  : Ember.inject.service('tooltip'),
+  resourceActions : service('resource-actions'),
+  tooltipService  : service('tooltip'),
 
-  tooltip         : Ember.computed.alias('tooltipService.tooltipOpts.type'),
-  tooltipTemplate : Ember.computed.alias('tooltipService.tooltipOpts.template'),
+  tooltip         : alias('tooltipService.tooltipOpts.type'),
+  tooltipTemplate : alias('tooltipService.tooltipOpts.template'),
 
   error             : null,
   error_description : null,

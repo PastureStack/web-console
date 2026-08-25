@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(ManageLabels, {
+export default Component.extend(ManageLabels, {
   // Inputs
   instance: null,
   errors: null,
@@ -11,7 +12,7 @@ export default Ember.Component.extend(ManageLabels, {
   editing: true,
   classNameBindings: ['editing:component-editing:component-static'],
 
-  intl: Ember.inject.service(),
+  intl: service(),
 
   init() {
     this._super(...arguments);

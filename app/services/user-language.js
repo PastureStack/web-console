@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
 import { loadScript } from 'ui/utils/load-script';
@@ -19,14 +21,14 @@ const MOMENT_LOCALES = {
   'zh-tw': 'zh-tw',
 };
 
-export default Ember.Service.extend({
-  prefs         : Ember.inject.service(),
-  session       : Ember.inject.service(),
-  intl          : Ember.inject.service(),
-  locales       : Ember.computed.alias('app.locales'),
-  growl         : Ember.inject.service(),
-  cookies       : Ember.inject.service(),
-  userTheme     : Ember.inject.service('user-theme'),
+export default Service.extend({
+  prefs         : service(),
+  session       : service(),
+  intl          : service(),
+  locales       : alias('app.locales'),
+  growl         : service(),
+  cookies       : service(),
+  userTheme     : service('user-theme'),
   loadedLocales : null,
 
   bootstrap: function() {
@@ -94,7 +96,7 @@ export default Ember.Service.extend({
     if ( savePref && session.get(C.SESSION.ACCOUNT_ID) ) {
       return this.set(`prefs.${C.PREFS.LANGUAGE}`, lang);
     } else {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
   },
 
@@ -115,7 +117,7 @@ export default Ember.Service.extend({
   sideLoadLanguage(language) {
     let baseLanguage = C.LANGUAGE.DEFAULT;
     let loadBase = language !== 'none' && language !== baseLanguage;
-    let promise = loadBase ? this.loadLanguageFile(baseLanguage) : Ember.RSVP.resolve();
+    let promise = loadBase ? this.loadLanguageFile(baseLanguage) : resolve();
 
     return promise.then(() => {
       return this.loadLanguageFile(language);
@@ -137,7 +139,7 @@ export default Ember.Service.extend({
     let loadedLocales = this.get('loadedLocales');
 
     if ( loadedLocales.includes(language) ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     return ajaxPromise({
@@ -149,7 +151,7 @@ export default Ember.Service.extend({
       if ( this.get('app.needIntlPolyfill') ) {
         polyfillPromise = loadScript(`${this.get('app.baseAssets')}assets/intl/locales/${language.toLowerCase()}.js?${application.version}`);
       } else {
-        polyfillPromise = Ember.RSVP.resolve();
+        polyfillPromise = resolve();
       }
 
       return polyfillPromise.then(() => {

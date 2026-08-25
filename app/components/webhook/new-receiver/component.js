@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
 const DRIVERS = ['scaleService','scaleHost','serviceUpgrade'];
 
-export default Ember.Component.extend(NewOrEdit, {
-  projects: Ember.inject.service(),
+export default Component.extend(NewOrEdit, {
+  projects: service(),
   model: null,
 
   init() {

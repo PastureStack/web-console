@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { resolve, all } from 'rsvp';
 
 function value(resource, key) {
   if ( resource && typeof resource.get === 'function' )
@@ -61,11 +61,11 @@ export function runWithConcurrency(items, limit, worker) {
   function next() {
     if ( cursor >= list.length )
     {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     let item = list[cursor++];
-    return Ember.RSVP.resolve(worker(item)).then(next);
+    return resolve(worker(item)).then(next);
   }
 
   let workers = [];
@@ -74,5 +74,5 @@ export function runWithConcurrency(items, limit, worker) {
     workers.push(next());
   }
 
-  return Ember.RSVP.all(workers);
+  return all(workers);
 }

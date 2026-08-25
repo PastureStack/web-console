@@ -81,7 +81,7 @@ if [[ "$(sha256sum "$ember_license" | awk 'NR == 1 {print $1}')" != "$ember_lice
   echo "DIST_EMBER_LICENSE_DRIFT file=$ember_license" >&2
   exit 1
 fi
-if ! grep -Fx -- '- Distribution: `ember-source@6.12.0`' "$ember_upstream" >/dev/null; then
+if ! grep -Fx -- '- Distribution: `ember-source@7.2.0`' "$ember_upstream" >/dev/null; then
   echo "DIST_EMBER_PROVENANCE_DRIFT file=$ember_upstream" >&2
   exit 1
 fi
@@ -102,41 +102,10 @@ if ! grep -Fx -- '- Upstream version: `5.1.3`' "$ember_fetch_upstream" >/dev/nul
   exit 1
 fi
 
-ember_power_select_license="$dist_dir/licenses/ember-power-select/LICENSE.md"
-ember_power_select_upstream="$dist_dir/licenses/ember-power-select/UPSTREAM.md"
-ember_power_select_license_sha256=0c454de6bb0a94445b9fe315cdad6830e317ca6aa9fb04d0b84fe000d04a5c90
-if [[ ! -s "$ember_power_select_license" ]] || [[ ! -s "$ember_power_select_upstream" ]]; then
-  echo "DIST_EMBER_POWER_SELECT_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember-power-select" >&2
-  exit 1
-fi
-if [[ "$(sha256sum "$ember_power_select_license" | awk 'NR == 1 {print $1}')" != "$ember_power_select_license_sha256" ]]; then
-  echo "DIST_EMBER_POWER_SELECT_LICENSE_DRIFT file=$ember_power_select_license" >&2
-  exit 1
-fi
-if ! grep -F -- '- Upstream version: `1.0.0-beta.19`' "$ember_power_select_upstream" >/dev/null; then
-  echo "DIST_EMBER_POWER_SELECT_PROVENANCE_DRIFT file=$ember_power_select_upstream" >&2
-  exit 1
-fi
-
-ember_basic_dropdown_license="$dist_dir/licenses/ember-basic-dropdown/LICENSE.md"
-ember_basic_dropdown_upstream="$dist_dir/licenses/ember-basic-dropdown/UPSTREAM.md"
-ember_basic_dropdown_license_sha256=c3cd4817d1568725ab93dced4bd46f0dceaeace8c6badb9d12e2239fced7e810
-if [[ ! -s "$ember_basic_dropdown_license" ]] || [[ ! -s "$ember_basic_dropdown_upstream" ]]; then
-  echo "DIST_EMBER_BASIC_DROPDOWN_LEGAL_FILES_MISSING dir=$dist_dir/licenses/ember-basic-dropdown" >&2
-  exit 1
-fi
-if [[ "$(sha256sum "$ember_basic_dropdown_license" | awk 'NR == 1 {print $1}')" != "$ember_basic_dropdown_license_sha256" ]]; then
-  echo "DIST_EMBER_BASIC_DROPDOWN_LICENSE_DRIFT file=$ember_basic_dropdown_license" >&2
-  exit 1
-fi
-if ! grep -F -- '- Upstream version: `0.16.0-beta.4`' "$ember_basic_dropdown_upstream" >/dev/null; then
-  echo "DIST_EMBER_BASIC_DROPDOWN_PROVENANCE_DRIFT file=$ember_basic_dropdown_upstream" >&2
-  exit 1
-fi
-
-runtime_legal_packages=(ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
-runtime_legal_versions=(9.0.2 9.0.0 5.2.0 4.3.0)
+runtime_legal_packages=(bootstrap-multiselect ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
+runtime_legal_versions=(2.0.0 9.0.2 9.0.0 5.2.0 4.3.0)
 runtime_legal_hashes=(
+  e87a389b5937ef5ba537318b1502d80dbe9748617d853e7ea2bb4bd1451ccde5
   fee7ff7079edfdbac1c78d0329da16ae9b6ef73405cec197ed6136ddf1d70117
   fee7ff7079edfdbac1c78d0329da16ae9b6ef73405cec197ed6136ddf1d70117
   c7543891093cb613eeb5a90c16a18fa25b8708a0c7c1c67691202384ff9b6567
@@ -163,7 +132,7 @@ for index in "${!runtime_legal_packages[@]}"; do
   fi
 done
 
-for required_signature in bs.collapse bs.dropdown; do
+for required_signature in 'Bootstrap v5.3.8' bs.button bs.collapse bs.dropdown; do
   if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
       -exec grep -lF "$required_signature" {} + | grep -q .; then
     echo "DIST_REQUIRED_BOOTSTRAP_RUNTIME_MISSING signature=$required_signature" >&2
@@ -171,13 +140,19 @@ for required_signature in bs.collapse bs.dropdown; do
   fi
 done
 
-for forbidden_signature in bs.button bs.tooltip bs.popover data-loading-text; do
+for forbidden_signature in 'Bootstrap v3.' data-loading-text; do
   if find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
       -exec grep -lF "$forbidden_signature" {} + | grep -q .; then
-    echo "DIST_VULNERABLE_BOOTSTRAP_RUNTIME_PRESENT signature=$forbidden_signature" >&2
+    echo "DIST_LEGACY_BOOTSTRAP_RUNTIME_PRESENT signature=$forbidden_signature" >&2
     exit 1
   fi
 done
+
+if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.css' \
+    -exec grep -lF 'Bootstrap v3.' {} + | grep -q .; then
+  echo "DIST_LEGACY_BOOTSTRAP_CSS_PRESENT signature=Bootstrap v3." >&2
+  exit 1
+fi
 
 if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.js' \
     -exec grep -laF '["exports","ember-cli-htmlbars"]' {} + | grep -q .; then
@@ -261,10 +236,6 @@ grep -qx "${version}/licenses/ember/LICENSE" "$tar_list"
 grep -qx "${version}/licenses/ember/UPSTREAM.md" "$tar_list"
 grep -qx "${version}/licenses/ember-fetch/LICENSE.md" "$tar_list"
 grep -qx "${version}/licenses/ember-fetch/UPSTREAM.md" "$tar_list"
-grep -qx "${version}/licenses/ember-power-select/LICENSE.md" "$tar_list"
-grep -qx "${version}/licenses/ember-power-select/UPSTREAM.md" "$tar_list"
-grep -qx "${version}/licenses/ember-basic-dropdown/LICENSE.md" "$tar_list"
-grep -qx "${version}/licenses/ember-basic-dropdown/UPSTREAM.md" "$tar_list"
 for package_name in "${runtime_legal_packages[@]}"; do
   grep -qx "${version}/licenses/runtime/${package_name}/LICENSE.md" "$tar_list"
   grep -qx "${version}/licenses/runtime/${package_name}/UPSTREAM.md" "$tar_list"

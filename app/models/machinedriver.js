@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 import C from 'ui/utils/constants';
@@ -9,8 +10,8 @@ const builtInUi = ['amazonec2','azure','digitalocean','exoscale','packet','racks
 
 var machineDriver = Resource.extend(PolledResource, {
   type: 'machineDriver',
-  modalService: Ember.inject.service('modal'),
-  catalog: Ember.inject.service(),
+  modalService: service('modal'),
+  catalog: service(),
 
   actions: {
     activate: function() {
@@ -26,7 +27,7 @@ var machineDriver = Resource.extend(PolledResource, {
     },
   },
 
-  catalogTemplateIcon: Ember.computed('externalId', function() {
+  catalogTemplateIcon: computed('externalId', function() {
     let parsedExtId = parseExternalId(this.get('externalId')) || null;
 
     if (!parsedExtId) {
@@ -39,7 +40,7 @@ var machineDriver = Resource.extend(PolledResource, {
     }
   }),
 
-  iconMapFromConstants: Ember.computed('name', function() {
+  iconMapFromConstants: computed('name', function() {
     let name = this.get('name').toUpperCase();
     let icon = C.MACHINE_DRIVER_IMAGES[name];
 
@@ -55,7 +56,7 @@ var machineDriver = Resource.extend(PolledResource, {
     return driverDisplayUrl(this.get('url'));
   }.property('url'),
 
-  displayChecksum: Ember.computed('checksum', function() {
+  displayChecksum: computed('checksum', function() {
     return this.get('checksum').substring(0, 8);
   }),
 

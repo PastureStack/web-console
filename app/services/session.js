@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import Service from '@ember/service';
 import BrowserStore from 'ui/utils/browser-storage';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend(BrowserStore, {
+export default Service.extend(BrowserStore, {
   backing: window.localStorage,
 
   // Multiple browser windows to the same URL will send 'storage' events

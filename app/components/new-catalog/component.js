@@ -1,4 +1,8 @@
-import Ember from 'ember';
+import { set, computed } from '@ember/object';
+import { scheduleOnce } from '@ember/runloop';
+import { alias, notEmpty } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ShellQuote from 'ui/utils/shell-quote';
 import C from 'ui/utils/constants';
@@ -11,11 +15,11 @@ import {
 } from 'ui/utils/localized-catalog-field';
 import { isCatalogQuestionAnswerMissing } from 'ui/utils/catalog-question-answer';
 
-export default Ember.Component.extend(NewOrEdit, {
-  intl: Ember.inject.service(),
-  catalog: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
+export default Component.extend(NewOrEdit, {
+  intl: service(),
+  catalog: service(),
+  projects: service(),
+  settings: service(),
 
   allTemplates: null,
   templateResource: null,
@@ -37,9 +41,9 @@ export default Ember.Component.extend(NewOrEdit, {
 
   classNames: ['launch-catalog'],
 
-  primaryResource: Ember.computed.alias('stackResource'),
-  templateBase: Ember.computed.alias('templateResource.templateBase'),
-  editing: Ember.computed.notEmpty('stackResource.id'),
+  primaryResource: alias('stackResource'),
+  templateBase: alias('templateResource.templateBase'),
+  editing: notEmpty('stackResource.id'),
 
   previewOpen: false,
   previewTab: null,
@@ -76,7 +80,7 @@ export default Ember.Component.extend(NewOrEdit, {
     this.set('catalogQuestionFallbacks', null);
     this.set('catalogQuestionLocalizationLabels', null);
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       if ( this.get('selectedTemplateUrl') ) {
         this.templateChanged();
       } else {
@@ -138,14 +142,14 @@ export default Ember.Component.extend(NewOrEdit, {
         description: item.description
       };
 
-      Ember.set(item, 'label', localizedCatalogQuestionField(
+      set(item, 'label', localizedCatalogQuestionField(
         labels,
         locale,
         item.variable,
         'label',
         fallback.label
       ));
-      Ember.set(item, 'description', localizedCatalogQuestionField(
+      set(item, 'description', localizedCatalogQuestionField(
         labels,
         locale,
         item.variable,
@@ -164,7 +168,7 @@ export default Ember.Component.extend(NewOrEdit, {
     }
   }.observes('intl._locale'),
 
-  showDescription: Ember.computed('loading', 'loadingReadme', function () {
+  showDescription: computed('loading', 'loadingReadme', function () {
     return (!this.get('loading') && !this.get('loadingReadme'));
   }),
 
@@ -290,7 +294,7 @@ export default Ember.Component.extend(NewOrEdit, {
     return out;
   }.property('selectedTemplateModel.questions.@each.{variable,answer}'),
 
-  answersArray: Ember.computed.alias('selectedTemplateModel.questions'),
+  answersArray: alias('selectedTemplateModel.questions'),
 
   answersString: function() {
     return (this.get('answersArray')||[]).map((obj) => {

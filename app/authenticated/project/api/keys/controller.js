@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller, { inject as controller } from '@ember/controller';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Controller.extend(Sortable, {
-  access: Ember.inject.service(),
-  'tab-session': Ember.inject.service(),
+export default Controller.extend(Sortable, {
+  access: service(),
+  'tab-session': service(),
 
   sortBy: 'name',
   sorts: {
@@ -16,13 +18,13 @@ export default Ember.Controller.extend(Sortable, {
     created:      ['created','name','id'],
   },
 
-  application: Ember.inject.controller(),
-  cookies: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  growl: Ember.inject.service(),
-  project: Ember.computed.alias('projects.current'),
-  endpointService: Ember.inject.service('endpoint'),
-  modalService: Ember.inject.service('modal'),
+  application: controller(),
+  cookies: service(),
+  projects: service(),
+  growl: service(),
+  project: alias('projects.current'),
+  endpointService: service('endpoint'),
+  modalService: service('modal'),
 
   accountArranged: function() {
     var me = this.get(`session.${C.SESSION.ACCOUNT_ID}`);

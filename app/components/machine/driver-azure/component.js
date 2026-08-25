@@ -1,10 +1,17 @@
-import Ember from 'ember';
-import { regions, storageTypes, environments } from 'ui/utils/azure-choices';
+import { computed, observer } from '@ember/object';
+import { scheduleOnce } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
+import {
+  regions,
+  storageTypes,
+  environments
+} from 'ui/utils/azure-choices';
 import { sizes } from 'ui/utils/azure-vm-choices';
 import Driver from 'ui/mixins/driver';
 
-export default Ember.Component.extend(Driver, {
-  azureConfig      : Ember.computed.alias('model.azureConfig'),
+export default Component.extend(Driver, {
+  azureConfig      : alias('model.azureConfig'),
   environments     : environments.sortBy('value'),
   vmTypeChoices    : sizes,
   driverName       : 'azure',
@@ -48,7 +55,7 @@ export default Ember.Component.extend(Driver, {
   init() {
     this._super(...arguments);
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       this.set('publicIpChoice', this.initPublicIpChoices(this.get('azureConfig.staticPublicIp'), this.get('azureConfig.noPublicIp')));
       this.set('openPorts', this.initOpenPorts(this.get('azureConfig.openPort')));
     });
@@ -68,7 +75,7 @@ export default Ember.Component.extend(Driver, {
     }
   },
 
-  vmSizeChoices: Ember.computed('azureConfig.location', 'selectedVmType', function() {
+  vmSizeChoices: computed('azureConfig.location', 'selectedVmType', function() {
     const location = this.get('azureConfig.location');
     const selectedVmType = this.get('selectedVmType');
     const found = sizes.findBy('label', selectedVmType);
@@ -90,17 +97,17 @@ export default Ember.Component.extend(Driver, {
     return out;
   }),
 
-  regionChoices: Ember.computed('azureConfig.environment', function() {
+  regionChoices: computed('azureConfig.environment', function() {
       let environment = this.get('azureConfig.environment');
       return regions[environment];
   }),
 
-  evironmentChoiceObserver: Ember.observer('azureConfig.environment', function() {
+  evironmentChoiceObserver: observer('azureConfig.environment', function() {
       let environment = this.get('azureConfig.environment');
       this.set('azureConfig.location', regions[environment][0].name);
   }),
 
-  privateSet: Ember.computed('publicIpChoice', function() {
+  privateSet: computed('publicIpChoice', function() {
       let publicIpChoice = this.get('publicIpChoice');
       if (publicIpChoice && this.get('publicIpChoices').findBy('value', publicIpChoice).name === 'None') {
         return true;
@@ -108,7 +115,7 @@ export default Ember.Component.extend(Driver, {
       return false;
   }),
 
-  ipChoiceObserver: Ember.observer('publicIpChoice', function() {
+  ipChoiceObserver: observer('publicIpChoice', function() {
       let publicIpChoice = this.get('publicIpChoice');
       if (this.get('publicIpChoices').findBy('value', publicIpChoice).name === 'None') {
         this.set('azureConfig.usePrivateIp', true);
@@ -117,7 +124,7 @@ export default Ember.Component.extend(Driver, {
       }
   }),
 
-  setUsePrivateIp: Ember.computed('publicIpChoice', function() {
+  setUsePrivateIp: computed('publicIpChoice', function() {
       let publicIpChoice = this.get('publicIpChoice');
       if (publicIpChoice && this.get('publicIpChoices').findBy('value', publicIpChoice).name === 'None') {
         return this.set('azureConfig.usePrivateIp', true);
@@ -125,7 +132,7 @@ export default Ember.Component.extend(Driver, {
       return false;
   }),
 
-  publicIpObserver: Ember.observer('publicIpChoice', function() {
+  publicIpObserver: observer('publicIpChoice', function() {
     let elChoice = this.get('publicIpChoice');
     let choice = this.get('publicIpChoices').findBy('value', elChoice);
 
@@ -138,7 +145,7 @@ export default Ember.Component.extend(Driver, {
 
   }),
 
-  openPort: Ember.observer('openPorts', function() {
+  openPort: observer('openPorts', function() {
     let str = (this.get('openPorts')||'').trim();
     let ary = [];
     if ( str.length ) {

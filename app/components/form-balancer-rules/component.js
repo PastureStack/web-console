@@ -1,12 +1,14 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { parsePortSpec } from 'ui/utils/parse-port';
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
+export default Component.extend({
+  intl: service(),
 
   service: null,
   ruleType: 'portRule',
-  showListeners: Ember.computed.equal('ruleType','portRule'),
+  showListeners: equal('ruleType','portRule'),
 
   rules: null,
   protocolChoices: null,

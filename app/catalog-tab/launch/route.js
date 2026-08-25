@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { hash } from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
+import EmberObject, { get } from '@ember/object';
 import C from 'ui/utils/constants';
 import { catalogVersionOptions } from 'ui/utils/catalog-version-options';
 
@@ -11,11 +14,11 @@ function resourceValue(resource, path) {
     return resource.get(path);
   }
 
-  return Ember.get(resource, path);
+  return get(resource, path);
 }
 
-export default Ember.Route.extend({
-  catalog: Ember.inject.service(),
+export default Route.extend({
+  catalog: service(),
 
   parentRoute: 'catalog-tab',
 
@@ -36,7 +39,7 @@ export default Ember.Route.extend({
       dependencies.stack = store.find('stack', params.stackId);
     }
 
-    return Ember.RSVP.hash(dependencies, 'Load dependencies').then((results) => {
+    return hash(dependencies, 'Load dependencies').then((results) => {
       if ( !results.stack )
       {
         results.stack = store.createRecord({
@@ -64,7 +67,7 @@ export default Ember.Route.extend({
       } : null;
       let verArr = catalogVersionOptions(links, currentOption);
 
-      return Ember.Object.create({
+      return EmberObject.create({
         stack: results.stack,
         tpl: results.tpl,
         upgrade: results.upgrade,

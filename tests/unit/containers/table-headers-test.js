@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 import HostContainersController from 'ui/host/containers/controller';
@@ -9,7 +9,7 @@ function columnKeys(controller) {
 }
 
 function destroy(controller) {
-  Ember.run(() => controller.destroy());
+  run(() => controller.destroy());
 }
 
 module('Unit | Containers | table headers');

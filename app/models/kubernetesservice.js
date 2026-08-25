@@ -1,12 +1,12 @@
+import { alias } from '@ember/object/computed';
 import Service from 'ui/models/service';
-import Ember from 'ember';
 import escapeHtml from 'ui/utils/escape-html';
 
 const esc = escapeHtml;
 
 var KubernetesService = Service.extend({
   type: 'kubernetesService',
-  spec: Ember.computed.alias('template.spec'),
+  spec: alias('template.spec'),
 
   displayPorts: function() {
     var pub = '';

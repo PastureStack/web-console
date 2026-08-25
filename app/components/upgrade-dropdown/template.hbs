@@ -1,9 +1,9 @@
 {{~#if this.showDropdown~}}
-  <button type="button" class="btn {{this.color}}{{this.btnClass}} dropdown-toggle" data-toggle="dropdown" aria-expanded="true">
+  <button type="button" class="btn {{this.color}}{{this.btnClass}} dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="true">
     {{t (concat-str 'upgradeBtn.status.' this.upgradeStatus character='')}}
     <span class="sr-only">{{t 'nav.srToggleDropdown'}}</span>
   </button>
-  <ul class="dropdown-menu dropdown-menu-right" role="menu">
+  <ul class="dropdown-menu dropdown-menu-end" role="menu">
     {{#each-in this.allVersions as |version url|}}
       <li class="{{if (eq this.currentVersion version) 'active'}}">
         <a {{action "changeVersion" version url}}>

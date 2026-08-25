@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { scheduleOnce } from '@ember/runloop';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
 function clientX(event) {
@@ -24,7 +25,7 @@ function clientX(event) {
   return 0;
 }
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames        : ['slider'],
   classNameBindings : ['disabled','active'],
 
@@ -53,7 +54,7 @@ export default Ember.Component.extend({
 
   didInsertElement: function() {
     this._super();
-    Ember.run.scheduleOnce('afterRender', this, 'valueChanged');
+    scheduleOnce('afterRender', this, 'valueChanged');
   },
 
   willDestroyElement: function() {

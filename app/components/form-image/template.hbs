@@ -13,8 +13,8 @@
       <div class="input-group">
         {{input type="text" value=this.userInput placeholder=(t 'formImage.vm.placeholder') class="form-control"}}
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu dropdown-menu-right" role="menu" style="min-width: 250px; max-height: 300px; overflow-y: auto;">
+          <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu" style="min-width: 250px; max-height: 300px; overflow-y: auto;">
             <li role="presentation" class="dropdown-header">{{t 'formImage.vm.dropdownLabel' appName=this.settings.appName}}</li>
             <li><a href="#" {{action "setInput" "ubuntu:26.04"}}>ubuntu:26.04</a></li>
             <li><a href="#" {{action "setInput" "alpine:3.22"}}>alpine:3.22</a></li>

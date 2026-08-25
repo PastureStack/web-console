@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { service } from '@ember/service';
 import Stack from 'ui/models/stack';
 import C from 'ui/utils/constants';
 
 var KubernetesStack = Stack.extend({
   type: 'kubernetesStack',
 
-  k8s: Ember.inject.service(),
+  k8s: service(),
 
   availableActions: function() {
     var a = this.get('actionLinks');
@@ -30,7 +31,7 @@ var KubernetesStack = Stack.extend({
       return obj.hasLabel(C.LABEL.STACK_UUID, uuid);
     }
 
-    return Ember.Object.create({
+    return EmberObject.create({
       services:    this.get('k8s.services').filter(fn),
       deployments: this.get('k8s.deployments').filter(fn),
       replicasets: this.get('k8s.replicasets').filter(fn),

@@ -1,17 +1,19 @@
-import Ember from 'ember';
+import { once } from '@ember/runloop';
+import { reject, resolve, Promise, all } from 'rsvp';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 
 let ACTIVEISH = ['active','upgrading','updating-active'];
 
-export default Ember.Service.extend({
-  access: Ember.inject.service(),
-  'tab-session': Ember.inject.service('tab-session'),
-  prefs: Ember.inject.service(),
-  k8sSvc: Ember.inject.service('k8s'),
-  swarmSvc: Ember.inject.service('swarm'),
-  mesosSvc: Ember.inject.service('mesos'),
-  userStore: Ember.inject.service('user-store'),
-  store: Ember.inject.service(),
+export default Service.extend({
+  access: service(),
+  'tab-session': service('tab-session'),
+  prefs: service(),
+  k8sSvc: service('k8s'),
+  swarmSvc: service('swarm'),
+  mesosSvc: service('mesos'),
+  userStore: service('user-store'),
+  store: service(),
 
   current: null,
   all: null,
@@ -114,7 +116,7 @@ export default Ember.Service.extend({
     function fail() {
       // Then cry
       select(null);
-      return Ember.RSVP.reject();
+      return reject();
     }
   },
 
@@ -125,11 +127,11 @@ export default Ember.Service.extend({
     } else {
       this.set('store.baseUrl', this.get('app.apiEndpoint'));
     }
-    return Ember.RSVP.resolve(project);
+    return resolve(project);
   },
 
   _activeProjectFromId: function(projectId) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       if ( !projectId )
       {
         reject();
@@ -192,16 +194,16 @@ export default Ember.Service.extend({
       }
     }
 
-    return Ember.RSVP.all(promises).then(() => {
+    return all(promises).then(() => {
       this.set('orchestrationState', hash);
-      return Ember.RSVP.resolve(hash);
+      return resolve(hash);
     }).catch((e) => {
-      return Ember.RSVP.reject(e);
+      return reject(e);
     });
   },
 
   orchestrationStateShouldChange: function() {
-    Ember.run.once(this, 'updateOrchestrationState', true);
+    once(this, 'updateOrchestrationState', true);
   }.observes('current.{id,orchestration}'),
 
   isReady: function() {

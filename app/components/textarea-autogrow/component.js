@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import { scheduleOnce, later, debounce, run } from '@ember/runloop';
+import { service } from '@ember/service';
+import TextArea from '@ember/legacy-built-in-components/components/textarea';
 import { isGecko } from 'ui/utils/platform';
 import IntlPlaceholder from 'ui/mixins/intl-placeholder';
 
-export default Ember.TextArea.extend(IntlPlaceholder, {
-  intl: Ember.inject.service(),
+export default TextArea.extend(IntlPlaceholder, {
+  intl: service(),
 
   minHeight: 0,
   maxHeight: 200,
@@ -12,7 +14,7 @@ export default Ember.TextArea.extend(IntlPlaceholder, {
   classNames: ['no-resize'],
 
   didInsertElement() {
-    Ember.run.scheduleOnce('afterRender', this, 'initHeights');
+    scheduleOnce('afterRender', this, 'initHeights');
   },
 
   initHeights() {
@@ -23,12 +25,12 @@ export default Ember.TextArea.extend(IntlPlaceholder, {
     this.autoSize();
 
     this.$().on('paste', () => {
-      Ember.run.later(this, 'autoSize', 100);
+      later(this, 'autoSize', 100);
     });
   },
 
   changed: function() {
-    Ember.run.debounce(this,'autoSize',100);
+    debounce(this,'autoSize',100);
   }.observes('value'),
 
   isSmall: function() {
@@ -47,7 +49,7 @@ export default Ember.TextArea.extend(IntlPlaceholder, {
     let el = this.element;
     let $el = $(el);
 
-    Ember.run(() => {
+    run(() => {
       $el.css('height', '1px');
 
       let border = parseInt($el.css('borderTopWidth'),10)||0 + parseInt($el.css('borderBottomWidth'),10)||0;

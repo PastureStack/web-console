@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import MfaSecurityConfirmation from 'ui/components/mfa-security-confirmation/component';
 import inertRenderer from '../../helpers/inert-renderer';
@@ -16,11 +17,11 @@ test('does not start a passkey confirmation on an insecure connection', function
   });
   let component = createOwned(InsecureMfaSecurityConfirmation, {
     renderer: inertRenderer(),
-    intl: Ember.Object.create(),
-    modalService: Ember.Object.create({modalOpts: {}}),
-    userStore: Ember.Object.create({
+    intl: EmberObject.create(),
+    modalService: EmberObject.create({modalOpts: {}}),
+    userStore: EmberObject.create({
       rawRequest() {
-        return Ember.RSVP.resolve({body: challenge});
+        return resolve({body: challenge});
       },
     }),
   }, 'component');

@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { schedule } from '@ember/runloop';
+import { observer } from '@ember/object';
+import Component from '@ember/component';
 import Resource from 'ember-api-store/models/resource';
 
-export default Ember.Component.extend({
+export default Component.extend({
   resource:     null, // The object that is being edited
   resourceType: null, // The schema type the object is
   field:        null, // The field on resource that this input is for
@@ -52,8 +54,8 @@ export default Ember.Component.extend({
     return out;
   }.property('field','resourceType','schemas.[]'),
 
-  valueChanged: Ember.observer('value', function() {
-    Ember.run.schedule('afterRender', () => {
+  valueChanged: observer('value', function() {
+    schedule('afterRender', () => {
       this.get('resource').set(this.get('field'), this.get('value'));
     });
   }),

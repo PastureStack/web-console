@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import EmberObject from '@ember/object';
 import { setOwner } from '@ember/application';
 import { module, test } from 'qunit';
 
@@ -9,7 +10,7 @@ module('Unit | Utility | owner lookup');
 test('it resolves stable legacy properties through the public owner API', function(assert) {
   let target = {id: 'lookup-target'};
   let requestedName;
-  let subject = Ember.Object.extend({
+  let subject = EmberObject.extend({
     target: ownerLookup('service:lookup-target'),
   }).create();
 
@@ -23,5 +24,5 @@ test('it resolves stable legacy properties through the public owner API', functi
   assert.strictEqual(subject.get('target'), target);
   assert.equal(requestedName, 'service:lookup-target');
 
-  Ember.run(() => subject.destroy());
+  run(() => subject.destroy());
 });

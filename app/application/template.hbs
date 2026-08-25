@@ -37,7 +37,7 @@
   {{outlet}}
 
   <div class="dropdown" id="resource-actions-parent">
-    <ul role="menu" id="resource-actions" class="hide resource-actions global-actions dropdown-menu dropdown-menu-right">
+    <ul role="menu" id="resource-actions" class="hide resource-actions global-actions dropdown-menu dropdown-menu-end">
       <li class="resource-actions-tabbable"><a tabindex="-1" id="resource-actions-first" aria-label="{{t 'generic.selectActionBelow'}}"></a></li>
       {{#each this.resourceActions.activeActions as |item|}}
         {{#if item.divider}}

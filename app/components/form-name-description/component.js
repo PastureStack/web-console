@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { once, next } from '@ember/runloop';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   // Inputs
   // You can either set model or name+description
   model                  : null,
@@ -44,7 +45,7 @@ export default Ember.Component.extend({
   }.observes('model'),
 
   nameChanged: function() {
-   Ember.run.once(() => {
+   once(() => {
     let val = this.get('_name');
     if ( this.get('model') ) {
       this.set('model.name', val);
@@ -55,7 +56,7 @@ export default Ember.Component.extend({
   }.observes('_name'),
 
   descriptionChanged: function() {
-   Ember.run.once(() => {
+   once(() => {
     let val = this.get('_description');
     if ( this.get('model') ) {
       this.set('model.description', val);
@@ -66,7 +67,7 @@ export default Ember.Component.extend({
   }.observes('_description'),
 
   didInsertElement() {
-    Ember.run.next(() => {
+    next(() => {
       if ( this.isDestroyed || this.isDestroying ) {
         return;
       }

@@ -1,14 +1,18 @@
-import Ember from 'ember';
+import { reads } from '@ember/object/computed';
+import Component from '@ember/component';
+import { get, computed } from '@ember/object';
+
+function noop() {}
 
 export function ungroupedSelectContent(content, groupPath='group') {
-  return (content || []).filter((option) => !Ember.get(option, groupPath));
+  return (content || []).filter((option) => !get(option, groupPath));
 }
 
 export function groupedSelectContent(content, groupPath='group') {
   let groups = [];
 
   (content || []).forEach((option) => {
-    let key = Ember.get(option, groupPath);
+    let key = get(option, groupPath);
     if ( !key ) {
       return;
     }
@@ -25,7 +29,7 @@ export function groupedSelectContent(content, groupPath='group') {
   return groups.sort((a, b) => String(a.group).localeCompare(String(b.group)));
 }
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'select',
   // possible passed-in values with their defaults:
   content: null,
@@ -34,23 +38,23 @@ export default Ember.Component.extend({
   optionLabelPath: 'label',
   optionGroupPath: 'group',
   optionDisabledPath: 'disabled',
-  action: Ember.K, // action to fire on change
+  action: noop, // action to fire on change
   value: null,
   localizedLabel: false,
   disabled: false,
   attributeBindings: ['disabled'],
 
-  ungroupedContent: Ember.computed('content.[]', 'content.@each.group', 'optionGroupPath', function() {
+  ungroupedContent: computed('content.[]', 'content.@each.group', 'optionGroupPath', function() {
     return ungroupedSelectContent(this.get('content'), this.get('optionGroupPath'));
   }),
 
-  groupedContent: Ember.computed('content.[]', 'content.@each.group', 'optionGroupPath', function() {
+  groupedContent: computed('content.[]', 'content.@each.group', 'optionGroupPath', function() {
     return groupedSelectContent(this.get('content'), this.get('optionGroupPath'));
   }),
 
   // shadow the passed-in `selection` to avoid
   // leaking changes to it via a 2-way binding
-  _selection: Ember.computed.reads('selection'),
+  _selection: reads('selection'),
 
   init() {
     this._super(...arguments);
@@ -103,7 +107,7 @@ export default Ember.Component.extend({
         changeCallback(selection);
       }
 
-      this.set('value', Ember.get(selection, this.get('optionValuePath')));
+      this.set('value', get(selection, this.get('optionValuePath')));
     } else {
       this.set('value', null);
     }

@@ -47,7 +47,7 @@
           {{#input-or-display editable=this.editing value=this.healthCheck.requestLine}}
               <div class="input-group">
                 <div class="input-group-btn">
-                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{this.uriMethod}} <i class="icon icon-chevron-down"></i></button>
+                  <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{this.uriMethod}} <i class="icon icon-chevron-down"></i></button>
                   <ul class="dropdown-menu" role="menu">
                     <li role="presentation" class="dropdown-header">
                       {{t 'formHealthCheck.method.prompt'}}
@@ -63,7 +63,7 @@
                 {{input type="text" classNames="form-control" placeholder=(t 'formHealthCheck.path.placeholder') value=this.uriPath}}
 
                 <div class="input-group-btn">
-                  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">{{this.uriVersion}} <i class="icon icon-chevron-down"></i></button>
+                  <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{this.uriVersion}} <i class="icon icon-chevron-down"></i></button>
                   <ul class="dropdown-menu" role="menu">
                     <li role="presentation" class="dropdown-header">
                       {{t 'formHealthCheck.version.prompt'}}

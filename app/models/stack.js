@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 import C from 'ui/utils/constants';
@@ -38,9 +39,9 @@ export function tagChoices(all) {
 
 var Stack = Resource.extend({
   type: 'stack',
-  k8s: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
-  projectsService: Ember.inject.service('projects'),
+  k8s: service(),
+  modalService: service('modal'),
+  projectsService: service('projects'),
 
   services: denormalizeIdArray('serviceIds'),
 
@@ -224,7 +225,7 @@ var Stack = Resource.extend({
     }
   }.property('externalIdInfo.kind','group','system'),
 
-  tags: Ember.computed('group', {
+  tags: computed('group', {
     get() {
       return tagsToArray(this.get('group'));
     },

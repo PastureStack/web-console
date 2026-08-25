@@ -17,19 +17,19 @@ def expect(condition, message):
 
 dev = package.get("devDependencies", {})
 overrides = package.get("overrides", {})
-expect(dev.get("ember-intl") == "8.4.0", f"ember-intl declaration is {dev.get('ember-intl')!r}")
+expect(dev.get("ember-intl") == "9.0.0", f"ember-intl declaration is {dev.get('ember-intl')!r}")
 expect(
-    dev.get("@formatjs/icu-messageformat-parser") == "3.5.16",
+    dev.get("@formatjs/icu-messageformat-parser") == "3.5.17",
     f"FormatJS parser declaration is {dev.get('@formatjs/icu-messageformat-parser')!r}",
 )
 expect(
-    overrides.get("@formatjs/icu-messageformat-parser") == "3.5.16",
-    "FormatJS parser override is not locked to 3.5.16",
+    overrides.get("@formatjs/icu-messageformat-parser") == "3.5.17",
+    "FormatJS parser override is not locked to 3.5.17",
 )
 
 expected_lock = {
-    "node_modules/ember-intl": "8.4.0",
-    "node_modules/@formatjs/icu-messageformat-parser": "3.5.16",
+    "node_modules/ember-intl": "9.0.0",
+    "node_modules/@formatjs/icu-messageformat-parser": "3.5.17",
 }
 for package_path, version in expected_lock.items():
     expect(
@@ -52,7 +52,7 @@ for marker in ["YAML.parse", "JSON.stringify", "outputPath"]:
     expect(marker in tree, f"translation JSON tree marker missing: {marker}")
 for marker in ["instance.lookup('service:intl')", "findTranslationByKey", "formatHtmlMessage", "getLocalesByTranslations"]:
     expect(marker in initializer, f"Intl compatibility marker missing: {marker}")
-for marker in ["Ember.Helper.extend", "intl.t(key, options)", "options.htmlSafe = true"]:
+for marker in ["export default Helper.extend", "intl.t(key, options)", "options.htmlSafe = true"]:
     expect(marker in html_helper, f"HTML message helper compatibility marker missing: {marker}")
 
 yaml_files = sorted((repo / "translations").glob("*.yaml"))
@@ -60,7 +60,7 @@ expect(len(yaml_files) == 14, f"locale source count is {len(yaml_files)}, expect
 expect(any(path.name == "none.yaml" for path in yaml_files), "development-only none.yaml pseudo-locale is missing")
 
 docs = (repo / "docs/modernization.md").read_text(encoding="utf-8")
-for phrase in ["Ember Intl 8 public service API", "generated JSON assets"]:
+for phrase in ["Ember Intl 9 public service API", "generated JSON assets"]:
     expect(phrase in docs, f"modernization documentation missing: {phrase}")
 
 if failures:
@@ -71,7 +71,7 @@ if failures:
 
 print(
     "UI_EMBER_INTL_UPGRADE_OK "
-    "ember-intl=8.4.0 parser=3.5.16 selectable-locales=13 pseudo-locales=1 legacy-intl-packages=0 html-helper=restored"
+    "ember-intl=9.0.0 parser=3.5.17 selectable-locales=13 pseudo-locales=1 legacy-intl-packages=0 html-helper=restored"
 )
-print("Locale YAML is converted to release JSON by a first-party build plugin and consumed through the Ember Intl 8 public service boundary.")
+print("Locale YAML is converted to release JSON by a first-party build plugin and consumed through the Ember Intl 9 public service boundary.")
 print("failure_count=0")

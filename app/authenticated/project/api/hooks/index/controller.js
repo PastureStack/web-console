@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Controller.extend(Sortable, {
-  settings: Ember.inject.service(),
+export default Controller.extend(Sortable, {
+  settings: service(),
 
   sortableContent: function() {
     let receivers = this.get('model.receivers');

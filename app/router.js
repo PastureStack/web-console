@@ -1,6 +1,6 @@
 import EmberRouter from '@ember/routing/router';
 import config from './config/environment';
-import {applyRoutes, clearRoutes} from 'ui/utils/additional-routes';
+import { applyRoutes, clearRoutes, installAdditionalRouteSupport } from 'ui/utils/additional-routes';
 
 const Router = EmberRouter.extend({
   location: config.locationType,
@@ -8,6 +8,7 @@ const Router = EmberRouter.extend({
 });
 
 Router.map(function() {
+  installAdditionalRouteSupport(this);
   this.route('ie');
   this.route('index');
   this.route('failWhale', {path: '/fail'});

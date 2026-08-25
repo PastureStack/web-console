@@ -1,14 +1,15 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Route from '@ember/routing/route';
 import MultiStatsSocket from 'ui/utils/multi-stats';
 
-export default Ember.Route.extend({
+export default Route.extend({
   statsSocket: null,
 
   model() {
     let host = this.modelFor('host').get('host');
 
     return host.followLink('instances').then((instances) => {
-      return Ember.Object.create({
+      return EmberObject.create({
         host,
         instances,
       });

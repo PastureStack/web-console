@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
+export default Controller.extend({
   actions: {
     changeContainer(container) {
       this.get('router').transitionTo('container', container.get('id'));

@@ -1,13 +1,18 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import $ from 'jquery';
+import { computed, observer } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import Errors from 'ui/utils/errors';
 import C from 'ui/utils/constants';
 
 var PLAIN_PORT = 389;
 var TLS_PORT   = 636;
 
-export default Ember.Controller.extend({
-  access:         Ember.inject.service(),
-  settings:       Ember.inject.service(),
+export default Controller.extend({
+  access:         service(),
+  settings:       service(),
 
   confirmDisable: false,
   errors:         null,
@@ -16,7 +21,7 @@ export default Ember.Controller.extend({
   providerName:   'ldap.providerName.ad',
   userType:       C.PROJECT.TYPE_LDAP_USER,
   groupType:      C.PROJECT.TYPE_LDAP_GROUP,
-  ldapConfig:     Ember.computed.alias('model.ldapConfig'),
+  ldapConfig:     alias('model.ldapConfig'),
 
   addUserInput:   '',
   addOrgInput:    '',
@@ -26,19 +31,19 @@ export default Ember.Controller.extend({
   editing:        false,
   advancedOpen:   false,
 
-  createDisabled: Ember.computed('username.length','password.length', function() {
+  createDisabled: computed('username.length','password.length', function() {
     return !this.get('username.length') || !this.get('password.length');
   }),
 
-  numUsers: Ember.computed('model.allowedIdentities.@each.externalIdType','userType','groupType', function() {
+  numUsers: computed('model.allowedIdentities.@each.externalIdType','userType','groupType', function() {
     return (this.get('model.allowedIdentities')||[]).filterBy('externalIdType', this.get('userType')).get('length');
   }),
 
-  numGroups: Ember.computed('model.allowedIdentities.@each.externalIdType','userType','groupType', function() {
+  numGroups: computed('model.allowedIdentities.@each.externalIdType','userType','groupType', function() {
     return (this.get('model.allowedIdentities')||[]).filterBy('externalIdType', this.get('groupType')).get('length');
   }),
 
-  canEdit: Ember.computed('access.enabled', 'editing', function() {
+  canEdit: computed('access.enabled', 'editing', function() {
     var isEnabled = this.get('access.enabled');
     var editing   = this.get('editing');
 
@@ -50,7 +55,7 @@ export default Ember.Controller.extend({
 
   }),
 
-  tlsChanged: Ember.observer('ldapConfig.tls', function() {
+  tlsChanged: observer('ldapConfig.tls', function() {
     var on   = this.get('ldapConfig.tls');
     var port = parseInt(this.get('ldapConfig.port'),10);
 
@@ -78,10 +83,10 @@ export default Ember.Controller.extend({
       let open = this.get('advancedOpen');
 
       if (open) {
-        Ember.$('.custom-schema').hide();
+        $('.custom-schema').hide();
         this.set('advancedOpen', false);
       } else {
-        Ember.$('.custom-schema').show();
+        $('.custom-schema').show();
         this.set('advancedOpen', true);
       }
 
@@ -191,7 +196,7 @@ export default Ember.Controller.extend({
 
     promptDisable: function() {
       this.set('confirmDisable', true);
-      Ember.run.later(this, function() {
+      later(this, function() {
         this.set('confirmDisable', false);
       }, 10000);
     },

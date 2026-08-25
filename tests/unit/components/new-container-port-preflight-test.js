@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { A } from '@ember/array';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 
 import NewContainerComponent from 'ui/components/new-container/component';
@@ -8,26 +10,26 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 module('Unit | Component | new container port preflight');
 
 function createComponent() {
-  let launchConfig = Ember.Object.create({
+  let launchConfig = EmberObject.create({
     labels: {},
-    ports: Ember.A(),
-    secrets: Ember.A(),
+    ports: A(),
+    secrets: A(),
   });
-  let service = Ember.Object.create({
+  let service = EmberObject.create({
     name: 'web',
     scale: 1,
     launchConfig,
-    secondaryLaunchConfigs: Ember.A(),
+    secondaryLaunchConfigs: A(),
     validationErrors() {
-      return Ember.A();
+      return A();
     },
   });
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(NewContainerComponent, {
       renderer: inertRenderer(),
-      intl: Ember.Object.create({t(key) { return key; }}),
+      intl: EmberObject.create({t(key) { return key; }}),
       launchConfig,
       service,
       primaryResource: service,
@@ -43,10 +45,10 @@ test('preflight closure callback is invoked without legacy sendAction', function
   let received;
   let component = createComponent();
 
-  Ember.run(() => component.set('preflightChanged', (state) => {
+  run(() => component.set('preflightChanged', (state) => {
     received = state;
   }));
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'available',
     pending: false,
     blocked: false,
@@ -54,8 +56,8 @@ test('preflight closure callback is invoked without legacy sendAction', function
 
   assert.equal(received.status, 'available', 'passes the state to the closure callback');
 
-  Ember.run(() => component.set('preflightChanged', null));
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.set('preflightChanged', null));
+  run(() => component.send('portPreflightChanged', {
     status: 'warning',
     pending: false,
     blocked: false,
@@ -68,25 +70,25 @@ test('combined preflight status ignores idle and keeps the most important result
   let received;
   let component = createComponent();
 
-  Ember.run(() => component.set('preflightChanged', (state) => {
+  run(() => component.set('preflightChanged', (state) => {
     received = state;
   }));
 
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'available',
     pending: false,
     blocked: false,
   }));
   assert.equal(received.status, 'available', 'an idle volume check does not hide an available port result');
 
-  Ember.run(() => component.send('volumePreflightChanged', {
+  run(() => component.send('volumePreflightChanged', {
     status: 'warning',
     pending: false,
     blocked: false,
   }));
   assert.equal(received.status, 'warning', 'a warning takes precedence over an available result');
 
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'blocked',
     pending: false,
     blocked: true,
@@ -98,9 +100,9 @@ test('combined preflight status ignores idle and keeps the most important result
 
 test('serialized port changes update the launch config through a named action', function(assert) {
   let component = createComponent();
-  let ports = Ember.A(['19041:80/tcp']);
+  let ports = A(['19041:80/tcp']);
 
-  Ember.run(() => component.send('setPorts', ports));
+  run(() => component.send('setPorts', ports));
 
   assert.strictEqual(component.get('launchConfig.ports'), ports, 'stores the serialized port array');
   destroyOwned(component);
@@ -111,21 +113,21 @@ test('primary check disables save only while pending or blocked', function(asser
 
   assert.notOk(component.get('saveDisabled'), 'starts enabled');
 
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'checking',
     pending: true,
     blocked: false,
   }));
   assert.ok(component.get('saveDisabled'), 'disables save during the live check');
 
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'blocked',
     pending: false,
     blocked: true,
   }));
   assert.ok(component.get('saveDisabled'), 'disables save for an active conflict');
 
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'warning',
     pending: false,
     blocked: false,
@@ -138,7 +140,7 @@ test('primary check disables save only while pending or blocked', function(asser
 test('a transient volume recheck cannot become a stale save error', function(assert) {
   let component = createComponent();
 
-  Ember.run(() => component.send('volumePreflightChanged', {
+  run(() => component.send('volumePreflightChanged', {
     status: 'checking',
     pending: true,
     blocked: false,
@@ -154,14 +156,14 @@ test('a transient volume recheck cannot become a stale save error', function(ass
 test('sidekick checks participate in the parent save lock', function(assert) {
   let component = createComponent();
 
-  Ember.run(() => component.send('sidekickPortPreflightChanged', 'side-a', {
+  run(() => component.send('sidekickPortPreflightChanged', 'side-a', {
     status: 'checking',
     pending: true,
     blocked: false,
   }));
   assert.ok(component.get('saveDisabled'), 'a pending sidekick disables save');
 
-  Ember.run(() => component.send('sidekickPortPreflightChanged', 'side-a', {
+  run(() => component.send('sidekickPortPreflightChanged', 'side-a', {
     status: 'blocked',
     pending: false,
     blocked: true,
@@ -169,7 +171,7 @@ test('sidekick checks participate in the parent save lock', function(assert) {
   assert.ok(component.get('hasSidekickPortPreflightBlocked'), 'tracks a blocked sidekick');
   assert.ok(component.get('saveDisabled'), 'a blocked sidekick disables save');
 
-  Ember.run(() => component.removeSidekickPortPreflightState('side-a'));
+  run(() => component.removeSidekickPortPreflightState('side-a'));
   assert.notOk(component.get('hasSidekickPortPreflightBlocked'), 'removes stale state with the sidekick');
   assert.notOk(component.get('saveDisabled'), 're-enables save after removing the blocked sidekick');
 
@@ -179,7 +181,7 @@ test('sidekick checks participate in the parent save lock', function(assert) {
 test('service upgrade exposes the exact service and rolling-update context to preflight', function(assert) {
   let component = createComponent();
 
-  Ember.run(() => {
+  run(() => {
     component.setProperties({
       isUpgrade: true,
       'service.id': '1s55',
@@ -198,10 +200,10 @@ test('service upgrade exposes the exact service and rolling-update context to pr
   assert.equal(component.get('preflightBatchSize'), 2, 'includes concurrent upgrade capacity');
   assert.ok(component.get('preflightStartFirst'), 'includes start-first placement semantics');
 
-  Ember.run(() => component.send('setPorts', Ember.A(['18080:8080/tcp'])));
+  run(() => component.send('setPorts', A(['18080:8080/tcp'])));
   assert.deepEqual(component.get('launchConfig.ports'), ['18080:8080/tcp'], 'retains newly added upgrade ports');
 
-  Ember.run(() => component.send('portPreflightChanged', {
+  run(() => component.send('portPreflightChanged', {
     status: 'blocked',
     pending: false,
     blocked: true,

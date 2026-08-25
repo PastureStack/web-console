@@ -36,18 +36,30 @@ dependencies = package.get("dependencies", {})
 dev_dependencies = package.get("devDependencies", {})
 if "node-sass" in dependencies or "node-sass" in dev_dependencies:
     fail("NODE_SASS_STILL_DECLARED")
-if dependencies.get("sass") != "1.99.0":
-    fail("SASS_DECLARATION_UNEXPECTED", actual=dependencies.get("sass"), expected="1.99.0")
-if dev_dependencies.get("ember-cli-sass") != "^10.0.1":
-    fail("EMBER_CLI_SASS_VERSION_CHANGED", actual=dev_dependencies.get("ember-cli-sass"), expected="^10.0.1")
+if dependencies.get("sass") != "1.103.1":
+    fail("SASS_DECLARATION_UNEXPECTED", actual=dependencies.get("sass"), expected="1.103.1")
+if dev_dependencies.get("ember-cli-sass") != "11.0.1":
+    fail("EMBER_CLI_SASS_VERSION_CHANGED", actual=dev_dependencies.get("ember-cli-sass"), expected="11.0.1")
 overrides = package.get("overrides", {})
 lacsso_manifest = Path("vendor/lacsso/package.json")
 if not lacsso_manifest.is_file():
     fail("LACSSO_VENDOR_MANIFEST_MISSING", file=lacsso_manifest)
 else:
     lacsso_package = json.loads(lacsso_manifest.read_text(encoding="utf-8"))
-    if lacsso_package.get("dependencies", {}).get("ember-cli-sass") != "10.0.1":
-        fail("LACSSO_EMBER_CLI_SASS_VENDOR_VERSION_UNEXPECTED", actual=lacsso_package.get("dependencies", {}).get("ember-cli-sass"), expected="10.0.1")
+    if lacsso_package.get("dependencies", {}).get("ember-cli-sass") != "11.0.1":
+        fail("LACSSO_EMBER_CLI_SASS_VENDOR_VERSION_UNEXPECTED", actual=lacsso_package.get("dependencies", {}).get("ember-cli-sass"), expected="11.0.1")
+
+lacsso_forms = Path("vendor/lacsso/app/styles/components/_forms.scss")
+lacsso_css = Path("vendor/lacsso/lacsso.css")
+if not lacsso_forms.is_file() or not lacsso_css.is_file():
+    fail("LACSSO_STYLE_SOURCE_MISSING")
+else:
+    lacsso_style_text = lacsso_forms.read_text(encoding="utf-8") + "\n" + lacsso_css.read_text(encoding="utf-8")
+    for marker in ("Bootstrap v3", ".lacsso.input-group"):
+        if marker in lacsso_style_text:
+            fail("LACSSO_BOOTSTRAP3_STYLE_REMAINS", marker=marker)
+    if ".lacsso.input-sm" not in lacsso_style_text:
+        fail("LACSSO_ACTIVE_INPUT_SIZE_MISSING")
 
 build_source = build_path.read_text(encoding="utf-8")
 if "node-sass" in build_source:
@@ -74,13 +86,13 @@ else:
     if "node_modules/node-sass" in packages:
         fail("NODE_SASS_STILL_RESOLVED", package="node_modules/node-sass")
     sass = packages.get("node_modules/sass", {})
-    if sass.get("version") != "1.99.0":
-        fail("SASS_LOCK_VERSION_UNEXPECTED", actual=sass.get("version"), expected="1.99.0")
+    if sass.get("version") != "1.103.1":
+        fail("SASS_LOCK_VERSION_UNEXPECTED", actual=sass.get("version"), expected="1.103.1")
     if "node_modules/ember-cli-sass" not in packages:
         fail("EMBER_CLI_SASS_LOCK_MISSING")
     lacsso_sass = packages.get("vendor/lacsso/node_modules/ember-cli-sass", {}) or packages.get("node_modules/lacsso/node_modules/ember-cli-sass", {})
-    if lacsso_sass and lacsso_sass.get("version") != "10.0.1":
-        fail("LACSSO_EMBER_CLI_SASS_LOCK_UNEXPECTED", actual=lacsso_sass.get("version"), expected="10.0.1")
+    if lacsso_sass:
+        fail("LACSSO_DUPLICATE_EMBER_CLI_SASS_RESOLVED", actual=lacsso_sass.get("version"))
     if "node_modules/lacsso/node_modules/broccoli-sass-source-maps" in packages:
         fail("LACSSO_OLD_SASS_PIPELINE_STILL_RESOLVED")
     package_count = len(packages)
@@ -91,7 +103,7 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_SASS_REPLACEMENT_OK sass=1.99.0 lockfile={lock_path} package_count={package_count}")
+print(f"UI_SASS_REPLACEMENT_OK sass=1.103.1 ember_cli_sass=11.0.1 lockfile={lock_path} package_count={package_count}")
 print("node-sass is absent from current package.json, ember-cli-build.js, and the sass replacement lock baseline.")
 print("This is a no-publish dependency/build-chain step; browser artifact publication still requires CSS and route regression tests.")
 print("failure_count=0")

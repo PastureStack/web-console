@@ -1,12 +1,14 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  settings: Ember.inject.service(),
+export default Controller.extend({
+  settings: service(),
 
   modelError: false,
   modelResolved: false,
   hasHosts: true,
-  docsLink: Ember.computed.alias('settings.docsBase'),
+  docsLink: alias('settings.docsBase'),
 
   modelObserver: function() {
     if (this.get('model.resolved')) {

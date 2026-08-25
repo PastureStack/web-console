@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import { get, set } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   instance: null,
   availableDrivers: null,
   errors: null,
 
-  disksArray: Ember.computed.alias('instance.disks'),
+  disksArray: alias('instance.disks'),
 
   init() {
     this._super(...arguments);
@@ -13,9 +15,9 @@ export default Ember.Component.extend({
 
     var disks = (this.get('instance.disks')||[]).slice();
     disks.forEach((disk) => {
-      if ( !Ember.get(disk, 'driver') )
+      if ( !get(disk, 'driver') )
       {
-        Ember.set(disk, 'driver', defaultDriver);
+        set(disk, 'driver', defaultDriver);
       }
     });
 
@@ -32,8 +34,8 @@ export default Ember.Component.extend({
     var errors = [];
 
     this.get('instance.disks').forEach((disk) => {
-      var name = (Ember.get(disk,'name')||'').trim().toLowerCase();
-      Ember.set(disk, 'name', name);
+      var name = (get(disk,'name')||'').trim().toLowerCase();
+      set(disk, 'name', name);
 
       if ( name.match(/([^a-z0-9._-])/) )
       {

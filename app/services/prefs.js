@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import Service, { service } from '@ember/service';
+import { computed } from '@ember/object';
 import C from 'ui/utils/constants';
 
 function pageSizePreference(preference, options, fallback) {
@@ -8,7 +10,7 @@ function pageSizePreference(preference, options, fallback) {
     return options.indexOf(parsed) === -1 ? fallback : parsed;
   }
 
-  return Ember.computed(preference, {
+  return computed(preference, {
     get() {
       return normalize(this.get(preference));
     },
@@ -23,8 +25,8 @@ function pageSizePreference(preference, options, fallback) {
   });
 }
 
-export default Ember.Service.extend({
-  userStore: Ember.inject.service('user-store'),
+export default Service.extend({
+  userStore: service('user-store'),
 
   unremoved: function() {
     return this.get('userStore').all('userpreference');
@@ -82,7 +84,7 @@ export default Ember.Service.extend({
     if ( !obj.get('id') || obj.get('value') !== neu ) {
       obj.set('value', neu);
       obj.save().then(() => {
-        Ember.run(() => {
+        run(() => {
           this.notifyPropertyChange(key);
         });
       });

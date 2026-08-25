@@ -1,17 +1,19 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller, { inject as controller } from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import { tagsToArray } from 'ui/models/stack';
 
-export default Ember.Controller.extend(Sortable, {
-  stacksController: Ember.inject.controller('stacks'),
-  projects: Ember.inject.service(),
-  prefs: Ember.inject.service(),
-  intl: Ember.inject.service(),
+export default Controller.extend(Sortable, {
+  stacksController: controller('stacks'),
+  projects: service(),
+  prefs: service(),
+  intl: service(),
 
-  infraTemplates: Ember.computed.alias('stacksController.infraTemplates'),
-  which: Ember.computed.alias('stacksController.which'),
-  tags: Ember.computed.alias('stacksController.tags'),
+  infraTemplates: alias('stacksController.infraTemplates'),
+  which: alias('stacksController.which'),
+  tags: alias('stacksController.tags'),
   showAddtlInfo: false,
   selectedService: null,
 
@@ -59,7 +61,7 @@ export default Ember.Controller.extend(Sortable, {
   // state isn't really a dependency here, but sortable won't recompute when it changes otherwise
   }.property('model.stacks.[]','model.stacks.@each.{state,grouping}','which','tags'),
 
-  sortableContent: Ember.computed.alias('filteredStacks'),
+  sortableContent: alias('filteredStacks'),
   sortBy: 'name',
   sorts: {
     state: ['stateSort','name','id'],

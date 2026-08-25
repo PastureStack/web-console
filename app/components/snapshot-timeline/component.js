@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { htmlSafe } from '@ember/template';
+import Component from '@ember/component';
+import { computed, set, get } from '@ember/object';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 
-const { get, set, computed } = Ember;
 const SHIFT_DIFF = 3;
 const PLOT_HEIGHT = 7;
 
-export default Ember.Component.extend(ThrottledResize, {
+export default Component.extend(ThrottledResize, {
   tagName: 'div',
   classNames: ['timeline-container'],
   startDate: null,
@@ -57,7 +58,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
         prevPlot = shift;
 
-        set(snapshot, 'position', Ember.String.htmlSafe(`left: calc(${shift}% - ${PLOT_HEIGHT});`));
+        set(snapshot, 'position', htmlSafe(`left: calc(${shift}% - ${PLOT_HEIGHT});`));
         return snapshot;
       });
 
@@ -77,7 +78,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
         prevPlot = shift;
 
-        set(snapshot, 'position', Ember.String.htmlSafe(`left: calc(${shift}% - ${PLOT_HEIGHT}px);`));
+        set(snapshot, 'position', htmlSafe(`left: calc(${shift}% - ${PLOT_HEIGHT}px);`));
         return snapshot;
       });
 

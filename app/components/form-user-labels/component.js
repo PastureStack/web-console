@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(ManageLabels, {
+export default Component.extend(ManageLabels, {
   // Inputs
   initialLabels: null,
   readonlyLabels: null,
@@ -9,7 +10,7 @@ export default Ember.Component.extend(ManageLabels, {
   actions: {
     addUserLabel() {
       this._super();
-      Ember.run.next(() => {
+      next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }

@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 
-export default Ember.Service.extend({
-  store: Ember.inject.service(),
+export default Service.extend({
+  store: service(),
 
   isReady() {
     return this.get('store').find('stack').then((stacks) => {
@@ -20,7 +21,7 @@ export default Ember.Service.extend({
         return false;
       });
     }).catch(() => {
-      return Ember.RSVP.resolve(false);
+      return resolve(false);
     });
   },
 

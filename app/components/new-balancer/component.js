@@ -1,10 +1,14 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { once } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(NewOrEdit, {
-  intl                      : Ember.inject.service(),
-  settings                  : Ember.inject.service(),
+export default Component.extend(NewOrEdit, {
+  intl                      : service(),
+  settings                  : service(),
 
   service                   : null,
   editing                   : null,
@@ -23,8 +27,8 @@ export default Ember.Component.extend(NewOrEdit, {
   schedulingErrors          : null,
   scaleErrors               : null,
 
-  primaryResource           : Ember.computed.alias('service'),
-  launchConfig              : Ember.computed.alias('service.launchConfig'),
+  primaryResource           : alias('service'),
+  launchConfig              : alias('service.launchConfig'),
 
   init() {
     this._super(...arguments);
@@ -116,7 +120,7 @@ export default Ember.Component.extend(NewOrEdit, {
   },
 
   shouldUpdatePorts: function() {
-    Ember.run.once(this,'updatePorts');
+    once(this,'updatePorts');
   }.observes('service.lbConfig.portRules.@each.{sourceIp,sourcePort,access,protocol}'),
 
 
@@ -264,7 +268,7 @@ export default Ember.Component.extend(NewOrEdit, {
     let to = (this.get('service.launchConfig.imageUuid')||'').replace(/^docker:/,'');
 
     if ( this.get('upgradeImage')+'' === 'true' ) {
-      return Ember.Object.create({
+      return EmberObject.create({
         from: from,
         to: to,
       });
@@ -280,7 +284,7 @@ export default Ember.Component.extend(NewOrEdit, {
   labelsReady: false,
 
   labelsChanged: function() {
-    Ember.run.once(this,'mergeLabels');
+    once(this,'mergeLabels');
   }.observes(
     'userLabels.@each.{key,value}',
     'scaleLabels.@each.{key,value}',

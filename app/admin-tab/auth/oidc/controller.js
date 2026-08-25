@@ -1,4 +1,8 @@
-import Ember from 'ember';
+import { get } from '@ember/object';
+import { resolve, reject } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 import Errors from 'ui/utils/errors';
 import { denormalizeName } from 'ui/services/settings';
@@ -27,15 +31,15 @@ function apiErrorCode(err) {
       (err.xhr.responseJSON.code || err.xhr.responseJSON.type));
 }
 
-export default Ember.Controller.extend({
-  access: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  oidc: Ember.inject.service(),
-  session: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Controller.extend({
+  access: service(),
+  intl: service(),
+  oidc: service(),
+  session: service(),
+  settings: service(),
+  userStore: service('user-store'),
 
-  config: Ember.computed.alias('model.oidcConfig'),
+  config: alias('model.oidcConfig'),
   advancedOpen: false,
   errors: null,
   activating: false,
@@ -91,7 +95,7 @@ export default Ember.Controller.extend({
     let origin = this.platformOrigin();
 
     if ( configured || this.platformHostname() === 'localhost' ) {
-      return Ember.RSVP.resolve(configured || origin);
+      return resolve(configured || origin);
     }
 
     return this.get('userStore').find('setting', denormalizeName(C.SETTING.API_HOST)).then((setting) => {
@@ -222,7 +226,7 @@ export default Ember.Controller.extend({
     {label: 'authPage.oidc.identity.disposition.discard', value: 'discardPermissions'},
   ],
 
-  currentAccountId: Ember.computed.alias('session.accountId'),
+  currentAccountId: alias('session.accountId'),
 
   matchedAccount: function() {
     return (this.get('accounts') || []).findBy('id', this.get('identityMatchAccountId'));
@@ -373,7 +377,7 @@ export default Ember.Controller.extend({
     if ( provider === 'localauthconfig' ) {
       let localRecoveryModel = this.get('recoveryLocalModel');
       if ( !localRecoveryModel ) {
-        return Ember.RSVP.reject(new Error('The local authentication recovery configuration is unavailable'));
+        return reject(new Error('The local authentication recovery configuration is unavailable'));
       }
 
       let local = localRecoveryModel.clone();
@@ -404,7 +408,7 @@ export default Ember.Controller.extend({
       operation: 'inspect',
       identityProof: identityProof,
     }).then((result) => {
-      let matchedAccountId = Ember.get(result, 'matchedAccountId') || null;
+      let matchedAccountId = get(result, 'matchedAccountId') || null;
       let currentAccountId = this.get('currentAccountId');
       let matchedAccount = (this.get('accounts') || []).findBy('id', matchedAccountId);
       let useMatched = !!matchedAccountId;
@@ -459,7 +463,7 @@ export default Ember.Controller.extend({
 
   prepareIdentitySwitch: function() {
     return this.assignVerifiedIdentity(true).then((result) => {
-      let code = Ember.get(result, 'providerSwitchCode');
+      let code = get(result, 'providerSwitchCode');
       if ( !code ) {
         throw new Error(this.get('intl').t('authPage.oidc.identity.missingSwitchTicket'));
       }
@@ -469,7 +473,7 @@ export default Ember.Controller.extend({
 
   cancelIdentitySwitch: function(providerSwitchCode) {
     if ( !providerSwitchCode ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
     return this.identityOperation({
       operation: 'cancelSwitch',
@@ -543,7 +547,7 @@ export default Ember.Controller.extend({
   restoreMatchedIdentityAccount: function() {
     let matchedAccountId = this.get('identityMatchAccountId');
     if ( !matchedAccountId || !this.get('canRestoreMatchedAccount') ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     this.setProperties({

@@ -8,6 +8,7 @@ var util     = require('util');
 var env      = EmberApp.env();
 var dartSass = require('sass');
 var TranslationJsonTree = require('./lib/translation-json-tree');
+var RtlCssTree = require('./lib/rtl-css-tree');
 var NormalizeTemplateModuleNameWebpackPlugin = require('./lib/normalize-template-module-name-webpack-plugin');
 
 
@@ -46,12 +47,6 @@ module.exports = function(defaults) {
         css: themeCssOutputPaths
       }
     },
-    nodeAssets: {
-      'lacsso': {
-        import: ['lacsso.css']
-      }
-    },
-
     // ember-auto-import stages two generated entry modules in a temporary
     // Broccoli directory. Webpack's production default hashes those absolute
     // paths into module IDs, so identical clean builds can receive different
@@ -96,7 +91,7 @@ module.exports = function(defaults) {
     },
   });
 
-  // Ember CLI 6.12 recreates outputPaths after merging constructor options.
+  // Ember CLI recreates outputPaths after merging constructor options.
   // Mutate the active CSS map in place because the default packager and the
   // Sass preprocessor both retain this exact object reference. Replacing the
   // object would leave the packager pointing at the empty app.scss output and
@@ -122,43 +117,39 @@ module.exports = function(defaults) {
   // Tests now bundle QUnit directly instead of pulling the legacy
   // ember-cli-qunit -> ember-qunit -> ember-test-helpers chain.
   app.import('vendor/jquery/jquery.js');
+  app.import('vendor/ember/ember-global-compat.js', {
+    outputFile: 'assets/ember-classic-compat.js'
+  });
   app.import('node_modules/qunit/qunit/qunit.css', { type: 'test' });
   app.import('node_modules/qunit/qunit/qunit.js', { type: 'test' });
   app.import('vendor/qunit-module-shim.js', { type: 'test' });
-  app.import('vendor/ember/ember-global-compat.js');
   app.import('node_modules/@xterm/xterm/css/xterm.css');
   app.import('node_modules/@xterm/xterm/lib/xterm.js');
   app.import('node_modules/@xterm/addon-fit/lib/addon-fit.js');
-  // Bootstrap 3 is out of support.  Keep its reviewed styles during the
-  // compatibility migration, but only ship the two JavaScript behaviours the
-  // console still uses.  In particular, do not re-introduce button.js,
-  // tooltip.js, popover.js, or the aggregate bootstrap.js bundle.
-  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/transition.js');
-  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/collapse.js');
-  app.import('vendor/bootstrap-sass/assets/javascripts/bootstrap/dropdown.js');
+  // Bootstrap 5 is the maintained runtime. The bundle includes Popper and no
+  // longer depends on jQuery; the application stylesheet remains responsible
+  // for PastureStack's light and dark theme overrides.
+  app.import('node_modules/bootstrap/dist/css/bootstrap.css');
+  app.import('node_modules/bootstrap/dist/js/bootstrap.bundle.js');
   app.import('node_modules/jgrowl/jquery.jgrowl.js');
   app.import('node_modules/jgrowl/jquery.jgrowl.css');
   app.import('node_modules/jquery.cookie/jquery.cookie.js');
-  app.import('node_modules/d3/d3.js');
-  app.import('node_modules/c3/c3.js');
-  app.import('node_modules/c3/c3.css');
+  app.import('vendor/lacsso/lacsso.css');
+  app.import('node_modules/billboard.js/dist/billboard.css');
   //app.import('vendor/term.js/src/term.js');
   //app.import('bower_components/xterm.js/src/xterm.css');
-  app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.js');
-  app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.css');
+  app.import('node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.js');
+  app.import('node_modules/bootstrap-multiselect/dist/css/bootstrap-multiselect.css');
   app.import('node_modules/prismjs/prism.js');
   app.import('node_modules/prismjs/components/prism-yaml.js');
   app.import('node_modules/prismjs/components/prism-bash.js');
   app.import('node_modules/lodash/lodash.js');
-  app.import('node_modules/graphlib/dist/graphlib.core.js');
-  app.import('node_modules/dagre/dist/dagre.core.js');
   app.import('node_modules/async/dist/async.js');
   app.import('vendor/position-calculator.js');
   app.import('vendor/aws-sdk-ec2.js');
   app.import('node_modules/identicon.js/pnglib.js');
   app.import('node_modules/identicon.js/identicon.js');
   app.import('node_modules/md5-jkmyers/md5.js');
-  app.import('vendor/dagre-d3/dagre-d3.core.js');
   app.import('vendor/novnc.js');
   app.import('node_modules/commonmark/dist/commonmark.js');
   // Generate TOTP enrollment QR codes entirely in the browser.  The
@@ -230,15 +221,8 @@ module.exports = function(defaults) {
     include: ['LICENSE.md', 'UPSTREAM.md'],
     destDir: 'licenses/ember-fetch'
   });
-  var emberPowerSelectLegalSource = new Funnel('vendor/ember-power-select', {
-    include: ['LICENSE.md', 'UPSTREAM.md'],
-    destDir: 'licenses/ember-power-select'
-  });
-  var emberBasicDropdownLegalSource = new Funnel('vendor/ember-basic-dropdown', {
-    include: ['LICENSE.md', 'UPSTREAM.md'],
-    destDir: 'licenses/ember-basic-dropdown'
-  });
   var runtimeLegalPackages = [
+    'bootstrap-multiselect',
     'ember-power-select',
     'ember-basic-dropdown',
     'ember-concurrency',
@@ -251,12 +235,14 @@ module.exports = function(defaults) {
     });
   });
 
+  var appTree = app.toTree();
+  var rtlCss = new RtlCssTree(appTree);
+
   return mergeTrees([
-    app.toTree(),
+    appTree,
+    rtlCss,
     translationJson,
     emberLegalSource,
-    emberFetchLegalSource,
-    emberPowerSelectLegalSource,
-    emberBasicDropdownLegalSource
+    emberFetchLegalSource
   ].concat(runtimeLegalSources), {overwrite: true});
 };

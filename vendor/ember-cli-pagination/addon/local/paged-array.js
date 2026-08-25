@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import { A } from '@ember/array';
+import { computed, observer } from '@ember/object';
+import Evented from '@ember/object/evented';
+import ArrayProxy from '@ember/array/proxy';
 import Util from 'ember-cli-pagination/util';
 import DivideIntoPages from 'ember-cli-pagination/divide-into-pages';
 import LockToRange from 'ember-cli-pagination/watch/lock-to-range';
 
-export default Ember.ArrayProxy.extend(Ember.Evented, {
+export default ArrayProxy.extend(Evented, {
   page: 1,
   perPage: 10,
 
@@ -14,11 +17,11 @@ export default Ember.ArrayProxy.extend(Ember.Evented, {
     });
   },
 
-  arrangedContent: Ember.computed("content.[]", "page", "perPage", function() {
+  arrangedContent: computed("content.[]", "page", "perPage", function() {
     return this.divideObj().objsForPage(this.get('page'));
   }),
 
-  totalPages: Ember.computed("content.[]", "perPage", function() {
+  totalPages: computed("content.[]", "perPage", function() {
     return this.divideObj().totalPages();
   }),
 
@@ -27,7 +30,7 @@ export default Ember.ArrayProxy.extend(Ember.Evented, {
     return this.set('page', page);
   },
 
-  watchPage: Ember.observer('page','totalPages', function() {
+  watchPage: observer('page','totalPages', function() {
     var page = this.get('page');
     var totalPages = this.get('totalPages');
 
@@ -39,7 +42,7 @@ export default Ember.ArrayProxy.extend(Ember.Evented, {
   }),
 
   then: function(success,failure) {
-    var content = Ember.A(this.get('content'));
+    var content = A(this.get('content'));
     var me = this;
 
     if (content.then) {

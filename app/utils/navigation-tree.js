@@ -1,5 +1,4 @@
-import Ember from 'ember';
-import { A } from '@ember/array';
+import { A, isArray } from '@ember/array';
 import C from 'ui/utils/constants';
 import { tagChoices } from 'ui/models/stack';
 import { uniqKeys } from 'ui/utils/util';
@@ -357,7 +356,7 @@ export function removeId(id) {
   {
     if ( navTree[i].id === id ) {
       navTree.removeAt(i);
-    } else if ( navTree[i].submenu && Ember.isArray(navTree[i].submenu) ) {
+    } else if ( navTree[i].submenu && isArray(navTree[i].submenu) ) {
       let sub = navTree[i].submenu;
       for ( var j = sub.length-1 ; j >= 0 ; j-- )
       {

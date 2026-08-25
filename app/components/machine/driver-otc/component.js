@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { reject } from 'rsvp';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 import fetch from 'ember-api-store/utils/fetch';
 
@@ -17,13 +19,13 @@ const URLS = {
 
 const SERVICE = 'ecs';
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName:         'otcConfig',
   catalogUrls:        null,
   step:               1,
   _prevStep:          1,
   errors:             null,
-  intl:               Ember.inject.service(),
+  intl:               service(),
   volumeTypes:        VOLUME_TYPES,
   itemsLoading:       false,
   flavors:            null,
@@ -299,7 +301,7 @@ export default Ember.Component.extend(Driver, {
         this.set('itemsLoading', false);
         this.set('step', this.get('_prevStep'));
 
-        return Ember.RSVP.reject();
+        return reject();
       }
     }).catch((err) => {
       let errors = [];
@@ -313,7 +315,7 @@ export default Ember.Component.extend(Driver, {
         errors: errors.uniq()
       });
 
-      return Ember.RSVP.reject(err);
+      return reject(err);
     });
   },
 

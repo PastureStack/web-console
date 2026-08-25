@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Tooltip from 'ui/mixins/tooltip';
 import { resolveTooltipContentComponent } from 'ui/utils/tooltip-content-component';
 
-export default Ember.Component.extend(Tooltip, {
+export default Component.extend(Tooltip, {
   needs   : ['application'],
-  model   : Ember.computed.alias('tooltipService.tooltipOpts.model'),
+  model   : alias('tooltipService.tooltipOpts.model'),
   display : null,
 
   contentComponent: function() {

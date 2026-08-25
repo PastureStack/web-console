@@ -1,4 +1,8 @@
-import Ember from 'ember';
+import { once } from '@ember/runloop';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
+import { hash } from 'rsvp';
 import C from 'ui/utils/constants';
 
 const NONE       = 'none',
@@ -33,7 +37,7 @@ function getUpgradeInfo(task, cb) {
     deps.fullInfo = obj.get('catalog').fetchTemplate(task.templateId, false);
   }
 
-  Ember.RSVP.hash(deps).then((hash) => {
+  hash(deps).then((hash) => {
     if ( obj.isDestroyed || obj.isDestroying ) {
       return;
     }
@@ -102,13 +106,13 @@ function getUpgradeInfo(task, cb) {
   });
 }
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   model               : null,
   upgradeOnly         : true,
 
-  intl                : Ember.inject.service(),
-  catalog             : Ember.inject.service(),
-  userStore           : Ember.inject.service('user-store'),
+  intl                : service(),
+  catalog             : service(),
+  userStore           : service('user-store'),
 
   upgradeInfo         : null,
   upgradeStatus       : null,
@@ -118,7 +122,7 @@ export default Ember.Mixin.create({
     this.updateStatus();
   },
 
-  color: Ember.computed('upgradeStatus', function() {
+  color: computed('upgradeStatus', function() {
     switch ( this.get('upgradeStatus') ) {
       case NONE:
         return 'hide';
@@ -137,7 +141,7 @@ export default Ember.Mixin.create({
     }
   }),
 
-  currentVersion: Ember.computed('upgradeInfo','model.externalId', function() {
+  currentVersion: computed('upgradeInfo','model.externalId', function() {
     let text = this.get('intl').findTranslationByKey('upgradeBtn.version.current');
     let version = this.get('upgradeInfo.version');
     if (typeof version === 'string' || typeof version === 'number') {
@@ -204,6 +208,6 @@ export default Ember.Mixin.create({
   },
 
   externalIdChanged: function() {
-    Ember.run.once(this, 'updateStatus');
+    once(this, 'updateStatus');
   }.observes('model.{externalId,state}'),
 });

@@ -1,8 +1,13 @@
-import Ember from 'ember';
 import TypeMixin from '../mixins/type';
-import { set, get } from '@ember/object';
+import EmberObject, { set, get } from '@ember/object';
 import { isArray } from '@ember/array';
-import { displayKeyFor, validateLength, validateChars, validateHostname, validateDnsLabel } from '../utils/validate';
+import {
+  displayKeyFor,
+  validateLength,
+  validateChars,
+  validateHostname,
+  validateDnsLabel
+} from '../utils/validate';
 import { normalizeType } from '../utils/normalize';
 
 const STRING_LIKE_TYPES = [
@@ -17,7 +22,26 @@ const STRING_LIKE_TYPES = [
   'hostname',
 ];
 
-var Actionable = Ember.Object.extend(Ember.ActionHandler);
+var Actionable = EmberObject.extend({
+  mergedProperties: ['actions'],
+
+  send(actionName, ...args) {
+    if ( this.actions && typeof this.actions[actionName] === 'function' ) {
+      const shouldBubble = this.actions[actionName].apply(this, args) === true;
+      if ( !shouldBubble ) {
+        return;
+      }
+    }
+
+    const target = get(this, 'target');
+    if ( target ) {
+      if ( typeof target.send !== 'function' ) {
+        throw new TypeError(`Action target for '${actionName}' does not implement send()`);
+      }
+      return target.send(actionName, ...args);
+    }
+  },
+});
 var Resource = Actionable.extend(TypeMixin, {
   // You should probably override intl with a real translator...
   intl: {

@@ -29,10 +29,10 @@ bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
 deps = package.get("devDependencies", {}) or {}
 
 expected_direct = {
-    "ember-cli": "6.12.0",
+    "ember-cli": "7.2.0",
     "ember-cli-htmlbars": "7.0.1",
     "ember-resolver": "13.2.0",
-    "ember-source": "6.12.0",
+    "ember-source": "7.2.0",
 }
 for name, expected in expected_direct.items():
     actual = deps.get(name)
@@ -47,14 +47,14 @@ if bower.get("dependencies"):
 
 packages = lock.get("packages", {}) or {}
 root = packages.get("", {}) or {}
-if (root.get("devDependencies", {}) or {}).get("ember-source") != "6.12.0":
+if (root.get("devDependencies", {}) or {}).get("ember-source") != "7.2.0":
     fail("EMBER_LOCK_ROOT_DRIFT")
 
 ember = packages.get("node_modules/ember-source", {}) or {}
 expected_ember = {
-    "version": "6.12.0",
-    "resolved": "https://registry.npmjs.org/ember-source/-/ember-source-6.12.0.tgz",
-    "integrity": "sha512-cApfEKxltl2VWt0o24XISsdkpyqqtT8wG0/EWokjeyqBPRCOIej2PMzRkLAu3A5AWpuWoJ//yq04mDix7axA7w==",
+    "version": "7.2.0",
+    "resolved": "https://registry.npmjs.org/ember-source/-/ember-source-7.2.0.tgz",
+    "integrity": "sha512-pWjYFeM76vAgiFvqrBacAsQh94vTIy8SC1X2S3goULJHJ5/tVWAZ2NtaLFx9oZd3/Lk0gGRdsCMla9rQY58vyw==",
 }
 for field, expected in expected_ember.items():
     actual = ember.get(field)
@@ -89,7 +89,7 @@ else:
 
 build = Path("ember-cli-build.js").read_text(encoding="utf-8")
 environment = Path("config/environment.js").read_text(encoding="utf-8")
-if "app.import('vendor/ember/ember-global-compat.js')" not in build:
+if "app.import('vendor/ember/ember-global-compat.js', {" not in build:
     fail("EMBER_GLOBAL_COMPAT_IMPORT_MISSING")
 for marker in [
     "var emberLegalSource = new Funnel('vendor/ember'",
@@ -97,19 +97,14 @@ for marker in [
     "destDir: 'licenses/ember'",
     "var emberFetchLegalSource = new Funnel('vendor/ember-fetch-compat'",
     "destDir: 'licenses/ember-fetch'",
-    "var emberPowerSelectLegalSource = new Funnel('vendor/ember-power-select'",
-    "destDir: 'licenses/ember-power-select'",
-    "var emberBasicDropdownLegalSource = new Funnel('vendor/ember-basic-dropdown'",
-    "destDir: 'licenses/ember-basic-dropdown'",
     "var runtimeLegalPackages = [",
+    "'bootstrap-multiselect'",
     "'ember-concurrency'",
     "'ember-modifier'",
     "new Funnel('vendor/runtime-licenses/' + packageName",
     "destDir: 'licenses/runtime/' + packageName",
     "emberLegalSource,",
-    "emberFetchLegalSource,",
-    "emberPowerSelectLegalSource,",
-    "emberBasicDropdownLegalSource",
+    "emberFetchLegalSource\n  ].concat(runtimeLegalSources)",
     "].concat(runtimeLegalSources)",
 ]:
     if marker not in build:
@@ -126,9 +121,9 @@ if not jquery_path.is_file() or "jQuery JavaScript Library v3.7.1" not in jquery
 
 docs = Path("docs/modernization.md").read_text(encoding="utf-8")
 for phrase in [
-    "Ember 6.12 LTS Runtime And CLI",
-    "ember-source@6.12.0",
-    "Ember CLI 6.12.0",
+    "Ember 7.2 Runtime And CLI",
+    "ember-source@7.2.0",
+    "Ember CLI 7.2.0",
     "classic bundle boundary",
 ]:
     if phrase not in docs:
@@ -139,6 +134,6 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("ui-ember-runtime-provenance-ok ember=6.12.0 ember_cli=6.12.0 jquery=3.7.1 bower_dependencies=0 vendored_runtime=absent")
+print("ui-ember-runtime-provenance-ok ember=7.2.0 ember_cli=7.2.0 jquery=3.7.1 bower_dependencies=0 vendored_runtime=absent")
 print("failure_count=0")
 PY

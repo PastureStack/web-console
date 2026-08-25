@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  projects: Ember.inject.service(),
-  consoleWorkspace: Ember.inject.service('console-workspace'),
+export default Controller.extend({
+  projects: service(),
+  consoleWorkspace: service('console-workspace'),
 
   available: function() {
     return this.get('projects.orchestrationState.swarmReady') && this.get('model.instance').hasAction('execute');

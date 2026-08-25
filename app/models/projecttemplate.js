@@ -1,9 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 
 var ProjectTemplate = Resource.extend(PolledResource, {
-  access: Ember.inject.service(),
+  access: service(),
 
   actions: {
     edit: function() {

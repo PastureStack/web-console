@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { scheduleOnce } from '@ember/runloop';
+import { isArray } from '@ember/array';
+import Component from '@ember/component';
 import ContainerChoices from 'ui/mixins/container-choices';
 
-export default Ember.Component.extend(ContainerChoices, {
+export default Component.extend(ContainerChoices, {
   // Inputs
   editing: null,
   instance: null,
@@ -26,7 +28,7 @@ export default Ember.Component.extend(ContainerChoices, {
     var out = [];
     var links = this.get('initialLinks')||[];
 
-    if ( Ember.isArray(links) )
+    if ( isArray(links) )
     {
       links.forEach(function(value) {
         // Objects, from edit
@@ -51,7 +53,7 @@ export default Ember.Component.extend(ContainerChoices, {
       });
     }
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       this.set('linksArray', out);
       this.linksDidChange();
     });

@@ -1,11 +1,14 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { alias, sort } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import { parseExternalId } from 'ui/utils/parse-externalid';
 
-export default Ember.Component.extend({
-  prefs             : Ember.inject.service(),
-  projects          : Ember.inject.service(),
-  hasVm             : Ember.computed.alias('projects.current.virtualMachine'),
+export default Component.extend({
+  prefs             : service(),
+  projects          : service(),
+  hasVm             : alias('projects.current.virtualMachine'),
 
   model             : null,
   single            : false,
@@ -14,7 +17,7 @@ export default Ember.Component.extend({
   collapsed         : true,
   classNames        : ['stack-section'],
 
-  sortedServices    : Ember.computed.sort('model.services','sortBy'),
+  sortedServices    : sort('model.services','sortBy'),
   sortBy: ['name','id'],
 
   actions: {
@@ -78,7 +81,7 @@ export default Ember.Component.extend({
     var out = [];
     var map = this.get('model.outputs')||{};
     Object.keys(map).forEach((key) => {
-      out.push(Ember.Object.create({
+      out.push(EmberObject.create({
         key: key,
         value: map[key],
       }));

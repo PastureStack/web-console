@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import EmberObject from '@ember/object';
+import { A } from '@ember/array';
 import Resource from 'ember-api-store/models/resource';
 import { module, test } from 'qunit';
 
@@ -30,20 +32,20 @@ test('it loads and clones the inactive OIDC configuration for local recovery', f
     enabled: true,
     type: 'localauthconfig',
   });
-  let accounts = Ember.A([
+  let accounts = A([
     record(store, { id: '1a1', kind: 'admin', state: 'active', type: 'account' }),
   ]);
-  let access = Ember.Object.create({ enabled: true, provider: 'localauthconfig' });
-  let session = Ember.Object.create({ accountId: '1a1' });
+  let access = EmberObject.create({ enabled: true, provider: 'localauthconfig' });
+  let session = EmberObject.create({ accountId: '1a1' });
   let route = createOwned(OidcRoute, {
     access,
     authStore: {
       createRecord: store.createRecord,
       find() {
-        return Ember.RSVP.resolve(config);
+        return resolve(config);
       },
       getById() {
-        return Ember.Object.create({
+        return EmberObject.create({
           resourceFields: {
             displayName: { default: 'OpenID Connect' },
             usePkce: { default: true },
@@ -55,29 +57,29 @@ test('it loads and clones the inactive OIDC configuration for local recovery', f
     userStore: {
       find(type) {
         if (type === 'localauthconfig') {
-          return Ember.RSVP.resolve(Ember.A([localConfig]));
+          return resolve(A([localConfig]));
         }
 
-        return Ember.RSVP.resolve(accounts);
+        return resolve(accounts);
       },
     },
   }, 'route');
   let controller = createOwned(OidcController, {
     access,
-    intl: Ember.Object.create({
+    intl: EmberObject.create({
       t(key) {
         return key;
       },
     }),
-    oidc: Ember.Object.create(),
+    oidc: EmberObject.create(),
     session,
-    settings: Ember.Object.create({
+    settings: EmberObject.create({
       appName: 'PastureStack',
       get() {
         return null;
       },
     }),
-    userStore: Ember.Object.create(),
+    userStore: EmberObject.create(),
   }, 'controller');
 
   return route.model().then((model) => {

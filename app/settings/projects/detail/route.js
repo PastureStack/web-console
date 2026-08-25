@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { Promise } from 'rsvp';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 import { xhrConcur } from 'ui/utils/platform';
 import PromiseToCb from 'ui/mixins/promise-to-cb';
 
-export default Ember.Route.extend(PromiseToCb, {
+export default Route.extend(PromiseToCb, {
   queryParams: {
     editing: {
       refreshModel: true
@@ -22,7 +24,7 @@ export default Ember.Route.extend(PromiseToCb, {
       },
     };
 
-    let promise = new Ember.RSVP.Promise((resolve, reject) => {
+    let promise = new Promise((resolve, reject) => {
       let tasks = {
         allProjects:                        this.toCb(() => { return userStore.findAll('project'); }),
         project:            ['allProjects', this.toCb(() => { return userStore.find('project', params.project_id); })],
@@ -69,7 +71,7 @@ export default Ember.Route.extend(PromiseToCb, {
         });
       }
 
-      let out = Ember.Object.create({
+      let out = EmberObject.create({
         all: hash.allProjects,
         network: network,
         policyManager: hash.policyManagers.objectAt(0),

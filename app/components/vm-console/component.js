@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import Component from '@ember/component';
 import parseUri from 'ui/utils/parse-uri';
 import Util from 'ui/utils/util';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['vm-console'],
   instance : null,
 
@@ -28,7 +29,7 @@ export default Ember.Component.extend({
 
   didInsertElement() {
     this._super();
-    Ember.run.next(this, 'exec');
+    next(this, 'exec');
   },
 
   willDestroyElement() {

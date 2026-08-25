@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { next } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import SelectTab from 'ui/mixins/select-tab';
 import { debouncedObserver } from 'ui/utils/debounce';
@@ -6,8 +9,8 @@ import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { flattenLabelArrays } from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(NewOrEdit, SelectTab, {
-  intl                      : Ember.inject.service(),
+export default Component.extend(NewOrEdit, SelectTab, {
+  intl                      : service(),
 
   isStandalone              : true,
   isService                 : false,
@@ -75,7 +78,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
       }));
 
       // Wait for it to be added to the DOM...
-      Ember.run.next(() => {
+      next(() => {
         this.send('selectLaunchConfig', ary.get('length')-1);
       });
     },
@@ -96,7 +99,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
         idx = ary.get('length')-1;
       }
 
-      Ember.run.next(() => {
+      next(() => {
         this.send('selectLaunchConfig', idx);
       });
     },
@@ -269,7 +272,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     return this.get('launchConfigChoices').filterBy('enabled',true).get('length') === 0;
   }.property('launchConfigChoices.@each.enabled'),
 
-  preflightServiceId: Ember.computed('isService', 'primaryService.id', 'service.id', function() {
+  preflightServiceId: computed('isService', 'primaryService.id', 'service.id', function() {
     if ( !this.get('isService') ) {
       return null;
     }
@@ -277,11 +280,11 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     return this.get('primaryService.id') || this.get('service.id') || null;
   }),
 
-  preflightInstanceId: Ember.computed('isService', 'launchConfig.id', function() {
+  preflightInstanceId: computed('isService', 'launchConfig.id', function() {
     return this.get('isService') ? null : (this.get('launchConfig.id') || null);
   }),
 
-  preflightStackId: Ember.computed(
+  preflightStackId: computed(
     'primaryService.stackId',
     'service.stackId',
     function() {
@@ -289,7 +292,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     }
   ),
 
-  preflightScale: Ember.computed(
+  preflightScale: computed(
     'isService',
     'primaryService.scale',
     'service.scale',
@@ -307,15 +310,15 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     }
   ),
 
-  preflightBatchSize: Ember.computed('upgradeOptions.batchSize', function() {
+  preflightBatchSize: computed('upgradeOptions.batchSize', function() {
     return this.get('upgradeOptions.batchSize') || 1;
   }),
 
-  preflightStartFirst: Ember.computed('upgradeOptions.startFirst', function() {
+  preflightStartFirst: computed('upgradeOptions.startFirst', function() {
     return !!this.get('upgradeOptions.startFirst');
   }),
 
-  hasSidekickPortPreflightPending: Ember.computed('sidekickPortPreflightStates', function() {
+  hasSidekickPortPreflightPending: computed('sidekickPortPreflightStates', function() {
     let states = this.get('sidekickPortPreflightStates') || {};
 
     return Object.keys(states).some((key) => {
@@ -323,7 +326,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     });
   }),
 
-  hasSidekickPortPreflightBlocked: Ember.computed('sidekickPortPreflightStates', function() {
+  hasSidekickPortPreflightBlocked: computed('sidekickPortPreflightStates', function() {
     let states = this.get('sidekickPortPreflightStates') || {};
 
     return Object.keys(states).some((key) => {
@@ -331,7 +334,7 @@ export default Ember.Component.extend(NewOrEdit, SelectTab, {
     });
   }),
 
-  saveDisabled: Ember.computed(
+  saveDisabled: computed(
     'noLaunchConfigsEnabled',
     'portPreflightState.{pending,blocked}',
     'volumePreflightState.{pending,blocked}',

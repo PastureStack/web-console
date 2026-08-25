@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
 function hostname(str) {
@@ -20,9 +21,9 @@ function isBadTld(name) {
   }
 }
 
-export default Ember.Component.extend({
-  endpoint      : Ember.inject.service(),
-  settings      : Ember.inject.service(),
+export default Component.extend({
+  endpoint      : service(),
+  settings      : service(),
 
   customRadio   : null,
   customValue   : '',

@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import IndexRoute from 'ui/routes/index';
 
 module('Unit | Route | index');
@@ -8,7 +8,7 @@ module('Unit | Route | index');
 test('it exists', function(assert) {
   var route = IndexRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('activate redirects to authenticated route', function(assert) {
@@ -23,5 +23,5 @@ test('activate redirects to authenticated route', function(assert) {
   });
 
   route.get('actions').activate.call(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });

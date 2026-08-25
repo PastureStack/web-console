@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import Service, { service } from '@ember/service';
 import ApiError from 'ember-api-store/models/error';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  'tab-session': Ember.inject.service(),
-  store: Ember.inject.service('store'),
+export default Service.extend({
+  'tab-session': service(),
+  store: service('store'),
 
   kubernetesEndpoint: function() {
     return this.get('app.kubernetesEndpoint').replace(this.get('app.projectToken'), this.get(`tab-session.${C.TABSESSION.PROJECT}`));
@@ -46,7 +47,7 @@ export default Ember.Service.extend({
 
       return false;
     }).catch(() => {
-      return Ember.RSVP.resolve(false);
+      return resolve(false);
     });
   },
 

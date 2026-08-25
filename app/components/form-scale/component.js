@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { scheduleOnce } from '@ember/runloop';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
 import { debouncedObserver } from 'ui/utils/debounce';
@@ -8,7 +9,7 @@ function roundScale(num) {
   return Math.ceil((num-1)/10)*10*2;
 }
 
-export default Ember.Component.extend(ManageLabels, {
+export default Component.extend(ManageLabels, {
   initialLabels : null,
   initialScale  : null,
   isGlobal      : null,
@@ -26,7 +27,7 @@ export default Ember.Component.extend(ManageLabels, {
     this.set('max', Math.max(11, roundScale(this.get('scale'))));
 
     this.initLabels(this.get('initialLabels'), null, C.LABEL.SCHED_GLOBAL);
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       var on = this.getLabel(C.LABEL.SCHED_GLOBAL) === 'true';
       this.sendAction('setGlobal', this.set('isGlobal', on));
     });

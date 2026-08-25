@@ -1,6 +1,8 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import EmberObject from '@ember/object';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   // Inputs
   initialValues    : null,
   addActionLabel   : 'formValueArray.addActionLabel',
@@ -13,8 +15,8 @@ export default Ember.Component.extend({
 
   actions: {
     add() {
-      this.get('ary').pushObject(Ember.Object.create({value: ''}));
-      Ember.run.next(() => {
+      this.get('ary').pushObject(EmberObject.create({value: ''}));
+      next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }
@@ -39,7 +41,7 @@ export default Ember.Component.extend({
           return;
         }
 
-        ary.pushObject(Ember.Object.create({value: line}));
+        ary.pushObject(EmberObject.create({value: line}));
       });
 
       // Clean up empty user entries
@@ -60,7 +62,7 @@ export default Ember.Component.extend({
 
     var ary = [];
     (this.get('initialValues')||[]).forEach((value) => {
-      ary.push(Ember.Object.create({value: value}));
+      ary.push(EmberObject.create({value: value}));
     });
 
     this.set('ary', ary);

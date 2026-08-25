@@ -1,11 +1,13 @@
-import Ember from 'ember';
+import { hash } from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 
-export default Ember.Route.extend({
-  catalog: Ember.inject.service(),
+export default Route.extend({
+  catalog: service(),
 
   model() {
-    return Ember.RSVP.hash({
+    return hash({
       catalogInfo: this.get('catalog').fetchTemplates({templateBase: C.EXTERNAL_ID.KIND_INFRA, category: C.EXTERNAL_ID.KIND_ALL}),
     }).then((hash) => {
       let existing = this.modelFor('settings.projects').projectTemplates;

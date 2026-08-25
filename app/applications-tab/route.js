@@ -1,15 +1,18 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { all } from 'rsvp';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
-  projects: Ember.inject.service(),
+export default Route.extend({
+  projects: service(),
 
   model: function() {
     var store = this.get('store');
-    return Ember.RSVP.all([
+    return all([
       store.findAll('stack'),
       store.findAll('service'),
     ]).then((results) => {
-      return Ember.Object.create({
+      return EmberObject.create({
         stacks: results[0],
         services: results[1],
       });

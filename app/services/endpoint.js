@@ -1,10 +1,10 @@
-import Ember from 'ember';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  cookies: Ember.inject.service(),
-  'tab-session': Ember.inject.service('tab-session'),
-  settings: Ember.inject.service(),
+export default Service.extend({
+  cookies: service(),
+  'tab-session': service('tab-session'),
+  settings: service(),
 
   absolute: function() {
     var url = this.get('app.apiServer');

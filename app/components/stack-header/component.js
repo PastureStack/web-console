@@ -1,9 +1,12 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  settings: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  hasVm: Ember.computed.alias('projects.current.virtualMachine'),
+export default Component.extend({
+  settings: service(),
+  projects: service(),
+  hasVm: alias('projects.current.virtualMachine'),
 
   actions: {
     changeStack(stack) {
@@ -17,7 +20,7 @@ export default Ember.Component.extend({
     var out = [];
     var map = this.get('model.outputs')||{};
     Object.keys(map).forEach((key) => {
-      out.push(Ember.Object.create({
+      out.push(EmberObject.create({
         key: key,
         value: map[key],
       }));

@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import EmberObject from '@ember/object';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import LegacyContextPartial from 'ui/components/legacy-context-partial/component';
 import {
   dispatchContextAction,
@@ -16,7 +16,7 @@ import { resolveTooltipContentComponent } from 'ui/utils/tooltip-content-compone
 module('Unit | Component | legacy context partial');
 
 test('it reads and writes the explicitly supplied rendering context', function(assert) {
-  let context = Ember.Object.create({ value: 'before' });
+  let context = EmberObject.create({ value: 'before' });
 
   assert.equal(readContextProperty(context, 'value'), 'before', 'reads through the context');
   assert.equal(writeContextProperty(context, 'value', 'after'), 'after', 'returns the assigned value');

@@ -1,4 +1,9 @@
-import Ember from 'ember';
+import { reject, Promise } from 'rsvp';
+import { isArray } from '@ember/array';
+import { equal } from '@ember/object/computed';
+import { computed, get, set } from '@ember/object';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 import Util from 'ui/utils/util';
 import Resource from 'ember-api-store/models/resource';
 import { normalizeType } from 'ember-api-store/utils/normalize';
@@ -48,13 +53,13 @@ const stateColorSortMap = {
 };
 const stateColorUnknown = 5;
 
-export default Ember.Mixin.create({
-  endpointSvc: Ember.inject.service('endpoint'), // Some machine drivers have a property called 'endpoint'
-  cookies: Ember.inject.service(),
-  growl: Ember.inject.service(),
-  intl: Ember.inject.service(),
+export default Mixin.create({
+  endpointSvc: service('endpoint'), // Some machine drivers have a property called 'endpoint'
+  cookies: service(),
+  growl: service(),
+  intl: service(),
 
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
   reservedKeys: ['waitInterval','waitTimeout'],
 
   state: null,
@@ -80,7 +85,7 @@ export default Ember.Mixin.create({
     return [];
   }.property(),
 
-  translatedAvailableActions: Ember.computed('availableActions','intl._locale', function() {
+  translatedAvailableActions: computed('availableActions','intl._locale', function() {
     // use this if you need to pass translated actions to addons
     var availableActions = this.get('availableActions');
     if (availableActions) {
@@ -101,7 +106,7 @@ export default Ember.Mixin.create({
     for ( var i = 0 ; i < all.get('length') ; i++ )
     {
       obj = all.objectAt(i);
-      if ( Ember.get(obj,'divider') )
+      if ( get(obj,'divider') )
       {
         // Nothing was found, stop at the first divider;
         if ( seenAnAction )
@@ -109,10 +114,10 @@ export default Ember.Mixin.create({
           return null;
         }
       }
-      else if ( Ember.get(obj,'enabled') )
+      else if ( get(obj,'enabled') )
       {
         seenAnAction = true;
-        if ( Ember.get(obj,'icon') && Ember.get(obj,'action') !== 'promptDelete')
+        if ( get(obj,'icon') && get(obj,'action') !== 'promptDelete')
         {
           return obj;
         }
@@ -162,11 +167,11 @@ export default Ember.Mixin.create({
     return this.get('name') || '('+this.get('id')+')';
   }.property('name','id'),
 
-  isTransitioning: Ember.computed.equal('transitioning','yes'),
-  isError: Ember.computed.equal('transitioning','error'),
-  isRemoved: Ember.computed('state', () => { return !C.REMOVEDISH_STATES.includes(this.state); }),
-  isPurged: Ember.computed.equal('state','purged'),
-  isActive: Ember.computed.equal('state','active'),
+  isTransitioning: equal('transitioning','yes'),
+  isError: equal('transitioning','error'),
+  isRemoved: computed('state', () => { return !C.REMOVEDISH_STATES.includes(this.state); }),
+  isPurged: equal('state','purged'),
+  isActive: equal('state','active'),
 
   relevantState: function() {
     return this.get('combinedState') || this.get('state');
@@ -277,7 +282,7 @@ export default Ember.Mixin.create({
       seenObjs = [];
     }
     this.eachKeys((val,key) => {
-      Ember.set(this, key, recurse(val,depth));
+      set(this, key, recurse(val,depth));
     }, false);
 
     return this;
@@ -292,7 +297,7 @@ export default Ember.Mixin.create({
       {
         return val.trim();
       }
-      else if ( Ember.isArray(val) )
+      else if ( isArray(val) )
       {
         val.beginPropertyChanges();
         val.forEach((v, idx) => {
@@ -321,7 +326,7 @@ export default Ember.Mixin.create({
           // Skip keys with dots in them, like container labels
           if ( key.indexOf('.') === -1 )
           {
-            Ember.set(val, key, recurse(val[key], depth+1));
+            set(val, key, recurse(val[key], depth+1));
           }
         });
         return val;
@@ -422,9 +427,9 @@ export default Ember.Mixin.create({
         }
       }
 
-      var len = (val ? Ember.get(val,'length') : 0);
+      var len = (val ? get(val,'length') : 0);
 
-      if ( field.required && (val === null || (typeof val === 'string' && len === 0) || (Ember.isArray(val) && len === 0) ) )
+      if ( field.required && (val === null || (typeof val === 'string' && len === 0) || (isArray(val) && len === 0) ) )
       {
         errors.push(intl.t('validation.required', {key: displayKey}));
         continue;
@@ -531,7 +536,7 @@ export default Ember.Mixin.create({
     {
       return promise.catch((err) => {
         this.get('growl').fromError(Util.ucFirst(name) + ' Error', err);
-        return Ember.RSVP.reject(err);
+        return reject(err);
       });
     }
 
@@ -544,7 +549,7 @@ export default Ember.Mixin.create({
   waitInterval: 1000,
   waitTimeout: 30000,
   _waitForTestFn: function(testFn, msg) {
-    return new Ember.RSVP.Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       var timeout = setTimeout(() =>  {
         clearInterval(interval);
         clearTimeout(timeout);

@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 
 import Subscribe from 'ui/mixins/subscribe';
@@ -7,7 +8,7 @@ module('Unit | Mixin | subscribe');
 
 test('the socket remains the only owner of automatic reconnects', function(assert) {
   let connectCalls = 0;
-  let Subject = Ember.Object.extend(Subscribe, {
+  let Subject = EmberObject.extend(Subscribe, {
     forStr() {
       return '(test)';
     },
@@ -30,5 +31,5 @@ test('the socket remains the only owner of automatic reconnects', function(asser
     'the disconnect callback does not race the socket reconnect timer'
   );
 
-  Ember.run(() => subject.destroy());
+  run(() => subject.destroy());
 });

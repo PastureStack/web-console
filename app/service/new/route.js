@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import { all } from 'rsvp';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function(params/*, transition*/) {
     var store = this.get('store');
 
@@ -23,7 +25,7 @@ export default Ember.Route.extend({
       dependencies.pushObject(store.find('container', params.containerId, {include: ['ports']}));
     }
 
-    return Ember.RSVP.all(dependencies, 'Load container dependencies').then((results) => {
+    return all(dependencies, 'Load container dependencies').then((results) => {
       var store = this.get('store');
       var allHosts = results[0];
       var allStorageDrivers = results[1];
@@ -36,7 +38,7 @@ export default Ember.Route.extend({
 
       if ( params.upgrade )
       {
-        return Ember.Object.create({
+        return EmberObject.create({
           service: serviceOrContainer.clone(),
           allHosts: allHosts,
           allStorageDrivers,
@@ -106,7 +108,7 @@ export default Ember.Route.extend({
       service.set('launchConfig', instance);
       service.set('secondaryLaunchConfigs', secondaryLaunchConfigs);
 
-      return Ember.Object.create({
+      return EmberObject.create({
         service: service,
         allHosts: allHosts,
         allStorageDrivers,

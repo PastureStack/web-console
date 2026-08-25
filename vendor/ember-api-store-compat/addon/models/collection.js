@@ -1,11 +1,11 @@
-import Ember from 'ember';
+import { Promise } from 'rsvp';
+import ArrayProxy from '@ember/array/proxy';
+import { getOwner } from '@ember/application';
 import TypeMixin from '../mixins/type';
 import { copyHeaders } from '../utils/apply-headers';
 import { normalizeType } from '../utils/normalize';
 
-const { getOwner } = Ember;
-
-export default Ember.ArrayProxy.extend(TypeMixin, {
+export default ArrayProxy.extend(TypeMixin, {
   type: 'collection',
   createDefaults: null,
   createTypes: null,
@@ -50,7 +50,7 @@ export default Ember.ArrayProxy.extend(TypeMixin, {
     }
     */
 
-    var promise = new Ember.RSVP.Promise(function(resolve,reject) {
+    var promise = new Promise(function(resolve,reject) {
       var next = self.get('pagination.next');
       if ( next )
       {

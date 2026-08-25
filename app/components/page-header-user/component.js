@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: '',
 
-  access: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
+  access: service(),
+  modalService: service('modal'),
 
-  accessEnabled    : Ember.computed.alias('access.enabled'),
+  accessEnabled    : alias('access.enabled'),
 
   isLocalAuth: function() {
     return this.get('access.enabled') && this.get('access.provider') === 'localauthconfig';

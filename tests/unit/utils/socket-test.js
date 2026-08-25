@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { A } from '@ember/array';
 import { module, test } from 'qunit';
 
 import Socket from 'ui/utils/socket';
@@ -14,7 +15,7 @@ test('a disconnected listener can replace a socket without a competing reconnect
   };
   let socket = Socket.create({
     autoReconnect: true,
-    _disconnectCbs: Ember.A(),
+    _disconnectCbs: A(),
     _socket: closed,
     _state: 'connected',
   });
@@ -32,7 +33,7 @@ test('a disconnected listener can replace a socket without a competing reconnect
   assert.equal(socket.get('_state'), 'connecting', 'the replacement state is preserved');
   assert.notOk(socket.get('_reconnectTimer'), 'no second reconnect is scheduled');
 
-  Ember.run(() => socket.destroy());
+  run(() => socket.destroy());
 });
 
 test('a delayed close event cannot clear a newer socket', function(assert) {
@@ -40,7 +41,7 @@ test('a delayed close event cannot clear a newer socket', function(assert) {
     __sockId: 2,
   };
   let socket = Socket.create({
-    _disconnectCbs: Ember.A(),
+    _disconnectCbs: A(),
     _socket: replacement,
     _state: 'connected',
   });
@@ -50,5 +51,5 @@ test('a delayed close event cannot clear a newer socket', function(assert) {
   assert.equal(socket.get('_socket'), replacement, 'the newer socket remains active');
   assert.equal(socket.get('_state'), 'connected', 'the newer socket state is unchanged');
 
-  Ember.run(() => socket.destroy());
+  run(() => socket.destroy());
 });

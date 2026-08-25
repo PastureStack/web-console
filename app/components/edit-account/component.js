@@ -1,15 +1,18 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import EmberObject, { computed } from '@ember/object';
+import { alias, not } from '@ember/object/computed';
+import { service } from '@ember/service';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import C from 'ui/utils/constants';
 import ModalBase from 'lacsso/components/modal-base';
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  access: Ember.inject.service(),
-  primaryResource: Ember.computed.alias('model.account'),
-  settings: Ember.inject.service(),
+  access: service(),
+  primaryResource: alias('model.account'),
+  settings: service(),
 
-  originalModel: Ember.computed.alias('modalService.modalOpts'),
+  originalModel: alias('modalService.modalOpts'),
   account: null,
   credential: null,
 
@@ -17,7 +20,7 @@ export default ModalBase.extend(NewOrEdit, {
   newPassword: '',
   newPassword2: '',
 
-  validateDescription: Ember.computed(function() {
+  validateDescription: computed(function() {
     return this.get('settings').get(C.SETTING.AUTH_LOCAL_VALIDATE_DESC) || null;
   }),
 
@@ -30,10 +33,10 @@ export default ModalBase.extend(NewOrEdit, {
     return this.get('access.provider') === 'localauthconfig';
   }.property('access.provider'),
 
-  isAdmin: Ember.computed.alias('access.admin'),
+  isAdmin: alias('access.admin'),
   generated: false,
-  needOld: Ember.computed.not('isAdmin'),
-  showConfirm: Ember.computed.not('generated'),
+  needOld: not('isAdmin'),
+  showConfirm: not('generated'),
 
   init() {
     this._super(...arguments);
@@ -41,7 +44,7 @@ export default ModalBase.extend(NewOrEdit, {
     var credential = this.get('originalModel.passwordCredential');
     var credentialClone = (credential ? credential.clone() : null);
 
-    this.set('model', Ember.Object.create({
+    this.set('model', EmberObject.create({
       account: accountClone,
       credential: credentialClone,
     }));
@@ -83,7 +86,7 @@ export default ModalBase.extend(NewOrEdit, {
     }
     else
     {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
   },
 
@@ -110,7 +113,7 @@ export default ModalBase.extend(NewOrEdit, {
       this.set('session.'+C.SESSION.USER_TYPE, this.get('model.account.kind'));
     }
 
-    return Ember.RSVP.resolve();
+    return resolve();
   },
 
   actions: {

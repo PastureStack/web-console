@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import { parseRequestLine } from 'ui/utils/parse-healthcheck';
 
 const NONE = 'none';
@@ -21,8 +23,8 @@ const METHOD_CHOICES = ['OPTIONS','GET','HEAD','POST','PUT','DELETE','TRACE','CO
 const HTTP_1_0 = 'HTTP/1.0';
 const HTTP_1_1 = 'HTTP/1.1';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
+export default Component.extend({
+  projects: service(),
 
   // Inputs
   healthCheck: null,
@@ -41,7 +43,7 @@ export default Ember.Component.extend({
   uriVersion: null,
   checkType: null,
   uriHost: null,
-  showUriHost: Ember.computed.equal('uriVersion', HTTP_1_1),
+  showUriHost: equal('uriVersion', HTTP_1_1),
 
   strategy: null,
   quorum: null,

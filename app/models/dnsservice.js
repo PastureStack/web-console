@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Service from 'ui/models/service';
 import escapeHtml from 'ui/utils/escape-html';
 
@@ -6,7 +6,7 @@ const esc = escapeHtml;
 
 var DnsService = Service.extend({
   type: 'dnsService',
-  intl: Ember.inject.service(),
+  intl: service(),
 
   healthState: 'healthy',
 

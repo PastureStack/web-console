@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Checkbox from '@ember/legacy-built-in-components/components/checkbox';
 
-export default Ember.Checkbox.extend({
+export default Checkbox.extend({
   attributeBindings: ['nodeId'],
   nodeId: null,
 });

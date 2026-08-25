@@ -1,7 +1,10 @@
-import Ember from 'ember';
+import { isEmpty } from '@ember/utils';
+import { observer, computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  projects: Ember.inject.service(),
+export default Component.extend({
+  projects: service(),
 
   // Inputs
   instance: null,
@@ -102,7 +105,7 @@ export default Ember.Component.extend({
 
   },
 
-  memoryReservationChanged: Ember.observer('memoryReservationMb', function() {
+  memoryReservationChanged: observer('memoryReservationMb', function() {
     var mem = this.get('memoryReservationMb');
 
     if ( isNaN(mem) || mem <= 0) {
@@ -302,8 +305,8 @@ export default Ember.Component.extend({
     'syslog',
   ],
 
-  hasLogConfig: Ember.computed('instance.logConfig.config', function() {
-    return Ember.isEmpty(this.get('instance.logConfig.config'));
+  hasLogConfig: computed('instance.logConfig.config', function() {
+    return isEmpty(this.get('instance.logConfig.config'));
   }),
 
   isolationChoices: function() {

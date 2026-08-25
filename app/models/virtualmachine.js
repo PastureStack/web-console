@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Container from 'ui/models/container';
 
 var VirtualMachine = Container.extend({
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
   actions: {
     console: function() {
       this.get('consoleWorkspace').openVmConsole(this);

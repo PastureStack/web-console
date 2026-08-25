@@ -1,19 +1,22 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller, { inject as controller } from '@ember/controller';
 import { isAlternate } from 'ui/utils/platform';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend({
-  application:       Ember.inject.controller(),
-  catalog:           Ember.inject.service(),
-  settings:          Ember.inject.service(),
-  projects:          Ember.inject.service(),
-  projectId:         Ember.computed.alias(`tab-session.${C.TABSESSION.PROJECT}`),
+export default Controller.extend({
+  application:       controller(),
+  catalog:           service(),
+  settings:          service(),
+  projects:          service(),
+  projectId:         alias(`tab-session.${C.TABSESSION.PROJECT}`),
 
-  catalogController: Ember.inject.controller('catalog-tab'),
-  category:          Ember.computed.alias('catalogController.category'),
-  categories:        Ember.computed.alias('model.categories'),
-  catalogId:         Ember.computed.alias('catalogController.catalogId'),
-  modalService:      Ember.inject.service('modal'),
+  catalogController: controller('catalog-tab'),
+  category:          alias('catalogController.category'),
+  categories:        alias('model.categories'),
+  catalogId:         alias('catalogController.catalogId'),
+  modalService:      service('modal'),
 
   parentRoute: 'catalog-tab',
   launchRoute: 'catalog-tab.launch',
@@ -55,7 +58,7 @@ export default Ember.Controller.extend({
     }
   },
 
-  catalogURL: Ember.computed('model.catalogs', function() {
+  catalogURL: computed('model.catalogs', function() {
     var neu = {
       catalogs: {}
     };
@@ -68,7 +71,7 @@ export default Ember.Controller.extend({
     return JSON.stringify(neu);
   }),
 
-  arrangedContent: Ember.computed('model.catalog', 'search', function() {
+  arrangedContent: computed('model.catalog', 'search', function() {
     var search = this.get('search').toUpperCase();
     var result = [];
 

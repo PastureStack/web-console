@@ -1,15 +1,15 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
 
-var Validate = Ember.Object.extend();
+var Validate = EmberObject.extend();
 
 Validate.reopenClass({
   internalErrors: [],
 
   internalError: function(str,obj) {
     this.internalErrors.push(str);
-    Ember.Logger.warn(str);
+    console.warn(str);
     if (obj) {
-      Ember.Logger.warn(obj);
+      console.warn(obj);
     }
   },
 

@@ -1,7 +1,11 @@
+import EmberObject from '@ember/object';
+import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
-import Ember from 'ember';
-import HostsNewRoute, { proxifyUrl } from 'ui/hosts/new/route';
+import HostsNewRoute, {
+  isSelectableMachineDriver,
+  proxifyUrl
+} from 'ui/hosts/new/route';
 import { createOwned, destroyOwned } from '../../../../helpers/owned-subject';
 
 module('Unit | Route | hosts/new');
@@ -9,7 +13,7 @@ module('Unit | Route | hosts/new');
 test('it exists', function(assert) {
   var route = HostsNewRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('resetController clears host navigation query params on existing route', function(assert) {
@@ -27,7 +31,7 @@ test('resetController clears host navigation query params on existing route', fu
   };
 
   route.resetController(controller, true);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('proxifyUrl keeps local URLs and proxies remote driver UI URLs', function(assert) {
@@ -38,6 +42,11 @@ test('proxifyUrl keeps local URLs and proxies remote driver UI URLs', function(a
   assert.equal(proxifyUrl('http://rancher.local/driver.js', proxyBase), 'http://rancher.local/driver.js');
   assert.equal(proxifyUrl(sameOrigin, proxyBase), sameOrigin);
   assert.equal(proxifyUrl('https://drivers.example.com/ui.js', proxyBase), `${proxyBase}/https://drivers.example.com/ui.js`);
+});
+
+test('retired Packet provider is excluded from new host choices', function(assert) {
+  assert.notOk(isSelectableMachineDriver(EmberObject.create({ name: 'packet' })));
+  assert.ok(isSelectableMachineDriver(EmberObject.create({ name: 'amazonec2' })));
 });
 
 test('getHost clones a host and carries over the driver config', function(assert) {

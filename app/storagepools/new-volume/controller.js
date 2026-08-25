@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-export default Ember.Controller.extend(NewOrEdit, {
-  intl: Ember.inject.service(),
+export default Controller.extend(NewOrEdit, {
+  intl: service(),
 
   queryParams: ['driverName'],
   driverName: null,
 
-  primaryResource: Ember.computed.alias('model.volume'),
+  primaryResource: alias('model.volume'),
 
   validate: function() {
     var errors = [];

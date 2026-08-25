@@ -1,18 +1,21 @@
+import EmberObject, { computed } from '@ember/object';
+import { cancel, later } from '@ember/runloop';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
-import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { denormalizeId, denormalizeIdArray } from 'ui/utils/api-store-references';
 
 var Service = Resource.extend({
   type: 'service',
-  intl: Ember.inject.service(),
-  growl: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
+  intl: service(),
+  growl: service(),
+  modalService: service('modal'),
 
   instances: denormalizeIdArray('instanceIds'),
-  instanceCount: Ember.computed.alias('instances.length'),
-  projectId: Ember.computed.alias(`tab-session.${C.TABSESSION.PROJECT}`),
+  instanceCount: alias('instances.length'),
+  projectId: alias(`tab-session.${C.TABSESSION.PROJECT}`),
   stack: denormalizeId('stackId'),
 
   actions: {
@@ -127,10 +130,10 @@ var Service = Resource.extend({
   saveScale() {
     if ( this.get('scaleTimer') )
     {
-      Ember.run.cancel(this.get('scaleTimer'));
+      cancel(this.get('scaleTimer'));
     }
 
-    var timer = Ember.run.later(this, function() {
+    var timer = later(this, function() {
       this.save().catch((err) => {
         this.get('growl').fromError('Error updating scale',err);
       });
@@ -200,9 +203,9 @@ var Service = Resource.extend({
       }
       const id = links[key];
       const service = store.getById('service', id);
-      return Ember.Object.create({
+      return EmberObject.create({
         name: name,
-        service: service ? service : Ember.Object.create({
+        service: service ? service : EmberObject.create({
           name: id,
           id: id,
           arbitraryString: true,
@@ -269,9 +272,9 @@ var Service = Resource.extend({
     ].includes(this.get('type').toLowerCase());
   }.property('type'),
 
-  hasPorts: Ember.computed.alias('isReal'),
-  hasImage: Ember.computed.alias('isReal'),
-  hasLabels: Ember.computed.alias('isReal'),
+  hasPorts: alias('isReal'),
+  hasImage: alias('isReal'),
+  hasLabels: alias('isReal'),
 
   canUpgrade: function() {
     return this.get('isReal') && !!this.get('actionLinks.upgrade');
@@ -396,7 +399,7 @@ var Service = Resource.extend({
     }
   }.property('endpointsByPort.@each.{port,ipAddresses}', 'intl._locale'),
 
-  memoryReservationBlurb: Ember.computed('launchConfig.memoryReservation', function() {
+  memoryReservationBlurb: computed('launchConfig.memoryReservation', function() {
     if ( this.get('launchConfig.memoryReservation') ) {
       return Util.formatSi(this.get('launchConfig.memoryReservation'), 1024, 'iB', 'B');
     }

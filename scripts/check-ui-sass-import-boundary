@@ -21,12 +21,12 @@ expected_remaining_import_boundaries = {}
 load_css_expected = [
     "app/styles/helpers/functions",
     "app/styles/base/fonts",
-    "vendor/bootstrap-sass/assets/stylesheets/bootstrap",
     "vendor/bootswatch-cosmo/bootswatch",
     "app/styles/vendors/liquidfire-tweak",
     "app/styles/vendors/copy-to-clipboard",
     "app/styles/vendors/prism-theme",
-    "vendor/ember-power-select/app/styles/ember-power-select",
+    "node_modules/ember-basic-dropdown/ember-basic-dropdown",
+    "node_modules/ember-power-select/ember-power-select",
     "app/styles/vendors/power-select",
     "app/styles/vendors/bootstrap-tweak",
     "app/styles/layout/header",
@@ -94,7 +94,6 @@ use_expected = {
 }
 
 configured_load_css_expected = {
-    "vendor/bootstrap-sass/assets/stylesheets/bootstrap": ['$with: $bootstrap-config'],
     "app/styles/vendors/copy-to-clipboard": ['"brand-info": $brand-info', '"brand-primary-dark": $brand-primary-dark', '"green": $green', '"pre-bg": $pre-bg', '"primary": $primary'],
     "vendor/bootswatch-cosmo/bootswatch": ['"brand-danger": $brand-danger', '"brand-info": $brand-info', '"brand-primary": $brand-primary', '"brand-success": $brand-success', '"brand-warning": $brand-warning', '"state-danger-bg": $state-danger-bg', '"state-success-bg": $state-success-bg', '"state-warning-bg": $state-warning-bg', '"text-color": $text-color'],
     "app/styles/vendors/power-select": ['"accent-two": $accent-two', '"bottom-row": $bottom-row', '"dropdown-border": $dropdown-border', '"input-bg": $input-bg', '"line-height-small": $line-height-small', '"link-color": $link-color', '"padding-small-horizontal": $padding-small-horizontal', '"padding-small-vertical": $padding-small-vertical', '"table-bg-accent": $table-bg-accent', '"table-bg-hover": $table-bg-hover', '"text-color": $text-color'],
@@ -138,7 +137,6 @@ load_css_re = re.compile(r'^\s*@include\s+meta\.load-css\(["\']([^"\']+)["\'](?:
 use_re = re.compile(r'^\s*@use\s+["\']([^"\']+)["\'](?:\s+as\s+(?:\*|[A-Za-z_-][\w-]*))?;\s*$')
 global_dependency_re = re.compile(r"(?<![\w-])\$[A-Za-z_-][\w-]*|@include\s+|@extend\s+|^\s*@import\s+", re.M)
 variable_re = re.compile(r"^\s*(\$[A-Za-z_-][\w-]*)\s*:", re.M)
-bootstrap_config_key_re = re.compile(r'"([^"]+)":')
 
 
 def variable_aliases(path, namespace):
@@ -158,40 +156,6 @@ theme_aliases = {
     Path("app/styles/app-light.scss"): variable_aliases("app/styles/themes/_light.scss", "theme"),
     Path("app/styles/app-dark.scss"): variable_aliases("app/styles/themes/_dark.scss", "theme"),
 }
-
-bootstrap_default_only_variables = {
-    "bootstrap-sass-asset-helper",
-    "btn-border-radius-base",
-    "btn-border-radius-large",
-    "btn-border-radius-small",
-    "form-group-margin-bottom",
-    "zindex-modal-background",
-    "nav-tabs-border-color",
-    "nav-tabs-link-hover-border-color",
-    "nav-tabs-active-link-hover-bg",
-    "nav-tabs-active-link-hover-color",
-    "nav-tabs-active-link-hover-border-color",
-    "nav-tabs-justified-link-border-color",
-    "nav-tabs-justified-active-link-border-color",
-    "jumbotron-heading-font-size",
-    "dl-horizontal-breakpoint",
-}
-
-bootstrap_variable_names = {
-    name[1:]
-    for name in variable_re.findall(
-        Path("vendor/bootstrap-sass/assets/stylesheets/bootstrap/_variables.scss").read_text(encoding="utf-8")
-    )
-}
-bootstrap_config_expected = bootstrap_variable_names - bootstrap_default_only_variables
-
-
-def bootstrap_config_keys(source):
-    match = re.search(r"\$bootstrap-config:\s*\((.*?)\);", source, re.S)
-    if not match:
-        return set()
-    return set(bootstrap_config_key_re.findall(match.group(1)))
-
 
 def app_style_partial(import_name):
     if not import_name.startswith("app/styles/"):
@@ -285,21 +249,6 @@ for path, expected_imports in entrypoints.items():
                 failures.append(f"SASS_CONFIGURED_LOAD_CSS_MISSING file={path} import={name} expected={expected_config}")
 
     source = path.read_text(encoding="utf-8")
-    actual_bootstrap_config_keys = bootstrap_config_keys(source)
-    if not actual_bootstrap_config_keys:
-        failures.append(f"SASS_BOOTSTRAP_CONFIG_MISSING file={path}")
-    else:
-        missing_bootstrap_config = sorted(bootstrap_config_expected - actual_bootstrap_config_keys)
-        extra_bootstrap_config = sorted(actual_bootstrap_config_keys - bootstrap_config_expected)
-        if missing_bootstrap_config:
-            failures.append(
-                f"SASS_BOOTSTRAP_CONFIG_MISSING_KEYS file={path} keys={','.join(missing_bootstrap_config)}"
-            )
-        if extra_bootstrap_config:
-            failures.append(
-                f"SASS_BOOTSTRAP_CONFIG_EXTRA_KEYS file={path} keys={','.join(extra_bootstrap_config)}"
-            )
-
     for alias_type, expected_aliases in compatibility_aliases.items():
         for expected_alias in expected_aliases:
             if expected_alias not in source:
@@ -330,11 +279,10 @@ if failures:
 print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=53 use_per_entrypoint=7")
 print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
 print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
-print(f"bootstrap_config_keys={len(bootstrap_config_expected)} bootstrap_default_only_keys={len(bootstrap_default_only_variables)}")
-print("No Sass @import remains in the app-light/app-dark entrypoint boundary; vendored Bootstrap internals remain separately tracked.")
+print("No Sass @import remains in the app-light/app-dark entrypoint boundary; obsolete vendored Bootstrap Sass is absent.")
 print("Configured sass:meta.load-css migrations must keep explicit theme variable injection; do not rely on hidden global Sass scope.")
 print("No CSS-only app stylesheet partial remains pinned to @import; new CSS-only leaf imports must use sass:meta.load-css.")
-print("Bootstrap now loads through sass:meta.load-css with explicit configuration and a root compatibility bridge.")
+print("Bootstrap 5 CSS loads from the maintained npm package; the root compatibility bridge only preserves application theme selectors.")
 print("Cross-module @extend bridges must stay explicit until selector-provider redesign proves byte-identical CSS.")
 print("failure_count=0")
 PY

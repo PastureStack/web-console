@@ -1,13 +1,18 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { gt } from '@ember/object/computed';
+import { computed } from '@ember/object';
+import { A } from '@ember/array';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 import {
   filterVolumesByState,
   isBulkRemovableVolume,
 } from 'ui/utils/volume-bulk-remove';
 
-export default Ember.Controller.extend({
-  modalService: Ember.inject.service('modal'),
-  prefs: Ember.inject.service(),
+export default Controller.extend({
+  modalService: service('modal'),
+  prefs: service(),
 
   sortBy: 'displayUri',
   storageFilter: 'all',
@@ -23,7 +28,7 @@ export default Ember.Controller.extend({
     let savedPageSize = this.get('prefs.storageTablePerPage');
 
     this.setProperties({
-      selectedVolumes: Ember.A(),
+      selectedVolumes: A(),
       storageTablePerPage: C.TABLES.STORAGE_PAGE_SIZES.indexOf(savedPageSize) >= 0 ?
         savedPageSize : C.TABLES.DEFAULT_STORAGE_COUNT,
     });
@@ -36,7 +41,7 @@ export default Ember.Controller.extend({
     });
   }.property('model.[]', 'model.@each.{instanceId,state}', 'storageTableRevision'),
 
-  filteredVolumes: Ember.computed(
+  filteredVolumes: computed(
     'storageFilter',
     'nonRootVolumes.[]',
     'nonRootVolumes.@each.{state,instanceId,removed,actionLinks,mounts}',
@@ -45,13 +50,13 @@ export default Ember.Controller.extend({
     }
   ),
 
-  hasSelectedVolumes: Ember.computed.gt('selectedVolumes.length', 0),
-  selectedVolumeCount: Ember.computed('selectedVolumes.length', function() {
+  hasSelectedVolumes: gt('selectedVolumes.length', 0),
+  selectedVolumeCount: computed('selectedVolumes.length', function() {
     return String(this.get('selectedVolumes.length') || 0);
   }),
 
   _removeSuccessfulVolumes(volumes) {
-    let successful = Ember.A((volumes || []).slice());
+    let successful = A((volumes || []).slice());
     let model = this.get('model');
     let selected = this.get('selectedVolumes');
     let changed = false;
@@ -115,12 +120,12 @@ export default Ember.Controller.extend({
 
       this.setProperties({
         storageFilter: value,
-        selectedVolumes: Ember.A(),
+        selectedVolumes: A(),
       });
     },
 
     selectionChanged(volumes) {
-      this.set('selectedVolumes', Ember.A((volumes || []).slice()));
+      this.set('selectedVolumes', A((volumes || []).slice()));
     },
 
     storagePageSizeChanged(value) {
@@ -143,10 +148,10 @@ export default Ember.Controller.extend({
         volumes: selected.slice(),
         escToClose: true,
         onRemoved: (volume) => {
-          Ember.run(() => this._removeSuccessfulVolumes([volume]));
+          run(() => this._removeSuccessfulVolumes([volume]));
         },
         onComplete: (successful) => {
-          Ember.run(() => {
+          run(() => {
             this._removeSuccessfulVolumes(successful);
           });
         },

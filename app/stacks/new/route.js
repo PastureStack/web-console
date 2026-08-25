@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { hashSettled } from 'rsvp';
+import Route from '@ember/routing/route';
 import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
 
 const DOCKER = 'docker-compose.yml';
@@ -17,7 +18,7 @@ function githubUrl(repo,branch,file) {
     '/' + encodeURIComponent(file);
 }
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function(params/*, transition*/) {
     var stack = this.get('store').createRecord({
       type: 'stack',
@@ -43,7 +44,7 @@ export default Ember.Route.extend({
 
     if ( dockerUrl && rancherUrl )
     {
-      return Ember.RSVP.hashSettled({
+      return hashSettled({
         docker:  ajaxPromise({url: dockerUrl,  dataType: 'text'}, true),
         rancher: ajaxPromise({url: rancherUrl, dataType: 'text'}, true),
       }).then((hash) => {

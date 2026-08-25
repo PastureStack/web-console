@@ -1,13 +1,14 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
 const IN_APP = ['container', 'instance', 'stack', 'host', 'service'];
 
-export default Ember.Component.extend({
+export default Component.extend({
   model: null,
 
   tagName: '',
-  endpoint: Ember.inject.service(),
-  growl: Ember.inject.service(),
+  endpoint: service(),
+  growl: service(),
 
   inApp: function() {
     return IN_APP.indexOf(this.get('model.resourceType')) >= 0;

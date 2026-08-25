@@ -1,8 +1,11 @@
-import Ember from 'ember';
-import {stringifyTarget} from 'ui/utils/parse-target';
+import { scheduleOnce } from '@ember/runloop';
+import EmberObject, { get } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import { stringifyTarget } from 'ui/utils/parse-target';
 
-export default Ember.Component.extend({
-  intl        : Ember.inject.service(),
+export default Component.extend({
+  intl        : service(),
 
   existing    : null,
   exclude     : null,
@@ -13,7 +16,7 @@ export default Ember.Component.extend({
 
   actions: {
     addTargetService: function() {
-      this.get('targetsArray').pushObject(Ember.Object.create({isService: true, value: null}));
+      this.get('targetsArray').pushObject(EmberObject.create({isService: true, value: null}));
     },
     removeTarget: function(obj) {
       this.get('targetsArray').removeObject(obj);
@@ -39,7 +42,7 @@ export default Ember.Component.extend({
     {
       let links = existing.get('linkedServices');
       Object.keys(links).forEach((key) => {
-        out.pushObject(Ember.Object.create({
+        out.pushObject(EmberObject.create({
           isService: true,
           value: links[key],
         }));
@@ -47,13 +50,13 @@ export default Ember.Component.extend({
     }
     else
     {
-      out.pushObject(Ember.Object.create({
+      out.pushObject(EmberObject.create({
         isService: true,
         value: null
       }));
     }
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       this.set('targetsArray', out);
       this.targetsChanged();
     });
@@ -63,12 +66,12 @@ export default Ember.Component.extend({
     var out = [];
     var array = this.get('targetsArray');
     array.filterBy('isService',true).filterBy('value').map((choice) => {
-      var serviceId = Ember.get(choice,'value');
+      var serviceId = get(choice,'value');
 
       var entry = out.filterBy('serviceId', serviceId)[0];
       if ( !entry )
       {
-        entry = Ember.Object.create({
+        entry = EmberObject.create({
           serviceId: serviceId,
           ports: [],
         });

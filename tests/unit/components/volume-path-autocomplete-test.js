@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { A } from '@ember/array';
+import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 import VolumePathAutocomplete from 'ui/components/volume-path-autocomplete/component';
@@ -22,11 +23,11 @@ test('arrow keys select and Enter completes without routing through sendAction',
   let changed;
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(VolumePathAutocomplete, {
       renderer: inertRenderer(),
       value: 'da',
-      suggestions: Ember.A([
+      suggestions: A([
         {value: 'data1:/data', source: 'existing'},
         {value: 'data2:/data', source: 'existing'},
       ]),
@@ -62,13 +63,13 @@ test('Escape closes the candidate list without changing the value', function(ass
   let component = createOwned(VolumePathAutocomplete, {
     renderer: inertRenderer(),
     value: '/d',
-    suggestions: Ember.A(['/data']),
+    suggestions: A(['/data']),
     changed() {
       changed = true;
     },
   }, 'component');
 
-  Ember.run(() => component.set('isOpen', true));
+  run(() => component.set('isOpen', true));
   let escape = keyboardEvent('Escape');
   component.send('keyDown', escape);
 
@@ -83,13 +84,13 @@ test('Tab completes the active candidate and preserves normal focus movement', f
   let component = createOwned(VolumePathAutocomplete, {
     renderer: inertRenderer(),
     value: '/da',
-    suggestions: Ember.A(['/data']),
+    suggestions: A(['/data']),
     changed(value) {
       changed = value;
     },
   }, 'component');
 
-  Ember.run(() => component.set('isOpen', true));
+  run(() => component.set('isOpen', true));
   let tab = keyboardEvent('Tab');
   component.send('keyDown', tab);
 
@@ -105,13 +106,13 @@ test('mouse selection accepts the highlighted candidate', function(assert) {
   let component = createOwned(VolumePathAutocomplete, {
     renderer: inertRenderer(),
     value: 'sha',
-    suggestions: Ember.A([{value: 'shared:/srv/shared', source: 'existing'}]),
+    suggestions: A([{value: 'shared:/srv/shared', source: 'existing'}]),
     changed(value) {
       changed = value;
     },
   }, 'component');
 
-  Ember.run(() => component.set('isOpen', true));
+  run(() => component.set('isOpen', true));
   component.send('chooseSuggestion', component.get('activeSuggestion'), {
     preventDefault() {
       prevented = true;

@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
-  k8s: Ember.inject.service(),
+export default Mixin.create({
+  k8s: service(),
 
   selectorsAsArray: function() {
     var out = [];

@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { resolve, Promise } from 'rsvp';
+import { A } from '@ember/array';
+import { run } from '@ember/runloop';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 
 import FormPortsComponent from 'ui/components/form-ports/component';
@@ -8,7 +11,7 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 module('Unit | Component | form ports');
 
 function intlStub() {
-  return Ember.Object.create({
+  return EmberObject.create({
     t(key, values) {
       if ( values && values.value ) {
         return `${key}:${values.value}`;
@@ -20,7 +23,7 @@ function intlStub() {
 }
 
 function portRow(publicPort, privatePort, protocol) {
-  return Ember.Object.create({
+  return EmberObject.create({
     bindAddress: null,
     public: publicPort,
     private: privatePort,
@@ -31,12 +34,12 @@ function portRow(publicPort, privatePort, protocol) {
 function createComponent(project, properties) {
   let component;
 
-  Ember.run(() => {
+  run(() => {
     component = createOwned(FormPortsComponent, Object.assign({
       renderer: inertRenderer(),
       intl: intlStub(),
-      projects: Ember.Object.create({current: project}),
-      initialPorts: Ember.A(),
+      projects: EmberObject.create({current: project}),
+      initialPorts: A(),
       schedulePortPreflight() {},
     }, properties || {}), 'component');
   });
@@ -64,7 +67,7 @@ test('closure callbacks are invoked directly and missing optional callbacks are 
   });
   let row = portRow('8080', '80');
 
-  Ember.run(() => component.set('portsArray', Ember.A([row])));
+  run(() => component.set('portsArray', A([row])));
   component.portsArrayDidChange();
   component.applyPreflightState('available', [], null, {
     eligibleHostCount: 1,
@@ -75,7 +78,7 @@ test('closure callbacks are invoked directly and missing optional callbacks are 
   assert.deepEqual(changedSpecs, ['8080:80/tcp'], 'passes the serialized port specs');
   assert.equal(preflightState.status, 'available', 'passes the preflight result');
 
-  Ember.run(() => component.setProperties({
+  run(() => component.setProperties({
     changed: null,
     changedStr: null,
     preflightChanged: null,
@@ -87,7 +90,7 @@ test('closure callbacks are invoked directly and missing optional callbacks are 
 });
 
 function projectWithAction(callback) {
-  return Ember.Object.create({
+  return EmberObject.create({
     actionLinks: {portpreflight: '/v2-beta/projects/1a5?action=portpreflight'},
     hasAction(name) {
       return name === 'portpreflight';
@@ -102,11 +105,11 @@ test('managed owner on another host blocks saving and identifies the workload', 
   let captured;
   let project = projectWithAction((name, payload) => {
     captured = {name, payload};
-    return Ember.RSVP.resolve(Ember.Object.create({
+    return resolve(EmberObject.create({
       status: 'blocked',
       eligibleHostCount: 1,
       availableHostCount: 0,
-      conflicts: Ember.A([Ember.Object.create({
+      conflicts: A([EmberObject.create({
         severity: 'blocked',
         reasonCode: 'active_port_conflict_on_other_host',
         hostName: 'node-a',
@@ -130,7 +133,7 @@ test('managed owner on another host blocks saving and identifies the workload', 
   });
   let row = portRow('8080', '80');
 
-  Ember.run(() => component.set('portsArray', Ember.A([row])));
+  run(() => component.set('portsArray', A([row])));
   component._preflightSequence = 1;
 
   return component.runPortPreflight(1).then(() => {
@@ -154,11 +157,11 @@ test('managed owner on another host blocks saving and identifies the workload', 
 });
 
 test('stopped owner is a warning and does not block saving', function(assert) {
-  let project = projectWithAction(() => Ember.RSVP.resolve(Ember.Object.create({
+  let project = projectWithAction(() => resolve(EmberObject.create({
     status: 'warning',
     eligibleHostCount: 2,
     availableHostCount: 2,
-    conflicts: Ember.A([Ember.Object.create({
+    conflicts: A([EmberObject.create({
       severity: 'warning',
       reasonCode: 'stopped_port_owner',
       hostName: 'node-b',
@@ -172,7 +175,7 @@ test('stopped owner is a warning and does not block saving', function(assert) {
   let component = createComponent(project, {networkMode: 'bridge'});
   let row = portRow('8443', '443');
 
-  Ember.run(() => component.set('portsArray', Ember.A([row])));
+  run(() => component.set('portsArray', A([row])));
   component._preflightSequence = 1;
 
   return component.runPortPreflight(1).then(() => {
@@ -187,11 +190,11 @@ test('host networking checks the container port and reports misleading remapping
   let captured;
   let project = projectWithAction((name, payload) => {
     captured = payload;
-    return Ember.RSVP.resolve(Ember.Object.create({
+    return resolve(EmberObject.create({
       status: 'blocked',
       eligibleHostCount: 1,
       availableHostCount: 0,
-      conflicts: Ember.A([Ember.Object.create({
+      conflicts: A([EmberObject.create({
         severity: 'blocked',
         source: 'request',
         reasonCode: 'host_network_ignores_published_port',
@@ -205,7 +208,7 @@ test('host networking checks the container port and reports misleading remapping
   let component = createComponent(project, {networkMode: 'host'});
   let row = portRow('2201', '22');
 
-  Ember.run(() => component.set('portsArray', Ember.A([row])));
+  run(() => component.set('portsArray', A([row])));
   component._preflightSequence = 1;
 
   return component.runPortPreflight(1).then(() => {
@@ -219,32 +222,32 @@ test('host networking checks the container port and reports misleading remapping
 
 test('a late older response cannot replace the newest result', function(assert) {
   let resolvers = [];
-  let project = projectWithAction(() => new Ember.RSVP.Promise((resolve) => resolvers.push(resolve)));
+  let project = projectWithAction(() => new Promise((resolve) => resolvers.push(resolve)));
   let component = createComponent(project, {networkMode: 'managed'});
   let row = portRow('8080', '80');
 
-  Ember.run(() => component.set('portsArray', Ember.A([row])));
+  run(() => component.set('portsArray', A([row])));
   component._preflightSequence = 1;
   let oldRequest = component.runPortPreflight(1);
 
   component._preflightSequence = 2;
   let newRequest = component.runPortPreflight(2);
 
-  Ember.run(() => resolvers[1](Ember.Object.create({
+  run(() => resolvers[1](EmberObject.create({
     status: 'available',
     eligibleHostCount: 2,
     availableHostCount: 2,
-    conflicts: Ember.A(),
+    conflicts: A(),
   })));
 
   return newRequest.then(() => {
     assert.equal(component.get('preflightStatus'), 'available', 'applies the newest response');
 
-    Ember.run(() => resolvers[0](Ember.Object.create({
+    run(() => resolvers[0](EmberObject.create({
       status: 'blocked',
       eligibleHostCount: 2,
       availableHostCount: 0,
-      conflicts: Ember.A(),
+      conflicts: A(),
     })));
 
     return oldRequest;

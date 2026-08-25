@@ -1,5 +1,6 @@
-import TestLoader from 'ember-cli-test-loader/test-support/index';
-
-// Direct QUnit tests import the modules they exercise explicitly.
-// The old ember-qunit start path used to trigger ember-cli-test-loader.
-TestLoader.load();
+// Load the compiled test modules directly from Ember's AMD registry. This is
+// the only behavior the retired ember-cli-test-loader addon provided here.
+Object.keys(window.requirejs.entries)
+  .filter((name) => /(?:^|\/)(?:test|tests)\/.+-test$/.test(name))
+  .sort()
+  .forEach((name) => window.require(name));

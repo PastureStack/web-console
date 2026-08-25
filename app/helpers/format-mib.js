@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import { helper as buildHelper } from '@ember/component/helper';
 import Util from 'ui/utils/util';
 
 export function formatMib(params, options) {
   return Util.formatMib(params[0], options.adaptive);
 }
 
-export default Ember.Helper.helper(formatMib);
+export default buildHelper(formatMib);

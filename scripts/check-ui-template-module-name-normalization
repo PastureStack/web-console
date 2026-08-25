@@ -6,6 +6,7 @@ var path = require('path');
 var babel = require('@babel/core');
 var normalizePlugin = require(path.join(__dirname, '..', 'lib', 'normalize-template-module-name-babel-plugin'));
 var webpackPlugin = require(path.join(__dirname, '..', 'lib', 'normalize-template-module-name-webpack-plugin'));
+var compiler;
 
 assert.strictEqual(
   normalizePlugin.normalizeModuleName('/tmp/build-a/node_modules/example-addon/dist/component.js'),
@@ -33,7 +34,7 @@ function compile(filename) {
       [
         require.resolve('babel-plugin-ember-template-compilation'),
         {
-          compilerPath: require.resolve('ember-source/dist/ember-template-compiler.js'),
+          compiler,
           enableLegacyModules: []
         },
         'ember-cli-htmlbars:inline-precompile'
@@ -42,6 +43,8 @@ function compile(filename) {
   }).code;
 }
 
+async function main() {
+compiler = await import('ember-source/ember-template-compiler/index.js');
 var filename = '/tmp/build-a/node_modules/example-addon/dist/component.js';
 var compiled = compile(filename);
 var independentlyCompiled = compile('/tmp/build-b/node_modules/example-addon/dist/component.js');
@@ -62,3 +65,9 @@ assert.strictEqual(rules[1].use.options.plugins[0], webpackPlugin.babelPluginPat
 assert.deepStrictEqual(rules[2].use.options.plugins, undefined);
 
 console.log('UI_TEMPLATE_MODULE_NAME_NORMALIZATION_OK cases=8 failure_count=0');
+}
+
+main().catch((error) => {
+  console.error(`UI_TEMPLATE_MODULE_NAME_NORMALIZATION_FAIL ${error.stack || error}`);
+  process.exitCode = 1;
+});

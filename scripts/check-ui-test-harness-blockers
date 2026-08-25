@@ -28,8 +28,8 @@ if "ember-qunit" in dev_deps:
     fail("EMBER_QUNIT_STILL_PRESENT")
 if "ember-test-helpers" in dev_deps:
     fail("EMBER_TEST_HELPERS_STILL_PRESENT")
-if dev_deps.get("qunit") != "2.25.0":
-    fail("DIRECT_QUNIT_VERSION_UNEXPECTED", actual=dev_deps.get("qunit"), expected="2.25.0")
+if dev_deps.get("qunit") != "2.26.0":
+    fail("DIRECT_QUNIT_VERSION_UNEXPECTED", actual=dev_deps.get("qunit"), expected="2.26.0")
 
 all_test_files = [path for path in Path("tests").rglob("*") if path.is_file()]
 test_files = [path for path in Path("tests").rglob("*.js")]
@@ -67,7 +67,7 @@ if removed_ember_copy_count != 0:
     fail("REMOVED_EMBER_COPY_API_REMAINS", actual=removed_ember_copy_count, expected=0)
 
 navigation_tree = Path("app/utils/navigation-tree.js").read_text(encoding="utf-8")
-for marker in ["import { A } from '@ember/array'", "cloneNavigationValue", "Object.getPrototypeOf(value)"]:
+for marker in ["import { A, isArray } from '@ember/array'", "cloneNavigationValue", "Object.getPrototypeOf(value)"]:
     if marker not in navigation_tree:
         fail("NAVIGATION_TREE_COPY_BOUNDARY_MARKER_MISSING", marker=marker)
 
@@ -123,7 +123,7 @@ for private_marker in ["currentHandlerInfos", "this.router.router", "_names"]:
         fail("PRIVATE_ROUTE_INFO_NAVIGATION_RETURNED", marker=private_marker)
 
 authenticated_controller = Path("app/authenticated/controller.js").read_text(encoding="utf-8")
-if "Ember.computed.alias('router.currentRouteName')" not in authenticated_controller:
+if "import { alias } from '@ember/object/computed'" not in authenticated_controller or "currentPath : alias('router.currentRouteName')" not in authenticated_controller:
     fail("PUBLIC_CURRENT_ROUTE_NAME_ALIAS_MISSING")
 if "application.currentPath" in authenticated_controller:
     fail("REMOVED_APPLICATION_CURRENT_PATH_ALIAS_RETURNED")
@@ -226,9 +226,11 @@ for path in test_files + [Path("tests/test-helper.js")]:
         fail("EMBER_QUNIT_IMPORT_REMAINS", file=path)
 
 test_helper = Path("tests/test-helper.js").read_text(encoding="utf-8")
-for phrase in ["import TestLoader from 'ember-cli-test-loader/test-support/index';", "TestLoader.load();"]:
+for phrase in ["Object.keys(window.requirejs.entries)", ".filter((name) => /(?:^|\\/)(?:test|tests)\\/.+-test$/", ".forEach((name) => window.require(name))"]:
     if phrase not in test_helper:
         fail("DIRECT_QUNIT_TEST_HELPER_BOOTSTRAP_MISSING", phrase=phrase)
+if "ember-cli-test-loader" in dev_deps:
+    fail("RETIRED_EMBER_CLI_TEST_LOADER_RETURNED")
 
 bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
 bower_deps = bower.get("dependencies", {}) or {}
@@ -294,7 +296,7 @@ else:
             fail("EMBER_QUNIT_STILL_IN_LOCK", path=package_path)
         if package_path == "node_modules/ember-test-helpers" or package_path.startswith("node_modules/ember-test-helpers/"):
             fail("EMBER_TEST_HELPERS_STILL_IN_LOCK", path=package_path)
-    if packages.get("node_modules/qunit", {}).get("version") != "2.25.0":
+    if packages.get("node_modules/qunit", {}).get("version") != "2.26.0":
         fail("DIRECT_QUNIT_LOCK_VERSION_UNEXPECTED", actual=packages.get("node_modules/qunit", {}).get("version"))
 
 browser_gate = Path("scripts/check-ui-browser-ember-test")
@@ -317,8 +319,8 @@ if "templateCompilerPath" in environment:
 
 release_lock = json.loads(Path("package-lock.json").read_text(encoding="utf-8"))
 release_packages = release_lock.get("packages", {}) or {}
-if release_packages.get("node_modules/ember-source", {}).get("version") != "6.12.0":
-    fail("EMBER_LTS_TEMPLATE_COMPILER_LOCK_MISSING")
+if release_packages.get("node_modules/ember-source", {}).get("version") != "7.2.0":
+    fail("EMBER_CURRENT_TEMPLATE_COMPILER_LOCK_MISSING")
 
 modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
 required_phrases = [
@@ -331,7 +333,7 @@ required_phrases = [
     "No-Publish Browser Ember Test Gate",
     "No-Publish Ember QUnit Helper Removal",
     "No-Publish Testem Browser Runtime Modernization",
-    "ember-source@6.12.0",
+    "ember-source@7.2.0",
     "ember-cli-qunit",
     "moduleFor",
 ]
@@ -366,7 +368,7 @@ print(
     f"removedTransitionMethods={removed_transition_method_count} "
     f"registryInject={registry_inject_count} "
     f"templates={len(template_files)} "
-    "testemCiBrowser=Chrome lockedTemplateCompiler=6.12.0 browserEmberGate=present emberQunitHelpers=removed"
+    "testemCiBrowser=Chrome lockedTemplateCompiler=7.2.0 browserEmberGate=present emberQunitHelpers=removed"
 )
 print("Browser ember test is now a no-publish source gate; generated asset diff and live route smoke remain required before artifact publication.")
 print("failure_count=0")

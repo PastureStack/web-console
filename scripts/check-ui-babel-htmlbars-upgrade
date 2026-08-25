@@ -26,7 +26,7 @@ build = Path("ember-cli-build.js").read_text(encoding="utf-8")
 if "includePolyfill" in build:
     fail("LEGACY_BABEL_INCLUDE_POLYFILL_REMAINS")
 expected = {
-    "ember-cli-babel": "8.3.1",
+    "ember-cli-babel": "8.3.2",
     "ember-cli-htmlbars": "7.0.1",
 }
 for name, version in expected.items():
@@ -71,7 +71,7 @@ if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
-print(f"UI_BABEL_HTMLBARS_UPGRADE_OK ember-cli-babel=8.3.1 ember-cli-htmlbars=7.0.1 inline-precompile=removed lockfile={lock_path} package_count={package_count}")
-print("The root Babel and every HTMLBars compiler path are current for Ember 6.12; addon-owned Babel 6/7 paths remain explicitly tracked as build-only debt.")
+print(f"UI_BABEL_HTMLBARS_UPGRADE_OK ember-cli-babel=8.3.2 ember-cli-htmlbars=7.0.1 inline-precompile=removed lockfile={lock_path} package_count={package_count}")
+print("The root Babel and every HTMLBars compiler path are current for Ember 7.2; addon-owned Babel 6/7 paths remain explicitly tracked as build-only debt.")
 print("failure_count=0")
 PY

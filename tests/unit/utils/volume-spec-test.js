@@ -1,5 +1,8 @@
 import { module, test } from 'qunit';
-import { parseVolumeSpec, rankedVolumeSuggestions } from 'ui/utils/volume-spec';
+import {
+  parseVolumeSpec,
+  rankedVolumeSuggestions
+} from 'ui/utils/volume-spec';
 
 module('Unit | Utility | volume spec');
 

@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import { helper as buildHelper } from '@ember/component/helper';
 
 export function include(params) {
   const [items, value] = params;
   return items ? items.indexOf(value) > -1 : false;
 }
 
-export default Ember.Helper.helper(include);
+export default buildHelper(include);

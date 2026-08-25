@@ -85,7 +85,7 @@ for marker in ["getComponentTemplate", "ui/components/", "requirejs.entries"]:
     if marker not in pod_layouts:
         failures.append(f"UI_LOGIN_POD_LAYOUT_COMPATIBILITY_MISSING marker={marker}")
 
-input_compat = require("app/components/input/component.js", "Ember.TextField.extend")
+input_compat = require("app/components/input/component.js", "export default TextField.extend")
 for marker in ["attributeBindings: ['checked']", "type === 'checkbox'", "type === 'radio'"]:
     if marker not in input_compat:
         failures.append(f"UI_LOGIN_INPUT_COMPATIBILITY_MISSING marker={marker}")

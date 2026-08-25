@@ -1,3 +1,3 @@
-import Ember from 'ember';
+import TextArea from '@ember/legacy-built-in-components/components/textarea';
 
-export default Ember.TextArea;
+export default TextArea;

@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Component.extend(Sortable, {
+export default Component.extend(Sortable, {
   model: null,
   single: false,
 
-  sortableContent: Ember.computed.alias('model.volumes'),
+  sortableContent: alias('model.volumes'),
   sortBy: 'name',
   sorts: {
     state:  ['state','displayName','id'],

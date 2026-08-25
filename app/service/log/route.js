@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import EmberObject from '@ember/object';
+import Route from '@ember/routing/route';
 import FilteredSorted from 'ui/utils/filtered-sorted-array-proxy';
 
-export default Ember.Route.extend({
+export default Route.extend({
   model: function() {
     let par = this.modelFor('service');
     let serviceId = par.get('service.id');
@@ -15,7 +16,7 @@ export default Ember.Route.extend({
       limit: 100
     }).then(() => {
       let all = this.get('store').all('serviceLog');
-      return Ember.Object.create({
+      return EmberObject.create({
         service: par.get('service'),
         stack: par.get('stack'),
         logs: FilteredSorted.create({

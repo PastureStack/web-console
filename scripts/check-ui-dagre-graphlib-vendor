@@ -13,10 +13,11 @@ if "dagre" in bower.get("dependencies", {}):
 
 package = json.loads(Path("package.json").read_text())
 dependencies = package.get("devDependencies", {})
-if dependencies.get("dagre") != "0.8.5":
-    raise SystemExit("package.json must pin dagre 0.8.5")
-if dependencies.get("graphlib") != "2.1.8":
-    raise SystemExit("package.json must pin graphlib 2.1.8")
+if dependencies.get("dagre-d3-es") != "7.0.14":
+    raise SystemExit("package.json must pin dagre-d3-es 7.0.14")
+for retired in ["dagre", "graphlib"]:
+    if retired in dependencies:
+        raise SystemExit(f"package.json must not retain unmaintained {retired}")
 PY_CHECK
 
 if grep -R "bower_components/graphlib\|bower_components/dagre" -n ember-cli-build.js app tests 2>/dev/null; then
@@ -24,12 +25,17 @@ if grep -R "bower_components/graphlib\|bower_components/dagre" -n ember-cli-buil
   exit 1
 fi
 
-grep -q "app.import('node_modules/graphlib/dist/graphlib.core.js')" ember-cli-build.js
-grep -q "app.import('node_modules/dagre/dist/dagre.core.js')" ember-cli-build.js
-grep -q "expectDagreGraphlibBrowserGlobals" scripts/node24-lock-smoke.js
-grep -q "sandbox.dagre.layout(graph)" scripts/node24-lock-smoke.js
-grep -q "dagre layout smoke failed" scripts/node24-lock-smoke.js
-grep -q "sandbox.dagreD3.dagre.layout(renderGraph)" scripts/node24-lock-smoke.js
+if grep -q "vendor/dagre-d3\|node_modules/graphlib\|node_modules/dagre/dist" ember-cli-build.js scripts/node24-lock-smoke.js; then
+  echo "legacy dagre browser globals must not remain active" >&2
+  exit 1
+fi
+grep -q "from 'dagre-d3-es'" app/components/stack-graph/component.js
+grep -q "d3.zoom()" app/components/stack-graph/component.js
+grep -q "d3.zoomIdentity" app/components/stack-graph/component.js
+grep -q "arrowheadClass" app/components/stack-graph/component.js
+grep -q "curve: d3.curveBundle.beta(1)" app/components/stack-graph/component.js
+grep -q "expectDagreD3ESModules" scripts/node24-lock-smoke.js
+grep -q "dagreLayout.layout(graph)" scripts/node24-lock-smoke.js
 grep -q "dagre-d3 stack graph layout smoke failed" scripts/node24-lock-smoke.js
 
 if ! grep -q "setDefaultEdgeLabel(function()" app/components/stack-graph/component.js; then
@@ -38,4 +44,4 @@ if ! grep -q "setDefaultEdgeLabel(function()" app/components/stack-graph/compone
 fi
 
 
-echo "ui-dagre-graphlib-vendor-ok"
+echo "ui-dagre-d3-es-modernization-ok"

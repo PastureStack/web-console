@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   editing: null,
   createLabel: 'saveCancel.create',
   editLabel: 'saveCancel.edit',
@@ -44,7 +45,7 @@ export default Ember.Component.extend({
   savedChanged: function() {
     if ( this.get('saved') )
     {
-      Ember.run.later(this, () => {
+      later(this, () => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }

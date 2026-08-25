@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { next, debounce } from '@ember/runloop';
+import Component from '@ember/component';
+import EmberObject, { set } from '@ember/object';
 
 function applyLinesIntoArray(lines, ary) {
   lines.forEach((line) => {
@@ -29,11 +31,11 @@ function applyLinesIntoArray(lines, ary) {
     var existing = ary.filterBy('key',key)[0];
     if ( existing )
     {
-      Ember.set(existing,'value',val);
+      set(existing,'value',val);
     }
     else
     {
-      ary.pushObject(Ember.Object.create({key: key, value: val}));
+      ary.pushObject(EmberObject.create({key: key, value: val}));
     }
   });
 }
@@ -55,7 +57,7 @@ function removeEmptyEntries(ary, allowEmptyValue=false) {
   ary.removeObjects(toRemove);
 }
 
-export default Ember.Component.extend({
+export default Component.extend({
   // Inputs
   initialStr:           null,
   initialMap:           null,
@@ -78,12 +80,12 @@ export default Ember.Component.extend({
       let required = this.get('requiredIfAny');
       if ( required && !ary.get('length') ) {
         Object.keys(required).forEach((k) => {
-          ary.pushObject(Ember.Object.create({key: k, value: required[k], editable: false}));
+          ary.pushObject(EmberObject.create({key: k, value: required[k], editable: false}));
         });
       }
 
-      ary.pushObject(Ember.Object.create({key: '', value: ''}));
-      Ember.run.next(() => {
+      ary.pushObject(EmberObject.create({key: '', value: ''}));
+      next(() => {
         if ( this.isDestroyed || this.isDestroying ) {
           return;
         }
@@ -120,7 +122,7 @@ export default Ember.Component.extend({
     if ( map )
     {
       Object.keys(map).forEach((key) => {
-        ary.push(Ember.Object.create({key: key, value: map[key]}));
+        ary.push(EmberObject.create({key: key, value: map[key]}));
       });
     }
     else if ( this.get('initialStr') )
@@ -138,7 +140,7 @@ export default Ember.Component.extend({
   },
 
   aryObserver: function() {
-    Ember.run.debounce(this,'fireChanged',100);
+    debounce(this,'fireChanged',100);
   }.observes('ary.@each.{key,value}'),
 
   fireChanged() {

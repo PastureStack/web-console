@@ -1,15 +1,16 @@
-import Ember from 'ember';
+import { notEmpty, empty } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import { denormalizeId } from 'ui/utils/api-store-references';
 
 export default Resource.extend({
   type: 'snapshot',
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   volume: denormalizeId('volumeId'),
 
-  hasBackups: Ember.computed.notEmpty('backupTargetId'),
-  backupEnabled: Ember.computed.empty('backupTargetId'),
+  hasBackups: notEmpty('backupTargetId'),
+  backupEnabled: empty('backupTargetId'),
 
   actions: {
     backup() {

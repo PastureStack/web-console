@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
 import ManageLabels from 'ui/mixins/manage-labels';
 import { flattenLabelArrays } from 'ui/mixins/manage-labels';
 import NewOrEdit from 'ui/mixins/new-or-edit';
@@ -8,7 +8,7 @@ import { debouncedObserver } from 'ui/utils/debounce';
 
 export default ModalBase.extend(NewOrEdit, ManageLabels, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: Ember.computed.alias('modalService.modalOpts'),
+  originalModel: alias('modalService.modalOpts'),
   model: null,
   editing: true,
 

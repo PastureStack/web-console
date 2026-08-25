@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { A } from '@ember/array';
+import { resolve } from 'rsvp';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 
 import PrefsService from 'ui/services/prefs';
@@ -6,12 +9,12 @@ import PrefsService from 'ui/services/prefs';
 module('Unit | Service | prefs');
 
 function preferenceRecord(name, value) {
-  return Ember.Object.create({
+  return EmberObject.create({
     id: `1up-${name}`,
     name,
     value: JSON.stringify(value),
     save() {
-      return Ember.RSVP.resolve(this);
+      return resolve(this);
     },
   });
 }
@@ -19,13 +22,13 @@ function preferenceRecord(name, value) {
 test('page-size computed properties accept legacy two-way binding writes', function(assert) {
   assert.expect(7);
 
-  let records = Ember.A([
+  let records = A([
     preferenceRecord('tableCount', 50),
     preferenceRecord('statsTableCount', 10),
     preferenceRecord('storageTableCount', 25),
   ]);
   let service = PrefsService.create({
-    userStore: Ember.Object.create({
+    userStore: EmberObject.create({
       all() {
         return records;
       },
@@ -34,20 +37,20 @@ test('page-size computed properties accept legacy two-way binding writes', funct
 
   assert.equal(service.get('storageTablePerPage'), 25, 'reads the stored storage page size');
 
-  Ember.run(() => service.set('storageTablePerPage', 0));
+  run(() => service.set('storageTablePerPage', 0));
 
   assert.equal(service.get('storageTablePerPage'), 0, 'accepts the semantic All value');
   assert.equal(records.findBy('name', 'storageTableCount').get('value'), '0', 'persists All through the base preference');
 
-  Ember.run(() => service.set('storageTablePerPage', 999));
+  run(() => service.set('storageTablePerPage', 999));
 
   assert.equal(service.get('storageTablePerPage'), 25, 'normalizes unsupported storage sizes');
   assert.equal(records.findBy('name', 'storageTableCount').get('value'), '25', 'persists the normalized storage size');
 
-  Ember.run(() => service.set('tablePerPage', 0));
+  run(() => service.set('tablePerPage', 0));
 
   assert.equal(service.get('tablePerPage'), 50, 'does not allow All on ordinary tables');
   assert.equal(records.findBy('name', 'tableCount').get('value'), '50', 'persists the ordinary-table fallback');
 
-  Ember.run(() => service.destroy());
+  run(() => service.destroy());
 });

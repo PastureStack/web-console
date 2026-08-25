@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Errors from 'ui/utils/errors';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'section',
   classNames: ['well'],
-  settings: Ember.inject.service(),
-  access: Ember.inject.service(),
+  settings: service(),
+  access: service(),
 
   model: null,
   individuals: 'siteAccess.users',

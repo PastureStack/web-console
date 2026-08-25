@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { alias, notEmpty } from '@ember/object/computed';
+import { service } from '@ember/service';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { denormalizeId, denormalizeIdArray } from 'ui/utils/api-store-references';
@@ -11,9 +13,9 @@ var Container = Instance.extend({
   requestedHostId            : null,
   primaryIpAddress           : null,
   primaryAssociatedIpAddress : null,
-  projects                   : Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
-  consoleWorkspace: Ember.inject.service('console-workspace'),
+  projects                   : service(),
+  modalService: service('modal'),
+  consoleWorkspace: service('console-workspace'),
   // Container-specific
   type                       : 'container',
   imageUuid                  : null,
@@ -31,8 +33,8 @@ var Container = Instance.extend({
   mounts                     : denormalizeIdArray('mountIds'),
   primaryHost                : denormalizeId('hostId'),
   services                   : denormalizeIdArray('serviceIds'),
-  primaryService             : Ember.computed.alias('services.firstObject'),
-  primaryStack               : Ember.computed.alias('primaryService.stack'),
+  primaryService             : alias('services.firstObject'),
+  primaryStack               : alias('primaryService.stack'),
 
   actions: {
     restart: function() {
@@ -116,7 +118,7 @@ var Container = Instance.extend({
   }.property('actionLinks.{restart,start,stop,restore,purge,execute,logs,update}','systemContainer','canDelete','labels','isVm'),
 
 
-  memoryReservationBlurb: Ember.computed('memoryReservation', function() {
+  memoryReservationBlurb: computed('memoryReservation', function() {
     if ( this.get('memoryReservation') ) {
       return formatSi(this.get('memoryReservation'), 1024, 'iB', 'B');
     }
@@ -179,7 +181,7 @@ var Container = Instance.extend({
     return ['removed','removing','purging','purged'].indexOf(this.get('state')) === -1;
   }.property('state'),
 
-  isManaged: Ember.computed.notEmpty('systemContainer'),
+  isManaged: notEmpty('systemContainer'),
 
   displayImage: function() {
     return (this.get('imageUuid')||'').replace(/^docker:/,'');

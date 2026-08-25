@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { scheduleOnce } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
 
@@ -7,9 +9,9 @@ var lastContainer = 'ubuntu:26.04';
 var lastVm = 'ubuntu:26.04';
 var lastWindows = 'microsoft/nanoserver';
 
-export default Ember.Component.extend(ManageLabels, {
-  settings: Ember.inject.service(),
-  projects: Ember.inject.service(),
+export default Component.extend(ManageLabels, {
+  settings: service(),
+  projects: service(),
 
   // Inputs
   initialValue: null,
@@ -49,7 +51,7 @@ export default Ember.Component.extend(ManageLabels, {
       }
     }
 
-    Ember.run.scheduleOnce('afterRender', () => {
+    scheduleOnce('afterRender', () => {
       this.set('userInput', initial);
       this.userInputDidChange();
     });

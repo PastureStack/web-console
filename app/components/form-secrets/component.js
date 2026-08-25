@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
 const DEFAULT_UID = '0';
 const DEFAULT_GID = '0';
 const DEFAULT_MODE = '444';
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
+export default Component.extend({
+  intl: service(),
   secrets: null,
   showPermissions: false,
 

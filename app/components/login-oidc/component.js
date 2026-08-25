@@ -1,12 +1,14 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  oidc: Ember.inject.service(),
+export default Component.extend({
+  oidc: service(),
 
   actions: {
     authenticate: function() {
       this.sendAction('action');
-      Ember.run.later(() => {
+      later(() => {
         this.get('oidc').authorizeRedirect().catch((err) => {
           this.sendAction('errorAction', err);
         });

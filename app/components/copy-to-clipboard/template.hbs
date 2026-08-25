@@ -1,11 +1,10 @@
 {{#if this.isSupported}}
   {{#tooltip-element type="tooltip-basic" model=(t this.model.tooltipText) tooltipTemplate='tooltip-static' class="copy-button-container" textChangedEvent=this.textChangedEvent baseClass="copy-clipboard" isCopyTo=true  tooltipFor="copyToClipboard"}}
-    <CopyButton
-      @target={{this.target}}
-      @text={{this.clipboardText}}
-      @onSuccess={{action "alertSuccess"}}
+    <button
+      type="button"
+      {{action "copy"}}
       class={{this.buttonClasses}}>
       <i class="icon icon-copy"></i>{{#if this.buttonText}} {{t this.buttonText}}{{/if}}
-    </CopyButton>
+    </button>
   {{/tooltip-element}}
 {{/if}}

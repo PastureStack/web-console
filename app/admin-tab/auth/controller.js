@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 
-export default Ember.Controller.extend({
-  access: Ember.inject.service(),
-  intl: Ember.inject.service(),
+export default Controller.extend({
+  access: service(),
+  intl: service(),
 
   lastRoute: 'admin-tab.auth.github',
   drivers: function() {

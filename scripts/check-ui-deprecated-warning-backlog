@@ -15,8 +15,8 @@ from pathlib import Path
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 
-expected_count = 133
-expected_sha256 = "7521d899c8854e4d4225d5fa5c3d9ed5ffd98eed83c793391e512e9b7215d287"
+expected_count = 98
+expected_sha256 = "5658ca781209c90f2dc7f546cc4f10cc8afde478c33cd330c975a128ce8ca511"
 hits = []
 for package_path, meta in sorted(lock.get("packages", {}).items()):
     if not package_path or not meta.get("deprecated"):
@@ -44,6 +44,6 @@ for row in hits:
 summary = ",".join(f"{name}:{count}" for name, count in sorted(by_name.items()))
 print(f"UI_DEPRECATED_WARNING_BACKLOG_OK current_deprecated_paths={len(hits)} inventory_sha256={actual_sha256} lockfile={lock_path}")
 print(f"known_deprecated_warning_families={summary}")
-print("The exact Ember 6.12 build-only deprecation inventory is fail-closed; P1 supply-chain work must reduce and deliberately re-baseline it.")
+print("The exact Ember 7.2 build-only deprecation inventory is fail-closed; future dependency work must reduce and deliberately re-baseline it.")
 print("failure_count=0")
 PY

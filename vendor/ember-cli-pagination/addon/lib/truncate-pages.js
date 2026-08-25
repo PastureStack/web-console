@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { A } from '@ember/array';
+import EmberObject, { computed } from '@ember/object';
 import SafeGet from '../util/safe-get';
 
-export default Ember.Object.extend(SafeGet, {
+export default EmberObject.extend(SafeGet, {
   numPagesToShow: 10,
   showFL: false,
   currentPage: null,
@@ -14,7 +15,7 @@ export default Ember.Object.extend(SafeGet, {
     return page > 0 && page <= totalPages;
   },
 
-  pagesToShow: Ember.computed("numPagesToShow","currentPage","totalPages", function() {
+  pagesToShow: computed("numPagesToShow","currentPage","totalPages", function() {
     var res = [];
 
     var numPages = this.getInt('numPagesToShow');
@@ -76,7 +77,7 @@ export default Ember.Object.extend(SafeGet, {
       }
     }
 
-    return Ember.A(res);
+    return A(res);
 
   })
 });

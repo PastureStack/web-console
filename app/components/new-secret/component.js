@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { observer } from '@ember/object';
+import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-export default Ember.Component.extend(NewOrEdit, {
+export default Component.extend(NewOrEdit, {
   model: null,
 
   userValue: '',
-  userValueChanged: Ember.observer('userValue', function() {
+  userValueChanged: observer('userValue', function() {
     this.set('primaryResource.value', AWS.util.base64.encode(this.get('userValue')));
   }),
 

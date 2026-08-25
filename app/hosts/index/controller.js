@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend({
-  prefs: Ember.inject.service(),
+export default Controller.extend({
+  prefs: service(),
 
   mode        : 'grouped',
   queryParams : ['mode'],
@@ -14,7 +16,7 @@ export default Ember.Controller.extend({
 
   },
 
-  showSystem: Ember.computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
+  showSystem: computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
     get() {
       return this.get(`prefs.${C.PREFS.SHOW_SYSTEM}`) !== false;
     },
@@ -25,7 +27,7 @@ export default Ember.Controller.extend({
     }
   }),
 
-  show: Ember.computed('showSystem', function() {
+  show: computed('showSystem', function() {
     return this.get('showSystem') === false ? 'standard' : 'all';
   }),
 

@@ -1,12 +1,15 @@
-import Ember from 'ember';
+import { equal } from '@ember/object/computed';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ContainerChoices from 'ui/mixins/container-choices';
 import ManageLabels from 'ui/mixins/manage-labels';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(ManageLabels, ContainerChoices,{
-  intl:                Ember.inject.service(),
-  projects:            Ember.inject.service(),
-  settings:            Ember.inject.service(),
+export default Component.extend(ManageLabels, ContainerChoices,{
+  intl:                service(),
+  projects:            service(),
+  settings:            service(),
 
   //Inputs
   instance:            null,
@@ -50,7 +53,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     },
   },
 
-  disableRetainIp: Ember.computed('isUpgrade', 'service.retainIp', 'retainWasSetOnInit', function() {
+  disableRetainIp: computed('isUpgrade', 'service.retainIp', 'retainWasSetOnInit', function() {
     let isUpgrade = this.get('isUpgrade');
     let wasSet = this.get('retainWasSetOnInit');
     if ( isUpgrade && wasSet ) {
@@ -68,7 +71,7 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
   // Network
   // ----------------------------------
   networkChoices: null,
-  isContainerNetwork: Ember.computed.equal('instance.networkMode','container'),
+  isContainerNetwork: equal('instance.networkMode','container'),
   initNetwork: function() {
     var isService = this.get('isService')||false;
     var mode = this.get('instance.networkMode');
@@ -106,8 +109,8 @@ export default Ember.Component.extend(ManageLabels, ContainerChoices,{
     }
   }.observes('instance.networkMode'),
 
-  isManagedNetwork: Ember.computed.equal('instance.networkMode','managed'),
-  isHostNetwork: Ember.computed.equal('instance.networkMode','host'),
+  isManagedNetwork: equal('instance.networkMode','managed'),
+  isHostNetwork: equal('instance.networkMode','host'),
 
   // ----------------------------------
   // Requested IP

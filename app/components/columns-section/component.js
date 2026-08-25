@@ -1,10 +1,13 @@
-import Ember from 'ember';
+import { next, scheduleOnce } from '@ember/runloop';
+import { htmlSafe } from '@ember/template';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 
 const MIN_WIDTH     = 260; // Minimum width of a column, including margin-right
 const COLUMN_MARGIN = 10; // this must match the rule in styles/pod.scss .pod-column
 
-export default Ember.Component.extend(ThrottledResize, {
+export default Component.extend(ThrottledResize, {
   pods         : null, // Override me with an array of content pods
   emptyMessage : null,
 
@@ -15,18 +18,18 @@ export default Ember.Component.extend(ThrottledResize, {
   tagName      : 'section',
 
   columnCount  : 3, // Will be reset on didInsertElement and resize
-  podCount     : Ember.computed.alias('pods.length'),
+  podCount     : alias('pods.length'),
 
   lastIndex: function() {
     return this.get('columnCount')-1;
   }.property('columnCount'),
 
   columnWidthCss: function() {
-    return Ember.String.htmlSafe('width: ' + this.get('columnWidth') + 'px');
+    return htmlSafe('width: ' + this.get('columnWidth') + 'px');
   }.property('columnWidth'),
 
   lastColumnWidthCss: function() {
-    return Ember.String.htmlSafe('width: ' + (this.get('columnWidth')+this.get('columnFudge')) + 'px');
+    return htmlSafe('width: ' + (this.get('columnWidth')+this.get('columnFudge')) + 'px');
   }.property('columnWidth','columnFudge'),
 
   onResize: function() {
@@ -74,7 +77,7 @@ export default Ember.Component.extend(ThrottledResize, {
   },
 
   podCountChanged: function() {
-    Ember.run.next(this,'onResize');
+    next(this,'onResize');
   }.observes('podCount'),
 
   columns: function() {
@@ -115,6 +118,6 @@ export default Ember.Component.extend(ThrottledResize, {
   didInsertElement: function() {
     this._super();
     // Removes deprecation warning about modifing after insert
-    Ember.run.scheduleOnce('afterRender', this, 'onResize');
+    scheduleOnce('afterRender', this, 'onResize');
   },
 });

@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { next, later, debounce, cancel } from '@ember/runloop';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 import { DEFAULT_COMMAND } from 'ui/components/container-shell/component';
 
@@ -45,9 +48,9 @@ function terminalBrokerStatusAction(httpStatus, brokerStatus) {
   return 'connect';
 }
 
-export default Ember.Component.extend(ThrottledResize, {
+export default Component.extend(ThrottledResize, {
   classNames: ['workspace-terminal'],
-  workspace: Ember.inject.service('console-workspace'),
+  workspace: service('console-workspace'),
   entry: null,
   instance: null,
   status: 'connecting',
@@ -67,12 +70,12 @@ export default Ember.Component.extend(ThrottledResize, {
     return this.get('controllerId') === this.get('workspace.clientId');
   }.property('controllerId', 'workspace.clientId'),
 
-  isEnded: Ember.computed.equal('status', 'ended'),
+  isEnded: equal('status', 'ended'),
 
   didInsertElement() {
     this._super(...arguments);
     this.setupTerminal();
-    Ember.run.next(this, () => {
+    next(this, () => {
       let shouldCreate = !this.get('entry.brokerReady') && this.get('entry.status') !== 'ended';
       this.connect(shouldCreate);
     });
@@ -102,7 +105,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
     contextMenuHandler() {
       this.set('contenteditable', true);
-      Ember.run.later(this, () => {
+      later(this, () => {
         if (!this.isDestroyed && !this.isDestroying) {
           this.set('contenteditable', false);
         }
@@ -133,7 +136,7 @@ export default Ember.Component.extend(ThrottledResize, {
         });
       }),
     });
-    Ember.run.next(this, 'fit');
+    next(this, 'fit');
   },
 
   connect(create) {
@@ -305,7 +308,7 @@ export default Ember.Component.extend(ThrottledResize, {
         lastActivity: frame.lastActivity,
       });
       this.setTerminalInputEnabled(frame.status === 'connected');
-      Ember.run.next(this, 'fit');
+      next(this, 'fit');
       break;
     case 'replay':
       (frame.replay || []).forEach((entry) => {
@@ -394,7 +397,7 @@ export default Ember.Component.extend(ThrottledResize, {
   },
 
   onResize() {
-    Ember.run.debounce(this, 'fit', 80);
+    debounce(this, 'fit', 80);
   },
 
   scheduleReconnect() {
@@ -406,7 +409,7 @@ export default Ember.Component.extend(ThrottledResize, {
       return;
     }
     let delay = Math.min(10000, 500 * Math.pow(2, Math.min(attempt, 5)));
-    this._reconnectTimer = Ember.run.later(this, () => {
+    this._reconnectTimer = later(this, () => {
       this.set('createAttempted', false);
       this.connect(false);
     }, delay);
@@ -414,7 +417,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
   cancelReconnect() {
     if (this._reconnectTimer) {
-      Ember.run.cancel(this._reconnectTimer);
+      cancel(this._reconnectTimer);
       this._reconnectTimer = null;
     }
   },

@@ -9,5 +9,5 @@ This directory records the runtime package bundled by the PastureStack Web Conso
 - npm integrity: `sha512-XsbvnIhdeL/HJSThsLgJCMgYKJIn6HFLgWRARJffsMfUE1hsW5XAL8pQkGA5iBpl69cZ3RA5U5ljttZDQoR/rg==`
 - License: MIT, retained in `LICENSE.md`
 
-This runtime record is separate from the legacy Sass source retained under
-`vendor/ember-power-select`, which has its own pinned version and provenance.
+The application loads this same package's maintained Sass module; no legacy
+Power Select style package is retained.

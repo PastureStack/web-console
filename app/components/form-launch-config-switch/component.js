@@ -1,8 +1,10 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  projects     : Ember.inject.service(),
-  hasVm        : Ember.computed.alias('projects.current.virtualMachine'),
+export default Component.extend({
+  projects     : service(),
+  hasVm        : alias('projects.current.virtualMachine'),
 
   index        : null,
   choices      : null,

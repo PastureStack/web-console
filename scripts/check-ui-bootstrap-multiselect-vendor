@@ -4,35 +4,57 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 python3 - <<'PY_CHECK'
+import hashlib
 import json
 from pathlib import Path
 
-bower = json.loads(Path("bower.json").read_text())
+version = "2.0.0"
+integrity = "sha512-m8dTwF+mLlpt8PtXfAXyERJLOGNuNrVuU9aQi2WMfwfwSzhgN+LbTaRuTk8Y15NZiMzy2m/FPfhKKgOOJxk2WQ=="
+package = json.loads(Path("package.json").read_text(encoding="utf-8"))
+lock = json.loads(Path("package-lock.json").read_text(encoding="utf-8"))
+bower = json.loads(Path("bower.json").read_text(encoding="utf-8"))
+
 if "bootstrap-multiselect" in bower.get("dependencies", {}):
     raise SystemExit("bower.json must not depend on bootstrap-multiselect")
+if package.get("devDependencies", {}).get("bootstrap-multiselect") != version:
+    raise SystemExit("package.json must pin bootstrap-multiselect 2.0.0")
+entry = lock.get("packages", {}).get("node_modules/bootstrap-multiselect", {})
+if entry.get("version") != version or entry.get("integrity") != integrity:
+    raise SystemExit("bootstrap-multiselect lock provenance drift")
+if Path("vendor/bootstrap-multiselect").exists():
+    raise SystemExit("obsolete vendored bootstrap-multiselect source must be absent")
 
-js = Path("vendor/bootstrap-multiselect/bootstrap-multiselect.js").read_text()
-css = Path("vendor/bootstrap-multiselect/bootstrap-multiselect.css").read_text()
-required_js_markers = [
-    "Bootstrap Multiselect",
-    "Dual licensed under the BSD-3-Clause and the Apache License, Version 2.0.",
-    "$.fn.multiselect",
-    "Constructor = Multiselect",
-]
-for marker in required_js_markers:
+js_path = Path("node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.js")
+css_path = Path("node_modules/bootstrap-multiselect/dist/css/bootstrap-multiselect.css")
+js = js_path.read_text(encoding="utf-8")
+css = css_path.read_text(encoding="utf-8")
+for marker in ["Bootstrap Multiselect", "$.fn.multiselect", "Constructor = Multiselect", 'data-bs-toggle="dropdown"']:
     if marker not in js:
-        raise SystemExit(f"bootstrap-multiselect vendor JS missing marker: {marker}")
+        raise SystemExit(f"bootstrap-multiselect 2 runtime marker missing: {marker}")
+if "data-toggle=\"dropdown\"" in js:
+    raise SystemExit("bootstrap-multiselect restored the Bootstrap 3/4 data-toggle API")
 if ".multiselect-container" not in css:
-    raise SystemExit("bootstrap-multiselect vendor CSS missing multiselect-container marker")
+    raise SystemExit("bootstrap-multiselect CSS marker missing")
+
+build = Path("ember-cli-build.js").read_text(encoding="utf-8")
+for asset in [
+    "node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.js",
+    "node_modules/bootstrap-multiselect/dist/css/bootstrap-multiselect.css",
+]:
+    if f"app.import('{asset}')" not in build:
+        raise SystemExit(f"bootstrap-multiselect build import missing: {asset}")
+
+legal = Path("vendor/runtime-licenses/bootstrap-multiselect")
+license_path = legal / "LICENSE.md"
+upstream_path = legal / "UPSTREAM.md"
+if not license_path.is_file() or not upstream_path.is_file():
+    raise SystemExit("bootstrap-multiselect release legal evidence missing")
+if hashlib.sha256(license_path.read_bytes()).hexdigest() != "e87a389b5937ef5ba537318b1502d80dbe9748617d853e7ea2bb4bd1451ccde5":
+    raise SystemExit("bootstrap-multiselect license hash drift")
+upstream = upstream_path.read_text(encoding="utf-8")
+for marker in [f"Upstream version: `{version}`", integrity]:
+    if marker not in upstream:
+        raise SystemExit(f"bootstrap-multiselect provenance marker missing: {marker}")
+
+print("ui-bootstrap-multiselect-current-ok version=2.0.0 bootstrap=5 legacy_vendor_absent=true")
 PY_CHECK
-
-if grep -R "bower_components/bootstrap-multiselect" -n ember-cli-build.js app tests 2>/dev/null; then
-  echo "bootstrap-multiselect must be imported from vendor/bootstrap-multiselect, not Bower" >&2
-  exit 1
-fi
-
-grep -q "app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.js')" ember-cli-build.js
-grep -q "app.import('vendor/bootstrap-multiselect/bootstrap-multiselect.css')" ember-cli-build.js
-grep -q "expectBootstrapMultiselectVendorGlobal" scripts/node24-lock-smoke.js
-
-echo "ui-bootstrap-multiselect-vendor-ok"

@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 import Util from 'ui/utils/util';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend(ManageLabels, {
-  settings      : Ember.inject.service(),
-  projects      : Ember.inject.service(),
+export default Component.extend(ManageLabels, {
+  settings      : service(),
+  projects      : service(),
   cattleAgentIp : null,
   model         : null,
   subnet        : null,

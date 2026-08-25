@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import { resolve } from 'rsvp';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import C from 'ui/utils/constants';
 import AccessService from 'ui/services/access';
@@ -12,21 +14,21 @@ test('uses an explicit provider only for the activation token exchange', functio
   let sessionValues;
   let request;
   let service = AccessService.create({
-    cookies: Ember.Object.create({
+    cookies: EmberObject.create({
       setWithOptions(name, value) {
         cookie = {name, value};
       },
     }),
     provider: 'localauthconfig',
-    session: Ember.Object.create({
+    session: EmberObject.create({
       setProperties(values) {
         sessionValues = values;
       },
     }),
-    userStore: Ember.Object.create({
+    userStore: EmberObject.create({
       rawRequest(options) {
         request = options;
-        return Ember.RSVP.resolve({
+        return resolve({
           body: {
             jwt: 'platform-session-token',
             user: 'test-user',
@@ -41,7 +43,7 @@ test('uses an explicit provider only for the activation token exchange', functio
     assert.strictEqual(service.get('provider'), 'localauthconfig', 'the active provider is unchanged until activation succeeds');
     assert.strictEqual(cookie.value, 'platform-session-token', 'the normal platform session is accepted');
     assert.ok(sessionValues, 'the normal session contract is updated');
-    Ember.run(() => service.destroy());
+    run(() => service.destroy());
   });
 });
 
@@ -55,7 +57,7 @@ test('suspends and restores the current provider session around activation', fun
     [C.SESSION.USER_ID]: '1u1',
   };
   let service = AccessService.create({
-    cookies: Ember.Object.create({
+    cookies: EmberObject.create({
       get() {
         return cookieValue;
       },
@@ -69,7 +71,7 @@ test('suspends and restores the current provider session around activation', fun
         cookieValue = value;
       },
     }),
-    session: Ember.Object.create({
+    session: EmberObject.create({
       get(key) {
         return sessionValues[key];
       },
@@ -90,7 +92,7 @@ test('suspends and restores the current provider session around activation', fun
 
   assert.strictEqual(cookieValue, 'existing-local-session', 'the previous provider token is restored');
   assert.strictEqual(sessionValues[C.SESSION.USER_ID], '1u1', 'the previous session values are restored');
-  Ember.run(() => service.destroy());
+  run(() => service.destroy());
 });
 
 test('holds an MFA challenge without creating a browser session', function(assert) {
@@ -104,20 +106,20 @@ test('holds an MFA challenge without creating a browser session', function(asser
     mfaMethods: ['totp'],
   };
   let service = AccessService.create({
-    cookies: Ember.Object.create({
+    cookies: EmberObject.create({
       setWithOptions() {
         cookieWritten = true;
       },
     }),
     provider: 'localauthconfig',
-    session: Ember.Object.create({
+    session: EmberObject.create({
       setProperties() {
         sessionWritten = true;
       },
     }),
-    userStore: Ember.Object.create({
+    userStore: EmberObject.create({
       rawRequest() {
-        return Ember.RSVP.resolve({body: challenge});
+        return resolve({body: challenge});
       },
     }),
   });
@@ -127,7 +129,7 @@ test('holds an MFA challenge without creating a browser session', function(asser
     assert.strictEqual(service.get('mfaChallenge'), challenge, 'the challenge remains only in memory');
     assert.notOk(cookieWritten, 'no session cookie exists before MFA succeeds');
     assert.notOk(sessionWritten, 'no authenticated session state exists before MFA succeeds');
-    Ember.run(() => service.destroy());
+    run(() => service.destroy());
   });
 });
 
@@ -138,21 +140,21 @@ test('creates the browser session only after MFA succeeds', function(assert) {
   let cookie;
   let sessionValues;
   let service = AccessService.create({
-    cookies: Ember.Object.create({
+    cookies: EmberObject.create({
       setWithOptions(name, value) {
         cookie = {name, value};
       },
     }),
     mfaChallenge: {mfaRequired: true},
-    session: Ember.Object.create({
+    session: EmberObject.create({
       setProperties(values) {
         sessionValues = values;
       },
     }),
-    userStore: Ember.Object.create({
+    userStore: EmberObject.create({
       rawRequest(options) {
         request = options;
-        return Ember.RSVP.resolve({
+        return resolve({
           body: {jwt: 'mfa-complete-session', user: 'administrator'},
         });
       },
@@ -169,7 +171,7 @@ test('creates the browser session only after MFA succeeds', function(assert) {
     assert.strictEqual(service.get('mfaChallenge'), null, 'the completed challenge is removed from memory');
     assert.strictEqual(cookie.value, 'mfa-complete-session', 'the completed session token is stored');
     assert.ok(sessionValues, 'the normal session contract is populated after verification');
-    Ember.run(() => service.destroy());
+    run(() => service.destroy());
   });
 });
 
@@ -184,10 +186,10 @@ test('preserves other factor options while an email recovery code is requested',
   };
   let service = AccessService.create({
     mfaChallenge: original,
-    userStore: Ember.Object.create({
+    userStore: EmberObject.create({
       rawRequest(options) {
         assert.strictEqual(options.data.mfaMethod, 'emailRecovery', 'the email recovery method is requested');
-        return Ember.RSVP.resolve({
+        return resolve({
           body: {
             mfaRequired: true,
             mfaChallengeId: 'opaque-challenge',
@@ -211,6 +213,6 @@ test('preserves other factor options while an email recovery code is requested',
     assert.ok(challenge.emailCodeSent, 'the email-code step becomes active');
     assert.strictEqual(challenge.recoveryEmailMasked, 'ad***@example.test',
       'the response adds the masked destination');
-    Ember.run(() => service.destroy());
+    run(() => service.destroy());
   });
 });

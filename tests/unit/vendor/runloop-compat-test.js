@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { bind, run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 module('Unit | Vendor | Runloop compatibility');
@@ -10,8 +10,8 @@ test('Ember.run.bind uses the public runloop helper instead of Function.prototyp
       return this.value;
     },
   };
-  const bound = Ember.run.bind(target, target.read);
+  const bound = bind(target, target.read);
 
-  assert.true(Object.prototype.hasOwnProperty.call(Ember.run, 'bind'));
+  assert.true(Object.prototype.hasOwnProperty.call(run, 'bind'));
   assert.strictEqual(bound(), 42);
 });

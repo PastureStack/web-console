@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { reject, resolve } from 'rsvp';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  'tab-session': Ember.inject.service('tab-session'),
-  store: Ember.inject.service(),
+export default Service.extend({
+  'tab-session': service('tab-session'),
+  store: service(),
 
   publicUrl: function() {
     return this.get('store').find('service').then((services) => {
@@ -16,7 +17,7 @@ export default Ember.Service.extend({
         }
       }
 
-      return Ember.RSVP.reject('No mesos-master endpoint found');
+      return reject('No mesos-master endpoint found');
     });
   },
 
@@ -35,13 +36,13 @@ export default Ember.Service.extend({
         }).then(() => {
           return true;
         }).catch(() => {
-          return Ember.RSVP.resolve(false);
+          return resolve(false);
         });
       }
 
       return false;
     }).catch(() => {
-      return Ember.RSVP.resolve(false);
+      return resolve(false);
     });
   },
 

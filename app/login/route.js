@@ -1,8 +1,9 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
-  access: Ember.inject.service(),
-  language: Ember.inject.service('user-language'),
+export default Route.extend({
+  access: service(),
+  language: service('user-language'),
 
   beforeModel(transition) {
     this._super.apply(this,arguments);

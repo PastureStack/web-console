@@ -1,14 +1,18 @@
-import Ember from 'ember';
+import { Promise, reject } from 'rsvp';
+import $ from 'jquery';
+import { cancel, later, scheduleOnce } from '@ember/runloop';
+import { service } from '@ember/service';
+import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 
-export default Ember.Route.extend({
-  access         : Ember.inject.service(),
-  cookies        : Ember.inject.service(),
-  github         : Ember.inject.service(),
-  language       : Ember.inject.service('user-language'),
-  modal          : Ember.inject.service(),
-  oidc           : Ember.inject.service(),
-  settings       : Ember.inject.service(),
+export default Route.extend({
+  access         : service(),
+  cookies        : service(),
+  github         : service(),
+  language       : service('user-language'),
+  modal          : service(),
+  oidc           : service(),
+  settings       : service(),
 
   previousParams : null,
   previousRoute  : null,
@@ -25,8 +29,8 @@ export default Ember.Route.extend({
   },
 
   willDestroy() {
-    Ember.run.cancel(this.get('hideTimer'));
-    Ember.run.cancel(this.get('loadingWatchdog'));
+    cancel(this.get('hideTimer'));
+    cancel(this.get('loadingWatchdog'));
     this.hideLoadingOverlay();
     this.unregisterShortcuts();
     this._super(...arguments);
@@ -149,12 +153,12 @@ export default Ember.Route.extend({
   },
 
   showLoadingOverlay(id) {
-    Ember.run.cancel(this.get('hideTimer'));
-    Ember.run.cancel(this.get('loadingWatchdog'));
+    cancel(this.get('hideTimer'));
+    cancel(this.get('loadingWatchdog'));
     this.setProperties({
       hideTimer      : null,
       loadingShown   : true,
-      loadingWatchdog: Ember.run.later(this, function() {
+      loadingWatchdog: later(this, function() {
         this.hideLoadingOverlay(id);
       }, this.get('loadingTimeout')),
     });
@@ -162,7 +166,7 @@ export default Ember.Route.extend({
     // Stop both layers independently.  The previous nested fade callback
     // could re-show the overlay after a newer transition had already hidden
     // it, leaving the application permanently blocked.
-    Ember.$('#loading-underlay, #loading-overlay')
+    $('#loading-underlay, #loading-overlay')
       .stop(true, true)
       .css('opacity', 1)
       .show();
@@ -173,8 +177,8 @@ export default Ember.Route.extend({
       return;
     }
 
-    Ember.run.cancel(this.get('hideTimer'));
-    this.set('hideTimer', Ember.run.scheduleOnce('afterRender', this, function() {
+    cancel(this.get('hideTimer'));
+    this.set('hideTimer', scheduleOnce('afterRender', this, function() {
       this.hideLoadingOverlay(id);
     }));
   },
@@ -184,15 +188,15 @@ export default Ember.Route.extend({
       return;
     }
 
-    Ember.run.cancel(this.get('hideTimer'));
-    Ember.run.cancel(this.get('loadingWatchdog'));
+    cancel(this.get('hideTimer'));
+    cancel(this.get('loadingWatchdog'));
     this.setProperties({
       hideTimer      : null,
       loadingShown   : false,
       loadingWatchdog: null,
     });
 
-    Ember.$('#loading-overlay, #loading-underlay').stop(true, true).hide();
+    $('#loading-overlay, #loading-underlay').stop(true, true).hide();
   },
 
   finishLogin() {
@@ -244,7 +248,7 @@ export default Ember.Route.extend({
         setTimeout(function() {
           window.close();
         }, 250);
-        return Ember.RSVP.reject('oidcTest');
+        return reject('oidcTest');
       }
 
       let oidcCode;
@@ -258,7 +262,7 @@ export default Ember.Route.extend({
       } catch (err) {
         transition.abort();
         this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
-        return Ember.RSVP.reject(err);
+        return reject(err);
       }
 
       return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
@@ -281,7 +285,7 @@ export default Ember.Route.extend({
 
       transition.abort();
 
-      return Ember.RSVP.reject('isTest');
+      return reject('isTest');
 
     } else if ( !isOidcCallback && params.code ) {
 
@@ -313,7 +317,7 @@ export default Ember.Route.extend({
 
         this.controllerFor('application').set('error', obj);
 
-        return Ember.RSVP.reject(obj);
+        return reject(obj);
       }
     }
 
@@ -325,7 +329,7 @@ export default Ember.Route.extend({
         setTimeout(function() {
           window.close();
         },250);
-        return new Ember.RSVP.promise();
+        return new Promise(() => {});
       } catch(e) {
         window.close();
       }

@@ -1,4 +1,4 @@
-import Ember from 'ember';
+import { get } from '@ember/object';
 
 const TOKEN_PATTERN = /(\d+)/g;
 
@@ -100,8 +100,8 @@ export function naturalSort(items, fields, options={}) {
 
     for ( let fieldIndex = 0 ; fieldIndex < sortFields.length ; fieldIndex++ ) {
       let sortField = sortFields[fieldIndex];
-      let leftValue = Ember.get(left, sortField.field);
-      let rightValue = Ember.get(right, sortField.field);
+      let leftValue = get(left, sortField.field);
+      let rightValue = get(right, sortField.field);
       let comparison = naturalCompare(leftValue, rightValue);
 
       if (
@@ -114,8 +114,8 @@ export function naturalSort(items, fields, options={}) {
         let threshold = Math.max(Math.abs(leftValue), Math.abs(rightValue), 1) * hysteresis;
 
         if ( Math.abs(leftValue - rightValue) <= threshold ) {
-          let leftRank = previousRanks[Ember.get(left, 'id')];
-          let rightRank = previousRanks[Ember.get(right, 'id')];
+          let leftRank = previousRanks[get(left, 'id')];
+          let rightRank = previousRanks[get(right, 'id')];
 
           if ( leftRank !== undefined && rightRank !== undefined && leftRank !== rightRank ) {
             return leftRank - rightRank;

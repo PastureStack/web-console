@@ -1,15 +1,18 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Tooltip from 'ui/mixins/tooltip';
 import StrippedName from 'ui/mixins/stripped-name';
 import { resolveTooltipContentComponent } from 'ui/utils/tooltip-content-component';
 
-export default Ember.Component.extend(Tooltip, StrippedName, {
-  resourceActions:  Ember.inject.service('resource-actions'),
+export default Component.extend(Tooltip, StrippedName, {
+  resourceActions:  service('resource-actions'),
   needs:            ['application'],
-  model:            Ember.computed.alias('tooltipService.tooltipOpts.model'),
-  actionsOpen:      Ember.computed.alias('resourceActions.open'),
+  model:            alias('tooltipService.tooltipOpts.model'),
+  actionsOpen:      alias('resourceActions.open'),
   inTooltip:        false,
-  contentComponent: Ember.computed('tooltipTemplate', function() {
+  contentComponent: computed('tooltipTemplate', function() {
     return resolveTooltipContentComponent(this.get('tooltipTemplate'), 'tooltip-action-menu');
   }),
 

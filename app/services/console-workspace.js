@@ -1,4 +1,10 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { resolve, all } from 'rsvp';
+import EmberObject from '@ember/object';
+import { alias } from '@ember/object/computed';
+import { cancel, later, next } from '@ember/runloop';
+import { A } from '@ember/array';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 import {
   brokerWebSocketProtocols,
@@ -104,10 +110,10 @@ function sessionContext(instance, project, projectId) {
   };
 }
 
-export default Ember.Service.extend({
-  session: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  store: Ember.inject.service(),
+export default Service.extend({
+  session: service(),
+  projects: service(),
+  store: service(),
 
   sessions: null,
   accountId: null,
@@ -122,7 +128,7 @@ export default Ember.Service.extend({
 
   init() {
     this._super(...arguments);
-    this.set('sessions', Ember.A());
+    this.set('sessions', A());
     let storedClientId = storedWorkspaceClientId(window.sessionStorage);
     this.setProperties({
       clientId: workspaceClientId(window.sessionStorage),
@@ -182,7 +188,7 @@ export default Ember.Service.extend({
       channel.close();
     }
     if (this._clientProbeTimer) {
-      Ember.run.cancel(this._clientProbeTimer);
+      cancel(this._clientProbeTimer);
       this._clientProbeTimer = null;
     }
     this._super(...arguments);
@@ -215,7 +221,7 @@ export default Ember.Service.extend({
       clientId: this.get('clientId'),
       nonce,
     });
-    this._clientProbeTimer = Ember.run.later(this, () => {
+    this._clientProbeTimer = later(this, () => {
       if (this.get('clientConflict')) {
         this.set('clientId', workspaceClientId(window.sessionStorage, true));
       }
@@ -253,7 +259,7 @@ export default Ember.Service.extend({
     return this.get('sessions').filterBy('windowState', 'open');
   }.property('sessions.@each.windowState'),
 
-  sessionCount: Ember.computed.alias('sessions.length'),
+  sessionCount: alias('sessions.length'),
 
   openTerminal(instance, options = {}) {
     return this.openSession('terminal', instance, options);
@@ -292,7 +298,7 @@ export default Ember.Service.extend({
 
     let now = new Date().toISOString();
     let context = sessionContext(instance, this.projectForId(projectId), projectId);
-    let entry = this.decorateEntry(Ember.Object.create({
+    let entry = this.decorateEntry(EmberObject.create({
       sessionId: workspaceSessionId(),
       secret: workspaceSecret(),
       kind,
@@ -360,7 +366,7 @@ export default Ember.Service.extend({
     let instance = entry.get('instance');
     if (instance) {
       this.updateEntryContext(entry, instance);
-      return Ember.RSVP.resolve(instance);
+      return resolve(instance);
     }
 
     let type = entry.get('instanceType') || 'container';
@@ -471,7 +477,7 @@ export default Ember.Service.extend({
       });
     }
     this.saveLayouts();
-    Ember.run.next(() => Ember.$(window).trigger('resize'));
+    next(() => $(window).trigger('resize'));
   },
 
   clampOpenWindows() {
@@ -514,7 +520,7 @@ export default Ember.Service.extend({
   brokerStatus(entry) {
     let url = `/v1/exec/sessions/${encodeURIComponent(entry.get('sessionId'))}`;
 
-    return Ember.$.ajax({
+    return $.ajax({
       url,
       method: 'GET',
       dataType: 'json',
@@ -545,7 +551,7 @@ export default Ember.Service.extend({
     };
     let url = `/v1/exec/sessions/${encodeURIComponent(entry.get('sessionId'))}`;
 
-    return Ember.$.ajax({
+    return $.ajax({
       url,
       method: 'POST',
       contentType: 'application/json',
@@ -564,13 +570,13 @@ export default Ember.Service.extend({
     if (entry.get('kind') === 'vm') {
       this.updateSession(entry, {status: 'ended'});
       this.closeWindow(entry);
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     this.updateSession(entry, {status: 'closing'});
     let url = `/v1/exec/sessions/${encodeURIComponent(entry.get('sessionId'))}`;
 
-    return Ember.$.ajax({
+    return $.ajax({
       url,
       method: 'DELETE',
       headers: {
@@ -598,7 +604,7 @@ export default Ember.Service.extend({
     let entry = this.get('terminationEntry');
     this.set('terminationEntry', null);
     if (!entry) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
     return this.terminateSession(entry).catch(() => undefined);
   },
@@ -617,7 +623,7 @@ export default Ember.Service.extend({
     let requests = sessions.map((entry) => {
       return this.terminateSession(entry).catch(() => undefined);
     });
-    return Ember.RSVP.all(requests).finally(() => {
+    return all(requests).finally(() => {
       let accountId = this.get('accountId');
       if (accountId) {
         window.localStorage.removeItem(globalStorageKey(accountId));
@@ -658,7 +664,7 @@ export default Ember.Service.extend({
       if (entry) {
         entry.setProperties(raw);
       } else {
-        entry = Ember.Object.create(raw);
+        entry = EmberObject.create(raw);
       }
       this.decorateEntry(entry);
       let layout = layouts[raw.sessionId];

@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import BackupTargetsRoute from 'ui/backuptargets/route';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
@@ -9,7 +9,7 @@ module('Unit | Route | backuptargets');
 test('it exists', function(assert) {
   let route = BackupTargetsRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });
 
 test('model loads all backup targets', function(assert) {

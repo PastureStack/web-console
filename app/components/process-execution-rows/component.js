@@ -1,12 +1,14 @@
-import Ember from 'ember';
+import { on } from '@ember/object/evented';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName    : '',
   expanded   : false,
   expandAll  : false,
   expandSelf : false,
   depth      : 0,
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   actions: {
     expand: function() {
@@ -17,7 +19,7 @@ export default Ember.Component.extend({
     }
   },
 
-  setup: Ember.on('init', function() {
+  setup: on('init', function() {
 
     if (this.get('nodeDepth')) {
       this.set('depth', this.incrementProperty('nodeDepth'));

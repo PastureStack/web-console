@@ -1,13 +1,14 @@
-import Ember from 'ember';
+import { resolve, reject } from 'rsvp';
+import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 
-export default Ember.Service.extend({
-  cookies: Ember.inject.service(),
-  session: Ember.inject.service(),
-  github:  Ember.inject.service(),
-  shibbolethAuth: Ember.inject.service(),
-  store: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+export default Service.extend({
+  cookies: service(),
+  session: service(),
+  github:  service(),
+  shibbolethAuth: service(),
+  store: service(),
+  userStore: service('user-store'),
 
   token: null,
   mfaChallenge: null,
@@ -45,16 +46,16 @@ export default Ember.Service.extend({
       }
 
       // Auth token still good
-      return Ember.RSVP.resolve('Auth Succeeded');
+      return resolve('Auth Succeeded');
     }, (/* err */) => {
       // Auth token expired
-      return Ember.RSVP.reject('Auth Failed');
+      return reject('Auth Failed');
     });
   },
 
   detect() {
     if ( this.get('enabled') !== null ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     return this.get('userStore').rawRequest({
@@ -90,13 +91,13 @@ export default Ember.Service.extend({
         this.clearSessionKeys();
       }
 
-      return Ember.RSVP.resolve(undefined,'API supports authentication'+(token.security ? '' : ', but is not enabled'));
+      return resolve(undefined,'API supports authentication'+(token.security ? '' : ', but is not enabled'));
     })
     .catch((err) => {
       // Otherwise this API is too old to do auth.
       this.set('enabled', false);
       this.set('app.initError', err);
-      return Ember.RSVP.resolve(undefined,'Error determining API authentication');
+      return resolve(undefined,'Error determining API authentication');
     });
   },
 
@@ -132,7 +133,7 @@ export default Ember.Service.extend({
       } catch(e) {
         err = {type: 'error', message: 'Error logging in'};
       }
-      return Ember.RSVP.reject(err);
+      return reject(err);
     });
   },
 
@@ -162,7 +163,7 @@ export default Ember.Service.extend({
       } catch(e) {
         err = {type: 'error', message: 'Error verifying the security factor'};
       }
-      return Ember.RSVP.reject(err);
+      return reject(err);
     });
   },
 

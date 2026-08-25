@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   selected: null,  // Selected secret ID
   selectClass: 'form-control',
   exclude: null,  // ID or array of IDs to exclude from list
@@ -37,7 +38,7 @@ export default Ember.Component.extend({
 
     let exclude = this.get('exclude');
     if ( exclude ) {
-      if ( !Ember.isArray(exclude) ) {
+      if ( !isArray(exclude) ) {
         exclude = [exclude];
       }
 

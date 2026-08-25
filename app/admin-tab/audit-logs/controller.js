@@ -1,15 +1,17 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import { alias } from '@ember/object/computed';
+import Controller, { inject as controller } from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend(Sortable, {
-  application       : Ember.inject.controller(),
+export default Controller.extend(Sortable, {
+  application       : controller(),
   queryParams       : ['sortBy', 'sortOrder', 'eventType', 'resourceType', 'resourceId', 'clientIp', 'authType'],
 
-  sortableContent   : Ember.computed.alias('model.auditLog'),
+  sortableContent   : alias('model.auditLog'),
   resourceTypeAndId : null,
-  modalService      : Ember.inject.service('modal'),
-  intl              : Ember.inject.service(),
+  modalService      : service('modal'),
+  intl              : service(),
 
   actions: {
     updateResourceType: function(type) {

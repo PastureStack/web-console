@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { A } from '@ember/array';
+import EmberObject from '@ember/object';
 
-export default Ember.Object.extend({
+export default EmberObject.extend({
   objsForPage: function(page) {
     var range = this.range(page);
-    const all = Ember.A(this.get('all'));
-    return Ember.A(all.slice(range.start,range.end+1));
+    const all = A(this.get('all'));
+    return A(all.slice(range.start,range.end+1));
   },
 
   totalPages: function() {

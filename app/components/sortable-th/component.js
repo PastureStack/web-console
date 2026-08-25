@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'TH',
   classNames: ['sortable'],
   name: null,
@@ -9,8 +10,8 @@ export default Ember.Component.extend({
   label: null,
   ariaRole: ['columnheader'],
 
-  current: Ember.computed.alias('sortable.sortBy'),
-  descending: Ember.computed.alias('sortable.descending'),
+  current: alias('sortable.sortBy'),
+  descending: alias('sortable.descending'),
 
   activeAscending: function() {
     return !this.get('descending') && this.get('current') === this.get('name');

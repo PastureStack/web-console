@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { get } from '@ember/object';
+import { next } from '@ember/runloop';
+import Service from '@ember/service';
 import BootstrapFixes from 'ui/utils/bootstrap-fixes';
 
-export default Ember.Service.extend({
+export default Service.extend({
   model          : null,
   open           : false,
   tooltipActions : null,
@@ -34,7 +36,7 @@ export default Ember.Service.extend({
       }
     });
 
-    Ember.run.next(() => {
+    next(() => {
 
       if (this.get('tooltipActions')) {
         $menu.addClass('tooltip-actions');
@@ -51,7 +53,7 @@ export default Ember.Service.extend({
 
       this.set('open',true);
       // Delay ensure it works in firefox
-      Ember.run.next(() => {
+      next(() => {
         BootstrapFixes.positionDropdown($menu, trigger, true);
         $('#resource-actions-first')[0].focus();
         $menu.css('visibility','visible');
@@ -77,7 +79,7 @@ export default Ember.Service.extend({
 
   activeActions: function() {
     let list = (this.get('model.availableActions')||[]).filter(function(act) {
-      return Ember.get(act,'enabled') !== false || Ember.get(act,'divider');
+      return get(act,'enabled') !== false || get(act,'divider');
     });
 
     // Remove dividers at the beginning

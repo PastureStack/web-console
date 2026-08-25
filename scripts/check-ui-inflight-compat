@@ -62,13 +62,13 @@ old_inflight = {
     and path.endswith("node_modules/inflight")
     and meta.get("version") != "1.1.0-rc16.0"
 }
-if len(old_inflight) != 32 or set(old_inflight.values()) != {"1.0.6"}:
+if len(old_inflight) != 26 or set(old_inflight.values()) != {"1.0.6"}:
     fail("INFLIGHT_BUILD_DEBT_INVENTORY_DRIFT", count=len(old_inflight), versions=sorted(set(old_inflight.values())))
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
-print(f"UI_INFLIGHT_COMPAT_OK wrapper=vendor/inflight-compat version=1.1.0-rc16.0 nested_build_only=32 lockfile={lock_path}")
+print(f"UI_INFLIGHT_COMPAT_OK wrapper=vendor/inflight-compat version=1.1.0-rc16.0 nested_build_only=26 lockfile={lock_path}")
 print("The first-party path uses the reviewed wrapper; addon-owned 1.0.6 copies remain fail-closed P1 build debt under the exact deprecation inventory.")
 print("failure_count=0")
 PY

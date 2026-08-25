@@ -1,9 +1,10 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Sortable from 'ui/mixins/sortable';
 
-export default Ember.Component.extend(Sortable, {
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
+export default Component.extend(Sortable, {
+  projects: service(),
+  settings: service(),
 
   sortBy: 'name',
   sorts: {

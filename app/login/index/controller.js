@@ -1,4 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { later, schedule } from '@ember/runloop';
+import { computed } from '@ember/object';
+import { equal, alias, bool, notEmpty } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import {
   authenticate as authenticateWithPasskey,
   isAvailable as isWebAuthnAvailable,
@@ -7,19 +12,19 @@ import {
 import { totpProvisioningQr } from 'ui/utils/totp-qr';
 import { localizedMfaError } from 'ui/utils/mfa-error';
 
-export default Ember.Controller.extend({
+export default Controller.extend({
   queryParams       : ['timedOut','errorMsg'],
-  access            : Ember.inject.service(),
-  settings          : Ember.inject.service(),
-  intl              : Ember.inject.service(),
+  access            : service(),
+  settings          : service(),
+  intl              : service(),
 
-  isGithub          : Ember.computed.equal('access.provider', 'githubconfig'),
-  isActiveDirectory : Ember.computed.equal('access.provider', 'ldapconfig'),
-  isOpenLdap        : Ember.computed.equal('access.provider', 'openldapconfig'),
-  isLocal           : Ember.computed.equal('access.provider', 'localauthconfig'),
-  isOidc            : Ember.computed.equal('access.provider', 'oidcconfig'),
-  isAzureAd         : Ember.computed.equal('access.provider', 'azureadconfig'),
-  isShibboleth      : Ember.computed.equal('access.provider', 'shibbolethconfig'),
+  isGithub          : equal('access.provider', 'githubconfig'),
+  isActiveDirectory : equal('access.provider', 'ldapconfig'),
+  isOpenLdap        : equal('access.provider', 'openldapconfig'),
+  isLocal           : equal('access.provider', 'localauthconfig'),
+  isOidc            : equal('access.provider', 'oidcconfig'),
+  isAzureAd         : equal('access.provider', 'azureadconfig'),
+  isShibboleth      : equal('access.provider', 'shibbolethconfig'),
 
   timedOut          : false,
   waiting           : false,
@@ -32,11 +37,11 @@ export default Ember.Controller.extend({
   newRecoveryCodes  : null,
   showMfaRecoveryOptions : false,
 
-  canLocalRecovery: Ember.computed.alias('access.token.localRecoveryEnabled'),
-  mfaChallenge: Ember.computed.alias('access.mfaChallenge'),
-  isMfaPending: Ember.computed.bool('mfaChallenge.mfaRequired'),
-  emailCodeSent: Ember.computed.alias('mfaChallenge.emailCodeSent'),
-  hasNewRecoveryCodes: Ember.computed.notEmpty('newRecoveryCodes'),
+  canLocalRecovery: alias('access.token.localRecoveryEnabled'),
+  mfaChallenge: alias('access.mfaChallenge'),
+  isMfaPending: bool('mfaChallenge.mfaRequired'),
+  emailCodeSent: alias('mfaChallenge.emailCodeSent'),
+  hasNewRecoveryCodes: notEmpty('newRecoveryCodes'),
   recoveryCodesText: function() {
     return (this.get('newRecoveryCodes') || []).join('\n');
   }.property('newRecoveryCodes.[]'),
@@ -79,16 +84,16 @@ export default Ember.Controller.extend({
     return methods.indexOf(selected) >= 0 ? selected : (primary[0] || methods[0]);
   }.property('mfaChallenge.mfaMethods.[]', 'primaryMfaMethods.[]', 'selectedMfaMethod'),
 
-  isMfaTotp: Ember.computed('activeMfaMethod', function() {
+  isMfaTotp: computed('activeMfaMethod', function() {
     return ['totp', 'totpEnrollment'].indexOf(this.get('activeMfaMethod')) >= 0;
   }),
-  isMfaEnrollment: Ember.computed.equal('activeMfaMethod', 'totpEnrollment'),
+  isMfaEnrollment: equal('activeMfaMethod', 'totpEnrollment'),
   isMfaPasskey: function() {
     return ['webauthn', 'webauthnEnrollment'].indexOf(this.get('activeMfaMethod')) >= 0;
   }.property('activeMfaMethod'),
-  isMfaPasskeyEnrollment: Ember.computed.equal('activeMfaMethod', 'webauthnEnrollment'),
-  isMfaRecoveryCode: Ember.computed.equal('activeMfaMethod', 'recoveryCode'),
-  isMfaEmailRecovery: Ember.computed.equal('activeMfaMethod', 'emailRecovery'),
+  isMfaPasskeyEnrollment: equal('activeMfaMethod', 'webauthnEnrollment'),
+  isMfaRecoveryCode: equal('activeMfaMethod', 'recoveryCode'),
+  isMfaEmailRecovery: equal('activeMfaMethod', 'emailRecovery'),
 
   totpEnrollmentQrSvg: function() {
     let uri = this.get('mfaChallenge.totpProvisioningUri');
@@ -114,7 +119,7 @@ export default Ember.Controller.extend({
     authenticate(code) {
       this.send('started');
 
-      Ember.run.later(() => {
+      later(() => {
         let provider = this.get('useLocalRecovery') ? 'localAuthConfig' : undefined;
         this.get('access').login(code, provider).then((xhr) => {
           this.handleLoginResponse(xhr.body, true);
@@ -294,9 +299,9 @@ export default Ember.Controller.extend({
   },
 
   bootstrap: function() {
-    Ember.run.schedule('afterRender', this, () => {
-      var user = Ember.$('.login-user')[0];
-      var pass = Ember.$('.login-pass')[0];
+    schedule('afterRender', this, () => {
+      var user = $('.login-user')[0];
+      var pass = $('.login-pass')[0];
       if ( user )
       {
         if ( user.value )

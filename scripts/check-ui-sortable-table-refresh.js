@@ -29,7 +29,7 @@ for (const marker of [
   'this._lastRequestedPageSizeInput = value;',
   '_applyRequestedPageSize(value) {',
   'perPageBinding:  "effectivePerPage"',
-  "_pagedOptionsShouldChange: Ember.observer('page', 'effectivePerPage'",
+  "_pagedOptionsShouldChange: observer('page', 'effectivePerPage'",
   '_syncPagedContent(content) {',
   "paged.set('content', content);",
   "paged.set('page', page);",
@@ -37,8 +37,8 @@ for (const marker of [
   'this._syncPagedContent(out);',
   'this.clampPageToContentLength(out.length);',
   'clampPageToContentLength(length) {',
-  'Ember.run.throttle(this, this._updateFiltered, 100, false)',
-  'Ember.run.debounce(this, this._updateFiltered, 100, false)',
+  'throttle(this, this._updateFiltered, 100, false)',
+  'debounce(this, this._updateFiltered, 100, false)',
 ]) {
   if (!component.includes(marker)) {
     failures.push('SORTABLE_TABLE_REFRESH_CONTRACT_MISSING=' + marker);
@@ -47,7 +47,7 @@ for (const marker of [
 
 for (const marker of [
   'function pageSizePreference(preference, options, fallback)',
-  'return Ember.computed(preference, {',
+  'return computed(preference, {',
   'set(key, value) {',
   'this.set(preference, normalized);',
   'storageTablePerPage: pageSizePreference(',
@@ -70,7 +70,7 @@ for (const marker of [
 
 for (const marker of [
   "host.followLink('instances')",
-  'Ember.Object.create({',
+  'EmberObject.create({',
   'instances,',
 ]) {
   if (!hostRoute.includes(marker)) {
@@ -112,7 +112,7 @@ for (const marker of [
   'relationship is populated after initialization',
   "body.pushObjects([",
   'relationship collection replaces the initial body',
-  "component.set('body', Ember.A([",
+  "component.set('body', A([",
   'derives initial rows after invocation attributes are received',
   'component.didReceiveAttrs();',
   'late rows reach the rendered page',

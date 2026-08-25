@@ -9,5 +9,5 @@ This directory records the runtime package bundled by the PastureStack Web Conso
 - npm integrity: `sha512-v14n7srtuHyZEgy+uESN/sN5UtavfnCrZ70i+iUlzfTgMc/Mq0U9pteilNVftn6CSiHvV8o2SRaRauvKYNJFBA==`
 - License: MIT, retained in `LICENSE.md`
 
-This runtime record is separate from the legacy Sass source retained under
-`vendor/ember-basic-dropdown`, which has its own pinned version and provenance.
+The application loads this same package's maintained Sass module; no legacy
+Basic Dropdown style package is retained.

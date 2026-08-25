@@ -27,10 +27,10 @@ if "ember-cli-uglify" in dev:
     fail("EMBER_CLI_UGLIFY_DEPENDENCY_REMAINS", version=dev.get("ember-cli-uglify"))
 if dev.get("ember-cli-terser") != "^4.0.2":
     fail("EMBER_CLI_TERSER_DEPENDENCY_MISSING", version=dev.get("ember-cli-terser"))
-if dev.get("ember-intl") != "8.4.0":
-    fail("EMBER_INTL_DEPENDENCY_UNEXPECTED", version=dev.get("ember-intl"), expected="8.4.0")
-if dev.get("@formatjs/icu-messageformat-parser") != "3.5.16":
-    fail("FORMATJS_PARSER_DEPENDENCY_UNEXPECTED", version=dev.get("@formatjs/icu-messageformat-parser"), expected="3.5.16")
+if dev.get("ember-intl") != "9.0.0":
+    fail("EMBER_INTL_DEPENDENCY_UNEXPECTED", version=dev.get("ember-intl"), expected="9.0.0")
+if dev.get("@formatjs/icu-messageformat-parser") != "3.5.17":
+    fail("FORMATJS_PARSER_DEPENDENCY_UNEXPECTED", version=dev.get("@formatjs/icu-messageformat-parser"), expected="3.5.17")
 
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
@@ -77,7 +77,7 @@ for phrase in [
     "ember-browserify",
     "sourceType: module",
     "ember-cli-terser",
-    "Ember Intl 8 public service API",
+    "Ember Intl 9 public service API",
 ]:
     if phrase not in docs:
         fail("BROWSERIFY_REMOVAL_DOC_MISSING", phrase=phrase)

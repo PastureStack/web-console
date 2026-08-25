@@ -9,8 +9,8 @@
   "license": "MIT",
   "repository": "https://github.com/ember-cli/ember-fetch",
   "pasturestackCompatibility": {
-    "revision": 4,
-    "reason": "Use native Fetch APIs without the obsolete Babel 6 and Rollup 0 graph while declaring the supported Ember CLI Babel preprocessor required by the retained add-on modules."
+    "revision": 6,
+    "reason": "Use native Fetch APIs and current Ember modules without the obsolete Ember global, Ember polyfills, Babel 6, or Rollup 0 graph."
   },
   "dependencies": {
     "ember-cli-babel": "8.3.1"

@@ -1,13 +1,15 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   currentPath : null,
   canEdit     : null,
 
   tagName     : '',
 
-  projects    : Ember.inject.service(),
-  project     : Ember.computed.alias('projects.current'),
+  projects    : service(),
+  project     : alias('projects.current'),
 
   projectChoices: function() {
     return this.get('projects.active').sortBy('name','id');

@@ -1,10 +1,11 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   driverName         : 'vmwarevsphere',
   model              : null,
-  config             : Ember.computed.alias('model.vmwarevsphereConfig'),
+  config             : alias('model.vmwarevsphereConfig'),
   showEngineUrl      : false,
 
   bootstrap: function() {

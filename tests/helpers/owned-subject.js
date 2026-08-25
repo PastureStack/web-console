@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { run } from '@ember/runloop';
+import Application from '@ember/application';
+import EmberObject from '@ember/object';
 
 let nextSubjectId = 0;
-let TestResolver = Ember.Object.extend({
+let TestResolver = EmberObject.extend({
   normalize(fullName) {
     return fullName;
   },
@@ -18,7 +20,7 @@ export function createOwned(Factory, properties, type) {
     return OwnedFactory.create();
   }
 
-  let application = Ember.Application.create({
+  let application = Application.create({
     autoboot: false,
     Resolver: TestResolver,
   });
@@ -41,7 +43,7 @@ export function createOwned(Factory, properties, type) {
 export function destroyOwned(subject) {
   let context = subject && subject.__testOwnerContext;
 
-  Ember.run(() => {
+  run(() => {
     if (context) {
       context.owner.destroy();
       context.application.destroy();

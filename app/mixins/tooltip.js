@@ -1,13 +1,17 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { scheduleOnce } from '@ember/runloop';
+import { observer } from '@ember/object';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 
-export default Ember.Mixin.create(ThrottledResize, {
+export default Mixin.create(ThrottledResize, {
   tooltipContent : null,
   originalNode   : null,
-  router         : Ember.inject.service("-routing"),
+  router         : service("-routing"),
   currentRoute   : null,
 
-  tooltipService: Ember.inject.service('tooltip'),
+  tooltipService: service('tooltip'),
 
   mouseEnter: function() {
     this.get('tooltipService').cancelTimer();
@@ -16,7 +20,7 @@ export default Ember.Mixin.create(ThrottledResize, {
     this.destroyTooltip();
   },
 
-  routeObserver: Ember.observer('router.currentRouteName', function() {
+  routeObserver: observer('router.currentRouteName', function() {
     // On init
     if (!this.get('currentRoute')) {
       this.set('currentRoute', this.get('router.currentRouteName'));
@@ -29,7 +33,7 @@ export default Ember.Mixin.create(ThrottledResize, {
   }).on('init'),
 
   tooltipConstructor: function() {
-    Ember.run.scheduleOnce('afterRender', this, function() {
+    scheduleOnce('afterRender', this, function() {
       if (this.get('tooltipService.tooltipOpts')) {
         this.constructTooltip();
       }
@@ -38,7 +42,7 @@ export default Ember.Mixin.create(ThrottledResize, {
 
   constructTooltip: function() {
     let tts           = this.get('tooltipService');
-    let node          = Ember.$(this.element);
+    let node          = $(this.element);
     let eventPosition = tts.get('tooltipOpts.eventPosition');
     let position      = this.positionTooltip(node, eventPosition);
     let css           = {visibility: 'visible'};

@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import Service, { service } from '@ember/service';
 
-export default Ember.Service.extend({
-  intl: Ember.inject.service(),
-  store: Ember.inject.service(),
+export default Service.extend({
+  intl: service(),
+  store: service(),
 
   list: function() {
     let intl = this.get('intl');

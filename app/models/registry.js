@@ -1,10 +1,12 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import EmberObject from '@ember/object';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 
 var Registry = Resource.extend({
   type: 'registry',
   serverAddress: null,
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   actions: {
     deactivate: function() {
@@ -17,7 +19,7 @@ var Registry = Resource.extend({
 
     edit: function() {
       this.get('store').find('registry').then((registries) => {
-        this.get('modalService').toggleModal('edit-registry', Ember.Object.create({
+        this.get('modalService').toggleModal('edit-registry', EmberObject.create({
           registries: registries,
           registry: this,
           credential: this.get('credential'),
@@ -42,7 +44,7 @@ var Registry = Resource.extend({
     ];
   }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}'),
 
-  displayName: Ember.computed.alias('displayAddress'),
+  displayName: alias('displayAddress'),
   displayAddress: function() {
     var address = this.get('serverAddress').toLowerCase();
     if ( address === 'index.docker.io' )

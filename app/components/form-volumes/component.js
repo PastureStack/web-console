@@ -1,4 +1,20 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import { isEmpty } from '@ember/utils';
+import {
+  scheduleOnce,
+  once,
+  cancel,
+  debounce
+} from '@ember/runloop';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import { isArray, A } from '@ember/array';
+import EmberObject, {
+  get,
+  set,
+  computed,
+  observer
+} from '@ember/object';
 import { parseVolumeSpec } from 'ui/utils/volume-spec';
 
 const PREFLIGHT_DELAY = 300;
@@ -39,7 +55,7 @@ function value(target, key) {
     return undefined;
   }
 
-  return typeof target.get === 'function' ? target.get(key) : Ember.get(target, key);
+  return typeof target.get === 'function' ? target.get(key) : get(target, key);
 }
 
 function asArray(items) {
@@ -51,7 +67,7 @@ function asArray(items) {
     return items.toArray();
   }
 
-  return Ember.isArray(items) ? items : [];
+  return isArray(items) ? items : [];
 }
 
 function includesCapability(driver, capability) {
@@ -59,9 +75,9 @@ function includesCapability(driver, capability) {
     .indexOf(capability) >= 0;
 }
 
-export default Ember.Component.extend({
-  intl: Ember.inject.service(),
-  projects: Ember.inject.service(),
+export default Component.extend({
+  intl: service(),
+  projects: service(),
 
   // Inputs
   instance            : null,
@@ -97,20 +113,20 @@ export default Ember.Component.extend({
     this._preflightSequence = 0;
     this._preflightTimer = null;
     this.setProperties({
-      preflightIssues: Ember.A(),
-      volumeWarnings: Ember.A(),
+      preflightIssues: A(),
+      volumeWarnings: A(),
     });
 
     this.initVolumes();
     this.initVolumesFrom();
     this.initVolumesFromLaunchConfig();
 
-    Ember.run.scheduleOnce('afterRender', this, this.scheduleVolumePreflight);
+    scheduleOnce('afterRender', this, this.scheduleVolumePreflight);
   },
 
   initVolumesFromLaunchConfig() {
     var dv = this.get('instance.dataVolumesFromLaunchConfigs');
-    Ember.run.once(this,'initChoices', dv);
+    once(this,'initChoices', dv);
   },
 
   initChoices: function(initEnabled=[]) {
@@ -187,7 +203,7 @@ export default Ember.Component.extend({
   },
 
   shouldUpdateChoices: function() {
-    Ember.run.once(this,'updateChoices');
+    once(this,'updateChoices');
   }.observes('primaryService.name','primaryService.secondaryLaunchConfigs.@each.name','launchConfigIndex'),
 
   volumesFromLaunchConfigChanged: function() {
@@ -197,7 +213,7 @@ export default Ember.Component.extend({
 
   actions: {
     addVolume: function() {
-      this.get('volumesArray').pushObject(Ember.Object.create({value: ''}));
+      this.get('volumesArray').pushObject(EmberObject.create({value: ''}));
     },
     removeVolume: function(obj) {
       this.get('volumesArray').removeObject(obj);
@@ -218,7 +234,7 @@ export default Ember.Component.extend({
     },
 
     volumeValueChanged(row, newValue) {
-      Ember.set(row, 'value', newValue);
+      set(row, 'value', newValue);
     },
 
     driverChanged(selection) {
@@ -241,7 +257,7 @@ export default Ember.Component.extend({
     }
 
     this.set('volumesArray', ary.map(function(vol) {
-      return Ember.Object.create({value: vol});
+      return EmberObject.create({value: vol});
     }));
   },
 
@@ -311,13 +327,13 @@ export default Ember.Component.extend({
     out.endPropertyChanges();
   }.observes('volumesFromArray.@each.value'),
 
-  eligibleHosts: Ember.computed('allHosts.@each.{state,removed}', function() {
-    return Ember.A(asArray(this.get('allHosts')).filter((host) => {
+  eligibleHosts: computed('allHosts.@each.{state,removed}', function() {
+    return A(asArray(this.get('allHosts')).filter((host) => {
       return !value(host, 'removed') && ACTIVE_HOST_STATES.indexOf(value(host, 'state')) >= 0;
     }));
   }),
 
-  storageDriverChoices: Ember.computed(
+  storageDriverChoices: computed(
     'intl._locale',
     'instance.{requestedHostId,volumeDriver}',
     'eligibleHosts.@each.id',
@@ -325,7 +341,7 @@ export default Ember.Component.extend({
     'allStoragePools.@each.{state,removed,storageDriverId,driverName,hostIds}',
     function() {
       let intl = this.get('intl');
-      let hosts = this.get('eligibleHosts') || Ember.A();
+      let hosts = this.get('eligibleHosts') || A();
       let hostIds = hosts.map((host) => String(value(host, 'id')));
       let requestedHostId = this.get('instance.requestedHostId');
       let choices = [{
@@ -408,7 +424,7 @@ export default Ember.Component.extend({
         });
       }
 
-      return Ember.A(choices.sort((left, right) => {
+      return A(choices.sort((left, right) => {
         if ( left.value === '' ) {
           return -1;
         }
@@ -420,15 +436,15 @@ export default Ember.Component.extend({
     }
   ),
 
-  selectedDriverChoice: Ember.computed('storageDriverChoices.[]', 'instance.volumeDriver', function() {
+  selectedDriverChoice: computed('storageDriverChoices.[]', 'instance.volumeDriver', function() {
     let current = String(this.get('instance.volumeDriver') || '');
-    return (this.get('storageDriverChoices') || Ember.A()).find((choice) => choice.value === current) || null;
+    return (this.get('storageDriverChoices') || A()).find((choice) => choice.value === current) || null;
   }),
 
-  preflightIssueMessages: Ember.computed('intl._locale', 'preflightIssues.[]', function() {
+  preflightIssueMessages: computed('intl._locale', 'preflightIssues.[]', function() {
     let intl = this.get('intl');
 
-    return Ember.A(asArray(this.get('preflightIssues')).map((issue) => {
+    return A(asArray(this.get('preflightIssues')).map((issue) => {
       let reason = String(value(issue, 'reasonCode') || 'unknown');
       let reasonKey = KNOWN_PREFLIGHT_REASONS.indexOf(reason) >= 0 ? reason : 'unknown';
       let parts = [intl.t(`formVolumes.preflight.reason.${reasonKey}`)];
@@ -447,7 +463,7 @@ export default Ember.Component.extend({
       }
 
       let severity = String(value(issue, 'severity') || 'unknown');
-      return Ember.Object.create({
+      return EmberObject.create({
         severity,
         className: severity === 'blocked' ? 'text-danger' : (severity === 'warning' ? 'text-warning' : 'text-muted'),
         text: parts.join(' · '),
@@ -455,7 +471,7 @@ export default Ember.Component.extend({
     }));
   }),
 
-  volumePathSuggestions: Ember.computed(
+  volumePathSuggestions: computed(
     'intl._locale',
     'instance.volumeDriver',
     'volumesArray.@each.value',
@@ -516,7 +532,7 @@ export default Ember.Component.extend({
         suggestions.push({value: path, source: suggestedSource, priority: 3});
       });
 
-      return Ember.A(suggestions);
+      return A(suggestions);
     }
   ),
 
@@ -544,11 +560,11 @@ export default Ember.Component.extend({
         targets[parsed.target] = true;
       }
 
-      if ( !Ember.isEmpty(volumeDriver) && parsed.kind === 'anonymous' ) {
+      if ( !isEmpty(volumeDriver) && parsed.kind === 'anonymous' ) {
         warnings.push(this.get('intl').t('formVolumes.warnings.anonymousDriver'));
       }
 
-      if ( !Ember.isEmpty(volumeDriver) && parsed.kind === 'bind' ) {
+      if ( !isEmpty(volumeDriver) && parsed.kind === 'bind' ) {
         warnings.push(this.get('intl').t('formVolumes.warnings.bindIgnoresDriver'));
       }
     });
@@ -562,11 +578,11 @@ export default Ember.Component.extend({
       errors.push(this.get('intl').t('formVolumes.errors.preflightBlocked'));
     }
 
-    this.set('volumeWarnings', Ember.A(warnings).uniq());
+    this.set('volumeWarnings', A(warnings).uniq());
     this.set('errors', errors.uniq());
   }.observes('volumesArray.@each.value', 'instance.volumeDriver', 'selectedDriverChoice.{disabled,disabledReason}', 'preflightStatus'),
 
-  preflightInputsDidChange: Ember.observer(
+  preflightInputsDidChange: observer(
     'volumesArray.@each.value',
     'instance.{volumeDriver,requestedHostId}',
     'serviceId',
@@ -589,7 +605,7 @@ export default Ember.Component.extend({
     this._preflightSequence += 1;
     let sequence = this._preflightSequence;
     if ( this._preflightTimer ) {
-      Ember.run.cancel(this._preflightTimer);
+      cancel(this._preflightTimer);
       this._preflightTimer = null;
     }
 
@@ -602,7 +618,7 @@ export default Ember.Component.extend({
     }
 
     this.applyPreflightState('checking', [], null);
-    this._preflightTimer = Ember.run.debounce(this, this.runVolumePreflight, sequence, PREFLIGHT_DELAY);
+    this._preflightTimer = debounce(this, this.runVolumePreflight, sequence, PREFLIGHT_DELAY);
   },
 
   buildPreflightInput() {
@@ -634,7 +650,7 @@ export default Ember.Component.extend({
   runVolumePreflight(sequence) {
     this._preflightTimer = null;
     if ( sequence !== this._preflightSequence || this.get('isDestroyed') || this.get('isDestroying') ) {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     let project = this.get('projects.current');
@@ -644,7 +660,7 @@ export default Ember.Component.extend({
     );
     if ( !supported || typeof project.doAction !== 'function' ) {
       this.applyPreflightState('unknown', [], 'formVolumes.preflight.unsupported');
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
     let request;
@@ -652,10 +668,10 @@ export default Ember.Component.extend({
       request = project.doAction('volumepreflight', this.buildPreflightInput(), {catchGrowl: false});
     } catch (error) {
       this.applyPreflightState('unknown', [], 'formVolumes.preflight.requestFailed');
-      return Ember.RSVP.resolve();
+      return resolve();
     }
 
-    return Ember.RSVP.resolve(request).then((result) => {
+    return resolve(request).then((result) => {
       if ( sequence !== this._preflightSequence || this.get('isDestroyed') || this.get('isDestroying') ) {
         return;
       }
@@ -682,7 +698,7 @@ export default Ember.Component.extend({
 
     this.setProperties({
       preflightStatus: status,
-      preflightIssues: Ember.A((issues || []).slice()),
+      preflightIssues: A((issues || []).slice()),
       preflightMessage: message,
     });
     this.validate();
@@ -699,7 +715,7 @@ export default Ember.Component.extend({
   willDestroyElement() {
     this._preflightSequence += 1;
     if ( this._preflightTimer ) {
-      Ember.run.cancel(this._preflightTimer);
+      cancel(this._preflightTimer);
       this._preflightTimer = null;
     }
     this._super(...arguments);

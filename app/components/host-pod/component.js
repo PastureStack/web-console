@@ -1,9 +1,11 @@
-import Ember from 'ember';
+import { equal, alias, or } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 import GroupedInstances from 'ui/mixins/grouped-instances';
 
-export default Ember.Component.extend(ManageLabels, GroupedInstances, {
-  settings: Ember.inject.service(),
+export default Component.extend(ManageLabels, GroupedInstances, {
+  settings: service(),
 
   model: null,
   mode: null,
@@ -43,11 +45,11 @@ export default Ember.Component.extend(ManageLabels, GroupedInstances, {
     return this.get('filteredInstances').sortBy('name','id');
   }.property('filteredInstances.@each.{name,id}'),
 
-  isActive: Ember.computed.equal('model.state','active'),
-  isProvisioning: Ember.computed.equal('model.state','provisioning'),
-  isError: Ember.computed.equal('model.state','error'),
-  showAdd: Ember.computed.alias('isActive'),
-  showOnlyMessage: Ember.computed.or('isProvisioning','isError'),
+  isActive: equal('model.state','active'),
+  isProvisioning: equal('model.state','provisioning'),
+  isError: equal('model.state','error'),
+  showAdd: alias('isActive'),
+  showOnlyMessage: or('isProvisioning','isError'),
 
   stateBackground: function() {
     return this.get('model.stateColor').replace("text-","bg-");

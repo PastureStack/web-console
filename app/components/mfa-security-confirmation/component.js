@@ -1,4 +1,6 @@
-import Ember from 'ember';
+import { scheduleOnce } from '@ember/runloop';
+import { alias, equal, empty, or } from '@ember/object/computed';
+import { service } from '@ember/service';
 import ModalBase from 'lacsso/components/modal-base';
 import {
   authenticate as authenticateWithPasskey,
@@ -9,10 +11,10 @@ import { localizedMfaError } from 'ui/utils/mfa-error';
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
 
-  intl: Ember.inject.service(),
-  userStore: Ember.inject.service('user-store'),
+  intl: service(),
+  userStore: service('user-store'),
 
-  opts: Ember.computed.alias('modalService.modalOpts'),
+  opts: alias('modalService.modalOpts'),
   challenge: null,
   method: null,
   verificationCode: '',
@@ -20,11 +22,11 @@ export default ModalBase.extend({
   waiting: true,
   errorMessage: null,
 
-  isTotp: Ember.computed.equal('method', 'totp'),
-  isPasskey: Ember.computed.equal('method', 'webauthn'),
-  isRecoveryCode: Ember.computed.equal('method', 'recoveryCode'),
-  noAvailableMethod: Ember.computed.empty('method'),
-  confirmDisabled: Ember.computed.or('waiting', 'noAvailableMethod'),
+  isTotp: equal('method', 'totp'),
+  isPasskey: equal('method', 'webauthn'),
+  isRecoveryCode: equal('method', 'recoveryCode'),
+  noAvailableMethod: empty('method'),
+  confirmDisabled: or('waiting', 'noAvailableMethod'),
 
   webAuthnEnvironmentSupported: function() {
     return isWebAuthnAvailable();
@@ -44,7 +46,7 @@ export default ModalBase.extend({
 
   didInsertElement() {
     this._super(...arguments);
-    Ember.run.scheduleOnce('afterRender', this, this.begin);
+    scheduleOnce('afterRender', this, this.begin);
   },
 
   begin() {

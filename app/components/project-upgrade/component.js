@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   classNames: ['project-upgrade'],
 
-  access: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
+  access: service(),
+  projects: service(),
+  settings: service(),
 
   canUpgrade: function() {
     return this.get('access').isOwner();

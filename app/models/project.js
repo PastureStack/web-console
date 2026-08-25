@@ -1,17 +1,18 @@
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
-import Ember from 'ember';
 import C from 'ui/utils/constants';
 import { displayOrchestrationName } from 'ui/utils/orchestration-name';
 import { denormalizeId } from 'ui/utils/api-store-references';
 
 var Project = Resource.extend(PolledResource, {
-  access: Ember.inject.service(),
-  prefs: Ember.inject.service(),
-  projects: Ember.inject.service(),
-  settings: Ember.inject.service(),
-  intl: Ember.inject.service(),
-  modalService: Ember.inject.service('modal'),
+  access: service(),
+  prefs: service(),
+  projects: service(),
+  settings: service(),
+  intl: service(),
+  modalService: service('modal'),
 
   projectTemplate: denormalizeId('projectTemplateId'),
 
@@ -154,13 +155,13 @@ var Project = Resource.extend(PolledResource, {
     }
   }.property('state', 'healthState'),
 
-  isUpgrading: Ember.computed.equal('state','upgrading'),
+  isUpgrading: equal('state','upgrading'),
 
   needsUpgrade: function() {
     return this.get('isActive') && this.get('version') !== this.get(`settings.${C.SETTING.PROJECT_VERSION}`);
   }.property('isActive','version',`settings.${C.SETTING.PROJECT_VERSION}`),
 
-  isWindows: Ember.computed.equal('orchestration','windows'),
+  isWindows: equal('orchestration','windows'),
 });
 
 // Projects don't get pushed by /subscribe WS, so refresh more often

@@ -1,7 +1,8 @@
-import Ember from 'ember';
+import { and } from '@ember/object/computed';
+import Mixin from '@ember/object/mixin';
 import C from 'ui/utils/constants';
 
-export default Ember.Mixin.create({
+export default Mixin.create({
   stripProject: true,
   prefixLength: function() {
     var name = this.get('model.displayName');
@@ -13,7 +14,7 @@ export default Ember.Mixin.create({
 
     return 0;
   }.property('name'),
-  showEllipsis: Ember.computed.and('stripProject','prefixLength'),
+  showEllipsis: and('stripProject','prefixLength'),
 
   displayName: function() {
     var name = this.get('model.displayName')||'';

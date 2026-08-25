@@ -1,12 +1,15 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import { Promise } from 'rsvp';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 import Util from 'ui/utils/util';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ManageLabels from 'ui/mixins/manage-labels';
 import { addAction } from 'ui/utils/add-view-action';
 
-export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
-  intl          : Ember.inject.service(),
-  settings      : Ember.inject.service(),
+export default Mixin.create(NewOrEdit, ManageLabels, {
+  intl          : service(),
+  settings      : service(),
   createDelayMs : 0,
   showEngineUrl : true,
 
@@ -143,7 +146,7 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
       let parts = this.get('nameParts');
       let tpl = this.get('multiTemplate');
       let delay = this.get('createDelayMs');
-      var promise = new Ember.RSVP.Promise(function(resolve,reject) {
+      var promise = new Promise(function(resolve,reject) {
         let hosts = [];
         for ( let i = parts.start + 1 ; i <= parts.end ; i++ )
         {
@@ -179,7 +182,7 @@ export default Ember.Mixin.create(NewOrEdit, ManageLabels, {
 
   didInsertElement() {
     this._super();
-    Ember.run.next(() => {
+    next(() => {
       try {
         let input = this.$('INPUT')[0];
         if ( input )

@@ -3,7 +3,6 @@
 const fs = require('fs');
 const path = require('path');
 const parser = require('@babel/parser');
-const compiler = require('ember-source/dist/ember-template-compiler.js');
 
 const root = path.resolve(__dirname, '..');
 const appRoot = path.join(root, 'app');
@@ -98,6 +97,8 @@ function walkTemplate(node, scope, seen, elements, sourceFile) {
   });
 }
 
+async function main() {
+const compiler = await import('ember-source/ember-template-compiler/index.js');
 const templateElements = new Map();
 const templateFiles = filesUnder(appRoot, '.hbs');
 
@@ -252,3 +253,9 @@ console.log(
   `javascript=${javascriptFiles.length} inputs=${supportedInputs.length} ` +
   'native_shadow=0 runtime_computed_assignment=0'
 );
+}
+
+main().catch((error) => {
+  console.error(`UI_CATALOG_FORM_CONTRACT_ERROR ${error.stack || error}`);
+  process.exitCode = 1;
+});

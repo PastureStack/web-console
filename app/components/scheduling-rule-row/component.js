@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { setProperties, computed } from '@ember/object';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
 function splitEquals(str) {
@@ -34,7 +35,7 @@ function normalizedLabels(objects) {
   return out;
 }
 
-export default Ember.Component.extend({
+export default Component.extend({
   rule: null,
   instance: null,
 
@@ -159,7 +160,7 @@ export default Ember.Component.extend({
 
     key += this.get('suffix');
 
-    Ember.setProperties(this.get('rule'),{
+    setProperties(this.get('rule'),{
       key: key,
       value: value
     });
@@ -182,7 +183,7 @@ export default Ember.Component.extend({
     }
   }.observes('isGlobal'),
 
-  getSuffixLabel: Ember.computed('suffix', function() {
+  getSuffixLabel: computed('suffix', function() {
     let label = this.get('schedulingRuleSuffixChoices').findBy('value', this.get('suffix')).label;
     label = label.split('.');
     return label[label.length -1];

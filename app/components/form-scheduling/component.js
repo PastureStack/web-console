@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { scheduleOnce } from '@ember/runloop';
+import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
 
-export default Ember.Component.extend(ManageLabels, {
+export default Component.extend(ManageLabels, {
   // Inputs
   // Global scale scheduling
   isGlobal: false,
@@ -56,7 +58,7 @@ export default Ember.Component.extend(ManageLabels, {
         isRequestedHost: false,
         requestedHostId: null,
       });
-      Ember.run.scheduleOnce('afterRender', () => {
+      scheduleOnce('afterRender', () => {
         this.sendAction('setGlobal', true);
         this.sendAction('setRequestedHost', null);
       });
@@ -68,7 +70,7 @@ export default Ember.Component.extend(ManageLabels, {
         requestedHostId: this.get('initialHostId'),
       });
 
-      Ember.run.scheduleOnce('afterRender', () => {
+      scheduleOnce('afterRender', () => {
         this.sendAction('setGlobal', false);
         this.sendAction('setRequestedHost', this.get('requestedHostId'));
       });
@@ -110,7 +112,7 @@ export default Ember.Component.extend(ManageLabels, {
     this.sendAction('setRequestedHost', hostId);
   }.observes('requestedHostId'),
 
-  selectedChoice: Ember.computed('allHosts.@each.{id,name,state}', function() {
+  selectedChoice: computed('allHosts.@each.{id,name,state}', function() {
     return this.get('hostChoices').findBy('id', this.get('initialHostId'));
   }),
 

@@ -1,15 +1,16 @@
-import Ember from 'ember';
+import { A } from '@ember/array';
+import EmberObject, { computed } from '@ember/object';
 import Util from 'ember-cli-pagination/util';
 import TruncatePages from './truncate-pages';
 import SafeGet from '../util/safe-get';
 
-export default Ember.Object.extend(SafeGet, {
-  pageItemsAll: Ember.computed("currentPage", "totalPages", function() {
+export default EmberObject.extend(SafeGet, {
+  pageItemsAll: computed("currentPage", "totalPages", function() {
     const currentPage = this.getInt("currentPage");
     const totalPages = this.getInt("totalPages");
     Util.log(`PageNumbers#pageItems, currentPage ${currentPage}, totalPages ${totalPages}`);
 
-    let res = Ember.A([]);
+    let res = A([]);
 
     for(let i=1; i<=totalPages; i++) {
       res.push({
@@ -22,7 +23,7 @@ export default Ember.Object.extend(SafeGet, {
   }),
   //
 
-  pageItemsTruncated: Ember.computed('currentPage','totalPages','numPagesToShow','showFL', function() {
+  pageItemsTruncated: computed('currentPage','totalPages','numPagesToShow','showFL', function() {
     const currentPage = this.getInt('currentPage');
     const totalPages = this.getInt("totalPages");
     const toShow = this.getInt('numPagesToShow');
@@ -45,7 +46,7 @@ export default Ember.Object.extend(SafeGet, {
     });
   }),
 
-  pageItems: Ember.computed('currentPage','totalPages','truncatePages','numPagesToShow', function() {
+  pageItems: computed('currentPage','totalPages','truncatePages','numPagesToShow', function() {
     if (this.get('truncatePages')) {
       return this.get('pageItemsTruncated');
     }

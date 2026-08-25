@@ -1,6 +1,6 @@
-import Ember from 'ember';
+import Route from '@ember/routing/route';
 
-export default Ember.Route.extend({
+export default Route.extend({
   redirect: function(model) {
     if (model.service.kind !== 'dnsService') {
       this.get('router').transitionTo('service.containers');

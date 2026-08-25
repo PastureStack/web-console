@@ -20,8 +20,8 @@ def fail(code, **fields):
 
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
-if package.get("devDependencies", {}).get("ember-cli-babel") != "8.3.1":
-    fail("EMBER_CLI_BABEL_DECLARATION_UNEXPECTED", actual=package.get("devDependencies", {}).get("ember-cli-babel"), expected="8.3.1")
+if package.get("devDependencies", {}).get("ember-cli-babel") != "8.3.2":
+    fail("EMBER_CLI_BABEL_DECLARATION_UNEXPECTED", actual=package.get("devDependencies", {}).get("ember-cli-babel"), expected="8.3.2")
 
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
@@ -30,8 +30,8 @@ else:
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     packages = lock.get("packages", {}) or {}
     babel = packages.get("node_modules/ember-cli-babel", {})
-    if babel.get("version") != "8.3.1":
-        fail("EMBER_CLI_BABEL_LOCK_VERSION_UNEXPECTED", actual=babel.get("version"), expected="8.3.1")
+    if babel.get("version") != "8.3.2":
+        fail("EMBER_CLI_BABEL_LOCK_VERSION_UNEXPECTED", actual=babel.get("version"), expected="8.3.2")
     for package_path, meta in sorted(packages.items()):
         if package_path.endswith("node_modules/ember-cli-babel") and str(meta.get("version", "")).startswith(("4.", "5.")):
             fail("EMBER_CLI_BABEL_UNSUPPORTED_MAJOR_REMAINS", package=package_path, version=meta.get("version"))
@@ -43,8 +43,8 @@ if failures:
 
 print(
     "UI_EMBER_CLI_BABEL_RIMRAF_OVERRIDE_OK "
-    f"ember-cli-babel=8.3.1 unsupported_babel_majors=0 lockfile={lock_path} package_count={package_count}"
+    f"ember-cli-babel=8.3.2 unsupported_babel_majors=0 lockfile={lock_path} package_count={package_count}"
 )
-print("The root Ember Babel path is current for Ember 6.12; addon-owned deprecated filesystem utilities remain fail-closed in the exact P1 build-debt inventory.")
+print("The root Ember Babel path is current for Ember 7.2; addon-owned deprecated filesystem utilities remain fail-closed in the exact P1 build-debt inventory.")
 print("failure_count=0")
 PY

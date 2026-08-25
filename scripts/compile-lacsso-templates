@@ -3,7 +3,6 @@
 
 const fs = require("fs");
 const path = require("path");
-const { precompile } = require("ember-source/dist/ember-template-compiler.js");
 
 const repoRoot = path.resolve(__dirname, "..");
 const vendorRoot = path.join(repoRoot, "vendor", "lacsso");
@@ -15,19 +14,28 @@ const templates = [
   "addon/templates/components/sortable-thead.hbs",
 ];
 
-for (const relativePath of templates) {
-  const sourcePath = path.join(sourceRoot, relativePath);
-  const outputPath = path.join(vendorRoot, relativePath.replace(/\.hbs$/, ".js"));
-  const moduleName = `lacsso/${relativePath.replace(/^addon\//, "")}`;
-  const compiled = precompile(fs.readFileSync(sourcePath, "utf8"), { moduleName });
-  const output = [
-    "// Generated from the maintained upstream-derived template by ember-source 6.12.0.",
-    "import { createTemplateFactory } from '@ember/template-factory';",
-    "",
-    `export default createTemplateFactory(${compiled});`,
-    "",
-  ].join("\n");
+async function main() {
+  const { precompile } = await import("ember-source/ember-template-compiler/index.js");
 
-  fs.writeFileSync(outputPath, output, "utf8");
-  process.stdout.write(`compiled ${relativePath} -> ${path.relative(repoRoot, outputPath)}\n`);
+  for (const relativePath of templates) {
+    const sourcePath = path.join(sourceRoot, relativePath);
+    const outputPath = path.join(vendorRoot, relativePath.replace(/\.hbs$/, ".js"));
+    const moduleName = `lacsso/${relativePath.replace(/^addon\//, "")}`;
+    const compiled = precompile(fs.readFileSync(sourcePath, "utf8"), { moduleName });
+    const output = [
+      "// Generated from the maintained upstream-derived template by ember-source 7.2.0.",
+      "import { createTemplateFactory } from '@ember/template-factory';",
+      "",
+      `export default createTemplateFactory(${compiled});`,
+      "",
+    ].join("\n");
+
+    fs.writeFileSync(outputPath, output, "utf8");
+    process.stdout.write(`compiled ${relativePath} -> ${path.relative(repoRoot, outputPath)}\n`);
+  }
 }
+
+main().catch((error) => {
+  process.stderr.write(`${error.stack || error}\n`);
+  process.exitCode = 1;
+});

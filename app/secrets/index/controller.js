@@ -1,8 +1,11 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { computed } from '@ember/object';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend({
-  bulkActionHandler: Ember.inject.service(),
+export default Controller.extend({
+  bulkActionHandler: service(),
   bulkActionsList: [
     {
       "label": "action.remove",
@@ -13,11 +16,11 @@ export default Ember.Controller.extend({
     },
   ],
   sortBy: 'name',
-  prefs: Ember.inject.service(),
+  prefs: service(),
 
   queryParams: ['sortBy'],
 
-  showSystem: Ember.computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
+  showSystem: computed(`prefs.${C.PREFS.SHOW_SYSTEM}`, {
     get() {
       return this.get(`prefs.${C.PREFS.SHOW_SYSTEM}`) !== false;
     },
@@ -28,7 +31,7 @@ export default Ember.Controller.extend({
     }
   }),
 
-  show: Ember.computed('showSystem', function() {
+  show: computed('showSystem', function() {
     return this.get('showSystem') === false ? 'standard' : 'all';
   }),
 
@@ -85,7 +88,7 @@ export default Ember.Controller.extend({
     this.set('show', (this.get('showSystem') ? 'all' : 'standard'));
   }.observes('showSystem'),
 
-  sortableContent: Ember.computed.alias('filtered'),
+  sortableContent: alias('filtered'),
   filtered: function() {
     let all = this.get('model');
     if ( this.get('showSystem') ) {

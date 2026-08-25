@@ -1,6 +1,7 @@
-import Ember from 'ember';
+import { get } from '@ember/object';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   actions: {
     addTargetIp: function() {
       this.get('targetIpArray').pushObject({value: null});
@@ -58,7 +59,7 @@ export default Ember.Component.extend({
       if ( targets )
       {
         var out =  targets.filterBy('value').map((choice) => {
-          return Ember.get(choice,'value');
+          return get(choice,'value');
         }).uniq();
 
         this.setProperties({

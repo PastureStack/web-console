@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { computed } from '@ember/object';
+import { alias } from '@ember/object/computed';
+import Component from '@ember/component';
 import layout from '../templates/components/sortable-thead';
 
-export default Ember.Component.extend({
+export default Component.extend({
   layout,
   tagName: 'TH',
   classNames: ['lacsso'],
@@ -15,22 +17,22 @@ export default Ember.Component.extend({
   isSortable: true,
   columnRole: null,
 
-  current: Ember.computed.alias('sortable.sortBy'),
-  descending: Ember.computed.alias('sortable.descending'),
+  current: alias('sortable.sortBy'),
+  descending: alias('sortable.descending'),
 
-  resolvedColumnRole: Ember.computed('columnRole', 'isActions', function() {
+  resolvedColumnRole: computed('columnRole', 'isActions', function() {
     return this.get('columnRole') || (this.get('isActions') ? 'actions' : null);
   }),
 
-  sortableEnabled: Ember.computed('isSortable', 'isActions', function() {
+  sortableEnabled: computed('isSortable', 'isActions', function() {
     return !this.get('isActions') && this.get('isSortable') !== false;
   }),
 
-  activeAscending: Ember.computed('name','current','descending', function() {
+  activeAscending: computed('name','current','descending', function() {
     return !this.get('descending') && this.get('current') === this.get('name');
   }),
 
-  activeDescending: Ember.computed('name','current','descending', function() {
+  activeDescending: computed('name','current','descending', function() {
     return this.get('descending') && this.get('current') === this.get('name');
   }),
 

@@ -1,19 +1,34 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import {
+  schedule,
+  debounce,
+  next,
+  throttle,
+  scheduleOnce
+} from '@ember/runloop';
+import { isArray, A } from '@ember/array';
+import { or, alias, gt } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
+import EmberObject, {
+  set,
+  get,
+  computed,
+  observer
+} from '@ember/object';
 import layout from '../templates/components/sortable-table';
 import Sortable from '../mixins/sortable-base';
 import StickyHeader from '../mixins/sticky-table-header';
 import pagedArray from 'ember-cli-pagination/computed/paged-array';
-import {isAlternate, isMore, isRange} from '../utils/platform';
-
-const {get,set} = Ember;
+import { isAlternate, isMore, isRange } from '../utils/platform';
 
 function resolvedColumnKey(header, index) {
   return get(header, 'columnKey') || get(header, 'name') || `column-${index}`;
 }
 
-export default Ember.Component.extend(Sortable, StickyHeader, {
+export default Component.extend(Sortable, StickyHeader, {
   layout,
-  prefs:             Ember.inject.service(),
+  prefs:             service(),
   body:              null,
   sortBy:            null,
   descending:        false,
@@ -46,22 +61,22 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   selectedPageSize:  null,
   allPageSizeValue:  1000000,
 
-  showHeader: Ember.computed.or('bulkActions','search','columnSelector','paging'),
+  showHeader: or('bulkActions','search','columnSelector','paging'),
 
-  columnOptions: Ember.computed('headers.[]', 'columnSelector', function() {
+  columnOptions: computed('headers.[]', 'columnSelector', function() {
     let headers = this.get('headers') || [];
     let preference = this.get('columnPreference');
     let saved = preference ? this.get(`prefs.${preference}`) : null;
-    let savedVisible = saved && Ember.isArray(saved.visible) ? saved.visible : null;
+    let savedVisible = saved && isArray(saved.visible) ? saved.visible : null;
 
-    return Ember.A(headers.map((header, index) => {
+    return A(headers.map((header, index) => {
       let key = resolvedColumnKey(header, index);
       let isActions = !!get(header, 'isActions');
       let visible = savedVisible ?
         savedVisible.indexOf(key) >= 0 :
         get(header, 'defaultHidden') !== true;
 
-      return Ember.Object.create({
+      return EmberObject.create({
         key,
         header,
         translationKey: get(header, 'translationKey'),
@@ -72,17 +87,17 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     }));
   }),
 
-  selectableColumnOptions: Ember.computed('columnOptions.@each.hideable', function() {
-    return Ember.A((this.get('columnOptions') || []).filterBy('hideable', true));
+  selectableColumnOptions: computed('columnOptions.@each.hideable', function() {
+    return A((this.get('columnOptions') || []).filterBy('hideable', true));
   }),
 
-  visibleHeaders: Ember.computed('columnOptions.@each.visible', function() {
-    return Ember.A((this.get('columnOptions') || [])
+  visibleHeaders: computed('columnOptions.@each.visible', function() {
+    return A((this.get('columnOptions') || [])
       .filterBy('visible', true)
       .mapBy('header'));
   }),
 
-  visibleColumnMap: Ember.computed('columnOptions.@each.visible', 'bulkActions', function() {
+  visibleColumnMap: computed('columnOptions.@each.visible', 'bulkActions', function() {
     let output = {};
     let visible = (this.get('columnOptions') || []).filterBy('visible', true);
 
@@ -91,7 +106,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     });
     output.count = visible.length + (this.get('bulkActions') ? 1 : 0);
 
-    return Ember.Object.create(output);
+    return EmberObject.create(output);
   }),
 
   init: function() {
@@ -106,8 +121,8 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     this.set('selectedNodes', []);
     this._updateFiltered();
 
-    Ember.run.schedule('afterRender', () => {
-      let tbody = Ember.$(this.element).find('table tbody');
+    schedule('afterRender', () => {
+      let tbody = $(this.element).find('table tbody');
       let self = this; // need this context in click function and can't use arrow func there
 
       tbody.on('click', 'tr', function(e) {
@@ -129,7 +144,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     this._updateFiltered();
   },
 
-  normalizeRequestedPageSize: Ember.observer('perPage', function() {
+  normalizeRequestedPageSize: observer('perPage', function() {
     this._syncRequestedPageSize();
   }),
 
@@ -221,7 +236,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       }
 
       option.toggleProperty('visible');
-      Ember.run.debounce(this, this.persistColumnVisibility, 150);
+      debounce(this, this.persistColumnVisibility, 150);
     },
   },
 
@@ -243,19 +258,19 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   // Table content
   // Flow: body [-> sortableContent] -> arranged -> filtered -> pagedContent
   // -----
-  sortableContent: Ember.computed.alias('body'),
+  sortableContent: alias('body'),
   pagedContent: pagedArray('filtered', {pageBinding:  "page", perPageBinding:  "effectivePerPage"}),
 
-  selectablePagedContent: Ember.computed(
+  selectablePagedContent: computed(
     'pagedContent.[]',
     'pagedContent.@each.{state,removed,instanceId,actionLinks,mounts}',
     'selectionFilter',
     function() {
-      return Ember.A((this.get('pagedContent') || []).filter((node) => this.isSelectable(node)));
+      return A((this.get('pagedContent') || []).filter((node) => this.isSelectable(node)));
     }
   ),
 
-  hasSelectablePagedContent: Ember.computed.gt('selectablePagedContent.length', 0),
+  hasSelectablePagedContent: gt('selectablePagedContent.length', 0),
 
   isSelectable(node) {
     let filter = this.get('selectionFilter');
@@ -276,7 +291,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   },
 
   // For data-title properties on <td>s
-  dt: Ember.computed('visibleHeaders.@each.{name,displayName}', function() {
+  dt: computed('visibleHeaders.@each.{name,displayName}', function() {
     let out = {};
     this.get('visibleHeaders').forEach((header) => {
       let name = get(header,'name');
@@ -289,7 +304,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   }),
 
   // Pick a new sort if the current column disappears.
-  headersChanged: Ember.observer('visibleHeaders.@each.name', function() {
+  headersChanged: observer('visibleHeaders.@each.name', function() {
     let sortBy = this.get('sortBy');
     let headers = this.get('visibleHeaders') || [];
     if ( headers && headers.get('length') ) {
@@ -297,7 +312,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       if ( !cur ) {
         let fallback = headers.find((header) => get(header, 'name') && !get(header, 'isActions'));
 
-        Ember.run.next(this, function() {
+        next(this, function() {
           if ( fallback ) {
             this.send('changeSort', get(fallback, 'name'));
           }
@@ -306,7 +321,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     }
   }),
 
-  searchFields: Ember.computed('headers.@each.{searchField,name}', function() {
+  searchFields: computed('headers.@each.{searchField,name}', function() {
     let out = [];
 
     this.get('headers').forEach((header) => {
@@ -314,7 +329,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       if ( field ) {
         if ( typeof field === 'string' ) {
           out.addObject(field);
-        } else if ( Ember.isArray(field) ) {
+        } else if ( isArray(field) ) {
           out.addObjects(field);
         }
       } else if ( field === false ) {
@@ -328,7 +343,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   }),
 
   filtered: null,
-  _filteredShouldChangeContent: Ember.observer(
+  _filteredShouldChangeContent: observer(
     'body',
     'body.[]',
     'arranged.[]',
@@ -337,16 +352,16 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     'sortRevision',
     function() {
       // Throttle so it's updated even if continuously changing
-      Ember.run.throttle(this, this._updateFiltered, 100, false);
+      throttle(this, this._updateFiltered, 100, false);
     }
   ),
-  _filteredShouldChangeSearch: Ember.observer('searchText', function() {
+  _filteredShouldChangeSearch: observer('searchText', function() {
     // Debounce so it's not updating while typing even if continuously changing
-    Ember.run.debounce(this, this._updateFiltered, 100, false);
+    debounce(this, this._updateFiltered, 100, false);
   }),
 
-  _pagedOptionsShouldChange: Ember.observer('page', 'effectivePerPage', function() {
-    this._syncPagedContent(this.get('filtered') || Ember.A([]));
+  _pagedOptionsShouldChange: observer('page', 'effectivePerPage', function() {
+    this._syncPagedContent(this.get('filtered') || A([]));
   }),
 
   _syncPagedContent(content) {
@@ -411,7 +426,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     }
   },
 
-  pagedContentChanged: Ember.observer('pagedContent.[]', function() {
+  pagedContentChanged: observer('pagedContent.[]', function() {
     // Remove selected items not in the current content
     let content = this.get('pagedContent');
     let selectable = this.get('selectablePagedContent');
@@ -435,7 +450,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   scheduleRowAnimation() {
     let previous = this._rowPositions || {};
 
-    Ember.run.scheduleOnce('afterRender', this, this.animateRows, previous);
+    scheduleOnce('afterRender', this, this.animateRows, previous);
   },
 
   captureRowPositions() {
@@ -446,8 +461,8 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       return output;
     }
 
-    Ember.$(element).find('tbody tr[data-row-id]').each(function() {
-      let row = Ember.$(this);
+    $(element).find('tbody tr[data-row-id]').each(function() {
+      let row = $(this);
       let id = row.attr('data-row-id');
 
       if ( id ) {
@@ -470,7 +485,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
       return;
     }
 
-    Ember.$(element).find('tbody tr[data-row-id]').each(function() {
+    $(element).find('tbody tr[data-row-id]').each(function() {
       let row = this;
       let id = row.getAttribute('data-row-id');
       let oldTop = previous[id];
@@ -502,23 +517,23 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
 
   didInsertElement() {
     this._super(...arguments);
-    Ember.run.scheduleOnce('afterRender', this, function() {
+    scheduleOnce('afterRender', this, function() {
       this._rowPositions = this.captureRowPositions();
       this.notifyPageContentChange(this.get('pagedContent'));
     });
   },
 
-  indexFrom: Ember.computed('page','effectivePerPage', function() {
+  indexFrom: computed('page','effectivePerPage', function() {
     var current =  this.get('page');
     var perPage =  this.get('effectivePerPage');
     return Math.max(0, 1 + perPage*(current-1));
   }),
 
-  indexTo: Ember.computed('indexFrom','effectivePerPage','filtered.length', function() {
+  indexTo: computed('indexFrom','effectivePerPage','filtered.length', function() {
     return Math.min(this.get('filtered.length'), this.get('indexFrom') + this.get('effectivePerPage') - 1);
   }),
 
-  pageCountContent: Ember.computed('indexFrom','indexTo','pagedContent.totalPages', function() {
+  pageCountContent: computed('indexFrom','indexTo','pagedContent.totalPages', function() {
     let from = this.get('indexFrom') || 0;
     let to = this.get('indexTo') || 0;
     let count = this.get('filtered.length') || 0;
@@ -534,12 +549,12 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     return out;
   }),
 
-  pageCountChanged: Ember.observer('indexFrom', 'filtered.length', function() {
+  pageCountChanged: observer('indexFrom', 'filtered.length', function() {
     // Keep the current page valid when live rows are removed.
     this.clampPageToContentLength(this.get('filtered.length') || 0);
   }),
 
-  sortKeyChanged: Ember.observer('sortBy', function() {
+  sortKeyChanged: observer('sortBy', function() {
     this.set('page',1);
   }),
 
@@ -550,8 +565,8 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     let tagName = e.target.tagName;
     let content = this.get('pagedContent');
     let selection = this.get('selectedNodes');
-    let isCheckbox = tagName === 'INPUT' || Ember.$(e.target).hasClass('select-for-action');
-    let nodeId = Ember.$(e.currentTarget).find('input[type="checkbox"]').attr('nodeid');
+    let isCheckbox = tagName === 'INPUT' || $(e.target).hasClass('select-for-action');
+    let nodeId = $(e.currentTarget).find('input[type="checkbox"]').attr('nodeid');
     let node = content.findBy('id', nodeId);
 
     if ( !node || !this.isSelectable(node) || tagName === 'A' ) {
@@ -592,7 +607,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     this.set('prevNode', node);
   },
 
-  isAll: Ember.computed('selectedNodes.length', 'selectablePagedContent.length', {
+  isAll: computed('selectedNodes.length', 'selectablePagedContent.length', {
     get() {
       let selectable = this.get('selectablePagedContent.length');
 
@@ -648,10 +663,10 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     function toggle(node, on) {
       let id = get(node,'id');
       if ( id ) {
-        let input = Ember.$(`input[nodeid=${id}]`);
+        let input = $(`input[nodeid=${id}]`);
         if ( input && input.length ) {
-          Ember.run.next(function() { input[0].checked = on; });
-          Ember.$(input).closest('tr').toggleClass('row-selected', on);
+          next(function() { input[0].checked = on; });
+          $(input).closest('tr').toggleClass('row-selected', on);
         }
       }
     }
@@ -659,7 +674,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
     this.notifySelectionChanged();
   },
 
-  actionsChanged: Ember.observer('selectedNodes.@each.translatedAvailableActions', function() {
+  actionsChanged: observer('selectedNodes.@each.translatedAvailableActions', function() {
     let data = this.get('selectedNodes');
     var out = null;
 
@@ -673,7 +688,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   }),
 
   mergeBulkActions(nodes) {
-    var commonActions =  Ember.$().extend(true, [], this.get('bulkActionsList'));
+    var commonActions =  $().extend(true, [], this.get('bulkActionsList'));
 
     // loop over every selectedNode to find available actions
     nodes.forEach((item) => {
@@ -693,7 +708,7 @@ export default Ember.Component.extend(Sortable, StickyHeader, {
   },
 
   mergeSingleActions(node) {
-    var commonActions =  Ember.$().extend(true, [], this.get('bulkActionsList'));
+    var commonActions =  $().extend(true, [], this.get('bulkActionsList'));
     var localActions =   [];
 
     // no others selected just push the availabe actions out

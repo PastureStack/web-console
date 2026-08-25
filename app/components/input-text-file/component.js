@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import { isSafari } from 'ui/utils/platform';
 
-export default Ember.Component.extend({
+export default Component.extend({
   value        : null,
   placeholder  : "",
   accept       : "text/*",

@@ -51,14 +51,12 @@ module.exports = function(environment) {
     environment: environment,
     exportApplicationGlobal: true,
     rootURL: '/',
-    // Ember 6 registers history, hash, and none locations. Use the modern
-    // history default explicitly; the removed auto registry entry would leave
+    // Keep the history location explicit; the removed auto registry entry would leave
     // the production router without an onUpdateURL implementation.
     locationType: 'history',
     EmberENV: {
-      // Ember 6.12 still supports the legacy Array convenience methods used by
-      // the classic console. Keep this explicit during the staged native-array
-      // migration; Ember 7 removes this compatibility switch.
+      // The remaining classic code paths still use Ember.Array convenience methods.
+      // Keep this compatibility switch explicit until those call sites are migrated.
       EXTEND_PROTOTYPES: {
         Array: true
       },

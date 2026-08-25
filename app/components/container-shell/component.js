@@ -1,4 +1,5 @@
-import Ember from 'ember';
+import { next } from '@ember/runloop';
+import Component from '@ember/component';
 import { alternateLabel } from 'ui/utils/platform';
 import ThrottledResize from 'ui/mixins/throttled-resize';
 
@@ -7,7 +8,7 @@ const FitAddon = window.FitAddon.FitAddon;
 
 export const DEFAULT_COMMAND = ["/bin/sh","-c",'TERM=xterm-256color; export TERM; [ -x /bin/bash ] && ([ -x /usr/bin/script ] && /usr/bin/script -q -c "/bin/bash" /dev/null || exec /bin/bash) || exec /bin/sh'];
 
-export default Ember.Component.extend(ThrottledResize, {
+export default Component.extend(ThrottledResize, {
   instance: null,
   command: null,
   cols: 80,
@@ -54,7 +55,7 @@ export default Ember.Component.extend(ThrottledResize, {
 
   didInsertElement: function() {
     this._super();
-    Ember.run.next(this, 'exec');
+    next(this, 'exec');
   },
 
   exec: function() {

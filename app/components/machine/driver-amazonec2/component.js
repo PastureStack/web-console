@@ -1,4 +1,9 @@
-import Ember from 'ember';
+import $ from 'jquery';
+import { scheduleOnce } from '@ember/runloop';
+import EmberObject, { observer, computed } from '@ember/object';
+import { alias, equal, gte } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 
 let RANCHER_TAG           = 'rancher-ui';
@@ -621,12 +626,12 @@ function nameFromResource(r, idField) {
   return out;
 }
 
-export default Ember.Component.extend(Driver, {
-  prefs                    : Ember.inject.service(),
+export default Component.extend(Driver, {
+  prefs                    : service(),
   driverName               : 'amazonec2',
   model                    : null,
-  amazonec2Config          : Ember.computed.alias('model.amazonec2Config'),
-  intl                     : Ember.inject.service(),
+  amazonec2Config          : alias('model.amazonec2Config'),
+  intl                     : service(),
 
   clients                  : null,
   allSubnets               : null,
@@ -635,23 +640,23 @@ export default Ember.Component.extend(Driver, {
   defaultSecurityGroup     : null,
   defaultSecurityGroupName : RANCHER_GROUP,
   whichSecurityGroup       : 'default',
-  isCustomSecurityGroup    : Ember.computed.equal('whichSecurityGroup','custom'),
+  isCustomSecurityGroup    : equal('whichSecurityGroup','custom'),
   instanceTypes            : INSTANCE_TYPES,
   regionChoices            : REGIONS,
 
   step                     : 1,
-  isStep1                  : Ember.computed.equal('step',1),
-  isStep2                  : Ember.computed.equal('step',2),
-  isStep3                  : Ember.computed.equal('step',3),
-  isStep4                  : Ember.computed.equal('step',4),
-  isStep5                  : Ember.computed.equal('step',5),
-  isStep6                  : Ember.computed.equal('step',6),
-  isStep7                  : Ember.computed.equal('step',7),
-  isGteStep3               : Ember.computed.gte('step',3),
-  isGteStep4               : Ember.computed.gte('step',4),
-  isGteStep5               : Ember.computed.gte('step',5),
-  isGteStep6               : Ember.computed.gte('step',6),
-  isGteStep7               : Ember.computed.gte('step',7),
+  isStep1                  : equal('step',1),
+  isStep2                  : equal('step',2),
+  isStep3                  : equal('step',3),
+  isStep4                  : equal('step',4),
+  isStep5                  : equal('step',5),
+  isStep6                  : equal('step',6),
+  isStep7                  : equal('step',7),
+  isGteStep3               : gte('step',3),
+  isGteStep4               : gte('step',4),
+  isGteStep5               : gte('step',5),
+  isGteStep6               : gte('step',6),
+  isGteStep7               : gte('step',7),
 
   bootstrap: function() {
     let pref   = this.get('prefs.amazonec2')||{};
@@ -676,7 +681,7 @@ export default Ember.Component.extend(Driver, {
     this._super(...arguments);
 
     this.set('editing', false);
-    this.set('clients', Ember.Object.create());
+    this.set('clients', EmberObject.create());
     this.set('allSubnets', []);
 
     let cur = this.get('amazonec2Config.securityGroup');
@@ -706,14 +711,14 @@ export default Ember.Component.extend(Driver, {
   },
 
   stepDidChange: function() {
-    Ember.run.scheduleOnce('afterRender', this, function() {
+    scheduleOnce('afterRender', this, function() {
       document.body.scrollTop = document.body.scrollHeight;
     });
   }.observes('context.step'),
 
-  selectedSecurityGroupChanged: Ember.observer('whichSecurityGroup', 'isStep5', function() {
+  selectedSecurityGroupChanged: observer('whichSecurityGroup', 'isStep5', function() {
     if (this.get('isStep5') && this.get('whichSecurityGroup') === 'custom') {
-      Ember.run.scheduleOnce('afterRender', this, function() {
+      scheduleOnce('afterRender', this, function() {
         this.initMultiselect();
       });
     }
@@ -769,7 +774,7 @@ export default Ember.Component.extend(Driver, {
               return;
             }
 
-            subnets.pushObject(Ember.Object.create({
+            subnets.pushObject(EmberObject.create({
               subnetName: nameFromResource(subnet, 'SubnetId'),
               subnetId:   subnet.SubnetId,
               vpcName:    vpcNames[subnet.VpcId] || subnet.VpcId,
@@ -847,7 +852,7 @@ export default Ember.Component.extend(Driver, {
     },
 
     multiSecurityGroupSelect: function() {
-      let options = Array.prototype.slice.call(Ember.$('.existing-security-groups')[0], 0);
+      let options = Array.prototype.slice.call($('.existing-security-groups')[0], 0);
       let selectedOptions = [];
 
       options.filterBy('selected', true).forEach((cap) => {
@@ -990,7 +995,7 @@ export default Ember.Component.extend(Driver, {
 
     this.$('.existing-security-groups').multiselect(opts);
   },
-  selectedZone: Ember.computed('amazonec2Config.{region,zone}', {
+  selectedZone: computed('amazonec2Config.{region,zone}', {
     get: function() {
       let config = this.get('amazonec2Config');
       if ( config.get('region') && config.get('zone') ) {
@@ -1065,7 +1070,7 @@ export default Ember.Component.extend(Driver, {
     return out.sortBy('sortKey');
   }.property('selectedZone','allSubnets.@each.{subnetId,vpcId,zone}'),
 
-  selectedSubnet: Ember.computed('amazonec2Config.{subnetId,vpcId}', {
+  selectedSubnet: computed('amazonec2Config.{subnetId,vpcId}', {
     set: function(key, val) {
       let config = this.get('amazonec2Config');
       if ( arguments.length > 1 ) {

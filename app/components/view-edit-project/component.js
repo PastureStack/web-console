@@ -1,14 +1,17 @@
-import Ember from 'ember';
+import { resolve } from 'rsvp';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import { sortInsensitiveBy } from 'ui/utils/sort';
 
-export default Ember.Component.extend(NewOrEdit, Sortable, {
-  projects: Ember.inject.service(),
-  access: Ember.inject.service(),
-  growl: Ember.inject.service(),
-  accessEnabled: Ember.computed.alias('access.enabled'),
+export default Component.extend(NewOrEdit, Sortable, {
+  projects: service(),
+  access: service(),
+  growl: service(),
+  accessEnabled: alias('access.enabled'),
   queryParams: ['editing'],
 
   project: null,
@@ -18,8 +21,8 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
   editing: false,
   tab: 'access',
 
-  primaryResource: Ember.computed.alias('project'),
-  sortableContent: Ember.computed.alias('project.projectMembers'),
+  primaryResource: alias('project'),
+  sortableContent: alias('project.projectMembers'),
   sortBy: 'name',
   sorts: {
     name:   ['name', 'externalId'],
@@ -171,12 +174,12 @@ export default Ember.Component.extend(NewOrEdit, Sortable, {
     if ( this.get('canEditProject') ) {
       return this._super(...arguments);
     } else {
-      return Ember.RSVP.resolve();
+      return resolve();
     }
   },
 
   didSave() {
-    let setMembers = Ember.RSVP.resolve();
+    let setMembers = resolve();
     if ( this.get('editing') )
     {
       if ( this.get('access.enabled') )

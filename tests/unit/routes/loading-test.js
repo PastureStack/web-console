@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import { run } from '@ember/runloop';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 import LoadingRoute from 'ui/loading/route';
 
 module('Unit | Route | loading');
@@ -8,5 +8,5 @@ module('Unit | Route | loading');
 test('it exists', function(assert) {
   var route = LoadingRoute.create();
   assert.ok(route);
-  Ember.run(() => route.destroy());
+  run(() => route.destroy());
 });

@@ -1,10 +1,13 @@
-import Ember from 'ember';
+import { get } from '@ember/object';
+import { equal } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Mixin from '@ember/object/mixin';
 
-export default Ember.Mixin.create({
-  intl: Ember.inject.service(),
+export default Mixin.create({
+  intl: service(),
   // linksArray, allHosts, instance should be set
 
-  isManagedNetwork: Ember.computed.equal('instance.networkMode','managed'),
+  isManagedNetwork: equal('instance.networkMode','managed'),
 
   containerChoices: function() {
     var list = [];
@@ -12,7 +15,7 @@ export default Ember.Mixin.create({
     var intl = this.get('intl');
 
     var expectContainerIds = (this.get('linksArray')||[]).map(function(obj) {
-      return Ember.get(obj,'targetInstanceId');
+      return get(obj,'targetInstanceId');
     });
 
     this.get('allHosts').map((host) => {

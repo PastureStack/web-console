@@ -1,10 +1,14 @@
-import Ember from 'ember';
+import { later } from '@ember/runloop';
+import { Promise } from 'rsvp';
+import { computed, get } from '@ember/object';
+import { service } from '@ember/service';
+import Controller from '@ember/controller';
 import C from 'ui/utils/constants';
 
-export default Ember.Controller.extend({
-  access            : Ember.inject.service(),
-  settings          : Ember.inject.service(),
-  intl              : Ember.inject.service(),
+export default Controller.extend({
+  access            : service(),
+  settings          : service(),
+  intl              : service(),
 
   confirmDisable    : false,
   errors            : null,
@@ -35,7 +39,7 @@ export default Ember.Controller.extend({
   }.property('adminPublicValue','adminSecretValue','adminSecretValue2',
     'isExternalActive', 'testing', 'switching'),
 
-  validateDescription: Ember.computed(function() {
+  validateDescription: computed(function() {
     return this.get('settings').get(C.SETTING.AUTH_LOCAL_VALIDATE_DESC) || null;
   }),
 
@@ -124,14 +128,14 @@ export default Ember.Controller.extend({
         localUsername: username,
         localPassword: password,
       }).save().then((result) => {
-        let providerSwitchCode = Ember.get(result, 'providerSwitchCode');
+        let providerSwitchCode = get(result, 'providerSwitchCode');
         if ( !providerSwitchCode ) {
           throw new Error(this.get('intl').t('authPage.localAuth.switch.missingTicket'));
         }
 
         this.get('access').suspendSession();
-        return new Ember.RSVP.Promise((resolve) => {
-          Ember.run.later(this, resolve, 1200);
+        return new Promise((resolve) => {
+          later(this, resolve, 1200);
         }).then(() => {
           return this.get('access').login(providerSwitchCode, 'providerSwitch');
         }).catch(() => {
@@ -166,7 +170,7 @@ export default Ember.Controller.extend({
 
     promptDisable: function() {
       this.set('confirmDisable', true);
-      Ember.run.later(this, function() {
+      later(this, function() {
         this.set('confirmDisable', false);
       }, 10000);
     },
@@ -216,7 +220,7 @@ export default Ember.Controller.extend({
       });
     },
   },
-  headerText: Ember.computed('isLocalActive', 'isExternalActive', 'intl._locale', function() {
+  headerText: computed('isLocalActive', 'isExternalActive', 'intl._locale', function() {
     let out = this.get('intl').findTranslationByKey('authPage.localAuth.header.disabled');
     if (this.get('isLocalActive')) {
       out = this.get('intl').findTranslationByKey('authPage.localAuth.header.enabled');

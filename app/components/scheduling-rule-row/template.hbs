@@ -35,8 +35,8 @@
       <div class="input-group">
         {{input type="text" class="form-control input-sm" value=this.userKey}}
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu dropdown-menu-right" role="menu">
+          <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu">
             {{#each this.hostLabelKeyChoices as |key|}}
               <li><a {{action "setKey" key}}>{{key}}</a></li>
             {{/each}}
@@ -52,8 +52,8 @@
       <div class="input-group">
         {{input type="text" class="form-control input-sm" value=this.userKey}}
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu dropdown-menu-right" role="menu">
+          <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu">
             {{#each this.containerLabelKeyChoices as |key|}}
               <li><a {{action "setKey" key}}>{{key}}</a></li>
             {{/each}}
@@ -77,8 +77,8 @@
         {{input type="text" class="form-control input-sm" value=this.userValue}}
         {{#if this.hostLabelValueChoices.length}}
           <div class="input-group-btn">
-            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
               {{#each this.hostLabelValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
@@ -96,8 +96,8 @@
         {{input type="text" class="form-control input-sm" value=this.userValue}}
         {{#if this.containerLabelValueChoices.length}}
           <div class="input-group-btn">
-            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
               {{#each this.containerLabelValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
@@ -115,8 +115,8 @@
         {{input type="text" class="form-control input-sm" value=this.userValue}}
          {{#if this.serviceValueChoices.length}}
           <div class="input-group-btn">
-            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
               {{#each this.serviceValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}
@@ -134,8 +134,8 @@
         {{input type="text" class="form-control input-sm" value=this.userValue}}
          {{#if this.containerValueChoices.length}}
           <div class="input-group-btn">
-            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-            <ul class="dropdown-menu dropdown-menu-right" role="menu">
+            <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+            <ul class="dropdown-menu dropdown-menu-end" role="menu">
               {{#each this.containerValueChoices as |value|}}
                 <li><a {{action "setValue" value}}>{{value}}</a></li>
               {{/each}}

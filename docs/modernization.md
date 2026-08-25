@@ -45,14 +45,14 @@ responsive local, OpenID Connect, SAML, MFA, and recovery layout; a
 reduced-motion animated gradient; new PastureStack-owned authentication and
 favicon assets; and a root favicon response so the login console remains clean.
 
-`v1.6.56-pasturestack.36` removes the unsupported aggregate Bootstrap 3
-JavaScript bundle from the production graph. The compatibility UI now loads
-only the reviewed transition, collapse, and dropdown modules required by the
-navigation and menus. The vulnerable Button, Tooltip, and Popover plug-ins are
-excluded from both test and production artifacts, and source gates prevent
-their data APIs or jQuery entry points from being restored accidentally.
-Bootstrap-derived Sass remains temporarily isolated behind the existing theme
-boundary and must be replaced as a separate visual migration.
+The maintained UI runtime now uses Bootstrap `5.3.8` CSS and its matching
+bundle. The unused vendored Bootstrap 3 JavaScript, Sass, fonts, and metadata
+have been removed. Source and package gates reject the former Bower/npm
+Bootstrap Sass dependencies, Bootstrap 3 artifacts, and legacy `data-toggle`
+or loading-state APIs while allowing the maintained Bootstrap 5 Button,
+Collapse, Dropdown, Tooltip, and Popover implementations. The unused Bootstrap
+3 input-group fragment formerly embedded in Lacsso's scoped stylesheet is also
+absent; active sortable-table input sizing remains locally maintained.
 
 Production candidate packages omit JavaScript and third-party Intl source maps.
 They also omit the development-only `none` pseudo-locale. Development and test
@@ -155,12 +155,11 @@ These no-publish candidates replace Bower delivery paths with pinned npm or revi
 - **No-Publish Async 3.2.6 Upgrade Candidate:** `async@3.2.6` is imported from `node_modules/async/dist/async.js`.
 - **No-Publish CommonMark 0.31.2 Upgrade Candidate:** `commonmark@0.31.2` is imported from `node_modules/commonmark/dist/commonmark.js`.
 - **No-Publish Bower jquery.cookie Migration Candidate:** `jquery.cookie@1.4.1` is imported from `node_modules/jquery.cookie/jquery.cookie.js`.
-- **No-Publish Bower jGrowl Migration Candidate:** `jgrowl@1.4.2` is imported from `node_modules/jgrowl/jquery.jgrowl.js`.
+- **No-Publish Bower jGrowl Migration Candidate:** `jgrowl@1.5.1` is imported from `node_modules/jgrowl/jquery.jgrowl.js`.
 - **No-Publish Bower lodash Migration Candidate:** `lodash@4.18.1` is imported from `node_modules/lodash/lodash.js`; Dagre and Graphlib use their compatible npm browser bundles.
 - **No-Publish Bower md5/identicon Migration Candidate:** `identicon.js@2.3.3` and `md5-jkmyers@0.0.1` replace the Bower inputs; the browser bundle comes from `node_modules/identicon.js/identicon.js`.
 - **No-Publish Moment 2.30.1 Upgrade Candidate:** `moment@2.30.1` is imported from `node_modules/moment/moment.js`.
-- **No-Publish Bower c3/d3 Migration Candidate:** `c3@0.4.24` and `d3@3.5.17` retain the compatible chart API through `node_modules/c3/c3.js` and `node_modules/d3/d3.js`.
-- **No-Publish C3/D3 Request Retirement:** the active graph excludes the obsolete request, forever-agent, and jsdom delivery path.
+- **C3 retirement and maintained chart runtime:** the four live statistics charts now use NAVER's maintained `billboard.js@4.0.3`; sparkline and stack graph code use `d3@7.9.0`, and the stack renderer uses `dagre-d3-es@7.0.14`. The lock contains only the fixed `d3-color@3.1.0`; the unmaintained C3 and legacy global D3/Dagre delivery paths are absent.
 - **Local TOTP QR Rendering:** the console imports the pinned MIT-licensed
   `qrcode-generator@2.0.4` browser bundle. Authenticator provisioning data is
   encoded locally and is not sent to a third-party rendering service.
@@ -221,12 +220,12 @@ stand-ins; registration of a test waiter or failure to call the browser Fetch
 implementation blocks the candidate before publication. Distributable archives
 include its exact license and provenance under `licenses/ember-fetch/`.
 The four active lacsso Handlebars templates are compiled deterministically with
-`ember-source@6.12.0` into public `@ember/template-factory` modules. Their
+`ember-source@7.2.0` into public `@ember/template-factory` modules. Their
 original markup remains byte-for-byte under `vendor/lacsso/upstream-templates`;
 the production artifact gate rejects the build-only `ember-cli-htmlbars` AMD
 import that otherwise fails at browser startup.
 The application-owned API-store reference boundary preserves the retired
-`denormalizeId` and `denormalizeIdArray` contract while using Ember 6 computed
+`denormalizeId` and `denormalizeIdArray` contract while using Ember 7 computed
 properties. It keeps the upstream UI's `Id`/`Ids` singular-type inference,
 including array fields such as `serviceIds`, without forking the Apache-2.0
 store package. Explicit setters retain expanded API relationships such as a
@@ -278,15 +277,15 @@ are not part of the browser runtime, and can embed a random absolute temporary
 build path. A public candidate fails closed if test helpers or `/tmp/` build
 paths remain after packaging.
 
-The Ember CLI 6.12 compatibility build restores the runtime theme output map
+The Ember CLI 7.2 compatibility build restores the runtime theme output map
 after Ember CLI initializes its default packager. Release artifacts must
 contain non-empty `ui-light.css`, `ui-light.rtl.css`, `ui-dark.css`, and
 `ui-dark.rtl.css` assets. The retained Ember Power Select and Ember Basic
 Dropdown Sass sources keep their exact upstream version and integrity records,
 and their MIT licenses are copied into every distributable under `licenses/`.
 
-The **Ember 6.12 LTS Runtime And CLI** baseline uses
-`ember-source@6.12.0`, Ember CLI 6.12.0, Ember CLI HTMLBars 7.0.1, and
+The **Ember 7.2 Runtime And CLI** baseline uses
+`ember-source@7.2.0`, Ember CLI 7.2.0, Ember CLI HTMLBars 7.0.1, and
 `jquery@3.7.1`. Runtime code and the template compiler are restored from the
 immutable npm lock instead of copied browser bundles. Every distributable
 copies the exact upstream MIT license and pinned runtime provenance into
@@ -296,7 +295,7 @@ extensions, and classic bundle boundary are retired under browser regression
 coverage. The
 **No-Publish ember-browserify Removal** replaces `npm:` pseudo-imports and
 `ember-browserify` with native `sourceType: module` imports and
-`ember-cli-terser`. Locale loading now uses generated JSON assets and the Ember Intl 8 public service API; the removed private translation reducer and legacy
+`ember-cli-terser`. Locale loading now uses generated JSON assets and the Ember Intl 9 public service API; the removed private translation reducer and legacy
 `intl-format-cache/memoizer` shim are not part of the release graph.
 
 The template source now qualifies controller and component state with `this`,
@@ -313,12 +312,12 @@ validation changes a real storage filter and verifies controller state so a
 bridge that only compiles, but cannot dispatch an action, cannot be released.
 
 The current interactive-select runtime is pinned to
-`ember-power-select@9.0.2`, `ember-basic-dropdown@9.0.0`,
+`bootstrap-multiselect@2.0.0`, `ember-power-select@9.0.2`, `ember-basic-dropdown@9.0.0`,
 `ember-concurrency@5.2.0`, and `ember-modifier@4.3.0`. Their exact npm
 integrities, upstream provenance, and MIT license texts are retained under
 `vendor/runtime-licenses/` and copied into every release under
-`licenses/runtime/`. These records are intentionally separate from the older,
-independently pinned Sass sources used to preserve the existing visual theme.
+`licenses/runtime/`. The application also loads the Sass modules from these
+same maintained package versions; the older beta-era style copies are absent.
 
 Build-only dependencies are not force-overridden across incompatible major
 versions. Reviewed first-party compatibility packages cover direct project
@@ -559,10 +558,10 @@ info arrays or the Router service's internal router instance, so an initial
 route with no settled predecessor remains a valid no-op instead of entering an
 error-transition loop.
 
-The Ember 6.12 migration deliberately keeps AMD compatibility enabled for this
+The Ember 7.2 runtime deliberately keeps AMD compatibility enabled for this
 release because the classic application boundary still depends on the global
-compatibility bridge. Enabling the Ember 7 module-only optional feature is a
-separate migration gate: it must first replace the remaining barrel imports,
+compatibility bridge. Enabling the module-only optional feature is a separate
+migration gate: it must first replace the remaining barrel imports,
 prototype extensions, and global module lookups, then repeat the full browser
 and compatible-server regression suite. It is not silently enabled by this LTS
 upgrade.

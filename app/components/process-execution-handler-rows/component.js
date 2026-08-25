@@ -1,11 +1,12 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName              : '',
   expanded             : false,
   depth                : 0,
   expandAll : false,
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   actions: {
     expand: function() {

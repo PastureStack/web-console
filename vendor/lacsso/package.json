@@ -22,7 +22,7 @@
   "homepage": "https://github.com/rancher/lacsso#readme",
   "rc16Maintenance": {
     "source": "lacsso@0.0.59",
-    "reason": "Maintain the supported build chain and precompile active templates with Ember 6.12.",
+    "reason": "Maintain the supported build chain and precompile active templates with Ember 7.2.",
     "compatibility": "The upstream Handlebars sources are retained byte-for-byte; only their build representation changes."
   },
   "keywords": [
@@ -32,7 +32,7 @@
     "ember-cli-babel": "8.3.1",
     "ember-cli-htmlbars": "7.0.1",
     "ember-cli-pagination": "file:../ember-cli-pagination",
-    "ember-cli-sass": "10.0.1",
+    "ember-cli-sass": "11.0.1",
     "ember-rl-dropdown": "file:../ember-rl-dropdown",
     "ember-truth-helpers": "5.0.0"
   },

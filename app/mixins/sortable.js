@@ -11,11 +11,13 @@
  * @function currentSort - returns the current sort
  * @function arranged - returns the sorted data, you should use this as your data to display
  */
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+
+import Mixin from '@ember/object/mixin';
 import { naturalSort } from 'ui/utils/natural-sort';
 
-export default Ember.Mixin.create({
-  sortableContent: Ember.computed.alias('model'),
+export default Mixin.create({
+  sortableContent: alias('model'),
   sorts: null,
   sortBy: null,
   descending: false,

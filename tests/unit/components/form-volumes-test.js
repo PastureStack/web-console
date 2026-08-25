@@ -1,4 +1,7 @@
-import Ember from 'ember';
+import { defer } from 'rsvp';
+import { A } from '@ember/array';
+import { run } from '@ember/runloop';
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 
 import FormVolumesComponent from 'ui/components/form-volumes/component';
@@ -8,7 +11,7 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 module('Unit | Component | form volumes');
 
 function intlStub() {
-  return Ember.Object.create({
+  return EmberObject.create({
     _locale: 'en-us',
     t(key, values) {
       if ( values && values.path ) {
@@ -23,30 +26,30 @@ function intlStub() {
 }
 
 function resource(values) {
-  return Ember.Object.create(values);
+  return EmberObject.create(values);
 }
 
 function createComponent(properties) {
   let component;
-  Ember.run(() => {
+  run(() => {
     component = createOwned(FormVolumesComponent, Object.assign({
       renderer: inertRenderer(),
       intl: intlStub(),
-      projects: Ember.Object.create({current: Ember.Object.create({isWindows: false})}),
+      projects: EmberObject.create({current: EmberObject.create({isWindows: false})}),
       instance: resource({
-        dataVolumes: Ember.A(),
-        dataVolumesFrom: Ember.A(),
-        dataVolumesFromLaunchConfigs: Ember.A(),
+        dataVolumes: A(),
+        dataVolumesFrom: A(),
+        dataVolumesFromLaunchConfigs: A(),
         requestedHostId: null,
         volumeDriver: null,
       }),
-      primaryService: resource({name: 'app', secondaryLaunchConfigs: Ember.A()}),
+      primaryService: resource({name: 'app', secondaryLaunchConfigs: A()}),
       launchConfigIndex: -1,
-      allHosts: Ember.A(),
-      allStorageDrivers: Ember.A(),
-      allStoragePools: Ember.A(),
-      allVolumes: Ember.A(),
-      allServices: Ember.A(),
+      allHosts: A(),
+      allStorageDrivers: A(),
+      allStoragePools: A(),
+      allVolumes: A(),
+      allServices: A(),
       scheduleVolumePreflight() {},
     }, properties || {}), 'component');
   });
@@ -54,7 +57,7 @@ function createComponent(properties) {
 }
 
 test('driver choices hide secret drivers and disable incomplete NFS coverage', function(assert) {
-  let hosts = Ember.A([
+  let hosts = A([
     resource({id: '1h1', state: 'active'}),
     resource({id: '1h2', state: 'active'}),
   ]);
@@ -64,26 +67,26 @@ test('driver choices hide secret drivers and disable incomplete NFS coverage', f
     state: 'active',
     scope: 'environment',
     volumeAccessMode: 'multiHostRW',
-    volumeCapabilities: Ember.A(),
+    volumeCapabilities: A(),
   });
   let secret = resource({
     id: '1sd10',
     name: 'secret-driver',
     state: 'active',
     scope: 'local',
-    volumeCapabilities: Ember.A(['secrets']),
+    volumeCapabilities: A(['secrets']),
   });
-  let pools = Ember.A([
+  let pools = A([
     resource({
       state: 'active',
       storageDriverId: '1sd4',
       driverName: 'pasturestack-nfs',
-      hostIds: Ember.A(['1h1']),
+      hostIds: A(['1h1']),
     }),
   ]);
   let component = createComponent({
     allHosts: hosts,
-    allStorageDrivers: Ember.A([nfs, secret]),
+    allStorageDrivers: A([nfs, secret]),
     allStoragePools: pools,
   });
   let choices = component.get('storageDriverChoices');
@@ -91,52 +94,52 @@ test('driver choices hide secret drivers and disable incomplete NFS coverage', f
   assert.deepEqual(choices.mapBy('value'), ['', 'pasturestack-nfs'], 'keeps local and non-secret choices only');
   assert.ok(choices.findBy('value', 'pasturestack-nfs').disabled, 'blocks incomplete environment coverage');
 
-  Ember.run(() => pools[0].set('hostIds', Ember.A(['1h1', '1h2'])));
+  run(() => pools[0].set('hostIds', A(['1h1', '1h2'])));
   assert.notOk(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabled, 'enables NFS after every active host is covered');
   assert.ok(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').detail.includes('multiHostRW'), 'shows the access mode in driver details');
   destroyOwned(component);
 });
 
 test('pasturestack-nfs requires environment scope and multi-host read-write access', function(assert) {
-  let hosts = Ember.A([resource({id: '1h1', state: 'active'})]);
+  let hosts = A([resource({id: '1h1', state: 'active'})]);
   let nfs = resource({
     id: '1sd4',
     name: 'pasturestack-nfs',
     state: 'active',
     scope: 'local',
     volumeAccessMode: 'singleHostRW',
-    volumeCapabilities: Ember.A(),
+    volumeCapabilities: A(),
   });
-  let pools = Ember.A([resource({
+  let pools = A([resource({
     state: 'active',
     storageDriverId: '1sd4',
     driverName: 'pasturestack-nfs',
-    hostIds: Ember.A(['1h1']),
+    hostIds: A(['1h1']),
   })]);
   let component = createComponent({
     allHosts: hosts,
-    allStorageDrivers: Ember.A([nfs]),
+    allStorageDrivers: A([nfs]),
     allStoragePools: pools,
   });
 
   assert.equal(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabledReason, 'invalidNfsContract');
 
-  Ember.run(() => nfs.setProperties({scope: 'environment', volumeAccessMode: 'singleHostRW'}));
+  run(() => nfs.setProperties({scope: 'environment', volumeAccessMode: 'singleHostRW'}));
   assert.equal(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabledReason, 'invalidNfsContract');
 
-  Ember.run(() => nfs.set('volumeAccessMode', 'multiHostRW'));
+  run(() => nfs.set('volumeAccessMode', 'multiHostRW'));
   assert.notOk(component.get('storageDriverChoices').findBy('value', 'pasturestack-nfs').disabled);
   destroyOwned(component);
 });
 
 test('autocomplete candidates include existing service mounts before generated paths', function(assert) {
   let service = resource({
-    launchConfig: resource({dataVolumes: Ember.A(['shared:/srv/shared', '/etc/app:/config:ro'])}),
-    secondaryLaunchConfigs: Ember.A([
-      resource({dataVolumes: Ember.A(['sidekick-data:/data'])}),
+    launchConfig: resource({dataVolumes: A(['shared:/srv/shared', '/etc/app:/config:ro'])}),
+    secondaryLaunchConfigs: A([
+      resource({dataVolumes: A(['sidekick-data:/data'])}),
     ]),
   });
-  let component = createComponent({allServices: Ember.A([service])});
+  let component = createComponent({allServices: A([service])});
   let suggestions = component.get('volumePathSuggestions');
 
   assert.deepEqual(
@@ -150,9 +153,9 @@ test('autocomplete candidates include existing service mounts before generated p
 
 test('validation rejects duplicate targets and unavailable selected drivers', function(assert) {
   let instance = resource({
-    dataVolumes: Ember.A(['one:/data', 'two:/data']),
-    dataVolumesFrom: Ember.A(),
-    dataVolumesFromLaunchConfigs: Ember.A(),
+    dataVolumes: A(['one:/data', 'two:/data']),
+    dataVolumesFrom: A(),
+    dataVolumesFromLaunchConfigs: A(),
     requestedHostId: null,
     volumeDriver: 'missing-driver',
   });
@@ -166,8 +169,8 @@ test('validation rejects duplicate targets and unavailable selected drivers', fu
 });
 
 test('late preflight responses cannot overwrite the newest result', function(assert) {
-  let first = Ember.RSVP.defer();
-  let second = Ember.RSVP.defer();
+  let first = defer();
+  let second = defer();
   let calls = 0;
   let project = resource({
     actionLinks: {volumepreflight: '/v2-beta/projects/1a5?action=volumepreflight'},

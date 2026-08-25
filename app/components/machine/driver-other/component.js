@@ -1,7 +1,7 @@
-import Ember from 'ember';
+import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
 
-export default Ember.Component.extend(Driver, {
+export default Component.extend(Driver, {
   // Set by Driver
   driverName         : 'other',
   driver             : null,

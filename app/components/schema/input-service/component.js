@@ -1,7 +1,9 @@
-import Ember from 'ember';
+import { isArray } from '@ember/array';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 
-export default Ember.Component.extend({
-  allServices : Ember.inject.service(),
+export default Component.extend({
+  allServices : service(),
 
   selected:          null,  // Selected service ID
   custom:            null, // Custom input
@@ -51,7 +53,7 @@ export default Ember.Component.extend({
 
     let exclude = this.get('exclude');
     if ( exclude ) {
-      if ( !Ember.isArray(exclude) ) {
+      if ( !isArray(exclude) ) {
         exclude = [exclude];
       }
 

@@ -1,6 +1,6 @@
-import { module, test } from 'qunit';
+import Component from '@ember/component';
 
-import Ember from 'ember';
+import { module, test } from 'qunit';
 
 module('Unit | Vendor | Legacy component action');
 
@@ -24,7 +24,7 @@ test('it sends named classic component actions to their target', function(assert
   };
 
   assert.equal(
-    Ember.Component.prototype.sendAction.call(component, 'action', 'operator:secret'),
+    Component.prototype.sendAction.call(component, 'action', 'operator:secret'),
     'sent',
     'returns the target action result'
   );
@@ -47,11 +47,11 @@ test('it invokes closure actions and ignores missing actions', function(assert) 
   };
 
   assert.equal(
-    Ember.Component.prototype.sendAction.call(closureComponent, 'save', 42),
+    Component.prototype.sendAction.call(closureComponent, 'save', 42),
     'closed',
     'returns the closure result'
   );
-  Ember.Component.prototype.sendAction.call({get() {}}, 'missing');
+  Component.prototype.sendAction.call({get() {}}, 'missing');
 });
 
 test('it does not recursively invoke a component prototype event method', function(assert) {
@@ -68,6 +68,6 @@ test('it does not recursively invoke a component prototype event method', functi
     return this[key];
   };
 
-  Ember.Component.prototype.sendAction.call(component, 'input', 'value');
+  Component.prototype.sendAction.call(component, 'input', 'value');
   assert.ok(true, 'prototype event methods are ignored when no closure action was supplied');
 });

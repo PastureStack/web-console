@@ -259,8 +259,8 @@
       <div class="input-group">
         {{input type="text" value=this.instance.logConfig.driver classNames="form-control" placeholder=(t 'formSecurity.logDriver.placeholder')}}
         <div class="input-group-btn">
-          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu dropdown-menu-right" role="menu">
+          <button type="button" class="btn btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="icon icon-chevron-down"></i></button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu">
             {{#each this.logDriverChoices as |value|}}
               <li><a {{action "setLogDriver" value}}>{{value}}</a></li>
             {{/each}}

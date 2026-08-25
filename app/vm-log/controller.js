@@ -1,5 +1,5 @@
-import Ember from 'ember';
+import Controller from '@ember/controller';
 import Console from 'ui/mixins/console';
 
-export default Ember.Controller.extend(Console, {
+export default Controller.extend(Console, {
 });

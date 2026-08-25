@@ -1,15 +1,17 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
+import Component from '@ember/component';
 import C from 'ui/utils/constants';
 
-export default Ember.Component.extend({
+export default Component.extend({
   tagName: 'footer',
   className: 'clearfix',
 
-  settings: Ember.inject.service(),
+  settings: service(),
 
-  projectId        : Ember.computed.alias(`tab-session.${C.TABSESSION.PROJECT}`),
+  projectId        : alias(`tab-session.${C.TABSESSION.PROJECT}`),
 
-  modalService: Ember.inject.service('modal'),
+  modalService: service('modal'),
 
   init() {
     this._super(...arguments);

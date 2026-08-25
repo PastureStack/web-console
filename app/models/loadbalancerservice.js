@@ -1,5 +1,5 @@
+import { service } from '@ember/service';
 import Service from 'ui/models/service';
-import Ember from 'ember';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { parsePortSpec } from 'ui/utils/parse-port';
@@ -20,8 +20,8 @@ function specToPort(spec) {
 var LoadBalancerService = Service.extend({
   type: 'loadBalancerService',
 
-  intl: Ember.inject.service(),
-  settings: Ember.inject.service(),
+  intl: service(),
+  settings: service(),
 
   initPorts() {
     let rules = this.get('lbConfig.portRules')||[];

@@ -1,11 +1,11 @@
-import Ember from 'ember';
+import { alias } from '@ember/object/computed';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
-import {tagChoices, tagsToArray} from 'ui/models/stack';
+import { tagChoices, tagsToArray } from 'ui/models/stack';
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
-  originalModel: Ember.computed.alias('modalService.modalOpts'),
+  originalModel: alias('modalService.modalOpts'),
   editing: true,
   model: null,
 

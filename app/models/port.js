@@ -1,8 +1,8 @@
-import Ember from 'ember';
+import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 
 var Port = Resource.extend({
-  intl: Ember.inject.service(),
+  intl: service(),
   _publicIp: null,
   _publicIpState: null,
   displayPublicIp: function() {
