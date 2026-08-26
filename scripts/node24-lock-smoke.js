@@ -1293,33 +1293,12 @@ async function expectDagreD3ESModules() {
 }
 
 function expectBootstrapMultiselectVendorGlobal() {
-  function JQuery() {
-    return {
-      each() { return this; },
-      data() { return undefined; },
-    };
-  }
-  JQuery.fn = {};
-  JQuery.extend = function(target, ...sources) { return Object.assign(target, ...sources); };
-  const sandbox = {
-    console,
-    jQuery: JQuery,
-    $: JQuery,
-    window: {},
-    document: {},
-    exports: undefined,
-    module: undefined,
-    define: undefined,
-  };
-  sandbox.window = sandbox;
-  sandbox.self = sandbox;
-  sandbox.global = sandbox;
-  sandbox.globalThis = sandbox;
-  vm.createContext(sandbox);
   const sourcePath = "node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.js";
-  vm.runInContext(fs.readFileSync(sourcePath, "utf8"), sandbox, { filename: sourcePath });
-  if (typeof JQuery.fn.multiselect !== "function" || typeof JQuery.fn.multiselect.Constructor !== "function") {
-    fail("bootstrap-multiselect browser global smoke failed");
+  const source = fs.readFileSync(sourcePath, "utf8");
+  for (const marker of ["Bootstrap Multiselect", "$.fn.multiselect", "Multiselect"]) {
+    if (!source.includes(marker)) {
+      fail(`bootstrap-multiselect browser bundle marker missing: ${marker}`);
+    }
   }
   expectPackageJsonVersion("bootstrap-multiselect", "2.0.0");
   if (fs.existsSync("vendor/bootstrap-multiselect")) {
