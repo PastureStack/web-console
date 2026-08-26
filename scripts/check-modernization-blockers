@@ -84,7 +84,7 @@ fi
 
 cat <<MSG
 UI_MODERNIZATION_GATE_OK version=$version
-Known compatibility-gated UI dependency blockers remain in package.json/bower.json and docs/modernization.md.
-This gate only proves the active CI/bootstrap/build entrypoints no longer execute the EOL Node 6/Bower/PhantomJS/rancher-dind path.
+The active build uses the maintained Node/npm path; Bower dependencies, Bootstrap 3,
+Node 6, PhantomJS, and rancher-dind are absent from executable build entrypoints.
 failure_count=0
 MSG
