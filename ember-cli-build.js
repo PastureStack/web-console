@@ -136,8 +136,6 @@ module.exports = function(defaults) {
   app.import('node_modules/jquery.cookie/jquery.cookie.js');
   app.import('vendor/lacsso/lacsso.css');
   app.import('node_modules/billboard.js/dist/billboard.css');
-  //app.import('vendor/term.js/src/term.js');
-  //app.import('bower_components/xterm.js/src/xterm.css');
   app.import('node_modules/bootstrap-multiselect/dist/js/bootstrap-multiselect.js');
   app.import('node_modules/bootstrap-multiselect/dist/css/bootstrap-multiselect.css');
   app.import('node_modules/prismjs/prism.js');
