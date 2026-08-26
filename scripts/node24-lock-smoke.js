@@ -1607,9 +1607,6 @@ function runSocketSmoke(label, transport) {
   await runSocketSmoke("polling", "polling");
   console.log("node24-lock-baseline-smoke-ok");
 })().catch((err) => {
-  const detail = String(err && err.stack ? err.stack : err)
-    .replaceAll("\r", "")
-    .replaceAll("\n", " ");
-  console.error("node24-lock-baseline-smoke-failed", detail);
-  process.exit(1);
+	console.error("node24-lock-baseline-smoke-failed");
+	process.exit(1);
 });
