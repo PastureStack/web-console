@@ -14,7 +14,7 @@ checks = {
     "scripts/node24-lock-smoke.js": [
         'fs.mkdtempSync(path.join(os.tmpdir(), "pasturestack-yamljs-smoke-"))',
         'fs.writeFileSync(file, "hello: world\\n", { flag: "wx", mode: 0o600 })',
-        'console.error("node24-lock-baseline-smoke-failed",',
+        'console.error("node24-lock-baseline-smoke-failed");',
     ],
     "scripts/ui-candidate-browser-smoke.js": [
         "const root = process.cwd();",
