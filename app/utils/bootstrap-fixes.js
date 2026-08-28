@@ -2,6 +2,15 @@ export function resizeDropdown(event) {
   // Preserve compatibility with existing signature
   var $item = $('.dropdown-menu', event.target);
   var target = event.relatedTarget;
+
+  // Bootstrap 5 emits shown.bs.dropdown from the toggle itself, while this
+  // legacy helper expects the containing dropdown. Bootstrap already positions
+  // that menu with Popper, so leave it alone instead of dereferencing an empty
+  // PositionCalculator result.
+  if ( !$item.length || !target ) {
+    return null;
+  }
+
   var right = $item.hasClass('dropdown-menu-end');
   return positionDropdown($item, target, right);
 }
@@ -31,6 +40,10 @@ export function positionDropdown(menu, trigger, right) {
     flip: 'both'
   });
   var posResult = calculator.calculate();
+
+  if ( !posResult || !posResult.moveBy ) {
+    return null;
+  }
 
   // set new position
   $menu.css({
