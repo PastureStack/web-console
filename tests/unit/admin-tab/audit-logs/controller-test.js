@@ -56,6 +56,28 @@ test('offers friendly environment and user names without raw ID fallbacks', func
   destroyOwned(controller);
 });
 
+test('waits for active locales before translating authentication choices', function(assert) {
+  let translations = 0;
+  let intl = EmberObject.create({
+    _locale: [],
+    t(key) {
+      translations++;
+      return key;
+    },
+  });
+  let controller = controllerFor({intl});
+
+  assert.strictEqual(translations, 0, 'controller initialization does not translate before setLocale');
+  assert.deepEqual(controller.get('authTypes'), [], 'authentication choices start in a safe empty state');
+
+  intl.set('_locale', ['zh-tw', 'en-us']);
+
+  assert.strictEqual(translations, 4, 'locale activation populates every visible authentication type once');
+  assert.strictEqual(controller.get('authTypes.length'), 4, 'the choices are ready after locale activation');
+
+  destroyOwned(controller);
+});
+
 test('restores query parameters into the editable condition builder', function(assert) {
   let controller = controllerFor({
     accountId: '1e1',

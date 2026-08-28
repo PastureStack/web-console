@@ -258,11 +258,44 @@ body.farm #application {
 }
 
 .login .language-dropdown .dropdown-menu {
+  z-index: 1080;
+  min-width: 284px;
+  max-width: calc(100vw - 48px);
   max-height: 300px;
+  padding: 8px;
   overflow-y: auto;
+  text-align: left !important;
   border: 1px solid rgba(24, 91, 128, .12);
   border-radius: 12px;
+  background: rgba(255, 255, 255, .99);
   box-shadow: 0 16px 34px rgba(16, 57, 82, .16);
+}
+
+.login .language-dropdown .dropdown-menu > li > a {
+  display: block;
+  padding: 8px 12px;
+  color: #324e62;
+  border-radius: 8px;
+  line-height: 1.35;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.login .language-dropdown .dropdown-menu > li > a:hover,
+.login .language-dropdown .dropdown-menu > li > a:focus {
+  color: #075f9a;
+  background: #edf6fb;
+  text-decoration: none;
+}
+
+.login .language-dropdown .dropdown-menu > li.selected > a {
+  color: #075f9a;
+  background: #e5f3fa;
+  font-weight: 600;
+}
+
+.login .language-dropdown .dropdown-menu > .divider {
+  margin: 6px 4px;
 }
 
 .login .login-auth-region {
@@ -382,6 +415,18 @@ body.farm #application {
   border-radius: 11px;
 }
 
+.login .alert-warning {
+  color: #6b4b09;
+  border-color: #efd28b;
+  background: #fff7dc;
+}
+
+.login .alert-danger {
+  color: #842d39;
+  border-color: #edb7be;
+  background: #fff0f2;
+}
+
 .login .btn-group-justified .btn {
   white-space: normal;
 }
@@ -395,6 +440,11 @@ body.farm #application {
 [dir='rtl'] .login .login-credentials-form,
 [dir='rtl'] .login .login-provider-form {
   text-align: right;
+}
+
+[dir='rtl'] .login .language-dropdown .dropdown-menu,
+[dir='rtl'] .login .language-dropdown .dropdown-menu > li > a {
+  text-align: right !important;
 }
 
 @media (max-width: 520px) {
