@@ -68,6 +68,7 @@ load_css_expected = [
     "app/styles/pages/service-addtl-info",
     "app/styles/pages/virtualmachine",
     "app/styles/pages/auth-ldap",
+    "app/styles/pages/audit-logs",
     "app/styles/layout/lg-screen",
     "app/styles/layout/md-screen",
     "app/styles/layout/sm-screen",
@@ -123,6 +124,7 @@ configured_load_css_expected = {
     "app/styles/pages/about": ['"bold-weight": $bold-weight', '"screen-sm-max": $screen-sm-max'],
     "app/styles/pages/welcome": ['"border-radius-large": $border-radius-large', '"brand-info": $brand-info', '"page-header-border-color": $page-header-border-color', '"well-bg": $well-bg'],
     "app/styles/pages/settings": ['"light-grey": $light-grey'],
+    "app/styles/pages/audit-logs": ['"brand-primary": $brand-primary', '"input-bg": $input-bg', '"table-border-color": $table-border-color', '"text-color": $text-color', '"text-muted": $text-muted', '"well-bg": $well-bg'],
     "app/styles/pages/catalog": ['"bold-weight": $bold-weight'],
     "app/styles/pages/service-addtl-info": ['"page-header-border-color": $page-header-border-color', '"red": $red', '"shadow": $shadow', '"tab-active-bg": $tab-active-bg', '"table-border-color": $table-border-color', '"well-bg": $well-bg'],
     "app/styles/pages/stack": ['"accent-three": $accent-three', '"accent-two": $accent-two', '"blueDark": $blueDark', '"bold-weight": $bold-weight', '"brand-danger": $brand-danger', '"brand-info": $brand-info', '"brand-success": $brand-success', '"brand-warning": $brand-warning', '"light-grey": $light-grey', '"midGray": $midGray', '"table-bg": $table-bg', '"table-bg-accent": $table-bg-accent', '"table-border-color": $table-border-color', '"text-color": $text-color', '"text-muted": $text-muted', '"well-bg": $well-bg'],
@@ -276,7 +278,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=53 use_per_entrypoint=7")
+print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=54 use_per_entrypoint=7")
 print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
 print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
 print("No Sass @import remains in the app-light/app-dark entrypoint boundary; obsolete vendored Bootstrap Sass is absent.")
