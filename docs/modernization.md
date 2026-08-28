@@ -534,6 +534,11 @@ version, a missing override, or drift in the exact toolchain declarations, and
 the release CI fails closed when the current npm advisory service reports a new
 Critical or High finding.
 
+`1.6.71` adds a result-oriented audit-log filter builder. Operators can combine
+time range, environment, user, event, description, resource, source-IP, and
+authentication conditions without exposing raw account or project identifiers.
+The existing audit table, sorting, pagination, and detail view remain unchanged.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
