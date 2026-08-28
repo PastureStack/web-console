@@ -25,7 +25,7 @@ if "ember-browserify" in dev:
     fail("EMBER_BROWSERIFY_DEPENDENCY_REMAINS", version=dev.get("ember-browserify"))
 if "ember-cli-uglify" in dev:
     fail("EMBER_CLI_UGLIFY_DEPENDENCY_REMAINS", version=dev.get("ember-cli-uglify"))
-if dev.get("ember-cli-terser") != "^4.0.2":
+if dev.get("ember-cli-terser") != "4.0.2":
     fail("EMBER_CLI_TERSER_DEPENDENCY_MISSING", version=dev.get("ember-cli-terser"))
 if dev.get("ember-intl") != "9.0.0":
     fail("EMBER_INTL_DEPENDENCY_UNEXPECTED", version=dev.get("ember-intl"), expected="9.0.0")
