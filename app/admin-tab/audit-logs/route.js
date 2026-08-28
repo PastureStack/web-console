@@ -1,8 +1,10 @@
 import { cancel, later } from '@ember/runloop';
 import EmberObject from '@ember/object';
 import Route from '@ember/routing/route';
+import { hash } from 'rsvp';
 
 const INTERVALCOUNT = 15000;
+const TEXT_OPERATORS = ['exact', 'contains', 'startsWith', 'notEqual', 'notContains'];
 
 export default Route.extend({
   queryParams: {
@@ -25,6 +27,27 @@ export default Route.extend({
       refreshModel: true
     },
     authType: {
+      refreshModel: true
+    },
+    createdFrom: {
+      refreshModel: true
+    },
+    createdTo: {
+      refreshModel: true
+    },
+    accountId: {
+      refreshModel: true
+    },
+    authenticatedAsAccountId: {
+      refreshModel: true
+    },
+    description: {
+      refreshModel: true
+    },
+    eventTypeOperator: {
+      refreshModel: true
+    },
+    descriptionOperator: {
       refreshModel: true
     }
   },
@@ -65,18 +88,35 @@ export default Route.extend({
   model(params) {
     this.cancelLogUpdate();
 
-    return this.get('userStore').find('auditLog', null, this.parseFilters(params)).then((response) => {
-      var resourceTypes = this.get('userStore').all('schema').filterBy('links.collection').map((x) => { return x.get('_id'); });
+    let userStore = this.get('userStore');
+    let resourceTypes = userStore.all('schema').filterBy('links.collection').map((schema) => schema.get('_id')).sort();
 
+    return hash({
+      accounts: userStore.find('account', null, {
+        filter: {kind_ne: ['service', 'agent']},
+        forceReload: true,
+      }),
+      auditLog: userStore.find('auditLog', null, this.parseFilters(params)),
+      passwords: userStore.find('password'),
+      projects: userStore.find('project', null, {
+        url: 'projects',
+        filter: {all: 'true'},
+        forceReload: true,
+        removeMissing: true,
+      }),
+    }).then((result) => {
       return EmberObject.create({
-        auditLog: response,
-        resourceTypes: resourceTypes
+        accounts: result.accounts,
+        auditLog: result.auditLog,
+        projects: result.projects,
+        resourceTypes,
       });
     });
   },
 
   setupController(controller, model) {
     this._super(controller, model);
+    controller.syncDraftFromQuery();
     this.scheduleLogUpdate();
   },
 
@@ -112,20 +152,58 @@ export default Route.extend({
       depaginate  : false,
       forceReload : true,
     };
-    if (params) {
-      _.forEach(params, (item, key) => {
-        if ( ['sortBy','sortOrder','forceReload'].indexOf(key) >= 0 )  {
-          returnValue[key] = item;
-        } else {
-          if (item) {
-            returnValue.filter[key] = item;
-          } else {
-            delete returnValue.filter[key];
-          }
-        }
-      });
+
+    if (!params) {
+      return returnValue;
     }
+
+    returnValue.sortBy = params.sortBy || 'id';
+    returnValue.sortOrder = params.sortOrder || 'desc';
+
+    this.addTextFilter(returnValue.filter, 'eventType', params.eventType, params.eventTypeOperator);
+    this.addTextFilter(returnValue.filter, 'description', params.description, params.descriptionOperator);
+
+    if (params.createdFrom) {
+      returnValue.filter.created_gte = params.createdFrom;
+    }
+    if (params.createdTo) {
+      returnValue.filter.created_lte = params.createdTo;
+    }
+
+    ['accountId', 'authenticatedAsAccountId', 'resourceType', 'resourceId', 'clientIp', 'authType'].forEach((key) => {
+      if (params[key]) {
+        returnValue.filter[key] = params[key];
+      }
+    });
+
     return returnValue;
+  },
+
+  addTextFilter(filters, field, value, operator) {
+    let trimmed = String(value || '').trim();
+    let selectedOperator = TEXT_OPERATORS.indexOf(operator) >= 0 ? operator : 'contains';
+
+    if (!trimmed) {
+      return;
+    }
+
+    switch (selectedOperator) {
+      case 'exact':
+        filters[field] = trimmed;
+        break;
+      case 'startsWith':
+        filters[`${field}_prefix`] = trimmed;
+        break;
+      case 'notEqual':
+        filters[`${field}_ne`] = trimmed;
+        break;
+      case 'notContains':
+        filters[`${field}_notlike`] = `%${trimmed}%`;
+        break;
+      default:
+        filters[`${field}_like`] = `%${trimmed}%`;
+        break;
+    }
   },
 
 });

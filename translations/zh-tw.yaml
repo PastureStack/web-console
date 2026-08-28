@@ -138,6 +138,47 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: 全部清除
     searchButtonText: 搜尋
+  filterBuilder:
+    title: 篩選稽核日誌
+    help: 直接選擇時間、環境與使用者；只加入真正需要的其他條件，所有條件會以「且」合併。
+    matchAll: 必須同時符合下列新增條件
+    activeCount: 已套用 {count} 個條件
+    timeRange: 時間範圍
+    from: 開始時間
+    to: 結束時間
+    environment: 環境
+    environmentPlaceholder: 所有環境
+    user: 使用者
+    userPlaceholder: 所有使用者
+    addCondition: 新增條件
+    apply: 套用篩選
+    clear: 全部清除
+    removeCondition: 移除此條件
+    rangeError: 開始時間必須早於或等於結束時間。
+    presets:
+      label: 快速時間範圍
+      hour: 最近 1 小時
+      day: 最近 24 小時
+      week: 最近 7 天
+    conditions:
+      eventType: 事件類型
+      description: 描述
+      resource: 資源
+      clientIp: 來源 IP 位址
+      authType: 驗證方式
+    operators:
+      contains: 包含
+      exact: 等於
+      startsWith: 開頭為
+      notEqual: 不等於
+      notContains: 不包含
+    placeholders:
+      eventType: 例如 resource.change
+      description: 輸入描述文字
+      resourceType: 所有資源類型
+      resourceId: 選填的資源 ID
+      clientIp: 例如 10.0.0.25
+      authType: 所有驗證方式
   table:
     time: 時間
     eventType: 事件類型
