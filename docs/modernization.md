@@ -539,6 +539,13 @@ time range, environment, user, event, description, resource, source-IP, and
 authentication conditions without exposing raw account or project identifiers.
 The existing audit table, sorting, pagination, and detail view remain unchanged.
 
+`1.6.72` fixes the production bootstrap boundary found during real-browser
+validation of that filter release. The application now installs the Ember 7
+resolver through a native application class, replaces the obsolete global-app
+add-on with a modular initializer, and emits flat Ember Intl 9 message keys so
+the production login and authenticated routes render instead of failing or
+showing missing-translation markers.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

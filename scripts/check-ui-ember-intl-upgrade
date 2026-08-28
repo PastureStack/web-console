@@ -48,7 +48,7 @@ initializer = (repo / "app/instance-initializers/intl.js").read_text(encoding="u
 html_helper = (repo / "app/helpers/format-html-message.js").read_text(encoding="utf-8")
 for marker in ["TranslationJsonTree", "translations", "mergeTrees"]:
     expect(marker in build, f"translation build marker missing: {marker}")
-for marker in ["YAML.parse", "JSON.stringify", "outputPath"]:
+for marker in ["YAML.parse", "flattenTranslations", "JSON.stringify", "outputPath"]:
     expect(marker in tree, f"translation JSON tree marker missing: {marker}")
 for marker in ["instance.lookup('service:intl')", "findTranslationByKey", "formatHtmlMessage", "getLocalesByTranslations"]:
     expect(marker in initializer, f"Intl compatibility marker missing: {marker}")

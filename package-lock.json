@@ -1,12 +1,12 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.71",
+  "version": "1.6.72",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@pasturestack/web-console",
-      "version": "1.6.71",
+      "version": "1.6.72",
       "license": "Apache-2.0",
       "dependencies": {
         "sass": "1.103.1"
@@ -43,7 +43,6 @@
         "ember-cli-sass": "11.0.1",
         "ember-cli-terser": "4.0.2",
         "ember-concurrency": "5.2.0",
-        "ember-export-application-global": "2.0.1",
         "ember-fetch": "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.6.tgz",
         "ember-inflector": "6.0.0",
         "ember-intl": "9.0.0",
@@ -11136,16 +11135,6 @@
       },
       "engines": {
         "node": "14.* || 16.* || >= 18"
-      }
-    },
-    "node_modules/ember-export-application-global": {
-      "version": "2.0.1",
-      "resolved": "https://registry.npmjs.org/ember-export-application-global/-/ember-export-application-global-2.0.1.tgz",
-      "integrity": "sha512-B7wiurPgsxsSGzJuPFkpBWnaeuCu2PGpG2BjyrfA1VcL7//o+5RSnZqiCEY326y7qmxb2GoCgo0ft03KBU0rRw==",
-      "dev": true,
-      "license": "MIT",
-      "engines": {
-        "node": ">= 4"
       }
     },
     "node_modules/ember-fetch": {
