@@ -66,7 +66,7 @@ if lock_bytes != baseline_bytes:
 lock = json.loads(lock_bytes)
 packages = lock.get("packages", {})
 root = packages.get("", {})
-if package.get("version") != "1.6.76":
+if package.get("version") != "1.6.77":
     fail(f"unexpected Web Console version: {package.get('version')}")
 if root.get("version") != package.get("version"):
     fail(f"lock root version differs: {root.get('version')}")
