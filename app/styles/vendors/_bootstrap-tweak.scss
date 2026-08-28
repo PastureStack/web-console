@@ -51,6 +51,13 @@ $yellowDark: null !default;
           box-shadow: $shadow;
 }
 
+// Bootstrap 3 exposed `.hide`; Bootstrap 5 removed it in favor of `.d-none`.
+// Existing application state still toggles `.hide`, including the full-screen
+// underlay, so preserve that compatibility contract during the migration.
+.hide {
+  display: none !important;
+}
+
 a {
   color: $link-color;
 }

@@ -38,6 +38,18 @@ test('the Bootstrap collapse data API handles the production header contract', f
   }, 450);
 });
 
+test('the legacy hide contract keeps inactive overlays non-interactive', function(assert) {
+  let fixture = document.getElementById('qunit-fixture');
+
+  fixture.innerHTML = '<div class="underlay hide">Inactive overlay</div>';
+
+  assert.strictEqual(
+    window.getComputedStyle(fixture.firstElementChild).display,
+    'none',
+    'the Bootstrap 3 compatibility class still removes inactive overlays from hit testing'
+  );
+});
+
 test('Bootstrap 5 multiselect preserves the application command surface', function(assert) {
   let select = $('<select multiple><option value="read" selected>Read</option><option value="write">Write</option></select>');
 
