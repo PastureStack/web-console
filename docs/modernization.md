@@ -546,6 +546,12 @@ add-on with a modular initializer, and emits flat Ember Intl 9 message keys so
 the production login and authenticated routes render instead of failing or
 showing missing-translation markers.
 
+`1.6.73` restores Bootstrap 5's production interaction boundary. The runtime
+is imported by the application module and exposed to the existing header
+compatibility code, so collapse and dropdown controls execute instead of being
+left as a dormant anonymous AMD module. This release does not change the audit
+table or broaden the audit-filter redesign.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state
