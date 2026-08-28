@@ -132,8 +132,8 @@ for index in "${!runtime_legal_packages[@]}"; do
   fi
 done
 
-for required_signature in 'Bootstrap v5.3.8' bs.button bs.collapse bs.dropdown; do
-  if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
+for required_signature in 'define("ui/utils/bootstrap-runtime"' 'window.bootstrap='; do
+  if ! find "$dist_dir/assets" -maxdepth 1 -type f -name 'ui*.js' \
       -exec grep -lF "$required_signature" {} + | grep -q .; then
     echo "DIST_REQUIRED_BOOTSTRAP_RUNTIME_MISSING signature=$required_signature" >&2
     exit 1
@@ -141,7 +141,7 @@ for required_signature in 'Bootstrap v5.3.8' bs.button bs.collapse bs.dropdown; 
 done
 
 for forbidden_signature in 'Bootstrap v3.' data-loading-text; do
-  if find "$dist_dir/assets" -maxdepth 1 -type f -name 'vendor*.js' \
+  if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.js' \
       -exec grep -lF "$forbidden_signature" {} + | grep -q .; then
     echo "DIST_LEGACY_BOOTSTRAP_RUNTIME_PRESENT signature=$forbidden_signature" >&2
     exit 1

@@ -43,8 +43,8 @@ cat >"$tmpdir/dist/index.html" <<'HTML'
 <script src="assets/vendor-test.js"></script>
 <script src="assets/ui-test.js"></script>
 HTML
-printf 'Bootstrap v5.3.8 vendor bs.button bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
-printf 'ui\n' >"$tmpdir/dist/assets/ui-test.js"
+printf 'vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'define("ui/utils/bootstrap-runtime",["exports","bootstrap"],function(){return window.bootstrap=runtime})\n' >"$tmpdir/dist/assets/ui-test.js"
 for theme_asset in ui-light.css ui-light.rtl.css ui-dark.css ui-dark.rtl.css; do
   printf 'body { color: #123456; }\n' >"$tmpdir/dist/assets/$theme_asset"
 done
@@ -61,7 +61,7 @@ for package_name in "${runtime_legal_packages[@]}"; do
   cp "vendor/runtime-licenses/$package_name/UPSTREAM.md" "$tmpdir/dist/licenses/runtime/$package_name/UPSTREAM.md"
 done
 
-printf 'Bootstrap v5.3.8 Bootstrap v3.3.7 vendor bs.button bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'Bootstrap v3.3.7 vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
 if SOURCE_DATE_EPOCH=1700000000 bash ./scripts/package-static-candidate \
     9.9.9 "$tmpdir/dist" "$tmpdir/unsafe.tar.gz" >"$tmpdir/unsafe.out" 2>&1; then
   echo "VULNERABLE_BOOTSTRAP_RUNTIME_ACCEPTED"
@@ -72,7 +72,7 @@ if ! grep -q 'DIST_LEGACY_BOOTSTRAP_RUNTIME_PRESENT signature=Bootstrap v3.' "$t
   echo "VULNERABLE_BOOTSTRAP_REJECTION_REASON_UNEXPECTED"
   exit 1
 fi
-printf 'Bootstrap v5.3.8 vendor bs.button bs.collapse bs.dropdown\n' >"$tmpdir/dist/assets/vendor-test.js"
+printf 'vendor\n' >"$tmpdir/dist/assets/vendor-test.js"
 
 out="$tmpdir/9.9.9.tar.gz"
 out_repeat="$tmpdir/9.9.9-repeat.tar.gz"
