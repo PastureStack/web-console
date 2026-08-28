@@ -74,7 +74,7 @@
             <div class="audit-log-filter-row" data-filter-key={{filterKey}}>
               {{#if (eq filterKey "eventType")}}
                 <label class="audit-log-filter-row-label" for="audit-log-event-type">{{t 'auditLogsPage.filterBuilder.conditions.eventType'}}</label>
-                <select class="form-control input-sm audit-log-filter-operator" onchange={{action (mut this.filters.eventTypeOperator) value="target.value"}}>
+                <select class="form-control input-sm audit-log-filter-operator" onchange={{action "selectTextOperator" "eventType" value="target.value"}}>
                   {{#each this.textOperators as |operator|}}
                     <option value={{operator.key}} selected={{eq this.filters.eventTypeOperator operator.key}}>{{operator.label}}</option>
                   {{/each}}
@@ -82,7 +82,7 @@
                 {{input id="audit-log-event-type" class="form-control input-sm audit-log-filter-value" value=this.filters.eventType placeholder=(t "auditLogsPage.filterBuilder.placeholders.eventType")}}
               {{else if (eq filterKey "description")}}
                 <label class="audit-log-filter-row-label" for="audit-log-description">{{t 'auditLogsPage.filterBuilder.conditions.description'}}</label>
-                <select class="form-control input-sm audit-log-filter-operator" onchange={{action (mut this.filters.descriptionOperator) value="target.value"}}>
+                <select class="form-control input-sm audit-log-filter-operator" onchange={{action "selectTextOperator" "description" value="target.value"}}>
                   {{#each this.textOperators as |operator|}}
                     <option value={{operator.key}} selected={{eq this.filters.descriptionOperator operator.key}}>{{operator.label}}</option>
                   {{/each}}

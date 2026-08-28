@@ -109,6 +109,14 @@ export default Controller.extend(Sortable, {
       this.set('filterError', null);
     },
 
+    selectTextOperator(field, operator) {
+      if (['eventType', 'description'].indexOf(field) === -1) {
+        return;
+      }
+
+      this.set(`filters.${field}Operator`, operator);
+    },
+
     selectEnvironment(environment) {
       this.set('filters.accountId', environment ? environment.get('id') : null);
     },

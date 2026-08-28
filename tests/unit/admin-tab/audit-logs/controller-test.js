@@ -123,6 +123,23 @@ test('adds each optional condition once and removes its value with the row', fun
   destroyOwned(controller);
 });
 
+test('stores text operators in the query-backed draft', function(assert) {
+  let controller = controllerFor();
+
+  controller.actions.selectTextOperator.call(controller, 'eventType', 'exact');
+  controller.actions.selectTextOperator.call(controller, 'description', 'notContains');
+
+  assert.strictEqual(controller.get('filters.eventTypeOperator'), 'exact',
+    'event type operator is ready for query serialization');
+  assert.strictEqual(controller.get('filters.descriptionOperator'), 'notContains',
+    'description operator is ready for query serialization');
+
+  controller.actions.selectTextOperator.call(controller, 'unknown', 'exact');
+  assert.notOk(controller.get('filters.unknownOperator'), 'unknown fields cannot create draft state');
+
+  destroyOwned(controller);
+});
+
 test('applies a valid local time range and blocks an inverted range', function(assert) {
   let sent = [];
   let controller = controllerFor({
