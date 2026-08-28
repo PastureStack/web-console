@@ -27,6 +27,22 @@ expected = "3.0.1"
 actual = package.get("devDependencies", {}).get("ember-load-initializers")
 if actual != expected:
     fail("UI_EMBER_LOAD_INITIALIZERS_VERSION_DRIFT", actual=actual, expected=expected)
+if "ember-export-application-global" in package.get("devDependencies", {}):
+    fail("UI_OBSOLETE_APPLICATION_GLOBAL_ADDON_PRESENT")
+
+app_source = Path("app/app.js").read_text(encoding="utf-8")
+for marker in ["class App extends Application", "Resolver = Resolver;"]:
+    if marker not in app_source:
+        fail("UI_NATIVE_APPLICATION_BOOT_MARKER_MISSING", marker=marker)
+if "Application.extend(" in app_source:
+    fail("UI_CLASSIC_APPLICATION_BOOT_PRESENT")
+
+global_initializer = Path("app/initializers/export-application-global.js").read_text(encoding="utf-8")
+for marker in ["import { classify } from '@ember/string';", "classify(config.modulePrefix)"]:
+    if marker not in global_initializer:
+        fail("UI_APPLICATION_GLOBAL_INITIALIZER_MARKER_MISSING", marker=marker)
+if "from 'ember'" in global_initializer:
+    fail("UI_APPLICATION_GLOBAL_INITIALIZER_USES_REMOVED_EMBER_MODULE")
 
 if not lock_path.is_file():
     fail("UI_EMBER_LOAD_INITIALIZERS_LOCK_MISSING", file=lock_path)
@@ -45,12 +61,14 @@ else:
         fail("UI_EMBER_LOAD_INITIALIZERS_LOCK_VERSION_DRIFT", actual=resolved_version, expected=expected)
     if resolved_deps:
         fail("UI_EMBER_LOAD_INITIALIZERS_UNEXPECTED_RUNTIME_DEPS", actual=sorted(resolved_deps))
+    if "node_modules/ember-export-application-global" in packages:
+        fail("UI_OBSOLETE_APPLICATION_GLOBAL_ADDON_LOCKED")
 
 if failures:
     print(f"failure_count={failures}")
     sys.exit(1)
 
 print(f"UI_EMBER_LOAD_INITIALIZERS_UPGRADE_OK version={expected} lockfile={lock_path}")
-print("The initializer loader is on its dependency-free maintained release for the Ember 6.12 application boundary.")
+print("The initializer loader and application bootstrap use the maintained Ember 7.2 boundary without the removed global Ember module.")
 print("failure_count=0")
 PY
