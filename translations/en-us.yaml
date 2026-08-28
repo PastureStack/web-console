@@ -152,6 +152,47 @@ auditLogsPage:
       dropdownList:
     clearButtonText: Clear Filters
     searchButtonText: Search
+  filterBuilder:
+    title: Filter audit logs
+    help: Choose the time, environment, and user directly. Add only the extra conditions you need; all conditions are combined with AND.
+    matchAll: All added conditions must match
+    activeCount: '{count, plural, =0 {No active conditions} =1 {# active condition} other {# active conditions}}'
+    timeRange: Time range
+    from: From
+    to: To
+    environment: Environment
+    environmentPlaceholder: Any environment
+    user: User
+    userPlaceholder: Any user
+    addCondition: Add condition
+    apply: Apply filters
+    clear: Clear all
+    removeCondition: Remove condition
+    rangeError: The start time must be earlier than or equal to the end time.
+    presets:
+      label: Quick time ranges
+      hour: Last hour
+      day: Last 24 hours
+      week: Last 7 days
+    conditions:
+      eventType: Event type
+      description: Description
+      resource: Resource
+      clientIp: Source IP
+      authType: Authentication type
+    operators:
+      contains: contains
+      exact: is
+      startsWith: starts with
+      notEqual: is not
+      notContains: does not contain
+    placeholders:
+      eventType: e.g. resource.change
+      description: Enter description text
+      resourceType: Any resource type
+      resourceId: Optional resource ID
+      clientIp: e.g. 10.0.0.25
+      authType: Any authentication type
   table:
     time: Time
     eventType: Event Type

@@ -3,43 +3,160 @@
 </section>
 <section>
   <div class="well">
-    <div class="form-inline r-mb25 inline-block">
-      <div class="form-group">
-        {{input class="form-control input-sm r-mr5" value=this.filters.eventType placeholder=(t "auditLogsPage.form.eventType.placeholder")}}
-        <div class="input-group r-mr5">
-          <span class="input-group-btn">
-            {{input class="form-control input-sm pull-right" value=this.filters.resourceId placeholder=(t "auditLogsPage.form.resourceId.placeholder") disabled=this.resourceIdReady}}
-            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{if this.filters.resourceType this.filters.resourceType (t "auditLogsPage.form.resourceType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
+    <form class="audit-log-filter-panel" data-testid="audit-log-filter-panel" {{action "search" on="submit"}}>
+      <div class="audit-log-filter-header">
+        <div>
+          <h2 class="audit-log-filter-title">{{t 'auditLogsPage.filterBuilder.title'}}</h2>
+          <p class="audit-log-filter-help">{{t 'auditLogsPage.filterBuilder.help'}}</p>
+        </div>
+        <span class="audit-log-filter-count" data-testid="audit-log-filter-count">
+          {{t 'auditLogsPage.filterBuilder.activeCount' count=this.activeFilterCount}}
+        </span>
+      </div>
+
+      <div class="audit-log-filter-primary-grid">
+        <fieldset class="audit-log-filter-card audit-log-filter-time">
+          <legend>{{t 'auditLogsPage.filterBuilder.timeRange'}}</legend>
+          <div class="audit-log-filter-time-inputs">
+            <label>
+              <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
+              {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdFrom data-testid="audit-log-created-from"}}
+            </label>
+            <span class="audit-log-filter-time-separator" aria-hidden="true">→</span>
+            <label>
+              <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
+              {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdTo data-testid="audit-log-created-to"}}
+            </label>
+          </div>
+          <div class="audit-log-filter-presets" aria-label="{{t 'auditLogsPage.filterBuilder.presets.label'}}">
+            <button type="button" class="btn btn-xs btn-default" {{action "setTimePreset" 1 "hour"}}>{{t 'auditLogsPage.filterBuilder.presets.hour'}}</button>
+            <button type="button" class="btn btn-xs btn-default" {{action "setTimePreset" 24 "hours"}}>{{t 'auditLogsPage.filterBuilder.presets.day'}}</button>
+            <button type="button" class="btn btn-xs btn-default" {{action "setTimePreset" 7 "days"}}>{{t 'auditLogsPage.filterBuilder.presets.week'}}</button>
+          </div>
+        </fieldset>
+
+        <label class="audit-log-filter-card audit-log-filter-select">
+          <span class="audit-log-filter-label">{{t 'auditLogsPage.filterBuilder.environment'}}</span>
+          <PowerSelect
+            @options={{this.environmentOptions}}
+            @selected={{this.selectedEnvironment}}
+            @onChange={{action "selectEnvironment"}}
+            @searchField="searchText"
+            @placeholder={{t 'auditLogsPage.filterBuilder.environmentPlaceholder'}}
+            @allowClear={{true}}
+            as |environment|
+          >
+            {{environment.label}}
+          </PowerSelect>
+        </label>
+
+        <label class="audit-log-filter-card audit-log-filter-select">
+          <span class="audit-log-filter-label">{{t 'auditLogsPage.filterBuilder.user'}}</span>
+          <PowerSelect
+            @options={{this.userOptions}}
+            @selected={{this.selectedUser}}
+            @onChange={{action "selectUser"}}
+            @searchField="searchText"
+            @placeholder={{t 'auditLogsPage.filterBuilder.userPlaceholder'}}
+            @allowClear={{true}}
+            as |user|
+          >
+            <span>{{user.label}}</span>
+            {{#if user.detail}}<small class="audit-log-filter-option-detail">{{user.detail}}</small>{{/if}}
+          </PowerSelect>
+        </label>
+      </div>
+
+      {{#if this.optionalFilters.length}}
+        <div class="audit-log-filter-conditions" data-testid="audit-log-filter-conditions">
+          <div class="audit-log-filter-match-all">{{t 'auditLogsPage.filterBuilder.matchAll'}}</div>
+          {{#each this.optionalFilters as |filterKey|}}
+            <div class="audit-log-filter-row" data-filter-key={{filterKey}}>
+              {{#if (eq filterKey "eventType")}}
+                <label class="audit-log-filter-row-label" for="audit-log-event-type">{{t 'auditLogsPage.filterBuilder.conditions.eventType'}}</label>
+                <select class="form-control input-sm audit-log-filter-operator" onchange={{action (mut this.filters.eventTypeOperator) value="target.value"}}>
+                  {{#each this.textOperators as |operator|}}
+                    <option value={{operator.key}} selected={{eq this.filters.eventTypeOperator operator.key}}>{{operator.label}}</option>
+                  {{/each}}
+                </select>
+                {{input id="audit-log-event-type" class="form-control input-sm audit-log-filter-value" value=this.filters.eventType placeholder=(t "auditLogsPage.filterBuilder.placeholders.eventType")}}
+              {{else if (eq filterKey "description")}}
+                <label class="audit-log-filter-row-label" for="audit-log-description">{{t 'auditLogsPage.filterBuilder.conditions.description'}}</label>
+                <select class="form-control input-sm audit-log-filter-operator" onchange={{action (mut this.filters.descriptionOperator) value="target.value"}}>
+                  {{#each this.textOperators as |operator|}}
+                    <option value={{operator.key}} selected={{eq this.filters.descriptionOperator operator.key}}>{{operator.label}}</option>
+                  {{/each}}
+                </select>
+                {{input id="audit-log-description" class="form-control input-sm audit-log-filter-value" value=this.filters.description placeholder=(t "auditLogsPage.filterBuilder.placeholders.description")}}
+              {{else if (eq filterKey "resource")}}
+                <span class="audit-log-filter-row-label">{{t 'auditLogsPage.filterBuilder.conditions.resource'}}</span>
+                <div class="audit-log-filter-resource-type">
+                  <PowerSelect
+                    @options={{this.model.resourceTypes}}
+                    @selected={{this.filters.resourceType}}
+                    @onChange={{action "updateResourceType"}}
+                    @placeholder={{t 'auditLogsPage.filterBuilder.placeholders.resourceType'}}
+                    @allowClear={{true}}
+                    as |resource|
+                  >
+                    {{resource}}
+                  </PowerSelect>
+                </div>
+                {{input class="form-control input-sm audit-log-filter-value" value=this.filters.resourceId placeholder=(t "auditLogsPage.filterBuilder.placeholders.resourceId") aria-label=(t "auditLogsPage.filterBuilder.placeholders.resourceId")}}
+              {{else if (eq filterKey "clientIp")}}
+                <label class="audit-log-filter-row-label" for="audit-log-client-ip">{{t 'auditLogsPage.filterBuilder.conditions.clientIp'}}</label>
+                <span class="audit-log-filter-operator audit-log-filter-operator-static">{{t 'auditLogsPage.filterBuilder.operators.exact'}}</span>
+                {{input id="audit-log-client-ip" class="form-control input-sm audit-log-filter-value" value=this.filters.clientIp placeholder=(t "auditLogsPage.filterBuilder.placeholders.clientIp")}}
+              {{else if (eq filterKey "authType")}}
+                <span class="audit-log-filter-row-label">{{t 'auditLogsPage.filterBuilder.conditions.authType'}}</span>
+                <span class="audit-log-filter-operator audit-log-filter-operator-static">{{t 'auditLogsPage.filterBuilder.operators.exact'}}</span>
+                <div class="audit-log-filter-value audit-log-filter-select-inline">
+                  <PowerSelect
+                    @options={{this.authTypes}}
+                    @selected={{this.selectedAuthType}}
+                    @onChange={{action "updateAuthType"}}
+                    @searchField="value"
+                    @placeholder={{t 'auditLogsPage.filterBuilder.placeholders.authType'}}
+                    @allowClear={{true}}
+                    as |type|
+                  >
+                    {{type.value}}
+                  </PowerSelect>
+                </div>
+              {{/if}}
+              <button type="button" class="btn btn-sm btn-link audit-log-filter-remove" title="{{t 'auditLogsPage.filterBuilder.removeCondition'}}" aria-label="{{t 'auditLogsPage.filterBuilder.removeCondition'}}" {{action "removeFilter" filterKey}}>
+                <i class="icon icon-x" aria-hidden="true"></i>
+              </button>
+            </div>
+          {{/each}}
+        </div>
+      {{/if}}
+
+      {{#if this.filterError}}
+        <div class="alert alert-danger audit-log-filter-error" role="alert" data-testid="audit-log-filter-error">{{this.filterError}}</div>
+      {{/if}}
+
+      <div class="audit-log-filter-footer">
+        <div class="dropdown">
+          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" disabled={{not this.hasAvailableFilters}}>
+            <i class="icon icon-plus" aria-hidden="true"></i>
+            {{t 'auditLogsPage.filterBuilder.addCondition'}}
+            <i class="icon icon-chevron-down" aria-hidden="true"></i>
+          </button>
+          {{#if this.hasAvailableFilters}}
             <ul class="dropdown-menu" role="menu">
-              <li role="presentation" class="dropdown-header">
-                {{t 'auditLogsPage.form.resourceType.dropdownPlaceholder'}}
-              </li>
-              {{#each this.model.resourceTypes as |resource|}}
-                <li {{action "updateResourceType" resource}}>
-                  <a href="#">{{resource}}</a>
-                </li>
+              {{#each this.availableFilterDefinitions as |definition|}}
+                <li><a href="#" {{action "addFilter" definition.key}}>{{definition.label}}</a></li>
               {{/each}}
             </ul>
-          </span>
+          {{/if}}
         </div>
-        {{input class="form-control input-sm r-mr5" value=this.filters.clientIp placeholder=(t "auditLogsPage.form.requestIp.placeholder")}}
-        <span class="dropdown">
-          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">{{if this.authTypeReadable this.authTypeReadable (t "auditLogsPage.form.authType.placeholder")}} <i class="icon icon-chevron-down"></i></button>
-          <ul class="dropdown-menu" role="menu">
-            <li role="presentation" class="dropdown-header">
-              {{t 'auditLogsPage.form.authType.dropdownPlaceholder'}}
-            </li>
-            {{#each this.authTypes as |type|}}
-              <li {{action "updateAuthType" type}}>
-                <a href="#">{{type.value}}</a>
-              </li>
-            {{/each}}
-          </ul>
-        </span>
-        <button role="button" class="btn btn-sm btn-danger r-ml5" {{action "clearAll"}}> {{t 'auditLogsPage.form.clearButtonText'}}</button>
-        <button role="button" class="btn btn-sm btn-primary r-ml5" {{action "search"}}> {{t 'auditLogsPage.form.searchButtonText'}}</button>
+        <div class="audit-log-filter-actions">
+          <button type="button" class="btn btn-sm btn-default" {{action "clearAll"}}>{{t 'auditLogsPage.filterBuilder.clear'}}</button>
+          <button type="submit" class="btn btn-sm btn-primary" data-testid="audit-log-filter-apply">{{t 'auditLogsPage.filterBuilder.apply'}}</button>
+        </div>
       </div>
-    </div>
+    </form>
     <table class="grid fixed table table-hover r-mb15">
       <thead>
         {{sortable-th sortable=this action="changeSort" name="id" label="auditLogsPage.table.time" width="115" class="r-pl10"}}

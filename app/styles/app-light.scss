@@ -683,6 +683,7 @@ $k8sHeader: theme.$k8sHeader;
 @include meta.load-css("app/styles/pages/service-addtl-info", $with: ("page-header-border-color": $page-header-border-color, "red": $red, "shadow": $shadow, "tab-active-bg": $tab-active-bg, "table-border-color": $table-border-color, "well-bg": $well-bg));
 @include meta.load-css("app/styles/pages/virtualmachine");
 @include meta.load-css("app/styles/pages/auth-ldap");
+@include meta.load-css("app/styles/pages/audit-logs", $with: ("brand-primary": $brand-primary, "input-bg": $input-bg, "table-border-color": $table-border-color, "text-color": $text-color, "text-muted": $text-muted, "well-bg": $well-bg));
 
 //******************************************
 // Responsive Layout
