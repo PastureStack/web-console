@@ -389,11 +389,22 @@ export default Controller.extend(Sortable, {
 
   setup: function() {
     var out = [];
+    var intl = this.get('intl');
+    var activeLocales = this.get('intl._locale');
+
+    // The controller can be created while an expired session is returning to
+    // the login route. Ember Intl cannot translate until setLocale() has run;
+    // the locale observer below will populate these choices immediately after
+    // language bootstrap completes.
+    if (!intl || !activeLocales || !activeLocales.length) {
+      this.set('authTypes', out);
+      return;
+    }
 
     Object.keys(C.AUTH_TYPES).forEach((key) => {
       var val = C.AUTH_TYPES[key];
       if (val !== C.AUTH_TYPES.HeaderAuth && val !== C.AUTH_TYPES.TokenAccount) {
-        out.push(EmberObject.create({name: key, value: this.get('intl').t(val)}));
+        out.push(EmberObject.create({name: key, value: intl.t(val)}));
       }
     });
 

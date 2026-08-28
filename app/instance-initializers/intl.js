@@ -4,9 +4,30 @@ import missingMessage from 'ui/utils/intl/missing-message';
 
 export function initialize(instance) {
   var intl = instance.lookup('service:intl');
+  var activeLocales = makeArray(intl._locales).filter(Boolean);
+  var setLocale = intl.setLocale.bind(intl);
+
+  // Ember Intl 9 replaced the legacy `_locale` field with its tracked
+  // `_locales` state.  This application still has classic computed properties
+  // that observe `_locale`, so expose the active locale list and notify those
+  // properties whenever the public setLocale() API changes it.
+  Object.defineProperty(intl, '_locale', {
+    configurable: true,
+    get() {
+      return activeLocales;
+    },
+  });
+
+  intl.setLocale = function(locales) {
+    let result = setLocale(locales);
+
+    activeLocales = makeArray(locales).filter(Boolean);
+    this.notifyPropertyChange('_locale');
+    return result;
+  };
 
   // Keep the narrow legacy call surface while the application moves to the
-  // public Ember Intl 8 API. New code should call t(), exists(), locales, and
+  // public Ember Intl 9 API. New code should call t(), exists(), locales, and
   // formatMessage() directly.
   intl.findTranslationByKey = function(key, locales) {
     locales = makeArray(locales || get(this, '_locale'));
