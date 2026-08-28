@@ -32,7 +32,6 @@ if Path("vendor/bootstrap-sass").exists():
 build = Path("ember-cli-build.js").read_text(encoding="utf-8")
 expected_imports = [
     "node_modules/bootstrap/dist/css/bootstrap.css",
-    "node_modules/bootstrap/dist/js/bootstrap.bundle.js",
 ]
 actual_imports = [
     path
@@ -43,6 +42,23 @@ if actual_imports != expected_imports:
     raise SystemExit(
         f"Bootstrap 5 build imports drift: actual={actual_imports!r} expected={expected_imports!r}"
     )
+
+app_source = Path("app/app.js").read_text(encoding="utf-8")
+runtime_source = Path("app/utils/bootstrap-runtime.js").read_text(encoding="utf-8")
+for marker in (
+    "import installBootstrapRuntime from './utils/bootstrap-runtime';",
+    "installBootstrapRuntime();",
+):
+    if marker not in app_source:
+        raise SystemExit(f"Bootstrap application boot boundary missing marker: {marker}")
+for marker in (
+    "import * as Bootstrap from 'bootstrap';",
+    "window.bootstrap = Bootstrap;",
+):
+    if marker not in runtime_source:
+        raise SystemExit(f"Bootstrap application runtime boundary missing marker: {marker}")
+if "bootstrap/dist/js/bootstrap.bundle.js" in build:
+    raise SystemExit("Bootstrap UMD bundle must not be imported into the production vendor bundle")
 
 forbidden_source_patterns = {
     "Bootstrap loading-state data API": re.compile(r"data-loading-text", re.I),
@@ -64,7 +80,7 @@ if violations:
     raise SystemExit("Legacy Bootstrap API restored:\n" + "\n".join(violations))
 
 test_source = Path("tests/unit/vendor/bootstrap-runtime-boundary-test.js").read_text(encoding="utf-8")
-for marker in ("button", "collapse", "dropdown", "tooltip", "popover", expected_version):
+for marker in ("Button", "Collapse", "Dropdown", "Tooltip", "Popover", expected_version):
     if marker not in test_source:
         raise SystemExit(f"Bootstrap browser runtime boundary missing marker: {marker}")
 

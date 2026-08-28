@@ -1,15 +1,41 @@
 import $ from 'jquery';
 import { module, test } from 'qunit';
+import installBootstrapRuntime from 'ui/utils/bootstrap-runtime';
 
 module('Unit | Vendor | Bootstrap runtime boundary');
 
 test('the maintained Bootstrap runtime is registered', function(assert) {
-  let plugins = $.fn;
+  installBootstrapRuntime();
+  let runtime = window.bootstrap;
 
-  ['button', 'collapse', 'dropdown', 'tooltip', 'popover'].forEach((name) => {
-    assert.equal(typeof plugins[name], 'function', `${name} is registered by Bootstrap 5`);
-    assert.equal(plugins[name].Constructor.VERSION, '5.3.8', `${name} comes from Bootstrap 5.3.8`);
+  ['Button', 'Collapse', 'Dropdown', 'Tooltip', 'Popover'].forEach((name) => {
+    assert.equal(typeof runtime[name], 'function', `${name} is registered by Bootstrap 5`);
+    assert.equal(runtime[name].VERSION, '5.3.8', `${name} comes from Bootstrap 5.3.8`);
   });
+});
+
+test('the Bootstrap collapse data API handles the production header contract', function(assert) {
+  let done = assert.async();
+  let fixture = document.getElementById('qunit-fixture');
+
+  installBootstrapRuntime();
+  fixture.innerHTML = '<button type="button" data-bs-toggle="collapse" data-bs-target="#bootstrap-runtime-panel" aria-expanded="false"></button><div id="bootstrap-runtime-panel" class="collapse">Navigation</div>';
+
+  let trigger = fixture.querySelector('button');
+  let panel = fixture.querySelector('#bootstrap-runtime-panel');
+
+  trigger.click();
+  setTimeout(() => {
+    assert.true(panel.classList.contains('show'), 'the maintained runtime opens the collapsed navigation');
+    assert.strictEqual(trigger.getAttribute('aria-expanded'), 'true', 'the trigger exposes its expanded state');
+
+    trigger.click();
+    setTimeout(() => {
+      assert.false(panel.classList.contains('show'), 'the maintained runtime closes the navigation again');
+      assert.strictEqual(trigger.getAttribute('aria-expanded'), 'false', 'the trigger exposes its collapsed state');
+      done();
+    }, 450);
+  }, 450);
 });
 
 test('Bootstrap 5 multiselect preserves the application command surface', function(assert) {
