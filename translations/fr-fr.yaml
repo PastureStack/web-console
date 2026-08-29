@@ -2593,6 +2593,8 @@ loginUserPass:
   loginLabel: Se connecter
   loggingInLabel: Connexion en cours...
   passwordLabel: Mot de Passe
+  showPasswordLabel: Afficher le mot de passe
+  hidePasswordLabel: Masquer le mot de passe
 machine:
   driverAmazon:
     accessSection: Accès du Compte

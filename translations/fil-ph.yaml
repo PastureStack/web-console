@@ -2592,6 +2592,8 @@ loginUserPass:
   loginLabel: Mag-log In
   loggingInLabel: Nagla-log In...
   passwordLabel: Password
+  showPasswordLabel: Ipakita ang password
+  hidePasswordLabel: Itago ang password
 machine:
   driverAmazon:
     accessSection: Access sa Account

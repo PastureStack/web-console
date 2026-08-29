@@ -2600,6 +2600,8 @@ loginUserPass:
   loginLabel: Bejelentkezés
   loggingInLabel: Bejelentkezés...
   passwordLabel: Jelszó
+  showPasswordLabel: Jelszó megjelenítése
+  hidePasswordLabel: Jelszó elrejtése
 machine:
   driverAmazon:
     accessSection: Fiókhozzáférés

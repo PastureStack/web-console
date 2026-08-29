@@ -2963,6 +2963,8 @@ loginUserPass:
   loginLabel: Log In
   loggingInLabel: Logging In...
   passwordLabel: Password
+  showPasswordLabel: Show password
+  hidePasswordLabel: Hide password
 
 machine:
   driverAmazon:

@@ -2636,6 +2636,8 @@ loginUserPass:
   loginLabel: Anmelden
   loggingInLabel: Anmeldung läuft...
   passwordLabel: Passwort
+  showPasswordLabel: Passwort anzeigen
+  hidePasswordLabel: Passwort ausblenden
 machine:
   driverAmazon:
     accessSection: Zugriff

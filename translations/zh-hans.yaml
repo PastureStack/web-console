@@ -2515,6 +2515,8 @@ loginUserPass:
   loginLabel: 登录
   loggingInLabel: 登录中...
   passwordLabel: 密码
+  showPasswordLabel: 显示密码
+  hidePasswordLabel: 隐藏密码
 machine:
   driverAmazon:
     accessSection: 账户访问

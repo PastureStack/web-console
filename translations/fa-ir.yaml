@@ -2541,6 +2541,8 @@ loginUserPass:
   loginLabel: ورود
   loggingInLabel: در حال ورود...
   passwordLabel: رمز عبور
+  showPasswordLabel: نمایش رمز عبور
+  hidePasswordLabel: پنهان کردن رمز عبور
 machine:
   driverAmazon:
     accessSection: دسترسی به حساب

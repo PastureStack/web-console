@@ -124,9 +124,9 @@ body.farm #application {
 
 .login .login-hero {
   position: relative;
-  min-height: 238px;
+  min-height: 204px;
   box-sizing: border-box;
-  padding: 36px 38px 42px;
+  padding: 24px 38px 28px;
   overflow: hidden;
   border-radius: 25px 25px 0 0;
   background: linear-gradient(125deg, #075fa8, #087fbd, #0a9fc2, #176dc1, #075fa8);
@@ -169,11 +169,11 @@ body.farm #application {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 94px;
-  height: 94px;
+  width: 78px;
+  height: 78px;
   margin: 0 auto;
   border: 1px solid rgba(255, 255, 255, .42);
-  border-radius: 28px;
+  border-radius: 23px;
   background: linear-gradient(145deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, .11));
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, .45),
@@ -183,8 +183,8 @@ body.farm #application {
 
 .login .logo {
   display: block;
-  width: 76px;
-  height: 76px;
+  width: 64px;
+  height: 64px;
   margin: 0;
   border-radius: 0;
   background-color: transparent;
@@ -197,11 +197,11 @@ body.farm #application {
 .login .login-hero h1 {
   position: relative;
   z-index: 2;
-  margin: 22px 0 0;
+  margin: 16px 0 0;
   padding: 0;
   color: #fff;
   background: transparent;
-  font-size: 29px;
+  font-size: 26px;
   font-weight: 500;
   line-height: 1.42;
   letter-spacing: .01em;
@@ -213,7 +213,7 @@ body.farm #application {
   position: relative;
   min-width: 0;
   box-sizing: border-box;
-  padding: 22px 42px 34px;
+  padding: 18px 42px 26px;
   border-radius: 0 0 25px 25px;
   background: rgba(255, 255, 255, .98);
 }
@@ -223,7 +223,7 @@ body.farm #application {
   display: block;
   width: 46px;
   height: 4px;
-  margin: 28px auto 0;
+  margin: 20px auto 0;
   border-radius: 999px;
   background: linear-gradient(90deg, #0b74b9, #19b9b0);
   opacity: .44;
@@ -232,48 +232,95 @@ body.farm #application {
 .login .login-language-row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  margin-bottom: 22px;
+  width: 100%;
+  min-height: 46px;
+  margin-bottom: 18px;
+}
+
+.login .login-language-row .language-dropdown {
+  width: 100%;
 }
 
 .login .language-dropdown .lang-select {
-  min-height: 34px;
-  padding: 7px 12px;
-  color: #1a688f;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: #f2f7fb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 13px;
+  color: #245f7e;
+  border: 1px solid #d2e0e9;
+  border-radius: 11px;
+  background: #f6fafc;
+  box-shadow: inset 0 1px 2px rgba(16, 57, 82, .025);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
   text-decoration: none;
-  transition: color .18s ease, border-color .18s ease, background-color .18s ease;
+  transition: color .18s ease, border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+
+.login .language-dropdown .lang-select::after {
+  display: none;
+}
+
+.login .language-dropdown .lang-select-label {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  gap: 9px;
+}
+
+.login .language-dropdown .lang-select-label .icon {
+  color: #0e84b8;
+  font-size: 16px;
+}
+
+.login .language-dropdown .lang-select > .icon-chevron-down {
+  margin-left: 16px;
+  color: #7190a3;
+  font-size: 11px;
+  transition: transform .18s ease;
 }
 
 .login .language-dropdown .lang-select:hover,
 .login .language-dropdown .lang-select:focus,
-.login .language-dropdown.open .lang-select {
+.login .language-dropdown.open .lang-select,
+.login .language-dropdown:has(.dropdown-menu.show) .lang-select {
   color: #075f9a;
-  border-color: rgba(9, 113, 174, .2);
-  background: #eaf4fa;
-  outline: none;
+  border-color: #82bad3;
+  background: #fff;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(15, 137, 195, .12);
+}
+
+.login .language-dropdown:has(.dropdown-menu.show) .lang-select > .icon-chevron-down {
+  transform: rotate(180deg);
 }
 
 .login .language-dropdown .dropdown-menu {
   z-index: 1080;
-  min-width: 284px;
+  width: 100%;
+  min-width: 100%;
   max-width: calc(100vw - 48px);
-  max-height: 300px;
-  padding: 8px;
+  max-height: 268px;
+  padding: 7px;
   overflow-y: auto;
   text-align: left !important;
   border: 1px solid rgba(24, 91, 128, .12);
-  border-radius: 12px;
+  border-radius: 11px;
   background: rgba(255, 255, 255, .99);
-  box-shadow: 0 16px 34px rgba(16, 57, 82, .16);
+  box-shadow: 0 18px 42px rgba(16, 57, 82, .2);
+  scrollbar-color: #9ab6c6 transparent;
+  scrollbar-width: thin;
 }
 
 .login .language-dropdown .dropdown-menu > li > a {
-  display: block;
-  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  padding: 8px 11px;
   color: #324e62;
   border-radius: 8px;
   line-height: 1.35;
@@ -292,6 +339,13 @@ body.farm #application {
   color: #075f9a;
   background: #e5f3fa;
   font-weight: 600;
+}
+
+.login .language-dropdown .dropdown-menu > li.selected > a::after {
+  content: '✓';
+  margin-left: 14px;
+  color: #0a83ad;
+  font-weight: 700;
 }
 
 .login .language-dropdown .dropdown-menu > .divider {
@@ -343,13 +397,74 @@ body.farm #application {
   box-shadow: 0 0 0 3px rgba(15, 137, 195, .14);
 }
 
+.login .login-password-field {
+  position: relative;
+}
+
+.login .login-password-field .form-control {
+  padding-right: 52px;
+}
+
+.login .login-password-toggle {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: #56798e;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  cursor: pointer;
+  transition: color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+
+.login .login-password-toggle:hover,
+.login .login-password-toggle:focus {
+  color: #0877aa;
+  background: #eaf4fa;
+  outline: 0;
+}
+
+.login .login-password-toggle:focus {
+  box-shadow: 0 0 0 3px rgba(15, 137, 195, .16);
+}
+
+.login .login-password-eye {
+  width: 19px;
+  height: 19px;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.login .login-password-eye-slash {
+  display: none;
+  stroke-width: 2;
+}
+
+.login .login-password-toggle.is-revealed .login-password-eye-slash {
+  display: block;
+}
+
 .login .login-submit-row {
-  margin-top: 24px;
+  margin-top: 20px;
   padding: 0;
 }
 
 .login .login-submit-row .btn-primary,
 .login .login-auth-region > .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   min-height: 48px;
   padding: 12px 20px;
   color: #fff;
@@ -460,34 +575,41 @@ body.farm #application {
   }
 
   .login .login-hero {
-    min-height: 214px;
-    padding: 30px 24px 34px;
+    min-height: 190px;
+    padding: 22px 24px 26px;
     border-radius: 20px 20px 0 0;
   }
 
   .login .login-brand-mark {
-    width: 82px;
-    height: 82px;
-    border-radius: 24px;
+    width: 72px;
+    height: 72px;
+    border-radius: 21px;
   }
 
   .login .logo {
-    width: 66px;
-    height: 66px;
+    width: 59px;
+    height: 59px;
   }
 
   .login .login-hero h1 {
-    margin-top: 18px;
-    font-size: 25px;
+    margin-top: 14px;
+    font-size: 23px;
   }
 
   .login .login-panel {
-    padding: 18px 24px 28px;
+    padding: 16px 24px 24px;
     border-radius: 0 0 20px 20px;
   }
 
   .login .login-language-row {
     margin-bottom: 18px;
+  }
+}
+
+@media (max-height: 820px) and (min-width: 521px) {
+  .login-shell {
+    padding-top: 24px;
+    padding-bottom: 24px;
   }
 }
 
@@ -499,24 +621,24 @@ body.farm #application {
   }
 
   .login .login-hero {
-    min-height: 205px;
-    padding-top: 28px;
-    padding-bottom: 30px;
+    min-height: 176px;
+    padding-top: 18px;
+    padding-bottom: 20px;
   }
 
   .login .login-brand-mark {
-    width: 78px;
-    height: 78px;
+    width: 66px;
+    height: 66px;
   }
 
   .login .logo {
-    width: 64px;
-    height: 64px;
+    width: 54px;
+    height: 54px;
   }
 
   .login .login-hero h1 {
-    margin-top: 16px;
-    font-size: 25px;
+    margin-top: 12px;
+    font-size: 23px;
   }
 
   .login .login-panel {

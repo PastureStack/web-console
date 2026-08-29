@@ -2592,6 +2592,8 @@ loginUserPass:
   loginLabel: Entrar
   loggingInLabel: Entrando...
   passwordLabel: Senha
+  showPasswordLabel: Mostrar senha
+  hidePasswordLabel: Ocultar senha
 machine:
   driverAmazon:
     accessSection: Conta de Acesso

@@ -2629,6 +2629,8 @@ loginUserPass:
   loginLabel: Вхід
   loggingInLabel: Вхід до системи...
   passwordLabel: Пароль
+  showPasswordLabel: Показати пароль
+  hidePasswordLabel: Приховати пароль
 machine:
   driverAmazon:
     accessSection: Доступ до облікового запису

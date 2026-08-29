@@ -1,18 +1,23 @@
-import { service } from '@ember/service';
 import Component from '@ember/component';
 
 export default Component.extend({
-  access: service(),
-
   waiting: null,
 
   username: null,
   password: null,
+  showPassword: false,
 
   actions: {
+    togglePasswordVisibility() {
+      this.toggleProperty('showPassword');
+    },
+
     authenticate: function() {
       var code = this.get('username')+':'+this.get('password');
-      this.set('password','');
+      this.setProperties({
+        password: '',
+        showPassword: false,
+      });
       this.sendAction('action', code);
     }
   }

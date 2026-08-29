@@ -2822,6 +2822,8 @@ loginUserPass:
   loginLabel: 登入
   loggingInLabel: 登入中…
   passwordLabel: 密碼
+  showPasswordLabel: 顯示密碼
+  hidePasswordLabel: 隱藏密碼
 machine:
   driverAmazon:
     accessSection: 帳號存取
