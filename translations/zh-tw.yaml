@@ -147,7 +147,7 @@ auditLogsPage:
     from: 開始時間
     to: 結束時間
     timeZone: 顯示時區：{zone}
-    timeInclusive: 僅查詢這段時間內的紀錄
+    timeInclusive: 包含開始時間，不包含結束時間
     timeNotSelected: 尚未選擇時間範圍
     environment: 環境
     environmentPlaceholder: 所有環境
@@ -157,13 +157,19 @@ auditLogsPage:
     userPlaceholder: 所有使用者
     allUsers: 所有可辨識使用者
     noRawIds: 顯示名稱或登入帳號，不顯示內部 ID
+    operationSource: 操作來源
+    allChannels: 所有操作來源
+    channelHelp: 明確區分 WebUI、API、自動化與系統操作
     addCondition: 新增條件
     apply: 套用篩選
     clear: 全部清除
     removeCondition: 移除此條件
-    rangeError: 開始時間必須早於或等於結束時間。
+    rangeError: 開始時間必須早於結束時間。
+    autocomplete:
+      label: 目前授權範圍內的建議值
     presets:
       label: 快速時間範圍
+      minutes15: 最近 15 分鐘
       hour: 最近 1 小時
       day: 最近 24 小時
       week: 最近 7 天
@@ -174,6 +180,15 @@ auditLogsPage:
       clientIp: 來源 IP 位址
       authType: 驗證方式
       interactionChannel: 操作管道
+    shortcuts:
+      title: 調查捷徑
+      recentApi: 最近 1 小時的 API 操作
+      recentWeb: 最近 1 小時的 WebUI 操作
+      changes: 最近 24 小時的變更事件
+      removals: 最近 24 小時的移除事件
+    results:
+      updating: 正在更新結果…
+      summary: '已完成查詢：{count} 筆，時間範圍 {range}'
     operators:
       contains: 包含
       exact: 等於
@@ -203,6 +218,9 @@ auditLogsPage:
       title: 選擇時間範圍
       cancel: 取消
       accept: 使用此時間
+      wheelHelp: 滾輪可無限前後移動；每格 15 分鐘，也可使用方向鍵或直接輸入
+      fromWheelLabel: 開始時間無限滾輪
+      toWheelLabel: 結束時間無限滾輪
   table:
     time: 時間
     eventType: 事件類型

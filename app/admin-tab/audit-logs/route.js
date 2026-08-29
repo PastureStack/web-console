@@ -57,14 +57,17 @@ export default Route.extend({
 
   timer   : null,
   userHasPaged : null,
+  pollGeneration: 0,
 
   actions: {
     filterLogs() {
       this.cancelLogUpdate();
+      this.set('userHasPaged', false);
     },
 
     logsSorted() {
       this.cancelLogUpdate();
+      this.set('userHasPaged', false);
     },
 
     next() {
@@ -80,6 +83,20 @@ export default Route.extend({
       this.set('userHasPaged', false);
       this.refresh();
       this.scheduleLogUpdate();
+    },
+
+    loading() {
+      if (this.controller) {
+        this.controller.set('isFiltering', true);
+      }
+      return true;
+    },
+
+    error() {
+      if (this.controller) {
+        this.controller.set('isFiltering', false);
+      }
+      return true;
     }
   },
 
@@ -95,12 +112,7 @@ export default Route.extend({
     let resourceTypes = userStore.all('schema').filterBy('links.collection').map((schema) => schema.get('_id')).sort();
 
     return hash({
-      accounts: userStore.find('account', null, {
-        filter: {kind_ne: ['service', 'agent']},
-        forceReload: true,
-      }),
       auditLog: userStore.find('auditLog', null, this.parseFilters(params)),
-      passwords: userStore.find('password'),
       projects: userStore.find('project', null, {
         url: 'projects',
         filter: {all: 'true'},
@@ -109,7 +121,6 @@ export default Route.extend({
       }),
     }).then((result) => {
       return EmberObject.create({
-        accounts: result.accounts,
         auditLog: result.auditLog,
         projects: result.projects,
         resourceTypes,
@@ -126,26 +137,27 @@ export default Route.extend({
   scheduleLogUpdate() {
     cancel(this.get('timer'));
 
-    this.set('timer', later(() => {
+    let generation = this.incrementProperty('pollGeneration');
+    let timer = later(() => {
       var params = this.paramsFor('admin-tab.audit-logs');
 
       this.get('userStore').find('auditLog', null, this.parseFilters(params)).then((response) => {
-        // We can get into a state where the user paged but we have an unresolved promise from the previous
-        // run. If thats the case we dont want to replace the page with this unresolved promise.
-        if (!this.get('userHasPaged')) {
-
+        // Ignore a response from a poll that was cancelled by a new query,
+        // sorting operation, pagination action, or route transition.
+        if (generation === this.get('pollGeneration') && this.get('timer') === timer && !this.get('userHasPaged')) {
           this.controller.set('model.auditLog', response);
-          if ( this.get('timer') ) {
-            this.scheduleLogUpdate();
-          }
+          this.scheduleLogUpdate();
         }
       }, (/* error */) => {});
-    }, INTERVALCOUNT));
+    }, INTERVALCOUNT);
+
+    this.set('timer', timer);
   },
 
   cancelLogUpdate() {
     cancel(this.get('timer'));
     this.set('timer', null);
+    this.incrementProperty('pollGeneration');
   },
 
   parseFilters(params) {
@@ -161,7 +173,7 @@ export default Route.extend({
       return returnValue;
     }
 
-    returnValue.sortBy = params.sortBy || 'id';
+    returnValue.sortBy = params.sortBy || 'created';
     returnValue.sortOrder = params.sortOrder || 'desc';
 
     this.addTextFilter(returnValue.filter, 'eventType', params.eventType, params.eventTypeOperator);

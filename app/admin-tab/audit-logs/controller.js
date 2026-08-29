@@ -8,7 +8,7 @@ import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import { addQueryParams, download } from 'ui/utils/util';
 
-const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType', 'interactionChannel'];
+const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType'];
 
 function defaultTimeRange() {
   let end = moment();
@@ -53,6 +53,37 @@ function isoDateTime(value) {
   let parsed = moment(value);
 
   return parsed.isValid() ? parsed.toISOString() : null;
+}
+
+function matchingTimePreset(fromValue, toValue) {
+  let from = moment(fromValue);
+  let to = moment(toValue);
+
+  if (!from.isValid() || !to.isValid() || Math.abs(moment().diff(to, 'seconds')) > 90) {
+    return 'custom';
+  }
+
+  let minutes = to.diff(from, 'minutes');
+
+  return ({15: 'minutes15', 60: 'hour', 1440: 'day', 10080: 'week'})[minutes] || 'custom';
+}
+
+function timeWheelOptions(value) {
+  let current = moment(value);
+
+  if (!current.isValid()) {
+    return [];
+  }
+
+  return [-2, -1, 0, 1, 2].map((offset) => {
+    let option = current.clone().add(offset * 15, 'minutes');
+
+    return {
+      current: offset === 0,
+      label: option.format('YYYY/MM/DD HH:mm'),
+      value: option.format('YYYY-MM-DDTHH:mm:ss'),
+    };
+  });
 }
 
 export default Controller.extend(Sortable, {
@@ -101,11 +132,38 @@ export default Controller.extend(Sortable, {
   optionalFilters          : null,
   filterError              : null,
   isTimePickerOpen         : false,
+  isFiltering              : false,
+  activeTimePreset         : 'day',
+  timeWheelField           : null,
+  timeWheelDirection       : 'next',
+  timeWheelPhase           : false,
 
   init() {
     this._super(...arguments);
     this.set('filters', emptyFilters());
     this.set('optionalFilters', A());
+  },
+
+  shiftTimeWheel(field, step) {
+    if (['createdFrom', 'createdTo'].indexOf(field) === -1 || !step) {
+      return false;
+    }
+
+    let current = moment(this.get(`filters.${field}`));
+
+    if (!current.isValid()) {
+      return false;
+    }
+
+    current.add(step * 15, 'minutes');
+    this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
+    this.setProperties({
+      activeTimePreset  : 'custom',
+      timeWheelDirection: step > 0 ? 'next' : 'previous',
+      timeWheelField    : field,
+      timeWheelPhase    : !this.get('timeWheelPhase'),
+    });
+    return true;
   },
 
   actions: {
@@ -149,6 +207,12 @@ export default Controller.extend(Sortable, {
       this.set('filters.interactionChannel', channel ? channel.get('key') : null);
     },
 
+    useSuggestion(field, value) {
+      if (['clientIp', 'eventType'].indexOf(field) >= 0) {
+        this.set(`filters.${field}`, value);
+      }
+    },
+
     openTimePicker() {
       this.set('isTimePickerOpen', true);
     },
@@ -178,7 +242,92 @@ export default Controller.extend(Sortable, {
 
       this.set('filters.createdFrom', end.clone().subtract(amount, unit).format('YYYY-MM-DDTHH:mm:ss'));
       this.set('filters.createdTo', end.format('YYYY-MM-DDTHH:mm:ss'));
+      this.set('activeTimePreset', ({
+        '15-minutes': 'minutes15',
+        '1-hour': 'hour',
+        '24-hours': 'day',
+        '7-days': 'week',
+      })[`${amount}-${unit}`] || 'custom');
       this.set('filterError', null);
+    },
+
+    customTimeChanged() {
+      this.set('activeTimePreset', 'custom');
+    },
+
+    nudgeTime(field, event) {
+      if (['createdFrom', 'createdTo'].indexOf(field) === -1 || !event || !event.deltaY || event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      if (this.shiftTimeWheel(field, event.deltaY > 0 ? 1 : -1)) {
+        event.preventDefault();
+      }
+    },
+
+    selectWheelTime(field, value) {
+      let current = moment(this.get(`filters.${field}`));
+      let selected = moment(value);
+
+      if (!current.isValid() || !selected.isValid() || current.isSame(selected)) {
+        return;
+      }
+
+      this.set(`filters.${field}`, selected.format('YYYY-MM-DDTHH:mm:ss'));
+      this.setProperties({
+        activeTimePreset  : 'custom',
+        timeWheelDirection: selected.isAfter(current) ? 'next' : 'previous',
+        timeWheelField    : field,
+        timeWheelPhase    : !this.get('timeWheelPhase'),
+      });
+    },
+
+    keyTimeWheel(field, event) {
+      let step = ({ArrowDown: 1, ArrowUp: -1, PageDown: 4, PageUp: -4})[event && event.key];
+
+      if (step && this.shiftTimeWheel(field, step)) {
+        event.preventDefault();
+      }
+    },
+
+    applyInvestigationPreset(preset) {
+      let end = moment();
+      let optionalFilters = this.get('optionalFilters');
+
+      this.set('filters.createdTo', end.format('YYYY-MM-DDTHH:mm:ss'));
+      switch (preset) {
+        case 'recentApi':
+          this.set('filters.createdFrom', end.clone().subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss'));
+          this.set('filters.interactionChannel', 'public_api');
+          this.set('activeTimePreset', 'hour');
+          break;
+        case 'recentWeb':
+          this.set('filters.createdFrom', end.clone().subtract(1, 'hour').format('YYYY-MM-DDTHH:mm:ss'));
+          this.set('filters.interactionChannel', 'web_ui');
+          this.set('activeTimePreset', 'hour');
+          break;
+        case 'changes':
+          this.set('filters.createdFrom', end.clone().subtract(24, 'hours').format('YYYY-MM-DDTHH:mm:ss'));
+          this.set('filters.eventType', 'change');
+          this.set('filters.eventTypeOperator', 'contains');
+          this.set('activeTimePreset', 'day');
+          if (optionalFilters.indexOf('eventType') === -1) {
+            optionalFilters.pushObject('eventType');
+          }
+          break;
+        case 'removals':
+          this.set('filters.createdFrom', end.clone().subtract(24, 'hours').format('YYYY-MM-DDTHH:mm:ss'));
+          this.set('filters.eventType', 'remove');
+          this.set('filters.eventTypeOperator', 'contains');
+          this.set('activeTimePreset', 'day');
+          if (optionalFilters.indexOf('eventType') === -1) {
+            optionalFilters.pushObject('eventType');
+          }
+          break;
+        default:
+          return;
+      }
+      this.send('search');
     },
 
     changeSort(name) {
@@ -192,6 +341,7 @@ export default Controller.extend(Sortable, {
       }
 
       this.set('filterError', null);
+      this.set('isFiltering', true);
       this.setProperties({
         accountId                : this.get('filters.accountId'),
         authType                 : this.get('filters.authType'),
@@ -220,6 +370,8 @@ export default Controller.extend(Sortable, {
     clearAll() {
       this.set('filters', emptyFilters());
       this.set('optionalFilters', A());
+      this.set('activeTimePreset', 'day');
+      this.set('isFiltering', true);
       this.setProperties({
         accountId                : null,
         authType                 : null,
@@ -288,6 +440,7 @@ export default Controller.extend(Sortable, {
     filters.interactionChannel = this.get('interactionChannel');
     filters.resourceId = this.get('resourceId');
     filters.resourceType = this.get('resourceType');
+    this.set('activeTimePreset', matchingTimePreset(filters.createdFrom, filters.createdTo));
 
     let optional = A();
 
@@ -306,14 +459,11 @@ export default Controller.extend(Sortable, {
     if (filters.authType) {
       optional.pushObject('authType');
     }
-    if (filters.interactionChannel) {
-      optional.pushObject('interactionChannel');
-    }
-
     this.setProperties({
       filters,
       optionalFilters: optional,
       filterError: null,
+      isFiltering: false,
     });
   },
 
@@ -421,28 +571,21 @@ export default Controller.extend(Sortable, {
   }.property('model.projects.@each.{displayName,name,type}'),
 
   userOptions: function() {
-    return (this.get('model.accounts') || [])
-      .filter((account) => ['admin', 'user'].indexOf(String(account.get('kind') || '').toLowerCase()) >= 0)
-      .map((account) => {
-        let name = String(account.get('name') || '').trim();
-        let username = String(account.get('username') || '').trim();
-        let label = name || username;
-        let detail = name && username && name !== username ? username : null;
+    return (this.get('model.auditLog.filters.suggestions.actors') || [])
+      .map((actor) => {
+        let id = actor && typeof actor.get === 'function' ? actor.get('id') : actor && actor.id;
+        let labelValue = actor && typeof actor.get === 'function' ? actor.get('label') : actor && actor.label;
+        let label = String(labelValue || '').trim();
 
-        if (!label) {
+        if (!id || !label || label === String(id)) {
           return null;
         }
 
-        return EmberObject.create({
-          id: account.get('id'),
-          label,
-          detail,
-          searchText: [name, username].filter(Boolean).join(' '),
-        });
+        return EmberObject.create({id, label, searchText: label});
       })
       .filter(Boolean)
       .sort((left, right) => left.get('label').localeCompare(right.get('label'), undefined, {numeric: true, sensitivity: 'base'}));
-  }.property('model.accounts.@each.{id,kind,name,username}'),
+  }.property('model.auditLog.filters.suggestions.actors.[]'),
 
   selectedEnvironment: function() {
     let id = this.get('filters.accountId');
@@ -488,6 +631,14 @@ export default Controller.extend(Sortable, {
     return `${from.format('YYYY/MM/DD HH:mm')} – ${to.format('YYYY/MM/DD HH:mm')}`;
   }.property('filters.createdFrom', 'filters.createdTo', 'intl._locale'),
 
+  createdFromWheelOptions: function() {
+    return timeWheelOptions(this.get('filters.createdFrom'));
+  }.property('filters.createdFrom'),
+
+  createdToWheelOptions: function() {
+    return timeWheelOptions(this.get('filters.createdTo'));
+  }.property('filters.createdTo'),
+
   timeZoneLabel: function() {
     return `UTC${moment().format('Z')}`;
   }.property(),
@@ -500,9 +651,17 @@ export default Controller.extend(Sortable, {
     return this.get('selectedUser.label') || this.get('intl').t('auditLogsPage.filterBuilder.allUsers');
   }.property('selectedUser.label', 'intl._locale'),
 
+  interactionChannelSelectionSummary: function() {
+    return this.get('selectedInteractionChannel.label') || this.get('intl').t('auditLogsPage.filterBuilder.allChannels');
+  }.property('selectedInteractionChannel.label', 'intl._locale'),
+
   clientIpSuggestions: function() {
     return this.get('model.auditLog.filters.suggestions.clientIps') || [];
   }.property('model.auditLog.filters.suggestions.clientIps.[]'),
+
+  clientIpQuickSuggestions: function() {
+    return this.get('clientIpSuggestions').slice(0, 6);
+  }.property('clientIpSuggestions.[]'),
 
   eventTypeSuggestions: function() {
     return this.get('model.auditLog.filters.suggestions.eventTypes') || [];
@@ -519,7 +678,7 @@ export default Controller.extend(Sortable, {
     let fromMoment = moment(from);
     let toMoment = moment(to);
 
-    return !fromMoment.isValid() || !toMoment.isValid() || fromMoment.isAfter(toMoment);
+    return !fromMoment.isValid() || !toMoment.isValid() || !fromMoment.isBefore(toMoment);
   }.property('filters.createdFrom', 'filters.createdTo'),
 
   activeFilterCount: function() {
@@ -535,6 +694,9 @@ export default Controller.extend(Sortable, {
     if (filters.authenticatedAsAccountId) {
       count++;
     }
+    if (filters.interactionChannel) {
+      count++;
+    }
 
     this.get('optionalFilters').forEach((key) => {
       if ((key === 'resource' && (filters.resourceType || filters.resourceId)) ||
@@ -548,6 +710,23 @@ export default Controller.extend(Sortable, {
     'filters.{accountId,authType,authenticatedAsAccountId,clientIp,createdFrom,createdTo,description,eventType,interactionChannel,resourceId,resourceType}',
     'optionalFilters.[]'
   ),
+
+  resultCount: function() {
+    let total = this.get('model.auditLog.pagination.total');
+
+    return Number.isFinite(Number(total)) ? Number(total) : this.get('model.auditLog.length') || 0;
+  }.property('model.auditLog.length', 'model.auditLog.pagination.total'),
+
+  appliedRangeSummary: function() {
+    let from = moment(this.get('createdFrom'));
+    let to = moment(this.get('createdTo'));
+
+    if (!from.isValid() || !to.isValid()) {
+      return this.get('timeRangeSummary');
+    }
+
+    return `${from.format('YYYY/MM/DD HH:mm')} – ${to.format('YYYY/MM/DD HH:mm')}`;
+  }.property('createdFrom', 'createdTo', 'timeRangeSummary'),
 
   setup: function() {
     var out = [];
