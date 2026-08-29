@@ -5,14 +5,33 @@ $text-color: null !default;
 $text-muted: null !default;
 $well-bg: null !default;
 
-.audit-log-filter-panel {
+.audit-log-filter-form {
   margin-bottom: 25px;
+}
+
+.audit-log-filter-panel {
+  position: relative;
+  min-width: 0;
+  margin: 0;
   padding: 20px;
   color: $text-color;
   background: $well-bg;
   border: 1px solid $table-border-color;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
+}
+
+.audit-log-filter-panel-legend {
+  display: block;
+  width: auto;
+  margin: 0 0 0 8px;
+  padding: 0 10px;
+  color: $text-color;
+  background: $well-bg;
+  border: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
 }
 
 .audit-log-filter-header,
@@ -23,12 +42,6 @@ $well-bg: null !default;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-}
-
-.audit-log-filter-title {
-  margin: 0 0 4px;
-  font-size: 18px;
-  font-weight: 600;
 }
 
 .audit-log-filter-help {
@@ -51,7 +64,7 @@ $well-bg: null !default;
 
 .audit-log-filter-primary-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-top: 18px;
 }
@@ -91,25 +104,30 @@ fieldset.audit-log-filter-card {
   font-weight: 600;
 }
 
-.audit-log-filter-card-control {
+.audit-log-primary-control {
   display: flex;
   width: 100%;
-  min-height: 44px;
+  height: 48px;
+  min-height: 48px;
   align-items: center;
-}
-
-button.audit-log-filter-card-control {
-  padding: 9px 11px;
   color: $text-color;
   background: $input-bg;
   border: 1px solid $table-border-color;
-  border-radius: 4px;
+  border-radius: 5px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+button.audit-log-primary-control {
+  padding: 10px 12px;
+  color: $text-color;
+  background: $input-bg;
   cursor: pointer;
   text-align: left;
 }
 
-button.audit-log-filter-card-control:hover,
-button.audit-log-filter-card-control:focus {
+button.audit-log-primary-control:hover,
+button.audit-log-primary-control:focus,
+.audit-log-primary-control:focus-within {
   color: $text-color;
   border-color: $brand-primary;
   outline: 0;
@@ -155,18 +173,30 @@ button.audit-log-filter-card-control:focus {
   white-space: nowrap;
 }
 
-.audit-log-filter-select .audit-log-filter-card-control,
+.audit-log-primary-select,
 .audit-log-filter-select .ember-power-select-trigger,
 .audit-log-filter-select-inline .ember-power-select-trigger,
 .audit-log-filter-resource-type .ember-power-select-trigger {
   width: 100%;
 }
 
-.audit-log-filter-select .ember-power-select-trigger {
-  min-height: 44px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+.audit-log-primary-select .ember-power-select-trigger {
+  width: 100%;
+  min-height: 46px;
+  padding: 7px 11px;
+  background: transparent;
+  border: 0;
   border-radius: 4px;
+  box-shadow: none;
+  line-height: 30px;
+}
+
+.audit-log-primary-select .ember-power-select-trigger:focus {
+  box-shadow: none;
+}
+
+.audit-log-primary-select .ember-power-select-status-icon {
+  right: 11px;
 }
 
 .audit-log-filter-select-inline .ember-power-select-trigger,
@@ -226,9 +256,45 @@ button.audit-log-filter-card-control:focus {
 
 .audit-log-filter-value,
 .audit-log-filter-resource-type,
-.audit-log-filter-select-inline {
+.audit-log-filter-select-inline,
+.audit-log-filter-value-group {
   min-width: 0;
   width: 100%;
+}
+
+.audit-log-filter-value-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.audit-log-autocomplete-suggestions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.audit-log-suggestion {
+  max-width: 100%;
+  padding: 3px 8px;
+  color: $text-color;
+  background: rgba($brand-primary, .07);
+  border: 1px solid rgba($brand-primary, .2);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-log-suggestion:hover,
+.audit-log-suggestion:focus {
+  color: $brand-primary;
+  border-color: rgba($brand-primary, .55);
+  outline: 0;
 }
 
 .audit-log-filter-remove {
@@ -260,6 +326,25 @@ button.audit-log-filter-card-control:focus {
   gap: 8px;
 }
 
+.audit-log-results-status {
+  min-height: 38px;
+  margin: -13px 0 14px;
+  padding: 9px 12px;
+  color: $text-muted;
+  background: rgba($brand-primary, .045);
+  border: 1px solid $table-border-color;
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 18px;
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+.audit-log-results-status.is-loading {
+  color: $brand-primary;
+  background: rgba($brand-primary, .09);
+  border-color: rgba($brand-primary, .25);
+}
+
 .audit-log-time-dialog-backdrop {
   position: fixed;
   z-index: 1060;
@@ -274,11 +359,14 @@ button.audit-log-filter-card-control:focus {
 
 .audit-log-time-dialog {
   width: min(680px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 20px;
   color: $text-color;
   background: $well-bg;
-  border: 1px solid $table-border-color;
-  border-radius: 7px;
+  border: 2px solid rgba($brand-primary, .42);
+  border-radius: 8px;
   box-shadow: 0 18px 50px rgba(0, 0, 0, .24);
   animation: audit-log-dialog-in 180ms ease-out;
 }
@@ -333,6 +421,110 @@ button.audit-log-filter-card-control:focus {
   box-shadow: 0 0 0 2px rgba($brand-primary, .14);
 }
 
+.audit-log-time-editor {
+  min-width: 0;
+}
+
+.audit-log-time-editor > label {
+  display: block;
+}
+
+.audit-log-time-wheel {
+  position: relative;
+  height: 152px;
+  margin-top: 9px;
+  overflow: hidden;
+  background: $input-bg;
+  border: 1px solid $table-border-color;
+  border-radius: 6px;
+  outline: 0;
+  cursor: ns-resize;
+}
+
+.audit-log-time-wheel::after {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: linear-gradient(to bottom, $input-bg 0%, rgba($input-bg, .18) 33%, rgba($input-bg, 0) 46%, rgba($input-bg, 0) 54%, rgba($input-bg, .18) 67%, $input-bg 100%);
+  content: '';
+  pointer-events: none;
+}
+
+.audit-log-time-wheel:focus {
+  border-color: $brand-primary;
+  box-shadow: 0 0 0 2px rgba($brand-primary, .14);
+}
+
+.audit-log-time-wheel-selection {
+  position: absolute;
+  z-index: 1;
+  top: 60px;
+  right: 6px;
+  left: 6px;
+  height: 30px;
+  background: rgba($brand-primary, .09);
+  border: 1px solid rgba($brand-primary, .28);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.audit-log-time-wheel-track {
+  position: relative;
+  z-index: 2;
+}
+
+.audit-log-time-wheel-option {
+  display: block;
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  color: $text-muted;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 30px;
+  text-align: center;
+  transition: color 120ms ease, opacity 120ms ease;
+}
+
+.audit-log-time-wheel-option:hover {
+  color: $brand-primary;
+}
+
+.audit-log-time-wheel-option.is-current {
+  color: $text-color;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.audit-log-time-wheel.is-moving.is-next.phase-a .audit-log-time-wheel-track {
+  animation: audit-log-time-wheel-next-a 180ms cubic-bezier(.2, .75, .3, 1);
+}
+
+.audit-log-time-wheel.is-moving.is-next.phase-b .audit-log-time-wheel-track {
+  animation: audit-log-time-wheel-next-b 180ms cubic-bezier(.2, .75, .3, 1);
+}
+
+.audit-log-time-wheel.is-moving.is-previous.phase-a .audit-log-time-wheel-track {
+  animation: audit-log-time-wheel-previous-a 180ms cubic-bezier(.2, .75, .3, 1);
+}
+
+.audit-log-time-wheel.is-moving.is-previous.phase-b .audit-log-time-wheel-track {
+  animation: audit-log-time-wheel-previous-b 180ms cubic-bezier(.2, .75, .3, 1);
+}
+
+.audit-log-time-wheel-help {
+  margin: 7px 0 0;
+  color: $text-muted;
+  font-size: 11px;
+  text-align: center;
+}
+
+.audit-log-time-wheel-help > span {
+  margin-right: 3px;
+}
+
 .audit-log-filter-time-separator {
   padding-bottom: 9px;
   color: $text-muted;
@@ -343,6 +535,33 @@ button.audit-log-filter-card-control:focus {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 12px;
+}
+
+.audit-log-time-preset {
+  min-width: 92px;
+  padding: 7px 11px;
+  color: $text-color;
+  background: $input-bg;
+  border: 1px solid $table-border-color;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.audit-log-time-preset:hover,
+.audit-log-time-preset:focus {
+  border-color: rgba($brand-primary, .55);
+  outline: 0;
+  transform: translateY(-1px);
+}
+
+.audit-log-time-preset.is-active {
+  color: $brand-primary;
+  background: rgba($brand-primary, .12);
+  border-color: $brand-primary;
+  box-shadow: 0 0 0 2px rgba($brand-primary, .1);
+  font-weight: 700;
 }
 
 .audit-log-time-dialog-actions {
@@ -386,9 +605,17 @@ button.audit-log-filter-card-control:focus {
   }
 }
 
+@keyframes audit-log-time-wheel-next-a { from { transform: translateY(30px); } to { transform: translateY(0); } }
+@keyframes audit-log-time-wheel-next-b { from { transform: translateY(30px); } to { transform: translateY(0); } }
+@keyframes audit-log-time-wheel-previous-a { from { transform: translateY(-30px); } to { transform: translateY(0); } }
+@keyframes audit-log-time-wheel-previous-b { from { transform: translateY(-30px); } to { transform: translateY(0); } }
+
 @media (prefers-reduced-motion: reduce) {
   .audit-log-filter-card,
+  .audit-log-primary-control,
   .audit-log-filter-row,
+  .audit-log-time-wheel-track,
+  .audit-log-time-wheel-option,
   .audit-log-time-dialog,
   .audit-log-time-dialog-backdrop {
     animation: none;
@@ -396,11 +623,13 @@ button.audit-log-filter-card-control:focus {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1400px) {
   .audit-log-filter-primary-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
+@media (max-width: 1100px) {
   .audit-log-filter-card {
     min-height: 138px;
   }
@@ -425,6 +654,10 @@ button.audit-log-filter-card-control:focus {
 
   .audit-log-filter-time-inputs,
   .audit-log-filter-row {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-log-filter-primary-grid {
     grid-template-columns: 1fr;
   }
 

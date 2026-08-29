@@ -3,12 +3,11 @@
 </section>
 <section>
   <div class="well">
-    <form class="audit-log-filter-panel" data-testid="audit-log-filter-panel" {{action "search" on="submit"}}>
+    <form class="audit-log-filter-form" data-testid="audit-log-filter-panel" aria-busy={{if this.isFiltering "true" "false"}} {{action "search" on="submit"}}>
+      <fieldset class="audit-log-filter-panel">
+        <legend class="audit-log-filter-panel-legend">{{t 'auditLogsPage.filterBuilder.title'}}</legend>
       <div class="audit-log-filter-header">
-        <div>
-          <h2 class="audit-log-filter-title">{{t 'auditLogsPage.filterBuilder.title'}}</h2>
-          <p class="audit-log-filter-help">{{t 'auditLogsPage.filterBuilder.help'}}</p>
-        </div>
+        <p class="audit-log-filter-help">{{t 'auditLogsPage.filterBuilder.help'}}</p>
         <span class="audit-log-filter-count" data-testid="audit-log-filter-count">
           {{t 'auditLogsPage.filterBuilder.activeCount' count=this.activeFilterCount}}
         </span>
@@ -17,7 +16,7 @@
       <div class="audit-log-filter-primary-grid">
         <fieldset class="audit-log-filter-card audit-log-filter-time">
           <legend>{{t 'auditLogsPage.filterBuilder.timeRange'}}</legend>
-          <button type="button" class="audit-log-filter-card-control audit-log-time-open" data-testid="audit-log-time-open" {{action "openTimePicker"}}>
+          <button type="button" class="audit-log-primary-control audit-log-time-open" data-testid="audit-log-time-open" {{action "openTimePicker"}}>
             <i class="icon icon-calendar" aria-hidden="true"></i>
             <span>{{this.timeRangeSummary}}</span>
             <i class="icon icon-edit" aria-hidden="true"></i>
@@ -30,7 +29,7 @@
 
         <fieldset class="audit-log-filter-card audit-log-filter-select">
           <legend>{{t 'auditLogsPage.filterBuilder.environment'}}</legend>
-          <div class="audit-log-filter-card-control">
+          <div class="audit-log-primary-control audit-log-primary-select">
             <PowerSelect
               @options={{this.environmentOptions}}
               @selected={{this.selectedEnvironment}}
@@ -51,7 +50,7 @@
 
         <fieldset class="audit-log-filter-card audit-log-filter-select">
           <legend>{{t 'auditLogsPage.filterBuilder.user'}}</legend>
-          <div class="audit-log-filter-card-control">
+          <div class="audit-log-primary-control audit-log-primary-select">
             <PowerSelect
               @options={{this.userOptions}}
               @selected={{this.selectedUser}}
@@ -68,6 +67,27 @@
           <div class="audit-log-filter-card-summary">
             <span>{{this.userSelectionSummary}}</span>
             <span>{{t 'auditLogsPage.filterBuilder.noRawIds'}}</span>
+          </div>
+        </fieldset>
+
+        <fieldset class="audit-log-filter-card audit-log-filter-select">
+          <legend>{{t 'auditLogsPage.filterBuilder.operationSource'}}</legend>
+          <div class="audit-log-primary-control audit-log-primary-select">
+            <PowerSelect
+              @options={{this.interactionChannels}}
+              @selected={{this.selectedInteractionChannel}}
+              @onChange={{action "updateInteractionChannel"}}
+              @searchField="label"
+              @placeholder={{t 'auditLogsPage.filterBuilder.placeholders.interactionChannel'}}
+              @allowClear={{true}}
+              as |channel|
+            >
+              {{channel.label}}
+            </PowerSelect>
+          </div>
+          <div class="audit-log-filter-card-summary">
+            <span>{{this.interactionChannelSelectionSummary}}</span>
+            <span>{{t 'auditLogsPage.filterBuilder.channelHelp'}}</span>
           </div>
         </fieldset>
       </div>
@@ -114,10 +134,19 @@
               {{else if (eq filterKey "clientIp")}}
                 <label class="audit-log-filter-row-label" for="audit-log-client-ip">{{t 'auditLogsPage.filterBuilder.conditions.clientIp'}}</label>
                 <span class="audit-log-filter-operator audit-log-filter-operator-static">{{t 'auditLogsPage.filterBuilder.operators.exact'}}</span>
-                {{input id="audit-log-client-ip" list="audit-log-client-ip-suggestions" class="form-control input-sm audit-log-filter-value" value=this.filters.clientIp placeholder=(t "auditLogsPage.filterBuilder.placeholders.clientIp") autocomplete="off"}}
-                <datalist id="audit-log-client-ip-suggestions">
-                  {{#each this.clientIpSuggestions as |clientIp|}}<option value={{clientIp}}></option>{{/each}}
-                </datalist>
+                <div class="audit-log-filter-value-group">
+                  {{input id="audit-log-client-ip" list="audit-log-client-ip-suggestions" class="form-control input-sm audit-log-filter-value" value=this.filters.clientIp placeholder=(t "auditLogsPage.filterBuilder.placeholders.clientIp") autocomplete="off" aria-describedby="audit-log-client-ip-help"}}
+                  <datalist id="audit-log-client-ip-suggestions">
+                    {{#each this.clientIpSuggestions as |clientIp|}}<option value={{clientIp}}></option>{{/each}}
+                  </datalist>
+                  {{#if this.clientIpQuickSuggestions.length}}
+                    <div id="audit-log-client-ip-help" class="audit-log-autocomplete-suggestions" aria-label="{{t 'auditLogsPage.filterBuilder.autocomplete.label'}}">
+                      {{#each this.clientIpQuickSuggestions as |clientIp|}}
+                        <button type="button" class="audit-log-suggestion" {{action "useSuggestion" "clientIp" clientIp}}>{{clientIp}}</button>
+                      {{/each}}
+                    </div>
+                  {{/if}}
+                </div>
               {{else if (eq filterKey "authType")}}
                 <span class="audit-log-filter-row-label">{{t 'auditLogsPage.filterBuilder.conditions.authType'}}</span>
                 <span class="audit-log-filter-operator audit-log-filter-operator-static">{{t 'auditLogsPage.filterBuilder.operators.exact'}}</span>
@@ -132,22 +161,6 @@
                     as |type|
                   >
                     {{type.value}}
-                  </PowerSelect>
-                </div>
-              {{else if (eq filterKey "interactionChannel")}}
-                <span class="audit-log-filter-row-label">{{t 'auditLogsPage.filterBuilder.conditions.interactionChannel'}}</span>
-                <span class="audit-log-filter-operator audit-log-filter-operator-static">{{t 'auditLogsPage.filterBuilder.operators.exact'}}</span>
-                <div class="audit-log-filter-value audit-log-filter-select-inline">
-                  <PowerSelect
-                    @options={{this.interactionChannels}}
-                    @selected={{this.selectedInteractionChannel}}
-                    @onChange={{action "updateInteractionChannel"}}
-                    @searchField="label"
-                    @placeholder={{t 'auditLogsPage.filterBuilder.placeholders.interactionChannel'}}
-                    @allowClear={{true}}
-                    as |channel|
-                  >
-                    {{channel.label}}
                   </PowerSelect>
                 </div>
               {{/if}}
@@ -165,6 +178,19 @@
 
       <div class="audit-log-filter-footer">
         <div class="audit-log-filter-secondary-actions">
+          <div class="dropdown">
+            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="icon icon-search" aria-hidden="true"></i>
+              {{t 'auditLogsPage.filterBuilder.shortcuts.title'}}
+              <i class="icon icon-chevron-down" aria-hidden="true"></i>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+              <li><a href="#" {{action "applyInvestigationPreset" "recentApi"}}>{{t 'auditLogsPage.filterBuilder.shortcuts.recentApi'}}</a></li>
+              <li><a href="#" {{action "applyInvestigationPreset" "recentWeb"}}>{{t 'auditLogsPage.filterBuilder.shortcuts.recentWeb'}}</a></li>
+              <li><a href="#" {{action "applyInvestigationPreset" "changes"}}>{{t 'auditLogsPage.filterBuilder.shortcuts.changes'}}</a></li>
+              <li><a href="#" {{action "applyInvestigationPreset" "removals"}}>{{t 'auditLogsPage.filterBuilder.shortcuts.removals'}}</a></li>
+            </ul>
+          </div>
           <div class="dropdown">
             <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" disabled={{not this.hasAvailableFilters}}>
               <i class="icon icon-plus" aria-hidden="true"></i>
@@ -194,10 +220,21 @@
         </div>
         <div class="audit-log-filter-actions">
           <button type="button" class="btn btn-sm btn-default" {{action "clearAll"}}>{{t 'auditLogsPage.filterBuilder.clear'}}</button>
-          <button type="submit" class="btn btn-sm btn-primary" data-testid="audit-log-filter-apply">{{t 'auditLogsPage.filterBuilder.apply'}}</button>
+          <button type="submit" class="btn btn-sm btn-primary" data-testid="audit-log-filter-apply" disabled={{this.isFiltering}}>
+            {{#if this.isFiltering}}<i class="icon icon-spinner icon-spin" aria-hidden="true"></i> {{t 'auditLogsPage.filterBuilder.results.updating'}}{{else}}{{t 'auditLogsPage.filterBuilder.apply'}}{{/if}}
+          </button>
         </div>
       </div>
+      </fieldset>
     </form>
+
+    <div class="audit-log-results-status {{if this.isFiltering "is-loading"}}" role="status" aria-live="polite">
+      {{#if this.isFiltering}}
+        {{t 'auditLogsPage.filterBuilder.results.updating'}}
+      {{else}}
+        {{t 'auditLogsPage.filterBuilder.results.summary' count=this.resultCount range=this.appliedRangeSummary}}
+      {{/if}}
+    </div>
 
     {{#if this.isTimePickerOpen}}
       <div class="audit-log-time-dialog-backdrop" role="presentation">
@@ -210,20 +247,58 @@
           </div>
           <div class="audit-log-time-dialog-summary">{{this.timeRangeSummary}}</div>
           <div class="audit-log-filter-time-inputs">
-            <label>
-              <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
-              {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdFrom data-testid="audit-log-created-from"}}
-            </label>
+            <div class="audit-log-time-editor">
+              <label {{action "nudgeTime" "createdFrom" on="wheel"}}>
+                <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
+                {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdFrom input=(action "customTimeChanged") data-testid="audit-log-created-from"}}
+              </label>
+              <div
+                class="audit-log-time-wheel {{if (eq this.timeWheelField "createdFrom") "is-moving"}} is-{{this.timeWheelDirection}} phase-{{if this.timeWheelPhase "b" "a"}}"
+                role="listbox"
+                tabindex="0"
+                aria-label={{t 'auditLogsPage.filterBuilder.timeDialog.fromWheelLabel'}}
+                data-testid="audit-log-created-from-wheel"
+                {{action "nudgeTime" "createdFrom" on="wheel"}}
+                {{action "keyTimeWheel" "createdFrom" on="keyDown"}}
+              >
+                <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
+                <div class="audit-log-time-wheel-track">
+                  {{#each this.createdFromWheelOptions as |option|}}
+                    <button type="button" role="option" aria-selected={{if option.current "true" "false"}} tabindex="-1" class="audit-log-time-wheel-option {{if option.current "is-current"}}" {{action "selectWheelTime" "createdFrom" option.value}}>{{option.label}}</button>
+                  {{/each}}
+                </div>
+              </div>
+            </div>
             <span class="audit-log-filter-time-separator" aria-hidden="true">→</span>
-            <label>
-              <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
-              {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdTo data-testid="audit-log-created-to"}}
-            </label>
+            <div class="audit-log-time-editor">
+              <label {{action "nudgeTime" "createdTo" on="wheel"}}>
+                <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
+                {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdTo input=(action "customTimeChanged") data-testid="audit-log-created-to"}}
+              </label>
+              <div
+                class="audit-log-time-wheel {{if (eq this.timeWheelField "createdTo") "is-moving"}} is-{{this.timeWheelDirection}} phase-{{if this.timeWheelPhase "b" "a"}}"
+                role="listbox"
+                tabindex="0"
+                aria-label={{t 'auditLogsPage.filterBuilder.timeDialog.toWheelLabel'}}
+                data-testid="audit-log-created-to-wheel"
+                {{action "nudgeTime" "createdTo" on="wheel"}}
+                {{action "keyTimeWheel" "createdTo" on="keyDown"}}
+              >
+                <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
+                <div class="audit-log-time-wheel-track">
+                  {{#each this.createdToWheelOptions as |option|}}
+                    <button type="button" role="option" aria-selected={{if option.current "true" "false"}} tabindex="-1" class="audit-log-time-wheel-option {{if option.current "is-current"}}" {{action "selectWheelTime" "createdTo" option.value}}>{{option.label}}</button>
+                  {{/each}}
+                </div>
+              </div>
+            </div>
           </div>
+          <p class="audit-log-time-wheel-help"><span aria-hidden="true">↕</span> {{t 'auditLogsPage.filterBuilder.timeDialog.wheelHelp'}}</p>
           <div class="audit-log-filter-presets" aria-label="{{t 'auditLogsPage.filterBuilder.presets.label'}}">
-            <button type="button" class="btn btn-xs btn-default" {{action "setTimePreset" 1 "hour"}}>{{t 'auditLogsPage.filterBuilder.presets.hour'}}</button>
-            <button type="button" class="btn btn-xs btn-default" {{action "setTimePreset" 24 "hours"}}>{{t 'auditLogsPage.filterBuilder.presets.day'}}</button>
-            <button type="button" class="btn btn-xs btn-default" {{action "setTimePreset" 7 "days"}}>{{t 'auditLogsPage.filterBuilder.presets.week'}}</button>
+            <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "minutes15") "is-active"}}" aria-pressed={{eq this.activeTimePreset "minutes15"}} {{action "setTimePreset" 15 "minutes"}}>{{t 'auditLogsPage.filterBuilder.presets.minutes15'}}</button>
+            <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "hour") "is-active"}}" aria-pressed={{eq this.activeTimePreset "hour"}} {{action "setTimePreset" 1 "hour"}}>{{t 'auditLogsPage.filterBuilder.presets.hour'}}</button>
+            <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "day") "is-active"}}" aria-pressed={{eq this.activeTimePreset "day"}} {{action "setTimePreset" 24 "hours"}}>{{t 'auditLogsPage.filterBuilder.presets.day'}}</button>
+            <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "week") "is-active"}}" aria-pressed={{eq this.activeTimePreset "week"}} {{action "setTimePreset" 7 "days"}}>{{t 'auditLogsPage.filterBuilder.presets.week'}}</button>
           </div>
           <div class="audit-log-time-dialog-actions">
             <span>{{t 'auditLogsPage.filterBuilder.timeZone' zone=this.timeZoneLabel}}</span>

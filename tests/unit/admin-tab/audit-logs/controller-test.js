@@ -5,6 +5,21 @@ import { module, test } from 'qunit';
 import AuditLogsController from 'ui/admin-tab/audit-logs/controller';
 import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
 
+function auditLogFor(records = [], actors = []) {
+  let auditLog = A(records);
+
+  auditLog.set('filters', EmberObject.create({
+    suggestions: EmberObject.create({
+      actors: A(actors),
+      clientIps: A(),
+      eventTypes: A(),
+      resourceTypes: A(),
+    }),
+  }));
+  auditLog.set('pagination', EmberObject.create({total: records.length}));
+  return auditLog;
+}
+
 function controllerFor(properties = {}) {
   return createOwned(AuditLogsController, Object.assign({
     intl: EmberObject.create({
@@ -13,8 +28,7 @@ function controllerFor(properties = {}) {
       },
     }),
     model: EmberObject.create({
-      accounts: A(),
-      auditLog: A(),
+      auditLog: auditLogFor(),
       projects: A(),
       resourceTypes: A(),
     }),
@@ -27,13 +41,12 @@ module('Unit | Controller | admin tab | audit logs');
 test('offers friendly environment and user names without raw ID fallbacks', function(assert) {
   let controller = controllerFor({
     model: EmberObject.create({
-      accounts: A([
-        EmberObject.create({id: '1a1', kind: 'admin', name: '陳管理員', username: 'chen'}),
-        EmberObject.create({id: '1a2', kind: 'user', name: '', username: 'alice'}),
-        EmberObject.create({id: '1a3', kind: 'user', name: '', username: ''}),
-        EmberObject.create({id: '1a4', kind: 'service', name: 'system'}),
+      auditLog: auditLogFor([], [
+        {id: '1a1', label: '陳管理員'},
+        {id: '1a2', label: 'alice'},
+        {id: '1a3', label: ''},
+        {id: '1a4', label: '1a4'},
       ]),
-      auditLog: A(),
       projects: A([
         EmberObject.create({id: '1e1', type: 'project', displayName: '正式環境'}),
         EmberObject.create({id: '1e2', type: 'project', displayName: '', name: '測試環境'}),
@@ -47,7 +60,7 @@ test('offers friendly environment and user names without raw ID fallbacks', func
   assert.deepEqual(controller.get('environmentOptions').map((item) => item.get('label')).sort(),
     ['正式環境', '測試環境'].sort(), 'named projects use a human label and blank projects are omitted');
   assert.deepEqual(controller.get('userOptions').map((item) => item.get('label')).sort(),
-    ['alice', '陳管理員'].sort(), 'users are shown by a human name or username');
+    ['alice', '陳管理員'].sort(), 'only human actors returned by the permission-scoped audit query are offered');
   assert.notOk(controller.get('environmentOptions').some((item) => /^1e/.test(item.get('label'))),
     'an internal project ID is never used as a label');
   assert.notOk(controller.get('userOptions').some((item) => /^1a/.test(item.get('label'))),
@@ -140,7 +153,7 @@ test('stores text operators in the query-backed draft', function(assert) {
   destroyOwned(controller);
 });
 
-test('applies a valid local time range and blocks an inverted range', function(assert) {
+test('applies a valid local time range and blocks inverted, empty, or zero-width ranges', function(assert) {
   let sent = [];
   let controller = controllerFor({
     send(name) {
@@ -173,10 +186,16 @@ test('applies a valid local time range and blocks an inverted range', function(a
 
   assert.deepEqual(sent, [], 'a one-sided time range is not sent');
 
+  controller.set('filters.createdFrom', '2026-08-28T10:00:00');
+  controller.set('filters.createdTo', '2026-08-28T10:00:00');
+  controller.actions.search.call(controller);
+
+  assert.deepEqual(sent, [], 'an empty half-open time range is not sent');
+
   destroyOwned(controller);
 });
 
-test('offers an explicit WebUI/API channel condition and defaults to a bounded 24 hour range', function(assert) {
+test('offers WebUI/API as a primary filter and defaults to a bounded 24 hour range', function(assert) {
   let controller = controllerFor();
   let start = moment(controller.get('filters.createdFrom'));
   let end = moment(controller.get('filters.createdTo'));
@@ -186,11 +205,51 @@ test('offers an explicit WebUI/API channel condition and defaults to a bounded 2
     ['web_ui', 'public_api', 'automation', 'system_internal', 'unknown']);
 
   controller.actions.addFilter.call(controller, 'interactionChannel');
+  assert.notOk(controller.get('optionalFilters').includes('interactionChannel'),
+    'the operation source remains a fixed primary control instead of a duplicate optional row');
   controller.actions.updateInteractionChannel.call(controller, controller.get('interactionChannels')[1]);
   controller.actions.search.call(controller);
 
   assert.strictEqual(controller.get('interactionChannel'), 'public_api',
     'the selected API channel is serialized independently from the user');
+
+  destroyOwned(controller);
+});
+
+test('moves both time wheels indefinitely in 15-minute steps with a repeatable animation phase', function(assert) {
+  let controller = controllerFor();
+  let prevented = 0;
+
+  controller.set('filters.createdFrom', '2026-08-28T10:00:00');
+  controller.actions.nudgeTime.call(controller, 'createdFrom', {
+    deltaY: 120,
+    preventDefault() {
+      prevented++;
+    },
+  });
+
+  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T10:15:00');
+  assert.strictEqual(controller.get('timeWheelDirection'), 'next');
+  assert.strictEqual(controller.get('createdFromWheelOptions.length'), 5);
+  assert.strictEqual(controller.get('createdFromWheelOptions')[2].label, '2026/08/28 10:15',
+    'the selected time always remains at the center of the rolling window');
+
+  let firstPhase = controller.get('timeWheelPhase');
+  for (let index = 0; index < 200; index++) {
+    controller.actions.nudgeTime.call(controller, 'createdFrom', {
+      deltaY: -1,
+      preventDefault() {
+        prevented++;
+      },
+    });
+  }
+
+  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-26T08:15:00',
+    'the virtual wheel keeps generating earlier slots instead of reaching a list boundary');
+  assert.strictEqual(controller.get('timeWheelDirection'), 'previous');
+  assert.strictEqual(controller.get('timeWheelPhase'), firstPhase,
+    'the alternating phase remains deterministic across repeated wheel animation cycles');
+  assert.strictEqual(prevented, 201, 'page scrolling is consumed only by valid time-wheel movements');
 
   destroyOwned(controller);
 });

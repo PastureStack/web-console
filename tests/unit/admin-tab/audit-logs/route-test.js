@@ -67,3 +67,15 @@ test('supports useful text operators without leaking UI-only fields', function(a
 
   destroyOwned(route);
 });
+
+test('invalidates an older polling generation whenever a new filter query takes control', function(assert) {
+  let route = createOwned(AuditLogsRoute, {pollGeneration: 7, timer: null}, 'route');
+
+  route.cancelLogUpdate();
+
+  assert.strictEqual(route.get('pollGeneration'), 8,
+    'an already-running stale response can no longer replace the newly filtered table');
+  assert.strictEqual(route.get('timer'), null);
+
+  destroyOwned(route);
+});

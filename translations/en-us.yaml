@@ -161,7 +161,7 @@ auditLogsPage:
     from: From
     to: To
     timeZone: 'Display timezone: {zone}'
-    timeInclusive: Only records inside this range are queried
+    timeInclusive: Includes the start time and excludes the end time
     timeNotSelected: No time range selected
     environment: Environment
     environmentPlaceholder: Any environment
@@ -171,13 +171,19 @@ auditLogsPage:
     userPlaceholder: Any user
     allUsers: All identifiable users
     noRawIds: Names or usernames are shown instead of internal IDs
+    operationSource: Operation source
+    allChannels: All operation sources
+    channelHelp: Distinguishes WebUI, API, automation, and system activity
     addCondition: Add condition
     apply: Apply filters
     clear: Clear all
     removeCondition: Remove condition
-    rangeError: The start time must be earlier than or equal to the end time.
+    rangeError: The start time must be earlier than the end time.
+    autocomplete:
+      label: Suggested values from the current authorized scope
     presets:
       label: Quick time ranges
+      minutes15: Last 15 minutes
       hour: Last hour
       day: Last 24 hours
       week: Last 7 days
@@ -188,6 +194,15 @@ auditLogsPage:
       clientIp: Source IP
       authType: Authentication type
       interactionChannel: Interaction channel
+    shortcuts:
+      title: Investigation shortcuts
+      recentApi: API activity in the last hour
+      recentWeb: WebUI activity in the last hour
+      changes: Change events in the last 24 hours
+      removals: Removal events in the last 24 hours
+    results:
+      updating: Updating results…
+      summary: 'Query complete: {count} records, time range {range}'
     operators:
       contains: contains
       exact: is
@@ -217,6 +232,9 @@ auditLogsPage:
       title: Choose a time range
       cancel: Cancel
       accept: Use this range
+      wheelHelp: Scroll continuously in either direction in 15-minute steps, use the arrow keys, or type an exact time
+      fromWheelLabel: Infinite start-time wheel
+      toWheelLabel: Infinite end-time wheel
   table:
     time: Time
     eventType: Event Type
