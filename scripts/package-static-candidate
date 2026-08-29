@@ -140,6 +140,8 @@ for required_signature in 'define("ui/utils/bootstrap-runtime"' 'window.bootstra
   fi
 done
 
+# Bootstrap 3 JavaScript remains forbidden. The classic presentation-only CSS
+# is separately hash-pinned, provenance-checked, and browser-regression tested.
 for forbidden_signature in 'Bootstrap v3.' data-loading-text; do
   if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.js' \
       -exec grep -lF "$forbidden_signature" {} + | grep -q .; then
@@ -147,12 +149,6 @@ for forbidden_signature in 'Bootstrap v3.' data-loading-text; do
     exit 1
   fi
 done
-
-if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.css' \
-    -exec grep -lF 'Bootstrap v3.' {} + | grep -q .; then
-  echo "DIST_LEGACY_BOOTSTRAP_CSS_PRESENT signature=Bootstrap v3." >&2
-  exit 1
-fi
 
 if find "$dist_dir/assets" -maxdepth 1 -type f -name '*.js' \
     -exec grep -laF '["exports","ember-cli-htmlbars"]' {} + | grep -q .; then
