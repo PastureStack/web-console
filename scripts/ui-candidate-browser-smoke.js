@@ -26,7 +26,15 @@ const exerciseTotpEnrollment = process.env.UI_SMOKE_EXERCISE_TOTP_ENROLLMENT ===
 const exercisePasskeyEnrollment = process.env.UI_SMOKE_EXERCISE_PASSKEY_ENROLLMENT === "1";
 const requireRecoveryEmailEnrollment = process.env.UI_SMOKE_REQUIRE_EMAIL_RECOVERY === "1";
 const expectPasskeyLimit = process.env.UI_SMOKE_EXPECT_PASSKEY_LIMIT === "1";
-const defaultRoutes = `/env/${projectId}/infra/hosts,/env/${projectId}/apps/stacks?which=infra`;
+const defaultRoutes = [
+  `/env/${projectId}/apps/stacks`,
+  `/env/${projectId}/infra/hosts`,
+  `/env/${projectId}/infra/containers`,
+  `/env/${projectId}/catalog`,
+  `/env/${projectId}/apps/stacks/add`,
+  "/admin/accounts",
+  "/admin/audit-logs",
+].join(",");
 const routes = (process.env.UI_SMOKE_ROUTES || defaultRoutes).split(",").map((item) => item.trim()).filter(Boolean);
 let wsUpgradeCount = 0;
 let passkeyEnrollmentCompleted = false;
@@ -335,6 +343,68 @@ async function failOnRenderedError(page, route) {
   if (/HTTP ERROR 404|Problem accessing|Application Error|fail whale|Template version not found|Error check update/i.test(body)) {
     throw new Error(`route ${route} rendered error body: ${body.slice(0, 400)}`);
   }
+}
+
+async function assertClassicLayoutContract(page, route) {
+  const layout = await page.evaluate(() => {
+    const box = (selector) => {
+      const element = document.querySelector(selector);
+      if (!element) return null;
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return {
+        height: rect.height,
+        y: rect.y,
+        display: style.display,
+        fontFamily: style.fontFamily,
+        fontSize: style.fontSize,
+        lineHeight: style.lineHeight,
+        padding: style.padding,
+      };
+    };
+    const shields = Array.from(document.querySelectorAll('[data-testid="account-row-manage-mfa"] .icon-shield'))
+      .filter((element) => element.offsetParent !== null)
+      .map((element) => ({
+        content: getComputedStyle(element, "::before").content,
+        width: element.getBoundingClientRect().width,
+      }));
+    return {
+      body: box("body"),
+      header: box("header"),
+      navbar: box("nav.navbar"),
+      main: box("main"),
+      footer: box("footer"),
+      horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      shields,
+    };
+  });
+
+  const closeTo = (actual, expected, tolerance = 0.51) =>
+    Number.isFinite(actual) && Math.abs(actual - expected) <= tolerance;
+  if (!layout.body || !layout.body.fontFamily.startsWith("Lato") ||
+      layout.body.fontSize !== "15px" || layout.body.lineHeight !== "21.4286px") {
+    throw new Error(`route ${route} drifted from the v1.6.358 typography contract: ${JSON.stringify(layout.body)}`);
+  }
+  if (!layout.header || !layout.navbar || !closeTo(layout.header.height, 45) ||
+      !closeTo(layout.navbar.height, 45) || layout.navbar.fontSize !== "14px") {
+    throw new Error(`route ${route} drifted from the v1.6.358 navigation contract: ${JSON.stringify({ header: layout.header, navbar: layout.navbar })}`);
+  }
+  if (!layout.main || !closeTo(layout.main.y, 45)) {
+    throw new Error(`route ${route} drifted from the v1.6.358 main-content origin: ${JSON.stringify(layout.main)}`);
+  }
+  if (!layout.footer || !closeTo(layout.footer.height, 61.5) || layout.footer.padding !== "15px") {
+    throw new Error(`route ${route} drifted from the v1.6.358 footer contract: ${JSON.stringify(layout.footer)}`);
+  }
+  if (layout.horizontalOverflow > 1) {
+    throw new Error(`route ${route} has horizontal layout overflow=${layout.horizontalOverflow}`);
+  }
+  const emptyShield = layout.shields.find((shield) =>
+    shield.content === "none" || shield.content === "normal" || shield.width <= 0
+  );
+  if (emptyShield) {
+    throw new Error(`route ${route} rendered an empty security icon: ${JSON.stringify(emptyShield)}`);
+  }
+  console.log(`classic-layout-smoke-ok route=${route} header=45 footer=61.5 overflow=${layout.horizontalOverflow}`);
 }
 
 async function assertI18nHealth(page, route, warningStartIndex, i18nWarnings) {
@@ -971,6 +1041,7 @@ async function main() {
       await page.goto(base + route, { waitUntil: "domcontentloaded", timeout: 45000 });
       await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
       await failOnRenderedError(page, route);
+      await assertClassicLayoutContract(page, route);
       assertNoLoadingErrors(route, beforeLoadingErrorCount, loadingErrors);
       await assertI18nHealth(page, route, beforeI18nWarningCount, i18nWarnings);
       await assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount);

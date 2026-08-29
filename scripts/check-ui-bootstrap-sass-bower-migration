@@ -30,9 +30,7 @@ if Path("vendor/bootstrap-sass").exists():
     raise SystemExit("obsolete vendored Bootstrap 3 source must be absent")
 
 build = Path("ember-cli-build.js").read_text(encoding="utf-8")
-expected_imports = [
-    "node_modules/bootstrap/dist/css/bootstrap.css",
-]
+expected_imports = []
 actual_imports = [
     path
     for path in re.findall(r"app\.import\('(?P<path>[^']+)'\)", build)
@@ -42,6 +40,62 @@ if actual_imports != expected_imports:
     raise SystemExit(
         f"Bootstrap 5 build imports drift: actual={actual_imports!r} expected={expected_imports!r}"
     )
+
+authority_sha256 = "bab18039ee378d9afc63421db33f52bc685ff993e0c5dbddd21b4526752347f1"
+presentation_files = {
+    "app/styles/vendors/_bootstrap3-layout-light.scss":
+        "44954011eda0601c61ac8742227be654d6a679c52805ccbaebd94678c2b675b8",
+    "app/styles/vendors/_bootstrap3-layout-dark.scss":
+        "1264fdf5c2237451cad8151538183c208a8ce5190746b82552dfeab395da23ca",
+}
+for file_name, expected_sha256 in presentation_files.items():
+    path = Path(file_name)
+    if not path.is_file():
+        raise SystemExit(f"v1.6.358 presentation contract missing: {file_name}")
+    source = path.read_text(encoding="utf-8")
+    actual_sha256 = __import__("hashlib").sha256(path.read_bytes()).hexdigest()
+    if actual_sha256 != expected_sha256:
+        raise SystemExit(
+            f"v1.6.358 presentation contract drift: file={file_name} "
+            f"actual={actual_sha256} expected={expected_sha256}"
+        )
+    if authority_sha256 not in source or "Bootstrap 3.4.1 CSS under MIT" not in source:
+        raise SystemExit(f"v1.6.358 presentation provenance missing: {file_name}")
+    if ".glyphicon" in source:
+        raise SystemExit(f"unused Glyphicons restored in presentation contract: {file_name}")
+
+theme_imports = {
+    "app/styles/app-light.scss": 'meta.load-css("app/styles/vendors/bootstrap3-layout-light")',
+    "app/styles/app-dark.scss": 'meta.load-css("app/styles/vendors/bootstrap3-layout-dark")',
+}
+for file_name, marker in theme_imports.items():
+    if marker not in Path(file_name).read_text(encoding="utf-8"):
+        raise SystemExit(f"v1.6.358 presentation import missing: {file_name}")
+
+bridge = Path("app/styles/helpers/_bootstrap-root-bridge.scss").read_text(encoding="utf-8")
+for marker in (
+    ".navbar-toggler",
+    "@extend .navbar-toggle",
+    ".dropdown-menu.show",
+    ".collapse.show",
+    ".modal.show .modal-dialog",
+    ".modal-backdrop.show",
+    ".tooltip.show",
+    ".popover.show",
+):
+    if marker not in bridge:
+        raise SystemExit(f"Bootstrap 5 presentation state bridge missing marker: {marker}")
+
+icon_css = Path("vendor/icons/style.css").read_text(encoding="utf-8")
+if '.icon-shield:before { content: "\\e939"; }' not in icon_css:
+    raise SystemExit("security/MFA shield icon compatibility alias is missing")
+
+for file_name in (
+    "vendor/runtime-licenses/bootstrap3-layout-compat/LICENSE.md",
+    "vendor/runtime-licenses/bootstrap3-layout-compat/UPSTREAM.md",
+):
+    if not Path(file_name).is_file():
+        raise SystemExit(f"v1.6.358 presentation license evidence missing: {file_name}")
 
 app_source = Path("app/app.js").read_text(encoding="utf-8")
 runtime_source = Path("app/utils/bootstrap-runtime.js").read_text(encoding="utf-8")
@@ -84,5 +138,8 @@ for marker in ("Button", "Collapse", "Dropdown", "Tooltip", "Popover", expected_
     if marker not in test_source:
         raise SystemExit(f"Bootstrap browser runtime boundary missing marker: {marker}")
 
-print(f"ui-bootstrap5-runtime-ok version={expected_version} legacy_vendor_absent=true")
+print(
+    f"ui-bootstrap5-runtime-ok version={expected_version} "
+    f"presentation_authority=server-v1.6.358 legacy_javascript_absent=true"
+)
 PY_CHECK
