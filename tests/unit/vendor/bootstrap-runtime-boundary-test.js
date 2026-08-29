@@ -27,6 +27,7 @@ test('the Bootstrap collapse data API handles the production header contract', f
   trigger.click();
   setTimeout(() => {
     assert.true(panel.classList.contains('show'), 'the maintained runtime opens the collapsed navigation');
+    assert.strictEqual(window.getComputedStyle(panel).display, 'block', 'the presentation bridge renders Bootstrap 5 show state');
     assert.strictEqual(trigger.getAttribute('aria-expanded'), 'true', 'the trigger exposes its expanded state');
 
     trigger.click();
@@ -48,6 +49,37 @@ test('the legacy hide contract keeps inactive overlays non-interactive', functio
     'none',
     'the Bootstrap 3 compatibility class still removes inactive overlays from hit testing'
   );
+});
+
+test('the Bootstrap 5 dropdown state keeps the established menu presentation', function(assert) {
+  let fixture = document.getElementById('qunit-fixture');
+
+  installBootstrapRuntime();
+  fixture.innerHTML = '<div class="dropdown"><button type="button" data-bs-toggle="dropdown" aria-expanded="false">Language</button><div class="dropdown-menu dropdown-menu-end"><a class="dropdown-item" href="#">English</a></div></div>';
+
+  let trigger = fixture.querySelector('button');
+  let menu = fixture.querySelector('.dropdown-menu');
+  let dropdown = window.bootstrap.Dropdown.getOrCreateInstance(trigger);
+
+  dropdown.show();
+  assert.true(menu.classList.contains('show'), 'Bootstrap 5 marks the menu open');
+  assert.strictEqual(window.getComputedStyle(menu).display, 'block', 'the presentation bridge displays the open menu');
+  assert.strictEqual(trigger.getAttribute('aria-expanded'), 'true', 'the trigger exposes its open state');
+
+  dropdown.hide();
+  assert.false(menu.classList.contains('show'), 'Bootstrap 5 closes the menu');
+  dropdown.dispose();
+});
+
+test('security actions render a visible icon from the current icon font', function(assert) {
+  let fixture = document.getElementById('qunit-fixture');
+
+  fixture.innerHTML = '<button class="btn btn-default"><i class="icon icon-shield"></i><span class="sr-only">Security</span></button>';
+  let icon = fixture.querySelector('.icon-shield');
+  let glyph = window.getComputedStyle(icon, '::before');
+
+  assert.notStrictEqual(glyph.content, 'none', 'the shield compatibility alias has a glyph');
+  assert.ok(icon.getBoundingClientRect().width > 0, 'the security glyph occupies visible space');
 });
 
 test('Bootstrap 5 multiselect preserves the application command surface', function(assert) {

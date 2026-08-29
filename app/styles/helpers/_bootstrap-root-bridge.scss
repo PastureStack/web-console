@@ -1,4 +1,61 @@
 @mixin emit-bootstrap-root-bridge {
+  // Keep Bootstrap 5's maintained JavaScript/data API while presenting the
+  // established Server v1.6.358 layout. These are the only class names that
+  // changed during the interaction-runtime migration.
+  .navbar-toggler {
+    @extend .navbar-toggle;
+  }
+
+  .dropdown-menu-end {
+    right: 0;
+    left: auto;
+  }
+
+  // Bootstrap 5 toggles `.show`; the established presentation stylesheet uses
+  // Bootstrap 3's `.in`/`.open` selectors. Bind only the state class, not the
+  // obsolete JavaScript runtime.
+  .collapse.show {
+    display: block;
+  }
+
+  TR.collapse.show {
+    display: table-row;
+  }
+
+  TBODY.collapse.show {
+    display: table-row-group;
+  }
+
+  .dropdown-menu.show {
+    display: block;
+  }
+
+  .fade.show {
+    opacity: 1;
+  }
+
+  .modal.show {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .modal.show .modal-dialog {
+    transform: translate(0, 0);
+  }
+
+  .modal-backdrop.show {
+    opacity: 0.5;
+  }
+
+  .tooltip.show {
+    opacity: 0.9;
+  }
+
+  .popover.show {
+    display: block;
+  }
+
   .btn-group-xs > .btn {
     @extend .btn-xs;
   }

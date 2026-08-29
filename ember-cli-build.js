@@ -126,10 +126,11 @@ module.exports = function(defaults) {
   app.import('node_modules/@xterm/xterm/css/xterm.css');
   app.import('node_modules/@xterm/xterm/lib/xterm.js');
   app.import('node_modules/@xterm/addon-fit/lib/addon-fit.js');
-  // Bootstrap 5 is the maintained runtime. Its JavaScript is imported from
-  // app/app.js so it executes as an application module instead of becoming a
-  // dormant anonymous AMD module in the production vendor bundle.
-  app.import('node_modules/bootstrap/dist/css/bootstrap.css');
+  // Bootstrap 5 remains the maintained interaction runtime. Its JavaScript is
+  // imported from app/app.js. The console's established visual contract is
+  // emitted by the theme-specific presentation bridge instead of Bootstrap 5's
+  // global reboot/layout stylesheet, which is incompatible with the existing
+  // application DOM and would restyle every authenticated page.
   app.import('node_modules/jgrowl/jquery.jgrowl.js');
   app.import('node_modules/jgrowl/jquery.jgrowl.css');
   app.import('node_modules/jquery.cookie/jquery.cookie.js');
@@ -219,6 +220,7 @@ module.exports = function(defaults) {
     destDir: 'licenses/ember-fetch'
   });
   var runtimeLegalPackages = [
+    'bootstrap3-layout-compat',
     'bootstrap-multiselect',
     'ember-power-select',
     'ember-basic-dropdown',

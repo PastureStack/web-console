@@ -33,7 +33,7 @@ trap cleanup EXIT
 mkdir -p "$tmpdir/dist/assets"
 mkdir -p "$tmpdir/dist/licenses/ember"
 mkdir -p "$tmpdir/dist/licenses/ember-fetch"
-runtime_legal_packages=(bootstrap-multiselect ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
+runtime_legal_packages=(bootstrap3-layout-compat bootstrap-multiselect ember-power-select ember-basic-dropdown ember-concurrency ember-modifier)
 for package_name in "${runtime_legal_packages[@]}"; do
   mkdir -p "$tmpdir/dist/licenses/runtime/$package_name"
 done

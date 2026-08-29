@@ -610,6 +610,7 @@ $k8sHeader: theme.$k8sHeader;
 // Includes boilerplate for the project. Inlcude things like typography, Normalize, etc.
 //******************************************
 @include meta.load-css("app/styles/base/fonts");
+@include meta.load-css("app/styles/vendors/bootstrap3-layout-dark");
 @include meta.load-css("vendor/bootswatch-cosmo/bootswatch", $with: ("brand-danger": $brand-danger, "brand-info": $brand-info, "brand-primary": $brand-primary, "brand-success": $brand-success, "brand-warning": $brand-warning, "state-danger-bg": $state-danger-bg, "state-success-bg": $state-success-bg, "state-warning-bg": $state-warning-bg, "text-color": $text-color));
 
 
