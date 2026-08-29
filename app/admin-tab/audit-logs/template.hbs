@@ -248,7 +248,7 @@
           <div class="audit-log-time-dialog-summary">{{this.timeRangeSummary}}</div>
           <div class="audit-log-filter-time-inputs">
             <div class="audit-log-time-editor">
-              <label {{action "nudgeTime" "createdFrom" on="wheel"}}>
+              <label {{on "wheel" (action "nudgeTime" "createdFrom")}}>
                 <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
                 {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdFrom input=(action "customTimeChanged") data-testid="audit-log-created-from"}}
               </label>
@@ -258,8 +258,8 @@
                 tabindex="0"
                 aria-label={{t 'auditLogsPage.filterBuilder.timeDialog.fromWheelLabel'}}
                 data-testid="audit-log-created-from-wheel"
-                {{action "nudgeTime" "createdFrom" on="wheel"}}
-                {{action "keyTimeWheel" "createdFrom" on="keyDown"}}
+                {{on "wheel" (action "nudgeTime" "createdFrom")}}
+                {{on "keydown" (action "keyTimeWheel" "createdFrom")}}
               >
                 <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
                 <div class="audit-log-time-wheel-track">
@@ -271,7 +271,7 @@
             </div>
             <span class="audit-log-filter-time-separator" aria-hidden="true">→</span>
             <div class="audit-log-time-editor">
-              <label {{action "nudgeTime" "createdTo" on="wheel"}}>
+              <label {{on "wheel" (action "nudgeTime" "createdTo")}}>
                 <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
                 {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdTo input=(action "customTimeChanged") data-testid="audit-log-created-to"}}
               </label>
@@ -281,8 +281,8 @@
                 tabindex="0"
                 aria-label={{t 'auditLogsPage.filterBuilder.timeDialog.toWheelLabel'}}
                 data-testid="audit-log-created-to-wheel"
-                {{action "nudgeTime" "createdTo" on="wheel"}}
-                {{action "keyTimeWheel" "createdTo" on="keyDown"}}
+                {{on "wheel" (action "nudgeTime" "createdTo")}}
+                {{on "keydown" (action "keyTimeWheel" "createdTo")}}
               >
                 <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
                 <div class="audit-log-time-wheel-track">
