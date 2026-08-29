@@ -3,12 +3,15 @@ import EmberObject from '@ember/object';
 import { service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Controller, { inject as controller } from '@ember/controller';
+import { cancel, later } from '@ember/runloop';
 import moment from 'moment';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import { addQueryParams, download } from 'ui/utils/util';
 
 const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType'];
+const TIME_WHEEL_ANIMATION_MS = 260;
+const TIME_WHEEL_COMPLETION_GRACE_MS = 40;
 
 function defaultTimeRange() {
   let end = moment();
@@ -75,7 +78,10 @@ function timeWheelOptions(value) {
     return [];
   }
 
-  return [-2, -1, 0, 1, 2].map((offset) => {
+  // Keep one off-screen row on both ends.  The track can then move one full
+  // row before the selected value is committed, so wheel input is visibly
+  // interpolated instead of replacing the labels in the same paint.
+  return [-3, -2, -1, 0, 1, 2, 3].map((offset) => {
     let option = current.clone().add(offset * 15, 'minutes');
 
     return {
@@ -137,11 +143,32 @@ export default Controller.extend(Sortable, {
   timeWheelField           : null,
   timeWheelDirection       : 'next',
   timeWheelPhase           : false,
+  timeWheelAnimating       : false,
+  timeWheelActiveStep      : 0,
+  timeWheelPendingSteps    : 0,
 
   init() {
     this._super(...arguments);
     this.set('filters', emptyFilters());
     this.set('optionalFilters', A());
+  },
+
+  willDestroy() {
+    this.cancelTimeWheelCompletion();
+    this._super(...arguments);
+  },
+
+  cancelTimeWheelCompletion() {
+    cancel(this._timeWheelCompletionTimer);
+    this._timeWheelCompletionTimer = null;
+  },
+
+  scheduleTimeWheelCompletion(field) {
+    this.cancelTimeWheelCompletion();
+    this._timeWheelCompletionTimer = later(this, function() {
+      this._timeWheelCompletionTimer = null;
+      this.finishTimeWheelAnimation(field);
+    }, TIME_WHEEL_ANIMATION_MS + TIME_WHEEL_COMPLETION_GRACE_MS);
   },
 
   shiftTimeWheel(field, step) {
@@ -155,15 +182,92 @@ export default Controller.extend(Sortable, {
       return false;
     }
 
-    current.add(step * 15, 'minutes');
-    this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
+    let normalizedStep = step > 0 ? 1 : -1;
+    let stepCount = Math.max(1, Math.abs(Math.trunc(step)));
+
+    if (this.get('timeWheelAnimating')) {
+      if (this.get('timeWheelField') !== field) {
+        return false;
+      }
+
+      this.incrementProperty('timeWheelPendingSteps', normalizedStep * stepCount);
+      return true;
+    }
+
     this.setProperties({
-      activeTimePreset  : 'custom',
-      timeWheelDirection: step > 0 ? 'next' : 'previous',
-      timeWheelField    : field,
-      timeWheelPhase    : !this.get('timeWheelPhase'),
+      activeTimePreset     : 'custom',
+      timeWheelActiveStep  : normalizedStep,
+      timeWheelAnimating   : true,
+      timeWheelDirection   : normalizedStep > 0 ? 'next' : 'previous',
+      timeWheelField       : field,
+      timeWheelPendingSteps: normalizedStep * (stepCount - 1),
+      timeWheelPhase       : !this.get('timeWheelPhase'),
     });
+    this.scheduleTimeWheelCompletion(field);
     return true;
+  },
+
+  finishTimeWheelAnimation(field) {
+    if (!this.get('timeWheelAnimating') || this.get('timeWheelField') !== field) {
+      return false;
+    }
+
+    this.cancelTimeWheelCompletion();
+
+    let current = moment(this.get(`filters.${field}`));
+    let activeStep = this.get('timeWheelActiveStep');
+
+    if (!current.isValid() || !activeStep) {
+      this.resetTimeWheelAnimation();
+      return false;
+    }
+
+    current.add(activeStep * 15, 'minutes');
+    this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
+
+    let pendingSteps = this.get('timeWheelPendingSteps');
+
+    if (pendingSteps) {
+      let nextStep = pendingSteps > 0 ? 1 : -1;
+
+      this.setProperties({
+        timeWheelActiveStep  : nextStep,
+        timeWheelDirection   : nextStep > 0 ? 'next' : 'previous',
+        timeWheelPendingSteps: pendingSteps - nextStep,
+        timeWheelPhase       : !this.get('timeWheelPhase'),
+      });
+      this.scheduleTimeWheelCompletion(field);
+    } else {
+      this.resetTimeWheelAnimation();
+    }
+
+    return true;
+  },
+
+  flushTimeWheelAnimation() {
+    if (!this.get('timeWheelAnimating')) {
+      return;
+    }
+
+    let field = this.get('timeWheelField');
+    let current = moment(this.get(`filters.${field}`));
+    let totalSteps = this.get('timeWheelActiveStep') + this.get('timeWheelPendingSteps');
+
+    if (current.isValid() && totalSteps) {
+      current.add(totalSteps * 15, 'minutes');
+      this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
+    }
+    this.resetTimeWheelAnimation();
+  },
+
+  resetTimeWheelAnimation() {
+    this.cancelTimeWheelCompletion();
+    this.setProperties({
+      timeWheelActiveStep  : 0,
+      timeWheelAnimating   : false,
+      timeWheelField       : null,
+      timeWheelPendingSteps: 0,
+    });
   },
 
   actions: {
@@ -218,6 +322,7 @@ export default Controller.extend(Sortable, {
     },
 
     closeTimePicker() {
+      this.resetTimeWheelAnimation();
       this.set('isTimePickerOpen', false);
       let fallback = defaultTimeRange();
 
@@ -228,6 +333,7 @@ export default Controller.extend(Sortable, {
     },
 
     acceptTimePicker() {
+      this.flushTimeWheelAnimation();
       if (this.get('timeRangeInvalid')) {
         this.set('filterError', this.get('intl').t('auditLogsPage.filterBuilder.rangeError'));
         return;
@@ -238,6 +344,7 @@ export default Controller.extend(Sortable, {
     },
 
     setTimePreset(amount, unit) {
+      this.resetTimeWheelAnimation();
       let end = moment();
 
       this.set('filters.createdFrom', end.clone().subtract(amount, unit).format('YYYY-MM-DDTHH:mm:ss'));
@@ -252,6 +359,7 @@ export default Controller.extend(Sortable, {
     },
 
     customTimeChanged() {
+      this.resetTimeWheelAnimation();
       this.set('activeTimePreset', 'custom');
     },
 
@@ -273,13 +381,16 @@ export default Controller.extend(Sortable, {
         return;
       }
 
-      this.set(`filters.${field}`, selected.format('YYYY-MM-DDTHH:mm:ss'));
-      this.setProperties({
-        activeTimePreset  : 'custom',
-        timeWheelDirection: selected.isAfter(current) ? 'next' : 'previous',
-        timeWheelField    : field,
-        timeWheelPhase    : !this.get('timeWheelPhase'),
-      });
+      let steps = Math.round(selected.diff(current, 'minutes', true) / 15);
+
+      this.shiftTimeWheel(field, steps);
+    },
+
+    finishTimeWheelAnimation(field, event) {
+      if (event && event.target !== event.currentTarget) {
+        return;
+      }
+      this.finishTimeWheelAnimation(field);
     },
 
     keyTimeWheel(field, event) {

@@ -471,6 +471,8 @@ button.audit-log-primary-control:focus,
 .audit-log-time-wheel-track {
   position: relative;
   z-index: 2;
+  transform: translateY(-30px);
+  will-change: transform;
 }
 
 .audit-log-time-wheel-option {
@@ -499,19 +501,19 @@ button.audit-log-primary-control:focus,
 }
 
 .audit-log-time-wheel.is-moving.is-next.phase-a .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-next-a 180ms cubic-bezier(.2, .75, .3, 1);
+  animation: audit-log-time-wheel-next-a 260ms cubic-bezier(.22, .61, .36, 1) both;
 }
 
 .audit-log-time-wheel.is-moving.is-next.phase-b .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-next-b 180ms cubic-bezier(.2, .75, .3, 1);
+  animation: audit-log-time-wheel-next-b 260ms cubic-bezier(.22, .61, .36, 1) both;
 }
 
 .audit-log-time-wheel.is-moving.is-previous.phase-a .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-previous-a 180ms cubic-bezier(.2, .75, .3, 1);
+  animation: audit-log-time-wheel-previous-a 260ms cubic-bezier(.22, .61, .36, 1) both;
 }
 
 .audit-log-time-wheel.is-moving.is-previous.phase-b .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-previous-b 180ms cubic-bezier(.2, .75, .3, 1);
+  animation: audit-log-time-wheel-previous-b 260ms cubic-bezier(.22, .61, .36, 1) both;
 }
 
 .audit-log-time-wheel-help {
@@ -605,8 +607,8 @@ button.audit-log-primary-control:focus,
   }
 }
 
-@keyframes audit-log-time-wheel-next-a { from { transform: translateY(30px); } to { transform: translateY(0); } }
-@keyframes audit-log-time-wheel-next-b { from { transform: translateY(30px); } to { transform: translateY(0); } }
+@keyframes audit-log-time-wheel-next-a { from { transform: translateY(-30px); } to { transform: translateY(-60px); } }
+@keyframes audit-log-time-wheel-next-b { from { transform: translateY(-30px); } to { transform: translateY(-60px); } }
 @keyframes audit-log-time-wheel-previous-a { from { transform: translateY(-30px); } to { transform: translateY(0); } }
 @keyframes audit-log-time-wheel-previous-b { from { transform: translateY(-30px); } to { transform: translateY(0); } }
 
@@ -614,7 +616,6 @@ button.audit-log-primary-control:focus,
   .audit-log-filter-card,
   .audit-log-primary-control,
   .audit-log-filter-row,
-  .audit-log-time-wheel-track,
   .audit-log-time-wheel-option,
   .audit-log-time-dialog,
   .audit-log-time-dialog-backdrop {
