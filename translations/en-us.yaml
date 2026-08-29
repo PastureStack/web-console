@@ -232,9 +232,18 @@ auditLogsPage:
       title: Choose a time range
       cancel: Cancel
       accept: Use this range
-      wheelHelp: Scroll continuously in either direction in 15-minute steps, use the arrow keys, or type an exact time
-      fromWheelLabel: Infinite start-time wheel
-      toWheelLabel: Infinite end-time wheel
+      wheelHelp: Glide the three middle columns to choose hour, minute, and AM or PM; the wheels decelerate and settle on the nearest value
+      hour: Hour
+      minute: Minute
+      period: Period
+      am: AM
+      pm: PM
+      fromHourLabel: Start time hour
+      fromMinuteLabel: Start time minute
+      fromPeriodLabel: Start time AM or PM
+      toHourLabel: End time hour
+      toMinuteLabel: End time minute
+      toPeriodLabel: End time AM or PM
   table:
     time: Time
     eventType: Event Type

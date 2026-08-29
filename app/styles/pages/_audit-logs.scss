@@ -358,7 +358,7 @@ button.audit-log-primary-control:focus,
 }
 
 .audit-log-time-dialog {
-  width: min(680px, 100%);
+  width: min(760px, 100%);
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -429,91 +429,129 @@ button.audit-log-primary-control:focus,
   display: block;
 }
 
-.audit-log-time-wheel {
-  position: relative;
-  height: 152px;
+.audit-log-time-columns {
+  display: grid;
+  grid-template-columns: minmax(58px, 1fr) minmax(58px, 1fr) minmax(74px, 1.15fr);
+  gap: 5px;
   margin-top: 9px;
-  overflow: hidden;
+  padding: 7px;
   background: $input-bg;
   border: 1px solid $table-border-color;
-  border-radius: 6px;
-  outline: 0;
-  cursor: ns-resize;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .035);
 }
 
-.audit-log-time-wheel::after {
+.audit-time-column {
+  min-width: 0;
+}
+
+.audit-time-column-label {
+  height: 20px;
+  color: $text-muted;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 20px;
+  text-align: center;
+}
+
+.audit-time-column-frame {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 6px;
+  perspective: 280px;
+}
+
+.audit-time-column-frame::before,
+.audit-time-column-frame::after {
   position: absolute;
-  z-index: 3;
-  inset: 0;
-  background: linear-gradient(to bottom, $input-bg 0%, rgba($input-bg, .18) 33%, rgba($input-bg, 0) 46%, rgba($input-bg, 0) 54%, rgba($input-bg, .18) 67%, $input-bg 100%);
+  z-index: 4;
+  right: 0;
+  left: 0;
+  height: 62px;
   content: '';
   pointer-events: none;
 }
 
-.audit-log-time-wheel:focus {
-  border-color: $brand-primary;
-  box-shadow: 0 0 0 2px rgba($brand-primary, .14);
+.audit-time-column-frame::before {
+  top: 0;
+  background: linear-gradient(to bottom, $input-bg 8%, rgba($input-bg, .9) 36%, rgba($input-bg, 0) 100%);
 }
 
-.audit-log-time-wheel-selection {
+.audit-time-column-frame::after {
+  bottom: 0;
+  background: linear-gradient(to top, $input-bg 8%, rgba($input-bg, .9) 36%, rgba($input-bg, 0) 100%);
+}
+
+.audit-time-column-viewport {
+  position: relative;
+  z-index: 2;
+  height: 180px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  outline: 0;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  cursor: ns-resize;
+  -webkit-overflow-scrolling: touch;
+}
+
+.audit-time-column-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.audit-time-column-frame:focus-within {
+  box-shadow: 0 0 0 2px rgba($brand-primary, .16);
+}
+
+.audit-time-column-track {
+  padding: 72px 0;
+}
+
+.audit-time-column-option {
+  display: block;
+  width: 100%;
+  height: 36px;
+  padding: 0 5px;
+  color: $text-muted;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  cursor: pointer;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+  line-height: 36px;
+  text-align: center;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+.audit-time-column-option:hover {
+  color: $brand-primary;
+}
+
+.audit-time-column-option[aria-selected='true'] {
+  color: $text-color;
+  font-weight: 700;
+}
+
+.audit-time-column-selection {
   position: absolute;
   z-index: 1;
-  top: 60px;
-  right: 6px;
-  left: 6px;
-  height: 30px;
-  background: rgba($brand-primary, .09);
-  border: 1px solid rgba($brand-primary, .28);
+  top: 72px;
+  right: 2px;
+  left: 2px;
+  height: 36px;
+  background: rgba($brand-primary, .1);
+  border-top: 1px solid rgba($brand-primary, .28);
+  border-bottom: 1px solid rgba($brand-primary, .28);
   border-radius: 4px;
   pointer-events: none;
 }
 
-.audit-log-time-wheel-track {
-  position: relative;
-  z-index: 2;
-  transform: translateY(-30px);
-  will-change: transform;
-}
-
-.audit-log-time-wheel-option {
-  display: block;
-  width: 100%;
-  height: 30px;
-  padding: 0 8px;
-  color: $text-muted;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 30px;
-  text-align: center;
-  transition: color 120ms ease, opacity 120ms ease;
-}
-
-.audit-log-time-wheel-option:hover {
-  color: $brand-primary;
-}
-
-.audit-log-time-wheel-option.is-current {
-  color: $text-color;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.audit-log-time-wheel.is-moving.is-next.phase-a .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-next-a 260ms cubic-bezier(.22, .61, .36, 1) both;
-}
-
-.audit-log-time-wheel.is-moving.is-next.phase-b .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-next-b 260ms cubic-bezier(.22, .61, .36, 1) both;
-}
-
-.audit-log-time-wheel.is-moving.is-previous.phase-a .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-previous-a 260ms cubic-bezier(.22, .61, .36, 1) both;
-}
-
-.audit-log-time-wheel.is-moving.is-previous.phase-b .audit-log-time-wheel-track {
-  animation: audit-log-time-wheel-previous-b 260ms cubic-bezier(.22, .61, .36, 1) both;
+.audit-time-column.is-gliding .audit-time-column-selection {
+  background: rgba($brand-primary, .13);
 }
 
 .audit-log-time-wheel-help {
@@ -607,16 +645,10 @@ button.audit-log-primary-control:focus,
   }
 }
 
-@keyframes audit-log-time-wheel-next-a { from { transform: translateY(-30px); } to { transform: translateY(-60px); } }
-@keyframes audit-log-time-wheel-next-b { from { transform: translateY(-30px); } to { transform: translateY(-60px); } }
-@keyframes audit-log-time-wheel-previous-a { from { transform: translateY(-30px); } to { transform: translateY(0); } }
-@keyframes audit-log-time-wheel-previous-b { from { transform: translateY(-30px); } to { transform: translateY(0); } }
-
 @media (prefers-reduced-motion: reduce) {
   .audit-log-filter-card,
   .audit-log-primary-control,
   .audit-log-filter-row,
-  .audit-log-time-wheel-option,
   .audit-log-time-dialog,
   .audit-log-time-dialog-backdrop {
     animation: none;
