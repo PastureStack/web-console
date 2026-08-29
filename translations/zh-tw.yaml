@@ -218,9 +218,18 @@ auditLogsPage:
       title: 選擇時間範圍
       cancel: 取消
       accept: 使用此時間
-      wheelHelp: 滾輪可無限前後移動；每格 15 分鐘，也可使用方向鍵或直接輸入
-      fromWheelLabel: 開始時間無限滾輪
-      toWheelLabel: 結束時間無限滾輪
+      wheelHelp: 滑動中間三欄選擇時、分與上午／下午；放開後會平滑減速並吸附到最近數字
+      hour: 時
+      minute: 分
+      period: 時段
+      am: 上午
+      pm: 下午
+      fromHourLabel: 開始時間－小時
+      fromMinuteLabel: 開始時間－分鐘
+      fromPeriodLabel: 開始時間－上午或下午
+      toHourLabel: 結束時間－小時
+      toMinuteLabel: 結束時間－分鐘
+      toPeriodLabel: 結束時間－上午或下午
   table:
     time: 時間
     eventType: 事件類型

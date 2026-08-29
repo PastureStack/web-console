@@ -322,7 +322,7 @@ storage_template = (repo / "app/host/storage/template.hbs").read_text(encoding="
 if 'pageSizeChanged=(action "storagePageSizeChanged")' not in storage_template:
     fail("storage page-size callback is missing from the host storage table")
 
-if template_action_count != 520:
+if template_action_count != 514:
     fail(f"unexpected template action count: {template_action_count}")
 if power_select_count != 12:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")

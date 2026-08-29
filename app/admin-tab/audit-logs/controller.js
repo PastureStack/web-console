@@ -1,17 +1,22 @@
 import { A } from '@ember/array';
-import EmberObject from '@ember/object';
+import EmberObject, { computed } from '@ember/object';
 import { service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Controller, { inject as controller } from '@ember/controller';
-import { cancel, later } from '@ember/runloop';
 import moment from 'moment';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import { addQueryParams, download } from 'ui/utils/util';
 
 const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType'];
-const TIME_WHEEL_ANIMATION_MS = 260;
-const TIME_WHEEL_COMPLETION_GRACE_MS = 40;
+const TIME_HOUR_OPTIONS = Array.from({ length: 12 }, (unused, index) => ({
+  label: String(index + 1).padStart(2, '0'),
+  value: index + 1,
+}));
+const TIME_MINUTE_OPTIONS = Array.from({ length: 60 }, (unused, index) => ({
+  label: String(index).padStart(2, '0'),
+  value: index,
+}));
 
 function defaultTimeRange() {
   let end = moment();
@@ -71,25 +76,25 @@ function matchingTimePreset(fromValue, toValue) {
   return ({15: 'minutes15', 60: 'hour', 1440: 'day', 10080: 'week'})[minutes] || 'custom';
 }
 
-function timeWheelOptions(value) {
+function selectedTimePart(value, part) {
   let current = moment(value);
 
   if (!current.isValid()) {
-    return [];
+    return null;
   }
 
-  // Keep one off-screen row on both ends.  The track can then move one full
-  // row before the selected value is committed, so wheel input is visibly
-  // interpolated instead of replacing the labels in the same paint.
-  return [-3, -2, -1, 0, 1, 2, 3].map((offset) => {
-    let option = current.clone().add(offset * 15, 'minutes');
-
-    return {
-      current: offset === 0,
-      label: option.format('YYYY/MM/DD HH:mm'),
-      value: option.format('YYYY-MM-DDTHH:mm:ss'),
-    };
-  });
+  switch (part) {
+    case 'date':
+      return current.format('YYYY-MM-DD');
+    case 'hour':
+      return current.hour() % 12 || 12;
+    case 'minute':
+      return current.minute();
+    case 'period':
+      return current.hour() >= 12 ? 'pm' : 'am';
+    default:
+      return null;
+  }
 }
 
 export default Controller.extend(Sortable, {
@@ -140,12 +145,8 @@ export default Controller.extend(Sortable, {
   isTimePickerOpen         : false,
   isFiltering              : false,
   activeTimePreset         : 'day',
-  timeWheelField           : null,
-  timeWheelDirection       : 'next',
-  timeWheelPhase           : false,
-  timeWheelAnimating       : false,
-  timeWheelActiveStep      : 0,
-  timeWheelPendingSteps    : 0,
+  hourOptions              : TIME_HOUR_OPTIONS,
+  minuteOptions            : TIME_MINUTE_OPTIONS,
 
   init() {
     this._super(...arguments);
@@ -153,26 +154,27 @@ export default Controller.extend(Sortable, {
     this.set('optionalFilters', A());
   },
 
-  willDestroy() {
-    this.cancelTimeWheelCompletion();
-    this._super(...arguments);
+  updateDatePart(field, value) {
+    if (['createdFrom', 'createdTo'].indexOf(field) === -1) {
+      return false;
+    }
+
+    let current = moment(this.get(`filters.${field}`));
+    let selected = moment(value, 'YYYY-MM-DD', true);
+
+    if (!current.isValid() || !selected.isValid()) {
+      return false;
+    }
+
+    current.year(selected.year()).month(selected.month()).date(selected.date());
+    this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
+    this.set('activeTimePreset', 'custom');
+    this.set('filterError', null);
+    return true;
   },
 
-  cancelTimeWheelCompletion() {
-    cancel(this._timeWheelCompletionTimer);
-    this._timeWheelCompletionTimer = null;
-  },
-
-  scheduleTimeWheelCompletion(field) {
-    this.cancelTimeWheelCompletion();
-    this._timeWheelCompletionTimer = later(this, function() {
-      this._timeWheelCompletionTimer = null;
-      this.finishTimeWheelAnimation(field);
-    }, TIME_WHEEL_ANIMATION_MS + TIME_WHEEL_COMPLETION_GRACE_MS);
-  },
-
-  shiftTimeWheel(field, step) {
-    if (['createdFrom', 'createdTo'].indexOf(field) === -1 || !step) {
+  updateTimePart(field, part, value) {
+    if (['createdFrom', 'createdTo'].indexOf(field) === -1) {
       return false;
     }
 
@@ -182,92 +184,34 @@ export default Controller.extend(Sortable, {
       return false;
     }
 
-    let normalizedStep = step > 0 ? 1 : -1;
-    let stepCount = Math.max(1, Math.abs(Math.trunc(step)));
+    if (part === 'hour') {
+      let hour = Number(value);
 
-    if (this.get('timeWheelAnimating')) {
-      if (this.get('timeWheelField') !== field) {
+      if (!Number.isInteger(hour) || hour < 1 || hour > 12) {
         return false;
       }
+      current.hour((hour % 12) + (current.hour() >= 12 ? 12 : 0));
+    } else if (part === 'minute') {
+      let minute = Number(value);
 
-      this.incrementProperty('timeWheelPendingSteps', normalizedStep * stepCount);
-      return true;
-    }
-
-    this.setProperties({
-      activeTimePreset     : 'custom',
-      timeWheelActiveStep  : normalizedStep,
-      timeWheelAnimating   : true,
-      timeWheelDirection   : normalizedStep > 0 ? 'next' : 'previous',
-      timeWheelField       : field,
-      timeWheelPendingSteps: normalizedStep * (stepCount - 1),
-      timeWheelPhase       : !this.get('timeWheelPhase'),
-    });
-    this.scheduleTimeWheelCompletion(field);
-    return true;
-  },
-
-  finishTimeWheelAnimation(field) {
-    if (!this.get('timeWheelAnimating') || this.get('timeWheelField') !== field) {
-      return false;
-    }
-
-    this.cancelTimeWheelCompletion();
-
-    let current = moment(this.get(`filters.${field}`));
-    let activeStep = this.get('timeWheelActiveStep');
-
-    if (!current.isValid() || !activeStep) {
-      this.resetTimeWheelAnimation();
-      return false;
-    }
-
-    current.add(activeStep * 15, 'minutes');
-    this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
-
-    let pendingSteps = this.get('timeWheelPendingSteps');
-
-    if (pendingSteps) {
-      let nextStep = pendingSteps > 0 ? 1 : -1;
-
-      this.setProperties({
-        timeWheelActiveStep  : nextStep,
-        timeWheelDirection   : nextStep > 0 ? 'next' : 'previous',
-        timeWheelPendingSteps: pendingSteps - nextStep,
-        timeWheelPhase       : !this.get('timeWheelPhase'),
-      });
-      this.scheduleTimeWheelCompletion(field);
+      if (!Number.isInteger(minute) || minute < 0 || minute > 59) {
+        return false;
+      }
+      current.minute(minute);
+    } else if (part === 'period' && ['am', 'pm'].indexOf(value) >= 0) {
+      if (value === 'pm' && current.hour() < 12) {
+        current.add(12, 'hours');
+      } else if (value === 'am' && current.hour() >= 12) {
+        current.subtract(12, 'hours');
+      }
     } else {
-      this.resetTimeWheelAnimation();
+      return false;
     }
 
+    this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
+    this.set('activeTimePreset', 'custom');
+    this.set('filterError', null);
     return true;
-  },
-
-  flushTimeWheelAnimation() {
-    if (!this.get('timeWheelAnimating')) {
-      return;
-    }
-
-    let field = this.get('timeWheelField');
-    let current = moment(this.get(`filters.${field}`));
-    let totalSteps = this.get('timeWheelActiveStep') + this.get('timeWheelPendingSteps');
-
-    if (current.isValid() && totalSteps) {
-      current.add(totalSteps * 15, 'minutes');
-      this.set(`filters.${field}`, current.format('YYYY-MM-DDTHH:mm:ss'));
-    }
-    this.resetTimeWheelAnimation();
-  },
-
-  resetTimeWheelAnimation() {
-    this.cancelTimeWheelCompletion();
-    this.setProperties({
-      timeWheelActiveStep  : 0,
-      timeWheelAnimating   : false,
-      timeWheelField       : null,
-      timeWheelPendingSteps: 0,
-    });
   },
 
   actions: {
@@ -283,8 +227,14 @@ export default Controller.extend(Sortable, {
       this.set('filterError', null);
     },
 
-    selectTextOperator(field, operator) {
+    selectTextOperator(field, operatorOrEvent) {
       if (['eventType', 'description'].indexOf(field) === -1) {
+        return;
+      }
+
+      let operator = operatorOrEvent && operatorOrEvent.target ? operatorOrEvent.target.value : operatorOrEvent;
+
+      if (['contains', 'exact', 'startsWith', 'notEqual', 'notContains'].indexOf(operator) === -1) {
         return;
       }
 
@@ -322,7 +272,6 @@ export default Controller.extend(Sortable, {
     },
 
     closeTimePicker() {
-      this.resetTimeWheelAnimation();
       this.set('isTimePickerOpen', false);
       let fallback = defaultTimeRange();
 
@@ -333,7 +282,6 @@ export default Controller.extend(Sortable, {
     },
 
     acceptTimePicker() {
-      this.flushTimeWheelAnimation();
       if (this.get('timeRangeInvalid')) {
         this.set('filterError', this.get('intl').t('auditLogsPage.filterBuilder.rangeError'));
         return;
@@ -344,7 +292,6 @@ export default Controller.extend(Sortable, {
     },
 
     setTimePreset(amount, unit) {
-      this.resetTimeWheelAnimation();
       let end = moment();
 
       this.set('filters.createdFrom', end.clone().subtract(amount, unit).format('YYYY-MM-DDTHH:mm:ss'));
@@ -358,47 +305,8 @@ export default Controller.extend(Sortable, {
       this.set('filterError', null);
     },
 
-    customTimeChanged() {
-      this.resetTimeWheelAnimation();
-      this.set('activeTimePreset', 'custom');
-    },
-
-    nudgeTime(field, event) {
-      if (['createdFrom', 'createdTo'].indexOf(field) === -1 || !event || !event.deltaY || event.ctrlKey || event.metaKey) {
-        return;
-      }
-
-      if (this.shiftTimeWheel(field, event.deltaY > 0 ? 1 : -1)) {
-        event.preventDefault();
-      }
-    },
-
-    selectWheelTime(field, value) {
-      let current = moment(this.get(`filters.${field}`));
-      let selected = moment(value);
-
-      if (!current.isValid() || !selected.isValid() || current.isSame(selected)) {
-        return;
-      }
-
-      let steps = Math.round(selected.diff(current, 'minutes', true) / 15);
-
-      this.shiftTimeWheel(field, steps);
-    },
-
-    finishTimeWheelAnimation(field, event) {
-      if (event && event.target !== event.currentTarget) {
-        return;
-      }
-      this.finishTimeWheelAnimation(field);
-    },
-
-    keyTimeWheel(field, event) {
-      let step = ({ArrowDown: 1, ArrowUp: -1, PageDown: 4, PageUp: -4})[event && event.key];
-
-      if (step && this.shiftTimeWheel(field, step)) {
-        event.preventDefault();
-      }
+    setTimePart(field, part, value) {
+      this.updateTimePart(field, part, value);
     },
 
     applyInvestigationPreset(preset) {
@@ -742,13 +650,58 @@ export default Controller.extend(Sortable, {
     return `${from.format('YYYY/MM/DD HH:mm')} – ${to.format('YYYY/MM/DD HH:mm')}`;
   }.property('filters.createdFrom', 'filters.createdTo', 'intl._locale'),
 
-  createdFromWheelOptions: function() {
-    return timeWheelOptions(this.get('filters.createdFrom'));
+  createdFromDate: computed('filters.createdFrom', {
+    get() {
+      return selectedTimePart(this.get('filters.createdFrom'), 'date');
+    },
+
+    set(key, value) {
+      this.updateDatePart('createdFrom', value);
+      return value;
+    },
+  }),
+
+  createdToDate: computed('filters.createdTo', {
+    get() {
+      return selectedTimePart(this.get('filters.createdTo'), 'date');
+    },
+
+    set(key, value) {
+      this.updateDatePart('createdTo', value);
+      return value;
+    },
+  }),
+
+  createdFromHour: function() {
+    return selectedTimePart(this.get('filters.createdFrom'), 'hour');
   }.property('filters.createdFrom'),
 
-  createdToWheelOptions: function() {
-    return timeWheelOptions(this.get('filters.createdTo'));
+  createdFromMinute: function() {
+    return selectedTimePart(this.get('filters.createdFrom'), 'minute');
+  }.property('filters.createdFrom'),
+
+  createdFromPeriod: function() {
+    return selectedTimePart(this.get('filters.createdFrom'), 'period');
+  }.property('filters.createdFrom'),
+
+  createdToHour: function() {
+    return selectedTimePart(this.get('filters.createdTo'), 'hour');
   }.property('filters.createdTo'),
+
+  createdToMinute: function() {
+    return selectedTimePart(this.get('filters.createdTo'), 'minute');
+  }.property('filters.createdTo'),
+
+  createdToPeriod: function() {
+    return selectedTimePart(this.get('filters.createdTo'), 'period');
+  }.property('filters.createdTo'),
+
+  periodOptions: function() {
+    return [
+      { label: this.get('intl').t('auditLogsPage.filterBuilder.timeDialog.am'), value: 'am' },
+      { label: this.get('intl').t('auditLogsPage.filterBuilder.timeDialog.pm'), value: 'pm' },
+    ];
+  }.property('intl._locale'),
 
   timeZoneLabel: function() {
     return `UTC${moment().format('Z')}`;

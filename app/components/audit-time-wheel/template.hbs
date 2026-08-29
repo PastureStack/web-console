@@ -1,0 +1,25 @@
+<div class="audit-time-column-label">{{this.label}}</div>
+<div class="audit-time-column-frame">
+  <div
+    class="audit-time-column-viewport"
+    role="listbox"
+    tabindex="0"
+    aria-label={{this.ariaLabel}}
+    data-testid={{this.dataTestId}}
+  >
+    <div class="audit-time-column-track">
+      {{#each this.repeatedOptions as |option|}}
+        <button
+          type="button"
+          class="audit-time-column-option"
+          role={{if option.accessible "option" "presentation"}}
+          tabindex="-1"
+          aria-hidden={{if option.accessible "false" "true"}}
+          aria-selected={{if option.selected "true" "false"}}
+          data-wheel-index={{option.index}}
+        >{{option.label}}</button>
+      {{/each}}
+    </div>
+  </div>
+  <div class="audit-time-column-selection" aria-hidden="true"></div>
+</div>

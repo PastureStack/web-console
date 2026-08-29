@@ -99,7 +99,7 @@
             <div class="audit-log-filter-row" data-filter-key={{filterKey}}>
               {{#if (eq filterKey "eventType")}}
                 <label class="audit-log-filter-row-label" for="audit-log-event-type">{{t 'auditLogsPage.filterBuilder.conditions.eventType'}}</label>
-                <select class="form-control input-sm audit-log-filter-operator" onchange={{action "selectTextOperator" "eventType" value="target.value"}}>
+                <select class="form-control input-sm audit-log-filter-operator" {{on "change" (action "selectTextOperator" "eventType")}}>
                   {{#each this.textOperators as |operator|}}
                     <option value={{operator.key}} selected={{eq this.filters.eventTypeOperator operator.key}}>{{operator.label}}</option>
                   {{/each}}
@@ -110,7 +110,7 @@
                 </datalist>
               {{else if (eq filterKey "description")}}
                 <label class="audit-log-filter-row-label" for="audit-log-description">{{t 'auditLogsPage.filterBuilder.conditions.description'}}</label>
-                <select class="form-control input-sm audit-log-filter-operator" onchange={{action "selectTextOperator" "description" value="target.value"}}>
+                <select class="form-control input-sm audit-log-filter-operator" {{on "change" (action "selectTextOperator" "description")}}>
                   {{#each this.textOperators as |operator|}}
                     <option value={{operator.key}} selected={{eq this.filters.descriptionOperator operator.key}}>{{operator.label}}</option>
                   {{/each}}
@@ -248,48 +248,68 @@
           <div class="audit-log-time-dialog-summary">{{this.timeRangeSummary}}</div>
           <div class="audit-log-filter-time-inputs">
             <div class="audit-log-time-editor">
-              <label {{on "wheel" (action "nudgeTime" "createdFrom")}}>
+              <label>
                 <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
-                {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdFrom input=(action "customTimeChanged") data-testid="audit-log-created-from"}}
+                {{input type="date" class="form-control input-sm audit-log-date-input" value=this.createdFromDate data-testid="audit-log-created-from"}}
               </label>
-              <div
-                class="audit-log-time-wheel {{if (eq this.timeWheelField "createdFrom") "is-moving"}} is-{{this.timeWheelDirection}} phase-{{if this.timeWheelPhase "b" "a"}}"
-                role="listbox"
-                tabindex="0"
-                aria-label={{t 'auditLogsPage.filterBuilder.timeDialog.fromWheelLabel'}}
-                data-testid="audit-log-created-from-wheel"
-                {{on "wheel" (action "nudgeTime" "createdFrom")}}
-                {{on "keydown" (action "keyTimeWheel" "createdFrom")}}
-              >
-                <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
-                <div class="audit-log-time-wheel-track" {{on "animationend" (action "finishTimeWheelAnimation" "createdFrom")}}>
-                  {{#each this.createdFromWheelOptions as |option|}}
-                    <button type="button" role="option" aria-selected={{if option.current "true" "false"}} tabindex="-1" class="audit-log-time-wheel-option {{if option.current "is-current"}}" {{action "selectWheelTime" "createdFrom" option.value}}>{{option.label}}</button>
-                  {{/each}}
-                </div>
+              <div class="audit-log-time-columns" data-testid="audit-log-created-from-time-columns">
+                {{audit-time-wheel
+                  label=(t 'auditLogsPage.filterBuilder.timeDialog.hour')
+                  ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.fromHourLabel')
+                  dataTestId="audit-log-created-from-hour"
+                  options=this.hourOptions
+                  selectedValue=this.createdFromHour
+                  onChange=(action "setTimePart" "createdFrom" "hour")
+                }}
+                {{audit-time-wheel
+                  label=(t 'auditLogsPage.filterBuilder.timeDialog.minute')
+                  ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.fromMinuteLabel')
+                  dataTestId="audit-log-created-from-minute"
+                  options=this.minuteOptions
+                  selectedValue=this.createdFromMinute
+                  onChange=(action "setTimePart" "createdFrom" "minute")
+                }}
+                {{audit-time-wheel
+                  label=(t 'auditLogsPage.filterBuilder.timeDialog.period')
+                  ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.fromPeriodLabel')
+                  dataTestId="audit-log-created-from-period"
+                  options=this.periodOptions
+                  selectedValue=this.createdFromPeriod
+                  onChange=(action "setTimePart" "createdFrom" "period")
+                }}
               </div>
             </div>
             <span class="audit-log-filter-time-separator" aria-hidden="true">→</span>
             <div class="audit-log-time-editor">
-              <label {{on "wheel" (action "nudgeTime" "createdTo")}}>
+              <label>
                 <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
-                {{input type="datetime-local" step="1" class="form-control input-sm" value=this.filters.createdTo input=(action "customTimeChanged") data-testid="audit-log-created-to"}}
+                {{input type="date" class="form-control input-sm audit-log-date-input" value=this.createdToDate data-testid="audit-log-created-to"}}
               </label>
-              <div
-                class="audit-log-time-wheel {{if (eq this.timeWheelField "createdTo") "is-moving"}} is-{{this.timeWheelDirection}} phase-{{if this.timeWheelPhase "b" "a"}}"
-                role="listbox"
-                tabindex="0"
-                aria-label={{t 'auditLogsPage.filterBuilder.timeDialog.toWheelLabel'}}
-                data-testid="audit-log-created-to-wheel"
-                {{on "wheel" (action "nudgeTime" "createdTo")}}
-                {{on "keydown" (action "keyTimeWheel" "createdTo")}}
-              >
-                <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
-                <div class="audit-log-time-wheel-track" {{on "animationend" (action "finishTimeWheelAnimation" "createdTo")}}>
-                  {{#each this.createdToWheelOptions as |option|}}
-                    <button type="button" role="option" aria-selected={{if option.current "true" "false"}} tabindex="-1" class="audit-log-time-wheel-option {{if option.current "is-current"}}" {{action "selectWheelTime" "createdTo" option.value}}>{{option.label}}</button>
-                  {{/each}}
-                </div>
+              <div class="audit-log-time-columns" data-testid="audit-log-created-to-time-columns">
+                {{audit-time-wheel
+                  label=(t 'auditLogsPage.filterBuilder.timeDialog.hour')
+                  ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.toHourLabel')
+                  dataTestId="audit-log-created-to-hour"
+                  options=this.hourOptions
+                  selectedValue=this.createdToHour
+                  onChange=(action "setTimePart" "createdTo" "hour")
+                }}
+                {{audit-time-wheel
+                  label=(t 'auditLogsPage.filterBuilder.timeDialog.minute')
+                  ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.toMinuteLabel')
+                  dataTestId="audit-log-created-to-minute"
+                  options=this.minuteOptions
+                  selectedValue=this.createdToMinute
+                  onChange=(action "setTimePart" "createdTo" "minute")
+                }}
+                {{audit-time-wheel
+                  label=(t 'auditLogsPage.filterBuilder.timeDialog.period')
+                  ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.toPeriodLabel')
+                  dataTestId="audit-log-created-to-period"
+                  options=this.periodOptions
+                  selectedValue=this.createdToPeriod
+                  onChange=(action "setTimePart" "createdTo" "period")
+                }}
               </div>
             </div>
           </div>

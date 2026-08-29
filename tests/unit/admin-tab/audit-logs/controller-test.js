@@ -1,6 +1,5 @@
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
-import { later } from '@ember/runloop';
 import moment from 'moment';
 import { module, test } from 'qunit';
 import AuditLogsController from 'ui/admin-tab/audit-logs/controller';
@@ -140,7 +139,7 @@ test('adds each optional condition once and removes its value with the row', fun
 test('stores text operators in the query-backed draft', function(assert) {
   let controller = controllerFor();
 
-  controller.actions.selectTextOperator.call(controller, 'eventType', 'exact');
+  controller.actions.selectTextOperator.call(controller, 'eventType', {target: {value: 'exact'}});
   controller.actions.selectTextOperator.call(controller, 'description', 'notContains');
 
   assert.strictEqual(controller.get('filters.eventTypeOperator'), 'exact',
@@ -150,6 +149,9 @@ test('stores text operators in the query-backed draft', function(assert) {
 
   controller.actions.selectTextOperator.call(controller, 'unknown', 'exact');
   assert.notOk(controller.get('filters.unknownOperator'), 'unknown fields cannot create draft state');
+  controller.actions.selectTextOperator.call(controller, 'eventType', {target: {value: 'not-an-operator'}});
+  assert.strictEqual(controller.get('filters.eventTypeOperator'), 'exact',
+    'invalid browser values cannot replace a valid operator');
 
   destroyOwned(controller);
 });
@@ -217,104 +219,58 @@ test('offers WebUI/API as a primary filter and defaults to a bounded 24 hour ran
   destroyOwned(controller);
 });
 
-test('tweens both time wheels before committing every queued 15-minute step', function(assert) {
+test('maps local date-times to the three visible hour, minute, and period columns', function(assert) {
   let controller = controllerFor();
-  let prevented = 0;
 
-  controller.set('filters.createdFrom', '2026-08-28T10:00:00');
-  controller.actions.nudgeTime.call(controller, 'createdFrom', {
-    deltaY: 120,
-    preventDefault() {
-      prevented++;
-    },
-  });
+  controller.set('filters.createdFrom', '2026-08-28T00:07:31');
+  controller.set('filters.createdTo', '2026-08-28T12:46:52');
 
-  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T10:00:00',
-    'the selected value is retained while the old rows visibly travel to the next position');
-  assert.true(controller.get('timeWheelAnimating'));
-  assert.strictEqual(controller.get('timeWheelDirection'), 'next');
-  assert.strictEqual(controller.get('createdFromWheelOptions.length'), 7,
-    'one buffered row exists outside each edge of the five-row viewport');
-  assert.strictEqual(controller.get('createdFromWheelOptions')[3].label, '2026/08/28 10:00',
-    'the old selected row remains centered until animationend');
-
-  controller.actions.finishTimeWheelAnimation.call(controller, 'createdFrom');
-
-  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T10:15:00',
-    'animationend atomically commits the row which reached the center');
-  assert.strictEqual(controller.get('createdFromWheelOptions')[3].label, '2026/08/28 10:15',
-    'the committed selected time is centered without a visual jump');
-
-  let firstPhase = controller.get('timeWheelPhase');
-  for (let index = 0; index < 200; index++) {
-    controller.actions.nudgeTime.call(controller, 'createdFrom', {
-      deltaY: -1,
-      preventDefault() {
-        prevented++;
-      },
-    });
-  }
-
-  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T10:15:00',
-    'rapid wheel events queue without skipping their interpolation');
-  assert.strictEqual(controller.get('timeWheelPendingSteps'), -199,
-    'the active step is separate from the remaining animation queue');
-
-  for (let index = 0; index < 200; index++) {
-    controller.actions.finishTimeWheelAnimation.call(controller, 'createdFrom');
-  }
-
-  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-26T08:15:00',
-    'the virtual wheel keeps generating earlier slots instead of reaching a list boundary');
-  assert.strictEqual(controller.get('timeWheelDirection'), 'previous');
-  assert.strictEqual(controller.get('timeWheelPhase'), firstPhase,
-    'the alternating phase remains deterministic across repeated wheel animation cycles');
-  assert.notOk(controller.get('timeWheelAnimating'), 'the track returns to its stable center after the queue drains');
-  assert.strictEqual(prevented, 201, 'page scrolling is consumed only by valid time-wheel movements');
+  assert.strictEqual(controller.get('createdFromDate'), '2026-08-28');
+  assert.strictEqual(controller.get('createdFromHour'), 12, 'midnight is shown as 12 AM');
+  assert.strictEqual(controller.get('createdFromMinute'), 7);
+  assert.strictEqual(controller.get('createdFromPeriod'), 'am');
+  assert.strictEqual(controller.get('createdToHour'), 12, 'noon is shown as 12 PM');
+  assert.strictEqual(controller.get('createdToMinute'), 46);
+  assert.strictEqual(controller.get('createdToPeriod'), 'pm');
 
   destroyOwned(controller);
 });
 
-test('queues keyboard page steps on the end-time wheel and flushes them when accepted', function(assert) {
+test('updates each of the three time columns without changing the date or seconds', function(assert) {
   let controller = controllerFor();
 
-  controller.set('filters.createdFrom', '2026-08-28T09:00:00');
-  controller.set('filters.createdTo', '2026-08-28T10:00:00');
-  controller.set('isTimePickerOpen', true);
-  controller.actions.keyTimeWheel.call(controller, 'createdTo', {
-    key: 'PageDown',
-    preventDefault() {},
-  });
+  controller.set('filters.createdFrom', '2026-08-28T23:07:31');
+  controller.actions.setTimePart.call(controller, 'createdFrom', 'hour', 3);
+  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T15:07:31',
+    'hour selection retains PM and preserves the exact date and seconds');
 
-  assert.strictEqual(controller.get('timeWheelActiveStep'), 1);
-  assert.strictEqual(controller.get('timeWheelPendingSteps'), 3,
-    'PageDown is four visible one-row tween stages instead of a value jump');
+  controller.actions.setTimePart.call(controller, 'createdFrom', 'minute', 46);
+  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T15:46:31');
 
-  controller.actions.acceptTimePicker.call(controller);
+  controller.actions.setTimePart.call(controller, 'createdFrom', 'period', 'am');
+  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T03:46:31');
 
-  assert.strictEqual(controller.get('filters.createdTo'), '2026-08-28T11:00:00',
-    'accepting during a tween preserves the complete intended one-hour movement');
-  assert.notOk(controller.get('timeWheelAnimating'));
-  assert.notOk(controller.get('isTimePickerOpen'));
+  controller.actions.setTimePart.call(controller, 'createdFrom', 'hour', 12);
+  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T00:46:31',
+    '12 AM maps to midnight without changing other parts');
+  assert.strictEqual(controller.get('activeTimePreset'), 'custom');
 
   destroyOwned(controller);
 });
 
-test('finishes a wheel step when the browser does not deliver animationend', function(assert) {
-  let done = assert.async();
+test('changes the date independently and rejects invalid wheel values', function(assert) {
   let controller = controllerFor();
 
-  controller.set('filters.createdFrom', '2026-08-28T10:00:00');
-  controller.shiftTimeWheel('createdFrom', 1);
+  controller.set('filters.createdTo', '2026-08-28T18:46:52');
+  controller.set('createdToDate', '2026-09-02');
 
-  assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T10:00:00',
-    'the fallback does not skip the visible tween');
+  assert.strictEqual(controller.get('filters.createdTo'), '2026-09-02T18:46:52',
+    'calendar changes preserve the selected time down to seconds');
+  assert.notOk(controller.updateTimePart('createdTo', 'minute', 60));
+  assert.notOk(controller.updateTimePart('createdTo', 'hour', 0));
+  assert.notOk(controller.updateTimePart('createdTo', 'period', 'night'));
+  assert.strictEqual(controller.get('filters.createdTo'), '2026-09-02T18:46:52',
+    'invalid wheel values cannot corrupt the query range');
 
-  later(() => {
-    assert.strictEqual(controller.get('filters.createdFrom'), '2026-08-28T10:15:00',
-      'the bounded fallback commits exactly one step when animationend is absent');
-    assert.notOk(controller.get('timeWheelAnimating'));
-    destroyOwned(controller);
-    done();
-  }, 340);
+  destroyOwned(controller);
 });
