@@ -733,7 +733,7 @@ function expectEmberApiStoreFetchUpgrade() {
 
   const storeService = fs.readFileSync(path.join(apiStoreDir, "addon/services/store.js"), "utf8");
   if (!storeService.includes("const deferredRequest = defer();") ||
-      !storeService.includes("return deferredRequest.promise;") ||
+      !storeService.includes("later = deferredRequest.promise;") ||
       storeService.includes("let defer = defer();")) {
     fail("ember-api-store deferred request initialization fix is missing");
   }
