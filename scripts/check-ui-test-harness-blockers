@@ -51,8 +51,8 @@ if module_for_count != 0:
     fail("MODULE_FOR_USAGE_COUNT_UNEXPECTED", actual=module_for_count, expected=0)
 if module_for_component_count != 0:
     fail("MODULE_FOR_COMPONENT_USAGE_UNEXPECTED", actual=module_for_component_count, expected=0)
-if direct_qunit_import_count != 92:
-    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=92)
+if direct_qunit_import_count != 93:
+    fail("DIRECT_QUNIT_IMPORT_COUNT_UNEXPECTED", actual=direct_qunit_import_count, expected=93)
 
 volatile_computed_count = 0
 for path in Path("app").rglob("*.js"):
