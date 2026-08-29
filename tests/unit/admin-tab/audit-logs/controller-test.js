@@ -166,5 +166,31 @@ test('applies a valid local time range and blocks an inverted range', function(a
   assert.deepEqual(sent, [], 'an inverted range is not sent');
   assert.strictEqual(controller.get('filterError'), 'auditLogsPage.filterBuilder.rangeError');
 
+  sent.length = 0;
+  controller.set('filters.createdFrom', null);
+  controller.set('filters.createdTo', '2026-08-28T10:00:00');
+  controller.actions.search.call(controller);
+
+  assert.deepEqual(sent, [], 'a one-sided time range is not sent');
+
+  destroyOwned(controller);
+});
+
+test('offers an explicit WebUI/API channel condition and defaults to a bounded 24 hour range', function(assert) {
+  let controller = controllerFor();
+  let start = moment(controller.get('filters.createdFrom'));
+  let end = moment(controller.get('filters.createdTo'));
+
+  assert.strictEqual(end.diff(start, 'hours'), 24, 'the initial incident view is bounded to 24 hours');
+  assert.deepEqual(controller.get('interactionChannels').map((item) => item.get('key')),
+    ['web_ui', 'public_api', 'automation', 'system_internal', 'unknown']);
+
+  controller.actions.addFilter.call(controller, 'interactionChannel');
+  controller.actions.updateInteractionChannel.call(controller, controller.get('interactionChannels')[1]);
+  controller.actions.search.call(controller);
+
+  assert.strictEqual(controller.get('interactionChannel'), 'public_api',
+    'the selected API channel is serialized independently from the user');
+
   destroyOwned(controller);
 });

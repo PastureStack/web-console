@@ -6,24 +6,33 @@ import Controller, { inject as controller } from '@ember/controller';
 import moment from 'moment';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
+import { addQueryParams, download } from 'ui/utils/util';
 
-const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType'];
+const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType', 'interactionChannel'];
+
+function defaultTimeRange() {
+  let end = moment();
+
+  return {
+    createdFrom : end.clone().subtract(24, 'hours').format('YYYY-MM-DDTHH:mm:ss'),
+    createdTo   : end.format('YYYY-MM-DDTHH:mm:ss'),
+  };
+}
 
 function emptyFilters() {
-  return {
+  return Object.assign({
     accountId                : null,
     authType                 : null,
     authenticatedAsAccountId : null,
     clientIp                 : null,
-    createdFrom              : null,
-    createdTo                : null,
     description              : null,
     descriptionOperator      : 'contains',
     eventType                : null,
     eventTypeOperator        : 'contains',
+    interactionChannel       : null,
     resourceId               : null,
     resourceType             : null,
-  };
+  }, defaultTimeRange());
 }
 
 function localDateTime(value) {
@@ -59,6 +68,7 @@ export default Controller.extend(Sortable, {
     'resourceId',
     'clientIp',
     'authType',
+    'interactionChannel',
     'createdFrom',
     'createdTo',
     'accountId',
@@ -69,7 +79,7 @@ export default Controller.extend(Sortable, {
   modalService    : service('modal'),
   intl            : service(),
 
-  sortBy                   : 'id',
+  sortBy                   : 'created',
   sortOrder                : 'desc',
   descending               : true,
   limit                    : 100,
@@ -81,6 +91,7 @@ export default Controller.extend(Sortable, {
   resourceId               : null,
   clientIp                 : null,
   authType                 : null,
+  interactionChannel       : null,
   createdFrom              : null,
   createdTo                : null,
   accountId                : null,
@@ -89,6 +100,7 @@ export default Controller.extend(Sortable, {
   filters                  : null,
   optionalFilters          : null,
   filterError              : null,
+  isTimePickerOpen         : false,
 
   init() {
     this._super(...arguments);
@@ -133,6 +145,34 @@ export default Controller.extend(Sortable, {
       this.set('filters.authType', type ? type.get('name') : null);
     },
 
+    updateInteractionChannel(channel) {
+      this.set('filters.interactionChannel', channel ? channel.get('key') : null);
+    },
+
+    openTimePicker() {
+      this.set('isTimePickerOpen', true);
+    },
+
+    closeTimePicker() {
+      this.set('isTimePickerOpen', false);
+      let fallback = defaultTimeRange();
+
+      this.setProperties({
+        'filters.createdFrom': localDateTime(this.get('createdFrom')) || fallback.createdFrom,
+        'filters.createdTo': localDateTime(this.get('createdTo')) || fallback.createdTo,
+      });
+    },
+
+    acceptTimePicker() {
+      if (this.get('timeRangeInvalid')) {
+        this.set('filterError', this.get('intl').t('auditLogsPage.filterBuilder.rangeError'));
+        return;
+      }
+
+      this.set('filterError', null);
+      this.set('isTimePickerOpen', false);
+    },
+
     setTimePreset(amount, unit) {
       let end = moment();
 
@@ -163,6 +203,7 @@ export default Controller.extend(Sortable, {
         descriptionOperator      : this.get('filters.descriptionOperator') || 'contains',
         eventType                : this.get('filters.eventType'),
         eventTypeOperator        : this.get('filters.eventTypeOperator') || 'contains',
+        interactionChannel       : this.get('filters.interactionChannel'),
         resourceId               : this.get('filters.resourceId'),
         resourceType             : this.get('filters.resourceType'),
       });
@@ -191,12 +232,41 @@ export default Controller.extend(Sortable, {
         eventType                : null,
         eventTypeOperator        : 'contains',
         filterError              : null,
+        interactionChannel       : null,
         resourceId               : null,
         resourceType             : null,
-        sortBy                   : 'id',
+        sortBy                   : 'created',
         sortOrder                : 'desc',
       });
       this.send('filterLogs');
+    },
+
+    exportLogs(format) {
+      let params = {
+        accountId                : this.get('accountId'),
+        authType                 : this.get('authType'),
+        authenticatedAsAccountId : this.get('authenticatedAsAccountId'),
+        clientIp                 : this.get('clientIp'),
+        created_gte              : this.get('createdFrom'),
+        created_lte              : this.get('createdTo'),
+        description              : this.get('description'),
+        eventType                : this.get('eventType'),
+        format,
+        interactionChannel       : this.get('interactionChannel'),
+        resourceId               : this.get('resourceId'),
+        resourceType             : this.get('resourceType'),
+        sort                     : this.get('sortBy') || 'created',
+        order                    : this.get('sortOrder') || 'desc',
+      };
+
+      params = this.applyTextExportOperator(params, 'eventType', this.get('eventTypeOperator'));
+      params = this.applyTextExportOperator(params, 'description', this.get('descriptionOperator'));
+      Object.keys(params).forEach((key) => {
+        if (params[key] === null || params[key] === undefined || params[key] === '') {
+          delete params[key];
+        }
+      });
+      download(addQueryParams('/v2-beta/pasturestack/audit-logs/export', params), `audit-log-export-${format}`);
     },
   },
 
@@ -207,12 +277,15 @@ export default Controller.extend(Sortable, {
     filters.authType = this.get('authType');
     filters.authenticatedAsAccountId = this.get('authenticatedAsAccountId');
     filters.clientIp = this.get('clientIp');
-    filters.createdFrom = localDateTime(this.get('createdFrom'));
-    filters.createdTo = localDateTime(this.get('createdTo'));
+    if (this.get('createdFrom') || this.get('createdTo')) {
+      filters.createdFrom = localDateTime(this.get('createdFrom'));
+      filters.createdTo = localDateTime(this.get('createdTo'));
+    }
     filters.description = this.get('description');
     filters.descriptionOperator = this.get('descriptionOperator') || 'contains';
     filters.eventType = this.get('eventType');
     filters.eventTypeOperator = this.get('eventTypeOperator') || 'contains';
+    filters.interactionChannel = this.get('interactionChannel');
     filters.resourceId = this.get('resourceId');
     filters.resourceType = this.get('resourceType');
 
@@ -232,6 +305,9 @@ export default Controller.extend(Sortable, {
     }
     if (filters.authType) {
       optional.pushObject('authType');
+    }
+    if (filters.interactionChannel) {
+      optional.pushObject('interactionChannel');
     }
 
     this.setProperties({
@@ -261,7 +337,39 @@ export default Controller.extend(Sortable, {
       case 'authType':
         this.set('filters.authType', null);
         break;
+      case 'interactionChannel':
+        this.set('filters.interactionChannel', null);
+        break;
     }
+  },
+
+  applyTextExportOperator(params, field, operator) {
+    let value = params[field];
+
+    if (!value) {
+      return params;
+    }
+
+    delete params[field];
+    switch (operator) {
+      case 'exact':
+        params[field] = value;
+        break;
+      case 'startsWith':
+        params[`${field}_prefix`] = value;
+        break;
+      case 'notEqual':
+        params[`${field}_ne`] = value;
+        break;
+      case 'notContains':
+        params[`${field}_notlike`] = `%${value}%`;
+        break;
+      default:
+        params[`${field}_like`] = `%${value}%`;
+        break;
+    }
+
+    return params;
   },
 
   filterDefinitions: function() {
@@ -309,7 +417,7 @@ export default Controller.extend(Sortable, {
         });
       })
       .filter(Boolean)
-      .sort((left, right) => left.get('label').localeCompare(right.get('label')));
+      .sort((left, right) => left.get('label').localeCompare(right.get('label'), undefined, {numeric: true, sensitivity: 'base'}));
   }.property('model.projects.@each.{displayName,name,type}'),
 
   userOptions: function() {
@@ -333,7 +441,7 @@ export default Controller.extend(Sortable, {
         });
       })
       .filter(Boolean)
-      .sort((left, right) => left.get('label').localeCompare(right.get('label')));
+      .sort((left, right) => left.get('label').localeCompare(right.get('label'), undefined, {numeric: true, sensitivity: 'base'}));
   }.property('model.accounts.@each.{id,kind,name,username}'),
 
   selectedEnvironment: function() {
@@ -354,12 +462,58 @@ export default Controller.extend(Sortable, {
     return (this.get('authTypes') || []).find((authType) => authType.get('name') === name);
   }.property('authTypes.[]', 'filters.authType'),
 
+  interactionChannels: function() {
+    let intl = this.get('intl');
+
+    return ['web_ui', 'public_api', 'automation', 'system_internal', 'unknown'].map((key) => EmberObject.create({
+      key,
+      label: intl.t(`auditLogsPage.filterBuilder.channels.${key}`),
+    }));
+  }.property('intl._locale'),
+
+  selectedInteractionChannel: function() {
+    let key = this.get('filters.interactionChannel');
+
+    return this.get('interactionChannels').find((channel) => channel.get('key') === key);
+  }.property('filters.interactionChannel', 'interactionChannels.[]'),
+
+  timeRangeSummary: function() {
+    let from = moment(this.get('filters.createdFrom'));
+    let to = moment(this.get('filters.createdTo'));
+
+    if (!from.isValid() || !to.isValid()) {
+      return this.get('intl').t('auditLogsPage.filterBuilder.timeNotSelected');
+    }
+
+    return `${from.format('YYYY/MM/DD HH:mm')} – ${to.format('YYYY/MM/DD HH:mm')}`;
+  }.property('filters.createdFrom', 'filters.createdTo', 'intl._locale'),
+
+  timeZoneLabel: function() {
+    return `UTC${moment().format('Z')}`;
+  }.property(),
+
+  environmentSelectionSummary: function() {
+    return this.get('selectedEnvironment.label') || this.get('intl').t('auditLogsPage.filterBuilder.allAccessibleEnvironments');
+  }.property('selectedEnvironment.label', 'intl._locale'),
+
+  userSelectionSummary: function() {
+    return this.get('selectedUser.label') || this.get('intl').t('auditLogsPage.filterBuilder.allUsers');
+  }.property('selectedUser.label', 'intl._locale'),
+
+  clientIpSuggestions: function() {
+    return this.get('model.auditLog.filters.suggestions.clientIps') || [];
+  }.property('model.auditLog.filters.suggestions.clientIps.[]'),
+
+  eventTypeSuggestions: function() {
+    return this.get('model.auditLog.filters.suggestions.eventTypes') || [];
+  }.property('model.auditLog.filters.suggestions.eventTypes.[]'),
+
   timeRangeInvalid: function() {
     let from = this.get('filters.createdFrom');
     let to = this.get('filters.createdTo');
 
     if (!from || !to) {
-      return false;
+      return Boolean(from || to);
     }
 
     let fromMoment = moment(from);
@@ -391,7 +545,7 @@ export default Controller.extend(Sortable, {
 
     return count;
   }.property(
-    'filters.{accountId,authType,authenticatedAsAccountId,clientIp,createdFrom,createdTo,description,eventType,resourceId,resourceType}',
+    'filters.{accountId,authType,authenticatedAsAccountId,clientIp,createdFrom,createdTo,description,eventType,interactionChannel,resourceId,resourceType}',
     'optionalFilters.[]'
   ),
 

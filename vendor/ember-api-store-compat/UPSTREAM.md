@@ -14,4 +14,8 @@ aggregate module to Ember 7 module imports. It preserves resource action dispatc
 relationship handling, and store behavior while removing obsolete global logger,
 library-registration, and property-change batching calls.
 
+Compatibility revision 3 fixes duplicate in-flight request coalescing. The
+upstream local variable previously shadowed RSVP's `defer` import and crashed
+before initialization whenever two callers requested the same resource together.
+
 This compatibility packaging preserves upstream authorship. PastureStack does not claim authorship of the imported runtime source.

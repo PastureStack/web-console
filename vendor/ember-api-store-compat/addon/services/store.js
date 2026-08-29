@@ -444,9 +444,9 @@ var Store = Service.extend({
     if (queue[queueKey]) {
       // get the filterd promise object
       var filteredPromise = queue[queueKey];
-      let defer = defer();
-      filteredPromise.push(defer);
-      later = defer.promise;
+      const deferredRequest = defer();
+      filteredPromise.push(deferredRequest);
+      later = deferredRequest.promise;
 
     } else { // request is not in the findQueue
 

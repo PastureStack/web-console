@@ -17,6 +17,7 @@ test('maps every visible filter to the GDAPI query contract', function(assert) {
     descriptionOperator: 'exact',
     eventType: 'resource.',
     eventTypeOperator: 'startsWith',
+    interactionChannel: 'public_api',
     resourceId: '1h7',
     resourceType: 'host',
     sortBy: 'created',
@@ -34,6 +35,7 @@ test('maps every visible filter to the GDAPI query contract', function(assert) {
       created_lte: '2026-08-28T02:00:00.000Z',
       description: 'changed setting',
       eventType_prefix: 'resource.',
+      interactionChannel: 'public_api',
       resourceId: '1h7',
       resourceType: 'host',
     },
@@ -41,6 +43,7 @@ test('maps every visible filter to the GDAPI query contract', function(assert) {
     limit: 100,
     sortBy: 'created',
     sortOrder: 'asc',
+    url: 'pasturestack/audit-logs',
   });
 
   destroyOwned(route);
@@ -59,6 +62,8 @@ test('supports useful text operators without leaking UI-only fields', function(a
     {}, 'blank values are omitted');
   assert.notOk('eventTypeOperator' in route.parseFilters({eventType: 'change'}).filter,
     'the presentation-only operator never reaches GDAPI');
+  assert.strictEqual(route.parseFilters({interactionChannel: 'web_ui'}).filter.interactionChannel,
+    'web_ui', 'interaction channel is forwarded to the permission-bound endpoint');
 
   destroyOwned(route);
 });

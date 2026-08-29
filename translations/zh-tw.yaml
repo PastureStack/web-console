@@ -146,10 +146,17 @@ auditLogsPage:
     timeRange: 時間範圍
     from: 開始時間
     to: 結束時間
+    timeZone: 顯示時區：{zone}
+    timeInclusive: 僅查詢這段時間內的紀錄
+    timeNotSelected: 尚未選擇時間範圍
     environment: 環境
     environmentPlaceholder: 所有環境
+    allAccessibleEnvironments: 所有可存取環境
+    permissionScoped: 選項與結果都受您的環境權限限制
     user: 使用者
     userPlaceholder: 所有使用者
+    allUsers: 所有可辨識使用者
+    noRawIds: 顯示名稱或登入帳號，不顯示內部 ID
     addCondition: 新增條件
     apply: 套用篩選
     clear: 全部清除
@@ -166,6 +173,7 @@ auditLogsPage:
       resource: 資源
       clientIp: 來源 IP 位址
       authType: 驗證方式
+      interactionChannel: 操作管道
     operators:
       contains: 包含
       exact: 等於
@@ -179,6 +187,22 @@ auditLogsPage:
       resourceId: 選填的資源 ID
       clientIp: 例如 10.0.0.25
       authType: 所有驗證方式
+      interactionChannel: WebUI、API 或自動化
+    channels:
+      web_ui: 網頁介面（WebUI）
+      public_api: API
+      automation: 自動化
+      system_internal: 系統內部
+      unknown: 未知
+    export:
+      title: 匯出目前結果
+      xlsx: Excel 活頁簿（XLSX）
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: 選擇時間範圍
+      cancel: 取消
+      accept: 使用此時間
   table:
     time: 時間
     eventType: 事件類型
@@ -187,6 +211,8 @@ auditLogsPage:
     resourceTypeId: 資源類型／ID
     identity: 驗證身分
     authIp: 驗證方式／IP 位址
+    unnamedEnvironment: 未命名環境
+    unknownUser: 已刪除或不可見的使用者
   authTypes:
     none: 無
     apiKey: API 金鑰

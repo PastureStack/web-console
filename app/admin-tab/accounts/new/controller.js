@@ -26,10 +26,16 @@ export default Controller.extend(NewOrEdit, {
 
   validate: function() {
     var errors = [];
+    var username = (this.get('model.credential.publicValue')||'').trim();
 
-    if ( (this.get('model.credential.publicValue')||'').trim().length === 0 )
+    if ( username.length === 0 )
     {
       errors.push('Login Username is requried');
+    }
+
+    if ( (this.get('model.account.name')||'').trim().length === 0 && username.length > 0 )
+    {
+      this.set('model.account.name', username);
     }
 
     if ( (this.get('model.credential.secretValue')||'').trim().length === 0 )

@@ -563,6 +563,16 @@ the shared 45-pixel navigation, typography, footer geometry, overflow, and
 security-icon rendering across the major environment and administration route
 families so a full-page layout reset cannot silently return.
 
+`1.6.80` keeps that presentation contract while fixing the current application.
+It does not restore any Server `v1.6.358` code, dependency, runtime, or feature.
+The audit-log page adds permission-scoped, friendly environment and user
+filters; an explicit time range; interaction-channel, event, resource, IP, and
+text conditions; natural sorting; and CSV, JSON, and XLSX export. The existing
+result-table structure is preserved. Account creation also derives a usable
+display name when the submitted name is blank, and the reviewed local API-store
+compatibility package fixes the request-deferred initialization failure that
+could send otherwise valid routes to the global failure page.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

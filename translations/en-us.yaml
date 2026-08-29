@@ -160,10 +160,17 @@ auditLogsPage:
     timeRange: Time range
     from: From
     to: To
+    timeZone: 'Display timezone: {zone}'
+    timeInclusive: Only records inside this range are queried
+    timeNotSelected: No time range selected
     environment: Environment
     environmentPlaceholder: Any environment
+    allAccessibleEnvironments: All accessible environments
+    permissionScoped: Options and results are limited by your environment permissions
     user: User
     userPlaceholder: Any user
+    allUsers: All identifiable users
+    noRawIds: Names or usernames are shown instead of internal IDs
     addCondition: Add condition
     apply: Apply filters
     clear: Clear all
@@ -180,6 +187,7 @@ auditLogsPage:
       resource: Resource
       clientIp: Source IP
       authType: Authentication type
+      interactionChannel: Interaction channel
     operators:
       contains: contains
       exact: is
@@ -193,6 +201,22 @@ auditLogsPage:
       resourceId: Optional resource ID
       clientIp: e.g. 10.0.0.25
       authType: Any authentication type
+      interactionChannel: WebUI, API, or automation
+    channels:
+      web_ui: WebUI
+      public_api: API
+      automation: Automation
+      system_internal: System internal
+      unknown: Unknown
+    export:
+      title: Export current results
+      xlsx: Excel workbook (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Choose a time range
+      cancel: Cancel
+      accept: Use this range
   table:
     time: Time
     eventType: Event Type
@@ -201,6 +225,8 @@ auditLogsPage:
     resourceTypeId: "Resource Type:ID"
     identity: Identity
     authIp: "Auth & IP"
+    unnamedEnvironment: Unnamed environment
+    unknownUser: Deleted or unavailable user
   authTypes:
     none: None
     apiKey: API Key
