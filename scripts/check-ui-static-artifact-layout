@@ -48,6 +48,10 @@ printf 'define("ui/utils/bootstrap-runtime",["exports","bootstrap"],function(){r
 for theme_asset in ui-light.css ui-light.rtl.css ui-dark.css ui-dark.rtl.css; do
   printf 'body { color: #123456; }\n' >"$tmpdir/dist/assets/$theme_asset"
 done
+# Presentation-only Bootstrap 3 CSS is an approved, hash-pinned visual
+# compatibility layer; only the legacy JavaScript runtime is forbidden.
+printf '/*! Bootstrap v3.4.1 presentation-only fixture */ body { color: #123456; }\n' \
+  >"$tmpdir/dist/assets/ui-light.css"
 printf 'detached test bundle @ember/test-helpers /tmp/random-build-path\n' >"$tmpdir/dist/assets/chunk.999.test-only.js"
 printf 'source map\n' >"$tmpdir/dist/assets/ui-test.js.map"
 printf '{}\n' >"$tmpdir/dist/translations/en-us.json"
