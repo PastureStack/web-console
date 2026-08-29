@@ -262,7 +262,7 @@
                 {{on "keydown" (action "keyTimeWheel" "createdFrom")}}
               >
                 <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
-                <div class="audit-log-time-wheel-track">
+                <div class="audit-log-time-wheel-track" {{on "animationend" (action "finishTimeWheelAnimation" "createdFrom")}}>
                   {{#each this.createdFromWheelOptions as |option|}}
                     <button type="button" role="option" aria-selected={{if option.current "true" "false"}} tabindex="-1" class="audit-log-time-wheel-option {{if option.current "is-current"}}" {{action "selectWheelTime" "createdFrom" option.value}}>{{option.label}}</button>
                   {{/each}}
@@ -285,7 +285,7 @@
                 {{on "keydown" (action "keyTimeWheel" "createdTo")}}
               >
                 <div class="audit-log-time-wheel-selection" aria-hidden="true"></div>
-                <div class="audit-log-time-wheel-track">
+                <div class="audit-log-time-wheel-track" {{on "animationend" (action "finishTimeWheelAnimation" "createdTo")}}>
                   {{#each this.createdToWheelOptions as |option|}}
                     <button type="button" role="option" aria-selected={{if option.current "true" "false"}} tabindex="-1" class="audit-log-time-wheel-option {{if option.current "is-current"}}" {{action "selectWheelTime" "createdTo" option.value}}>{{option.label}}</button>
                   {{/each}}
