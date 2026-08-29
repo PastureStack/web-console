@@ -11,12 +11,14 @@ $well-bg: null !default;
   color: $text-color;
   background: $well-bg;
   border: 1px solid $table-border-color;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, .06);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
 }
 
 .audit-log-filter-header,
-.audit-log-filter-footer {
+.audit-log-filter-footer,
+.audit-log-time-dialog-header,
+.audit-log-time-dialog-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -41,6 +43,7 @@ $well-bg: null !default;
   padding: 5px 10px;
   color: $brand-primary;
   background: rgba($brand-primary, .12);
+  border: 1px solid rgba($brand-primary, .18);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
@@ -48,29 +51,39 @@ $well-bg: null !default;
 
 .audit-log-filter-primary-grid {
   display: grid;
-  grid-template-columns: minmax(360px, 1.8fr) minmax(210px, 1fr) minmax(210px, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin-top: 18px;
 }
 
 .audit-log-filter-card {
+  display: flex;
   min-width: 0;
+  min-height: 156px;
   margin: 0;
-  padding: 12px;
+  padding: 13px;
+  flex-direction: column;
   background: $input-bg;
   border: 1px solid $table-border-color;
-  border-radius: 3px;
+  border-radius: 5px;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.audit-log-filter-card:hover,
+.audit-log-filter-card:focus-within {
+  border-color: rgba($brand-primary, .55);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, .08);
+  transform: translateY(-1px);
 }
 
 fieldset.audit-log-filter-card {
   min-width: 0;
 }
 
-.audit-log-filter-card legend,
-.audit-log-filter-label {
+.audit-log-filter-card legend {
   display: block;
   width: auto;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   padding: 0;
   color: $text-color;
   border: 0;
@@ -78,39 +91,84 @@ fieldset.audit-log-filter-card {
   font-weight: 600;
 }
 
-.audit-log-filter-time-inputs {
-  display: grid;
-  grid-template-columns: minmax(130px, 1fr) auto minmax(130px, 1fr);
-  align-items: end;
-  gap: 8px;
+.audit-log-filter-card-control {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
 }
 
-.audit-log-filter-time-inputs label {
+button.audit-log-filter-card-control {
+  padding: 9px 11px;
+  color: $text-color;
+  background: $input-bg;
+  border: 1px solid $table-border-color;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+}
+
+button.audit-log-filter-card-control:hover,
+button.audit-log-filter-card-control:focus {
+  color: $text-color;
+  border-color: $brand-primary;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba($brand-primary, .14);
+}
+
+.audit-log-time-open {
+  gap: 9px;
+}
+
+.audit-log-time-open span {
   min-width: 0;
-  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  font-weight: 600;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audit-log-time-open .icon:first-child {
+  color: $brand-primary;
+}
+
+.audit-log-filter-card-summary {
+  display: flex;
+  min-width: 0;
+  margin-top: auto;
+  padding-top: 13px;
+  flex-direction: column;
+  gap: 3px;
   color: $text-muted;
   font-size: 11px;
-  font-weight: 500;
+  line-height: 1.35;
 }
 
-.audit-log-filter-time-inputs label span {
-  display: block;
-  margin-bottom: 4px;
+.audit-log-filter-card-summary span:first-child {
+  color: $text-color;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.audit-log-filter-time-separator {
-  padding-bottom: 7px;
-  color: $text-muted;
-}
-
-.audit-log-filter-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 9px;
-}
-
+.audit-log-filter-select .audit-log-filter-card-control,
 .audit-log-filter-select .ember-power-select-trigger,
+.audit-log-filter-select-inline .ember-power-select-trigger,
+.audit-log-filter-resource-type .ember-power-select-trigger {
+  width: 100%;
+}
+
+.audit-log-filter-select .ember-power-select-trigger {
+  min-height: 44px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  border-radius: 4px;
+}
+
 .audit-log-filter-select-inline .ember-power-select-trigger,
 .audit-log-filter-resource-type .ember-power-select-trigger {
   min-height: 32px;
@@ -142,6 +200,19 @@ fieldset.audit-log-filter-card {
   gap: 10px;
   padding: 9px 0;
   border-top: 1px solid $table-border-color;
+  animation: audit-log-filter-row-in 160ms ease-out;
+}
+
+@keyframes audit-log-filter-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .audit-log-filter-row-label {
@@ -182,24 +253,168 @@ fieldset.audit-log-filter-card {
   border-top: 1px solid $table-border-color;
 }
 
+.audit-log-filter-secondary-actions,
 .audit-log-filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.audit-log-time-dialog-backdrop {
+  position: fixed;
+  z-index: 1060;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(20, 35, 43, .48);
+  animation: audit-log-backdrop-in 140ms ease-out;
+}
+
+.audit-log-time-dialog {
+  width: min(680px, 100%);
+  padding: 20px;
+  color: $text-color;
+  background: $well-bg;
+  border: 1px solid $table-border-color;
+  border-radius: 7px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .24);
+  animation: audit-log-dialog-in 180ms ease-out;
+}
+
+.audit-log-time-dialog-header h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.audit-log-time-dialog-summary {
+  margin: 16px 0;
+  padding: 12px;
+  color: $brand-primary;
+  background: rgba($brand-primary, .08);
+  border: 1px solid rgba($brand-primary, .22);
+  border-radius: 5px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.audit-log-filter-time-inputs {
+  display: grid;
+  grid-template-columns: minmax(190px, 1fr) auto minmax(190px, 1fr);
+  align-items: end;
+  gap: 10px;
+}
+
+.audit-log-filter-time-inputs label {
+  min-width: 0;
+  margin: 0;
+  color: $text-muted;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.audit-log-filter-time-inputs label span {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.audit-log-filter-time-inputs .form-control {
+  height: 38px;
+  background: $input-bg;
+  border: 1px solid $table-border-color;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, .04);
+}
+
+.audit-log-filter-time-inputs .form-control:focus {
+  border-color: $brand-primary;
+  box-shadow: 0 0 0 2px rgba($brand-primary, .14);
+}
+
+.audit-log-filter-time-separator {
+  padding-bottom: 9px;
+  color: $text-muted;
+}
+
+.audit-log-filter-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.audit-log-time-dialog-actions {
+  margin-top: 18px;
+  padding-top: 14px;
+  color: $text-muted;
+  border-top: 1px solid $table-border-color;
+  font-size: 12px;
+}
+
+.audit-log-time-dialog-actions > div {
   display: flex;
   gap: 8px;
 }
 
-@media (max-width: 991px) {
+.audit-log-channel-badge {
+  display: inline-block;
+  margin-bottom: 3px;
+  padding: 2px 6px;
+  color: $brand-primary;
+  background: rgba($brand-primary, .1);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+@keyframes audit-log-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes audit-log-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audit-log-filter-card,
+  .audit-log-filter-row,
+  .audit-log-time-dialog,
+  .audit-log-time-dialog-backdrop {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 1100px) {
   .audit-log-filter-primary-grid {
     grid-template-columns: 1fr;
+  }
+
+  .audit-log-filter-card {
+    min-height: 138px;
   }
 }
 
 @media (max-width: 767px) {
-  .audit-log-filter-panel {
+  .audit-log-filter-panel,
+  .audit-log-time-dialog {
     padding: 14px;
   }
 
   .audit-log-filter-header,
-  .audit-log-filter-footer {
+  .audit-log-filter-footer,
+  .audit-log-time-dialog-actions {
     align-items: stretch;
     flex-direction: column;
   }
@@ -221,8 +436,14 @@ fieldset.audit-log-filter-card {
     justify-self: end;
   }
 
+  .audit-log-filter-secondary-actions,
   .audit-log-filter-actions,
   .audit-log-filter-actions .btn {
     width: 100%;
+  }
+
+  .audit-log-filter-secondary-actions .dropdown,
+  .audit-log-filter-secondary-actions .btn {
+    flex: 1;
   }
 }

@@ -13,7 +13,7 @@ package = json.loads(package_path.read_text(encoding="utf-8"))
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
 compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.6.tgz"
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.2.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.3.tgz"
 
 
 def fail(message):
@@ -110,28 +110,34 @@ with tarfile.open(archive_path, "r:gz") as archive:
         fail("ember-fetch compatibility source and install archive differ")
 
 api_store_compat_dir = repo / "vendor/ember-api-store-compat"
-api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.2.tgz"
+api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.3.tgz"
 api_store_package_path = api_store_compat_dir / "package.json"
 api_store_license_path = api_store_compat_dir / "LICENSE"
 api_store_upstream_path = api_store_compat_dir / "UPSTREAM.md"
 for required in [api_store_archive, api_store_package_path, api_store_license_path, api_store_upstream_path]:
     if not required.is_file():
         fail(f"reviewed ember-api-store compatibility file missing: {required.relative_to(repo)}")
-if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "91fedcf4e3d950567c4fd323cf31f1dac64948220fae9f29f63c76872b405453":
+if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "e9ca0c1ec78e886bc93b108ae1b1aec69426beecabe20124ab5eaa449722ab0d":
     fail("reviewed ember-api-store compatibility archive hash changed")
 if hashlib.sha256(api_store_license_path.read_bytes()).hexdigest() != "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594":
     fail("ember-api-store upstream Apache-2.0 license changed")
 api_store_package = json.loads(api_store_package_path.read_text(encoding="utf-8"))
 if api_store_package.get("dependencies") != expected_api_store_deps:
     fail("ember-api-store compatibility source metadata changed")
-if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 2:
+if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 3:
     fail("ember-api-store compatibility revision marker is missing")
 with tarfile.open(api_store_archive, "r:gz") as archive:
-    for relative in ["package.json", "LICENSE", "UPSTREAM.md"]:
+    for relative in ["package.json", "LICENSE", "UPSTREAM.md", "addon/services/store.js"]:
         archived = archive.extractfile(f"package/{relative}")
         source = api_store_compat_dir / relative
         if archived is None or archived.read() != source.read_bytes():
             fail(f"ember-api-store compatibility source and install archive differ: {relative}")
+
+api_store_runtime = (api_store_compat_dir / "addon/services/store.js").read_text(encoding="utf-8")
+if "const deferredRequest = defer();" not in api_store_runtime:
+    fail("ember-api-store duplicate-request coalescing fix is missing")
+if "let defer = defer();" in api_store_runtime:
+    fail("ember-api-store RSVP defer shadowing regression returned")
 
 for forbidden in [
     "node_modules/ember-network",
@@ -316,9 +322,9 @@ storage_template = (repo / "app/host/storage/template.hbs").read_text(encoding="
 if 'pageSizeChanged=(action "storagePageSizeChanged")' not in storage_template:
     fail("storage page-size callback is missing from the host storage table")
 
-if template_action_count != 494:
+if template_action_count != 502:
     fail(f"unexpected template action count: {template_action_count}")
-if power_select_count != 11:
+if power_select_count != 12:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")
 
 action_compat_paths = [
@@ -358,7 +364,7 @@ for marker in [
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.8.5 api_store_compat_revision=2 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
+    f"version=2.8.5 api_store_compat_revision=3 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
     f"ember6_template_compat_revision=1 terminal_reconnect_revision=2 "
     f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )

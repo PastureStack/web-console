@@ -53,7 +53,7 @@ package = json.loads(package_path.read_text(encoding="utf-8"))
 ci_source = ci_path.read_text(encoding="utf-8")
 if "npm audit --audit-level=high" not in ci_source:
     fail("live npm Critical/High audit gate is missing from scripts/ci")
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.2.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.3.tgz"
 lock_bytes = lock_path.read_bytes()
 baseline_bytes = baseline_path.read_bytes()
 if lock_bytes != baseline_bytes:
@@ -66,7 +66,7 @@ if lock_bytes != baseline_bytes:
 lock = json.loads(lock_bytes)
 packages = lock.get("packages", {})
 root = packages.get("", {})
-if package.get("version") != "1.6.79":
+if package.get("version") != "1.6.80":
     fail(f"unexpected Web Console version: {package.get('version')}")
 if root.get("version") != package.get("version"):
     fail(f"lock root version differs: {root.get('version')}")

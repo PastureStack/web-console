@@ -29,6 +29,9 @@ export default Route.extend({
     authType: {
       refreshModel: true
     },
+    interactionChannel: {
+      refreshModel: true
+    },
     createdFrom: {
       refreshModel: true
     },
@@ -151,6 +154,7 @@ export default Route.extend({
       limit       : 100,
       depaginate  : false,
       forceReload : true,
+      url         : 'pasturestack/audit-logs',
     };
 
     if (!params) {
@@ -170,7 +174,7 @@ export default Route.extend({
       returnValue.filter.created_lte = params.createdTo;
     }
 
-    ['accountId', 'authenticatedAsAccountId', 'resourceType', 'resourceId', 'clientIp', 'authType'].forEach((key) => {
+    ['accountId', 'authenticatedAsAccountId', 'resourceType', 'resourceId', 'clientIp', 'authType', 'interactionChannel'].forEach((key) => {
       if (params[key]) {
         returnValue.filter[key] = params[key];
       }

@@ -32,7 +32,7 @@
     "node": ">=24"
   },
   "pasturestackCompatibility": {
-    "revision": 2,
+    "revision": 3,
     "upstreamPackage": "ember-api-store",
     "upstreamVersion": "2.8.5",
     "upstreamIntegrity": "sha512-YvnBZfdNGG7hB25hecEENHObXNN+186Bbkd1wAIL7qtRXqboQsQxTU05xxP7axgW6TPYfUYMxZ+GgbHgD14g2A=="
