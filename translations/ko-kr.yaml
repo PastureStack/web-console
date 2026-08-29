@@ -2478,6 +2478,8 @@ loginUserPass:
   loginLabel: 로그인
   loggingInLabel: 로그인 중...
   passwordLabel: 비밀번호
+  showPasswordLabel: 비밀번호 표시
+  hidePasswordLabel: 비밀번호 숨기기
 machine:
   driverAmazon:
     accessSection: 계정 액세스

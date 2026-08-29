@@ -2552,6 +2552,8 @@ loginUserPass:
   loginLabel: ログイン
   loggingInLabel: ログイン中...
   passwordLabel: パスワード
+  showPasswordLabel: パスワードを表示
+  hidePasswordLabel: パスワードを非表示
 machine:
   driverAmazon:
     accessSection: アカウントアクセス
