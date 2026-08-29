@@ -552,6 +552,17 @@ compatibility code, so collapse and dropdown controls execute instead of being
 left as a dormant anonymous AMD module. This release does not change the audit
 table or broaden the audit-filter redesign.
 
+`1.6.79` restores the authenticated console's established Server `v1.6.358`
+visual contract without reverting the modernized application. Bootstrap
+`5.3.8`, Ember `7.2`, current authentication, audit filtering, dependencies,
+and security fixes remain active. Only the incompatible global Bootstrap 5
+reboot/layout stylesheet is replaced by provenance-bound light and dark
+presentation snapshots; Bootstrap 5 remains the JavaScript interaction
+runtime through small state-class bridges. The release browser smoke checks
+the shared 45-pixel navigation, typography, footer geometry, overflow, and
+security-icon rendering across the major environment and administration route
+families so a full-page layout reset cannot silently return.
+
 The navigation header uses Ember's public `<LinkTo>` component with explicit
 route, model-array, query, and `current-when` arguments. The removed
 `Ember.LinkComponent` global is neither reopened nor subclassed. Active-state

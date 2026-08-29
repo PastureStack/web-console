@@ -21,6 +21,7 @@ expected_remaining_import_boundaries = {}
 load_css_expected = [
     "app/styles/helpers/functions",
     "app/styles/base/fonts",
+    "{classic_layout}",
     "vendor/bootswatch-cosmo/bootswatch",
     "app/styles/vendors/liquidfire-tweak",
     "app/styles/vendors/copy-to-clipboard",
@@ -227,9 +228,18 @@ for path, expected_imports in entrypoints.items():
         if extra:
             failures.append(f"SASS_IMPORT_BOUNDARY_EXTRA file={path} imports={','.join(extra)}")
 
-    if load_css != load_css_expected:
+    classic_layout = (
+        "app/styles/vendors/bootstrap3-layout-light"
+        if path.name == "app-light.scss"
+        else "app/styles/vendors/bootstrap3-layout-dark"
+    )
+    expected_load_css = [
+        item.format(classic_layout=classic_layout)
+        for item in load_css_expected
+    ]
+    if load_css != expected_load_css:
         failures.append(
-            f"SASS_LOAD_CSS_BOUNDARY_CHANGED file={path} expected_count={len(load_css_expected)} actual_count={len(load_css)}"
+            f"SASS_LOAD_CSS_BOUNDARY_CHANGED file={path} expected_count={len(expected_load_css)} actual_count={len(load_css)}"
         )
 
     expected_uses = use_expected[path]
@@ -278,13 +288,13 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=54 use_per_entrypoint=7")
+print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=55 use_per_entrypoint=7")
 print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
 print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
 print("No Sass @import remains in the app-light/app-dark entrypoint boundary; obsolete vendored Bootstrap Sass is absent.")
 print("Configured sass:meta.load-css migrations must keep explicit theme variable injection; do not rely on hidden global Sass scope.")
 print("No CSS-only app stylesheet partial remains pinned to @import; new CSS-only leaf imports must use sass:meta.load-css.")
-print("Bootstrap 5 CSS loads from the maintained npm package; the root compatibility bridge only preserves application theme selectors.")
+print("Bootstrap 5 remains the maintained interaction runtime; the v1.6.358 presentation snapshots preserve the established application layout.")
 print("Cross-module @extend bridges must stay explicit until selector-provider redesign proves byte-identical CSS.")
 print("failure_count=0")
 PY
