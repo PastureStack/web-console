@@ -25,8 +25,8 @@ jobs:
 
       - name: Install pinned Node.js
         env:
-          NODE_VERSION: 24.19.0
-          NODE_ARCHIVE_SHA256: 14b342e71204f811bde6153be8e04b62aef63c236fef92b55f9c83154b409647
+          NODE_VERSION: 24.20.0
+          NODE_ARCHIVE_SHA256: 2f2c0da162318f0de47665410c7c8c2ed3d36c8f3105de4bbc61176c70a7cbf2
           NPM_VERSION: 12.0.2
         run: |
           set -euo pipefail
@@ -60,10 +60,10 @@ jobs:
       - name: Test and build twice
         id: build
         env:
-          PASTURESTACK_NODE24_IMAGE: node:24.19.0-bookworm@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f6687167ca405e6584
+          PASTURESTACK_NODE24_IMAGE: node:24.20.0-bookworm@sha256:be23f54a88d34e8824c741b19b91064094f92c1c97b194144bfc8b50d67258e2
         run: |
           set -euo pipefail
-          test "$(node --version)" = v24.19.0
+          test "$(node --version)" = v24.20.0
           test "$(npm --version)" = 12.0.2
           npm ci --ignore-scripts --no-audit --no-fund
           bash scripts/ci

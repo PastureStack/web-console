@@ -11,7 +11,7 @@ from pathlib import Path
 
 failures = 0
 expected = ">=24"
-expected_node = "24.19.0"
+expected_node = "24.20.0"
 expected_npm = "12.0.2"
 files = [
     Path("package.json"),
@@ -82,7 +82,7 @@ else:
         f"NODE_VERSION: {expected_node}",
         f'test "$(node --version)" = v{expected_node}',
         f'test "$(npm --version)" = {expected_npm}',
-        "node:24.19.0-bookworm@sha256:934240a162082fd8b8a2f90cd5114446443f1eba1c5378f6687167ca405e6584",
+        "node:24.20.0-bookworm@sha256:be23f54a88d34e8824c741b19b91064094f92c1c97b194144bfc8b50d67258e2",
     ]:
         if marker not in workflow_text:
             fail("UI_PINNED_TOOLCHAIN_MARKER_MISSING", marker=marker)
