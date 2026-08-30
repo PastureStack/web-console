@@ -231,6 +231,12 @@ auditLogsPage:
       toHourLabel: Година часу завершення
       toMinuteLabel: Хвилина часу завершення
       toPeriodLabel: AM або PM часу завершення
+      calendar:
+        label: Календар
+        open: Відкрити календар
+        previousMonth: Попередній місяць
+        nextMonth: Наступний місяць
+        today: Сьогодні
   table:
     time: Час
     eventType: Тип події

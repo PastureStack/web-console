@@ -234,6 +234,12 @@ auditLogsPage:
       toHourLabel: Befejezési idő órája
       toMinuteLabel: Befejezési idő perce
       toPeriodLabel: Befejezési idő délelőtt vagy délután
+      calendar:
+        label: Naptár
+        open: Naptár megnyitása
+        previousMonth: Előző hónap
+        nextMonth: Következő hónap
+        today: Ma
   table:
     time: Időpont
     eventType: Esemény típusa

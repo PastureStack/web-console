@@ -422,11 +422,149 @@ button.audit-log-primary-control:focus,
 }
 
 .audit-log-time-editor {
+  position: relative;
   min-width: 0;
 }
 
 .audit-log-time-editor > label {
   display: block;
+}
+
+.audit-date-picker {
+  position: relative;
+}
+
+.audit-log-date-input-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  color: $text-color;
+  cursor: pointer;
+  text-align: start;
+}
+
+.audit-log-date-input-button:hover,
+.audit-log-date-input-button:focus {
+  border-color: $brand-primary;
+  outline: 0;
+}
+
+.audit-date-calendar {
+  position: absolute;
+  z-index: 12;
+  top: calc(100% + 5px);
+  left: 0;
+  width: min(290px, calc(100vw - 56px));
+  padding: 10px;
+  color: $text-color;
+  background: $input-bg;
+  border: 1px solid rgba($brand-primary, .38);
+  border-radius: 7px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .22);
+  animation: audit-date-calendar-in 140ms ease-out;
+}
+
+.audit-log-time-editor:last-child .audit-date-calendar {
+  right: 0;
+  left: auto;
+}
+
+.audit-date-calendar-header {
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 7px;
+  text-align: center;
+}
+
+.audit-date-calendar-header strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.audit-date-calendar-nav,
+.audit-date-calendar-day {
+  color: $text-color;
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.audit-date-calendar-nav {
+  width: 34px;
+  height: 32px;
+  font-size: 22px;
+  line-height: 30px;
+}
+
+.audit-date-calendar-nav:hover,
+.audit-date-calendar-nav:focus,
+.audit-date-calendar-day:hover,
+.audit-date-calendar-day:focus {
+  color: $brand-primary;
+  background: rgba($brand-primary, .1);
+  outline: 0;
+}
+
+.audit-date-calendar-weekdays,
+.audit-date-calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.audit-date-calendar-weekdays {
+  color: $text-muted;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.audit-date-calendar-weekdays > span,
+.audit-date-calendar-day {
+  min-width: 0;
+  height: 32px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.audit-date-calendar-day {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.audit-date-calendar-day.is-adjacent-month {
+  color: rgba($text-muted, .55);
+}
+
+.audit-date-calendar-day.is-today {
+  box-shadow: inset 0 0 0 1px rgba($brand-primary, .5);
+}
+
+.audit-date-calendar-day.is-selected {
+  color: #fff;
+  background: $brand-primary;
+  font-weight: 700;
+}
+
+.audit-date-calendar-day.is-selected:hover,
+.audit-date-calendar-day.is-selected:focus {
+  color: #fff;
+  background: $brand-primary;
+}
+
+.audit-date-calendar-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid $table-border-color;
+}
+
+.audit-date-calendar-footer .btn {
+  padding: 3px 7px;
 }
 
 .audit-log-time-columns {
@@ -645,12 +783,25 @@ button.audit-log-primary-control:focus,
   }
 }
 
+@keyframes audit-date-calendar-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .audit-log-filter-card,
   .audit-log-primary-control,
   .audit-log-filter-row,
   .audit-log-time-dialog,
-  .audit-log-time-dialog-backdrop {
+  .audit-log-time-dialog-backdrop,
+  .audit-date-calendar {
     animation: none;
     transition: none;
   }

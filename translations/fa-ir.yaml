@@ -231,6 +231,12 @@ auditLogsPage:
       toHourLabel: ساعت زمان پایان
       toMinuteLabel: دقیقه زمان پایان
       toPeriodLabel: قبل‌ازظهر یا بعدازظهر زمان پایان
+      calendar:
+        label: تقویم
+        open: باز کردن تقویم
+        previousMonth: ماه قبل
+        nextMonth: ماه بعد
+        today: امروز
   table:
     time: زمان
     eventType: نوع رویداد

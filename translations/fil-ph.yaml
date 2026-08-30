@@ -234,6 +234,12 @@ auditLogsPage:
       toHourLabel: Oras ng pagtatapos
       toMinuteLabel: Minuto ng pagtatapos
       toPeriodLabel: AM o PM ng oras ng pagtatapos
+      calendar:
+        label: Kalendaryo
+        open: Buksan ang kalendaryo
+        previousMonth: Nakaraang buwan
+        nextMonth: Susunod na buwan
+        today: Ngayon
   table:
     time: Oras
     eventType: Uri ng Kaganapan

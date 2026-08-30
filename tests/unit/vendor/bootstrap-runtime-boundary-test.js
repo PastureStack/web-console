@@ -71,6 +71,29 @@ test('the Bootstrap 5 dropdown state keeps the established menu presentation', f
   dropdown.dispose();
 });
 
+test('the footer language menu stays above its trigger and inside the viewport', function(assert) {
+  let fixture = document.getElementById('qunit-fixture');
+
+  installBootstrapRuntime();
+  fixture.innerHTML = '<footer><div style="float:right"><div class="dropdown language-dropdown inline-block"><button type="button" class="lang-select" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">Deutsch</button><ul class="dropdown-menu dropdown-menu-end text-right" style="width:349px"><li><a href="#">Deutsch (Deutschland)</a></li></ul></div></div></footer>';
+
+  let trigger = fixture.querySelector('button');
+  let menu = fixture.querySelector('.dropdown-menu');
+  let dropdown = window.bootstrap.Dropdown.getOrCreateInstance(trigger);
+
+  dropdown.show();
+
+  let menuRect = menu.getBoundingClientRect();
+  let triggerRect = trigger.getBoundingClientRect();
+
+  assert.ok(menuRect.right <= window.innerWidth, 'the menu right edge does not overflow the viewport');
+  assert.ok(Math.abs(menuRect.right - triggerRect.right) < 2, 'the menu is anchored to the trigger right edge');
+  assert.ok(menuRect.bottom <= triggerRect.top, 'the footer menu opens upward');
+
+  dropdown.hide();
+  dropdown.dispose();
+});
+
 test('security actions render a visible icon from the current icon font', function(assert) {
   let fixture = document.getElementById('qunit-fixture');
 

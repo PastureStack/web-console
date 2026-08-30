@@ -231,6 +231,12 @@ auditLogsPage:
       toHourLabel: Heure de fin
       toMinuteLabel: Minute de fin
       toPeriodLabel: AM ou PM de l’heure de fin
+      calendar:
+        label: Calendrier
+        open: Ouvrir le calendrier
+        previousMonth: Mois précédent
+        nextMonth: Mois suivant
+        today: Aujourd’hui
   table:
     time: Heure
     eventType: Evenement
