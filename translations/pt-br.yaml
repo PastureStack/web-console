@@ -139,6 +139,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: Limpar tudo
     searchButtonText: Pesquisar
+  filterBuilder:
+    title: Filtrar logs de auditoria
+    help: Selecione diretamente o período, o ambiente e o usuário. Adicione apenas as condições extras necessárias; todas as condições são combinadas com E.
+    matchAll: Todas as condições adicionadas devem corresponder
+    activeCount: '{count, plural, =0 {Nenhuma condição ativa} =1 {# condição ativa} other {# condições ativas}}'
+    timeRange: Período
+    from: De
+    to: Até
+    timeZone: 'Fuso horário exibido: {zone}'
+    timeInclusive: Inclui o horário inicial e exclui o horário final
+    timeNotSelected: Nenhum período selecionado
+    environment: Ambiente
+    environmentPlaceholder: Qualquer ambiente
+    allAccessibleEnvironments: Todos os ambientes acessíveis
+    permissionScoped: As opções e os resultados são limitados pelas suas permissões de ambiente
+    user: Usuário
+    userPlaceholder: Qualquer usuário
+    allUsers: Todos os usuários identificáveis
+    noRawIds: Nomes ou nomes de usuário são exibidos no lugar de IDs internos
+    operationSource: Origem da operação
+    allChannels: Todas as origens de operação
+    channelHelp: Distingue atividades da WebUI, API, automação e sistema
+    addCondition: Adicionar condição
+    apply: Aplicar filtros
+    clear: Limpar tudo
+    removeCondition: Remover condição
+    rangeError: O horário inicial deve ser anterior ao horário final.
+    autocomplete:
+      label: Valores sugeridos no escopo autorizado atual
+    presets:
+      label: Períodos rápidos
+      minutes15: Últimos 15 minutos
+      hour: Última hora
+      day: Últimas 24 horas
+      week: Últimos 7 dias
+    conditions:
+      eventType: Tipo de evento
+      description: Descrição
+      resource: Recurso
+      clientIp: IP de origem
+      authType: Tipo de autenticação
+      interactionChannel: Canal de interação
+    shortcuts:
+      title: Atalhos de investigação
+      recentApi: Atividade da API na última hora
+      recentWeb: Atividade da WebUI na última hora
+      changes: Eventos de alteração nas últimas 24 horas
+      removals: Eventos de remoção nas últimas 24 horas
+    results:
+      updating: Atualizando resultados…
+      summary: 'Consulta concluída: {count} registros, período {range}'
+    operators:
+      contains: contém
+      exact: é
+      startsWith: começa com
+      notEqual: não é
+      notContains: não contém
+    placeholders:
+      eventType: por exemplo, resource.change
+      description: Digite o texto da descrição
+      resourceType: Qualquer tipo de recurso
+      resourceId: ID de recurso opcional
+      clientIp: por exemplo, 10.0.0.25
+      authType: Qualquer tipo de autenticação
+      interactionChannel: WebUI, API ou automação
+    channels:
+      web_ui: Interface web (WebUI)
+      public_api: API
+      automation: Automação
+      system_internal: Interno do sistema
+      unknown: Desconhecido
+    export:
+      title: Exportar os resultados atuais
+      xlsx: Pasta de trabalho do Excel (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Escolher um período
+      cancel: Cancelar
+      accept: Usar este período
+      wheelHelp: Deslize as três colunas centrais para escolher hora, minuto e AM ou PM; as rodas desaceleram suavemente e param no valor mais próximo
+      hour: Hora
+      minute: Minuto
+      period: Período
+      am: AM
+      pm: PM
+      fromHourLabel: Hora inicial
+      fromMinuteLabel: Minuto inicial
+      fromPeriodLabel: AM ou PM do horário inicial
+      toHourLabel: Hora final
+      toMinuteLabel: Minuto final
+      toPeriodLabel: AM ou PM do horário final
   table:
     time: Tempo
     eventType: Tipo de Evento
@@ -147,6 +239,8 @@ auditLogsPage:
     resourceTypeId: 'ID:Tempo de Recurso'
     identity: Identidade
     authIp: Autenticação e IP
+    unnamedEnvironment: Ambiente sem nome
+    unknownUser: Usuário excluído ou indisponível
   authTypes:
     none: Nenhum
     apiKey: API Chave

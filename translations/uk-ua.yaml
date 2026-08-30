@@ -139,6 +139,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: Очистити фільтри
     searchButtonText: Пошук
+  filterBuilder:
+    title: Фільтр журналу аудиту
+    help: Виберіть період, середовище та користувача. Додавайте лише необхідні додаткові умови; усі умови об’єднуються оператором І.
+    matchAll: Усі додані умови мають виконуватися
+    activeCount: '{count, plural, =0 {Немає активних умов} =1 {# активна умова} other {# активних умов}}'
+    timeRange: Період
+    from: Від
+    to: До
+    timeZone: 'Часовий пояс відображення: {zone}'
+    timeInclusive: Включає час початку та виключає час завершення
+    timeNotSelected: Період не вибрано
+    environment: Середовище
+    environmentPlaceholder: Будь-яке середовище
+    allAccessibleEnvironments: Усі доступні середовища
+    permissionScoped: Варіанти й результати обмежені вашими правами на середовища
+    user: Користувач
+    userPlaceholder: Будь-який користувач
+    allUsers: Усі ідентифіковані користувачі
+    noRawIds: Замість внутрішніх ID відображаються імена або імена користувачів
+    operationSource: Джерело операції
+    allChannels: Усі джерела операцій
+    channelHelp: Розрізняє дії через WebUI, API, автоматизацію та систему
+    addCondition: Додати умову
+    apply: Застосувати фільтри
+    clear: Очистити все
+    removeCondition: Видалити умову
+    rangeError: Час початку має передувати часу завершення.
+    autocomplete:
+      label: Запропоновані значення з поточної дозволеної області
+    presets:
+      label: Швидкі періоди
+      minutes15: Останні 15 хвилин
+      hour: Остання година
+      day: Останні 24 години
+      week: Останні 7 днів
+    conditions:
+      eventType: Тип події
+      description: Опис
+      resource: Ресурс
+      clientIp: IP джерела
+      authType: Тип автентифікації
+      interactionChannel: Канал взаємодії
+    shortcuts:
+      title: Швидкі запити для розслідування
+      recentApi: Активність API за останню годину
+      recentWeb: Активність WebUI за останню годину
+      changes: Події змін за останні 24 години
+      removals: Події видалення за останні 24 години
+    results:
+      updating: Оновлення результатів…
+      summary: 'Запит виконано: {count} записів, період {range}'
+    operators:
+      contains: містить
+      exact: дорівнює
+      startsWith: починається з
+      notEqual: не дорівнює
+      notContains: не містить
+    placeholders:
+      eventType: наприклад, resource.change
+      description: Введіть текст опису
+      resourceType: Будь-який тип ресурсу
+      resourceId: Необов’язковий ID ресурсу
+      clientIp: наприклад, 10.0.0.25
+      authType: Будь-який тип автентифікації
+      interactionChannel: WebUI, API або автоматизація
+    channels:
+      web_ui: Вебінтерфейс (WebUI)
+      public_api: API
+      automation: Автоматизація
+      system_internal: Внутрішня система
+      unknown: Невідомо
+    export:
+      title: Експортувати поточні результати
+      xlsx: Книга Excel (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Вибрати період
+      cancel: Скасувати
+      accept: Використати цей період
+      wheelHelp: Прокрутіть три середні стовпці, щоб вибрати годину, хвилину та AM або PM; колеса плавно сповільняться й зупиняться на найближчому значенні
+      hour: Година
+      minute: Хвилина
+      period: Період доби
+      am: AM
+      pm: PM
+      fromHourLabel: Година часу початку
+      fromMinuteLabel: Хвилина часу початку
+      fromPeriodLabel: AM або PM часу початку
+      toHourLabel: Година часу завершення
+      toMinuteLabel: Хвилина часу завершення
+      toPeriodLabel: AM або PM часу завершення
   table:
     time: Час
     eventType: Тип події
@@ -147,6 +239,8 @@ auditLogsPage:
     resourceTypeId: 'Тип ресурсу: ID'
     identity: Ідентичність
     authIp: IP Авторизації
+    unnamedEnvironment: Середовище без назви
+    unknownUser: Видалений або недоступний користувач
   authTypes:
     none: жодного
     apiKey: API Ключ

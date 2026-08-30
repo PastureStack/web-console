@@ -142,6 +142,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: Filter bereinigen
     searchButtonText: Suchen
+  filterBuilder:
+    title: Auditprotokolle filtern
+    help: Wählen Sie Zeitraum, Umgebung und Benutzer direkt aus. Fügen Sie nur die zusätzlich benötigten Bedingungen hinzu; alle Bedingungen werden mit UND verknüpft.
+    matchAll: Alle hinzugefügten Bedingungen müssen erfüllt sein
+    activeCount: '{count, plural, =0 {Keine aktiven Bedingungen} =1 {# aktive Bedingung} other {# aktive Bedingungen}}'
+    timeRange: Zeitraum
+    from: Von
+    to: Bis
+    timeZone: 'Anzeigezeitzone: {zone}'
+    timeInclusive: Die Startzeit ist eingeschlossen, die Endzeit ausgeschlossen
+    timeNotSelected: Kein Zeitraum ausgewählt
+    environment: Umgebung
+    environmentPlaceholder: Beliebige Umgebung
+    allAccessibleEnvironments: Alle zugänglichen Umgebungen
+    permissionScoped: Optionen und Ergebnisse sind auf Ihre Umgebungsberechtigungen beschränkt
+    user: Benutzer
+    userPlaceholder: Beliebiger Benutzer
+    allUsers: Alle identifizierbaren Benutzer
+    noRawIds: Namen oder Benutzernamen werden anstelle interner IDs angezeigt
+    operationSource: Vorgangsquelle
+    allChannels: Alle Vorgangsquellen
+    channelHelp: Unterscheidet Aktivitäten über WebUI, API, Automatisierung und System
+    addCondition: Bedingung hinzufügen
+    apply: Filter anwenden
+    clear: Alle löschen
+    removeCondition: Bedingung entfernen
+    rangeError: Die Startzeit muss vor der Endzeit liegen.
+    autocomplete:
+      label: Vorgeschlagene Werte aus dem aktuell autorisierten Bereich
+    presets:
+      label: Schnelle Zeiträume
+      minutes15: Letzte 15 Minuten
+      hour: Letzte Stunde
+      day: Letzte 24 Stunden
+      week: Letzte 7 Tage
+    conditions:
+      eventType: Ereignistyp
+      description: Beschreibung
+      resource: Ressource
+      clientIp: Quell-IP
+      authType: Authentifizierungstyp
+      interactionChannel: Interaktionskanal
+    shortcuts:
+      title: Schnellzugriffe für Untersuchungen
+      recentApi: API-Aktivität der letzten Stunde
+      recentWeb: WebUI-Aktivität der letzten Stunde
+      changes: Änderungsereignisse der letzten 24 Stunden
+      removals: Löschereignisse der letzten 24 Stunden
+    results:
+      updating: Ergebnisse werden aktualisiert…
+      summary: 'Abfrage abgeschlossen: {count} Einträge, Zeitraum {range}'
+    operators:
+      contains: enthält
+      exact: ist
+      startsWith: beginnt mit
+      notEqual: ist nicht
+      notContains: enthält nicht
+    placeholders:
+      eventType: z. B. resource.change
+      description: Beschreibungstext eingeben
+      resourceType: Beliebiger Ressourcentyp
+      resourceId: Optionale Ressourcen-ID
+      clientIp: z. B. 10.0.0.25
+      authType: Beliebiger Authentifizierungstyp
+      interactionChannel: WebUI, API oder Automatisierung
+    channels:
+      web_ui: Weboberfläche (WebUI)
+      public_api: API
+      automation: Automatisierung
+      system_internal: Systemintern
+      unknown: Unbekannt
+    export:
+      title: Aktuelle Ergebnisse exportieren
+      xlsx: Excel-Arbeitsmappe (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Zeitraum auswählen
+      cancel: Abbrechen
+      accept: Diesen Zeitraum verwenden
+      wheelHelp: Bewegen Sie die drei mittleren Spalten, um Stunde, Minute und AM oder PM auszuwählen; die Rollen bremsen sanft ab und rasten beim nächsten Wert ein
+      hour: Stunde
+      minute: Min.
+      period: Tageshälfte
+      am: AM
+      pm: PM
+      fromHourLabel: Stunde der Startzeit
+      fromMinuteLabel: Minute der Startzeit
+      fromPeriodLabel: AM oder PM der Startzeit
+      toHourLabel: Stunde der Endzeit
+      toMinuteLabel: Minute der Endzeit
+      toPeriodLabel: AM oder PM der Endzeit
   table:
     time: Zeit
     eventType: Ereignistyp
@@ -150,6 +242,8 @@ auditLogsPage:
     resourceTypeId: 'Ressource Zeit:Id'
     identity: Iditität
     authIp: Authentifizierung & IP
+    unnamedEnvironment: Unbenannte Umgebung
+    unknownUser: Gelöschter oder nicht verfügbarer Benutzer
   authTypes:
     none: Keine
     apiKey: API Schlüssel
