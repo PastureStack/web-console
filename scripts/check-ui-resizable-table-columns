@@ -13,6 +13,8 @@ sortable_table=vendor/lacsso/upstream-templates/addon/templates/components/sorta
 sortable_header=vendor/lacsso/addon/components/sortable-thead.js
 page_numbers=vendor/lacsso/app/templates/components/page-numbers.hbs
 pagination_styles=vendor/lacsso/app/styles/components/_pagination.scss
+audit_template=app/admin-tab/audit-logs/template.hbs
+audit_styles=app/styles/pages/_audit-logs.scss
 failures=0
 
 require_file() {
@@ -42,6 +44,8 @@ require_file "$sortable_table"
 require_file "$sortable_header"
 require_file "$page_numbers"
 require_file "$pagination_styles"
+require_file "$audit_template"
+require_file "$audit_styles"
 
 require_pattern "$utility" 'table\.grid:not\(\[data-column-resize="off"\]\)' 'data-grid selector with an explicit opt-out'
 require_pattern "$utility" 'MutationObserver' 'dynamic Ember table discovery'
@@ -73,6 +77,11 @@ require_pattern "$header_styles" 'right:[[:space:]]*0' 'environment menu overlay
 require_pattern "$header_styles" 'width:[[:space:]]*auto' 'environment menu overlay does not impose a fixed width'
 require_pattern "$styles" 'th:last-child[[:space:]]+\.table-column-resize-handle' 'last resize handle contained within the table'
 require_pattern "$styles" '@media \(max-width:[[:space:]]*694px\)' 'stacked mobile fallback'
+require_pattern "$audit_template" 'audit-log-results-table' 'audit results table has a page-scoped layout hook'
+require_pattern "$audit_template" 'audit-log-auth-ip-heading' 'long localized authentication/IP header has a targeted wrapping hook'
+require_pattern "$audit_styles" 'audit-log-results-table.*audit-log-auth-ip-heading' 'audit authentication/IP wrapping remains scoped to the audit table'
+require_pattern "$audit_styles" 'white-space:[[:space:]]*normal' 'long localized audit header can wrap instead of being clipped'
+require_pattern "$audit_styles" 'overflow-wrap:[[:space:]]*anywhere' 'unbroken localized audit header tokens stay within their column'
 
 selector_line=$(grep -n -m1 'sortable-table-column-selector' "$sortable_table" | cut -d: -f1)
 page_size_line=$(grep -n -m1 'sortable-table-page-size' "$sortable_table" | cut -d: -f1)
@@ -88,6 +97,6 @@ if [[ $failures -ne 0 ]]; then
   exit 1
 fi
 
-echo "UI_RESIZABLE_TABLE_COLUMNS_OK selector=table.grid auto_fit=true semantic_profiles=true selection_width=48 pointer=true keyboard=true mobile_fallback=true"
+echo "UI_RESIZABLE_TABLE_COLUMNS_OK selector=table.grid auto_fit=true semantic_profiles=true selection_width=48 pointer=true keyboard=true mobile_fallback=true audit_auth_ip_header=wrapped"
 echo "Only rendered data grids with a multi-column table header are enhanced; layout tables remain unchanged."
 echo "failure_count=0"
