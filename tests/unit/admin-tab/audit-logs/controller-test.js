@@ -198,6 +198,58 @@ test('applies a valid local time range and blocks inverted, empty, or zero-width
   destroyOwned(controller);
 });
 
+test('forces a refresh when applying an unchanged query instead of leaving the loading state stuck', function(assert) {
+  let sent = [];
+  let controller = controllerFor({
+    send(name, options) {
+      sent.push({name, options});
+    },
+  });
+
+  controller.set('eventType', null);
+  controller.runFilterQuery({eventType: null});
+
+  assert.deepEqual(sent, [{name: 'filterLogs', options: {refreshIfUnchanged: true}}],
+    'an unchanged query asks the route for one explicit refresh');
+  assert.ok(controller.get('isFiltering'), 'the loading state is owned by the refresh lifecycle');
+
+  sent.length = 0;
+  controller.runFilterQuery({eventType: 'api.'});
+
+  assert.deepEqual(sent, [{name: 'filterLogs', options: {refreshIfUnchanged: false}}],
+    'a changed query relies on its query-parameter transition and does not double refresh');
+
+  destroyOwned(controller);
+});
+
+test('clears optional conditions while applying the visible default 24 hour range', function(assert) {
+  let sent = [];
+  let controller = controllerFor({
+    accountId: '1e1',
+    createdFrom: null,
+    createdTo: null,
+    eventType: 'api.',
+    send(name, options) {
+      sent.push({name, options});
+    },
+  });
+
+  controller.set('filters.eventType', 'api.');
+  controller.get('optionalFilters').pushObject('eventType');
+  controller.actions.clearAll.call(controller);
+
+  assert.strictEqual(controller.get('eventType'), null, 'the optional event condition is cleared');
+  assert.deepEqual(controller.get('optionalFilters').toArray(), [], 'optional condition rows are cleared');
+  assert.ok(controller.get('createdFrom'), 'clear applies the start shown in the default time control');
+  assert.ok(controller.get('createdTo'), 'clear applies the end shown in the default time control');
+  assert.strictEqual(moment(controller.get('createdTo')).diff(moment(controller.get('createdFrom')), 'hours'), 24,
+    'the backend query remains bounded to the same visible 24 hour range');
+  assert.deepEqual(sent, [{name: 'filterLogs', options: {refreshIfUnchanged: false}}],
+    'the bounded clear query starts exactly one query-parameter refresh');
+
+  destroyOwned(controller);
+});
+
 test('offers WebUI/API as a primary filter and defaults to a bounded 24 hour range', function(assert) {
   let controller = controllerFor();
   let start = moment(controller.get('filters.createdFrom'));

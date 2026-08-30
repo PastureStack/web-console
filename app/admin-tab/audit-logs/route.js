@@ -60,9 +60,12 @@ export default Route.extend({
   pollGeneration: 0,
 
   actions: {
-    filterLogs() {
+    filterLogs(options = {}) {
       this.cancelLogUpdate();
       this.set('userHasPaged', false);
+      if (options.refreshIfUnchanged) {
+        this.refresh();
+      }
     },
 
     logsSorted() {
