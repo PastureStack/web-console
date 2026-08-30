@@ -214,6 +214,14 @@ export default Controller.extend(Sortable, {
     return true;
   },
 
+  runFilterQuery(queryProperties) {
+    let refreshIfUnchanged = Object.keys(queryProperties).every((key) => this.get(key) === queryProperties[key]);
+
+    this.set('isFiltering', true);
+    this.setProperties(queryProperties);
+    this.send('filterLogs', {refreshIfUnchanged});
+  },
+
   actions: {
     addFilter(key) {
       if (OPTIONAL_FILTER_KEYS.indexOf(key) >= 0 && this.get('optionalFilters').indexOf(key) === -1) {
@@ -360,8 +368,7 @@ export default Controller.extend(Sortable, {
       }
 
       this.set('filterError', null);
-      this.set('isFiltering', true);
-      this.setProperties({
+      this.runFilterQuery({
         accountId                : this.get('filters.accountId'),
         authType                 : this.get('filters.authType'),
         authenticatedAsAccountId : this.get('filters.authenticatedAsAccountId'),
@@ -376,7 +383,6 @@ export default Controller.extend(Sortable, {
         resourceId               : this.get('filters.resourceId'),
         resourceType             : this.get('filters.resourceType'),
       });
-      this.send('filterLogs');
     },
 
     showResponseObjects(request, response) {
@@ -387,17 +393,18 @@ export default Controller.extend(Sortable, {
     },
 
     clearAll() {
-      this.set('filters', emptyFilters());
+      let filters = emptyFilters();
+
+      this.set('filters', filters);
       this.set('optionalFilters', A());
       this.set('activeTimePreset', 'day');
-      this.set('isFiltering', true);
-      this.setProperties({
+      this.runFilterQuery({
         accountId                : null,
         authType                 : null,
         authenticatedAsAccountId : null,
         clientIp                 : null,
-        createdFrom              : null,
-        createdTo                : null,
+        createdFrom              : isoDateTime(filters.createdFrom),
+        createdTo                : isoDateTime(filters.createdTo),
         description              : null,
         descriptionOperator      : 'contains',
         eventType                : null,
@@ -409,7 +416,6 @@ export default Controller.extend(Sortable, {
         sortBy                   : 'created',
         sortOrder                : 'desc',
       });
-      this.send('filterLogs');
     },
 
     exportLogs(format) {

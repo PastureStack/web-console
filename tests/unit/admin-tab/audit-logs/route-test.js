@@ -1,3 +1,4 @@
+import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import AuditLogsRoute from 'ui/admin-tab/audit-logs/route';
 import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
@@ -76,6 +77,27 @@ test('invalidates an older polling generation whenever a new filter query takes 
   assert.strictEqual(route.get('pollGeneration'), 8,
     'an already-running stale response can no longer replace the newly filtered table');
   assert.strictEqual(route.get('timer'), null);
+
+  destroyOwned(route);
+});
+
+test('refreshes only when unchanged query parameters cannot start a transition', function(assert) {
+  let refreshes = 0;
+  let route = createOwned(AuditLogsRoute, {
+    controller: EmberObject.create(),
+    refresh() {
+      refreshes++;
+    },
+    timer: null,
+    userHasPaged: true,
+  }, 'route');
+
+  route.actions.filterLogs.call(route, {refreshIfUnchanged: true});
+  assert.strictEqual(refreshes, 1, 'an unchanged query gets one explicit refresh completion path');
+  assert.notOk(route.get('userHasPaged'), 'a new filter query returns to the first result page');
+
+  route.actions.filterLogs.call(route, {refreshIfUnchanged: false});
+  assert.strictEqual(refreshes, 1, 'changed query parameters are not double refreshed');
 
   destroyOwned(route);
 });
