@@ -142,6 +142,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: Szűrők törlése
     searchButtonText: Keresés
+  filterBuilder:
+    title: Auditnaplók szűrése
+    help: Válassza ki közvetlenül az időtartományt, a környezetet és a felhasználót. Csak a szükséges további feltételeket adja hozzá; minden feltétel ÉS kapcsolatban áll.
+    matchAll: Minden hozzáadott feltételnek teljesülnie kell
+    activeCount: '{count, plural, =0 {Nincs aktív feltétel} =1 {# aktív feltétel} other {# aktív feltétel}}'
+    timeRange: Időtartomány
+    from: Kezdés
+    to: Befejezés
+    timeZone: 'Megjelenítési időzóna: {zone}'
+    timeInclusive: A kezdési időt tartalmazza, a befejezési időt nem
+    timeNotSelected: Nincs kiválasztott időtartomány
+    environment: Környezet
+    environmentPlaceholder: Bármely környezet
+    allAccessibleEnvironments: Minden elérhető környezet
+    permissionScoped: A lehetőségeket és az eredményeket a környezeti jogosultságai korlátozzák
+    user: Felhasználó
+    userPlaceholder: Bármely felhasználó
+    allUsers: Minden azonosítható felhasználó
+    noRawIds: A belső azonosítók helyett nevek vagy felhasználónevek jelennek meg
+    operationSource: Művelet forrása
+    allChannels: Minden műveletforrás
+    channelHelp: Megkülönbözteti a WebUI-, API-, automatizálási és rendszertevékenységet
+    addCondition: Feltétel hozzáadása
+    apply: Szűrők alkalmazása
+    clear: Összes törlése
+    removeCondition: Feltétel eltávolítása
+    rangeError: A kezdési időnek meg kell előznie a befejezési időt.
+    autocomplete:
+      label: Javasolt értékek a jelenlegi engedélyezett tartományból
+    presets:
+      label: Gyors időtartományok
+      minutes15: Elmúlt 15 perc
+      hour: Elmúlt óra
+      day: Elmúlt 24 óra
+      week: Elmúlt 7 nap
+    conditions:
+      eventType: Eseménytípus
+      description: Leírás
+      resource: Erőforrás
+      clientIp: Forrás IP-címe
+      authType: Hitelesítés típusa
+      interactionChannel: Interakciós csatorna
+    shortcuts:
+      title: Vizsgálati gyorsparancsok
+      recentApi: API-tevékenység az elmúlt órában
+      recentWeb: WebUI-tevékenység az elmúlt órában
+      changes: Módosítási események az elmúlt 24 órában
+      removals: Eltávolítási események az elmúlt 24 órában
+    results:
+      updating: Eredmények frissítése…
+      summary: 'Lekérdezés kész: {count} bejegyzés, időtartomány: {range}'
+    operators:
+      contains: tartalmazza
+      exact: egyenlő
+      startsWith: ezzel kezdődik
+      notEqual: nem egyenlő
+      notContains: nem tartalmazza
+    placeholders:
+      eventType: pl. resource.change
+      description: Adja meg a leírás szövegét
+      resourceType: Bármely erőforrástípus
+      resourceId: Nem kötelező erőforrás-azonosító
+      clientIp: pl. 10.0.0.25
+      authType: Bármely hitelesítéstípus
+      interactionChannel: WebUI, API vagy automatizálás
+    channels:
+      web_ui: Webes felület (WebUI)
+      public_api: API
+      automation: Automatizálás
+      system_internal: Belső rendszer
+      unknown: Ismeretlen
+    export:
+      title: Jelenlegi eredmények exportálása
+      xlsx: Excel-munkafüzet (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Időtartomány kiválasztása
+      cancel: Mégse
+      accept: Időtartomány használata
+      wheelHelp: Csúsztassa a középső három oszlopot az óra, a perc és a délelőtt vagy délután kiválasztásához; a kerekek finoman lelassulnak, és a legközelebbi értéknél állnak meg
+      hour: Óra
+      minute: Perc
+      period: Napszak
+      am: de.
+      pm: du.
+      fromHourLabel: Kezdési idő órája
+      fromMinuteLabel: Kezdési idő perce
+      fromPeriodLabel: Kezdési idő délelőtt vagy délután
+      toHourLabel: Befejezési idő órája
+      toMinuteLabel: Befejezési idő perce
+      toPeriodLabel: Befejezési idő délelőtt vagy délután
   table:
     time: Időpont
     eventType: Esemény típusa
@@ -150,6 +242,8 @@ auditLogsPage:
     resourceTypeId: 'Erőforrás típusa: ID'
     identity: Azonosító
     authIp: Hitelesítés és IP
+    unnamedEnvironment: Névtelen környezet
+    unknownUser: Törölt vagy nem elérhető felhasználó
   authTypes:
     none: Egyik sem
     apiKey: API Kulcs

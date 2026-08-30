@@ -139,6 +139,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: پاک کردن فیلتر ها
     searchButtonText: جستجو
+  filterBuilder:
+    title: فیلتر گزارش‌های ممیزی
+    help: بازه زمانی، محیط و کاربر را مستقیماً انتخاب کنید. فقط شرط‌های اضافی مورد نیاز را بیفزایید؛ همه شرط‌ها با «و» ترکیب می‌شوند.
+    matchAll: همه شرط‌های افزوده‌شده باید مطابقت داشته باشند
+    activeCount: '{count, plural, =0 {هیچ شرط فعالی نیست} =1 {# شرط فعال} other {# شرط فعال}}'
+    timeRange: بازه زمانی
+    from: از
+    to: تا
+    timeZone: 'منطقه زمانی نمایش: {zone}'
+    timeInclusive: زمان شروع را شامل می‌شود و زمان پایان را شامل نمی‌شود
+    timeNotSelected: هیچ بازه زمانی انتخاب نشده است
+    environment: محیط
+    environmentPlaceholder: هر محیط
+    allAccessibleEnvironments: همه محیط‌های قابل دسترسی
+    permissionScoped: گزینه‌ها و نتایج به مجوزهای محیطی شما محدود می‌شوند
+    user: کاربر
+    userPlaceholder: هر کاربر
+    allUsers: همه کاربران قابل شناسایی
+    noRawIds: به‌جای شناسه‌های داخلی، نام یا نام کاربری نمایش داده می‌شود
+    operationSource: منبع عملیات
+    allChannels: همه منابع عملیات
+    channelHelp: فعالیت‌های WebUI،‏ API، خودکارسازی و سیستم را از هم متمایز می‌کند
+    addCondition: افزودن شرط
+    apply: اعمال فیلترها
+    clear: پاک کردن همه
+    removeCondition: حذف شرط
+    rangeError: زمان شروع باید پیش از زمان پایان باشد.
+    autocomplete:
+      label: مقادیر پیشنهادی در محدوده مجاز فعلی
+    presets:
+      label: بازه‌های زمانی سریع
+      minutes15: ۱۵ دقیقه گذشته
+      hour: یک ساعت گذشته
+      day: ۲۴ ساعت گذشته
+      week: ۷ روز گذشته
+    conditions:
+      eventType: نوع رویداد
+      description: توضیحات
+      resource: منبع
+      clientIp: نشانی IP مبدأ
+      authType: نوع احراز هویت
+      interactionChannel: کانال تعامل
+    shortcuts:
+      title: میان‌برهای بررسی
+      recentApi: فعالیت API در یک ساعت گذشته
+      recentWeb: فعالیت WebUI در یک ساعت گذشته
+      changes: رویدادهای تغییر در ۲۴ ساعت گذشته
+      removals: رویدادهای حذف در ۲۴ ساعت گذشته
+    results:
+      updating: در حال به‌روزرسانی نتایج…
+      summary: 'پرس‌وجو کامل شد: {count} رکورد، بازه زمانی {range}'
+    operators:
+      contains: شامل می‌شود
+      exact: برابر است با
+      startsWith: شروع می‌شود با
+      notEqual: برابر نیست با
+      notContains: شامل نمی‌شود
+    placeholders:
+      eventType: برای نمونه resource.change
+      description: متن توضیحات را وارد کنید
+      resourceType: هر نوع منبع
+      resourceId: شناسه اختیاری منبع
+      clientIp: برای نمونه 10.0.0.25
+      authType: هر نوع احراز هویت
+      interactionChannel: WebUI،‏ API یا خودکارسازی
+    channels:
+      web_ui: رابط وب (WebUI)
+      public_api: API
+      automation: خودکارسازی
+      system_internal: داخلی سیستم
+      unknown: ناشناخته
+    export:
+      title: برون‌بری نتایج فعلی
+      xlsx: کارپوشه Excel ‏(XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: انتخاب بازه زمانی
+      cancel: لغو
+      accept: استفاده از این بازه
+      wheelHelp: سه ستون میانی را برای انتخاب ساعت، دقیقه و قبل‌ازظهر یا بعدازظهر بلغزانید؛ چرخ‌ها به‌آرامی کند می‌شوند و روی نزدیک‌ترین مقدار می‌ایستند
+      hour: ساعت
+      minute: دقیقه
+      period: نیم‌روز
+      am: قبل‌ازظهر
+      pm: بعدازظهر
+      fromHourLabel: ساعت زمان شروع
+      fromMinuteLabel: دقیقه زمان شروع
+      fromPeriodLabel: قبل‌ازظهر یا بعدازظهر زمان شروع
+      toHourLabel: ساعت زمان پایان
+      toMinuteLabel: دقیقه زمان پایان
+      toPeriodLabel: قبل‌ازظهر یا بعدازظهر زمان پایان
   table:
     time: زمان
     eventType: نوع رویداد
@@ -147,6 +239,8 @@ auditLogsPage:
     resourceTypeId: 'نوع منبع:شناسه'
     identity: هویت
     authIp: احراز هویت و IP
+    unnamedEnvironment: محیط بدون نام
+    unknownUser: کاربر حذف‌شده یا در دسترس نیست
   authTypes:
     none: هیچ کدام
     apiKey: API کلید

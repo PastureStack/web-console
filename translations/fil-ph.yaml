@@ -142,6 +142,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: I-clear ang Mga Filter
     searchButtonText: Maghanap
+  filterBuilder:
+    title: Salain ang talaan ng pag-audit
+    help: Direktang piliin ang saklaw ng oras, kapaligiran, at user. Idagdag lamang ang mga karagdagang kondisyong kailangan; pinagsasama ang lahat ng kondisyon gamit ang AT.
+    matchAll: Dapat tumugma ang lahat ng idinagdag na kondisyon
+    activeCount: '{count, plural, =0 {Walang aktibong kondisyon} =1 {# aktibong kondisyon} other {# aktibong kondisyon}}'
+    timeRange: Saklaw ng oras
+    from: Mula
+    to: Hanggang
+    timeZone: 'Timezone na ipinapakita: {zone}'
+    timeInclusive: Kasama ang oras ng simula at hindi kasama ang oras ng pagtatapos
+    timeNotSelected: Walang napiling saklaw ng oras
+    environment: Kapaligiran
+    environmentPlaceholder: Anumang kapaligiran
+    allAccessibleEnvironments: Lahat ng naa-access na kapaligiran
+    permissionScoped: Nililimitahan ng iyong mga pahintulot sa kapaligiran ang mga opsyon at resulta
+    user: User
+    userPlaceholder: Anumang user
+    allUsers: Lahat ng makikilalang user
+    noRawIds: Pangalan o username ang ipinapakita sa halip na mga panloob na ID
+    operationSource: Pinagmulan ng operasyon
+    allChannels: Lahat ng pinagmulan ng operasyon
+    channelHelp: Pinaghihiwalay ang aktibidad ng WebUI, API, automation, at system
+    addCondition: Magdagdag ng kondisyon
+    apply: Ilapat ang mga filter
+    clear: I-clear lahat
+    removeCondition: Alisin ang kondisyon
+    rangeError: Dapat mas maaga ang oras ng simula kaysa oras ng pagtatapos.
+    autocomplete:
+      label: Mga iminungkahing halaga mula sa kasalukuyang awtorisadong saklaw
+    presets:
+      label: Mabilis na mga saklaw ng oras
+      minutes15: Nakaraang 15 minuto
+      hour: Nakaraang oras
+      day: Nakaraang 24 na oras
+      week: Nakaraang 7 araw
+    conditions:
+      eventType: Uri ng kaganapan
+      description: Paglalarawan
+      resource: Resource
+      clientIp: Pinagmulan na IP
+      authType: Uri ng authentication
+      interactionChannel: Channel ng interaksyon
+    shortcuts:
+      title: Mga shortcut sa pagsisiyasat
+      recentApi: Aktibidad ng API sa nakaraang oras
+      recentWeb: Aktibidad ng WebUI sa nakaraang oras
+      changes: Mga kaganapan ng pagbabago sa nakaraang 24 na oras
+      removals: Mga kaganapan ng pag-aalis sa nakaraang 24 na oras
+    results:
+      updating: Ina-update ang mga resulta…
+      summary: 'Tapos na ang query: {count} tala, saklaw ng oras {range}'
+    operators:
+      contains: naglalaman ng
+      exact: ay
+      startsWith: nagsisimula sa
+      notEqual: ay hindi
+      notContains: hindi naglalaman ng
+    placeholders:
+      eventType: hal. resource.change
+      description: Ilagay ang teksto ng paglalarawan
+      resourceType: Anumang uri ng resource
+      resourceId: Opsyonal na resource ID
+      clientIp: hal. 10.0.0.25
+      authType: Anumang uri ng authentication
+      interactionChannel: WebUI, API, o automation
+    channels:
+      web_ui: Web interface (WebUI)
+      public_api: API
+      automation: Awtomasyon
+      system_internal: Panloob ng system
+      unknown: Hindi alam
+    export:
+      title: I-export ang kasalukuyang mga resulta
+      xlsx: Workbook ng Excel (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Pumili ng saklaw ng oras
+      cancel: Kanselahin
+      accept: Gamitin ang saklaw na ito
+      wheelHelp: I-slide ang tatlong gitnang column upang piliin ang oras, minuto, at AM o PM; dahan-dahang babagal ang mga wheel at hihinto sa pinakamalapit na halaga
+      hour: Oras
+      minute: Minuto
+      period: Yugto ng araw
+      am: AM
+      pm: PM
+      fromHourLabel: Oras ng pagsisimula
+      fromMinuteLabel: Minuto ng pagsisimula
+      fromPeriodLabel: AM o PM ng oras ng pagsisimula
+      toHourLabel: Oras ng pagtatapos
+      toMinuteLabel: Minuto ng pagtatapos
+      toPeriodLabel: AM o PM ng oras ng pagtatapos
   table:
     time: Oras
     eventType: Uri ng Kaganapan
@@ -150,6 +242,8 @@ auditLogsPage:
     resourceTypeId: Uri ng Resource／ID
     identity: Pagkakakilanlan
     authIp: Paraan ng Authentication／IP Address
+    unnamedEnvironment: Kapaligirang walang pangalan
+    unknownUser: Tinanggal o hindi available na user
   authTypes:
     none: Wala
     apiKey: API Key

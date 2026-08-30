@@ -141,6 +141,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: Сбросить Фильтры
     searchButtonText: Поиск
+  filterBuilder:
+    title: Фильтр журнала аудита
+    help: Выберите период, окружение и пользователя. Добавляйте только необходимые дополнительные условия; все условия объединяются оператором И.
+    matchAll: Все добавленные условия должны выполняться
+    activeCount: '{count, plural, =0 {Нет активных условий} =1 {# активное условие} other {# активных условий}}'
+    timeRange: Период
+    from: С
+    to: По
+    timeZone: 'Часовой пояс отображения: {zone}'
+    timeInclusive: Включает время начала и исключает время окончания
+    timeNotSelected: Период не выбран
+    environment: Окружение
+    environmentPlaceholder: Любое окружение
+    allAccessibleEnvironments: Все доступные окружения
+    permissionScoped: Варианты и результаты ограничены вашими правами на окружения
+    user: Пользователь
+    userPlaceholder: Любой пользователь
+    allUsers: Все идентифицируемые пользователи
+    noRawIds: Вместо внутренних ID отображаются имена или имена пользователей
+    operationSource: Источник операции
+    allChannels: Все источники операций
+    channelHelp: Различает действия через WebUI, API, автоматизацию и систему
+    addCondition: Добавить условие
+    apply: Применить фильтры
+    clear: Очистить всё
+    removeCondition: Удалить условие
+    rangeError: Время начала должно предшествовать времени окончания.
+    autocomplete:
+      label: Предлагаемые значения из текущей разрешённой области
+    presets:
+      label: Быстрые периоды
+      minutes15: Последние 15 минут
+      hour: Последний час
+      day: Последние 24 часа
+      week: Последние 7 дней
+    conditions:
+      eventType: Тип события
+      description: Описание
+      resource: Ресурс
+      clientIp: IP источника
+      authType: Тип аутентификации
+      interactionChannel: Канал взаимодействия
+    shortcuts:
+      title: Быстрые запросы для расследования
+      recentApi: Активность API за последний час
+      recentWeb: Активность WebUI за последний час
+      changes: События изменения за последние 24 часа
+      removals: События удаления за последние 24 часа
+    results:
+      updating: Обновление результатов…
+      summary: 'Запрос выполнен: {count} записей, период {range}'
+    operators:
+      contains: содержит
+      exact: равно
+      startsWith: начинается с
+      notEqual: не равно
+      notContains: не содержит
+    placeholders:
+      eventType: например, resource.change
+      description: Введите текст описания
+      resourceType: Любой тип ресурса
+      resourceId: Необязательный ID ресурса
+      clientIp: например, 10.0.0.25
+      authType: Любой тип аутентификации
+      interactionChannel: WebUI, API или автоматизация
+    channels:
+      web_ui: Веб-интерфейс (WebUI)
+      public_api: API
+      automation: Автоматизация
+      system_internal: Внутренняя система
+      unknown: Неизвестно
+    export:
+      title: Экспортировать текущие результаты
+      xlsx: Книга Excel (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Выбрать период
+      cancel: Отмена
+      accept: Использовать этот период
+      wheelHelp: Прокрутите три средних столбца, чтобы выбрать час, минуту и AM или PM; колёса плавно замедлятся и остановятся на ближайшем значении
+      hour: Час
+      minute: Минута
+      period: Период суток
+      am: AM
+      pm: PM
+      fromHourLabel: Час времени начала
+      fromMinuteLabel: Минута времени начала
+      fromPeriodLabel: AM или PM времени начала
+      toHourLabel: Час времени окончания
+      toMinuteLabel: Минута времени окончания
+      toPeriodLabel: AM или PM времени окончания
   table:
     time: Когда
     eventType: Событие
@@ -149,6 +241,8 @@ auditLogsPage:
     resourceTypeId: 'Тип ресурса: ID'
     identity: Представился как
     authIp: Аунтификация и IP
+    unnamedEnvironment: Окружение без имени
+    unknownUser: Удалённый или недоступный пользователь
   authTypes:
     none: Нет
     apiKey: API Ключ

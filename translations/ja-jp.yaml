@@ -138,6 +138,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: フィルターをクリア
     searchButtonText: 検索
+  filterBuilder:
+    title: 監査ログを絞り込む
+    help: 時間範囲、環境、ユーザーを直接選択します。必要な追加条件だけを指定してください。すべての条件は AND で結合されます。
+    matchAll: 追加したすべての条件に一致する必要があります
+    activeCount: '{count, plural, =0 {有効な条件はありません} =1 {# 件の条件が有効です} other {# 件の条件が有効です}}'
+    timeRange: 時間範囲
+    from: 開始
+    to: 終了
+    timeZone: '表示タイムゾーン: {zone}'
+    timeInclusive: 開始時刻を含み、終了時刻を含みません
+    timeNotSelected: 時間範囲が選択されていません
+    environment: 環境
+    environmentPlaceholder: すべての環境
+    allAccessibleEnvironments: アクセス可能なすべての環境
+    permissionScoped: 選択肢と結果は環境へのアクセス権限に応じて制限されます
+    user: ユーザー
+    userPlaceholder: すべてのユーザー
+    allUsers: 識別可能なすべてのユーザー
+    noRawIds: 内部 ID ではなく名前またはユーザー名を表示します
+    operationSource: 操作元
+    allChannels: すべての操作元
+    channelHelp: WebUI、API、自動化、システムの操作を区別します
+    addCondition: 条件を追加
+    apply: フィルターを適用
+    clear: すべてクリア
+    removeCondition: 条件を削除
+    rangeError: 開始時刻は終了時刻より前にしてください。
+    autocomplete:
+      label: 現在の認可範囲からの候補値
+    presets:
+      label: クイック時間範囲
+      minutes15: 過去 15 分
+      hour: 過去 1 時間
+      day: 過去 24 時間
+      week: 過去 7 日間
+    conditions:
+      eventType: イベント種別
+      description: 説明
+      resource: リソース
+      clientIp: 送信元 IP
+      authType: 認証方式
+      interactionChannel: 操作チャネル
+    shortcuts:
+      title: 調査用ショートカット
+      recentApi: 過去 1 時間の API 操作
+      recentWeb: 過去 1 時間の WebUI 操作
+      changes: 過去 24 時間の変更イベント
+      removals: 過去 24 時間の削除イベント
+    results:
+      updating: 結果を更新しています…
+      summary: 'クエリ完了: {count} 件、時間範囲 {range}'
+    operators:
+      contains: 含む
+      exact: 等しい
+      startsWith: 次で始まる
+      notEqual: 等しくない
+      notContains: 含まない
+    placeholders:
+      eventType: 例：resource.change
+      description: 説明文を入力
+      resourceType: すべてのリソース種別
+      resourceId: 任意のリソース ID
+      clientIp: 例：10.0.0.25
+      authType: すべての認証方式
+      interactionChannel: WebUI、API、または自動化
+    channels:
+      web_ui: ウェブ画面（WebUI）
+      public_api: API
+      automation: 自動化
+      system_internal: システム内部
+      unknown: 不明
+    export:
+      title: 現在の結果をエクスポート
+      xlsx: Excel ブック（XLSX）
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: 時間範囲を選択
+      cancel: キャンセル
+      accept: この時間範囲を使用
+      wheelHelp: 中央の 3 列を滑らせて時、分、午前または午後を選択します。ホイールは滑らかに減速し、最も近い値で止まります
+      hour: 時
+      minute: 分
+      period: 午前／午後
+      am: 午前
+      pm: 午後
+      fromHourLabel: 開始時刻の時
+      fromMinuteLabel: 開始時刻の分
+      fromPeriodLabel: 開始時刻の午前または午後
+      toHourLabel: 終了時刻の時
+      toMinuteLabel: 終了時刻の分
+      toPeriodLabel: 終了時刻の午前または午後
   table:
     time: 時刻
     eventType: イベント種別
@@ -146,6 +238,8 @@ auditLogsPage:
     resourceTypeId: リソース種別／ID
     identity: ID
     authIp: 認証方式／IP アドレス
+    unnamedEnvironment: 名前のない環境
+    unknownUser: 削除済みまたは利用できないユーザー
   authTypes:
     none: なし
     apiKey: API キー

@@ -139,6 +139,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: Effacer
     searchButtonText: Rechercher
+  filterBuilder:
+    title: Filtrer les journaux d’audit
+    help: Sélectionnez directement la période, l’environnement et l’utilisateur. Ajoutez uniquement les conditions supplémentaires nécessaires ; toutes les conditions sont combinées avec ET.
+    matchAll: Toutes les conditions ajoutées doivent correspondre
+    activeCount: '{count, plural, =0 {Aucune condition active} =1 {# condition active} other {# conditions actives}}'
+    timeRange: Période
+    from: Du
+    to: Au
+    timeZone: 'Fuseau horaire affiché : {zone}'
+    timeInclusive: Inclut l’heure de début et exclut l’heure de fin
+    timeNotSelected: Aucune période sélectionnée
+    environment: Environnement
+    environmentPlaceholder: Tous les environnements
+    allAccessibleEnvironments: Tous les environnements accessibles
+    permissionScoped: Les options et les résultats sont limités par vos autorisations d’environnement
+    user: Utilisateur
+    userPlaceholder: Tous les utilisateurs
+    allUsers: Tous les utilisateurs identifiables
+    noRawIds: Les noms ou noms d’utilisateur sont affichés à la place des identifiants internes
+    operationSource: Source de l’opération
+    allChannels: Toutes les sources d’opération
+    channelHelp: Distingue les activités WebUI, API, automatisées et système
+    addCondition: Ajouter une condition
+    apply: Appliquer les filtres
+    clear: Tout effacer
+    removeCondition: Supprimer la condition
+    rangeError: L’heure de début doit précéder l’heure de fin.
+    autocomplete:
+      label: Valeurs suggérées dans le périmètre actuellement autorisé
+    presets:
+      label: Périodes rapides
+      minutes15: 15 dernières minutes
+      hour: Dernière heure
+      day: 24 dernières heures
+      week: 7 derniers jours
+    conditions:
+      eventType: Type d’événement
+      description: Détails
+      resource: Ressource
+      clientIp: IP source
+      authType: Type d’authentification
+      interactionChannel: Canal d’interaction
+    shortcuts:
+      title: Raccourcis d’investigation
+      recentApi: Activité API de la dernière heure
+      recentWeb: Activité WebUI de la dernière heure
+      changes: Événements de modification des dernières 24 heures
+      removals: Événements de suppression des dernières 24 heures
+    results:
+      updating: Mise à jour des résultats…
+      summary: 'Requête terminée : {count} entrées, période {range}'
+    operators:
+      contains: contient
+      exact: est égal à
+      startsWith: commence par
+      notEqual: est différent de
+      notContains: ne contient pas
+    placeholders:
+      eventType: p. ex. resource.change
+      description: Saisissez le texte de la description
+      resourceType: Tous les types de ressource
+      resourceId: Identifiant de ressource facultatif
+      clientIp: p. ex. 10.0.0.25
+      authType: Tous les types d’authentification
+      interactionChannel: WebUI, API ou automatisation
+    channels:
+      web_ui: Interface web (WebUI)
+      public_api: API
+      automation: Automatisation
+      system_internal: Interne au système
+      unknown: Inconnu
+    export:
+      title: Exporter les résultats actuels
+      xlsx: Classeur Excel (XLSX)
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: Choisir une période
+      cancel: Annuler
+      accept: Utiliser cette période
+      wheelHelp: Faites glisser les trois colonnes centrales pour choisir l’heure, la minute et AM ou PM ; les roues ralentissent en douceur et s’arrêtent sur la valeur la plus proche
+      hour: Heure
+      minute: Minutes
+      period: Période
+      am: AM
+      pm: PM
+      fromHourLabel: Heure de début
+      fromMinuteLabel: Minute de début
+      fromPeriodLabel: AM ou PM de l’heure de début
+      toHourLabel: Heure de fin
+      toMinuteLabel: Minute de fin
+      toPeriodLabel: AM ou PM de l’heure de fin
   table:
     time: Heure
     eventType: Evenement
@@ -147,6 +239,8 @@ auditLogsPage:
     resourceTypeId: 'Ressource Heure:Id'
     identity: Utilisateur
     authIp: Autorisation & IP
+    unnamedEnvironment: Environnement sans nom
+    unknownUser: Utilisateur supprimé ou indisponible
   authTypes:
     none: Aucun
     apiKey: API Clé

@@ -138,6 +138,98 @@ auditLogsPage:
       dropdownList: null
     clearButtonText: 全部清除
     searchButtonText: 搜索
+  filterBuilder:
+    title: 筛选审计日志
+    help: 直接选择时间、环境和用户；只添加真正需要的其他条件，所有条件均以“且”合并。
+    matchAll: 必须同时满足下列新增条件
+    activeCount: '{count, plural, =0 {没有已启用的条件} =1 {已启用 # 个条件} other {已启用 # 个条件}}'
+    timeRange: 时间范围
+    from: 开始时间
+    to: 结束时间
+    timeZone: '显示时区：{zone}'
+    timeInclusive: 包含开始时间，不包含结束时间
+    timeNotSelected: 尚未选择时间范围
+    environment: 环境
+    environmentPlaceholder: 所有环境
+    allAccessibleEnvironments: 所有可访问环境
+    permissionScoped: 选项和结果受您的环境权限限制
+    user: 用户
+    userPlaceholder: 所有用户
+    allUsers: 所有可识别用户
+    noRawIds: 显示名称或用户名，不显示内部 ID
+    operationSource: 操作来源
+    allChannels: 所有操作来源
+    channelHelp: 明确区分 WebUI、API、自动化和系统操作
+    addCondition: 添加条件
+    apply: 应用筛选
+    clear: 全部清除
+    removeCondition: 移除此条件
+    rangeError: 开始时间必须早于结束时间。
+    autocomplete:
+      label: 当前授权范围内的建议值
+    presets:
+      label: 快速时间范围
+      minutes15: 最近 15 分钟
+      hour: 最近 1 小时
+      day: 最近 24 小时
+      week: 最近 7 天
+    conditions:
+      eventType: 事件类型
+      description: 描述
+      resource: 资源
+      clientIp: 来源 IP 地址
+      authType: 认证方式
+      interactionChannel: 操作渠道
+    shortcuts:
+      title: 调查快捷方式
+      recentApi: 最近 1 小时的 API 操作
+      recentWeb: 最近 1 小时的 WebUI 操作
+      changes: 最近 24 小时的变更事件
+      removals: 最近 24 小时的移除事件
+    results:
+      updating: 正在更新结果…
+      summary: '查询完成：{count} 条记录，时间范围 {range}'
+    operators:
+      contains: 包含
+      exact: 等于
+      startsWith: 开头为
+      notEqual: 不等于
+      notContains: 不包含
+    placeholders:
+      eventType: 例如 resource.change
+      description: 输入描述文字
+      resourceType: 所有资源类型
+      resourceId: 可选的资源 ID
+      clientIp: 例如 10.0.0.25
+      authType: 所有认证方式
+      interactionChannel: WebUI、API 或自动化
+    channels:
+      web_ui: 网页界面（WebUI）
+      public_api: API
+      automation: 自动化
+      system_internal: 系统内部
+      unknown: 未知
+    export:
+      title: 导出当前结果
+      xlsx: Excel 工作簿（XLSX）
+      csv: CSV
+      json: JSON
+    timeDialog:
+      title: 选择时间范围
+      cancel: 取消
+      accept: 使用此时间
+      wheelHelp: 滑动中间三列选择时、分和上午／下午；松开后会平滑减速并吸附到最近的数字
+      hour: 时
+      minute: 分
+      period: 时段
+      am: 上午
+      pm: 下午
+      fromHourLabel: 开始时间－小时
+      fromMinuteLabel: 开始时间－分钟
+      fromPeriodLabel: 开始时间－上午或下午
+      toHourLabel: 结束时间－小时
+      toMinuteLabel: 结束时间－分钟
+      toPeriodLabel: 结束时间－上午或下午
   table:
     time: 时间
     eventType: 事件类型
@@ -146,6 +238,8 @@ auditLogsPage:
     resourceTypeId: '资源类型:Id'
     identity: 认证用户
     authIp: 认证类型&IP
+    unnamedEnvironment: 未命名环境
+    unknownUser: 已删除或不可见的用户
   authTypes:
     none: 无
     apiKey: API 关键
