@@ -344,7 +344,7 @@
         </section>
       </div>
     {{/if}}
-    <table class="grid fixed table table-hover r-mb15">
+    <table class="grid fixed table table-hover r-mb15 audit-log-results-table">
       <thead>
         {{sortable-th sortable=this action="changeSort" name="created" label="auditLogsPage.table.time" width="115" class="r-pl10"}}
         {{sortable-th sortable=this action="changeSort" name="eventType" label="auditLogsPage.table.eventType" class="r-pl10"}}
@@ -352,7 +352,7 @@
         {{sortable-th sortable=this action="changeSort" name="accountId" label="auditLogsPage.table.environment" width="125" class="r-pl10"}}
         {{sortable-th sortable=this action="changeSort" name="resourceType" label="auditLogsPage.table.resourceTypeId" class="r-pl10"}}
         {{sortable-th sortable=this action="changeSort" name="authenticatedAsIdentityId" label="auditLogsPage.table.identity" width="175" class="r-pl10"}}
-        <th width="150" class="r-pl10">{{t 'auditLogsPage.table.authIp'}}</th>
+        <th width="150" class="r-pl10 audit-log-auth-ip-heading">{{t 'auditLogsPage.table.authIp'}}</th>
       </thead>
       <tbody>
         {{#each this.model.auditLog as |log|}}

@@ -5,6 +5,15 @@ $text-color: null !default;
 $text-muted: null !default;
 $well-bg: null !default;
 
+table.audit-log-results-table[data-resizable-columns="true"]:not(.table-column-measuring) > thead > th.audit-log-auth-ip-heading {
+  padding-right: 18px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  vertical-align: middle;
+  white-space: normal;
+  word-break: normal;
+}
+
 .audit-log-filter-form {
   margin-bottom: 25px;
 }
