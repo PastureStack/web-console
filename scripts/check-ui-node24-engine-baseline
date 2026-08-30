@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 failures = 0
-expected = ">=24"
+expected = "24.20.0"
 expected_node = "24.20.0"
 expected_npm = "12.0.2"
 files = [
@@ -120,7 +120,7 @@ if failures:
 
 print(
     "UI_NODE24_ENGINE_BASELINE_OK "
-    f"node_engine=>=24 pinned_node={expected_node} pinned_npm={expected_npm}"
+    f"node_engine={expected} pinned_node={expected_node} pinned_npm={expected_npm}"
 )
 if transitive_legacy:
     print("known_transitive_legacy_node_engine_markers=" + ",".join(transitive_legacy))
