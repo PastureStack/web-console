@@ -143,6 +143,7 @@ export default Controller.extend(Sortable, {
   optionalFilters          : null,
   filterError              : null,
   isTimePickerOpen         : false,
+  openDateCalendar         : null,
   isFiltering              : false,
   activeTimePreset         : 'day',
   hourOptions              : TIME_HOUR_OPTIONS,
@@ -276,11 +277,17 @@ export default Controller.extend(Sortable, {
     },
 
     openTimePicker() {
-      this.set('isTimePickerOpen', true);
+      this.setProperties({
+        isTimePickerOpen : true,
+        openDateCalendar : null,
+      });
     },
 
     closeTimePicker() {
-      this.set('isTimePickerOpen', false);
+      this.setProperties({
+        isTimePickerOpen : false,
+        openDateCalendar : null,
+      });
       let fallback = defaultTimeRange();
 
       this.setProperties({
@@ -296,7 +303,10 @@ export default Controller.extend(Sortable, {
       }
 
       this.set('filterError', null);
-      this.set('isTimePickerOpen', false);
+      this.setProperties({
+        isTimePickerOpen : false,
+        openDateCalendar : null,
+      });
     },
 
     setTimePreset(amount, unit) {
@@ -315,6 +325,20 @@ export default Controller.extend(Sortable, {
 
     setTimePart(field, part, value) {
       this.updateTimePart(field, part, value);
+    },
+
+    toggleDateCalendar(field, open) {
+      if (['createdFrom', 'createdTo'].indexOf(field) === -1) {
+        return;
+      }
+
+      this.set('openDateCalendar', open ? field : null);
+    },
+
+    setDatePart(field, value) {
+      if (this.updateDatePart(field, value)) {
+        this.set('openDateCalendar', null);
+      }
     },
 
     applyInvestigationPreset(preset) {

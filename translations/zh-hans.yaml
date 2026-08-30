@@ -230,6 +230,12 @@ auditLogsPage:
       toHourLabel: 结束时间－小时
       toMinuteLabel: 结束时间－分钟
       toPeriodLabel: 结束时间－上午或下午
+      calendar:
+        label: 日历
+        open: 打开日历
+        previousMonth: 上个月
+        nextMonth: 下个月
+        today: 今天
   table:
     time: 时间
     eventType: 事件类型

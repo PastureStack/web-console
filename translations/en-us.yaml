@@ -244,6 +244,12 @@ auditLogsPage:
       toHourLabel: End time hour
       toMinuteLabel: End time minute
       toPeriodLabel: End time AM or PM
+      calendar:
+        label: Calendar
+        open: Open calendar
+        previousMonth: Previous month
+        nextMonth: Next month
+        today: Today
   table:
     time: Time
     eventType: Event Type

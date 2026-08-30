@@ -230,6 +230,12 @@ auditLogsPage:
       toHourLabel: 終了時刻の時
       toMinuteLabel: 終了時刻の分
       toPeriodLabel: 終了時刻の午前または午後
+      calendar:
+        label: カレンダー
+        open: カレンダーを開く
+        previousMonth: 前の月
+        nextMonth: 次の月
+        today: 今日
   table:
     time: 時刻
     eventType: イベント種別

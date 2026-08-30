@@ -234,6 +234,12 @@ auditLogsPage:
       toHourLabel: Stunde der Endzeit
       toMinuteLabel: Minute der Endzeit
       toPeriodLabel: AM oder PM der Endzeit
+      calendar:
+        label: Kalender
+        open: Kalender öffnen
+        previousMonth: Vorheriger Monat
+        nextMonth: Nächster Monat
+        today: Heute
   table:
     time: Zeit
     eventType: Ereignistyp

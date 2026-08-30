@@ -250,7 +250,14 @@
             <div class="audit-log-time-editor">
               <label>
                 <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
-                {{input type="date" class="form-control input-sm audit-log-date-input" value=this.createdFromDate data-testid="audit-log-created-from"}}
+                {{audit-date-picker
+                  value=this.createdFromDate
+                  isOpen=(eq this.openDateCalendar "createdFrom")
+                  label=(t 'auditLogsPage.filterBuilder.from')
+                  dataTestId="audit-log-created-from"
+                  onToggle=(action "toggleDateCalendar" "createdFrom")
+                  onChange=(action "setDatePart" "createdFrom")
+                }}
               </label>
               <div class="audit-log-time-columns" data-testid="audit-log-created-from-time-columns">
                 {{audit-time-wheel
@@ -283,7 +290,14 @@
             <div class="audit-log-time-editor">
               <label>
                 <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
-                {{input type="date" class="form-control input-sm audit-log-date-input" value=this.createdToDate data-testid="audit-log-created-to"}}
+                {{audit-date-picker
+                  value=this.createdToDate
+                  isOpen=(eq this.openDateCalendar "createdTo")
+                  label=(t 'auditLogsPage.filterBuilder.to')
+                  dataTestId="audit-log-created-to"
+                  onToggle=(action "toggleDateCalendar" "createdTo")
+                  onChange=(action "setDatePart" "createdTo")
+                }}
               </label>
               <div class="audit-log-time-columns" data-testid="audit-log-created-to-time-columns">
                 {{audit-time-wheel

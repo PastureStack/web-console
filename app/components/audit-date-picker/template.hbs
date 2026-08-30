@@ -1,0 +1,54 @@
+<button
+  type="button"
+  class="form-control input-sm audit-log-date-input audit-log-date-input-button"
+  data-testid={{this.dataTestId}}
+  aria-haspopup="grid"
+  aria-expanded={{if this.isOpen "true" "false"}}
+  aria-label="{{this.label}} — {{t 'auditLogsPage.filterBuilder.timeDialog.calendar.open'}}"
+  {{action "toggle"}}
+>
+  <span>{{this.displayValue}}</span>
+  <i class="icon icon-calendar" aria-hidden="true"></i>
+</button>
+
+{{#if this.isOpen}}
+  <section class="audit-date-calendar" role="group" aria-label="{{this.label}} — {{t 'auditLogsPage.filterBuilder.timeDialog.calendar.label'}}">
+    <div class="audit-date-calendar-header">
+      <button type="button" class="audit-date-calendar-nav" aria-label="{{t 'auditLogsPage.filterBuilder.timeDialog.calendar.previousMonth'}}" {{action "previousMonth"}}>
+        <span aria-hidden="true">{{if this.isRtl "›" "‹"}}</span>
+      </button>
+      <strong>{{this.monthLabel}}</strong>
+      <button type="button" class="audit-date-calendar-nav" aria-label="{{t 'auditLogsPage.filterBuilder.timeDialog.calendar.nextMonth'}}" {{action "nextMonth"}}>
+        <span aria-hidden="true">{{if this.isRtl "‹" "›"}}</span>
+      </button>
+    </div>
+
+    <div class="audit-date-calendar-weekdays" role="row">
+      {{#each this.weekdayLabels as |weekday|}}
+        <span role="columnheader">{{weekday}}</span>
+      {{/each}}
+    </div>
+
+    <div class="audit-date-calendar-grid" role="grid">
+      {{#each this.calendarWeeks as |week|}}
+        <div class="audit-date-calendar-week" role="row">
+          {{#each week as |day|}}
+            <button
+              type="button"
+              role="gridcell"
+              class="audit-date-calendar-day {{if day.inMonth "is-current-month" "is-adjacent-month"}} {{if day.isSelected "is-selected"}} {{if day.isToday "is-today"}}"
+              aria-label={{day.ariaLabel}}
+              aria-selected={{if day.isSelected "true" "false"}}
+              aria-current={{if day.isToday "date" "false"}}
+              {{action "selectDate" day.value}}
+            >{{day.dayLabel}}</button>
+          {{/each}}
+        </div>
+      {{/each}}
+    </div>
+
+    <div class="audit-date-calendar-footer">
+      <button type="button" class="btn btn-sm btn-link" {{action "selectToday"}}>{{t 'auditLogsPage.filterBuilder.timeDialog.calendar.today'}}</button>
+    </div>
+  </section>
+{{/if}}
