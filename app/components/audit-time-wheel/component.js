@@ -3,6 +3,12 @@ import { scheduleOnce } from '@ember/runloop';
 
 export const TIME_WHEEL_ROW_HEIGHT = 36;
 
+export function timeWheelMotionHasSettled(targetScroll, nextPosition) {
+  // Browser scroll positions are quantized to device pixels.  A sub-pixel
+  // remainder can therefore stop changing before reaching an exact target.
+  return Math.abs(targetScroll - nextPosition) <= 1;
+}
+
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
 }
@@ -241,7 +247,7 @@ export default Component.extend({
     this._viewport.scrollTop = nextPosition;
     this.renderDepth();
 
-    if (idle && Math.abs(this._targetScroll - nextPosition) < 0.35) {
+    if (idle && timeWheelMotionHasSettled(this._targetScroll, nextPosition)) {
       this.setProgrammaticScrollTop(this._targetScroll);
       this._animationFrame = null;
       this._lastFrameAt = null;
