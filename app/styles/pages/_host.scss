@@ -76,7 +76,7 @@
   }
 }
 
-.c3 svg {
+.bb svg {
   font: 12px "Lato";
 }
 
@@ -84,7 +84,7 @@
 #cpuGraph,
 #networkGraph,
 #storageGraph {
-  .c3-axis .tick {
+  .bb-axis .tick {
     fill: #9da0ae;
     // text-shadow: 1px 1px 0px rgba(255,255,255,.5), -1px 1px 0px rgba(255,255,255,.5), 1px -1px 0px rgba(255,255,255,.5), -1px -1px 0px rgba(255,255,255,.5);
 
@@ -93,11 +93,11 @@
     }
   }
 
-  .c3-axis-x {
+  .bb-axis-x {
     display: none;
   }
 
-  .c3-axis .domain {
+  .bb-axis .domain {
     stroke: #f3f5f7;
   }
 }

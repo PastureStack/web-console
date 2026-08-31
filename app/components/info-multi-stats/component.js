@@ -14,10 +14,46 @@ import {
 const MAX_POINTS = 60;
 const TICK_COUNT = 6;
 
+export const HOST_STATS_SERIES = Object.freeze({
+  cpu: Object.freeze(['System', 'User']),
+  memory: Object.freeze(['Used']),
+  network: Object.freeze(['Transmit', 'Receive']),
+  storage: Object.freeze(['Write', 'Read']),
+});
+
+export const HOST_STATS_POINT_OPTIONS = Object.freeze({ show: false });
+
+export function initialGraphData(type, single) {
+  var x = ['x'];
+  for ( var i = 0 ; i < MAX_POINTS ; i++ )
+  {
+    x.push(i);
+  }
+
+  var rows = [x];
+  if ( single )
+  {
+    HOST_STATS_SERIES[type].forEach((key) => {
+      var row = [key];
+      for ( var idx = 0 ; idx < MAX_POINTS ; idx++ )
+      {
+        row.push(0);
+      }
+      rows.push(row);
+    });
+  }
+
+  return rows;
+}
+
+export function initialGraphGroups(type, single) {
+  return [single ? HOST_STATS_SERIES[type].slice() : []];
+}
+
 const GRADIENT_COLORS = [
   {
     type: 'cpu',
-    colors: ['#2ecc71', '#DBE8B1']
+    colors: ['#27ae60', '#DBE8B1']
   },
   {
     type: 'memory',
@@ -370,15 +406,12 @@ setupMarkers: function() {
   initCpuGraph() {
     var store = this.get('store');
     var single = this.get('single');
+    var initialCpuMax = Math.max(1, Number(this.get('model.info.cpuInfo.count')) || 1) * 100;
 
     //console.log('Init CPU');
-    var x = ['x'];
-    for ( var i = 0 ; i < MAX_POINTS ; i++ )
-    {
-      x.push(i);
-    }
-    this.set('cpuData', [x]);
-    this.set('cpuD3Data', [x]);
+    var cpuData = initialGraphData('cpu', single);
+    this.set('cpuData', cpuData);
+    this.set('cpuD3Data', cpuData);
 
     var cpuGraph = bb.generate({
       padding: {
@@ -392,14 +425,15 @@ setupMarkers: function() {
       data: {
         type: 'area-step',
         x: 'x',
-        columns: this.get('cpuData'),
-        groups: [[]], // Stacked graph, populated by getOrCreateDataRow...
+        columns: cpuData,
+        groups: initialGraphGroups('cpu', single),
         order: null,
         colors: {
           System: `url(${window.location.pathname}#cpu-0-gradient)`,
           User: `url(${window.location.pathname}#cpu-1-gradient)`,
         },
       },
+      point: HOST_STATS_POINT_OPTIONS,
       transition: { duration: 0 },
       legend: { show: false },
       tooltip: {
@@ -416,7 +450,7 @@ setupMarkers: function() {
         },
         y: {
           min: 0,
-          max: 100,
+          max: initialCpuMax,
           padding: {
             top: 0,
             left: 0,
@@ -437,14 +471,11 @@ setupMarkers: function() {
   initMemoryGraph() {
     var store = this.get('store');
     var single = this.get('single');
+    var initialMemoryMax = Math.ceil(Number(this.get('model.info.memoryInfo.memTotal')) || 0) || undefined;
 
     //console.log('Init Memory');
-    var x = ['x'];
-    for ( var i = 0 ; i < MAX_POINTS ; i++ )
-    {
-      x.push(i);
-    }
-    this.set('memoryData', [x]);
+    var memoryData = initialGraphData('memory', single);
+    this.set('memoryData', memoryData);
 
     var memoryGraph = bb.generate({
       padding: {
@@ -458,12 +489,13 @@ setupMarkers: function() {
       data: {
         type: 'area-step',
         x: 'x',
-        columns: this.get('memoryData'),
-        groups: [[]], // Stacked graph, populated by getOrCreateDataRow...
+        columns: memoryData,
+        groups: initialGraphGroups('memory', single),
         colors: {
           Used: `url(${window.location.pathname}#memory-0-gradient)`
         },
       },
+      point: HOST_STATS_POINT_OPTIONS,
       transition: { duration: 0 },
       legend: { show: false },
       tooltip: {
@@ -480,6 +512,7 @@ setupMarkers: function() {
         },
         y: {
           min: 0,
+          max: initialMemoryMax,
           padding: {
             top: 0,
             left: 0,
@@ -502,12 +535,8 @@ setupMarkers: function() {
     var single = this.get('single');
 
     //console.log('Init Storage');
-    var x = ['x'];
-    for ( var i = 0 ; i < MAX_POINTS ; i++ )
-    {
-      x.push(i);
-    }
-    this.set('storageData', [x]);
+    var storageData = initialGraphData('storage', single);
+    this.set('storageData', storageData);
 
     var storageGraph = bb.generate({
       padding: {
@@ -521,14 +550,15 @@ setupMarkers: function() {
       data: {
         type: 'area-step',
         x: 'x',
-        columns: this.get('storageData'),
-        groups: [[]], // Stacked graph, populated by getOrCreateDataRow...
+        columns: storageData,
+        groups: initialGraphGroups('storage', single),
         order: null,
         colors: {
           Write: `url(${window.location.pathname}#storage-0-gradient)`,
           Read: `url(${window.location.pathname}#storage-1-gradient)`
         },
       },
+      point: HOST_STATS_POINT_OPTIONS,
       transition: { duration: 0 },
       legend: { show: false },
       tooltip: {
@@ -566,15 +596,8 @@ setupMarkers: function() {
     var single = this.get('single');
 
     //console.log('Init Network');
-    var x = ['x'];
-    var z = [];
-    for ( var i = 0 ; i < MAX_POINTS ; i++ )
-    {
-      x.push(i);
-      z.push(i);
-    }
-    this.set('networkData', [x]);
-    this.set('networkD3Data', z);
+    var networkData = initialGraphData('network', single);
+    this.set('networkData', networkData);
 
     var networkGraph = bb.generate({
       padding: {
@@ -588,14 +611,15 @@ setupMarkers: function() {
       data: {
         type: 'area-step',
         x: 'x',
-        columns: this.get('networkData'),
-        groups: [[]], // Stacked graph, populated by getOrCreateDataRow...
+        columns: networkData,
+        groups: initialGraphGroups('network', single),
         order: null,
         colors: {
           Transmit: `url(${window.location.pathname}#network-0-gradient)`,
           Receive: `url(${window.location.pathname}#network-1-gradient)`
         },
       },
+      point: HOST_STATS_POINT_OPTIONS,
       transition: { duration: 0 },
       legend: { show: false },
       tooltip: {
