@@ -23,7 +23,8 @@ export function positionDropdown(menu, trigger, right) {
   // reset position
   menu.css({
     top: 0,
-    left: 0
+    left: 0,
+    right: 'auto'
   });
 
   // calculate new position

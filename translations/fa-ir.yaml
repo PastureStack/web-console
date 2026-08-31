@@ -174,6 +174,8 @@ auditLogsPage:
       hour: یک ساعت گذشته
       day: ۲۴ ساعت گذشته
       week: ۷ روز گذشته
+      month: ماه گذشته
+      allTime: همه زمان‌ها
     conditions:
       eventType: نوع رویداد
       description: توضیحات

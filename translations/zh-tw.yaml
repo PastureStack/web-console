@@ -173,6 +173,8 @@ auditLogsPage:
       hour: 最近 1 小時
       day: 最近 24 小時
       week: 最近 7 天
+      month: 最近 1 個月
+      allTime: 所有時間
     conditions:
       eventType: 事件類型
       description: 描述
@@ -917,7 +919,7 @@ containersPage:
       milliCpuReservation:
         labelText: 'mCPU 預留： '
     navTabs:
-      labels: 標籤：
+      labels: 標籤
       volumes: 磁碟區
       ports: 連接埠
       command: 命令

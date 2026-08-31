@@ -196,6 +196,8 @@
         <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "hour") "is-active"}}" {{action "setTimePreset" 1 "hour"}}>{{t 'auditLogsPage.filterBuilder.presets.hour'}}</button>
         <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "day") "is-active"}}" {{action "setTimePreset" 24 "hours"}}>{{t 'auditLogsPage.filterBuilder.presets.day'}}</button>
         <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "week") "is-active"}}" {{action "setTimePreset" 7 "days"}}>{{t 'auditLogsPage.filterBuilder.presets.week'}}</button>
+        <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "month") "is-active"}}" {{action "setTimePreset" 1 "month"}}>{{t 'auditLogsPage.filterBuilder.presets.month'}}</button>
+        <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "all") "is-active"}}" {{action "setAllTimePreset"}}>{{t 'auditLogsPage.filterBuilder.presets.allTime'}}</button>
       </div>
       <div class="audit-log-time-dialog-actions">
         <span>{{t 'auditLogsPage.filterBuilder.timeZone' zone=this.timeZoneLabel}}</span>

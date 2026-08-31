@@ -55,6 +55,25 @@ test('starts with all time and opens the picker with a useful 24 hour draft', fu
   destroyOwned(controller);
 });
 
+test('supports the one-month and all-time quick ranges', function(assert) {
+  let controller = controllerFor();
+
+  controller.actions.setTimePreset.call(controller, 1, 'month');
+  let from = moment(controller.get('filters.createdFrom'));
+  let to = moment(controller.get('filters.createdTo'));
+
+  assert.ok(from.clone().add(1, 'month').isSame(to), 'one month uses a calendar month instead of a fixed number of days');
+  assert.strictEqual(controller.get('activeTimePreset'), 'month');
+
+  controller.actions.setAllTimePreset.call(controller);
+  assert.strictEqual(controller.get('filters.createdFrom'), null);
+  assert.strictEqual(controller.get('filters.createdTo'), null);
+  assert.strictEqual(controller.get('activeTimePreset'), 'all');
+  assert.notOk(controller.get('timeRangeInvalid'), 'an unbounded range is a valid all-time query');
+
+  destroyOwned(controller);
+});
+
 test('serializes time, level, container, scope, and text conditions in one query', function(assert) {
   let sent = [];
   let controller = controllerFor({send(name, options) { sent.push({name, options}); }});

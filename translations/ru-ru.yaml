@@ -176,6 +176,8 @@ auditLogsPage:
       hour: Последний час
       day: Последние 24 часа
       week: Последние 7 дней
+      month: Последний месяц
+      allTime: За всё время
     conditions:
       eventType: Тип события
       description: Описание

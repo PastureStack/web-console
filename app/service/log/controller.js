@@ -65,7 +65,12 @@ function matchingTimePreset(fromValue, toValue) {
   if (!from.isValid() || !to.isValid() || Math.abs(moment().diff(to, 'seconds')) > 90) {
     return 'custom';
   }
-  return ({ 15: 'minutes15', 60: 'hour', 1440: 'day', 10080: 'week' })[to.diff(from, 'minutes')] || 'custom';
+  let fixed = ({ 15: 'minutes15', 60: 'hour', 1440: 'day', 10080: 'week' })[to.diff(from, 'minutes')];
+
+  if (fixed) {
+    return fixed;
+  }
+  return Math.abs(from.clone().add(1, 'month').diff(to, 'minutes')) <= 1 ? 'month' : 'custom';
 }
 
 function selectedTimePart(value, part) {
@@ -267,8 +272,19 @@ export default Controller.extend({
         '1-hour': 'hour',
         '24-hours': 'day',
         '7-days': 'week',
+        '1-month': 'month',
       })[`${amount}-${unit}`] || 'custom');
       this.set('filterError', null);
+    },
+
+    setAllTimePreset() {
+      this.setProperties({
+        'filters.createdFrom': null,
+        'filters.createdTo'  : null,
+        activeTimePreset     : 'all',
+        filterError          : null,
+        openDateCalendar     : null,
+      });
     },
 
     setTimePart(field, part, value) {

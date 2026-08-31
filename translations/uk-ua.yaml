@@ -174,6 +174,8 @@ auditLogsPage:
       hour: Остання година
       day: Останні 24 години
       week: Останні 7 днів
+      month: Останній місяць
+      allTime: За весь час
     conditions:
       eventType: Тип події
       description: Опис

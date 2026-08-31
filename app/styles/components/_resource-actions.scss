@@ -66,6 +66,9 @@ $text-color: null !default;
 
 .global-actions {
   position: absolute;
+  right: auto;
+  width: max-content;
+  max-width: calc(100vw - 16px);
 }
 
 .resource-actions-tabbable {

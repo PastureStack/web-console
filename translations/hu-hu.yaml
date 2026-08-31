@@ -177,6 +177,8 @@ auditLogsPage:
       hour: Elmúlt óra
       day: Elmúlt 24 óra
       week: Elmúlt 7 nap
+      month: Elmúlt hónap
+      allTime: Teljes időszak
     conditions:
       eventType: Eseménytípus
       description: Leírás

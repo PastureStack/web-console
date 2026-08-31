@@ -17,6 +17,7 @@ export default Service.extend({
     let $parent = this.set('actionParent', $('#resource-actions-parent'));
     let $menu = this.set('actionMenu', $('#resource-actions'));
     let $toggle = this.set('actionToggle', $(toggle||trigger));
+    let $trigger = this.set('actionTrigger', $(trigger));
 
     if ( model === this.get('model') && this.get('open') )
     {
@@ -49,6 +50,7 @@ export default Service.extend({
       $menu.css('visibility','hidden');
       $menu.removeClass('hide');
       $toggle.addClass('open');
+      $trigger.attr('aria-expanded', 'true');
       $parent.addClass('open');
 
       this.set('open',true);
@@ -63,10 +65,12 @@ export default Service.extend({
 
   hide() {
     this.get('actionToggle').removeClass('open');
-    this.get('actionParent').removeClass('hide');
+    this.get('actionTrigger').attr('aria-expanded', 'false');
+    this.get('actionParent').removeClass('open');
     this.get('actionMenu').addClass('hide');
     this.setProperties({
       actionToggle : null,
+      actionTrigger: null,
       actionMenu   : null,
       open         : false,
       model        : null,
