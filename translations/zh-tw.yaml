@@ -1413,10 +1413,10 @@ servicePage:
       shortcuts:
         title: 調查捷徑
         recent: 最近 1 小時
-        restarts: 最近 24 小時的重啟
+        restarts: 最近 24 小時的重新啟動
         errors: 最近 24 小時的錯誤
       results:
-        updating: 正在更新結果...
+        updating: 正在更新結果…
         summary: '查詢完成：{count} 筆，時間範圍 {range}'
     table:
       header:
