@@ -121,6 +121,7 @@ export default Controller.extend(Sortable, {
     'interactionChannel',
     'createdFrom',
     'createdTo',
+    'timeScope',
     'accountId',
     'authenticatedAsAccountId',
   ],
@@ -144,6 +145,7 @@ export default Controller.extend(Sortable, {
   interactionChannel       : null,
   createdFrom              : null,
   createdTo                : null,
+  timeScope                : null,
   accountId                : null,
   authenticatedAsAccountId : null,
   authTypes                : null,
@@ -417,6 +419,7 @@ export default Controller.extend(Sortable, {
         clientIp                 : this.get('filters.clientIp'),
         createdFrom              : isoDateTime(this.get('filters.createdFrom')),
         createdTo                : isoDateTime(this.get('filters.createdTo')),
+        timeScope                : !this.get('filters.createdFrom') && !this.get('filters.createdTo') ? 'all' : null,
         description              : this.get('filters.description'),
         descriptionOperator      : this.get('filters.descriptionOperator') || 'contains',
         eventType                : this.get('filters.eventType'),
@@ -447,6 +450,7 @@ export default Controller.extend(Sortable, {
         clientIp                 : null,
         createdFrom              : isoDateTime(filters.createdFrom),
         createdTo                : isoDateTime(filters.createdTo),
+        timeScope                : null,
         description              : null,
         descriptionOperator      : 'contains',
         eventType                : null,
@@ -496,7 +500,10 @@ export default Controller.extend(Sortable, {
     filters.authType = this.get('authType');
     filters.authenticatedAsAccountId = this.get('authenticatedAsAccountId');
     filters.clientIp = this.get('clientIp');
-    if (this.get('createdFrom') || this.get('createdTo')) {
+    if (this.get('timeScope') === 'all') {
+      filters.createdFrom = null;
+      filters.createdTo = null;
+    } else if (this.get('createdFrom') || this.get('createdTo')) {
       filters.createdFrom = localDateTime(this.get('createdFrom'));
       filters.createdTo = localDateTime(this.get('createdTo'));
     }
