@@ -64,6 +64,9 @@ function isoDateTime(value) {
 }
 
 function matchingTimePreset(fromValue, toValue) {
+  if (!fromValue && !toValue) {
+    return 'all';
+  }
   let from = moment(fromValue);
   let to = moment(toValue);
 
@@ -73,7 +76,12 @@ function matchingTimePreset(fromValue, toValue) {
 
   let minutes = to.diff(from, 'minutes');
 
-  return ({15: 'minutes15', 60: 'hour', 1440: 'day', 10080: 'week'})[minutes] || 'custom';
+  let fixed = ({15: 'minutes15', 60: 'hour', 1440: 'day', 10080: 'week'})[minutes];
+
+  if (fixed) {
+    return fixed;
+  }
+  return Math.abs(from.clone().add(1, 'month').diff(to, 'minutes')) <= 1 ? 'month' : 'custom';
 }
 
 function selectedTimePart(value, part) {
@@ -288,12 +296,11 @@ export default Controller.extend(Sortable, {
         isTimePickerOpen : false,
         openDateCalendar : null,
       });
-      let fallback = defaultTimeRange();
-
       this.setProperties({
-        'filters.createdFrom': localDateTime(this.get('createdFrom')) || fallback.createdFrom,
-        'filters.createdTo': localDateTime(this.get('createdTo')) || fallback.createdTo,
+        'filters.createdFrom': localDateTime(this.get('createdFrom')),
+        'filters.createdTo': localDateTime(this.get('createdTo')),
       });
+      this.set('activeTimePreset', matchingTimePreset(this.get('createdFrom'), this.get('createdTo')));
     },
 
     acceptTimePicker() {
@@ -319,8 +326,19 @@ export default Controller.extend(Sortable, {
         '1-hour': 'hour',
         '24-hours': 'day',
         '7-days': 'week',
+        '1-month': 'month',
       })[`${amount}-${unit}`] || 'custom');
       this.set('filterError', null);
+    },
+
+    setAllTimePreset() {
+      this.setProperties({
+        'filters.createdFrom': null,
+        'filters.createdTo'  : null,
+        activeTimePreset     : 'all',
+        filterError          : null,
+        openDateCalendar     : null,
+      });
     },
 
     setTimePart(field, part, value) {
@@ -670,6 +688,9 @@ export default Controller.extend(Sortable, {
   }.property('filters.interactionChannel', 'interactionChannels.[]'),
 
   timeRangeSummary: function() {
+    if (!this.get('filters.createdFrom') && !this.get('filters.createdTo')) {
+      return this.get('intl').t('auditLogsPage.filterBuilder.presets.allTime');
+    }
     let from = moment(this.get('filters.createdFrom'));
     let to = moment(this.get('filters.createdTo'));
 

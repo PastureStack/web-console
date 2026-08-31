@@ -1,5 +1,5 @@
 import { next } from '@ember/runloop';
-import { alias } from '@ember/object/computed';
+import { alias, and, not } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import bb from 'billboard.js';
@@ -85,6 +85,8 @@ export default Component.extend({
   available: alias('statsSocket.available'),
   active: alias('statsSocket.active'),
   loading: alias('statsSocket.loading'),
+  notRenderOk: not('renderOk'),
+  waitingForData: and('available', 'notRenderOk'),
 
   cpuCanvas: '#cpuGraph',
   cpuGraph: null,
@@ -276,6 +278,7 @@ setupMarkers: function() {
       setMemoryScale: false,
       setCpuScale: false,
       renderSeconds: null,
+      renderOk: false,
     });
   },
 

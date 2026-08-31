@@ -187,6 +187,8 @@ auditLogsPage:
       hour: Last hour
       day: Last 24 hours
       week: Last 7 days
+      month: Last month
+      allTime: All time
     conditions:
       eventType: Event type
       description: Description

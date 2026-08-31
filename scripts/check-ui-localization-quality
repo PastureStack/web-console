@@ -574,6 +574,9 @@ requiredLocales.forEach((locale) => {
       failures.push(`unexpected_value=${locale}:${key}`);
     }
   });
+  if (/[:：]\s*$/u.test(String(leaves['containersPage.containerPage.navTabs.labels'] || ''))) {
+    failures.push(`container_label_tab_has_terminal_colon=${locale}`);
+  }
   if (!String(leaves['nav.noHosts.prefix'] || '').includes(regionalNoHostsFragments[locale])) {
     failures.push(`unnatural_host_warning=${locale}`);
   }

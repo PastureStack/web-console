@@ -198,6 +198,26 @@ test('applies a valid local time range and blocks inverted, empty, or zero-width
   destroyOwned(controller);
 });
 
+test('supports the one-month and all-time quick ranges', function(assert) {
+  let controller = controllerFor();
+
+  controller.actions.setTimePreset.call(controller, 1, 'month');
+  let from = moment(controller.get('filters.createdFrom'));
+  let to = moment(controller.get('filters.createdTo'));
+
+  assert.ok(from.clone().add(1, 'month').isSame(to), 'one month follows calendar boundaries');
+  assert.strictEqual(controller.get('activeTimePreset'), 'month');
+
+  controller.actions.setAllTimePreset.call(controller);
+  assert.strictEqual(controller.get('filters.createdFrom'), null);
+  assert.strictEqual(controller.get('filters.createdTo'), null);
+  assert.strictEqual(controller.get('timeRangeSummary'), 'auditLogsPage.filterBuilder.presets.allTime');
+  assert.strictEqual(controller.get('activeTimePreset'), 'all');
+  assert.notOk(controller.get('timeRangeInvalid'), 'all time remains a valid query range');
+
+  destroyOwned(controller);
+});
+
 test('forces a refresh when applying an unchanged query instead of leaving the loading state stuck', function(assert) {
   let sent = [];
   let controller = controllerFor({

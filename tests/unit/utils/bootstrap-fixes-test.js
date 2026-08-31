@@ -51,3 +51,24 @@ test('a missing position result fails closed without throwing', function(assert)
     $.PositionCalculator = originalCalculator;
   }
 });
+
+test('legacy global action positioning clears Bootstrap end alignment', function(assert) {
+  let fixture = document.getElementById('qunit-fixture');
+  let originalCalculator = $.PositionCalculator;
+
+  fixture.innerHTML = '<button type="button">Open</button><ul class="dropdown-menu" style="right:0"></ul>';
+  $.PositionCalculator = function() {
+    this.calculate = function() {
+      return {moveBy: {x: 25, y: 40}};
+    };
+  };
+
+  try {
+    bootstrapFixes.positionDropdown($(fixture.querySelector('ul')), fixture.querySelector('button'), true);
+    assert.strictEqual(fixture.querySelector('ul').style.right, 'auto', 'the menu is not stretched between left and right');
+    assert.strictEqual(fixture.querySelector('ul').style.left, '25px', 'the calculated horizontal anchor is applied');
+    assert.strictEqual(fixture.querySelector('ul').style.top, '40px', 'the calculated vertical anchor is applied');
+  } finally {
+    $.PositionCalculator = originalCalculator;
+  }
+});

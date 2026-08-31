@@ -177,6 +177,8 @@ auditLogsPage:
       hour: Nakaraang oras
       day: Nakaraang 24 na oras
       week: Nakaraang 7 araw
+      month: Nakaraang buwan
+      allTime: Lahat ng oras
     conditions:
       eventType: Uri ng kaganapan
       description: Paglalarawan
