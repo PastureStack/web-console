@@ -351,8 +351,8 @@
         {{sortable-th sortable=this action="changeSort" name="description" label="auditLogsPage.table.description" class="r-pl10"}}
         {{sortable-th sortable=this action="changeSort" name="accountId" label="auditLogsPage.table.environment" width="125" class="r-pl10"}}
         {{sortable-th sortable=this action="changeSort" name="resourceType" label="auditLogsPage.table.resourceTypeId" class="r-pl10"}}
-        {{sortable-th sortable=this action="changeSort" name="authenticatedAsIdentityId" label="auditLogsPage.table.identity" width="175" class="r-pl10"}}
-        <th width="150" class="r-pl10 audit-log-auth-ip-heading">{{t 'auditLogsPage.table.authIp'}}</th>
+        {{sortable-th sortable=this action="changeSort" name="authenticatedAsIdentityId" label="auditLogsPage.table.identity" width="150" class="r-pl10"}}
+        <th width="300" class="r-pl10 audit-log-auth-ip-heading">{{t 'auditLogsPage.table.authIp'}}</th>
       </thead>
       <tbody>
         {{#each this.model.auditLog as |log|}}

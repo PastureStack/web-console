@@ -79,6 +79,8 @@ require_pattern "$styles" 'th:last-child[[:space:]]+\.table-column-resize-handle
 require_pattern "$styles" '@media \(max-width:[[:space:]]*694px\)' 'stacked mobile fallback'
 require_pattern "$audit_template" 'audit-log-results-table' 'audit results table has a page-scoped layout hook'
 require_pattern "$audit_template" 'audit-log-auth-ip-heading' 'long localized authentication/IP header has a targeted wrapping hook'
+require_pattern "$audit_template" 'authenticatedAsIdentityId"[^}]*width="150"' 'audit identity column keeps a compact default width'
+require_pattern "$audit_template" 'width="300"[^>]*audit-log-auth-ip-heading' 'audit authentication/IP column receives the wider default width'
 require_pattern "$audit_styles" 'audit-log-results-table.*audit-log-auth-ip-heading' 'audit authentication/IP wrapping remains scoped to the audit table'
 require_pattern "$audit_styles" 'white-space:[[:space:]]*normal' 'long localized audit header can wrap instead of being clipped'
 require_pattern "$audit_styles" 'overflow-wrap:[[:space:]]*anywhere' 'unbroken localized audit header tokens stay within their column'
@@ -97,6 +99,6 @@ if [[ $failures -ne 0 ]]; then
   exit 1
 fi
 
-echo "UI_RESIZABLE_TABLE_COLUMNS_OK selector=table.grid auto_fit=true semantic_profiles=true selection_width=48 pointer=true keyboard=true mobile_fallback=true audit_auth_ip_header=wrapped"
+echo "UI_RESIZABLE_TABLE_COLUMNS_OK selector=table.grid auto_fit=true semantic_profiles=true selection_width=48 pointer=true keyboard=true mobile_fallback=true audit_auth_ip_header=wrapped audit_identity_default_width=150 audit_auth_ip_default_width=300"
 echo "Only rendered data grids with a multi-column table header are enhanced; layout tables remain unchanged."
 echo "failure_count=0"
