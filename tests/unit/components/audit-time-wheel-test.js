@@ -3,6 +3,7 @@ import {
   repeatTimeWheelOptions,
   timeWheelCycleCount,
   timeWheelLogicalIndex,
+  timeWheelMotionHasSettled,
 } from 'ui/components/audit-time-wheel/component';
 
 module('Unit | Component | audit time wheel');
@@ -33,4 +34,11 @@ test('maps physical rows back to the same logical value across cycle boundaries'
     'reverse movement wraps to the final logical option');
   assert.strictEqual(timeWheelLogicalIndex(3, 0), -1,
     'an empty wheel cannot manufacture a selection');
+});
+
+test('settles when browser scroll quantization leaves a sub-pixel remainder', function(assert) {
+  assert.true(timeWheelMotionHasSettled(2520, 2519.0908203125),
+    'a device-pixel remainder still commits the selected time');
+  assert.false(timeWheelMotionHasSettled(2520, 2518.9),
+    'visible travel continues animating instead of committing early');
 });
