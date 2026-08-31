@@ -1159,6 +1159,47 @@ servicePage:
         noData: Ez a szolgáltatás nem tartalmaz portokat.
     notActive: 'A portok csak addig érhetők el, amíg a szolgáltatás aktív.'
   logTab:
+    filter:
+      title: Szolgáltatásnaplók szűrése
+      help: Szűkítse a szolgáltatás eseményeit idő, szint, konténer és csak a szükséges további feltételek szerint. Minden feltétel ÉS kapcsolatban van.
+      activeCount: '{count} aktív szűrő'
+      timeRange: Időtartomány
+      allTime: Minden időpont
+      allTimeHelp: Maradjon korlátlan, ha nincs szükség időablakra
+      level: Szint
+      allLevels: Minden szint
+      container: Konténer
+      allContainers: Minden elnevezett konténer
+      containerHelp: Belső azonosító helyett konténernév jelenik meg
+      scope: Esemény hatóköre
+      levels:
+        info: Információ
+        warn: Figyelmeztetés
+        error: Hiba
+      scopes:
+        all: Minden esemény
+        root: Csak fő események
+        sub: Csak részletes események
+      conditions:
+        eventType: Eseménytípus
+        description: Leírás
+      placeholders:
+        eventType: pl. service.instance.restart
+        description: Keresés az esemény részleteiben
+      addCondition: Feltétel hozzáadása
+      removeCondition: Feltétel eltávolítása
+      matchAll: Minden hozzáadott feltételnek teljesülnie kell
+      clear: Összes törlése
+      apply: Szűrők alkalmazása
+      rangeError: Érvényes időtartományt válasszon, amelynek kezdete megelőzi a végét.
+      shortcuts:
+        title: Vizsgálati gyorsparancsok
+        recent: Utolsó 1 óra
+        restarts: Újraindítások az elmúlt 24 órában
+        errors: Hibák az elmúlt 24 órában
+      results:
+        updating: Eredmények frissítése...
+        summary: 'Lekérdezés kész: {count} bejegyzés, időtartomány {range}'
     table:
       header:
         date: Dátum

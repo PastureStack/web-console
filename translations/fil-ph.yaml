@@ -1145,6 +1145,47 @@ servicePage:
         noData: Ang Serbisyong ito ay walang mga port.
     notActive: Available lang ang mga port habang Aktibo ang serbisyo.
   logTab:
+    filter:
+      title: Salain ang log ng serbisyo
+      help: Paliitin ang mga event ng serbisyong ito ayon sa oras, antas, container, at mga karagdagang kondisyong kailangan lamang. Pinagsasama ang lahat gamit ang AT.
+      activeCount: '{count} aktibong filter'
+      timeRange: Saklaw ng oras
+      allTime: Lahat ng oras
+      allTimeHelp: Iwanang walang hangganan kung hindi kailangan ang saklaw ng oras
+      level: Antas
+      allLevels: Lahat ng antas
+      container: Container
+      allContainers: Lahat ng may-pangalang container
+      containerHelp: Pangalan ang ipinapakita sa halip na panloob na ID
+      scope: Saklaw ng event
+      levels:
+        info: Impormasyon
+        warn: Babala
+        error: Error
+      scopes:
+        all: Lahat ng event
+        root: Pangunahing event lamang
+        sub: Detalyadong event lamang
+      conditions:
+        eventType: Uri ng event
+        description: Paglalarawan
+      placeholders:
+        eventType: hal. service.instance.restart
+        description: Hanapin sa detalye ng event
+      addCondition: Magdagdag ng kondisyon
+      removeCondition: Alisin ang kondisyon
+      matchAll: Dapat tumugma ang lahat ng idinagdag na kondisyon
+      clear: I-clear lahat
+      apply: Ilapat ang mga filter
+      rangeError: Pumili ng wastong saklaw na nauuna ang simula sa pagtatapos.
+      shortcuts:
+        title: Mga shortcut sa pagsisiyasat
+        recent: Huling 1 oras
+        restarts: Mga restart sa huling 24 oras
+        errors: Mga error sa huling 24 oras
+      results:
+        updating: Ina-update ang mga resulta...
+        summary: 'Tapos ang query: {count} tala, saklaw ng oras {range}'
     table:
       header:
         date: Petsa
