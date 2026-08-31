@@ -38,6 +38,9 @@ export default Route.extend({
     createdTo: {
       refreshModel: true
     },
+    timeScope: {
+      refreshModel: true
+    },
     accountId: {
       refreshModel: true
     },

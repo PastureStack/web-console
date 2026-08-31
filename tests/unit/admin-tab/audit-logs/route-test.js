@@ -65,6 +65,8 @@ test('supports useful text operators without leaking UI-only fields', function(a
     'the presentation-only operator never reaches GDAPI');
   assert.strictEqual(route.parseFilters({interactionChannel: 'web_ui'}).filter.interactionChannel,
     'web_ui', 'interaction channel is forwarded to the permission-bound endpoint');
+  assert.notOk('timeScope' in route.parseFilters({timeScope: 'all'}).filter,
+    'the frontend all-time marker never reaches GDAPI');
 
   destroyOwned(route);
 });

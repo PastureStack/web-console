@@ -215,7 +215,34 @@ test('supports the one-month and all-time quick ranges', function(assert) {
   assert.strictEqual(controller.get('activeTimePreset'), 'all');
   assert.notOk(controller.get('timeRangeInvalid'), 'all time remains a valid query range');
 
+  controller.actions.search.call(controller);
+  assert.strictEqual(controller.get('timeScope'), 'all',
+    'the unbounded choice has explicit query state instead of looking like an initial visit');
+
+  controller.syncDraftFromQuery();
+  assert.strictEqual(controller.get('filters.createdFrom'), null,
+    'the explicit all-time state survives route setup');
+  assert.strictEqual(controller.get('filters.createdTo'), null,
+    'route setup does not silently restore the default 24-hour range');
+
   destroyOwned(controller);
+});
+
+test('keeps an initial visit bounded while preserving an explicit all-time query', function(assert) {
+  let initial = controllerFor();
+
+  initial.syncDraftFromQuery();
+  assert.strictEqual(moment(initial.get('filters.createdTo')).diff(moment(initial.get('filters.createdFrom')), 'hours'), 24,
+    'an initial visit still uses the safe 24-hour default');
+  destroyOwned(initial);
+
+  let allTime = controllerFor({timeScope: 'all'});
+
+  allTime.syncDraftFromQuery();
+  assert.strictEqual(allTime.get('filters.createdFrom'), null);
+  assert.strictEqual(allTime.get('filters.createdTo'), null);
+  assert.strictEqual(allTime.get('activeTimePreset'), 'all');
+  destroyOwned(allTime);
 });
 
 test('forces a refresh when applying an unchanged query instead of leaving the loading state stuck', function(assert) {
