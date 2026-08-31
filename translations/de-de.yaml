@@ -1176,7 +1176,7 @@ servicePage:
       containerHelp: Containernamen statt interner IDs anzeigen
       scope: Ereignisumfang
       levels:
-        info: Information
+        info: Informationen
         warn: Warnung
         error: Fehler
       scopes:

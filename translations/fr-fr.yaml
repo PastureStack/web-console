@@ -1164,7 +1164,7 @@ servicePage:
       containerHelp: Affiche les noms au lieu des identifiants internes
       scope: Portée des événements
       levels:
-        info: Information
+        info: Informatif
         warn: Avertissement
         error: Erreur
       scopes:
@@ -1173,7 +1173,7 @@ servicePage:
         sub: Événements détaillés uniquement
       conditions:
         eventType: Type d’événement
-        description: Description
+        description: Détails
       placeholders:
         eventType: ex. service.instance.restart
         description: Rechercher dans les détails
