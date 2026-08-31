@@ -41,7 +41,7 @@ $yellowDark: null !default;
     word-break: break-word;
   }
 }
-.c3 {
+.bb {
 
   .grid-line-cpu,
   .grid-line-network,
@@ -51,53 +51,53 @@ $yellowDark: null !default;
     opacity: .1;
   }
 
-  path.c3-shape.c3-shape.c3-area.c3-area-System,
-  path.c3-shape.c3-shape.c3-area.c3-area-Used,
-  path.c3-shape.c3-shape.c3-area.c3-area-Write,
-  path.c3-shape.c3-shape.c3-area.c3-area-Read,
-  path.c3-shape.c3-shape.c3-area.c3-area-Transmit,
-  path.c3-shape.c3-shape.c3-area.c3-area-Receive,
-  path.c3-shape.c3-shape.c3-area.c3-area-User {
+  path.bb-shape.bb-area.bb-area-System,
+  path.bb-shape.bb-area.bb-area-Used,
+  path.bb-shape.bb-area.bb-area-Write,
+  path.bb-shape.bb-area.bb-area-Read,
+  path.bb-shape.bb-area.bb-area-Transmit,
+  path.bb-shape.bb-area.bb-area-Receive,
+  path.bb-shape.bb-area.bb-area-User {
     opacity: .8 !important;
   }
 
-  .c3-tooltip-name-System {
+  .bb-tooltip-name-System {
     span {
       background-color: $green !important;
     }
   }
 
-  .c3-tooltip-name-User {
+  .bb-tooltip-name-User {
     span {
       background-color: #DBE8B1 !important;
     }
   }
 
-  .c3-tooltip-name-Used {
+  .bb-tooltip-name-Used {
     span {
       background-color: $blueDark !important;
     }
   }
 
-  .c3-tooltip-name-Transmit {
+  .bb-tooltip-name-Transmit {
     span {
       background-color: $yellowDark !important;
     }
   }
 
-  .c3-tooltip-name-Receive {
+  .bb-tooltip-name-Receive {
     span {
       background-color: $yellow !important;
     }
   }
 
-  .c3-tooltip-name-Write {
+  .bb-tooltip-name-Write {
     span {
       background-color: $teal !important;
     }
   }
 
-  .c3-tooltip-name-Read {
+  .bb-tooltip-name-Read {
     span {
       background-color: #ABCED3 !important;
     }

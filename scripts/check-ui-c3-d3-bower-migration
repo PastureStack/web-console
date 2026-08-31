@@ -73,6 +73,33 @@ for required in ["from 'billboard.js'", "from 'd3'", "d3.scaleLinear()", "d3.are
     if required not in sources:
         fail("MODERN_CHART_API_MISSING", api=required)
 
+multi_stats = Path("app/components/info-multi-stats/component.js").read_text(encoding="utf-8")
+if multi_stats.count("point: HOST_STATS_POINT_OPTIONS") != 4:
+    fail("HOST_STATS_POINT_DISABLE_COUNT_UNEXPECTED", actual=multi_stats.count("point: HOST_STATS_POINT_OPTIONS"), expected=4)
+if "colors: ['#27ae60', '#DBE8B1']" not in multi_stats:
+    fail("HOST_STATS_CPU_PALETTE_DIFFERS_FROM_LEGEND")
+for chart_type, series in {
+    "cpu": ["System", "User"],
+    "memory": ["Used"],
+    "network": ["Transmit", "Receive"],
+    "storage": ["Write", "Read"],
+}.items():
+    series_literal = f"{chart_type}: Object.freeze({series!r})"
+    if series_literal not in multi_stats:
+        fail("HOST_STATS_INITIAL_SERIES_MISSING", chart=chart_type, expected=series)
+    if f"groups: initialGraphGroups('{chart_type}', single)" not in multi_stats:
+        fail("HOST_STATS_INITIAL_GROUP_MISSING", chart=chart_type)
+
+chart_styles = "\n".join(
+    Path(path).read_text(encoding="utf-8")
+    for path in ["app/styles/components/_multi-stats.scss", "app/styles/pages/_host.scss"]
+)
+if ".c3" in chart_styles or "c3-" in chart_styles:
+    fail("LEGACY_C3_STYLE_SELECTOR_REMAINS")
+for required in [".bb {", ".bb-axis", ".bb-area-System", ".bb-tooltip-name-System"]:
+    if required not in chart_styles:
+        fail("BILLBOARD_HOST_STYLE_SELECTOR_MISSING", selector=required)
+
 modernization = Path("docs/modernization.md").read_text(encoding="utf-8")
 for phrase in [f"billboard.js@{billboard_version}", f"d3@{d3_version}", "C3 retirement", "d3-color@3.1.0"]:
     if phrase not in modernization:
