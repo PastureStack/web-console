@@ -1150,6 +1150,47 @@ servicePage:
         noData: Acun ports pour ce service.
     notActive: Les ports sont ouvert que si le service est actif.
   logTab:
+    filter:
+      title: Filtrer les journaux du service
+      help: Limitez les événements de ce service par période, niveau, conteneur et uniquement avec les conditions supplémentaires nécessaires. Toutes les conditions sont combinées avec ET.
+      activeCount: '{count} filtres actifs'
+      timeRange: Période
+      allTime: Toute la période
+      allTimeHelp: Laisser sans limite si aucune période précise n’est nécessaire
+      level: Niveau
+      allLevels: Tous les niveaux
+      container: Conteneur
+      allContainers: Tous les conteneurs nommés
+      containerHelp: Affiche les noms au lieu des identifiants internes
+      scope: Portée des événements
+      levels:
+        info: Informatif
+        warn: Avertissement
+        error: Erreur
+      scopes:
+        all: Tous les événements
+        root: Événements principaux uniquement
+        sub: Événements détaillés uniquement
+      conditions:
+        eventType: Type d’événement
+        description: Détails
+      placeholders:
+        eventType: ex. service.instance.restart
+        description: Rechercher dans les détails
+      addCondition: Ajouter une condition
+      removeCondition: Supprimer la condition
+      matchAll: Toutes les conditions ajoutées doivent correspondre
+      clear: Tout effacer
+      apply: Appliquer les filtres
+      rangeError: Sélectionnez une période valide dont le début précède la fin.
+      shortcuts:
+        title: Raccourcis d’analyse
+        recent: Dernière heure
+        restarts: Redémarrages des dernières 24 heures
+        errors: Erreurs des dernières 24 heures
+      results:
+        updating: Mise à jour des résultats...
+        summary: 'Requête terminée : {count} entrées, période {range}'
     table:
       header:
         date: Date

@@ -1430,6 +1430,47 @@ servicePage:
         noData: This Service has no ports.
     notActive: Ports are only available while the service is Active.
   logTab:
+    filter:
+      title: Filter Service Logs
+      help: Narrow this service's events by time, level, container, and only the extra conditions you need. All conditions are combined with AND.
+      activeCount: '{count, plural, =0 {No active filters} =1 {1 active filter} other {# active filters}}'
+      timeRange: Time Range
+      allTime: All time
+      allTimeHelp: Leave unbounded unless a time window is needed
+      level: Level
+      allLevels: All levels
+      container: Container
+      allContainers: All named containers
+      containerHelp: Names are shown instead of internal IDs
+      scope: Event scope
+      levels:
+        info: Information
+        warn: Warning
+        error: Error
+      scopes:
+        all: All events
+        root: Parent events only
+        sub: Detail events only
+      conditions:
+        eventType: Event type
+        description: Description
+      placeholders:
+        eventType: e.g. service.instance.restart
+        description: Search event details
+      addCondition: Add condition
+      removeCondition: Remove condition
+      matchAll: All added conditions must match
+      clear: Clear all
+      apply: Apply filters
+      rangeError: Select a valid time range whose start is before its end.
+      shortcuts:
+        title: Investigation shortcuts
+        recent: Last hour
+        restarts: Restarts in the last 24 hours
+        errors: Errors in the last 24 hours
+      results:
+        updating: Updating results...
+        summary: 'Query complete: {count} records, time range {range}'
     table:
       header:
         date: Date

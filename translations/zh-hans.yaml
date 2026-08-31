@@ -1112,6 +1112,47 @@ servicePage:
         noData: 服务没有暴露任何端口
     notActive: 端口仅当服务处于活动状态时可见
   logTab:
+    filter:
+      title: 筛选服务日志
+      help: 按时间、级别、容器及真正需要的附加条件缩小当前服务的事件；所有条件以“并且”组合。
+      activeCount: '已应用 {count} 个条件'
+      timeRange: 时间范围
+      allTime: 所有时间
+      allTimeHelp: 不需要时间限制时可保持所有时间
+      level: 级别
+      allLevels: 所有级别
+      container: 容器
+      allContainers: 所有已命名容器
+      containerHelp: 显示容器名称，不显示内部 ID
+      scope: 事件范围
+      levels:
+        info: 信息
+        warn: 警告
+        error: 错误
+      scopes:
+        all: 所有事件
+        root: 仅主要事件
+        sub: 仅详细事件
+      conditions:
+        eventType: 事件类型
+        description: 描述
+      placeholders:
+        eventType: 例如 service.instance.restart
+        description: 搜索事件内容
+      addCondition: 添加条件
+      removeCondition: 移除条件
+      matchAll: 所有添加的条件都必须匹配
+      clear: 全部清除
+      apply: 应用筛选
+      rangeError: 请选择有效的时间范围，开始时间必须早于结束时间。
+      shortcuts:
+        title: 调查快捷方式
+        recent: 最近 1 小时
+        restarts: 最近 24 小时的重启
+        errors: 最近 24 小时的错误
+      results:
+        updating: 正在更新结果...
+        summary: '查询完成：{count} 条，时间范围 {range}'
     table:
       header:
         date: 日期

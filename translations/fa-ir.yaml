@@ -1115,6 +1115,47 @@ servicePage:
         noData: این سرویس پورتی ندارد.
     notActive: پورت ها فقط وقتی سرویس فعال است قابل دسترسی اند.
   logTab:
+    filter:
+      title: پالایش گزارش سرویس
+      help: رویدادهای این سرویس را بر اساس زمان، سطح، کانتینر و فقط شرط‌های اضافی موردنیاز محدود کنید. همهٔ شرط‌ها با «و» ترکیب می‌شوند.
+      activeCount: '{count} پالایهٔ فعال'
+      timeRange: بازهٔ زمانی
+      allTime: همهٔ زمان‌ها
+      allTimeHelp: اگر بازه لازم نیست، بدون محدودیت زمانی بماند
+      level: سطح
+      allLevels: همهٔ سطح‌ها
+      container: کانتینر
+      allContainers: همهٔ کانتینرهای نام‌دار
+      containerHelp: نام کانتینر به‌جای شناسهٔ داخلی نمایش داده می‌شود
+      scope: دامنهٔ رویداد
+      levels:
+        info: اطلاعات
+        warn: هشدار
+        error: خطا
+      scopes:
+        all: همهٔ رویدادها
+        root: فقط رویدادهای اصلی
+        sub: فقط رویدادهای جزئی
+      conditions:
+        eventType: نوع رویداد
+        description: توضیح
+      placeholders:
+        eventType: مانند service.instance.restart
+        description: جست‌وجوی جزئیات رویداد
+      addCondition: افزودن شرط
+      removeCondition: حذف شرط
+      matchAll: همهٔ شرط‌های افزوده‌شده باید منطبق باشند
+      clear: پاک کردن همه
+      apply: اعمال پالایه‌ها
+      rangeError: بازهٔ زمانی معتبری انتخاب کنید که آغاز آن پیش از پایان باشد.
+      shortcuts:
+        title: میان‌برهای بررسی
+        recent: یک ساعت گذشته
+        restarts: راه‌اندازی‌های مجدد ۲۴ ساعت گذشته
+        errors: خطاهای ۲۴ ساعت گذشته
+      results:
+        updating: در حال به‌روزرسانی نتایج...
+        summary: 'پرس‌وجو کامل شد: {count} رکورد، بازهٔ زمانی {range}'
     table:
       header:
         date: تاریخ

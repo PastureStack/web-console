@@ -1,3 +1,213 @@
+<form class="audit-log-filter-form r-mb20" data-testid="service-log-filter-panel" aria-busy={{if this.isFiltering "true" "false"}} {{action "search" on="submit"}}>
+  <fieldset class="audit-log-filter-panel">
+    <legend class="audit-log-filter-panel-legend">{{t 'servicePage.logTab.filter.title'}}</legend>
+    <div class="audit-log-filter-header">
+      <p class="audit-log-filter-help">{{t 'servicePage.logTab.filter.help'}}</p>
+      <span class="audit-log-filter-count" data-testid="service-log-filter-count">
+        {{t 'servicePage.logTab.filter.activeCount' count=this.activeFilterCount}}
+      </span>
+    </div>
+
+    <div class="audit-log-filter-primary-grid">
+      <fieldset class="audit-log-filter-card audit-log-filter-time">
+        <legend>{{t 'servicePage.logTab.filter.timeRange'}}</legend>
+        <button type="button" class="audit-log-primary-control audit-log-time-open" data-testid="service-log-time-open" {{action "openTimePicker"}}>
+          <i class="icon icon-calendar" aria-hidden="true"></i>
+          <span>{{this.timeRangeSummary}}</span>
+          <i class="icon icon-edit" aria-hidden="true"></i>
+        </button>
+        <div class="audit-log-filter-card-summary">
+          <span>{{t 'auditLogsPage.filterBuilder.timeZone' zone=this.timeZoneLabel}}</span>
+          <span>{{t 'servicePage.logTab.filter.allTimeHelp'}}</span>
+        </div>
+      </fieldset>
+
+      <fieldset class="audit-log-filter-card audit-log-filter-select">
+        <legend>{{t 'servicePage.logTab.filter.level'}}</legend>
+        <div class="audit-log-primary-control audit-log-primary-select">
+          <PowerSelect
+            @options={{this.levelOptions}}
+            @selected={{this.selectedLevel}}
+            @onChange={{action "selectLevel"}}
+            @placeholder={{t 'servicePage.logTab.filter.allLevels'}}
+            @allowClear={{true}}
+            as |level|
+          >
+            {{level.label}}
+          </PowerSelect>
+        </div>
+      </fieldset>
+
+      <fieldset class="audit-log-filter-card audit-log-filter-select">
+        <legend>{{t 'servicePage.logTab.filter.container'}}</legend>
+        <div class="audit-log-primary-control audit-log-primary-select">
+          <PowerSelect
+            @options={{this.instanceOptions}}
+            @selected={{this.selectedInstance}}
+            @onChange={{action "selectInstance"}}
+            @searchField="searchText"
+            @placeholder={{t 'servicePage.logTab.filter.allContainers'}}
+            @allowClear={{true}}
+            as |instance|
+          >
+            {{instance.label}}
+          </PowerSelect>
+        </div>
+        <div class="audit-log-filter-card-summary">
+          <span>{{t 'servicePage.logTab.filter.containerHelp'}}</span>
+        </div>
+      </fieldset>
+
+      <fieldset class="audit-log-filter-card audit-log-filter-select">
+        <legend>{{t 'servicePage.logTab.filter.scope'}}</legend>
+        <div class="audit-log-primary-control audit-log-primary-select">
+          <PowerSelect
+            @options={{this.scopeOptions}}
+            @selected={{this.selectedScope}}
+            @onChange={{action "selectScope"}}
+            @searchEnabled={{false}}
+            as |scope|
+          >
+            {{scope.label}}
+          </PowerSelect>
+        </div>
+      </fieldset>
+    </div>
+
+    {{#if this.optionalFilters.length}}
+      <div class="audit-log-filter-conditions" data-testid="service-log-filter-conditions">
+        <div class="audit-log-filter-match-all">{{t 'servicePage.logTab.filter.matchAll'}}</div>
+        {{#each this.optionalFilters as |filterKey|}}
+          <div class="audit-log-filter-row" data-filter-key={{filterKey}}>
+            {{#if (eq filterKey "eventType")}}
+              <label class="audit-log-filter-row-label" for="service-log-event-type">{{t 'servicePage.logTab.filter.conditions.eventType'}}</label>
+              <select class="form-control input-sm audit-log-filter-operator" {{on "change" (action "selectTextOperator" "eventType")}}>
+                {{#each this.textOperators as |operator|}}
+                  <option value={{operator.key}} selected={{eq this.filters.eventTypeOperator operator.key}}>{{operator.label}}</option>
+                {{/each}}
+              </select>
+              {{input id="service-log-event-type" class="form-control input-sm audit-log-filter-value" value=this.filters.eventType placeholder=(t "servicePage.logTab.filter.placeholders.eventType")}}
+            {{else if (eq filterKey "description")}}
+              <label class="audit-log-filter-row-label" for="service-log-description">{{t 'servicePage.logTab.filter.conditions.description'}}</label>
+              <select class="form-control input-sm audit-log-filter-operator" {{on "change" (action "selectTextOperator" "description")}}>
+                {{#each this.textOperators as |operator|}}
+                  <option value={{operator.key}} selected={{eq this.filters.descriptionOperator operator.key}}>{{operator.label}}</option>
+                {{/each}}
+              </select>
+              {{input id="service-log-description" class="form-control input-sm audit-log-filter-value" value=this.filters.description placeholder=(t "servicePage.logTab.filter.placeholders.description")}}
+            {{/if}}
+            <button type="button" class="btn btn-sm btn-link audit-log-filter-remove" title="{{t 'servicePage.logTab.filter.removeCondition'}}" aria-label="{{t 'servicePage.logTab.filter.removeCondition'}}" {{action "removeFilter" filterKey}}>
+              <i class="icon icon-x" aria-hidden="true"></i>
+            </button>
+          </div>
+        {{/each}}
+      </div>
+    {{/if}}
+
+    {{#if this.filterError}}
+      <div class="alert alert-danger audit-log-filter-error" role="alert" data-testid="service-log-filter-error">{{this.filterError}}</div>
+    {{/if}}
+
+    <div class="audit-log-filter-footer">
+      <div class="audit-log-filter-secondary-actions">
+        <div class="dropdown">
+          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="icon icon-search" aria-hidden="true"></i>
+            {{t 'servicePage.logTab.filter.shortcuts.title'}}
+            <i class="icon icon-chevron-down" aria-hidden="true"></i>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#" {{action "applyShortcut" "recent"}}>{{t 'servicePage.logTab.filter.shortcuts.recent'}}</a></li>
+            <li><a href="#" {{action "applyShortcut" "restarts"}}>{{t 'servicePage.logTab.filter.shortcuts.restarts'}}</a></li>
+            <li><a href="#" {{action "applyShortcut" "errors"}}>{{t 'servicePage.logTab.filter.shortcuts.errors'}}</a></li>
+          </ul>
+        </div>
+        <div class="dropdown">
+          <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" disabled={{not this.hasAvailableFilters}}>
+            <i class="icon icon-plus" aria-hidden="true"></i>
+            {{t 'servicePage.logTab.filter.addCondition'}}
+            <i class="icon icon-chevron-down" aria-hidden="true"></i>
+          </button>
+          {{#if this.hasAvailableFilters}}
+            <ul class="dropdown-menu" role="menu">
+              {{#each this.availableFilterDefinitions as |definition|}}
+                <li><a href="#" {{action "addFilter" definition.key}}>{{definition.label}}</a></li>
+              {{/each}}
+            </ul>
+          {{/if}}
+        </div>
+      </div>
+      <div class="audit-log-filter-actions">
+        <button type="button" class="btn btn-sm btn-default" {{action "clearAll"}}>{{t 'servicePage.logTab.filter.clear'}}</button>
+        <button type="submit" class="btn btn-sm btn-primary" data-testid="service-log-filter-apply" disabled={{this.isFiltering}}>
+          {{#if this.isFiltering}}<i class="icon icon-spinner icon-spin" aria-hidden="true"></i> {{t 'servicePage.logTab.filter.results.updating'}}{{else}}{{t 'servicePage.logTab.filter.apply'}}{{/if}}
+        </button>
+      </div>
+    </div>
+  </fieldset>
+</form>
+
+<div class="audit-log-results-status {{if this.isFiltering "is-loading"}}" role="status" aria-live="polite">
+  {{#if this.isFiltering}}
+    {{t 'servicePage.logTab.filter.results.updating'}}
+  {{else}}
+    {{t 'servicePage.logTab.filter.results.summary' count=this.resultCount range=this.appliedRangeSummary}}
+  {{/if}}
+</div>
+
+{{#if this.isTimePickerOpen}}
+  <div class="audit-log-time-dialog-backdrop" role="presentation">
+    <section class="audit-log-time-dialog" role="dialog" aria-modal="true" aria-labelledby="service-log-time-dialog-title" data-testid="service-log-time-dialog">
+      <div class="audit-log-time-dialog-header">
+        <h3 id="service-log-time-dialog-title">{{t 'auditLogsPage.filterBuilder.timeDialog.title'}}</h3>
+        <button type="button" class="btn btn-sm btn-link" aria-label="{{t 'auditLogsPage.filterBuilder.timeDialog.cancel'}}" {{action "closeTimePicker"}}>
+          <i class="icon icon-x" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="audit-log-time-dialog-summary">{{this.timeRangeSummary}}</div>
+      <div class="audit-log-filter-time-inputs">
+        <div class="audit-log-time-editor">
+          <label>
+            <span>{{t 'auditLogsPage.filterBuilder.from'}}</span>
+            {{audit-date-picker value=this.createdFromDate isOpen=(eq this.openDateCalendar "createdFrom") label=(t 'auditLogsPage.filterBuilder.from') dataTestId="service-log-created-from" onToggle=(action "toggleDateCalendar" "createdFrom") onChange=(action "setDatePart" "createdFrom")}}
+          </label>
+          <div class="audit-log-time-columns" data-testid="service-log-created-from-time-columns">
+            {{audit-time-wheel label=(t 'auditLogsPage.filterBuilder.timeDialog.hour') ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.fromHourLabel') dataTestId="service-log-created-from-hour" options=this.hourOptions selectedValue=this.createdFromHour onChange=(action "setTimePart" "createdFrom" "hour")}}
+            {{audit-time-wheel label=(t 'auditLogsPage.filterBuilder.timeDialog.minute') ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.fromMinuteLabel') dataTestId="service-log-created-from-minute" options=this.minuteOptions selectedValue=this.createdFromMinute onChange=(action "setTimePart" "createdFrom" "minute")}}
+            {{audit-time-wheel label=(t 'auditLogsPage.filterBuilder.timeDialog.period') ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.fromPeriodLabel') dataTestId="service-log-created-from-period" options=this.periodOptions selectedValue=this.createdFromPeriod onChange=(action "setTimePart" "createdFrom" "period")}}
+          </div>
+        </div>
+        <span class="audit-log-filter-time-separator" aria-hidden="true">→</span>
+        <div class="audit-log-time-editor">
+          <label>
+            <span>{{t 'auditLogsPage.filterBuilder.to'}}</span>
+            {{audit-date-picker value=this.createdToDate isOpen=(eq this.openDateCalendar "createdTo") label=(t 'auditLogsPage.filterBuilder.to') dataTestId="service-log-created-to" onToggle=(action "toggleDateCalendar" "createdTo") onChange=(action "setDatePart" "createdTo")}}
+          </label>
+          <div class="audit-log-time-columns" data-testid="service-log-created-to-time-columns">
+            {{audit-time-wheel label=(t 'auditLogsPage.filterBuilder.timeDialog.hour') ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.toHourLabel') dataTestId="service-log-created-to-hour" options=this.hourOptions selectedValue=this.createdToHour onChange=(action "setTimePart" "createdTo" "hour")}}
+            {{audit-time-wheel label=(t 'auditLogsPage.filterBuilder.timeDialog.minute') ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.toMinuteLabel') dataTestId="service-log-created-to-minute" options=this.minuteOptions selectedValue=this.createdToMinute onChange=(action "setTimePart" "createdTo" "minute")}}
+            {{audit-time-wheel label=(t 'auditLogsPage.filterBuilder.timeDialog.period') ariaLabel=(t 'auditLogsPage.filterBuilder.timeDialog.toPeriodLabel') dataTestId="service-log-created-to-period" options=this.periodOptions selectedValue=this.createdToPeriod onChange=(action "setTimePart" "createdTo" "period")}}
+          </div>
+        </div>
+      </div>
+      <p class="audit-log-time-wheel-help"><span aria-hidden="true">↕</span> {{t 'auditLogsPage.filterBuilder.timeDialog.wheelHelp'}}</p>
+      <div class="audit-log-filter-presets" aria-label="{{t 'auditLogsPage.filterBuilder.presets.label'}}">
+        <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "minutes15") "is-active"}}" {{action "setTimePreset" 15 "minutes"}}>{{t 'auditLogsPage.filterBuilder.presets.minutes15'}}</button>
+        <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "hour") "is-active"}}" {{action "setTimePreset" 1 "hour"}}>{{t 'auditLogsPage.filterBuilder.presets.hour'}}</button>
+        <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "day") "is-active"}}" {{action "setTimePreset" 24 "hours"}}>{{t 'auditLogsPage.filterBuilder.presets.day'}}</button>
+        <button type="button" class="audit-log-time-preset {{if (eq this.activeTimePreset "week") "is-active"}}" {{action "setTimePreset" 7 "days"}}>{{t 'auditLogsPage.filterBuilder.presets.week'}}</button>
+      </div>
+      <div class="audit-log-time-dialog-actions">
+        <span>{{t 'auditLogsPage.filterBuilder.timeZone' zone=this.timeZoneLabel}}</span>
+        <div>
+          <button type="button" class="btn btn-sm btn-default" {{action "closeTimePicker"}}>{{t 'auditLogsPage.filterBuilder.timeDialog.cancel'}}</button>
+          <button type="button" class="btn btn-sm btn-primary" {{action "acceptTimePicker"}}>{{t 'auditLogsPage.filterBuilder.timeDialog.accept'}}</button>
+        </div>
+      </div>
+    </section>
+  </div>
+{{/if}}
+
 <table class="grid fixed">
   <thead>
     <tr>
@@ -9,30 +219,20 @@
     </tr>
   </thead>
   <tbody>
-    {{#each this.model.logs.arrangedContent as |obj|}}
+    {{#each this.model.logs as |obj|}}
       <tr>
-        <td>
-          {{date-str obj.created format="hh:mm:ss A"}}
-        </td>
-        <td>
-          <span class="state badge {{obj.stateColor}} {{obj.stateBackground}}">{{upper-case obj.level}}</span>
-        </td>
-        <td>
-          {{obj.eventType}}{{#if obj.runTime}} ({{obj.runTime}}){{/if}}
-        </td>
-        <td>
-          {{obj.description}}
-        </td>
-        <td data-title="{{t 'generic.actions'}}:" class="actions">
-          {{action-menu model=obj}}
-        </td>
+        <td>{{date-str obj.created format="hh:mm:ss A"}}</td>
+        <td><span class="state badge {{obj.stateColor}} {{obj.stateBackground}}">{{upper-case obj.level}}</span></td>
+        <td>{{obj.eventType}}{{#if obj.runTime}} ({{obj.runTime}}){{/if}}</td>
+        <td>{{obj.description}}</td>
+        <td data-title="{{t 'generic.actions'}}:" class="actions">{{action-menu model=obj}}</td>
       </tr>
     {{else}}
-      <tr>
-        <td colspan="5">
-          <div class="text-muted text-center">{{t 'servicePage.logTab.table.body.noData'}}</div>
-        </td>
-      </tr>
+      <tr><td colspan="5"><div class="text-muted text-center">{{t 'servicePage.logTab.table.body.noData'}}</div></td></tr>
     {{/each}}
   </tbody>
 </table>
+<div class="container-paginatio text-center">
+  <button class="btn btn-sm btn-default" {{action "first"}}>{{t 'auditLogsPage.first'}}</button>
+  {{#if this.showPagination}}<button class="btn btn-sm btn-default" {{action "next"}}>{{t 'auditLogsPage.next'}}</button>{{/if}}
+</div>

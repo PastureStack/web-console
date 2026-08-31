@@ -1140,6 +1140,47 @@ servicePage:
         noData: Este serviço não tem portas.
     notActive: Portas estão disponíveis apenas enquanto o serviço está ativo.
   logTab:
+    filter:
+      title: Filtrar logs do serviço
+      help: Restrinja os eventos deste serviço por período, nível, contêiner e somente pelas condições adicionais necessárias. Todas as condições são combinadas com E.
+      activeCount: '{count} filtros ativos'
+      timeRange: Período
+      allTime: Todo o período
+      allTimeHelp: Deixe sem limite quando não for necessário um intervalo
+      level: Nível
+      allLevels: Todos os níveis
+      container: Contêiner
+      allContainers: Todos os contêineres nomeados
+      containerHelp: Exibe nomes de contêiner em vez de IDs internos
+      scope: Escopo do evento
+      levels:
+        info: Informação
+        warn: Aviso
+        error: Erro
+      scopes:
+        all: Todos os eventos
+        root: Somente eventos principais
+        sub: Somente eventos detalhados
+      conditions:
+        eventType: Tipo de evento
+        description: Descrição
+      placeholders:
+        eventType: ex. service.instance.restart
+        description: Pesquisar detalhes do evento
+      addCondition: Adicionar condição
+      removeCondition: Remover condição
+      matchAll: Todas as condições adicionadas devem corresponder
+      clear: Limpar tudo
+      apply: Aplicar filtros
+      rangeError: Selecione um período válido cujo início seja anterior ao fim.
+      shortcuts:
+        title: Atalhos de investigação
+        recent: Última hora
+        restarts: Reinicializações nas últimas 24 horas
+        errors: Erros nas últimas 24 horas
+      results:
+        updating: Atualizando resultados...
+        summary: 'Consulta concluída: {count} registros, período {range}'
     table:
       header:
         date: Data

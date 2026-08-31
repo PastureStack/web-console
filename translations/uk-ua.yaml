@@ -1162,6 +1162,47 @@ servicePage:
         noData: У Сервісу немає портів.
     notActive: Порти доступні тільки поки сервіс активний.
   logTab:
+    filter:
+      title: Фільтр журналів сервісу
+      help: Звузьте події цього сервісу за часом, рівнем, контейнером і лише потрібними додатковими умовами. Усі умови поєднуються оператором І.
+      activeCount: 'Активних фільтрів: {count}'
+      timeRange: Діапазон часу
+      allTime: За весь час
+      allTimeHelp: Залиште без обмежень, якщо часовий проміжок не потрібен
+      level: Рівень
+      allLevels: Усі рівні
+      container: Контейнер
+      allContainers: Усі іменовані контейнери
+      containerHelp: Показуються назви контейнерів, а не внутрішні ID
+      scope: Область подій
+      levels:
+        info: Інформація
+        warn: Попередження
+        error: Помилка
+      scopes:
+        all: Усі події
+        root: Лише основні події
+        sub: Лише докладні події
+      conditions:
+        eventType: Тип події
+        description: Опис
+      placeholders:
+        eventType: наприклад service.instance.restart
+        description: Пошук у деталях події
+      addCondition: Додати умову
+      removeCondition: Видалити умову
+      matchAll: Усі додані умови мають збігатися
+      clear: Очистити все
+      apply: Застосувати фільтри
+      rangeError: Виберіть дійсний діапазон, у якому початок передує завершенню.
+      shortcuts:
+        title: Швидке розслідування
+        recent: Остання година
+        restarts: Перезапуски за 24 години
+        errors: Помилки за 24 години
+      results:
+        updating: Оновлення результатів...
+        summary: 'Запит завершено: {count} записів, діапазон {range}'
     table:
       header:
         date: Дата

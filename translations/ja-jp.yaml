@@ -1134,6 +1134,47 @@ servicePage:
         noData: このサービスにはポートがありません
     notActive: ポートはサービスがアクティブの場合のみ利用できます。
   logTab:
+    filter:
+      title: サービスログを絞り込む
+      help: このサービスのイベントを時間、レベル、コンテナ、必要な追加条件で絞り込みます。すべての条件は AND で結合されます。
+      activeCount: '{count} 件の条件を適用中'
+      timeRange: 時間範囲
+      allTime: すべての期間
+      allTimeHelp: 時間指定が不要な場合は全期間のままにします
+      level: レベル
+      allLevels: すべてのレベル
+      container: コンテナ
+      allContainers: 名前のあるすべてのコンテナ
+      containerHelp: 内部 ID ではなくコンテナ名を表示します
+      scope: イベント範囲
+      levels:
+        info: 情報
+        warn: 警告
+        error: エラー
+      scopes:
+        all: すべてのイベント
+        root: 親イベントのみ
+        sub: 詳細イベントのみ
+      conditions:
+        eventType: イベント種別
+        description: 説明
+      placeholders:
+        eventType: 例 service.instance.restart
+        description: イベント内容を検索
+      addCondition: 条件を追加
+      removeCondition: 条件を削除
+      matchAll: 追加したすべての条件に一致
+      clear: すべてクリア
+      apply: フィルターを適用
+      rangeError: 開始日時が終了日時より前になる有効な時間範囲を選択してください。
+      shortcuts:
+        title: 調査ショートカット
+        recent: 過去 1 時間
+        restarts: 過去 24 時間の再起動
+        errors: 過去 24 時間のエラー
+      results:
+        updating: 結果を更新中...
+        summary: '検索完了：{count} 件、時間範囲 {range}'
     table:
       header:
         date: 日付

@@ -1377,6 +1377,47 @@ servicePage:
         noData: 服務沒有暴露任何連接埠
     notActive: 連接埠僅當服務處於活動狀態時可見
   logTab:
+    filter:
+      title: 篩選服務日誌
+      help: 依時間、等級、容器及真正需要的額外條件縮小目前服務的事件；所有條件會以「且」合併。
+      activeCount: '已套用 {count} 個條件'
+      timeRange: 時間範圍
+      allTime: 所有時間
+      allTimeHelp: 不需要時間限制時可保持所有時間
+      level: 等級
+      allLevels: 所有等級
+      container: 容器
+      allContainers: 所有具名容器
+      containerHelp: 顯示容器名稱，不顯示內部 ID
+      scope: 事件範圍
+      levels:
+        info: 資訊
+        warn: 警告
+        error: 錯誤
+      scopes:
+        all: 所有事件
+        root: 僅主要事件
+        sub: 僅詳細事件
+      conditions:
+        eventType: 事件類型
+        description: 描述
+      placeholders:
+        eventType: 例如 service.instance.restart
+        description: 搜尋事件內容
+      addCondition: 新增條件
+      removeCondition: 移除條件
+      matchAll: 所有新增條件都必須符合
+      clear: 全部清除
+      apply: 套用篩選
+      rangeError: 請選擇有效的時間範圍，開始時間必須早於結束時間。
+      shortcuts:
+        title: 調查捷徑
+        recent: 最近 1 小時
+        restarts: 最近 24 小時的重新啟動
+        errors: 最近 24 小時的錯誤
+      results:
+        updating: 正在更新結果…
+        summary: '查詢完成：{count} 筆，時間範圍 {range}'
     table:
       header:
         date: 日期
