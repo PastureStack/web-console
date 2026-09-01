@@ -48,8 +48,20 @@ export default Service.extend({
       // shared menu with a null model until the user clicks repeatedly.
       $('BODY')
         .off(`click${ACTION_EVENT_NAMESPACE}`)
-        .one(`click${ACTION_EVENT_NAMESPACE}`, () => {
-          if (request === this.get('showRequest')) {
+        .on(`click${ACTION_EVENT_NAMESPACE}`, (event) => {
+          if (request !== this.get('showRequest')) {
+            return;
+          }
+
+          let target = event.target;
+          let insideCurrentMenu = $trigger.is(target) || $trigger.has(target).length ||
+            $toggle.is(target) || $toggle.has(target).length ||
+            $menu.is(target) || $menu.has(target).length;
+
+          // Ember can flush `next()` before the native click finishes
+          // bubbling to BODY.  Ignore that opening/switching click and clicks
+          // inside the current menu; only a real outside click may close it.
+          if (!insideCurrentMenu) {
             this.hide();
           }
         });

@@ -108,6 +108,30 @@ test('the click which opens or switches the global menu cannot close it while bu
   });
 });
 
+test('a BODY listener ignores the current trigger and menu until a real outside click', async function(assert) {
+  installFixture();
+  let service = ResourceActionsService.create();
+  let model = EmberObject.create({name: 'current'});
+  let trigger = document.getElementById('trigger-a');
+  let menu = document.getElementById('resource-actions');
+
+  run(() => service.show(model, trigger, trigger));
+  await waitForNextQueues();
+  assert.true(service.get('open'), 'precondition: the menu opened');
+
+  $(trigger).trigger('click');
+  assert.true(service.get('open'), 'the bubbling trigger click is not treated as outside');
+  assert.strictEqual(service.get('model'), model, 'the current model remains authoritative');
+
+  $(menu).trigger('click');
+  assert.true(service.get('open'), 'clicks inside the current menu do not close it prematurely');
+
+  $('#qunit-fixture').trigger('click');
+  assert.false(service.get('open'), 'a real outside click closes the menu');
+  assert.equal(trigger.getAttribute('aria-expanded'), 'false', 'the trigger is collapsed after the outside click');
+  run(() => service.destroy());
+});
+
 test('viewport movement closes the menu instead of leaving a drifting anchor', async function(assert) {
   installFixture();
   let service = ResourceActionsService.create();
