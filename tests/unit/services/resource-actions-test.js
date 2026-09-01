@@ -141,10 +141,28 @@ test('viewport movement closes the menu instead of leaving a drifting anchor', a
   await waitForNextQueues();
   assert.true(service.get('open'), 'precondition: the menu opened');
 
-  $(window).trigger('scroll');
+  window.dispatchEvent(new Event('scroll'));
 
   assert.false(service.get('open'), 'scroll closes the global menu');
   assert.true(document.getElementById('resource-actions').classList.contains('hide'), 'the menu cannot drift away from its trigger');
   assert.equal(trigger.getAttribute('aria-expanded'), 'false', 'the trigger is collapsed after scroll');
+  run(() => service.destroy());
+});
+
+test('scrolling a nested page region closes the menu instead of detaching it from its trigger', async function(assert) {
+  installFixture();
+  let service = ResourceActionsService.create();
+  let trigger = document.getElementById('trigger-a');
+  let scroller = document.createElement('div');
+  document.getElementById('qunit-fixture').appendChild(scroller);
+
+  run(() => service.show(EmberObject.create(), trigger, trigger));
+  await waitForNextQueues();
+  assert.true(service.get('open'), 'precondition: the menu opened');
+
+  scroller.dispatchEvent(new Event('scroll', {bubbles: false}));
+
+  assert.false(service.get('open'), 'capturing nested scroll closes the global menu');
+  assert.true(document.getElementById('resource-actions').classList.contains('hide'), 'the menu cannot drift during nested scrolling');
   run(() => service.destroy());
 });

@@ -54,7 +54,53 @@ export function positionDropdown(menu, trigger, right) {
   return null;
 }
 
+export function avoidDropdownTriggerOverlap(menu, selector = '.more-actions', gap = 4) {
+  var $menu = $(menu);
+  var menuElement = $menu[0];
+
+  if ( !menuElement ) {
+    return null;
+  }
+
+  var menuRect = menuElement.getBoundingClientRect();
+  if ( !menuRect.width || !menuRect.height ) {
+    return null;
+  }
+
+  var overlappingTriggers = Array.from(document.querySelectorAll(selector))
+    .map((element) => element.getBoundingClientRect())
+    .filter((rect) => rect.width && rect.height &&
+      rect.left < menuRect.right && rect.right > menuRect.left &&
+      rect.top < menuRect.bottom && rect.bottom > menuRect.top);
+
+  if ( !overlappingTriggers.length ) {
+    return null;
+  }
+
+  // A shared action menu can be taller than a table row and cover the next
+  // row's ellipsis button.  Keep the menu beside that button column so a
+  // direct switch always reaches the intended trigger instead of executing
+  // whichever action happens to be painted over it.
+  var targetLeft = Math.min(...overlappingTriggers.map((rect) => rect.left)) - menuRect.width - gap;
+  if ( targetLeft < gap ) {
+    targetLeft = Math.max(...overlappingTriggers.map((rect) => rect.right)) + gap;
+  }
+
+  if ( targetLeft < gap || targetLeft + menuRect.width > window.innerWidth - gap ) {
+    return null;
+  }
+
+  var currentLeft = parseFloat($menu.css('left'));
+  if ( Number.isNaN(currentLeft) ) {
+    currentLeft = menuRect.left;
+  }
+
+  $menu.css('left', `${currentLeft + targetLeft - menuRect.left}px`);
+  return targetLeft;
+}
+
 export default {
   resizeDropdown: resizeDropdown,
-  positionDropdown: positionDropdown
+  positionDropdown: positionDropdown,
+  avoidDropdownTriggerOverlap: avoidDropdownTriggerOverlap,
 };

@@ -72,3 +72,23 @@ test('legacy global action positioning clears Bootstrap end alignment', function
     $.PositionCalculator = originalCalculator;
   }
 });
+
+test('a global action menu moves beside overlapping action triggers', function(assert) {
+  let fixture = document.getElementById('qunit-fixture');
+
+  fixture.innerHTML = `
+    <button class="more-actions">First</button>
+    <button class="more-actions">Second</button>
+    <ul class="global-actions" style="left: 100px"></ul>
+  `;
+
+  let menu = fixture.querySelector('.global-actions');
+  let triggers = fixture.querySelectorAll('.more-actions');
+
+  menu.getBoundingClientRect = () => ({left: 100, right: 200, top: 40, bottom: 140, width: 100, height: 100});
+  triggers[0].getBoundingClientRect = () => ({left: 180, right: 200, top: 10, bottom: 30, width: 20, height: 20});
+  triggers[1].getBoundingClientRect = () => ({left: 180, right: 200, top: 80, bottom: 100, width: 20, height: 20});
+
+  assert.strictEqual(bootstrapFixes.avoidDropdownTriggerOverlap($(menu)), 76, 'the menu is placed four pixels left of the overlapping trigger column');
+  assert.strictEqual(menu.style.left, '76px', 'the corrected left coordinate is applied');
+});
