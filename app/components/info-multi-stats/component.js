@@ -50,6 +50,13 @@ export function initialGraphGroups(type, single) {
   return [single ? HOST_STATS_SERIES[type].slice() : []];
 }
 
+export function graphGradientColor(type, index) {
+  // The charts live above a child-route outlet.  A path-qualified fragment
+  // becomes stale whenever that child route changes (labels -> networking,
+  // for example), making otherwise valid area paths render transparent.
+  return `url(#${type}-${index}-gradient)`;
+}
+
 const GRADIENT_COLORS = [
   {
     type: 'cpu',
@@ -136,24 +143,6 @@ export default Component.extend({
     });
     this.connect();
   },
-
-  // The SVG gradients have the path name in them, so they have to be updated when the route changes.
-  routeChanged: function() {
-    next(() => {
-      let graphs = [this.get('cpuGraph'), this.get('memoryGraph'), this.get('storageGraph'), this.get('networkGraph')];
-      graphs.forEach((graph) => {
-        try {
-          let colors = graph.internal.config.data_colors;
-          Object.keys(colors).forEach((key) => {
-            let neu = 'url(' + window.location.pathname + colors[key].replace(/^[^#]+/,'');
-            colors[key] = neu;
-          });
-        } catch (e) {
-          // eh....
-        }
-      });
-    });
-  }.observes('application.currentRouteName'),
 
   willDestroyElement: function() {
     this._super();
@@ -481,8 +470,8 @@ setupMarkers: function() {
         groups: initialGraphGroups('cpu', single),
         order: null,
         colors: {
-          System: `url(${window.location.pathname}#cpu-0-gradient)`,
-          User: `url(${window.location.pathname}#cpu-1-gradient)`,
+          System: graphGradientColor('cpu', 0),
+          User: graphGradientColor('cpu', 1),
         },
       },
       point: HOST_STATS_POINT_OPTIONS,
@@ -544,7 +533,7 @@ setupMarkers: function() {
         columns: memoryData,
         groups: initialGraphGroups('memory', single),
         colors: {
-          Used: `url(${window.location.pathname}#memory-0-gradient)`
+          Used: graphGradientColor('memory', 0)
         },
       },
       point: HOST_STATS_POINT_OPTIONS,
@@ -606,8 +595,8 @@ setupMarkers: function() {
         groups: initialGraphGroups('storage', single),
         order: null,
         colors: {
-          Write: `url(${window.location.pathname}#storage-0-gradient)`,
-          Read: `url(${window.location.pathname}#storage-1-gradient)`
+          Write: graphGradientColor('storage', 0),
+          Read: graphGradientColor('storage', 1)
         },
       },
       point: HOST_STATS_POINT_OPTIONS,
@@ -667,8 +656,8 @@ setupMarkers: function() {
         groups: initialGraphGroups('network', single),
         order: null,
         colors: {
-          Transmit: `url(${window.location.pathname}#network-0-gradient)`,
-          Receive: `url(${window.location.pathname}#network-1-gradient)`
+          Transmit: graphGradientColor('network', 0),
+          Receive: graphGradientColor('network', 1)
         },
       },
       point: HOST_STATS_POINT_OPTIONS,
