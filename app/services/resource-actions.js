@@ -16,6 +16,7 @@ export default Service.extend({
   showRequest    : 0,
   showTimer      : null,
   positionTimer  : null,
+  viewportListener: null,
 
   show: function(model,trigger,toggle) {
     let $trigger = $(trigger);
@@ -66,13 +67,15 @@ export default Service.extend({
           }
         });
 
-      $(window)
-        .off(ACTION_EVENT_NAMESPACE)
-        .one(`scroll${ACTION_EVENT_NAMESPACE} resize${ACTION_EVENT_NAMESPACE}`, () => {
-          if (request === this.get('showRequest')) {
-            this.hide();
-          }
-        });
+      let viewportListener = () => {
+        if (request === this.get('showRequest')) {
+          this.hide();
+        }
+      };
+      this.set('viewportListener', viewportListener);
+      document.addEventListener('scroll', viewportListener, true);
+      window.addEventListener('scroll', viewportListener);
+      window.addEventListener('resize', viewportListener);
 
       if (this.get('tooltipActions')) {
         $menu.addClass('tooltip-actions');
@@ -95,6 +98,7 @@ export default Service.extend({
         }
 
         BootstrapFixes.positionDropdown($menu, $trigger[0], true);
+        BootstrapFixes.avoidDropdownTriggerOverlap($menu);
         let firstAction = $('#resource-actions-first')[0];
         if (firstAction) {
           firstAction.focus();
@@ -132,7 +136,12 @@ export default Service.extend({
     }
 
     $('BODY').off(`click${ACTION_EVENT_NAMESPACE}`);
-    $(window).off(ACTION_EVENT_NAMESPACE);
+    let viewportListener = this.get('viewportListener');
+    if (viewportListener) {
+      document.removeEventListener('scroll', viewportListener, true);
+      window.removeEventListener('scroll', viewportListener);
+      window.removeEventListener('resize', viewportListener);
+    }
 
     let $toggle = this.get('actionToggle');
     let $trigger = this.get('actionTrigger');
@@ -159,6 +168,7 @@ export default Service.extend({
       actionMenu   : null,
       showTimer    : null,
       positionTimer: null,
+      viewportListener: null,
       open         : false,
       model        : null,
     });
