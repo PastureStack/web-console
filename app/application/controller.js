@@ -32,6 +32,9 @@ export default Controller.extend({
   // currentRouteName is set by Ember.Router
   // but getting the application controller to get it is inconvenient sometimes
   currentRouteNameChanged: function() {
+    if (this.get('resourceActions.open')) {
+      this.get('resourceActions').hide();
+    }
     this.set('app.currentRouteName', this.get('currentRouteName'));
   }.observes('currentRouteName'),
 

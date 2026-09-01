@@ -1,4 +1,4 @@
-import { next } from '@ember/runloop';
+import { cancel, next } from '@ember/runloop';
 import { alias, and, not } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
@@ -110,14 +110,30 @@ export default Component.extend({
 
   renderOk: false,
   renderTimer: null,
+  connectTimer: null,
+  statsResource: null,
+  statsLinkName: null,
+  markerSvg: null,
 
   didReceiveAttrs() {
+    this._super(...arguments);
+
+    let model = this.get('model');
+    let linkName = this.get('linkName');
+    if (model === this.get('statsResource') && linkName === this.get('statsLinkName')) {
+      return;
+    }
+
     if ( this.get('statsSocket') )
     {
       this.disconnect();
       this.tearDown();
     }
 
+    this.setProperties({
+      statsResource: model,
+      statsLinkName: linkName,
+    });
     this.connect();
   },
 
@@ -157,11 +173,25 @@ export default Component.extend({
   }.observes('active'),
 
   connect() {
-    next(() => {
+    let pending = this.get('connectTimer');
+    if (pending) {
+      cancel(pending);
+    }
+
+    let resource = this.get('model');
+    let linkName = this.get('linkName');
+    let timer = next(() => {
+      this.set('connectTimer', null);
+      if (this.isDestroyed || this.isDestroying ||
+          resource !== this.get('statsResource') ||
+          linkName !== this.get('statsLinkName')) {
+        return;
+      }
+
       try {
         var stats = MultiStatsSocket.create({
-          resource: this.get('model'),
-          linkName: this.get('linkName'),
+          resource: resource,
+          linkName: linkName,
         });
 
         this.set('statsSocket',stats);
@@ -169,13 +199,22 @@ export default Component.extend({
       } catch(e) {
       }
     });
+
+    this.set('connectTimer', timer);
   },
 
   disconnect() {
+    let pending = this.get('connectTimer');
+    if (pending) {
+      cancel(pending);
+      this.set('connectTimer', null);
+    }
+
     var stats = this.get('statsSocket');
     if ( stats )
     {
       stats.close();
+      this.set('statsSocket', null);
     }
   },
 
@@ -226,6 +265,7 @@ export default Component.extend({
 
 setupMarkers: function() {
     var svg = d3.select('body').append('svg:svg');
+    this.set('markerSvg', svg.node());
     svg.attr('height','0');
     svg.attr('width','0');
     svg.style('position','absolute');
@@ -258,6 +298,8 @@ setupMarkers: function() {
   },
 
   tearDown() {
+    clearInterval(this.get('renderTimer'));
+
     ['cpuGraph','memoryGraph','storageGraph','networkGraph'].forEach((key) => {
       var obj = this.get(key);
       if ( obj )
@@ -265,6 +307,11 @@ setupMarkers: function() {
         obj.destroy();
       }
     });
+
+    let markerSvg = this.get('markerSvg');
+    if (markerSvg) {
+      markerSvg.remove();
+    }
 
     this.setProperties({
       cpuGraph: null,
@@ -278,6 +325,8 @@ setupMarkers: function() {
       setMemoryScale: false,
       setCpuScale: false,
       renderSeconds: null,
+      renderTimer: null,
+      markerSvg: null,
       renderOk: false,
     });
   },
