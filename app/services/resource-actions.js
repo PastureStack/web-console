@@ -36,27 +36,31 @@ export default Service.extend({
     this.set('actionTrigger', $trigger);
     this.set('model', model);
 
-    $('BODY')
-      .off(`click${ACTION_EVENT_NAMESPACE}`)
-      .one(`click${ACTION_EVENT_NAMESPACE}`, () => {
-        if (request === this.get('showRequest')) {
-          this.hide();
-        }
-      });
-
-    $(window)
-      .off(ACTION_EVENT_NAMESPACE)
-      .one(`scroll${ACTION_EVENT_NAMESPACE} resize${ACTION_EVENT_NAMESPACE}`, () => {
-        if (request === this.get('showRequest')) {
-          this.hide();
-        }
-      });
-
     let showTimer = next(() => {
       this.set('showTimer', null);
       if (!this.isCurrentRequest(request, model, $trigger[0])) {
         return;
       }
+
+      // Bind the outside-click listener after the opening click has finished
+      // bubbling.  Binding it synchronously makes the same click close the
+      // global menu on some trigger/route render timings, which leaves the
+      // shared menu with a null model until the user clicks repeatedly.
+      $('BODY')
+        .off(`click${ACTION_EVENT_NAMESPACE}`)
+        .one(`click${ACTION_EVENT_NAMESPACE}`, () => {
+          if (request === this.get('showRequest')) {
+            this.hide();
+          }
+        });
+
+      $(window)
+        .off(ACTION_EVENT_NAMESPACE)
+        .one(`scroll${ACTION_EVENT_NAMESPACE} resize${ACTION_EVENT_NAMESPACE}`, () => {
+          if (request === this.get('showRequest')) {
+            this.hide();
+          }
+        });
 
       if (this.get('tooltipActions')) {
         $menu.addClass('tooltip-actions');

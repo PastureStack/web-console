@@ -5,6 +5,7 @@ import EmberObject from '@ember/object';
 
 import {
   HOST_STATS_POINT_OPTIONS,
+  graphGradientColor,
   initialGraphData,
   initialGraphGroups,
   default as InfoMultiStatsComponent
@@ -36,6 +37,12 @@ test('single-resource charts start with stable series and no point-node update p
 test('multi-resource charts retain dynamic series discovery', function(assert) {
   assert.deepEqual(initialGraphData('cpu', false).map((row) => row[0]), ['x']);
   assert.deepEqual(initialGraphGroups('cpu', false), [[]]);
+});
+
+test('chart gradients remain bound to the shared SVG across child routes', function(assert) {
+  ['cpu', 'memory', 'network', 'storage'].forEach((type) => {
+    assert.equal(graphGradientColor(type, 0), `url(#${type}-0-gradient)`, `${type} does not capture a child-route pathname`);
+  });
 });
 
 test('unchanged parent stats survive child-route attribute refreshes', function(assert) {

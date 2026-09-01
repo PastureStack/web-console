@@ -76,6 +76,38 @@ test('rapid trigger changes keep only the newest action model and anchor', async
   run(() => service.destroy());
 });
 
+test('the click which opens or switches the global menu cannot close it while bubbling', async function(assert) {
+  installFixture();
+  let service = ResourceActionsService.create();
+  let firstModel = EmberObject.create({name: 'first'});
+  let secondModel = EmberObject.create({name: 'second'});
+  let firstTrigger = document.getElementById('trigger-a');
+  let secondTrigger = document.getElementById('trigger-b');
+
+  $(firstTrigger).on('click.test-resource-actions', () => service.show(firstModel, firstTrigger, firstTrigger));
+  $(secondTrigger).on('click.test-resource-actions', () => service.show(secondModel, secondTrigger, secondTrigger));
+
+  $(firstTrigger).trigger('click');
+  await waitForNextQueues();
+  assert.true(service.get('open'), 'the opening click is not mistaken for an outside click');
+  assert.strictEqual(service.get('model'), firstModel, 'the first trigger owns the first menu');
+
+  $(secondTrigger).trigger('click');
+  await waitForNextQueues();
+  assert.true(service.get('open'), 'switching triggers remains open after the click bubbles');
+  assert.strictEqual(service.get('model'), secondModel, 'the second trigger replaces the action model');
+  assert.strictEqual(service.get('actionTrigger.0'), secondTrigger, 'the second trigger replaces the anchor');
+  assert.equal(firstTrigger.getAttribute('aria-expanded'), 'false', 'the first trigger is collapsed');
+  assert.equal(secondTrigger.getAttribute('aria-expanded'), 'true', 'the second trigger is expanded');
+
+  $(firstTrigger).off('.test-resource-actions');
+  $(secondTrigger).off('.test-resource-actions');
+  run(() => {
+    service.hide();
+    service.destroy();
+  });
+});
+
 test('viewport movement closes the menu instead of leaving a drifting anchor', async function(assert) {
   installFixture();
   let service = ResourceActionsService.create();
