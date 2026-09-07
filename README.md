@@ -65,6 +65,11 @@ pagination, and one operator-confirmed removal action. Selection rules,
 preview behavior, and the concurrency limit are documented in
 [operator-selected storage removal](docs/storage-bulk-remove.md).
 
+Linux shared memory, runtimes, GPU/graphics devices and advanced container limits
+use the shared [Resources and hardware](docs/resources-and-hardware.md) form.
+The guide covers coordinated agent/API rollout and the distinction between
+device visibility and exclusive GPU allocation.
+
 OpenID Connect configuration, stable account-to-identity assignment, safe
 provider switching, and local recovery are documented in
 [OpenID Connect](docs/openid-connect.md). TOTP, passkeys, recovery codes,

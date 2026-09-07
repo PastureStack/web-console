@@ -1,0 +1,175 @@
+<div class="form-resources">
+  {{#each (array this.instance) key="@identity" as |currentInstance|}}
+  <h3>{{t 'formResources.title'}}</h3>
+  <p class="help-block">{{t 'formResources.help'}}</p>
+  {{#unless this.projects.current.isWindows}}
+  <div class="row form-group">
+    <div class="col-md-6">
+      <label for="{{this.elementId}}-shm">{{t 'formResources.shm'}}</label>
+      {{#if this.editing}}
+        <div class="input-group">
+          <input id="{{this.elementId}}-shm" class="form-control" type="text" list="{{this.elementId}}-shm-suggestions" inputmode="decimal" aria-invalid={{if this.shmError 'true' 'false'}} value={{this.shmDraft}} oninput={{action 'setShm' value='target.value'}} placeholder="2g">
+          <datalist id="{{this.elementId}}-shm-suggestions"><option value="256m"></option><option value="512m"></option><option value="1g"></option><option value="2g"></option><option value="4g"></option></datalist>
+          <select class="form-control" aria-label={{t 'formResources.unit'}} onchange={{action 'setShmUnit'}}>
+            <option value="MiB" selected={{eq this.shmUnit 'MiB'}}>MiB</option>
+            <option value="GiB" selected={{eq this.shmUnit 'GiB'}}>GiB</option>
+          </select>
+        </div>
+      {{else}}
+        <div>{{if this.shmDraft (concat this.shmDraft ' ' this.shmUnit) (t 'formResources.default')}}</div>
+      {{/if}}
+    </div>
+    <div class="col-md-6">
+      <label for="{{this.elementId}}-ipc">{{t 'formResources.ipc'}}</label>
+      {{#if this.editing}}
+        <select id="{{this.elementId}}-ipc" class="form-control" onchange={{action 'setField' 'ipcMode'}}>
+          <option value="" selected={{not this.instance.ipcMode}}>{{t 'formResources.default'}}</option>
+          <option value="private" selected={{eq this.instance.ipcMode 'private'}}>{{t 'formResources.ipcPrivate'}}</option>
+          <option value="shareable" selected={{eq this.instance.ipcMode 'shareable'}}>{{t 'formResources.ipcShareable'}}</option>
+          <option value="host" selected={{eq this.instance.ipcMode 'host'}}>{{t 'formResources.ipcHost'}}</option>
+          <option value="none" selected={{eq this.instance.ipcMode 'none'}}>{{t 'formResources.ipcNone'}}</option>
+          {{#if (and this.instance.ipcMode (not (include (array 'private' 'shareable' 'host' 'none') this.instance.ipcMode)))}}
+            <option value={{this.instance.ipcMode}} selected>{{this.instance.ipcMode}}</option>
+          {{/if}}
+        </select>
+      {{else}}<div>{{or this.instance.ipcMode (t 'formResources.default')}}</div>{{/if}}
+    </div>
+  </div>
+
+  <p class="help-block">{{t 'formResources.shmHelp'}}</p>
+  <div class="row form-group">
+    <div class="col-md-6">
+      <label for="{{this.elementId}}-cpu">{{t 'formResources.cpu'}}</label>
+      {{#if this.editing}}
+        <input id="{{this.elementId}}-cpu" class="form-control" type="number" step="0.1" min="0.01" value={{this.cpuLimit}} oninput={{action 'setCpuLimit' value='target.value'}} placeholder={{t 'formResources.default'}}>
+      {{else}}<div>{{or this.cpuLimit (t 'formResources.default')}}</div>{{/if}}
+    </div>
+  </div>
+  <fieldset>
+    <legend>{{t 'formResources.gpu'}}</legend>
+    <p class="help-block">{{t 'formResources.gpuHelp'}}</p>
+    {{#if this.editing}}
+      <label for="{{this.elementId}}-host">{{t 'formResources.host'}}</label>
+      <select id="{{this.elementId}}-host" class="form-control" onchange={{action 'setHost'}}>
+        <option value="" selected={{not this.instance.requestedHostId}}>{{if this.primaryRequestedHostId (t 'formResources.inheritHost') (t 'formResources.chooseHost')}}</option>
+        {{#each this.hostChoices as |host|}}
+          <option value={{host.id}} disabled={{host.inactive}} selected={{eq host.id this.instance.requestedHostId}}>{{host.name}}{{#if host.inactive}} · {{t 'formResources.errors.hostInactive'}}{{/if}}</option>
+        {{/each}}
+      </select>
+    {{else}}<p>{{or this.selectedHost.displayName this.selectedHost.hostname this.selectedHost.name (t 'formResources.default')}}</p>{{/if}}
+    {{#if this.editing}}
+      {{#unless this.inventoryReady}}<p class="help-block" role="status">{{if this.selectedHost (t 'formResources.errors.inventoryUnavailable') (t 'formResources.errors.hostRequired')}}</p>{{/unless}}
+      {{#if this.customRequests}}
+        <p class="alert alert-warning">{{t 'formResources.customRequests'}}</p>
+        <pre>{{this.requestSummary}}</pre>
+      {{else}}
+        <label for="{{this.elementId}}-gpu-mode" class="r-mt15">NVIDIA GPU</label>
+        <select id="{{this.elementId}}-gpu-mode" class="form-control" onchange={{action 'setGpuMode'}}>
+          <option value="none" selected={{eq this.gpuMode 'none'}}>{{t 'generic.none'}}</option>
+          <option value="selected" disabled={{not this.nvidiaReady}} selected={{eq this.gpuMode 'selected'}}>{{t 'formResources.selected'}}</option>
+          <option value="count" disabled={{not this.nvidiaReady}} selected={{eq this.gpuMode 'count'}}>{{t 'formResources.count'}}</option>
+          <option value="all" disabled={{not this.nvidiaReady}} selected={{eq this.gpuMode 'all'}}>{{t 'formResources.all'}}</option>
+        </select>
+        {{#if (eq this.gpuMode 'count')}}
+          <label for="{{this.elementId}}-count">{{t 'formResources.count'}}</label>
+          <input id="{{this.elementId}}-count" class="form-control" type="number" min="1" max={{this.nvidiaCount}} step="1" value={{this.gpuCount}} oninput={{action 'setGpuCount' value='target.value'}}>
+        {{/if}}
+      {{/if}}
+    {{/if}}
+    {{#unless this.editing}}
+      {{#if this.customRequests}}
+        <pre>{{this.requestSummary}}</pre>
+      {{else if this.instance.deviceRequests.length}}
+        <p>{{t 'formResources.gpu'}} · {{#if (eq this.gpuMode 'all')}}{{t 'formResources.all'}}{{else if (eq this.gpuMode 'count')}}{{t 'formResources.count'}}: {{this.gpuCount}}{{else}}{{t 'formResources.selected'}}{{/if}}</p>
+      {{/if}}
+    {{/unless}}
+    <div class="row r-mt15">
+      {{#each this.gpuChoices as |device|}}
+        {{#if (or (not-eq device.kind 'nvidia') (and (not this.customRequests) (eq this.gpuMode 'selected')) (not this.editing))}}
+          <div class="col-md-6 r-mb10">
+            <label class="checkbox">
+              <input type="checkbox" checked={{device.selected}} disabled={{or (not this.editing) (not this.inventoryReady)}} onchange={{action 'toggleDevice' device}}>
+              {{device.name}}
+              <small class="text-muted block">{{device.pciAddress}} {{device.path}}</small>
+            </label>
+          </div>
+        {{/if}}
+      {{else}}
+        <p class="col-md-12 text-muted">{{t 'formResources.noDevices'}}</p>
+      {{/each}}
+    </div>
+    <label for="{{this.elementId}}-runtime">{{t 'formResources.runtime'}}</label>
+    {{#if this.editing}}
+      <select id="{{this.elementId}}-runtime" class="form-control" onchange={{action 'setField' 'runtime'}}>
+        <option value="" selected={{not this.instance.runtime}}>{{t 'formResources.default'}} {{this.hardware.defaultRuntime}}</option>
+        {{#each this.runtimeChoices as |runtime|}}
+          <option value={{runtime}} disabled={{not this.inventoryReady}} selected={{eq runtime this.instance.runtime}}>{{runtime}}</option>
+        {{/each}}
+      </select>
+    {{else}}<div>{{or this.instance.runtime (t 'formResources.default')}}</div>{{/if}}
+    <label for="{{this.elementId}}-groups" class="r-mt15">{{t 'formResources.groups'}}</label>
+    {{#if this.editing}}
+      <input id="{{this.elementId}}-groups" class="form-control" value={{this.groupText}} oninput={{action 'setGroups' value='target.value'}} placeholder="44, 993">
+    {{else}}<div>{{or this.groupText (t 'generic.none')}}</div>{{/if}}
+  </fieldset>
+
+  <hr>
+  {{form-security instance=this.instance editing=this.editing resourcesOnly=true}}
+
+  <button type="button" class="btn btn-default r-mb15" aria-expanded={{if this.advanced 'true' 'false'}} {{action 'toggleAdvanced'}}>{{t 'formResources.advanced'}}</button>
+  {{#if this.advanced}}
+    <div class="row form-group">
+      <div class="col-md-6">
+        <label>{{t 'formResources.pids'}}</label>
+        {{#input-or-display editable=this.editing value=this.instance.pidsLimit}}
+          <input class="form-control" type="number" min="-1" step="1" data-hardware="pids" value={{this.instance.pidsLimit}} oninput={{action 'setInteger' this.instance 'pidsLimit'}}>
+        {{/input-or-display}}
+      </div>
+      <div class="col-md-6">
+        <label>{{t 'formResources.init'}}</label>
+        {{#input-or-display editable=this.editing value=this.instance.runInit}}
+          <label class="checkbox">{{input type='checkbox' checked=this.instance.runInit}} {{t 'formResources.init'}}</label>
+        {{/input-or-display}}
+      </div>
+    </div>
+    <div class="row form-group">
+      <div class="col-md-6">
+        <label>{{t 'formResources.cpuQuota'}}</label>
+        {{#input-or-display editable=this.editing value=this.instance.cpuQuota}}
+          <input class="form-control" type="number" min="-1" step="1" data-hardware="quota" value={{this.instance.cpuQuota}} oninput={{action 'setInteger' this.instance 'cpuQuota'}}>
+        {{/input-or-display}}
+      </div>
+      <div class="col-md-6">
+        <label>{{t 'formResources.cpuPeriod'}}</label>
+        {{#input-or-display editable=this.editing value=this.instance.cpuPeriod}}
+          <input class="form-control" type="number" min="1000" step="1" data-hardware="period" value={{this.instance.cpuPeriod}} oninput={{action 'setInteger' this.instance 'cpuPeriod'}}>
+        {{/input-or-display}}
+      </div>
+    </div>
+    <h4>tmpfs</h4>
+    <div data-hardware="tmpfs">{{form-key-value initialMap=this.instance.tmpfs initialRows=this.draft.tmpfsRows rowsChanged=(action 'mapRows' 'tmpfs') changed=(action 'setMap' 'tmpfs') editing=this.editing allowEmptyValue=true allowMultilineValue=false keySuggestions=(array '/tmp' '/run' '/var/tmp') valueSuggestions=(array 'rw,noexec,nosuid,size=64m' 'rw,noexec,nosuid,size=256m') validityChanged=(action 'mapValidity' 'tmpfs')}}</div>
+    <h4>sysctls</h4>
+    <div data-hardware="sysctls">{{form-key-value initialMap=this.instance.sysctls initialRows=this.draft.sysctlsRows rowsChanged=(action 'mapRows' 'sysctls') changed=(action 'setMap' 'sysctls') editing=this.editing allowMultilineValue=false keySuggestions=(array 'net.core.somaxconn' 'net.ipv4.ip_local_port_range' 'net.ipv4.tcp_keepalive_time') validityChanged=(action 'mapValidity' 'sysctls')}}</div>
+    <h4>ulimits</h4>
+    {{#if this.editing}}<button type="button" class="btn btn-default" data-hardware="add-ulimit" disabled={{not this.availableUlimitNames.length}} {{action 'addUlimit'}}>{{t 'generic.add'}}</button>{{/if}}
+    <table class="table fixed no-lines">
+      <thead><tr><th>{{t 'generic.name'}}</th><th>{{t 'formResources.soft'}}</th><th>{{t 'formResources.hard'}}</th><th></th></tr></thead>
+      <tbody>
+        {{#each this.instance.ulimits as |limit|}}
+          <tr>
+            <td>{{#input-or-display editable=this.editing value=limit.name}}{{input class='form-control' value=limit.name list=(concat this.elementId '-ulimit-suggestions')}}{{/input-or-display}}</td>
+            <td>{{#input-or-display editable=this.editing value=limit.soft}}<input class="form-control" type="number" min="-1" step="1" data-hardware="soft" value={{limit.soft}} oninput={{action 'setInteger' limit 'soft'}}>{{/input-or-display}}</td>
+            <td>{{#input-or-display editable=this.editing value=limit.hard}}<input class="form-control" type="number" min="-1" step="1" data-hardware="hard" value={{limit.hard}} oninput={{action 'setInteger' limit 'hard'}}>{{/input-or-display}}</td>
+            <td>{{#if this.editing}}<button type="button" class="btn btn-default" {{action 'removeUlimit' limit}}>{{t 'generic.remove'}}</button>{{/if}}</td>
+          </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{#if this.editing}}<datalist id="{{this.elementId}}-ulimit-suggestions">{{#each this.ulimitNames as |name|}}<option value={{name}}></option>{{/each}}</datalist>{{/if}}
+  {{/if}}
+  {{#if this.editing}}{{top-errors errors=this.issues}}{{/if}}
+  {{else}}
+    <p class="alert alert-info">{{t 'formResources.linuxOnly'}}</p>
+  {{/unless}}
+  {{/each}}
+</div>

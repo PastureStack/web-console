@@ -73,6 +73,11 @@ export default Component.extend({
   allowMultilineValue:  true,
   editing:              true,
   ary:                  null,
+  keySuggestions:       null,
+  valueSuggestions:     null,
+  validityChanged:      null,
+  initialRows:          null,
+  rowsChanged:          null,
 
   actions: {
     add() {
@@ -119,7 +124,10 @@ export default Component.extend({
 
     var ary = [];
     var map = this.get('initialMap');
-    if ( map )
+    if ( this.get('initialRows') ) {
+      ary = this.get('initialRows').map((row) => EmberObject.create({...row}));
+    }
+    else if ( map )
     {
       Object.keys(map).forEach((key) => {
         ary.push(EmberObject.create({key: key, value: map[key]}));
@@ -140,7 +148,11 @@ export default Component.extend({
   },
 
   aryObserver: function() {
-    debounce(this,'fireChanged',100);
+    // Hardware options cannot silently lose incomplete rows, duplicate keys or
+    // the last keystroke when Save immediately follows typing. Other callers
+    // retain their existing debounced behaviour.
+    if ( typeof this.get('validityChanged') === 'function' ) { this.fireChanged(); }
+    else { debounce(this,'fireChanged',100); }
   }.observes('ary.@each.{key,value}'),
 
   fireChanged() {
@@ -150,10 +162,14 @@ export default Component.extend({
 
     var map = {};
     var str = '';
+    var valid = true;
+    var keys = new Set();
 
     this.get('ary').forEach((row) => {
       var k = row.get('key').trim();
       var v = row.get('value').trim();
+      if ( !k || (!v && !this.get('allowEmptyValue')) || keys.has(k) ) { valid = false; }
+      keys.add(k);
 
       if ( k && (v || this.get('allowEmptyValue')) )
       {
@@ -164,5 +180,9 @@ export default Component.extend({
 
     this.sendAction('changed', map);
     this.sendAction('changedStr', str);
+    let rowsChanged = this.get('rowsChanged');
+    if ( typeof rowsChanged === 'function' ) { rowsChanged(this.get('ary').map((row) => ({key: row.get('key'), value: row.get('value')}))); }
+    let validity = this.get('validityChanged');
+    if ( typeof validity === 'function' ) { validity(valid); }
   },
 });

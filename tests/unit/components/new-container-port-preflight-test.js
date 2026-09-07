@@ -9,6 +9,22 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
 module('Unit | Component | new container port preflight');
 
+test('hardware validation includes primary config while a sidekick is active', function(assert) {
+  let component = createComponent();
+  let primary = component.get('service.launchConfig');
+  let sidekick = EmberObject.create({name: 'worker', validationErrors() { return A(); }});
+  run(() => {
+    primary.setProperties({shmSize: 2147483648, ipcMode: 'host'});
+    component.set('service.secondaryLaunchConfigs', A([sidekick]));
+    component.set('launchConfig', sidekick);
+  });
+  assert.notOk(component.validate());
+  assert.ok(component.get('errors').includes('formResources.errors.ipcConflict'));
+  run(() => primary.set('ipcMode', 'private'));
+  assert.ok(component.validate());
+  destroyOwned(component);
+});
+
 function createComponent() {
   let launchConfig = EmberObject.create({
     labels: {},

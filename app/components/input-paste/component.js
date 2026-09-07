@@ -2,6 +2,7 @@ import TextField from '@ember/legacy-built-in-components/components/text-field';
 import IntlPlaceholder from 'ui/mixins/intl-placeholder';
 
 export default TextField.extend(IntlPlaceholder, {
+  attributeBindings: ['list'],
   _onPaste: null,
   didInsertElement: function() {
     this._super();

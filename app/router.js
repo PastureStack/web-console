@@ -109,6 +109,7 @@ Router.map(function() {
             this.route('healthcheck');
             this.route('scheduling');
             this.route('security');
+            this.route('resources');
           });
         });
 

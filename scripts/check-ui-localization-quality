@@ -265,7 +265,7 @@ if (/\bCattle\b/u.test(englishSource)) {
 
 const semanticFalseFriends = {
   'de-de': /\b(?:Hinrichtung eines Kindes|Umwelt|Bild(?:er|es)?)\b/u,
-  'fa-ir': /(?:اعدام کودک|محیط زیست|حسابرسی|رنچر|ظرف|اهراز|مشکشلات|همهow|Availablility)/u,
+  'fa-ir': /(?:اعدام کودک|محیط زیست|حسابرسی|رنچر|(?<!\p{L})ظرف(?!\p{L})|اهراز|مشکشلات|همهow|Availablility)/u,
   'fil-ph': /\b(?:lalagyan|larawan)\b|layunin-built|hindi kilalang impormasyon|Kubernetes Ang dashboard/iu,
   'fr-fr': /(?:Exécution d'enfants|ui-pilote-skel|\b[Pp]iles?\b)/u,
   'hu-hu': /(?:Gyermek kivégzés|Hozzáférési naplók)/u,
@@ -604,6 +604,9 @@ function lineNumberAt(source, offset) {
 }
 
 const allowedLiteralText = /^(?:GB|Mbps|\(CN\)|https:\/\/|ubuntu:\d+\.\d+|alpine:\d+\.\d+)$/iu;
+// Units, vendor names and exact Docker option names are not prose. Scope the
+// exception to this component; IPC descriptions and all guidance stay localized.
+const hardwareLiteralText = new Set(['MiB', 'GiB', 'NVIDIA GPU', 'tmpfs', 'sysctls', 'ulimits']);
 filesBelow(path.join(repoRoot, 'app'), '.hbs').forEach((templatePath) => {
   const relativePath = path.relative(repoRoot, templatePath).replace(/\\/g, '/');
   const rawSource = fs.readFileSync(templatePath, 'utf8');
@@ -616,7 +619,8 @@ filesBelow(path.join(repoRoot, 'app'), '.hbs').forEach((templatePath) => {
       .replace(/\{\{[\s\S]*?\}\}/gu, '')
       .replace(/&(?:[A-Za-z][A-Za-z0-9]+|#[0-9]+);/gu, '')
       .trim();
-    if (/[A-Za-z]{2,}/u.test(residual) && !allowedLiteralText.test(residual)) {
+    const hardwareToken = relativePath === 'app/components/form-resources/template.hbs' && hardwareLiteralText.has(residual);
+    if (/[A-Za-z]{2,}/u.test(residual) && !allowedLiteralText.test(residual) && !hardwareToken) {
       failures.push(
         `hardcoded_template_text=${relativePath}:${lineNumberAt(source, match.index)}:${residual.slice(0, 80)}`
       );

@@ -10,6 +10,8 @@ export default Component.extend({
   instance: null,
   classNameBindings: ['editing:component-editing:component-static'],
   editing: true,
+  resourcesOnly: false,
+  securityOnly: false,
 
   actions: {
     addDevice: function() {
@@ -41,17 +43,21 @@ export default Component.extend({
 
     if ( this.get('projects.current.isWindows') ) {
     } else {
-      this.initCapability();
-      this.initDevices();
-      this.initMemory();
-      this.initPidMode();
+      if ( !this.get('resourcesOnly') ) {
+        this.initCapability();
+        this.initPidMode();
+      }
+      if ( !this.get('securityOnly') ) {
+        this.initDevices();
+        this.initMemory();
+      }
     }
 
-    this.initLogging();
+    if ( !this.get('resourcesOnly') ) { this.initLogging(); }
   },
 
   didInsertElement() {
-    if ( ! this.get('projects.current.isWindows') ) {
+    if ( !this.get('resourcesOnly') && ! this.get('projects.current.isWindows') ) {
       this.initMultiselect();
       this.privilegedDidChange();
     }
@@ -75,6 +81,7 @@ export default Component.extend({
   memoryReservationMb: null,
   swapMb: null,
   initMemory: function() {
+    this._initializingResources = true;
     var memBytes = this.get('instance.memory') || 0;
     var memPlusSwapBytes = this.get('instance.memorySwap') || 0;
     var memReservation = this.get('instance.memoryReservation');
@@ -102,10 +109,11 @@ export default Component.extend({
     {
       this.set('swapMb','');
     }
-
+    this._initializingResources = false;
   },
 
   memoryReservationChanged: observer('memoryReservationMb', function() {
+    if ( this._initializingResources || !this.get('editing') ) { return; }
     var mem = this.get('memoryReservationMb');
 
     if ( isNaN(mem) || mem <= 0) {
@@ -117,6 +125,7 @@ export default Component.extend({
   }),
 
   memoryDidChange: function() {
+    if ( this._initializingResources || !this.get('editing') ) { return; }
     // The actual parameter we're interested in is 'memory', in bytes.
     var mem = parseInt(this.get('memoryMb'),10);
     if ( isNaN(mem) || mem <= 0)
@@ -152,9 +161,21 @@ export default Component.extend({
   // ----------------------------------
   pidHost: null,
   initPidMode: function() {
+    this._initializingPid = true;
     this.set('pidHost', this.get('instance.pidMode') === 'host');
+    this._initializingPid = false;
+  },
+
+  didReceiveAttrs() {
+    this._super(...arguments);
+    if ( this.get('resourcesOnly') && !this.get('projects.current.isWindows') && this._resourceInstance !== this.get('instance') ) {
+      this._resourceInstance = this.get('instance');
+      this.initDevices();
+      this.initMemory();
+    }
   },
   pidModeDidChange: function() {
+    if ( this._initializingPid || !this.get('editing') ) { return; }
     this.set('instance.pidMode', this.get('pidHost') ? 'host' : null);
   }.observes('pidHost'),
 
@@ -163,29 +184,36 @@ export default Component.extend({
   // ----------------------------------
   devicesArray: null,
   initDevices: function() {
+    this._initializingDevices = true;
     var ary = this.get('instance.devices');
     if ( !ary )
     {
       ary = [];
-      this.set('instance.devices',ary);
     }
 
     this.set('devicesArray', ary.map(function(dev) {
       var parts = dev.split(':');
-      return {host: parts[0], container: parts[1], permissions: parts[2]};
+      var target = parts[1] && parts[1].charAt(0) === '/' ? parts[1] : parts[0];
+      var permissions = parts[2] || (parts[1] && parts[1].charAt(0) !== '/' ? parts[1] : 'rwm');
+      return {host: parts[0], container: target, permissions};
     }));
+    this._initializingDevices = false;
   },
+  externalDevicesChanged: observer('instance.devices', function() {
+    if ( !this.get('securityOnly') && !this._publishingDevices ) { this.initDevices(); }
+  }),
   devicesDidChange: function() {
-    var out = this.get('instance.devices');
-    out.beginPropertyChanges();
-    out.clear();
+    if ( this._initializingDevices || !this.get('editing') ) { return; }
+    var out = [];
     this.get('devicesArray').forEach(function(row) {
       if ( row.host )
       {
-        out.push(row.host+":"+row.container+":"+row.permissions);
+        out.push(row.host+":"+(row.container || row.host)+":"+(row.permissions || 'rwm'));
       }
     });
-    out.endPropertyChanges();
+    this._publishingDevices = true;
+    this.set('instance.devices', out);
+    this._publishingDevices = false;
   }.observes('devicesArray.@each.{host,container,permissions}'),
 
   initMultiselect: function() {
@@ -263,7 +291,7 @@ export default Component.extend({
   privilegedDidChange: function() {
     var add = this.$('.select-cap-add');
     var drop = this.$('.select-cap-drop');
-    if ( add && drop )
+    if ( !this.get('resourcesOnly') && add && drop )
     {
       if ( this.get('instance.privileged') )
       {

@@ -103,6 +103,7 @@ export default Component.extend(ManageLabels, {
   restartLimit: null, //5,
 
   initRestart: function() {
+    this._initializingRestart = true;
     var name = this.get('instance.restartPolicy.name');
     var count = this.get('instance.restartPolicy.maximumRetryCount');
     if ( name === 'on-failure' && count !== undefined )
@@ -117,9 +118,11 @@ export default Component.extend(ManageLabels, {
       this.set('restartLimit','5');
       this.set('restart', name || 'no');
     }
+    this._initializingRestart = false;
   },
 
   restartDidChange: function() {
+    if ( this._initializingRestart || !this.get('editing') ) { return; }
     var policy = {};
     var name = this.get('restart');
     var limit = parseInt(this.get('restartLimit'),10);
@@ -138,6 +141,7 @@ export default Component.extend(ManageLabels, {
   }.observes('restart','restartLimit'),
 
   restartLimitDidChange: function() {
+    if ( this._initializingRestart || !this.get('editing') ) { return; }
     this.set('restart', 'on-failure-cond');
   }.observes('restartLimit'),
 

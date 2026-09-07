@@ -1,4 +1,5 @@
 {{#if this.projects.current.isWindows}}
+  {{#unless this.resourcesOnly}}
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
       <label class="form-control-static">{{t 'formSecurity.isolation.label'}}</label>
@@ -14,7 +15,9 @@
       {{/input-or-display}}
     </div>
   </div>
+  {{/unless}}
 {{else}}
+  {{#unless this.resourcesOnly}}
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
       <label class="form-control-static">{{t 'formSecurity.privileged.label'}}</label>
@@ -39,6 +42,8 @@
     </div>
   </div>
 
+  {{/unless}}
+  {{#unless this.securityOnly}}
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
       <label class="form-control-static">{{t 'formSecurity.memoryLimit.label'}}</label>
@@ -109,6 +114,8 @@
       {{/input-or-display}}
     </div>
   </div>
+  {{/unless}}
+  {{#unless this.resourcesOnly}}
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
       <label class="form-control-static">{{t 'formSecurity.capabilities.label'}}{{#unless this.editing}}({{t 'formSecurity.capabilities.add'}}){{/unless}}</label>
@@ -167,6 +174,8 @@
   {{/if}}
   </div>
 
+  {{/unless}}
+  {{#unless this.securityOnly}}
   <div class="row form-group">
     <div class="col-sm-12 col-md-2 form-label">
       <label class="form-control-static">{{t 'formSecurity.deviceBinding.label'}}</label>
@@ -247,8 +256,10 @@
       {{/if}}
     </div>
   </div>
+  {{/unless}}
 {{/if}}
 
+{{#unless this.resourcesOnly}}
 <div class="row form-group">
   <div class="col-sm-12 col-md-2 form-label">
     <label class="form-control-static">{{t 'formSecurity.logDriver.label'}}</label>
@@ -287,3 +298,4 @@
     }}
   </div>
 </div>
+{{/unless}}
