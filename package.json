@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.98",
+  "version": "1.6.99",
   "private": true,
   "description": "PastureStack browser console for the compatible control platform.",
   "repository": {
@@ -30,6 +30,8 @@
       "lodash": "$lodash"
     },
     "ember-cli-htmlbars": "7.0.1",
+    "fast-uri": "3.1.6",
+    "@xmldom/xmldom": "0.9.12",
     "nanoid": "3.3.18",
     "raw-body": "2.5.3",
     "rtlcss": "4.3.0",
@@ -39,7 +41,7 @@
     "tmp": "0.2.7",
     "uuid": "$uuid",
     "websocket-driver": "0.7.5",
-    "xmldom": "npm:@xmldom/xmldom@0.9.10",
+    "xmldom": "npm:@xmldom/xmldom@0.9.12",
     "xmlhttprequest-ssl": "4.0.0"
   },
   "dependencies": {

@@ -19,8 +19,8 @@ def fail(code, **fields):
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 overrides = package.get("overrides", {})
-if overrides.get("xmldom") != "npm:@xmldom/xmldom@0.9.10":
-    fail("XMLDOM_OVERRIDE_UNEXPECTED", actual=overrides.get("xmldom"), expected="npm:@xmldom/xmldom@0.9.10")
+if overrides.get("xmldom") != "npm:@xmldom/xmldom@0.9.12":
+    fail("XMLDOM_OVERRIDE_UNEXPECTED", actual=overrides.get("xmldom"), expected="npm:@xmldom/xmldom@0.9.12")
 if overrides.get("xmlhttprequest-ssl") != "4.0.0":
     fail("XMLHTTPREQUEST_SSL_OVERRIDE_UNEXPECTED", actual=overrides.get("xmlhttprequest-ssl"), expected="4.0.0")
 if "ws" in overrides:
@@ -37,8 +37,8 @@ else:
         if package.get(field, {}) != root.get(field, {}):
             fail("PACKAGE_LOCK_ROOT_FIELD_DRIFT", field=field)
     xmldom = packages.get("node_modules/xmldom")
-    if xmldom and xmldom.get("version") != "0.9.10":
-        fail("XMLDOM_LOCK_VERSION_UNEXPECTED", actual=xmldom.get("version"), expected="absent_or_0.9.10")
+    if xmldom and xmldom.get("version") != "0.9.12":
+        fail("XMLDOM_LOCK_VERSION_UNEXPECTED", actual=xmldom.get("version"), expected="absent_or_0.9.12")
     if xmldom and xmldom.get("name") not in (None, "@xmldom/xmldom"):
         fail("XMLDOM_LOCK_NAME_UNEXPECTED", actual=xmldom.get("name"), expected="@xmldom/xmldom")
     xhr = packages.get("node_modules/xmlhttprequest-ssl")

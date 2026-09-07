@@ -8,6 +8,7 @@ import { debouncedObserver } from 'ui/utils/debounce';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { flattenLabelArrays } from 'ui/mixins/manage-labels';
+import { hardwareIssues, hardwareHost, read } from 'ui/utils/hardware-options';
 
 export default Component.extend(NewOrEdit, SelectTab, {
   intl                      : service(),
@@ -44,6 +45,8 @@ export default Component.extend(NewOrEdit, SelectTab, {
   healthCheckErrors         : null,
   schedulingErrors          : null,
   securityErrors            : null,
+  resourceErrors            : null,
+  resourcePreflightState    : null,
   scaleErrors               : null,
   imageErrors               : null,
   portErrors                : null,
@@ -145,6 +148,10 @@ export default Component.extend(NewOrEdit, SelectTab, {
       this.set('volumePreflightState', state || {status: 'idle', pending: false, blocked: false});
       this.publishPreflightState();
     },
+    resourcePreflightChanged(state) {
+      this.set('resourcePreflightState', state);
+      this.publishPreflightState();
+    },
 
     sidekickPortPreflightChanged(key, state) {
       let current = Object.assign({}, this.get('sidekickPortPreflightStates') || {});
@@ -177,10 +184,11 @@ export default Component.extend(NewOrEdit, SelectTab, {
   publishPreflightState() {
     let port = this.get('portPreflightState') || {};
     let volume = this.get('volumePreflightState') || {};
+    let hardware = this.get('resourcePreflightState') || {};
     let statuses = [port.status, volume.status];
     let status = 'idle';
 
-    if ( port.blocked || volume.blocked || statuses.indexOf('blocked') >= 0 ) {
+    if ( hardware.blocked || port.blocked || volume.blocked || statuses.indexOf('blocked') >= 0 ) {
       status = 'blocked';
     } else if ( port.pending || volume.pending || statuses.indexOf('checking') >= 0 ) {
       status = 'checking';
@@ -193,7 +201,7 @@ export default Component.extend(NewOrEdit, SelectTab, {
     let state = {
       status,
       pending: !!port.pending || !!volume.pending,
-      blocked: !!port.blocked || !!volume.blocked,
+      blocked: !!port.blocked || !!volume.blocked || !!hardware.blocked,
     };
 
     this.invokePassedAction('preflightChanged', state);
@@ -338,10 +346,12 @@ export default Component.extend(NewOrEdit, SelectTab, {
     'noLaunchConfigsEnabled',
     'portPreflightState.{pending,blocked}',
     'volumePreflightState.{pending,blocked}',
+    'resourcePreflightState.blocked',
     'hasSidekickPortPreflightPending',
     'hasSidekickPortPreflightBlocked',
     function() {
       return this.get('noLaunchConfigsEnabled') ||
+        !!this.get('resourcePreflightState.blocked') ||
         !!this.get('portPreflightState.pending') ||
         !!this.get('portPreflightState.blocked') ||
         !!this.get('volumePreflightState.pending') ||
@@ -470,6 +480,14 @@ export default Component.extend(NewOrEdit, SelectTab, {
     errors.pushObjects(this.get('healthCheckErrors')||[]);
     errors.pushObjects(this.get('schedulingErrors')||[]);
     errors.pushObjects(this.get('securityErrors')||[]);
+    errors.pushObjects(this.get('resourceErrors')||[]);
+    // Re-evaluate hardware freshness at Save, including hidden sidekick forms.
+    let primaryConfig = this.get('service.launchConfig') || this.get('launchConfig');
+    let configs = [primaryConfig, ...(this.get('service.secondaryLaunchConfigs') || [])].filter(Boolean);
+    configs.forEach((config) => {
+      let host = hardwareHost(config, this.get('allHosts'), read(primaryConfig, 'requestedHostId'));
+      hardwareIssues(config, host).forEach((key) => errors.push(this.get('intl').t(key === 'deviceGroup' ? 'formResources.deviceGroupHelp' : `formResources.errors.${key}`)));
+    });
     errors.pushObjects(this.get('scaleErrors')||[]);
     errors.pushObjects(this.get('imageErrors')||[]);
     errors.pushObjects(this.get('portErrors')||[]);

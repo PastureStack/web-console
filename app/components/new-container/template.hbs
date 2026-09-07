@@ -66,6 +66,7 @@
     {{/if}}
 
     {{form-ports
+      showIp=true
       initialPorts=this.launchConfig.ports
       errors=this.portErrors
       changedStr=(action 'setPorts')
@@ -101,6 +102,7 @@
 </a></li>
         <li role="tab" aria-controls="panel" class="tab" data-section="network" {{action "selectTab" "network"}}><a href="#">{{t 'newContainer.tabs.networking'}}</a></li>
         <li role="tab" aria-controls="panel" class="tab" data-section="security" {{action "selectTab" "security"}}><a href="#">{{t 'newContainer.tabs.security'}}</a></li>
+        <li role="tab" aria-controls="panel" class="tab" data-section="resources" {{action "selectTab" "resources"}}><a href="#">{{t 'formResources.title'}}</a></li>
       {{/if}}
 
       {{#if this.supportsSecrets}}
@@ -175,7 +177,10 @@
       </div>
 
       <div class="section" data-section="security">
-        {{form-security instance=this.launchConfig errors=this.securityErrors editing=true}}
+        {{form-security instance=this.launchConfig errors=this.securityErrors editing=true securityOnly=true}}
+      </div>
+      <div class="section" data-section="resources">
+        {{form-resources instance=this.launchConfig allHosts=this.allHosts primaryRequestedHostId=(if this.isSidekick this.service.launchConfig.requestedHostId) editing=true errors=this.resourceErrors setRequestedHost=(action 'setRequestedHostId') preflightChanged=(action 'resourcePreflightChanged')}}
       </div>
     {{/if}}
 

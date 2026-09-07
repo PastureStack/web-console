@@ -87,6 +87,7 @@
 {{/if}}
 
 {{#if this.isService}}
+  <p class="help-block">{{t 'formResources.serviceRestart'}}</p>
   <div class="row {{unless this.editing 'form-group'}}">
     <div class="col-sm-12 col-md-2 form-label">
       <label>{{t 'formCommand.autoRestart.label'}}</label>
@@ -145,6 +146,9 @@
         <div class="radio small">
           <label>{{radio-button selection=this.restart value="always"}} {{t 'formCommand.autoRestart.always'}}</label>
         </div>
+        <div class="radio small">
+          <label>{{radio-button selection=this.restart value="unless-stopped"}} {{t 'formResources.unlessStopped'}}</label>
+        </div>
       </div>
       <div class="col-xs-12 col-sm-6 col-md-4">
         <div class="radio small">
@@ -195,4 +199,3 @@
     }}
   </div>
 </div>
-
