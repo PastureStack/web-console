@@ -4219,8 +4219,8 @@ formResources:
   cpu: "CPU 上限（核心數）"
   soft: "軟限制"
   hard: "硬限制"
-  serviceRestart: "服務會維持指定副本數。執行一次的工作與 Docker 重啟策略不同；手動停止服務容器可能觸發重建。"
-  unlessStopped: "除非手動停止，否則自動重啟"
+  serviceRestart: "服務會維持指定副本數。執行一次的工作與 Docker 重新啟動策略不同；手動停止服務容器可能觸發重建。"
+  unlessStopped: "除非手動停止，否則自動重新啟動"
   errors:
     shm: "共享記憶體須為安全整數範圍內的正數。"
     ipcConflict: "共享記憶體只能搭配 private 或 shareable IPC，不能搭配 host／none／其他容器的 IPC。"
