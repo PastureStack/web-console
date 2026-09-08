@@ -3898,6 +3898,7 @@ formResources:
   runtime: "컨테이너 런타임"
   groups: "추가 그룹 (쉼표로 구분한 이름 또는 GID)"
   advanced: "고급 설정"
+  addUlimit: "제한 추가"
   pids: "프로세스 제한 (-1: 무제한)"
   init: "init 프로세스 사용"
   cpuQuota: "CPU 할당량 (µs)"

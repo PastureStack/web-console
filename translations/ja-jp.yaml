@@ -3989,6 +3989,7 @@ formResources:
   runtime: "コンテナーランタイム"
   groups: "補助グループ（名前または GID、カンマ区切り）"
   advanced: "詳細設定"
+  addUlimit: "制限を追加"
   pids: "プロセス上限（-1：無制限）"
   init: "init プロセスを使用"
   cpuQuota: "CPU 割り当て時間（µs）"

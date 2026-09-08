@@ -4102,6 +4102,7 @@ formResources:
   runtime: "Container-Laufzeit"
   groups: "Zusätzliche Gruppen (Namen oder GIDs, kommagetrennt)"
   advanced: "Erweiterte Einstellungen"
+  addUlimit: "Limit hinzufügen"
   pids: "Prozesslimit (-1: unbegrenzt)"
   init: "Init-Prozess verwenden"
   cpuQuota: "CPU-Kontingent (µs)"

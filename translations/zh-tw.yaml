@@ -4212,6 +4212,7 @@ formResources:
   runtime: "容器執行環境（runtime）"
   groups: "補充群組（名稱或 GID，以逗號分隔）"
   advanced: "進階設定"
+  addUlimit: "新增限制"
   pids: "處理程序上限（-1：不限）"
   init: "使用 init 程序"
   cpuQuota: "CPU 配額（µs）"

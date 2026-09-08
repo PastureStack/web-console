@@ -4048,6 +4048,7 @@ formResources:
   runtime: "Runtime ng container"
   groups: "Mga karagdagang grupo (pangalan o GID, pinaghihiwalay ng kuwit)"
   advanced: "Mga advanced na setting"
+  addUlimit: "Magdagdag ng limitasyon"
   pids: "Limitasyon ng proseso (-1: walang limitasyon)"
   init: "Gumamit ng init process"
   cpuQuota: "Takdang oras ng CPU (µs)"

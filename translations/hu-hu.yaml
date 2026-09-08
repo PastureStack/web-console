@@ -4065,6 +4065,7 @@ formResources:
   runtime: "Konténer-futtatókörnyezet"
   groups: "Kiegészítő csoportok (nevek vagy GID-k, vesszővel elválasztva)"
   advanced: "Speciális beállítások"
+  addUlimit: "Korlát hozzáadása"
   pids: "Folyamatkorlát (-1: korlátlan)"
   init: "Init folyamat használata"
   cpuQuota: "CPU-kvóta (µs)"

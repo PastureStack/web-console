@@ -4046,6 +4046,7 @@ formResources:
   runtime: "Moteur d’exécution du conteneur"
   groups: "Groupes supplémentaires (noms ou GID séparés par des virgules)"
   advanced: "Paramètres avancés"
+  addUlimit: "Ajouter une limite"
   pids: "Limite de processus (-1 : illimitée)"
   init: "Utiliser un processus init"
   cpuQuota: "Quota CPU (µs)"
