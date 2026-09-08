@@ -60,6 +60,22 @@ module('Integration | Component | hardware resources', function(hooks) {
     assert.strictEqual(this.instance.get('ipcMode'), undefined);
   });
 
+  test('resource controls are grouped and the shared-memory value and unit stay together', async function(assert) {
+    await render(precompileTemplate('{{form-resources instance=this.instance allHosts=this.hosts}}'));
+    assert.deepEqual(findAll('.form-resources [data-resource-section]').map((element) => element.dataset.resourceSection),
+      ['essentials', 'hardware', 'limits', 'advanced'], 'only the four purposeful sections are rendered');
+    let control = find('.resource-size-control');
+    let input = control.querySelector('input');
+    let unit = control.querySelector('select');
+    assert.strictEqual(input.nextElementSibling.tagName, 'DATALIST', 'capacity suggestions stay bound next to the input');
+    assert.strictEqual(unit.parentElement, control, 'capacity unit stays in the same control');
+    assert.equal(getComputedStyle(control).display, 'flex', 'capacity and unit use one horizontal control');
+    assert.equal(Math.round(input.getBoundingClientRect().top), Math.round(unit.getBoundingClientRect().top), 'capacity and unit align vertically');
+    assert.ok(unit.getBoundingClientRect().width < input.getBoundingClientRect().width, 'the unit is compact and the value gets useful space');
+    assert.ok(find('.resource-field-host select[id$="-host"]'), 'host inventory is prominent in the hardware section');
+    assert.ok(find('.resource-advanced-toggle[aria-expanded="false"]'), 'rare settings remain discoverable without overwhelming the common path');
+  });
+
   test('switching primary and sidekick resets drafts and advanced maps without rewriting either config', async function(assert) {
     this.instance.set('tmpfs', {'/first': 'size=64m'});
     let first = this.instance;
