@@ -59,19 +59,23 @@ $well-bg: #f5f5f5 !default;
     }
   }
 
-  .resource-field-host,
   .resource-field-wide,
   .resource-device-list {
     grid-column: 1 / -1;
   }
 
   .resource-field-host {
-    border-bottom: 1px solid $table-border-color;
-    padding-bottom: 16px;
+    grid-column: span 4;
+  }
 
-    .form-control {
-      max-width: 520px;
-    }
+  .resource-hardware-empty {
+    align-self: end;
+    background: $well-bg;
+    border-left: 3px solid $brand-primary;
+    grid-column: span 8;
+    margin: 0;
+    min-height: 43px;
+    padding: 11px 14px;
   }
 
   .resource-size-control {
@@ -179,6 +183,10 @@ $well-bg: #f5f5f5 !default;
     .resource-device-list {
       grid-column: 1 / -1;
     }
+
+    .resource-hardware-empty {
+      grid-column: 1 / -1;
+    }
   }
 
   @media (max-width: 767px) {
@@ -195,6 +203,10 @@ $well-bg: #f5f5f5 !default;
     }
 
     .resource-field {
+      grid-column: 1 / -1;
+    }
+
+    .resource-hardware-empty {
       grid-column: 1 / -1;
     }
 

@@ -143,8 +143,10 @@ module('Integration | Component | hardware resources', function(hooks) {
   test('hardware choices follow real capabilities without silently changing existing requests', async function(assert) {
     this.preflight = (state) => { this.preflightState = state; };
     await render(precompileTemplate('{{form-resources instance=this.instance allHosts=this.hosts preflightChanged=this.preflight}}'));
-    assert.ok(find('select[id$="-gpu-mode"] option[value="all"]').disabled, 'GPU selection is unavailable until a host is chosen');
+    assert.notOk(find('select[id$="-gpu-mode"]'), 'host-specific controls stay out of the way until a host is chosen');
+    assert.ok(find('.resource-hardware-empty'), 'the form explains the single next step instead of showing disabled hardware controls');
     await select('select[id$="-host"]', 'test-host');
+    assert.notOk(find('.resource-hardware-empty'));
     assert.notOk(find('select[id$="-gpu-mode"] option[value="all"]').disabled);
     assert.strictEqual(this.instance.get('deviceRequests'), undefined, 'selecting a host does not allocate GPUs');
     await select('select[id$="-gpu-mode"]', 'count');

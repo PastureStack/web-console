@@ -61,7 +61,19 @@
       </select>
       {{#unless this.inventoryReady}}<p class="help-block" role="status">{{if this.selectedHost (t 'formResources.errors.inventoryUnavailable') (t 'formResources.errors.hostRequired')}}</p>{{/unless}}
       </div>
-    {{else}}<p>{{or this.selectedHost.displayName this.selectedHost.hostname this.selectedHost.name (t 'formResources.default')}}</p>{{/if}}
+    {{else}}<p class="resource-field resource-field-host">{{or this.selectedHost.displayName this.selectedHost.hostname this.selectedHost.name (t 'formResources.default')}}</p>{{/if}}
+    {{#if (or (not this.editing) this.selectedHost)}}
+    <div class="resource-field">
+      <label for="{{this.elementId}}-runtime">{{t 'formResources.runtime'}}</label>
+      {{#if this.editing}}
+        <select id="{{this.elementId}}-runtime" class="form-control" onchange={{action 'setField' 'runtime'}}>
+          <option value="" selected={{not this.instance.runtime}}>{{t 'formResources.default'}} {{this.hardware.defaultRuntime}}</option>
+          {{#each this.runtimeChoices as |runtime|}}
+            <option value={{runtime}} disabled={{not this.inventoryReady}} selected={{eq runtime this.instance.runtime}}>{{runtime}}</option>
+          {{/each}}
+        </select>
+      {{else}}<div>{{or this.instance.runtime (t 'formResources.default')}}</div>{{/if}}
+    </div>
     {{#if this.editing}}
       {{#if this.customRequests}}
         <div class="resource-field resource-field-wide">
@@ -91,6 +103,7 @@
         <p class="resource-field">{{t 'formResources.gpu'}} · {{#if (eq this.gpuMode 'all')}}{{t 'formResources.all'}}{{else if (eq this.gpuMode 'count')}}{{t 'formResources.count'}}: {{this.gpuCount}}{{else}}{{t 'formResources.selected'}}{{/if}}</p>
       {{/if}}
     {{/unless}}
+    {{#if this.gpuChoices.length}}
     <div class="resource-device-list">
       <div class="row">
       {{#each this.gpuChoices as |device|}}
@@ -103,28 +116,13 @@
             </label>
           </div>
         {{/if}}
-      {{else}}
-        <p class="col-md-12 text-muted">{{t 'formResources.noDevices'}}</p>
       {{/each}}
       </div>
     </div>
-    <div class="resource-field">
-      <label for="{{this.elementId}}-runtime">{{t 'formResources.runtime'}}</label>
-      {{#if this.editing}}
-        <select id="{{this.elementId}}-runtime" class="form-control" onchange={{action 'setField' 'runtime'}}>
-          <option value="" selected={{not this.instance.runtime}}>{{t 'formResources.default'}} {{this.hardware.defaultRuntime}}</option>
-          {{#each this.runtimeChoices as |runtime|}}
-            <option value={{runtime}} disabled={{not this.inventoryReady}} selected={{eq runtime this.instance.runtime}}>{{runtime}}</option>
-          {{/each}}
-        </select>
-      {{else}}<div>{{or this.instance.runtime (t 'formResources.default')}}</div>{{/if}}
-    </div>
-    <div class="resource-field">
-      <label for="{{this.elementId}}-groups">{{t 'formResources.groups'}}</label>
-      {{#if this.editing}}
-        <input id="{{this.elementId}}-groups" class="form-control" value={{this.groupText}} oninput={{action 'setGroups' value='target.value'}} placeholder="44, 993">
-      {{else}}<div>{{or this.groupText (t 'generic.none')}}</div>{{/if}}
-    </div>
+    {{/if}}
+    {{else}}
+      <p class="resource-hardware-empty" role="status">{{t 'formResources.errors.hostRequired'}}</p>
+    {{/if}}
     </div>
   </fieldset>
 
@@ -136,6 +134,14 @@
   <button type="button" class="btn btn-default resource-advanced-toggle" aria-expanded={{if this.advanced 'true' 'false'}} {{action 'toggleAdvanced'}}>{{t 'formResources.advanced'}}</button>
   {{#if this.advanced}}
     <div class="resource-advanced-content">
+    <div class="row form-group">
+      <div class="col-md-6">
+        <label for="{{this.elementId}}-groups">{{t 'formResources.groups'}}</label>
+        {{#if this.editing}}
+          <input id="{{this.elementId}}-groups" class="form-control" value={{this.groupText}} oninput={{action 'setGroups' value='target.value'}} placeholder="44, 993">
+        {{else}}<div>{{or this.groupText (t 'generic.none')}}</div>{{/if}}
+      </div>
+    </div>
     <div class="row form-group">
       <div class="col-md-6">
         <label>{{t 'formResources.pids'}}</label>
