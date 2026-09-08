@@ -429,6 +429,55 @@ async function assertI18nHealth(page, route, warningStartIndex, i18nWarnings) {
   console.log(`i18n-smoke-ok route=${route} warnings=0 keyLeaks=0`);
 }
 
+async function assertFooterMenuAnchoring(page) {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(100);
+
+  const menus = [
+    { name: "cli", wrapper: ".compose-download" },
+    { name: "language", wrapper: ".language-dropdown" },
+  ];
+
+  for (const item of menus) {
+    const trigger = page.locator(`${item.wrapper} > [data-bs-toggle="dropdown"]`);
+    const menu = page.locator(`${item.wrapper} > .dropdown-menu`);
+    if (await trigger.count() !== 1 || await menu.count() !== 1) {
+      throw new Error(`footer ${item.name} dropdown trigger or menu is missing`);
+    }
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await trigger.click();
+      await menu.waitFor({ state: "visible", timeout: 5000 });
+      const geometry = await page.evaluate(({ wrapper }) => {
+        const triggerElement = document.querySelector(`${wrapper} > [data-bs-toggle="dropdown"]`);
+        const menuElement = document.querySelector(`${wrapper} > .dropdown-menu`);
+        const triggerRect = triggerElement.getBoundingClientRect();
+        const menuRect = menuElement.getBoundingClientRect();
+        return {
+          trigger: { top: triggerRect.top, right: triggerRect.right },
+          menu: { top: menuRect.top, right: menuRect.right, bottom: menuRect.bottom, left: menuRect.left },
+          viewportWidth: document.documentElement.clientWidth,
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      }, { wrapper: item.wrapper });
+
+      if (geometry.menu.left < 0 || geometry.menu.right > geometry.viewportWidth + 1 ||
+          Math.abs(geometry.menu.right - geometry.trigger.right) > 2 ||
+          geometry.menu.bottom > geometry.trigger.top || geometry.overflow > 1) {
+        throw new Error(`footer ${item.name} dropdown lost its trigger anchor: ${JSON.stringify(geometry)}`);
+      }
+      await trigger.click();
+      await menu.waitFor({ state: "hidden", timeout: 5000 });
+      await page.evaluate(() => {
+        window.scrollBy(0, -20);
+        window.scrollBy(0, 20);
+      });
+    }
+  }
+
+  console.log("footer-dropdown-smoke-ok menus=cli,language attempts=2 anchor=right direction=up");
+}
+
 function assertNoLoadingErrors(route, startIndex, loadingErrors) {
   const newErrors = loadingErrors.slice(startIndex);
 
@@ -559,6 +608,10 @@ async function assertTemplateActionBridge(page, hostId) {
 }
 
 async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
+  if (/\/env\/[^/]+\/apps\/stacks(?:[/?#]|$)/.test(route)) {
+    await assertFooterMenuAnchoring(page);
+  }
+
   if (/\/admin\/accounts(?:[/?#]|$)/.test(route)) {
     await page.locator(".accounts-manage-my-mfa").waitFor({
       state: "visible",

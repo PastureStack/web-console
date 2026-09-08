@@ -4436,6 +4436,7 @@ formResources:
   runtime: "Container runtime"
   groups: "Supplementary groups (comma-separated names or GIDs)"
   advanced: "Advanced settings"
+  addUlimit: "Add limit"
   pids: "Process limit (-1: unlimited)"
   init: "Use an init process"
   cpuQuota: "CPU quota (µs)"

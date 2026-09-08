@@ -9,7 +9,7 @@ export default Component.extend({
   login        : false,
 
   tagName      : 'div',
-  classNames   : ['dropdown', 'language-dropdown', 'inline-block'],
+  classNames   : ['dropdown', 'footer-dropdown', 'language-dropdown', 'inline-block'],
   classNameBindings: ['hideSingle:hide'],
 
   language     : service('user-language'),

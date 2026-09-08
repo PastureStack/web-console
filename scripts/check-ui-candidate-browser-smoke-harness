@@ -122,6 +122,8 @@ if js_path.is_file():
         "i18n-smoke-ok",
         "assertClassicLayoutContract",
         "classic-layout-smoke-ok",
+        "assertFooterMenuAnchoring",
+        "footer-dropdown-smoke-ok",
         "v1.6.358 navigation contract",
         "horizontal layout overflow",
         "loadingErrors",

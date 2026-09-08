@@ -4053,6 +4053,7 @@ formResources:
   runtime: "Runtime do contêiner"
   groups: "Grupos suplementares (nomes ou GIDs separados por vírgulas)"
   advanced: "Configurações avançadas"
+  addUlimit: "Adicionar limite"
   pids: "Limite de processos (-1: ilimitado)"
   init: "Usar processo init"
   cpuQuota: "Cota de CPU (µs)"

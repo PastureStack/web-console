@@ -21,7 +21,9 @@ footer {
 
   }
 
-  .language-dropdown {
+  // Footer menus are rendered beside their triggers.  Keep both download and
+  // language overlays anchored to that local wrapper instead of the page.
+  .footer-dropdown {
     position: relative;
 
     .dropdown-menu,

@@ -59,7 +59,11 @@
           <option value={{host.id}} disabled={{host.inactive}} selected={{eq host.id this.instance.requestedHostId}}>{{host.name}}{{#if host.inactive}} · {{t 'formResources.errors.hostInactive'}}{{/if}}</option>
         {{/each}}
       </select>
-      {{#unless this.inventoryReady}}<p class="help-block" role="status">{{if this.selectedHost (t 'formResources.errors.inventoryUnavailable') (t 'formResources.errors.hostRequired')}}</p>{{/unless}}
+      {{#unless this.selectedHost}}
+        <p class="help-block resource-host-guidance" role="status">{{t 'formResources.errors.hostRequired'}}</p>
+      {{else unless this.inventoryReady}}
+        <p class="help-block resource-host-guidance" role="status">{{t 'formResources.errors.inventoryUnavailable'}}</p>
+      {{/unless}}
       </div>
     {{else}}<p class="resource-field resource-field-host">{{or this.selectedHost.displayName this.selectedHost.hostname this.selectedHost.name (t 'formResources.default')}}</p>{{/if}}
     {{#if (or (not this.editing) this.selectedHost)}}
@@ -120,8 +124,6 @@
       </div>
     </div>
     {{/if}}
-    {{else}}
-      <p class="resource-hardware-empty" role="status">{{t 'formResources.errors.hostRequired'}}</p>
     {{/if}}
     </div>
   </fieldset>
@@ -133,63 +135,67 @@
   <section class="resource-panel resource-advanced" data-resource-section="advanced">
   <button type="button" class="btn btn-default resource-advanced-toggle" aria-expanded={{if this.advanced 'true' 'false'}} {{action 'toggleAdvanced'}}>{{t 'formResources.advanced'}}</button>
   {{#if this.advanced}}
-    <div class="resource-advanced-content">
-    <div class="row form-group">
-      <div class="col-md-6">
+    <div class="resource-advanced-content resource-advanced-grid">
+      <div class="resource-field resource-advanced-field">
         <label for="{{this.elementId}}-groups">{{t 'formResources.groups'}}</label>
         {{#if this.editing}}
           <input id="{{this.elementId}}-groups" class="form-control" value={{this.groupText}} oninput={{action 'setGroups' value='target.value'}} placeholder="44, 993">
         {{else}}<div>{{or this.groupText (t 'generic.none')}}</div>{{/if}}
       </div>
-    </div>
-    <div class="row form-group">
-      <div class="col-md-6">
+      <div class="resource-field resource-advanced-field">
         <label>{{t 'formResources.pids'}}</label>
         {{#input-or-display editable=this.editing value=this.instance.pidsLimit}}
           <input class="form-control" type="number" min="-1" step="1" data-hardware="pids" value={{this.instance.pidsLimit}} oninput={{action 'setInteger' this.instance 'pidsLimit'}}>
         {{/input-or-display}}
       </div>
-      <div class="col-md-6">
+      <div class="resource-field resource-advanced-field">
         <label>{{t 'formResources.init'}}</label>
         {{#input-or-display editable=this.editing value=this.instance.runInit}}
           <label class="checkbox">{{input type='checkbox' checked=this.instance.runInit}} {{t 'formResources.init'}}</label>
         {{/input-or-display}}
       </div>
-    </div>
-    <div class="row form-group">
-      <div class="col-md-6">
+      <div class="resource-field resource-advanced-field">
         <label>{{t 'formResources.cpuQuota'}}</label>
         {{#input-or-display editable=this.editing value=this.instance.cpuQuota}}
           <input class="form-control" type="number" min="-1" step="1" data-hardware="quota" value={{this.instance.cpuQuota}} oninput={{action 'setInteger' this.instance 'cpuQuota'}}>
         {{/input-or-display}}
       </div>
-      <div class="col-md-6">
+      <div class="resource-field resource-advanced-field">
         <label>{{t 'formResources.cpuPeriod'}}</label>
         {{#input-or-display editable=this.editing value=this.instance.cpuPeriod}}
           <input class="form-control" type="number" min="1000" step="1" data-hardware="period" value={{this.instance.cpuPeriod}} oninput={{action 'setInteger' this.instance 'cpuPeriod'}}>
         {{/input-or-display}}
       </div>
-    </div>
-    <h4>tmpfs</h4>
-    <div data-hardware="tmpfs">{{form-key-value initialMap=this.instance.tmpfs initialRows=this.draft.tmpfsRows rowsChanged=(action 'mapRows' 'tmpfs') changed=(action 'setMap' 'tmpfs') editing=this.editing allowEmptyValue=true allowMultilineValue=false keySuggestions=(array '/tmp' '/run' '/var/tmp') valueSuggestions=(array 'rw,noexec,nosuid,size=64m' 'rw,noexec,nosuid,size=256m') validityChanged=(action 'mapValidity' 'tmpfs')}}</div>
-    <h4>sysctls</h4>
-    <div data-hardware="sysctls">{{form-key-value initialMap=this.instance.sysctls initialRows=this.draft.sysctlsRows rowsChanged=(action 'mapRows' 'sysctls') changed=(action 'setMap' 'sysctls') editing=this.editing allowMultilineValue=false keySuggestions=(array 'net.core.somaxconn' 'net.ipv4.ip_local_port_range' 'net.ipv4.tcp_keepalive_time') validityChanged=(action 'mapValidity' 'sysctls')}}</div>
-    <h4>ulimits</h4>
-    {{#if this.editing}}<button type="button" class="btn btn-default" data-hardware="add-ulimit" disabled={{not this.availableUlimitNames.length}} {{action 'addUlimit'}}>{{t 'generic.add'}}</button>{{/if}}
-    <table class="table fixed no-lines">
-      <thead><tr><th>{{t 'generic.name'}}</th><th>{{t 'formResources.soft'}}</th><th>{{t 'formResources.hard'}}</th><th></th></tr></thead>
-      <tbody>
-        {{#each this.instance.ulimits as |limit|}}
-          <tr>
-            <td>{{#input-or-display editable=this.editing value=limit.name}}{{input class='form-control' value=limit.name list=(concat this.elementId '-ulimit-suggestions')}}{{/input-or-display}}</td>
-            <td>{{#input-or-display editable=this.editing value=limit.soft}}<input class="form-control" type="number" min="-1" step="1" data-hardware="soft" value={{limit.soft}} oninput={{action 'setInteger' limit 'soft'}}>{{/input-or-display}}</td>
-            <td>{{#input-or-display editable=this.editing value=limit.hard}}<input class="form-control" type="number" min="-1" step="1" data-hardware="hard" value={{limit.hard}} oninput={{action 'setInteger' limit 'hard'}}>{{/input-or-display}}</td>
-            <td>{{#if this.editing}}<button type="button" class="btn btn-default" {{action 'removeUlimit' limit}}>{{t 'generic.remove'}}</button>{{/if}}</td>
-          </tr>
-        {{/each}}
-      </tbody>
-    </table>
-    {{#if this.editing}}<datalist id="{{this.elementId}}-ulimit-suggestions">{{#each this.ulimitNames as |name|}}<option value={{name}}></option>{{/each}}</datalist>{{/if}}
+      <section class="resource-advanced-group" data-resource-advanced-group="tmpfs">
+        <h4>tmpfs</h4>
+        <div data-hardware="tmpfs">{{form-key-value initialMap=this.instance.tmpfs initialRows=this.draft.tmpfsRows rowsChanged=(action 'mapRows' 'tmpfs') changed=(action 'setMap' 'tmpfs') editing=this.editing allowEmptyValue=true allowMultilineValue=false keySuggestions=(array '/tmp' '/run' '/var/tmp') valueSuggestions=(array 'rw,noexec,nosuid,size=64m' 'rw,noexec,nosuid,size=256m') validityChanged=(action 'mapValidity' 'tmpfs')}}</div>
+      </section>
+      <section class="resource-advanced-group" data-resource-advanced-group="sysctls">
+        <h4>sysctls</h4>
+        <div data-hardware="sysctls">{{form-key-value initialMap=this.instance.sysctls initialRows=this.draft.sysctlsRows rowsChanged=(action 'mapRows' 'sysctls') changed=(action 'setMap' 'sysctls') editing=this.editing allowMultilineValue=false keySuggestions=(array 'net.core.somaxconn' 'net.ipv4.ip_local_port_range' 'net.ipv4.tcp_keepalive_time') validityChanged=(action 'mapValidity' 'sysctls')}}</div>
+      </section>
+      <section class="resource-advanced-group resource-advanced-group-wide" data-resource-advanced-group="ulimits">
+        <div class="resource-advanced-group-heading">
+          <h4>ulimits</h4>
+          {{#if this.editing}}<button type="button" class="btn-circle-text" data-hardware="add-ulimit" disabled={{not this.availableUlimitNames.length}} {{action 'addUlimit'}}><i class="icon icon-plus-circle"></i> <span>{{t 'formResources.addUlimit'}}</span></button>{{/if}}
+        </div>
+        <div class="resource-advanced-table">
+          <table class="table fixed no-lines">
+            <thead><tr><th>{{t 'generic.name'}}</th><th>{{t 'formResources.soft'}}</th><th>{{t 'formResources.hard'}}</th><th></th></tr></thead>
+            <tbody>
+              {{#each this.instance.ulimits as |limit|}}
+                <tr>
+                  <td>{{#input-or-display editable=this.editing value=limit.name}}{{input class='form-control' value=limit.name list=(concat this.elementId '-ulimit-suggestions')}}{{/input-or-display}}</td>
+                  <td>{{#input-or-display editable=this.editing value=limit.soft}}<input class="form-control" type="number" min="-1" step="1" data-hardware="soft" value={{limit.soft}} oninput={{action 'setInteger' limit 'soft'}}>{{/input-or-display}}</td>
+                  <td>{{#input-or-display editable=this.editing value=limit.hard}}<input class="form-control" type="number" min="-1" step="1" data-hardware="hard" value={{limit.hard}} oninput={{action 'setInteger' limit 'hard'}}>{{/input-or-display}}</td>
+                  <td>{{#if this.editing}}<button type="button" class="btn btn-default" {{action 'removeUlimit' limit}}>{{t 'generic.remove'}}</button>{{/if}}</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+        {{#if this.editing}}<datalist id="{{this.elementId}}-ulimit-suggestions">{{#each this.ulimitNames as |name|}}<option value={{name}}></option>{{/each}}</datalist>{{/if}}
+      </section>
     </div>
   {{/if}}
   </section>

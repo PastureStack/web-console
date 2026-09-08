@@ -3941,6 +3941,7 @@ formResources:
   runtime: "容器运行时（runtime）"
   groups: "附加组（名称或 GID，以逗号分隔）"
   advanced: "高级设置"
+  addUlimit: "添加限制"
   pids: "进程上限（-1：不限）"
   init: "使用 init 进程"
   cpuQuota: "CPU 配额（µs）"

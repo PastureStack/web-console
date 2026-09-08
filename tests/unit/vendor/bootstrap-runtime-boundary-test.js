@@ -71,27 +71,29 @@ test('the Bootstrap 5 dropdown state keeps the established menu presentation', f
   dropdown.dispose();
 });
 
-test('the footer language menu stays above its trigger and inside the viewport', function(assert) {
+test('footer menus stay above their own trigger and inside the viewport', function(assert) {
   let fixture = document.getElementById('qunit-fixture');
 
   installBootstrapRuntime();
-  fixture.innerHTML = '<footer><div style="float:right"><div class="dropdown language-dropdown inline-block"><button type="button" class="lang-select" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">Deutsch</button><ul class="dropdown-menu dropdown-menu-end text-right" style="width:349px"><li><a href="#">Deutsch (Deutschland)</a></li></ul></div></div></footer>';
+  fixture.innerHTML = '<footer><div style="float:right"><div class="dropdown footer-dropdown compose-download inline-block"><button type="button" data-footer-trigger="cli" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">CLI</button><ul class="dropdown-menu dropdown-menu-end text-right" style="width:260px"><li><a href="#">Linux</a></li></ul></div></div><div style="float:right"><div class="dropdown footer-dropdown language-dropdown inline-block"><button type="button" data-footer-trigger="language" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">Deutsch</button><ul class="dropdown-menu dropdown-menu-end text-right" style="width:349px"><li><a href="#">Deutsch (Deutschland)</a></li></ul></div></div></footer>';
 
-  let trigger = fixture.querySelector('button');
-  let menu = fixture.querySelector('.dropdown-menu');
-  let dropdown = window.bootstrap.Dropdown.getOrCreateInstance(trigger);
+  ['cli', 'language'].forEach((kind) => {
+    let trigger = fixture.querySelector(`[data-footer-trigger="${kind}"]`);
+    let menu = trigger.nextElementSibling;
+    let dropdown = window.bootstrap.Dropdown.getOrCreateInstance(trigger);
 
-  dropdown.show();
+    dropdown.show();
 
-  let menuRect = menu.getBoundingClientRect();
-  let triggerRect = trigger.getBoundingClientRect();
+    let menuRect = menu.getBoundingClientRect();
+    let triggerRect = trigger.getBoundingClientRect();
 
-  assert.ok(menuRect.right <= window.innerWidth, 'the menu right edge does not overflow the viewport');
-  assert.ok(Math.abs(menuRect.right - triggerRect.right) < 2, 'the menu is anchored to the trigger right edge');
-  assert.ok(menuRect.bottom <= triggerRect.top, 'the footer menu opens upward');
+    assert.ok(menuRect.right <= window.innerWidth, `${kind} menu right edge does not overflow the viewport`);
+    assert.ok(Math.abs(menuRect.right - triggerRect.right) < 2, `${kind} menu is anchored to its trigger right edge`);
+    assert.ok(menuRect.bottom <= triggerRect.top, `${kind} menu opens upward`);
 
-  dropdown.hide();
-  dropdown.dispose();
+    dropdown.hide();
+    dropdown.dispose();
+  });
 });
 
 test('security actions render a visible icon from the current icon font', function(assert) {

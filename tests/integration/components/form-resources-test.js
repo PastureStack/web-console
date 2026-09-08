@@ -144,9 +144,10 @@ module('Integration | Component | hardware resources', function(hooks) {
     this.preflight = (state) => { this.preflightState = state; };
     await render(precompileTemplate('{{form-resources instance=this.instance allHosts=this.hosts preflightChanged=this.preflight}}'));
     assert.notOk(find('select[id$="-gpu-mode"]'), 'host-specific controls stay out of the way until a host is chosen');
-    assert.ok(find('.resource-hardware-empty'), 'the form explains the single next step instead of showing disabled hardware controls');
+    assert.ok(find('.resource-field-host .resource-host-guidance'), 'the next step stays attached to the host control');
+    assert.equal(findAll('.resource-host-guidance').length, 1, 'host guidance is not duplicated elsewhere in the grid');
     await select('select[id$="-host"]', 'test-host');
-    assert.notOk(find('.resource-hardware-empty'));
+    assert.notOk(find('.resource-host-guidance'));
     assert.notOk(find('select[id$="-gpu-mode"] option[value="all"]').disabled);
     assert.strictEqual(this.instance.get('deviceRequests'), undefined, 'selecting a host does not allocate GPUs');
     await select('select[id$="-gpu-mode"]', 'count');
@@ -173,6 +174,9 @@ module('Integration | Component | hardware resources', function(hooks) {
     await fillIn(shm, '3g');
     assert.equal(this.instance.get('shmSize'), 3221225472, 'custom capacity remains supported');
     await click('.form-resources button[aria-expanded]');
+    assert.deepEqual(findAll('[data-resource-advanced-group]').map((element) => element.dataset.resourceAdvancedGroup),
+      ['tmpfs', 'sysctls', 'ulimits'], 'advanced collections share one bounded layout');
+    assert.notOk(find('.form-resources').textContent.includes('Missing translation'), 'advanced actions have a real localized label');
     await click('[data-hardware="sysctls"] button');
     assert.true(this.preflightState.blocked, 'new unfinished row is not silently omitted');
     let key = find('[data-hardware="sysctls"] input.key');
