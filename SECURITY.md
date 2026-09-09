@@ -2,9 +2,11 @@
 
 ## Supported state
 
-The `1.6.56-pasturestack.x` compatibility line is maintained for the matching
-PastureStack Server release. Authentication-provider combinations must still
-be validated by an administrator before activation.
+The maintained compatibility release is the pure numeric `1.6.102` line used
+by the current PastureStack Server release. Earlier branded coordinates are
+historical records and are not current release or deployment targets.
+Authentication-provider combinations must still be validated by an
+administrator before activation.
 
 ## Security boundaries
 
