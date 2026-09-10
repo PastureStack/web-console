@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.108`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.109`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,12 +16,21 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.108` fixes the remaining real-host first-create completion failure.
-The create component now invokes and awaits the template's closure callback
-directly instead of routing it through deprecated `sendAction` dispatch after
-the service has already been persisted. This prevents a successful create from
-leaving the form open with an `undefined.get` error and inviting a duplicate
-submission. The same callback path is used by create and upgrade completion.
+Release `1.6.109` corrects the create and upgrade completion contract exposed by
+real-host acceptance testing. Top-level create routes now pass classic named
+actions to the shared form so Ember dispatch preserves the controller receiver;
+the compatibility layer also refuses to forward a component prototype callback
+as an action name. This prevents a successfully persisted service from leaving
+the form open with `undefined.get` or a template-action error. A regression test
+exercises the controller transition, and the init-process control has additional
+desktop separation from the adjacent process-limit input without changing its
+payload binding.
+
+Release `1.6.108` attempted to close the first-create completion failure with a
+closure callback. Real-host acceptance testing subsequently showed that the
+legacy action compatibility path could still misroute the callback after the
+service was already persisted. It is retained as a superseded diagnostic step,
+not as the current compatibility target.
 
 Release `1.6.107` removed saved-response dereferences from route selection, but
 real-host acceptance testing showed that the deprecated callback dispatch still
