@@ -48,7 +48,8 @@ export default Component.extend(NewOrEdit, {
     return this._super.apply(this,arguments);
   },
 
-  doneSaving() {
-    this.send('done');
+  doneSaving(savedService) {
+    this.sendAction('done', savedService || this.get('service'));
+    return savedService;
   },
 });

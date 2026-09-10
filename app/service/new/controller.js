@@ -8,11 +8,17 @@ export default Controller.extend({
   upgrade: null,
 
   actions: {
-    done() {
+    done(savedService) {
       if ( this.get('upgrade') ) {
         this.send('goToPrevious','stacks');
       } else {
-        return this.get('router').transitionTo('stack', this.get('model.service.stackId'));
+        let model = this.get('model');
+        let modelService = model && (typeof model.get === 'function' ? model.get('service') : model.service);
+        let stackId = savedService && (typeof savedService.get === 'function' ? savedService.get('stackId') : savedService.stackId);
+
+        stackId = stackId || (modelService && (typeof modelService.get === 'function' ? modelService.get('stackId') : modelService.stackId)) || this.get('stackId');
+
+        return this.get('router').transitionTo('stack', stackId);
       }
     },
 

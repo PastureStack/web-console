@@ -19,7 +19,8 @@ export default Component.extend(NewOrEdit, NewServiceAlias, {
     this.$('INPUT')[0].focus();
   },
 
-  doneSaving() {
-    this.send('done');
+  doneSaving(savedService) {
+    this.sendAction('done', savedService || this.get('service'));
+    return savedService;
   },
 });

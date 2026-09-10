@@ -197,10 +197,13 @@ module('Integration | Component | hardware resources', function(hooks) {
     await click('[data-hardware="sysctls"] button');
     assert.true(this.preflightState.blocked, 'new unfinished row is not silently omitted');
     let key = find('[data-hardware="sysctls"] input.key');
+    let value = find('[data-hardware="sysctls"] input.value');
+    assert.equal(key.placeholder, this.english['formKeyValue.key.placeholder'], 'key placeholder is localized instead of exposing its message ID');
+    assert.equal(value.placeholder, this.english['formKeyValue.value.placeholder'], 'value placeholder is localized instead of exposing its message ID');
     assert.ok(Array.from(key.list.options).some((option) => option.value === 'net.core.somaxconn'));
     await fillIn(key, 'net.core.somaxconn');
     assert.true(this.preflightState.blocked, 'key without value remains invalid');
-    await fillIn('[data-hardware="sysctls"] input.value', '1024');
+    await fillIn(value, '1024');
     assert.false(this.preflightState.blocked);
     assert.deepEqual(this.instance.get('sysctls'), {'net.core.somaxconn': '1024'});
     await click('[data-hardware="sysctls"] button');

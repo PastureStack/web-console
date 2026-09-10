@@ -553,18 +553,22 @@ export default Component.extend(NewOrEdit, SelectTab, {
     }
   },
 
-  didSave() {
+  didSave(savedResource) {
     if ( this.get('isService') )
     {
-      // Returns a promise
-      return this.setServiceLinks();
+      // Keep the persisted resource in the save chain.  The setservicelinks
+      // action does not return it, so dropping it here makes first-create
+      // navigation depend on a model that may already have been replaced.
+      return this.setServiceLinks(savedResource).then(() => savedResource || this.get('service'));
     }
+
+    return savedResource;
   },
 
-  setServiceLinks() {
-    var service = this.get('service');
+  setServiceLinks(savedResource) {
+    var service = savedResource && typeof savedResource.doAction === 'function' ? savedResource : this.get('service');
     var ary = [];
-    this.get('serviceLinksArray').forEach((row) => {
+    (this.get('serviceLinksArray') || []).forEach((row) => {
       if ( row.serviceId ) {
         ary.push({name: row.name, serviceId: row.serviceId});
       } else if ( row.service ) {
@@ -575,8 +579,9 @@ export default Component.extend(NewOrEdit, SelectTab, {
     return service.doAction('setservicelinks', {serviceLinks: ary});
   },
 
-  doneSaving() {
-    this.sendAction('done');
+  doneSaving(savedResource) {
+    this.sendAction('done', savedResource || this.get('service'));
+    return savedResource;
   },
 
   headerLabel: function() {

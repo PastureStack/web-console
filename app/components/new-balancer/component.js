@@ -389,7 +389,8 @@ export default Component.extend(NewOrEdit, {
     }
   },
 
-  doneSaving() {
-    this.send('done');
+  doneSaving(savedService) {
+    this.sendAction('done', savedService || this.get('service'));
+    return savedService;
   },
 });
