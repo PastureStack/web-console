@@ -148,10 +148,10 @@
           <input class="form-control" type="number" min="-1" step="1" data-hardware="pids" value={{this.instance.pidsLimit}} oninput={{action 'setInteger' this.instance 'pidsLimit'}}>
         {{/input-or-display}}
       </div>
-      <div class="resource-field resource-advanced-field">
-        <label>{{t 'formResources.init'}}</label>
+      <div class="resource-field resource-advanced-field resource-init-field">
+        <label for="{{this.elementId}}-init">{{t 'formResources.init'}}</label>
         {{#input-or-display editable=this.editing value=this.instance.runInit}}
-          <label class="checkbox">{{input type='checkbox' checked=this.instance.runInit}} {{t 'formResources.init'}}</label>
+          <label class="resource-inline-checkbox" for="{{this.elementId}}-init"><input id="{{this.elementId}}-init" data-hardware="init" type="checkbox" checked={{this.instance.runInit}} onchange={{action 'setBoolean' 'runInit'}}> <span>{{t 'formResources.init'}}</span></label>
         {{/input-or-display}}
       </div>
       <div class="resource-field resource-advanced-field">
