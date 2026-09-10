@@ -23,12 +23,13 @@ test('first-create navigation uses the persisted service and has a safe query fa
   });
 
   controller.actions.done.call(controller, EmberObject.create({stackId: '1st-saved'}));
+  run(() => controller.set('model', EmberObject.create({stackId: '1st-model', service: EmberObject.create({})})));
   controller.actions.done.call(controller);
 
   assert.deepEqual(transitions, [
     {route: 'stack', stackId: '1st-saved'},
-    {route: 'stack', stackId: '1st-query'},
-  ], 'navigation never dereferences a missing route model after creation');
+    {route: 'stack', stackId: '1st-model'},
+  ], 'navigation uses the immutable route identity even if a response clears the service field');
 
   run(() => controller.destroy());
 });

@@ -13,10 +13,11 @@ export default Controller.extend({
         this.send('goToPrevious','stacks');
       } else {
         let model = this.get('model');
+        let modelStackId = model && (typeof model.get === 'function' ? model.get('stackId') : model.stackId);
         let modelService = model && (typeof model.get === 'function' ? model.get('service') : model.service);
         let stackId = savedService && (typeof savedService.get === 'function' ? savedService.get('stackId') : savedService.stackId);
 
-        stackId = stackId || (modelService && (typeof modelService.get === 'function' ? modelService.get('stackId') : modelService.stackId)) || this.get('stackId');
+        stackId = stackId || modelStackId || (modelService && (typeof modelService.get === 'function' ? modelService.get('stackId') : modelService.stackId)) || this.get('stackId');
 
         return this.get('router').transitionTo('stack', stackId);
       }

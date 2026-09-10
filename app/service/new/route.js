@@ -39,6 +39,7 @@ export default Route.extend({
       if ( params.upgrade )
       {
         return EmberObject.create({
+          stackId: params.stackId,
           service: serviceOrContainer.clone(),
           allHosts: allHosts,
           allStorageDrivers,
@@ -109,6 +110,7 @@ export default Route.extend({
       service.set('secondaryLaunchConfigs', secondaryLaunchConfigs);
 
       return EmberObject.create({
+        stackId: params.stackId,
         service: service,
         allHosts: allHosts,
         allStorageDrivers,
