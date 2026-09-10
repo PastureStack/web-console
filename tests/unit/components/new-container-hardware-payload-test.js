@@ -122,27 +122,28 @@ test('first service creation keeps the saved service through links and navigatio
   destroyOwned(component);
 });
 
-test('service link persistence cannot erase the saved stack route identity', async function(assert) {
+test('service link persistence keeps the saved service without reading response route fields', async function(assert) {
   let launchConfig = hardwareLaunchConfig();
   let service = EmberObject.create({
-    id: '1s-new',
-    stackId: '1st-new',
     launchConfig,
     secondaryLaunchConfigs: A(),
     save() { return Promise.resolve(this); },
+  });
+  let savedResource = {
+    get() {
+      throw new Error('completion must not read fields from the saved response');
+    },
     doAction(name) {
       assert.equal(name, 'setservicelinks');
-      this.set('stackId', undefined);
       return Promise.resolve();
     },
-  });
+  };
   let component = createComponent(service, launchConfig);
 
   run(() => component.set('serviceLinksArray', A([{serviceId: '1s-linked', name: 'db'}])));
-  let linked = await component.didSave(service);
+  let linked = await component.didSave(savedResource);
 
-  assert.strictEqual(linked, service, 'the persisted service stays in the completion chain');
-  assert.equal(service.get('stackId'), '1st-new', 'the stack route identity is restored after a partial action response');
+  assert.strictEqual(linked, savedResource, 'the persisted service stays in the completion chain');
   destroyOwned(component);
 });
 
