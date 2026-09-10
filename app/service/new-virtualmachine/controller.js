@@ -8,8 +8,10 @@ export default Controller.extend({
   upgrade: null,
 
   actions: {
-    done() {
-      return this.get('router').transitionTo('stack', this.get('model.service.stackId'));
+    done(savedService) {
+      let stackId = savedService && (typeof savedService.get === 'function' ? savedService.get('stackId') : savedService.stackId);
+
+      return this.get('router').transitionTo('stack', stackId || this.get('stackId'));
     },
 
     cancel() {

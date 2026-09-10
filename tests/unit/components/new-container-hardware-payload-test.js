@@ -87,6 +87,41 @@ test('service creation retains every resource and hardware launch field', async 
   destroyOwned(component);
 });
 
+test('first service creation keeps the saved service through links and navigation', async function(assert) {
+  let launchConfig = hardwareLaunchConfig();
+  let navigationResource;
+  let linkAction;
+  let service = EmberObject.create({
+    id: '1s-new',
+    stackId: '1st-new',
+    launchConfig,
+    secondaryLaunchConfigs: A(),
+    save() { return Promise.resolve(this); },
+    doAction(name, value) {
+      linkAction = {name, value};
+      return Promise.resolve();
+    },
+  });
+  let component = createComponent(service, launchConfig);
+
+  run(() => component.setProperties({
+    serviceLinksArray: A(),
+    done(resource) {
+      navigationResource = resource;
+    },
+  }));
+
+  let saved = await component.doSave();
+  let linked = await component.didSave(saved);
+
+  component.doneSaving(linked);
+
+  assert.deepEqual(linkAction, {name: 'setservicelinks', value: {serviceLinks: []}}, 'links are saved once');
+  assert.strictEqual(linked, service, 'link action does not discard the persisted service');
+  assert.strictEqual(navigationResource, service, 'navigation receives the persisted service');
+  destroyOwned(component);
+});
+
 test('service upgrade sends every resource and hardware field in the upgrade strategy', async function(assert) {
   let launchConfig = hardwareLaunchConfig();
   let action;
