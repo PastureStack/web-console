@@ -400,7 +400,8 @@ export default Controller.extend({
 
   localizedOidcError: function(err) {
     let key = LOCAL_RECOVERY_ERRORS[apiErrorCode(err)];
-    return key ? this.get('intl').t(key) : Errors.stringify(err);
+    return key ? this.get('intl').t(key) :
+      (Errors.stringify(err) || this.get('intl').t('loginOidc.error.generic'));
   },
 
   inspectVerifiedIdentity: function(identityProof) {
@@ -490,8 +491,8 @@ export default Controller.extend({
 
     model.setProperties({
       enabled: true,
-      accessMode: 'restricted',
-      allowedIdentities: [this.get('testedIdentity')],
+      accessMode: 'unrestricted',
+      allowedIdentities: [],
     });
 
     // The verified identity is linked first and a short-lived, one-use

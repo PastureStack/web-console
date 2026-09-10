@@ -66,7 +66,7 @@ if lock_bytes != baseline_bytes:
 lock = json.loads(lock_bytes)
 packages = lock.get("packages", {})
 root = packages.get("", {})
-if package.get("version") != "1.6.102":
+if package.get("version") != "1.6.103":
     fail(f"unexpected Web Console version: {package.get('version')}")
 if root.get("version") != package.get("version"):
     fail(f"lock root version differs: {root.get('version')}")
@@ -102,10 +102,13 @@ forbidden_names = {
 minimums = {
     "braces": (3, 0, 3),
     "json5": (1, 0, 2),
+    "js-yaml": (4, 3, 2),
     "lodash": (4, 18, 0),
     "lodash-real": (4, 18, 0),
+    "morgan": (1, 12, 0),
     "nanoid": (3, 3, 18),
     "postcss": (8, 5, 23),
+    "qs": (6, 16, 0),
     "rollup": (2, 80, 0),
     "tmp": (0, 2, 6),
 }
@@ -125,7 +128,7 @@ for path, metadata in packages.items():
         minimum = ".".join(str(part) for part in minimums[name])
         fail(f"vulnerable {name} remains: {path}@{version}; minimum={minimum}")
 
-for required_name in ("braces", "json5", "lodash", "nanoid", "postcss", "tmp"):
+for required_name in ("braces", "json5", "js-yaml", "lodash", "morgan", "nanoid", "postcss", "qs", "tmp"):
     if checked[required_name] == 0:
         fail(f"expected dependency disappeared without review: {required_name}")
 

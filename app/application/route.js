@@ -4,11 +4,13 @@ import { cancel, later, scheduleOnce } from '@ember/runloop';
 import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
+import Errors from 'ui/utils/errors';
 
 export default Route.extend({
   access         : service(),
   cookies        : service(),
   github         : service(),
+  intl           : service(),
   language       : service('user-language'),
   modal          : service(),
   oidc           : service(),
@@ -83,7 +85,7 @@ export default Route.extend({
       /*if we dont abort the transition we'll call the model calls again and fail transition correctly*/
       transition.abort();
 
-      if ( err && err.status && [401,403].indexOf(err.status) >= 0 )
+      if ( [401,403].indexOf(Errors.status(err)) >= 0 )
       {
         this.send('logout',transition,true);
         return;
@@ -261,7 +263,9 @@ export default Route.extend({
         });
       } catch (err) {
         transition.abort();
-        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
+        this.get('router').transitionTo('login', {queryParams: {
+          errorMsg: Errors.stringify(err) || this.get('intl').t('loginOidc.error.generic'),
+        }});
         return reject(err);
       }
 
@@ -274,7 +278,9 @@ export default Route.extend({
         }
       }).catch((err) => {
         transition.abort();
-        this.get('router').transitionTo('login', {queryParams: {errorMsg: err.message}});
+        this.get('router').transitionTo('login', {queryParams: {
+          errorMsg: Errors.stringify(err) || this.get('intl').t('loginOidc.error.generic'),
+        }});
       });
     } else if ( !isOidcCallback && params.isTest ) {
       if ( github.stateMatches(params.state) ) {

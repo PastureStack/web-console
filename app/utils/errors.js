@@ -1,5 +1,104 @@
 import ApiError from 'ember-api-store/models/error';
 
+function nonEmptyString(value) {
+  if ( typeof value !== 'string' ) {
+    return null;
+  }
+
+  value = value.trim();
+  return value.length ? value : null;
+}
+
+function parsedJSON(value) {
+  let text = nonEmptyString(value);
+  if ( !text || (text[0] !== '{' && text[0] !== '[') ) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return null;
+  }
+}
+
+function nestedMessage(value, seen, depth) {
+  if ( depth > 4 || value === null || value === undefined ) {
+    return null;
+  }
+
+  if ( typeof value === 'string' ) {
+    let parsed = parsedJSON(value);
+    return parsed ? nestedMessage(parsed, seen, depth + 1) : nonEmptyString(value);
+  }
+
+  if ( typeof value !== 'object' || seen.indexOf(value) >= 0 ) {
+    return null;
+  }
+  seen.push(value);
+
+  let message = nonEmptyString(value.message);
+  let detail = nonEmptyString(value.detail);
+  if ( message && detail && message !== detail ) {
+    return `${message} (${detail})`;
+  }
+  if ( message || detail ) {
+    return message || detail;
+  }
+
+  let nested = [
+    value.body,
+    value.responseJSON,
+    value.response && value.response.data,
+    value.response && value.response.body,
+    value.xhr && value.xhr.responseJSON,
+    value.xhr && value.xhr.responseText,
+  ];
+  for ( let item of nested ) {
+    let result = nestedMessage(item, seen, depth + 1);
+    if ( result ) {
+      return result;
+    }
+  }
+
+  return nonEmptyString(value.statusText) ||
+    nonEmptyString(value.xhr && value.xhr.statusText) ||
+    nonEmptyString(value.code) ||
+    nonEmptyString(value.type);
+}
+
+function nestedStatus(value, seen, depth) {
+  if ( depth > 4 || value === null || value === undefined ) {
+    return null;
+  }
+
+  if ( typeof value === 'string' ) {
+    let parsed = parsedJSON(value);
+    return parsed ? nestedStatus(parsed, seen, depth + 1) : null;
+  }
+
+  if ( typeof value !== 'object' || seen.indexOf(value) >= 0 ) {
+    return null;
+  }
+  seen.push(value);
+
+  for ( let candidate of [value.status, value.statusCode] ) {
+    let status = Number(candidate);
+    if ( Number.isInteger(status) && status >= 100 && status <= 599 ) {
+      return status;
+    }
+  }
+
+  for ( let item of [value.body, value.responseJSON, value.response, value.xhr] ) {
+    let result = nestedStatus(item, seen, depth + 1);
+    if ( result ) {
+      return result;
+    }
+  }
+
+  return null;
+}
+
 export default {
   stringify(err) {
     var str;
@@ -109,6 +208,10 @@ export default {
       str = err;
     }
 
-    return str;
+    return nonEmptyString(str) || nestedMessage(err, [], 0);
+  },
+
+  status(err) {
+    return nestedStatus(err, [], 0);
   },
 };
