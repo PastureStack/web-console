@@ -322,7 +322,20 @@ storage_template = (repo / "app/host/storage/template.hbs").read_text(encoding="
 if 'pageSizeChanged=(action "storagePageSizeChanged")' not in storage_template:
     fail("storage page-size callback is missing from the host storage table")
 
-if template_action_count != 587:
+classic_route_templates = [
+    repo / "app" / "containers" / "new" / "template.hbs",
+    repo / "app" / "service" / "new" / "template.hbs",
+    repo / "app" / "service" / "new-virtualmachine" / "template.hbs",
+    repo / "app" / "virtualmachines" / "new" / "template.hbs",
+]
+for template_path in classic_route_templates:
+    template = template_path.read_text(encoding="utf-8")
+    relative = template_path.relative_to(repo)
+    for marker in ('done="done"', 'cancel="cancel"'):
+        if marker not in template:
+            fail(f"classic route completion action missing from {relative}: {marker}")
+
+if template_action_count != 579:
     fail(f"unexpected template action count: {template_action_count}")
 if power_select_count != 15:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")
