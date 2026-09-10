@@ -8,18 +8,16 @@ export default Controller.extend({
   upgrade: null,
 
   actions: {
-    done(savedService) {
+    done() {
       if ( this.get('upgrade') ) {
         this.send('goToPrevious','stacks');
       } else {
-        let model = this.get('model');
-        let modelStackId = model && (typeof model.get === 'function' ? model.get('stackId') : model.stackId);
-        let modelService = model && (typeof model.get === 'function' ? model.get('service') : model.service);
-        let stackId = savedService && (typeof savedService.get === 'function' ? savedService.get('stackId') : savedService.stackId);
+        let stackId = this.get('stackId');
 
-        stackId = stackId || modelStackId || (modelService && (typeof modelService.get === 'function' ? modelService.get('stackId') : modelService.stackId)) || this.get('stackId');
-
-        return this.get('router').transitionTo('stack', stackId);
+        // The query parameter is the immutable route input.  Do not derive
+        // navigation from a resource that the successful create response may
+        // replace or partially hydrate.
+        return stackId ? this.get('router').transitionTo('stack', stackId) : this.get('router').transitionTo('stacks');
       }
     },
 

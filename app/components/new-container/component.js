@@ -297,7 +297,7 @@ export default Component.extend(NewOrEdit, SelectTab, {
     'primaryService.stackId',
     'service.stackId',
     function() {
-      return this.get('primaryService.stackId') || this.get('service.stackId') || null;
+      return read(this.get('primaryService'), 'stackId') || read(this.get('service'), 'stackId') || null;
     }
   ),
 
@@ -558,28 +558,11 @@ export default Component.extend(NewOrEdit, SelectTab, {
     if ( this.get('isService') )
     {
       let service = savedResource || this.get('service');
-      let stackId = service && (typeof service.get === 'function' ? service.get('stackId') : service.stackId);
 
-      stackId = stackId || this.get('preflightStackId');
-
-      // A partial setservicelinks response can replace fields on the saved
-      // service.  Preserve the route identity captured before that action so
-      // a successful create cannot remain on the form and invite a duplicate.
-      return this.setServiceLinks(service).then(() => {
-        if ( service && stackId ) {
-          let current = typeof service.get === 'function' ? service.get('stackId') : service.stackId;
-
-          if ( !current ) {
-            if ( typeof service.set === 'function' ) {
-              service.set('stackId', stackId);
-            } else {
-              service.stackId = stackId;
-            }
-          }
-        }
-
-        return service;
-      });
+      // The saved API resource is completion data, not route authority.  A
+      // partial response may no longer be readable after persistence, so keep
+      // it in the chain without dereferencing it during navigation.
+      return this.setServiceLinks(service).then(() => service);
     }
 
     return savedResource;

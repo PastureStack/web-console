@@ -10,7 +10,7 @@ import NewVirtualMachineController from 'ui/service/new-virtualmachine/controlle
 
 module('Unit | Controller | service | new');
 
-test('first-create navigation uses the persisted service and has a safe query fallback', function(assert) {
+test('first-create navigation uses only the immutable stack route input', function(assert) {
   let transitions = [];
   let controller = NewServiceController.create({
     stackId: '1st-query',
@@ -22,14 +22,14 @@ test('first-create navigation uses the persisted service and has a safe query fa
     },
   });
 
-  controller.actions.done.call(controller, EmberObject.create({stackId: '1st-saved'}));
-  run(() => controller.set('model', EmberObject.create({stackId: '1st-model', service: EmberObject.create({})})));
-  controller.actions.done.call(controller);
+  controller.actions.done.call(controller, {get() { throw new Error('saved response must not be read'); }});
+  run(() => controller.set('stackId', null));
+  controller.actions.done.call(controller, {get() { throw new Error('missing-route fallback must not read response'); }});
 
   assert.deepEqual(transitions, [
-    {route: 'stack', stackId: '1st-saved'},
-    {route: 'stack', stackId: '1st-model'},
-  ], 'navigation uses the immutable route identity even if a response clears the service field');
+    {route: 'stack', stackId: '1st-query'},
+    {route: 'stacks', stackId: undefined},
+  ], 'navigation cannot be broken by a partial or unreadable saved resource');
 
   run(() => controller.destroy());
 });
