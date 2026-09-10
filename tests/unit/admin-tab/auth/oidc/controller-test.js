@@ -270,7 +270,7 @@ test('keeps security enabled and restores the local session after provider activ
 });
 
 test('activates OIDC with an identity-bound ticket and never disables security', function(assert) {
-  assert.expect(8);
+  assert.expect(10);
 
   let events = [];
   let candidate = EmberObject.create({
@@ -334,6 +334,33 @@ test('activates OIDC with an identity-bound ticket and never disables security',
       'the UI provider changes after the fresh provider session exists');
     assert.ok(events.indexOf('refresh') > events.indexOf('set-oidc-provider'), 'the page refreshes after activation completes');
     assert.strictEqual(candidate.get('enabled'), true, 'the final saved model is enabled');
+    assert.strictEqual(candidate.get('accessMode'), 'unrestricted',
+      'every identity accepted by the configured provider can sign in');
+    assert.deepEqual(candidate.get('allowedIdentities'), [],
+      'activation does not silently leave the provider restricted to the test account');
     run(() => controller.destroy());
   });
+});
+
+test('OIDC configuration errors always contain visible text', function(assert) {
+  let controller = OidcController.create({
+    intl: EmberObject.create({
+      t(key) {
+        assert.strictEqual(key, 'loginOidc.error.generic', 'the translated generic OIDC error is used');
+        return 'OpenID Connect sign-in failed.';
+      },
+    }),
+  });
+
+  assert.strictEqual(
+    controller.localizedOidcError({xhr: {responseJSON: {detail: 'Discovery endpoint rejected'}}}),
+    'Discovery endpoint rejected',
+    'a nested API explanation is shown'
+  );
+  assert.strictEqual(
+    controller.localizedOidcError({}),
+    'OpenID Connect sign-in failed.',
+    'an unknown error cannot render an empty alert'
+  );
+  run(() => controller.destroy());
 });

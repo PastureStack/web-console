@@ -8,6 +8,7 @@ import C from 'ui/utils/constants';
 import Subscribe from 'ui/mixins/subscribe';
 import { xhrConcur } from 'ui/utils/platform';
 import PromiseToCb from 'ui/mixins/promise-to-cb';
+import Errors from 'ui/utils/errors';
 
 const CHECK_AUTH_TIMER = 60*10*1000;
 
@@ -92,10 +93,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     return promise.then((hash) => {
       return EmberObject.create(hash);
     }).catch((err) => {
-      return this.loadingError(err, transition, EmberObject.create({
-        projects: [],
-        project: null,
-      }));
+      return this.loadingError(err, transition);
     });
   },
 
@@ -130,18 +128,18 @@ export default Route.extend(Subscribe, PromiseToCb, {
     this.get('storeReset').reset();
   },
 
-  loadingError(err, transition, ret) {
-    let isAuthEnabled = this.get('access.enabled');
-
+  loadingError(err, transition) {
     console.log('Loading Error:', err);
-    if ( err && (isAuthEnabled || [401,403].indexOf(err.status) >= 0) ) {
+    if ( [401,403].indexOf(Errors.status(err)) >= 0 ) {
       this.set('access.enabled', true);
       this.send('logout',transition, (transition.targetName !== 'authenticated.index'));
       return;
     }
 
-    this.get('router').replaceWith('settings.projects');
-    return ret;
+    // A valid session must not be destroyed because an unrelated schema,
+    // project, or network request failed during application initialization.
+    // Re-throw so the normal error route shows the actual failure.
+    return reject(err);
   },
 
   cbFind(type, store='store', opt=null) {
@@ -244,7 +242,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
   actions: {
     error(err,transition) {
       // Unauthorized error, send back to login screen
-      if ( err.status === 401 )
+      if ( Errors.status(err) === 401 )
       {
         this.send('logout',transition,true);
         return false;
