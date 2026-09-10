@@ -1,6 +1,7 @@
 import { computed } from '@ember/object';
 import { next } from '@ember/runloop';
 import { service } from '@ember/service';
+import { resolve } from 'rsvp';
 import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import SelectTab from 'ui/mixins/select-tab';
@@ -556,10 +557,29 @@ export default Component.extend(NewOrEdit, SelectTab, {
   didSave(savedResource) {
     if ( this.get('isService') )
     {
-      // Keep the persisted resource in the save chain.  The setservicelinks
-      // action does not return it, so dropping it here makes first-create
-      // navigation depend on a model that may already have been replaced.
-      return this.setServiceLinks(savedResource).then(() => savedResource || this.get('service'));
+      let service = savedResource || this.get('service');
+      let stackId = service && (typeof service.get === 'function' ? service.get('stackId') : service.stackId);
+
+      stackId = stackId || this.get('preflightStackId');
+
+      // A partial setservicelinks response can replace fields on the saved
+      // service.  Preserve the route identity captured before that action so
+      // a successful create cannot remain on the form and invite a duplicate.
+      return this.setServiceLinks(service).then(() => {
+        if ( service && stackId ) {
+          let current = typeof service.get === 'function' ? service.get('stackId') : service.stackId;
+
+          if ( !current ) {
+            if ( typeof service.set === 'function' ) {
+              service.set('stackId', stackId);
+            } else {
+              service.stackId = stackId;
+            }
+          }
+        }
+
+        return service;
+      });
     }
 
     return savedResource;
@@ -575,6 +595,12 @@ export default Component.extend(NewOrEdit, SelectTab, {
         ary.push({name: row.name, service: row.service});
       }
     });
+
+    // The common create path has no links.  Avoid an unnecessary action whose
+    // partial response can replace fields on the newly persisted service.
+    if ( !ary.length ) {
+      return resolve(service);
+    }
 
     return service.doAction('setservicelinks', {serviceLinks: ary});
   },
