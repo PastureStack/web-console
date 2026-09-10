@@ -102,21 +102,28 @@ test('first service creation keeps the saved service through links and navigatio
       return Promise.resolve();
     },
   });
+  let legacyDispatchCount = 0;
   let component = createComponent(service, launchConfig);
 
   run(() => component.setProperties({
     serviceLinksArray: A(),
+    sendAction() {
+      legacyDispatchCount++;
+      throw new TypeError("Cannot read properties of undefined (reading 'get')");
+    },
     done(resource) {
       navigationResource = resource;
+      return Promise.resolve();
     },
   }));
 
   let saved = await component.doSave();
   let linked = await component.didSave(saved);
 
-  component.doneSaving(linked);
+  await component.doneSaving(linked);
 
   assert.equal(linkActionCount, 0, 'an empty link set does not issue a redundant action');
+  assert.equal(legacyDispatchCount, 0, 'a closure action bypasses the deprecated sendAction path');
   assert.strictEqual(linked, service, 'link action does not discard the persisted service');
   assert.strictEqual(navigationResource, service, 'navigation receives the persisted service');
   destroyOwned(component);

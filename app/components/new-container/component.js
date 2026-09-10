@@ -162,11 +162,11 @@ export default Component.extend(NewOrEdit, SelectTab, {
     },
 
     done() {
-      this.sendAction('done');
+      return this.invokePassedAction('done');
     },
 
     cancel() {
-      this.sendAction('cancel');
+      return this.invokePassedAction('cancel');
     },
   },
 
@@ -589,8 +589,12 @@ export default Component.extend(NewOrEdit, SelectTab, {
   },
 
   doneSaving(savedResource) {
-    this.sendAction('done', savedResource || this.get('service'));
-    return savedResource;
+    let service = savedResource || this.get('service');
+
+    // Template actions are modern closure functions.  Calling the deprecated
+    // sendAction path against one can persist the service and then fail before
+    // navigation, leaving the form open and inviting a duplicate submission.
+    return resolve(this.invokePassedAction('done', service)).then(() => savedResource);
   },
 
   headerLabel: function() {
