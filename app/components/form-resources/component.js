@@ -118,6 +118,7 @@ export default Component.extend({
       let callback = this.get('setRequestedHost');
       if ( typeof callback === 'function' ) { callback(hostId); } else { this.set('instance.requestedHostId', hostId); }
     },
+    setBoolean(field, event) { this.set(`instance.${field}`, !!event.target.checked); },
     setField(field, event) { this.set(`instance.${field}`, event.target.value || null); },
     setShm(value) {
       updateHardwareDraft(this.get('instance'), {shmError: null});
