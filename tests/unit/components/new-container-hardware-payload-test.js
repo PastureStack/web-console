@@ -4,6 +4,7 @@ import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 import NewContainerComponent from 'ui/components/new-container/component';
+import NewServiceController from 'ui/service/new/controller';
 import inertRenderer from '../../helpers/inert-renderer';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
@@ -127,6 +128,44 @@ test('first service creation keeps the saved service through links and navigatio
   assert.strictEqual(linked, service, 'link action does not discard the persisted service');
   assert.strictEqual(navigationResource, service, 'navigation receives the persisted service');
   destroyOwned(component);
+});
+
+test('classic create completion keeps the controller receiver and leaves the form', async function(assert) {
+  let launchConfig = hardwareLaunchConfig();
+  let transition;
+  let service = EmberObject.create({
+    id: '1s-new',
+    stackId: '1st-query',
+    launchConfig,
+    secondaryLaunchConfigs: A(),
+    save() { return Promise.resolve(this); },
+  });
+  let controller = NewServiceController.create({
+    stackId: '1st-query',
+    router: {
+      transitionTo(route, stackId) {
+        transition = {route, stackId};
+        return Promise.resolve();
+      },
+    },
+  });
+  let component = createComponent(service, launchConfig);
+
+  run(() => component.setProperties({
+    serviceLinksArray: A(),
+    done: 'done',
+    target: controller,
+  }));
+
+  let saved = await component.doSave();
+  let linked = await component.didSave(saved);
+
+  await component.doneSaving(linked);
+
+  assert.deepEqual(transition, {route: 'stack', stackId: '1st-query'},
+    'the completion action runs on its controller and navigates to the owning stack');
+  destroyOwned(component);
+  run(() => controller.destroy());
 });
 
 test('service link persistence keeps the saved service without reading response route fields', async function(assert) {

@@ -83,8 +83,8 @@ module('Integration | Component | hardware resources', function(hooks) {
     assert.ok(initRect.left >= initFieldRect.left,
       'the init checkbox stays inside its own grid column instead of protruding into the previous control');
     if ( initRect.top < pidsRect.bottom && initRect.bottom > pidsRect.top ) {
-      assert.ok(initRect.left - pidsRect.right >= 16,
-        'same-row PID and init controls retain a visible grid gap');
+      assert.ok(initRect.left - pidsRect.right >= 24,
+        'same-row PID and init controls retain a clearly visible grid gap');
     } else {
       assert.ok(initRect.top >= pidsRect.bottom, 'responsive rows remain vertically separated');
     }

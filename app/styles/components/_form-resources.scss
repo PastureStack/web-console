@@ -166,6 +166,10 @@ $well-bg: #f5f5f5 !default;
       grid-column: span 4;
     }
 
+    .resource-init-field {
+      padding-left: 8px;
+    }
+
     .resource-inline-checkbox {
       align-items: center;
       display: flex;
@@ -262,6 +266,10 @@ $well-bg: #f5f5f5 !default;
       .resource-advanced-field,
       .resource-advanced-group {
         grid-column: 1 / -1;
+      }
+
+      .resource-init-field {
+        padding-left: 0;
       }
     }
   }

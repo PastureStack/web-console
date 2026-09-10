@@ -113,7 +113,11 @@
     // Native event handlers such as TextField#input are methods on the
     // component prototype, not closure actions supplied by the caller. Calling
     // one through sendAction would recursively re-enter the same event handler.
-    if (typeof action === 'function' && !isPrototypeMethod(this, propertyName, action)) {
+    if (typeof action === 'function') {
+      if (isPrototypeMethod(this, propertyName, action)) {
+        return;
+      }
+
       return action.apply(this, args);
     }
 

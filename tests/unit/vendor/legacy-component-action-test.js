@@ -67,7 +67,12 @@ test('it does not recursively invoke a component prototype event method', functi
   component.get = function(key) {
     return this[key];
   };
+  component._target = {
+    send() {
+      assert.ok(false, 'a prototype method must not be forwarded as an action name');
+    }
+  };
 
   Component.prototype.sendAction.call(component, 'input', 'value');
-  assert.ok(true, 'prototype event methods are ignored when no closure action was supplied');
+  assert.ok(true, 'prototype event methods are ignored even when the component has an action target');
 });
