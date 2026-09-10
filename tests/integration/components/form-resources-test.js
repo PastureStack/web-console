@@ -74,6 +74,23 @@ module('Integration | Component | hardware resources', function(hooks) {
     assert.ok(unit.getBoundingClientRect().width < input.getBoundingClientRect().width, 'the unit is compact and the value gets useful space');
     assert.ok(find('.resource-field-host select[id$="-host"]'), 'host inventory is prominent in the hardware section');
     assert.ok(find('.resource-advanced-toggle[aria-expanded="false"]'), 'rare settings remain discoverable without overwhelming the common path');
+    await click('.resource-advanced-toggle');
+    let pids = find('[data-hardware="pids"]');
+    let init = find('[data-hardware="init"]');
+    let pidsRect = pids.getBoundingClientRect();
+    let initRect = init.getBoundingClientRect();
+    let initFieldRect = init.closest('.resource-init-field').getBoundingClientRect();
+    assert.ok(initRect.left >= initFieldRect.left,
+      'the init checkbox stays inside its own grid column instead of protruding into the previous control');
+    if ( initRect.top < pidsRect.bottom && initRect.bottom > pidsRect.top ) {
+      assert.ok(initRect.left - pidsRect.right >= 16,
+        'same-row PID and init controls retain a visible grid gap');
+    } else {
+      assert.ok(initRect.top >= pidsRect.bottom, 'responsive rows remain vertically separated');
+    }
+    assert.equal(getComputedStyle(init).position, 'static', 'the checkbox does not use the legacy negative-offset layout');
+    await click(init);
+    assert.true(this.instance.get('runInit'), 'the aligned control still writes the launch configuration');
   });
 
   test('switching primary and sidekick resets drafts and advanced maps without rewriting either config', async function(assert) {
