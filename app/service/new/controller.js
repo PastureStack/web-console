@@ -1,6 +1,7 @@
 import Controller from '@ember/controller';
+import NewContainerRouteActions from 'ui/mixins/new-container-route-actions';
 
-export default Controller.extend({
+export default Controller.extend(NewContainerRouteActions, {
   queryParams: ['stackId','serviceId','containerId','upgrade'],
   stackId: null,
   serviceId: null,
