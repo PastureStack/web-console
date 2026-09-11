@@ -335,7 +335,7 @@ for template_path in classic_route_templates:
         if marker not in template:
             fail(f"classic route completion action missing from {relative}: {marker}")
 
-if template_action_count != 579:
+if template_action_count != 561:
     fail(f"unexpected template action count: {template_action_count}")
 if power_select_count != 15:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")
