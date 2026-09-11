@@ -32,11 +32,11 @@ function hardwareLaunchConfig() {
   });
 }
 
-function createComponent(service, launchConfig) {
+function createComponent(service, launchConfig, extra = {}) {
   let component;
 
   run(() => {
-    component = createOwned(NewContainerComponent, {
+    component = createOwned(NewContainerComponent, Object.assign({
       renderer: inertRenderer(),
       intl: EmberObject.create({t(key) { return key; }}),
       launchConfig,
@@ -44,7 +44,7 @@ function createComponent(service, launchConfig) {
       primaryResource: service,
       primaryService: service,
       isService: true,
-    }, 'component');
+    }, extra), 'component');
   });
 
   return component;
@@ -92,24 +92,29 @@ test('first service creation keeps the saved service through links and navigatio
   let launchConfig = hardwareLaunchConfig();
   let navigationResource;
   let linkActionCount = 0;
-  let reloaded = false;
+  let forceReload;
+  let hydrated = EmberObject.create({id: '1s-new', launchConfig});
   let service = EmberObject.create({
     id: '1s-new',
     stackId: '1st-new',
     launchConfig,
     secondaryLaunchConfigs: A(),
     save() { return Promise.resolve(this); },
-    reload() {
-      reloaded = true;
-      return Promise.resolve(this);
-    },
+    reload() { throw new Error('a sparse create response has no authoritative self link'); },
     doAction() {
       linkActionCount++;
       return Promise.resolve();
     },
   });
   let legacyDispatchCount = 0;
-  let component = createComponent(service, launchConfig);
+  let component = createComponent(service, launchConfig, {
+    store: {
+      find(type, id, opt) {
+        forceReload = {type, id, opt};
+        return Promise.resolve(hydrated);
+      },
+    },
+  });
 
   run(() => component.setProperties({
     serviceLinksArray: A(),
@@ -129,10 +134,12 @@ test('first service creation keeps the saved service through links and navigatio
   await component.doneSaving(linked);
 
   assert.equal(linkActionCount, 0, 'an empty link set does not issue a redundant action');
-  assert.true(reloaded, 'the persisted service is refreshed before the destination stack renders');
+  assert.deepEqual(forceReload, {
+    type: 'service', id: '1s-new', opt: {forceReload: true},
+  }, 'the persisted service is force-loaded by stable API id before the destination stack renders');
   assert.equal(legacyDispatchCount, 0, 'a closure action bypasses the deprecated sendAction path');
   assert.strictEqual(linked, service, 'link action does not discard the persisted service');
-  assert.strictEqual(navigationResource, service, 'navigation receives the persisted service');
+  assert.strictEqual(navigationResource, hydrated, 'navigation receives the hydrated service');
   destroyOwned(component);
 });
 
@@ -145,9 +152,12 @@ test('a transient completion refresh failure does not turn a successful create i
     launchConfig,
     secondaryLaunchConfigs: A(),
     save() { return Promise.resolve(this); },
-    reload() { return Promise.reject(new Error('transient refresh failure')); },
   });
-  let component = createComponent(service, launchConfig);
+  let component = createComponent(service, launchConfig, {
+    store: {
+      find() { throw new Error('transient refresh failure'); },
+    },
+  });
 
   run(() => component.setProperties({
     serviceLinksArray: A(),

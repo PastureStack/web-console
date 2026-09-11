@@ -590,14 +590,21 @@ export default Component.extend(NewOrEdit, SelectTab, {
 
   doneSaving(savedResource) {
     let service = savedResource || this.get('service');
+    let store = this.get('store');
+    let serviceId = service && typeof service.get === 'function' ? service.get('id') : service && service.id;
 
-    // A create response can be intentionally sparse while the local store
-    // already exposes the new service to the destination stack.  Refresh the
-    // persisted resource before rendering that stack so computed properties
-    // never observe a half-hydrated launch config.  The save itself remains
-    // authoritative if the optional refresh races a transient API failure.
-    let refreshed = service && typeof service.reload === 'function' ?
-      resolve(service.reload()).catch(() => service) : resolve(service);
+    // A create response can be intentionally sparse and may not yet contain a
+    // self link, so Resource#reload can be a no-op.  Force the persisted service
+    // through the store by its stable API id before the destination stack reads
+    // the live collection.  Keep Resource#reload as the non-service fallback.
+    let refreshed = resolve(service);
+    if ( store && serviceId && typeof store.find === 'function' ) {
+      refreshed = resolve().then(() => {
+        return store.find('service', serviceId, {forceReload: true});
+      }).catch(() => service);
+    } else if ( service && typeof service.reload === 'function' ) {
+      refreshed = resolve().then(() => service.reload()).catch(() => service);
+    }
 
     // Template actions are modern closure functions.  Calling the deprecated
     // sendAction path against one can persist the service and then fail before
