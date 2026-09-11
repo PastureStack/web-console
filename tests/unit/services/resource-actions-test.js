@@ -166,3 +166,30 @@ test('scrolling a nested page region closes the menu instead of detaching it fro
   assert.true(document.getElementById('resource-actions').classList.contains('hide'), 'the menu cannot drift during nested scrolling');
   run(() => service.destroy());
 });
+
+test('selecting an action closes the global menu before dispatching it', async function(assert) {
+  installFixture();
+  let service = ResourceActionsService.create();
+  let trigger = document.getElementById('trigger-a');
+  let dispatchedAction;
+  let wasOpenDuringDispatch;
+  let model = EmberObject.create({
+    send(actionName) {
+      dispatchedAction = actionName;
+      wasOpenDuringDispatch = service.get('open');
+    },
+  });
+
+  run(() => service.show(model, trigger, trigger));
+  await waitForNextQueues();
+  assert.true(service.get('open'), 'precondition: the menu opened');
+
+  run(() => service.triggerAction('edit'));
+
+  assert.equal(dispatchedAction, 'edit', 'dispatches the selected model action');
+  assert.false(wasOpenDuringDispatch, 'the menu is already closed when the action opens another surface');
+  assert.false(service.get('open'), 'the global menu remains closed');
+  assert.true(document.getElementById('resource-actions').classList.contains('hide'), 'the menu is hidden');
+  assert.equal(trigger.getAttribute('aria-expanded'), 'false', 'the trigger is collapsed');
+  run(() => service.destroy());
+});
