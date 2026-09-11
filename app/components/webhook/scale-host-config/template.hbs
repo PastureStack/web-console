@@ -22,7 +22,7 @@
     <div>
       {{form-key-value
         initialMap=this.model.hostSelector
-        changed=(action (mut this.model.hostSelector))
+        changed=(fn (mut this.model.hostSelector))
         addActionLabel="newReceiver.hostSelector.addActionLabel"
         allowEmptyValue=true
       }}

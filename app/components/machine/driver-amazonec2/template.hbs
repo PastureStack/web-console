@@ -298,7 +298,7 @@
       <div class="col-md-12">
         {{form-key-value
             initialMap=this.amazonec2Config.tags
-            changed=(action (mut this.amazonec2Config.tags))
+            changed=(fn (mut this.amazonec2Config.tags))
             addActionLabel="machine.driverAmazon.tags.addAction"
             keyLabel="machine.driverAmazon.tags.keyLabel"
             keyPlaceholder="machine.driverAmazon.tags.keyPlaceholder"

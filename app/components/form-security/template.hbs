@@ -209,7 +209,7 @@
                 </td>
                 <td>&nbsp;</td>
                 <td>
-                  {{device-permissions buttonClass="btn-sm" initialSelection=device.permissions changed=(action (mut device.permissions)) editing=this.editing}}
+                  {{device-permissions buttonClass="btn-sm" initialSelection=device.permissions changed=(fn (mut device.permissions)) editing=this.editing}}
                 </td>
                 <td class="text-right">
                   <button class="btn btn-primary btn-sm" {{action "removeDevice" device}}><i class="icon icon-minus"/></button>
@@ -242,7 +242,7 @@
                 </td>
                 <td>&nbsp;</td>
                 <td>
-                  {{device-permissions buttonClass="btn-sm" initialSelection=device.permissions changed=(action (mut device.permissions)) editing=this.editing}}
+                  {{device-permissions buttonClass="btn-sm" initialSelection=device.permissions changed=(fn (mut device.permissions)) editing=this.editing}}
                 </td>
                 <td class="text-right">
                   &nbsp;
@@ -290,7 +290,7 @@
   <div class="col-sm-12 col-md-8">
     {{form-key-value
       initialMap=this.instance.logConfig.config
-      changed=(action (mut this.instance.logConfig.config))
+      changed=(fn (mut this.instance.logConfig.config))
       addActionLabel="formSecurity.logConfig.addActionLabel"
       keyPlaceholder="formSecurity.logConfig.keyPlaceholder"
       valuePlaceholder="formSecurity.logConfig.valuePlaceholder"
