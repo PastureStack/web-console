@@ -130,7 +130,7 @@ test('first service creation keeps the saved service through links and navigatio
   destroyOwned(component);
 });
 
-test('classic create completion keeps the controller receiver and leaves the form', async function(assert) {
+test('bound create completion keeps the controller receiver and leaves the form', async function(assert) {
   let launchConfig = hardwareLaunchConfig();
   let transition;
   let service = EmberObject.create({
@@ -153,8 +153,10 @@ test('classic create completion keeps the controller receiver and leaves the for
 
   run(() => component.setProperties({
     serviceLinksArray: A(),
-    done: 'done',
-    target: controller,
+    done: controller.get('newContainerDoneAction'),
+    sendAction() {
+      throw new Error('bound route completion must not use classic action targeting');
+    },
   }));
 
   let saved = await component.doSave();
@@ -163,7 +165,7 @@ test('classic create completion keeps the controller receiver and leaves the for
   await component.doneSaving(linked);
 
   assert.deepEqual(transition, {route: 'stack', stackId: '1st-query'},
-    'the completion action runs on its controller and navigates to the owning stack');
+    'the detached completion action retains its controller and navigates to the owning stack');
   destroyOwned(component);
   run(() => controller.destroy());
 });

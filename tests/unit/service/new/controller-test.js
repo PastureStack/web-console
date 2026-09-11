@@ -3,12 +3,43 @@ import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 
 import NewServiceController from 'ui/service/new/controller';
+import NewContainerController from 'ui/containers/new/controller';
 import NewAliasController from 'ui/service/new-alias/controller';
 import NewBalancerController from 'ui/service/new-balancer/controller';
 import NewExternalController from 'ui/service/new-external/controller';
 import NewVirtualMachineController from 'ui/service/new-virtualmachine/controller';
+import NewStandaloneVirtualMachineController from 'ui/virtualmachines/new/controller';
 
 module('Unit | Controller | service | new');
+
+test('new-container route callbacks retain their controller receiver when detached', function(assert) {
+  [
+    NewServiceController,
+    NewVirtualMachineController,
+    NewContainerController,
+    NewStandaloneVirtualMachineController,
+  ].forEach((ControllerClass) => {
+    let sent = [];
+    let controller = ControllerClass.create();
+
+    controller.send = function(name, ...args) {
+      sent.push([name, ...args]);
+    };
+
+    let done = controller.get('newContainerDoneAction');
+    let cancel = controller.get('newContainerCancelAction');
+
+    done('saved-resource');
+    cancel();
+
+    assert.deepEqual(sent, [
+      ['done', 'saved-resource'],
+      ['cancel'],
+    ], `${ControllerClass} callbacks preserve the route controller instead of depending on a legacy component target`);
+
+    run(() => controller.destroy());
+  });
+});
 
 test('first-create navigation uses only the immutable stack route input', function(assert) {
   let transitions = [];
