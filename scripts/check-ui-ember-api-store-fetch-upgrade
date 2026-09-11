@@ -352,13 +352,28 @@ for marker in [
     "this.send('cancel', ...args)",
     "callbacks preserve the route controller",
     "bound route completion must not use classic action targeting",
-    "store.find('service', serviceId, {forceReload: true})",
-    "a sparse create response has no authoritative self link",
-    "the persisted service is force-loaded by stable API id before the destination stack renders",
-    "navigation continues with the persisted service when only the refresh fails",
+    "return resolve(this.invokePassedAction('done', service))",
+    "without an unrelated reload",
 ]:
     if marker not in route_action_sources:
         fail(f"receiver-bound route completion regression marker missing: {marker}")
+
+if "store.find('service', serviceId" in route_action_sources:
+    fail("post-create completion retained the unrelated service reload")
+
+page_header_sources = "\n".join([
+    (repo / "app" / "components" / "page-header" / "component.js").read_text(encoding="utf-8"),
+    (repo / "tests" / "unit" / "components" / "page-header-test.js").read_text(encoding="utf-8"),
+])
+for marker in [
+    "export function readableServices",
+    "service && typeof service.get === 'function'",
+    "readableServices(this.get('services'))",
+    "transient holes in the live service collection are ignored",
+    "only readable service resources reach navigation observers",
+]:
+    if marker not in page_header_sources:
+        fail(f"transient service collection regression marker missing: {marker}")
 
 if template_action_count != 561:
     fail(f"unexpected template action count: {template_action_count}")

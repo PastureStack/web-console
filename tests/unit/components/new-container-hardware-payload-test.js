@@ -92,29 +92,19 @@ test('first service creation keeps the saved service through links and navigatio
   let launchConfig = hardwareLaunchConfig();
   let navigationResource;
   let linkActionCount = 0;
-  let forceReload;
-  let hydrated = EmberObject.create({id: '1s-new', launchConfig});
   let service = EmberObject.create({
     id: '1s-new',
     stackId: '1st-new',
     launchConfig,
     secondaryLaunchConfigs: A(),
     save() { return Promise.resolve(this); },
-    reload() { throw new Error('a sparse create response has no authoritative self link'); },
     doAction() {
       linkActionCount++;
       return Promise.resolve();
     },
   });
   let legacyDispatchCount = 0;
-  let component = createComponent(service, launchConfig, {
-    store: {
-      find(type, id, opt) {
-        forceReload = {type, id, opt};
-        return Promise.resolve(hydrated);
-      },
-    },
-  });
+  let component = createComponent(service, launchConfig);
 
   run(() => component.setProperties({
     serviceLinksArray: A(),
@@ -134,43 +124,9 @@ test('first service creation keeps the saved service through links and navigatio
   await component.doneSaving(linked);
 
   assert.equal(linkActionCount, 0, 'an empty link set does not issue a redundant action');
-  assert.deepEqual(forceReload, {
-    type: 'service', id: '1s-new', opt: {forceReload: true},
-  }, 'the persisted service is force-loaded by stable API id before the destination stack renders');
   assert.equal(legacyDispatchCount, 0, 'a closure action bypasses the deprecated sendAction path');
   assert.strictEqual(linked, service, 'link action does not discard the persisted service');
-  assert.strictEqual(navigationResource, hydrated, 'navigation receives the hydrated service');
-  destroyOwned(component);
-});
-
-test('a transient completion refresh failure does not turn a successful create into a failed save', async function(assert) {
-  let launchConfig = hardwareLaunchConfig();
-  let navigationResource;
-  let service = EmberObject.create({
-    id: '1s-new',
-    stackId: '1st-new',
-    launchConfig,
-    secondaryLaunchConfigs: A(),
-    save() { return Promise.resolve(this); },
-  });
-  let component = createComponent(service, launchConfig, {
-    store: {
-      find() { throw new Error('transient refresh failure'); },
-    },
-  });
-
-  run(() => component.setProperties({
-    serviceLinksArray: A(),
-    done(resource) {
-      navigationResource = resource;
-      return Promise.resolve();
-    },
-  }));
-
-  await component.doneSaving(service);
-
-  assert.strictEqual(navigationResource, service,
-    'navigation continues with the persisted service when only the refresh fails');
+  assert.strictEqual(navigationResource, service, 'navigation receives the saved service without an unrelated reload');
   destroyOwned(component);
 });
 

@@ -590,28 +590,11 @@ export default Component.extend(NewOrEdit, SelectTab, {
 
   doneSaving(savedResource) {
     let service = savedResource || this.get('service');
-    let store = this.get('store');
-    let serviceId = service && typeof service.get === 'function' ? service.get('id') : service && service.id;
-
-    // A create response can be intentionally sparse and may not yet contain a
-    // self link, so Resource#reload can be a no-op.  Force the persisted service
-    // through the store by its stable API id before the destination stack reads
-    // the live collection.  Keep Resource#reload as the non-service fallback.
-    let refreshed = resolve(service);
-    if ( store && serviceId && typeof store.find === 'function' ) {
-      refreshed = resolve().then(() => {
-        return store.find('service', serviceId, {forceReload: true});
-      }).catch(() => service);
-    } else if ( service && typeof service.reload === 'function' ) {
-      refreshed = resolve().then(() => service.reload()).catch(() => service);
-    }
 
     // Template actions are modern closure functions.  Calling the deprecated
     // sendAction path against one can persist the service and then fail before
     // navigation, leaving the form open and inviting a duplicate submission.
-    return refreshed.then((navigationService) => {
-      return resolve(this.invokePassedAction('done', navigationService || service));
-    }).then(() => savedResource);
+    return resolve(this.invokePassedAction('done', service)).then(() => savedResource);
   },
 
   headerLabel: function() {

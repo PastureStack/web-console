@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.113`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.114`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,13 +16,19 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.113` corrects the hydration mechanism after the real
-`ranchernode22` create test proved that a sparse create response can have no
-usable self link. The shared form now force-loads the persisted service through
-the API store using its stable service ID before the destination stack reads the
-live collection. A synchronous or asynchronous refresh failure remains
-non-authoritative because the service save already succeeded. The hardware
-payload and other page regions are unchanged.
+Release `1.6.114` fixes the exact post-create exception captured during a real
+`ranchernode22` service creation. The live global service collection can contain
+a transient empty slot while the API store merges a newly created resource; the
+page-header observer now ignores only those unreadable entries before examining
+application-service metadata. The same guard covers both observer and navigation
+tree rebuild paths. Completion no longer performs the unrelated service reload
+introduced by the two superseded diagnostic releases, while the saved payload,
+route callback, hardware controls, and other page regions remain unchanged.
+
+Release `1.6.113` force-loaded the saved service by API ID while diagnosing the
+post-create failure. Instrumented browser evidence later located the exception
+in the page-header observer before completion navigation, so the extra request
+is removed in `1.6.114`; `1.6.113` remains a diagnostic boundary.
 
 Release `1.6.112` introduced the first-create refresh boundary found by the
 formal `ranchernode22` acceptance test. The API could return a deliberately
