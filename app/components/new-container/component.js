@@ -591,10 +591,20 @@ export default Component.extend(NewOrEdit, SelectTab, {
   doneSaving(savedResource) {
     let service = savedResource || this.get('service');
 
+    // A create response can be intentionally sparse while the local store
+    // already exposes the new service to the destination stack.  Refresh the
+    // persisted resource before rendering that stack so computed properties
+    // never observe a half-hydrated launch config.  The save itself remains
+    // authoritative if the optional refresh races a transient API failure.
+    let refreshed = service && typeof service.reload === 'function' ?
+      resolve(service.reload()).catch(() => service) : resolve(service);
+
     // Template actions are modern closure functions.  Calling the deprecated
     // sendAction path against one can persist the service and then fail before
     // navigation, leaving the form open and inviting a duplicate submission.
-    return resolve(this.invokePassedAction('done', service)).then(() => savedResource);
+    return refreshed.then((navigationService) => {
+      return resolve(this.invokePassedAction('done', navigationService || service));
+    }).then(() => savedResource);
   },
 
   headerLabel: function() {

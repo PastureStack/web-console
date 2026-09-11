@@ -92,12 +92,17 @@ test('first service creation keeps the saved service through links and navigatio
   let launchConfig = hardwareLaunchConfig();
   let navigationResource;
   let linkActionCount = 0;
+  let reloaded = false;
   let service = EmberObject.create({
     id: '1s-new',
     stackId: '1st-new',
     launchConfig,
     secondaryLaunchConfigs: A(),
     save() { return Promise.resolve(this); },
+    reload() {
+      reloaded = true;
+      return Promise.resolve(this);
+    },
     doAction() {
       linkActionCount++;
       return Promise.resolve();
@@ -124,9 +129,38 @@ test('first service creation keeps the saved service through links and navigatio
   await component.doneSaving(linked);
 
   assert.equal(linkActionCount, 0, 'an empty link set does not issue a redundant action');
+  assert.true(reloaded, 'the persisted service is refreshed before the destination stack renders');
   assert.equal(legacyDispatchCount, 0, 'a closure action bypasses the deprecated sendAction path');
   assert.strictEqual(linked, service, 'link action does not discard the persisted service');
   assert.strictEqual(navigationResource, service, 'navigation receives the persisted service');
+  destroyOwned(component);
+});
+
+test('a transient completion refresh failure does not turn a successful create into a failed save', async function(assert) {
+  let launchConfig = hardwareLaunchConfig();
+  let navigationResource;
+  let service = EmberObject.create({
+    id: '1s-new',
+    stackId: '1st-new',
+    launchConfig,
+    secondaryLaunchConfigs: A(),
+    save() { return Promise.resolve(this); },
+    reload() { return Promise.reject(new Error('transient refresh failure')); },
+  });
+  let component = createComponent(service, launchConfig);
+
+  run(() => component.setProperties({
+    serviceLinksArray: A(),
+    done(resource) {
+      navigationResource = resource;
+      return Promise.resolve();
+    },
+  }));
+
+  await component.doneSaving(service);
+
+  assert.strictEqual(navigationResource, service,
+    'navigation continues with the persisted service when only the refresh fails');
   destroyOwned(component);
 });
 

@@ -1866,7 +1866,7 @@ devicePermissions:
   none: 無
   read: 讀
   write: 寫
-  mknod: 姆諾德
+  mknod: 建立裝置節點（mknod）
 editAccount:
   title: 編輯帳號
   form:

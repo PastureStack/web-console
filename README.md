@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.111`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.112`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,13 +16,26 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.111` fixes the post-save route boundary found by creating a real
+Release `1.6.112` closes the remaining first-create render race found by the
+formal `ranchernode22` acceptance test. The API could return a deliberately
+sparse service while that same record was already visible to the destination
+stack, causing its computed fields to render before the launch configuration
+was hydrated. The shared create/upgrade form now refreshes the persisted
+service before navigation and treats an optional refresh failure as
+non-authoritative because the save itself has already succeeded. Focused tests
+cover refresh ordering, fallback behaviour, receiver binding, and unchanged
+hardware payloads. The Traditional Chinese capability label now describes
+`mknod` as creating a device node instead of presenting a misleading phonetic
+transliteration.
+
+Release `1.6.111` fixes the post-save callback receiver boundary found by creating a real
 service on a managed host. The API and node correctly created the service, but
 the legacy component action target could lose its controller receiver before
 navigation. All four container and virtual-machine create routes now pass
 receiver-bound completion and cancellation callbacks to the shared form. The
-resource and hardware payload is unchanged; focused regressions cover detached
-callbacks, successful navigation, and both create and upgrade payloads.
+resource and hardware payload is unchanged. Real-host acceptance subsequently
+found a separate sparse-response render race; `1.6.111` is retained as that
+diagnostic boundary rather than the current compatibility target.
 
 Release `1.6.110` restores the classic `(action (mut ...))` contract used by
 command and environment editors, and accepts the modern array-like browser

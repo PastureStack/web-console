@@ -41,6 +41,28 @@ test('new-container route callbacks retain their controller receiver when detach
   });
 });
 
+test('detached completion reaches the real controller action with its receiver', async function(assert) {
+  let transitions = [];
+  let controller = NewServiceController.create({
+    stackId: '1st-query',
+    upgrade: null,
+    router: {
+      transitionTo(route, stackId) {
+        transitions.push({route, stackId});
+        return Promise.resolve();
+      },
+    },
+  });
+
+  await controller.get('newContainerDoneAction')('saved-resource');
+
+  assert.deepEqual(transitions, [
+    {route: 'stack', stackId: '1st-query'},
+  ], 'the real controller action retains its receiver and uses the stable stack input');
+
+  run(() => controller.destroy());
+});
+
 test('first-create navigation uses only the immutable stack route input', function(assert) {
   let transitions = [];
   let controller = NewServiceController.create({

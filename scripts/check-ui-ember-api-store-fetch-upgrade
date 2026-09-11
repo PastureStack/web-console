@@ -337,6 +337,7 @@ for template_path in new_container_route_templates:
 
 route_action_sources = "\n".join([
     (repo / "app" / "mixins" / "new-container-route-actions.js").read_text(encoding="utf-8"),
+    (repo / "app" / "components" / "new-container" / "component.js").read_text(encoding="utf-8"),
     (repo / "tests" / "unit" / "service" / "new" / "controller-test.js").read_text(encoding="utf-8"),
     (repo / "tests" / "unit" / "components" / "new-container-hardware-payload-test.js").read_text(encoding="utf-8"),
 ])
@@ -351,6 +352,9 @@ for marker in [
     "this.send('cancel', ...args)",
     "callbacks preserve the route controller",
     "bound route completion must not use classic action targeting",
+    "typeof service.reload === 'function'",
+    "the persisted service is refreshed before the destination stack renders",
+    "navigation continues with the persisted service when only the refresh fails",
 ]:
     if marker not in route_action_sources:
         fail(f"receiver-bound route completion regression marker missing: {marker}")
