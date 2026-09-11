@@ -83,7 +83,7 @@
       <div class="row form-group">
         <div class="col-md-6">
           {{form-value-array
-            changed=(action (mut this.tags))
+            changed=(fn (mut this.tags))
             addActionLabel='machine.driverDigitalocean.tags.addActionLabel'
             valueLabel='machine.driverDigitalocean.tags.valueLabel'
             valuePlaceholder='machine.driverDigitalocean.tags.placeholder'

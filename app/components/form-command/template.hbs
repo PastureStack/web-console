@@ -5,7 +5,7 @@
 
   <div class="col-sm-12 col-md-8">
     {{#input-or-display editable=this.editing value=this.instance.command}}
-      {{input-command class="form-control" type="text" changed=(action (mut this.instance.command)) initialValue=this.instance.command placeholder=(t 'formCommand.command.placeholder')}}
+      {{input-command class="form-control" type="text" changed=(fn (mut this.instance.command)) initialValue=this.instance.command placeholder=(t 'formCommand.command.placeholder')}}
     {{/input-or-display}}
   </div>
 </div>
@@ -15,7 +15,7 @@
   </div>
   <div class="col-sm-12 col-md-8">
     {{#input-or-display editable=this.editing value=this.instance.entryPoint}}
-      {{input-command class="form-control" type="text" changed=(action (mut this.instance.entryPoint)) initialValue=this.instance.entryPoint placeholder=(t 'formCommand.entryPoint.placeholder')}}
+      {{input-command class="form-control" type="text" changed=(fn (mut this.instance.entryPoint)) initialValue=this.instance.entryPoint placeholder=(t 'formCommand.entryPoint.placeholder')}}
     {{/input-or-display}}
   </div>
 </div>
@@ -188,7 +188,7 @@
   <div class="col-sm-12 col-md-8">
     {{form-key-value
       initialMap=this.instance.environment
-      changed=(action (mut this.instance.environment))
+      changed=(fn (mut this.instance.environment))
       addActionLabel="formCommand.environment.addAction"
       keyLabel="formCommand.environment.keyLabel"
       keyPlaceholder="formCommand.environment.keyPlaceholder"

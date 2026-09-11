@@ -2,7 +2,7 @@
 
 ## Supported state
 
-The maintained compatibility release is the pure numeric `1.6.109` line used
+The maintained compatibility release is the pure numeric `1.6.110` line used
 by the current PastureStack Server release. Earlier branded coordinates are
 historical records and are not current release or deployment targets.
 Authentication-provider combinations must still be validated by an

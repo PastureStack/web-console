@@ -52,7 +52,7 @@
     <div>
       {{form-key-value
         initialMap=this.model.serviceSelector
-        changed=(action (mut this.model.serviceSelector))
+        changed=(fn (mut this.model.serviceSelector))
         addActionLabel="newReceiver.serviceSelector.addActionLabel"
         allowEmptyValue=true
       }}

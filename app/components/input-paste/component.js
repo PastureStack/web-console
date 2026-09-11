@@ -20,7 +20,11 @@ export default TextField.extend(IntlPlaceholder, {
     var e = event.originalEvent;
     if ( e && e.clipboardData && e.clipboardData.getData && e.clipboardData.types)
     {
-      if ( e.clipboardData.types.contains('text/plain') )
+      var types = e.clipboardData.types;
+      var hasPlainText = typeof types.contains === 'function' ?
+        types.contains('text/plain') : Array.prototype.indexOf.call(types, 'text/plain') >= 0;
+
+      if ( hasPlainText )
       {
         var text = e.clipboardData.getData('text/plain');
         if ( text )

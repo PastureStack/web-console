@@ -35,7 +35,7 @@
   <div class="col-md-10">
     {{form-key-value
       initialMap=this.machine.engineOpt
-      changed=(action (mut this.machine.engineOpt))
+      changed=(fn (mut this.machine.engineOpt))
       addActionLabel="formEngineOpts.engineOpts.addActionLabel"
       keyPlaceholder="formEngineOpts.engineOpts.keyPlaceholder"
       valuePlaceholder="formEngineOpts.engineOpts.valuePlaceholder"
@@ -50,7 +50,7 @@
   <div class="col-md-10">
     {{form-key-value
       initialMap=this.machine.engineLabel
-      changed=(action (mut this.machine.engineLabel))
+      changed=(fn (mut this.machine.engineLabel))
       addActionLabel="formEngineOpts.engineLabels.addActionLabel"
       keyLabel="formEngineOpts.engineLabels.keyLabel"
     }}
@@ -64,7 +64,7 @@
   <div class="col-md-10">
     {{form-key-value
       initialMap=this.machine.engineEnv
-      changed=(action (mut this.machine.engineEnv))
+      changed=(fn (mut this.machine.engineEnv))
       addActionLabel="formEngineOpts.engineEnv.addActionLabel"
       keyLabel="formEngineOpts.engineEnv.keyLabel"
       keyPlaceholder="formEngineOpts.engineEnv.keyPlaceholder"
@@ -80,7 +80,7 @@
   <div class="col-md-10">
     {{form-value-array
       initialValues=this.machine.engineInsecureRegistry
-      changed=(action (mut this.machine.engineInsecureRegistry))
+      changed=(fn (mut this.machine.engineInsecureRegistry))
       addActionLabel="formEngineOpts.engineInsecureRegistry.addActionLabel"
       valueLabel="formEngineOpts.engineInsecureRegistry.valueLabel"
       valuePlaceholder="formEngineOpts.engineInsecureRegistry.valuePlaceholder"
@@ -95,11 +95,10 @@
   <div class="col-md-10">
     {{form-value-array
       initialValues=this.machine.engineRegistryMirror
-      changed=(action (mut this.machine.engineRegistryMirror))
+      changed=(fn (mut this.machine.engineRegistryMirror))
       addActionLabel="formEngineOpts.engineRegistryMirror.addActionLabel"
       valueLabel="formEngineOpts.engineRegistryMirror.valueLabel"
       valuePlaceholder="formEngineOpts.engineRegistryMirror.valuePlaceholder"
     }}
   </div>
 </div>
-

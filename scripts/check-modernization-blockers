@@ -41,8 +41,8 @@ with open('package.json', encoding='utf-8') as f:
     print(json.load(f).get('version', ''))
 PY
 )
-if [[ "$version" != "1.6.109" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.109"
+if [[ "$version" != "1.6.110" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.110"
   failures=$((failures + 1))
 fi
 
@@ -58,6 +58,10 @@ require_no_pattern 'rancher/dind|deb\.nodesource\.com/setup_6|setup_6\.x|phantom
 require_no_pattern 'class="(loader|orbit|loadfield|grass|sun|moon)"' \
   'legacy product loading artwork returned to the application transition' \
   app/application/template.hbs
+
+require_no_pattern '\(action[[:space:]]+\(mut' \
+  'removed action-mut composition returned instead of the supported fn-mut contract' \
+  app
 
 require_no_pattern 'pasturestack-loader__ring|pasturestack-loader-(spin|spin-reverse|pulse)' \
   'circular or orbit-like loading silhouette returned to the branded transition' \
