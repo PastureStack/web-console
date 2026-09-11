@@ -352,8 +352,9 @@ for marker in [
     "this.send('cancel', ...args)",
     "callbacks preserve the route controller",
     "bound route completion must not use classic action targeting",
-    "typeof service.reload === 'function'",
-    "the persisted service is refreshed before the destination stack renders",
+    "store.find('service', serviceId, {forceReload: true})",
+    "a sparse create response has no authoritative self link",
+    "the persisted service is force-loaded by stable API id before the destination stack renders",
     "navigation continues with the persisted service when only the refresh fails",
 ]:
     if marker not in route_action_sources:

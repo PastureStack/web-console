@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.112`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.113`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,15 +16,25 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.112` closes the remaining first-create render race found by the
+Release `1.6.113` corrects the hydration mechanism after the real
+`ranchernode22` create test proved that a sparse create response can have no
+usable self link. The shared form now force-loads the persisted service through
+the API store using its stable service ID before the destination stack reads the
+live collection. A synchronous or asynchronous refresh failure remains
+non-authoritative because the service save already succeeded. The hardware
+payload and other page regions are unchanged.
+
+Release `1.6.112` introduced the first-create refresh boundary found by the
 formal `ranchernode22` acceptance test. The API could return a deliberately
 sparse service while that same record was already visible to the destination
 stack, causing its computed fields to render before the launch configuration
 was hydrated. The shared create/upgrade form now refreshes the persisted
 service before navigation and treats an optional refresh failure as
 non-authoritative because the save itself has already succeeded. Focused tests
-cover refresh ordering, fallback behaviour, receiver binding, and unchanged
-hardware payloads. The Traditional Chinese capability label now describes
+cover the intended refresh ordering, fallback behaviour, receiver binding, and
+unchanged hardware payloads. Real-host acceptance later proved Resource reload
+could not hydrate a response without a self link; `1.6.112` is retained as that
+diagnostic boundary. The Traditional Chinese capability label now describes
 `mknod` as creating a device node instead of presenting a misleading phonetic
 transliteration.
 
