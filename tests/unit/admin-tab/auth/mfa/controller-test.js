@@ -1,10 +1,61 @@
 import { run } from '@ember/runloop';
-import { resolve } from 'rsvp';
+import { resolve, reject } from 'rsvp';
 import EmberObject from '@ember/object';
 import { module, test } from 'qunit';
 import MfaController from 'ui/admin-tab/auth/mfa/controller';
 
 module('Unit | Controller | admin tab | auth | mfa');
+
+test('MFA settings opens step-up on a wrapped API error and retries only after confirmation', function(assert) {
+  let requests = [];
+  let controller = MfaController.create({
+    settingsForm: EmberObject.create({origin: 'https://example.test', smtpPassword: 'test-only'}),
+    userStore: {
+      rawRequest(options) {
+        requests.push(options);
+        return requests.length === 1 ? reject({type: 'error', body: {
+          status: 401, code: 'MfaReauthenticationRequired',
+        }}) : resolve();
+      },
+    },
+    modalService: {
+      toggleModal(name, options) {
+        assert.strictEqual(name, 'mfa-security-confirmation');
+        assert.strictEqual(requests.length, 1, 'no retry before the user confirms');
+        options.onComplete('one-use-ticket');
+      },
+    },
+    reloadSettings() { return resolve(); },
+  });
+  return controller.actions.saveSettings.call(controller, false).then(() => {
+    assert.strictEqual(requests.length, 2);
+    assert.strictEqual(requests[1].method, 'PUT');
+    assert.strictEqual(requests[1].data.origin, 'https://example.test');
+    assert.strictEqual(requests[1].data.securityConfirmation, 'one-use-ticket');
+    assert.notOk(requests[0].data.securityConfirmation, 'initial payload was not mutated');
+    assert.strictEqual(controller.get('settingsForm.smtpPassword'), '', 'password cleared after success');
+    assert.notOk(controller.get('busy'));
+    run(() => controller.destroy());
+  });
+});
+
+test('cancelling security confirmation never resubmits MFA settings', function(assert) {
+  let count = 0;
+  let controller = MfaController.create({
+    settingsForm: EmberObject.create({}),
+    userStore: {rawRequest() {
+      count++;
+      return reject({body: {code: 'MfaReauthenticationRequired'}});
+    }},
+    modalService: {toggleModal(name, options) { options.onCancel(); }},
+  });
+  return controller.actions.saveSettings.call(controller, false).then(() => {
+    assert.strictEqual(count, 1);
+    assert.notOk(controller.get('busy'));
+    assert.notOk(controller.get('errors'));
+    run(() => controller.destroy());
+  });
+});
 
 test('updates the global MFA and SMTP settings resource', function(assert) {
   assert.expect(3);
