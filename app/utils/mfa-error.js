@@ -36,8 +36,8 @@ function parsedBody(err) {
 
 export function mfaErrorCode(err) {
   let body = parsedBody(err);
-  return value(err, 'code') || value(err, 'type') ||
-    (body && (body.code || body.type)) || value(err, 'message');
+  return value(err, 'code') || (body && body.code) ||
+    value(err, 'type') || (body && body.type) || value(err, 'message');
 }
 
 export function localizedMfaError(err, intl, fallbackKey) {
@@ -45,6 +45,20 @@ export function localizedMfaError(err, intl, fallbackKey) {
   if ( key ) {
     return intl.t(key);
   }
-  return value(err, 'message') ||
-    intl.t(fallbackKey || 'loginPage.mfa.error.invalid');
+  let body = parsedBody(err);
+  let status = Number(value(err, 'status') || value(err, 'statusCode') ||
+    (body && body.status) || (err && err.xhr && err.xhr.status));
+  let code = mfaErrorCode(err);
+  let details = [];
+  if ( Number.isInteger(status) && status >= 400 && status <= 599 ) {
+    details.push(`HTTP ${status}`);
+  }
+  // Show bounded API identifiers, never arbitrary response text or HTML.
+  if ( typeof code === 'string' && code !== 'error' &&
+       /^[A-Za-z][A-Za-z0-9_. -]{0,63}$/.test(code) &&
+       (value(err, 'code') || (body && body.code)) ) {
+    details.push(code);
+  }
+  let message = intl.t(fallbackKey || 'loginPage.mfa.error.invalid');
+  return details.length ? `${message} (${details.join('; ')})` : message;
 }
