@@ -175,7 +175,16 @@ export default Service.extend({
   },
 
   triggerAction: function(actionName) {
-    this.get('model').send(actionName);
+    let model = this.get('model');
+
+    // The global menu lives outside the row which opened it, so opening a
+    // modal does not destroy or route-transition it away.  Close it before
+    // dispatching the selected action so it cannot remain above the modal.
+    this.hide();
+
+    if (model) {
+      model.send(actionName);
+    }
   },
 
   activeActions: function() {

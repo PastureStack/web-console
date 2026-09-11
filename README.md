@@ -8,13 +8,20 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.114`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.115`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.115` closes the global resource-action menu before dispatching
+the selected action. This prevents the row menu from remaining above account
+edit and other modal forms, while preserving the selected resource and action
+receiver. The same shared fix covers every resource table which uses this
+menu; focused tests verify that the menu, trigger state, and anchor are closed
+before the modal action executes.
 
 Release `1.6.114` fixes the exact post-create exception captured during a real
 `ranchernode22` service creation. The live global service collection can contain
