@@ -21,6 +21,20 @@ function fnOrValue(val, ctx) {
   }
 }
 
+export function readableServices(services) {
+  let out = [];
+
+  if ( services && typeof services.forEach === 'function' ) {
+    services.forEach((service) => {
+      if ( service && typeof service.get === 'function' ) {
+        out.push(service);
+      }
+    });
+  }
+
+  return out;
+}
+
 
 export default Component.extend(HoverDropdown, {
   // Inputs
@@ -68,25 +82,23 @@ export default Component.extend(HoverDropdown, {
   // This computed property generates the active list of choices to display
   navTree: null,
   updateNavTree() {
-    let services = this.get('services');
+    let services = readableServices(this.get('services'));
     let servicesNav = [];
-    if(services){
-      services.forEach((ele)=>{
-        let serviceApp = ele.get('serviceApp');
-        if(serviceApp){
-          let exist = getTree().findBy('id', ele.id);
-          if(!exist){
-            servicesNav.pushObject({
-              id: ele.id,
-              label: serviceApp.label,
-              url: serviceApp.url,
-              target: '_blank',
-              ctx: [this.get('projectId')],
-            });
-          }
+    services.forEach((ele)=>{
+      let serviceApp = ele.get('serviceApp');
+      if(serviceApp){
+        let exist = getTree().findBy('id', ele.id);
+        if(!exist){
+          servicesNav.pushObject({
+            id: ele.id,
+            label: serviceApp.label,
+            url: serviceApp.url,
+            target: '_blank',
+            ctx: [this.get('projectId')],
+          });
         }
-      });
-    }
+      }
+    });
 
     let out = getTree().concat(servicesNav).filter((item) => {
       if ( typeof item.condition === 'function' )
@@ -136,7 +148,7 @@ export default Component.extend(HoverDropdown, {
   },
 
   serviceAppChanged: function() {
-    let services = this.get('services') || [];
+    let services = readableServices(this.get('services'));
     let newServices = services.find((ele) => {
       let serviceApp = ele.get('serviceApp');
       if( serviceApp ){
