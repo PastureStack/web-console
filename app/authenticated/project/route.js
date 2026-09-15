@@ -28,9 +28,10 @@ export default Route.extend({
   },
 
   loadingError(err, transition, ret) {
-    if ( err && err.status && [401,403].indexOf(err.status) >= 0 )
+    if ( err && err.status === 401 )
     {
-      this.send('logout',transition,true);
+      this.send('sessionInvalid', transition, true, null,
+        transition && transition.authGeneration, 401);
       return;
     }
 

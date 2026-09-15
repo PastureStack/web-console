@@ -8,13 +8,27 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.116`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.117`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.117` prevents an older same-origin browser tab from revoking or
+clearing a session that a newer tab has just established. Explicit user logout
+is now the only browser path that requests server-side token revocation. Passive
+401, storage, WebSocket, timer, and route failures reconcile against a
+non-sensitive session generation; ordinary 403 permission failures remain local
+to the failed request. Login, cookie readback, generation commit, session
+adoption, and explicit logout share one cross-tab mutex, with a tested
+IndexedDB lease fallback when Web Locks is unavailable. OIDC transactions retain
+the generation captured before leaving the origin, stale callbacks cannot
+overwrite a newer login, and waiting tabs validate the shared cookie before
+adopting it. JWTs remain cookie- and memory-only and are never persisted in Web
+Storage. Pair this release with Engine `0.183.302` or newer for session-bound,
+idempotent server logout protection.
 
 Release `1.6.116` recognizes the MFA API's structured error code even when
 the transport wraps it in a generic error. Sensitive settings updates open

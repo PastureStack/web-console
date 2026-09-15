@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import { run } from '@ember/runloop';
+import { Promise } from 'rsvp';
 import { module, test } from 'qunit';
 
 import ApplicationRoute from 'ui/application/route';
@@ -64,6 +65,7 @@ test('the latest overlapping transition owns the loading overlay', function(asse
   var second = fakeTransition();
   var route = ApplicationRoute.create({
     loadingTimeout: 60000,
+    access: {captureGeneration() { return 'generation-a'; }},
   });
 
   run(() => {
@@ -96,6 +98,7 @@ test('a rejected transition clears the loading overlay', function(assert) {
   };
   var route = ApplicationRoute.create({
     loadingTimeout: 60000,
+    access: {captureGeneration() { return 'generation-a'; }},
   });
 
   run(() => route.get('actions').loading.call(route, transition));
@@ -105,5 +108,98 @@ test('a rejected transition clears the loading overlay', function(assert) {
   assert.equal(route.get('loadingShown'), false, 'the rejected transition clears the overlay');
 
   $('#loading-overlay, #loading-underlay').remove();
+  run(() => route.destroy());
+});
+
+test('a route 401 uses passive generation-aware reconciliation', function(assert) {
+  assert.expect(5);
+  let transition = {
+    authGeneration: 'request-generation',
+    abort() {
+      assert.ok(true, 'the failed transition is stopped');
+    },
+  };
+  let route = ApplicationRoute.create();
+  route.hideLoadingOverlay = function() {};
+  route.send = function(action, sentTransition, timedOut, error, generation) {
+    assert.strictEqual(action, 'sessionInvalid', 'route failures cannot invoke explicit logout');
+    assert.strictEqual(sentTransition, transition, 'the failed transition is retained');
+    assert.strictEqual(timedOut, true, 'the user sees the expired-session reason if ownership is confirmed');
+    assert.strictEqual(generation, 'request-generation', 'the request starting generation is retained');
+  };
+
+  route.get('actions').error.call(route, {xhr: {status: 401}}, transition);
+  run(() => route.destroy());
+});
+
+test('a restored current session resumes an aborted route without another login', async function(assert) {
+  let reloads = 0;
+  let loginTransitions = 0;
+  let transition = {authGeneration: 'current-generation'};
+  let route = ApplicationRoute.create({
+    access: {
+      handlePassiveFailure(generation, status) {
+        assert.strictEqual(generation, 'current-generation', 'the failed request keeps its owner');
+        assert.strictEqual(status, 401, 'only authentication failure enters recovery');
+        return Promise.resolve({status: 'active', generation});
+      },
+    },
+  });
+  route.reloadForSession = function() {
+    reloads++;
+  };
+  route.transitionToLogin = function() {
+    loginTransitions++;
+  };
+
+  await route.get('actions').sessionInvalid.call(
+    route, transition, true, null, transition.authGeneration, 401
+  );
+
+  assert.strictEqual(reloads, 1, 'the aborted route is retried after cookie recovery');
+  assert.strictEqual(loginTransitions, 0, 'a valid recovered session never shows login');
+  run(() => route.destroy());
+});
+
+test('duplicate cross-tab generation events validate and reload exactly once', async function(assert) {
+  let resolveAdoption;
+  let adoption = new Promise((resolve) => {
+    resolveAdoption = resolve;
+  });
+  let validations = 0;
+  let reloads = 0;
+  let generation = '1726358400000.' + 'a'.repeat(64);
+  let route = ApplicationRoute.create({
+    access: {
+      adoptSharedSession() {
+        validations++;
+        return adoption;
+      },
+      authSession: {
+        readShared() {
+          return {generation, accountId: '1a1', committedAt: 1726358400000};
+        },
+      },
+    },
+  });
+  route.reloadForSession = function() {
+    reloads++;
+  };
+
+  let first = route.get('actions').authSessionChanged.call(route, {
+    newRecord: {generation},
+  });
+  let duplicate = route.get('actions').authSessionChanged.call(route, {
+    newRecord: {generation},
+  });
+  assert.strictEqual(first, duplicate, 'overlapping events share the same reconciliation promise');
+
+  resolveAdoption({status: 'adopted', generation});
+  await first;
+  run(() => {});
+
+  assert.strictEqual(validations, 1, 'the shared cookie is validated once');
+  assert.strictEqual(reloads, 1, 'the route reloads once without a generation loop');
+  assert.strictEqual(route.get('lastSyncedGeneration'), generation, 'the applied generation is remembered');
   run(() => route.destroy());
 });

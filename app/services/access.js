@@ -1,9 +1,11 @@
 import { resolve, reject } from 'rsvp';
 import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
+import { parseAttempt } from 'ui/services/auth-session';
 
 export default Service.extend({
   cookies: service(),
+  authSession: service('auth-session'),
   session: service(),
   github:  service(),
   shibbolethAuth: service(),
@@ -13,6 +15,7 @@ export default Service.extend({
   token: null,
   mfaChallenge: null,
   loadedVersion: null,
+  explicitLogoutPromise: null,
 
   // These are set by authenticated/route
   // Is access control enabled
@@ -31,8 +34,12 @@ export default Service.extend({
     return this.get('userStore').createRecord(obj);
   }.property('session.'+C.SESSION.IDENTITY),
 
-  testAuth() {
-    // make a call to api base because it is authenticated
+  testAuth(generation) {
+    generation = generation || this.captureGeneration();
+    // Do not hold the authentication mutex while a network request is in
+    // flight.  A deliberately delayed response from an old session must be
+    // allowed to overlap a newer login; the captured generation is checked
+    // after the response settles.
     return this.get('userStore').rawRequest({
       url: '',
     }).then((xhr) => {
@@ -45,11 +52,12 @@ export default Service.extend({
         return;
       }
 
-      // Auth token still good
-      return resolve('Auth Succeeded');
-    }, (/* err */) => {
-      // Auth token expired
-      return reject('Auth Failed');
+      let shared = this.get('authSession').readShared();
+      if ( generation && shared && shared.generation !== generation ) {
+        return {status: 'stale', generation: shared.generation};
+      }
+
+      return {status: 'active', generation};
     });
   },
 
@@ -109,28 +117,47 @@ export default Service.extend({
     return rv;
   },
 
-  login(code, providerOverride, options) {
+  login(code, providerOverride, options, suppliedAttempt) {
+    let authSession = this.get('authSession');
+    let attempt = suppliedAttempt ? authSession.resumeLogin(suppliedAttempt) : authSession.beginLogin();
     let request = Object.assign({
       code: code,
       authProvider: providerOverride || this.get('provider'),
+      clientSessionId: attempt.generation,
     }, options || {});
-    return this.get('userStore').rawRequest({
+    return authSession.runExclusive(() => {
+      if ( authSession.isAttemptSuperseded(attempt) ) {
+        authSession.completeLogin(attempt.generation);
+        return {superseded: true};
+      }
+      return {superseded: false};
+    }).then((preflight) => {
+      if ( preflight.superseded ) {
+        return {body: null, authSessionAccepted: false, authSessionSuperseded: true};
+      }
+      return this.get('userStore').rawRequest({
       url: 'token',
       method: 'POST',
       data: request,
+      });
     }).then((xhr) => {
+      if ( xhr.authSessionSuperseded ) {
+        return xhr;
+      }
       if ( xhr.body && xhr.body.mfaRequired ) {
-        this.set('mfaChallenge', xhr.body);
+        return this._acceptMfaChallenge(xhr, attempt);
       } else {
         this.set('mfaChallenge', null);
-        this.acceptLogin(xhr.body);
+        return this.acceptLogin(xhr.body, attempt).then((result) => {
+          xhr.authSessionAccepted = result.accepted;
+          xhr.authSessionSuperseded = result.superseded;
+          return xhr;
+        });
       }
       return xhr;
     }).catch((res) => {
-      let err;
-      try {
-        err = res.body;
-      } catch(e) {
+      let err = res && res.body ? res.body : res;
+      if ( !err ) {
         err = {type: 'error', message: 'Error logging in'};
       }
       return reject(err);
@@ -138,29 +165,29 @@ export default Service.extend({
   },
 
   completeMfa(data) {
+    let attempt = this.get('authSession').currentLogin();
     return this.get('userStore').rawRequest({
       url: 'token',
       method: 'POST',
       data: Object.assign({
         authProvider: 'mfa',
+        clientSessionId: attempt.generation,
       }, data || {}),
     }).then((xhr) => {
       if ( xhr.body && xhr.body.mfaRequired ) {
-        let current = this.get('mfaChallenge');
-        let sameChallenge = current && current.mfaChallengeId &&
-          current.mfaChallengeId === xhr.body.mfaChallengeId;
-        this.set('mfaChallenge', sameChallenge ?
-          Object.assign({}, current, xhr.body) : xhr.body);
+        return this._acceptMfaChallenge(xhr, attempt);
       } else {
         this.set('mfaChallenge', null);
-        this.acceptLogin(xhr.body);
+        return this.acceptLogin(xhr.body, attempt).then((result) => {
+          xhr.authSessionAccepted = result.accepted;
+          xhr.authSessionSuperseded = result.superseded;
+          return xhr;
+        });
       }
       return xhr;
     }).catch((res) => {
-      let err;
-      try {
-        err = res.body;
-      } catch(e) {
+      let err = res && res.body ? res.body : res;
+      if ( !err ) {
         err = {type: 'error', message: 'Error verifying the security factor'};
       }
       return reject(err);
@@ -169,31 +196,205 @@ export default Service.extend({
 
   cancelMfa() {
     this.set('mfaChallenge', null);
+    let attempt = this.get('authSession').get('pendingLogin');
+    this.get('authSession').completeLogin(attempt && attempt.generation);
   },
 
-  acceptLogin(auth) {
-    var session = this.get('session');
-    var interesting = {};
-    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
-      if ( typeof auth[key] !== 'undefined' )
-      {
-        interesting[key] = auth[key];
+  acceptLogin(auth, attempt) {
+    if ( !auth || typeof auth.jwt !== 'string' || auth.jwt.trim().length === 0 ) {
+      return reject(new Error('The login response did not contain a valid session token'));
+    }
+
+    attempt = parseAttempt(attempt || this.get('authSession').currentLogin());
+    if ( !attempt ) {
+      return reject(new Error('The login response was not associated with a valid authentication attempt'));
+    }
+    return this.get('authSession').runExclusive(() => {
+      let authSession = this.get('authSession');
+      let shared = authSession.readShared();
+
+      // An older OIDC/MFA callback is never allowed to overwrite a login that
+      // began later in another tab.
+      if ( authSession.isAttemptSuperseded(attempt) ) {
+        authSession.completeLogin(attempt.generation);
+        return {accepted: false, superseded: true};
       }
+
+      let previousCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+      let previousValues = this._sessionValues();
+      let previousRecord = shared;
+      let written = this._writeTokenCookie(auth.jwt);
+
+      if ( !written || this.get('cookies').get(C.COOKIE.TOKEN) !== auth.jwt ) {
+        this._restoreLocalSnapshot(previousCookie, previousValues);
+        throw new Error('The browser refused the session cookie');
+      }
+
+      try {
+        this._applyTokenMetadata(auth);
+        authSession.commit(attempt.generation, auth.accountId, auth.jwt);
+      } catch (e) {
+        this._restoreLocalSnapshot(previousCookie, previousValues);
+        if ( previousRecord ) {
+          window.localStorage.setItem(C.AUTH_SESSION.STORAGE_KEY, JSON.stringify(previousRecord));
+          authSession.adopt(previousRecord, previousCookie);
+        } else {
+          window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+          authSession.forget();
+        }
+        throw e;
+      }
+
+      authSession.completeLogin(attempt.generation);
+      return {accepted: true, superseded: false};
+    });
+  },
+
+  captureGeneration() {
+    return this.get('authSession').capture();
+  },
+
+  ensureSession() {
+    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+    if ( !cookie ) {
+      return reject({status: 401, message: 'No session cookie'});
+    }
+
+    return this._readCurrentToken().then((token) => {
+      return this.get('authSession').runExclusive(() => {
+        if ( this.get('cookies').get(C.COOKIE.TOKEN) !== cookie ) {
+          return reject({status: 409, message: 'Session changed during validation'});
+        }
+
+        let current = this.get('authSession').readShared();
+        if ( !current ) {
+          current = this.get('authSession').commit(
+            this.get('authSession').createGeneration(), token.accountId, cookie
+          );
+        } else {
+          this.get('authSession').adopt(current, cookie);
+        }
+        this._applyTokenMetadata(token);
+        return {status: 'active', generation: current.generation};
+      });
+    });
+  },
+
+  adoptSharedSession() {
+    let shared = this.get('authSession').readShared();
+    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+    if ( !shared || !cookie ) {
+      return this.get('authSession').runExclusive(() => {
+        this._clearOwnedLocalState(this.captureGeneration());
+        return {status: 'invalid'};
+      });
+    }
+
+    return this._validateAndAdopt(shared, cookie);
+  },
+
+  handlePassiveFailure(generation, status) {
+    if ( status === 403 ) {
+      return resolve({status: 'forbidden'});
+    }
+
+    let shared = this.get('authSession').readShared();
+    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+    return this.get('authSession').runExclusive(() => {
+      shared = this.get('authSession').readShared();
+      cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+      if ( shared && !cookie && this.get('authSession').owns(shared.generation) ) {
+        let snapshot = this.get('authSession.tokenSnapshot');
+        if ( snapshot && this._writeTokenCookie(snapshot) &&
+             this.get('cookies').get(C.COOKIE.TOKEN) === snapshot ) {
+          cookie = snapshot;
+          // A page running pre-fix JavaScript can remove this shared cookie
+          // after the bound server DELETE was safely rejected.  Recommit the
+          // same generation so other tabs receive a storage event only after
+          // the owning tab has restored and read back the cookie.
+          shared = this.get('authSession').commit(
+            shared.generation, shared.accountId, snapshot
+          );
+        }
+      }
+
+      if ( !shared || !cookie ) {
+        this._clearOwnedLocalState(generation);
+        return {status: 'invalid'};
+      }
+      return {status: 'validate'};
+    }).then((outcome) => {
+      if ( outcome.status !== 'validate' ) {
+        return outcome;
+      }
+      return this._validateAndAdopt(shared, cookie).then((validated) => {
+        return validated.status === 'adopted' && generation === shared.generation ?
+          {status: 'active', generation: validated.generation} : validated;
+      }, (error) => {
+        return this._errorStatus(error) === 403 ? {status: 'forbidden'} : reject(error);
+      });
+    });
+  },
+
+  explicitLogout() {
+    if ( this.get('explicitLogoutPromise') ) {
+      return this.get('explicitLogoutPromise');
+    }
+
+    let promise = this.get('authSession').runExclusive((lockGuard) => {
+      let authSession = this.get('authSession');
+      let generation = authSession.capture();
+      let shared = authSession.readShared();
+      let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+      let snapshot = authSession.get('tokenSnapshot');
+
+      if ( !generation || !shared || shared.generation !== generation ||
+           !snapshot || cookie !== snapshot ) {
+        if ( shared && cookie ) {
+          return {status: 'stale'};
+        }
+        this._clearOwnedLocalState(generation);
+        return {status: 'complete'};
+      }
+
+      // Keep the mutex until the response settles.  The server does not emit
+      // an expiry cookie for bound sessions; this tab clears it only after it
+      // has rechecked ownership below.
+      return this.get('userStore').rawRequest({
+        url: 'token/current',
+        method: 'DELETE',
+        headers: {
+          [C.AUTH_SESSION.LOGOUT_HEADER]: generation,
+        },
+      }).then(() => lockGuard.assertOwned()).then(() => {
+        let current = authSession.readShared();
+        let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+        if ( current && current.generation === generation && currentCookie === snapshot ) {
+          this._clearOwnedLocalState(generation);
+        }
+        return {status: 'complete'};
+      });
     });
 
-    this.get('cookies').setWithOptions(C.COOKIE.TOKEN, auth['jwt'], {
-      path: '/',
-      secure: window.location.protocol === 'https:'
+    this.set('explicitLogoutPromise', promise);
+    return promise.finally(() => {
+      this.set('explicitLogoutPromise', null);
     });
-    session.setProperties(interesting);
   },
 
   clearToken() {
-    return this.get('userStore').rawRequest({
-      url: 'token/current',
-      method: 'DELETE',
-    }).then(() => {
-      return true;
+    return this.explicitLogout();
+  },
+
+  clearLocalSession(generation) {
+    generation = generation || this.captureGeneration();
+    return this.get('authSession').runExclusive(() => {
+      let shared = this.get('authSession').readShared();
+      if ( shared && (!generation || shared.generation !== generation) ) {
+        return {status: 'stale', generation: shared.generation};
+      }
+      this._clearOwnedLocalState(generation);
+      return {status: 'complete'};
     });
   },
 
@@ -240,7 +441,8 @@ export default Service.extend({
     if ( snapshot.token ) {
       this.get('cookies').setWithOptions(C.COOKIE.TOKEN, snapshot.token, {
         path: '/',
-        secure: window.location.protocol === 'https:'
+        secure: window.location.protocol === 'https:',
+        sameSite: 'Lax',
       });
     }
   },
@@ -256,5 +458,118 @@ export default Service.extend({
     }
 
     return false;
-  }
+  },
+
+  _readCurrentToken() {
+    return this.get('userStore').rawRequest({
+      url: 'token',
+    }).then((xhr) => {
+      let data = xhr && xhr.body && xhr.body.data;
+      let token = data && data[0];
+      if ( !token ) {
+        return reject({status: 401, message: 'No authenticated session'});
+      }
+      return token;
+    });
+  },
+
+  _acceptMfaChallenge(xhr, attempt) {
+    return this.get('authSession').runExclusive(() => {
+      let authSession = this.get('authSession');
+      if ( authSession.isAttemptSuperseded(attempt) ) {
+        authSession.completeLogin(attempt.generation);
+        xhr.authSessionAccepted = false;
+        xhr.authSessionSuperseded = true;
+        return xhr;
+      }
+
+      let current = this.get('mfaChallenge');
+      let sameChallenge = current && current.mfaChallengeId &&
+        current.mfaChallengeId === xhr.body.mfaChallengeId;
+      this.set('mfaChallenge', sameChallenge ?
+        Object.assign({}, current, xhr.body) : xhr.body);
+      xhr.authSessionAccepted = false;
+      xhr.authSessionSuperseded = false;
+      return xhr;
+    });
+  },
+
+  _validateAndAdopt(shared, cookie) {
+    return this._readCurrentToken().then((token) => {
+      return this.get('authSession').runExclusive(() => {
+        let current = this.get('authSession').readShared();
+        let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+        if ( !current || current.generation !== shared.generation || currentCookie !== cookie ) {
+          return {status: 'stale', generation: current && current.generation};
+        }
+        this.get('authSession').adopt(current, currentCookie);
+        this._applyTokenMetadata(token);
+        return {status: 'adopted', generation: current.generation};
+      });
+    }, (error) => {
+      if ( this._errorStatus(error) !== 401 ) {
+        return reject(error);
+      }
+      return this.get('authSession').runExclusive(() => {
+        let current = this.get('authSession').readShared();
+        let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+        if ( current && current.generation === shared.generation && currentCookie === cookie ) {
+          this._clearOwnedLocalState(shared.generation);
+          return {status: 'invalid'};
+        }
+        return {status: 'stale', generation: current && current.generation};
+      });
+    });
+  },
+
+  _applyTokenMetadata(auth) {
+    let interesting = {};
+    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
+      if ( typeof auth[key] !== 'undefined' ) {
+        interesting[key] = auth[key];
+      }
+    });
+    this.get('session').setProperties(interesting);
+  },
+
+  _sessionValues() {
+    let values = {};
+    C.TOKEN_TO_SESSION_KEYS.forEach((key) => {
+      values[key] = this.get('session').get(key);
+    });
+    return values;
+  },
+
+  _writeTokenCookie(token) {
+    return this.get('cookies').setWithOptions(C.COOKIE.TOKEN, token, {
+      path: '/',
+      secure: window.location.protocol === 'https:',
+      sameSite: 'Lax',
+    });
+  },
+
+  _restoreLocalSnapshot(cookie, values) {
+    this.get('session').setProperties(values || {});
+    if ( cookie ) {
+      this._writeTokenCookie(cookie);
+    } else {
+      this.get('cookies').remove(C.COOKIE.TOKEN, {path: '/'});
+    }
+  },
+
+  _clearOwnedLocalState(generation) {
+    let authSession = this.get('authSession');
+    let shared = authSession.readShared();
+    if ( shared && (!generation || shared.generation !== generation) ) {
+      return false;
+    }
+    this.clearSessionKeys();
+    authSession.removeShared(generation);
+    authSession.forget(generation);
+    return true;
+  },
+
+  _errorStatus(error) {
+    return error && error.xhr ? error.xhr.status : (error && error.status);
+  },
 });

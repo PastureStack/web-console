@@ -179,8 +179,14 @@ export default Mixin.create({
     },
 
     signInAgain() {
-      this.get('access').clearSessionKeys();
-      this.get('router').transitionTo('login');
+      let generation = this.get('access').captureGeneration();
+      return this.get('access').clearLocalSession(generation).then((outcome) => {
+        if ( outcome.status === 'stale' ) {
+          window.location.reload();
+          return;
+        }
+        this.get('router').transitionTo('login');
+      });
     },
   },
 

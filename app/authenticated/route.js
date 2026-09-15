@@ -30,27 +30,60 @@ export default Route.extend(Subscribe, PromiseToCb, {
 
     if ( this.get('access.enabled') ) {
       if ( this.get('access.isLoggedIn') ) {
-        this.testAuthToken();
+        return this.get('access').ensureSession().then(() => {
+          this.testAuthToken();
+        }, (error) => {
+          let generation = this.get('access').captureGeneration();
+          transition.send('sessionInvalid', transition, true, null, generation,
+            Errors.status(error) || 401);
+          return reject(error);
+        });
       } else {
-        transition.send('logout', transition, false);
+        transition.send('sessionInvalid', transition, false, null,
+          this.get('access').captureGeneration(), 401);
         return reject('Not logged in');
       }
     }
   },
 
   testAuthToken: function() {
+    let generation = this.get('access').captureGeneration();
     let timer = later(() => {
-      this.get('access').testAuth().then((/* res */) => {
-        this.testAuthToken();
-      }, (/* err */) => {
-        this.send('logout',null,true);
-      });
+      this.checkAuthToken(generation);
     }, CHECK_AUTH_TIMER);
 
     this.set('testTimer', timer);
   },
 
+  checkAuthToken(generation) {
+    if ( generation !== this.get('access').captureGeneration() ) {
+      this.testAuthToken();
+      return resolve({status: 'stale'});
+    }
+    return this.get('access').testAuth(generation).then((result) => {
+      if ( result && result.status === 'stale' ) {
+        this.send('sessionInvalid', null, false, null, generation, 401);
+      } else {
+        this.testAuthToken();
+      }
+      return result;
+    }, (err) => {
+      let status = Errors.status(err);
+      if ( status === 401 ) {
+        this.send('sessionInvalid', null, true, null, generation, status);
+      } else {
+        // A permission denial or transient network failure is not proof that
+        // the browser session expired.  Keep the session and try later.
+        this.testAuthToken();
+      }
+      return {status: status === 403 ? 'forbidden' : 'error'};
+    });
+  },
+
   model(params, transition) {
+    transition.authGeneration = transition.authGeneration ||
+      this.get('access').captureGeneration();
+    let requestGeneration = transition.authGeneration;
     // Save whether the user is admin
     let type = this.get(`session.${C.SESSION.USER_TYPE}`);
     let isAdmin = (type === C.USER.TYPE_ADMIN) || !this.get('access.enabled');
@@ -93,7 +126,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     return promise.then((hash) => {
       return EmberObject.create(hash);
     }).catch((err) => {
-      return this.loadingError(err, transition);
+      return this.loadingError(err, transition, undefined, requestGeneration);
     });
   },
 
@@ -128,11 +161,13 @@ export default Route.extend(Subscribe, PromiseToCb, {
     this.get('storeReset').reset();
   },
 
-  loadingError(err, transition) {
+  loadingError(err, transition, ret, generation) {
     console.log('Loading Error:', err);
-    if ( [401,403].indexOf(Errors.status(err)) >= 0 ) {
+    if ( Errors.status(err) === 401 ) {
       this.set('access.enabled', true);
-      this.send('logout',transition, (transition.targetName !== 'authenticated.index'));
+      this.send('sessionInvalid', transition,
+        (transition.targetName !== 'authenticated.index'), null,
+        generation || transition.authGeneration, 401);
       return;
     }
 
@@ -244,7 +279,8 @@ export default Route.extend(Subscribe, PromiseToCb, {
       // Unauthorized error, send back to login screen
       if ( Errors.status(err) === 401 )
       {
-        this.send('logout',transition,true);
+        this.send('sessionInvalid', transition, true, null,
+          transition && transition.authGeneration, 401);
         return false;
       }
       else

@@ -1,6 +1,5 @@
 import Service from '@ember/service';
 import BrowserStore from 'ui/utils/browser-storage';
-import C from 'ui/utils/constants';
 
 export default Service.extend(BrowserStore, {
   backing: window.localStorage,
@@ -18,15 +17,9 @@ export default Service.extend(BrowserStore, {
       {
         this.notifyPropertyChange(key);
 
-        if ( key === C.SESSION.ACCOUNT_ID && old && neu && old !== neu )
-        {
-          // If the active user changes, flee
-          try {
-            window.lc('application').send('logout');
-          }
-          catch (e) {
-          }
-        }
+        // Authentication ownership is coordinated by auth-session.  A
+        // localStorage notification is only evidence that another tab wrote
+        // something; it is never authority to revoke the current cookie.
       }
     });
   },

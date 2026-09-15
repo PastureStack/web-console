@@ -201,6 +201,7 @@ export default Controller.extend({
 
     disable: function() {
       this.send('clearError');
+      let generation = this.get('access').captureGeneration();
 
       var model = this.get('model');
       model.setProperties({
@@ -210,7 +211,8 @@ export default Controller.extend({
       });
 
       model.save().then(() => {
-        this.get('access').clearSessionKeys();
+        return this.get('access').clearLocalSession(generation);
+      }).then(() => {
         this.set('access.enabled',false);
         this.send('waitAndRefresh');
       }).catch((err) => {

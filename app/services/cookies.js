@@ -45,11 +45,11 @@ export default Service.extend({
     this.setWithOptions(key, value);
   },
 
-  // Opt: expire: date or number of days, path, domain, secure
+  // Opt: expire: date or number of days, path, domain, secure, sameSite
   setWithOptions: function(name, value, opt) {
     opt =  opt || {};
     opt.path = (typeof opt.path === 'undefined' ? '/' : opt.path);
-    opt.secure = (typeof opt.path === 'undefined' ? false : !!opt.secure);
+    opt.secure = (typeof opt.secure === 'undefined' ? false : !!opt.secure);
 
     let str = encodeURIComponent(name) + '=' + encodeURIComponent(value);
 
@@ -81,6 +81,11 @@ export default Service.extend({
     if ( opt.secure )
     {
       str += ';secure';
+    }
+
+    if ( opt.sameSite )
+    {
+      str += ';samesite=' + opt.sameSite;
     }
 
     try

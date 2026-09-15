@@ -107,7 +107,7 @@ export default Service.extend({
     });
   },
 
-  getAuthorizeUrl: function(preparedToken) {
+  getAuthorizeUrl: function(preparedToken, trackLogin) {
     let token = preparedToken || this.get('access.token');
     let tokenPromise = token && token.redirectUrl ? resolve(token) : this.getToken();
 
@@ -120,6 +120,14 @@ export default Service.extend({
 
       let pkceEnabled = currentToken.pkceEnabled !== false && currentToken.pkceEnabled !== 'false';
       return this.createTransaction(pkceEnabled).then((transaction) => {
+        if ( trackLogin ) {
+          let attempt = this.get('access.authSession').beginLogin();
+          transaction.authSessionAttempt = {
+            baseGeneration: attempt.baseGeneration,
+            generation: attempt.generation,
+            startedAt: attempt.startedAt,
+          };
+        }
         this.get('tab-session').set(C.TABSESSION.OIDC_TRANSACTION, transaction);
 
         let params = {
@@ -143,6 +151,10 @@ export default Service.extend({
   },
 
   consumeAuthorization: function(params) {
+    return this.consumeLoginAuthorization(params).code;
+  },
+
+  consumeLoginAuthorization: function(params) {
     let transaction = this.get('tab-session').get(C.TABSESSION.OIDC_TRANSACTION);
     this.get('tab-session').set(C.TABSESSION.OIDC_TRANSACTION, undefined);
 
@@ -166,15 +178,18 @@ export default Service.extend({
       throw new Error(this.get('intl').t('loginOidc.error.missingCode'));
     }
 
-    return JSON.stringify({
-      authorizationCode: params.code,
-      codeVerifier: transaction.codeVerifier || '',
-      nonce: transaction.nonce,
-    });
+    return {
+      authSessionAttempt: transaction.authSessionAttempt || null,
+      code: JSON.stringify({
+        authorizationCode: params.code,
+        codeVerifier: transaction.codeVerifier || '',
+        nonce: transaction.nonce,
+      }),
+    };
   },
 
   authorizeRedirect: function() {
-    return this.getAuthorizeUrl(null).then((url) => {
+    return this.getAuthorizeUrl(null, true).then((url) => {
       window.location.assign(url);
     });
   },

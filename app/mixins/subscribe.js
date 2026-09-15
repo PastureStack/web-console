@@ -14,6 +14,7 @@ const ORCHESTRATION_STACKS = [
 export default Mixin.create({
   k8s             : service(),
   projects        : service(),
+  access          : service(),
   'tab-session'   : service(),
 
   subscribeSocket : null,
@@ -31,50 +32,7 @@ export default Mixin.create({
 
     socket.on('message', (event) => {
       schedule('actions', this, function() {
-        // Fail-safe: make sure the message is for this project
-        var currentProject = this.get(`tab-session.${C.TABSESSION.PROJECT}`);
-        var metadata = socket.getMetadata();
-        var socketProject = metadata.projectId;
-        if ( currentProject !== socketProject ) {
-          console.error(`Subscribe ignoring message, current=${currentProject} socket=${socketProject} ` + this.forStr());
-          this.connectSubscribe();
-          return;
-        }
-
-        var d = JSON.parse(event.data);
-        let resource;
-        if ( d.data && d.data.resource ) {
-          resource = store._typeify(d.data.resource);
-          d.data.resource = resource;
-        }
-
-        //this._trySend('subscribeMessage',d);
-
-        switch ( d.name) {
-        case 'resource.change':
-          let key = d.resourceType+'Changed';
-          if ( this[key] ) {
-            this[key](d);
-          }
-
-          if ( resource && C.REMOVEDISH_STATES.includes(resource.state) ) {
-            let type = get(resource,'type');
-            let baseType = get(resource,'baseType');
-
-            store._remove(type, resource);
-
-            if ( baseType && type !== baseType ) {
-              store._remove(baseType, resource);
-            }
-          }
-          break;
-        case 'logout':
-          this.send('logout', false);
-          break;
-        case 'ping':
-          this.subscribePing(d);
-          break;
-        }
+        this.handleSubscribeMessage(event, socket, store);
       });
     });
 
@@ -89,9 +47,62 @@ export default Mixin.create({
     this.set('subscribeSocket', socket);
   },
 
+  handleSubscribeMessage(event, socket, store) {
+    // Fail-safe: make sure the message belongs to both this project and the
+    // session generation captured when the WebSocket was opened.
+    var currentProject = this.get(`tab-session.${C.TABSESSION.PROJECT}`);
+    var metadata = socket.getMetadata();
+    var socketProject = metadata.projectId;
+    var socketGeneration = metadata.authGeneration;
+    if ( socketGeneration !== this.get('access').captureGeneration() ) {
+      this.disconnectSubscribe();
+      this.send('sessionInvalid', null, false, null, socketGeneration, 401);
+      return;
+    }
+    if ( currentProject !== socketProject ) {
+      console.error(`Subscribe ignoring message, current=${currentProject} socket=${socketProject} ` + this.forStr());
+      this.connectSubscribe();
+      return;
+    }
+
+    var d = JSON.parse(event.data);
+    let resource;
+    if ( d.data && d.data.resource ) {
+      resource = store._typeify(d.data.resource);
+      d.data.resource = resource;
+    }
+
+    switch ( d.name) {
+    case 'resource.change':
+      let key = d.resourceType+'Changed';
+      if ( this[key] ) {
+        this[key](d);
+      }
+
+      if ( resource && C.REMOVEDISH_STATES.includes(resource.state) ) {
+        let type = get(resource,'type');
+        let baseType = get(resource,'baseType');
+
+        store._remove(type, resource);
+
+        if ( baseType && type !== baseType ) {
+          store._remove(baseType, resource);
+        }
+      }
+      break;
+    case 'logout':
+      this.send('sessionInvalid', null, true, null, socketGeneration, 401);
+      break;
+    case 'ping':
+      this.subscribePing(d);
+      break;
+    }
+  },
+
   connectSubscribe() {
     var socket = this.get('subscribeSocket');
     var projectId = this.get(`tab-session.${C.TABSESSION.PROJECT}`);
+    var authGeneration = this.get('access').captureGeneration();
     var url = ("ws://"+window.location.host + this.get('app.wsEndpoint')).replace(this.get('app.projectToken'), projectId);
 
     this.set('reconnect', true);
@@ -100,7 +111,7 @@ export default Mixin.create({
       url: url,
       autoReconnect: true,
     });
-    socket.reconnect({projectId: projectId});
+    socket.reconnect({projectId: projectId, authGeneration: authGeneration});
   },
 
   disconnectSubscribe(cb) {

@@ -122,7 +122,7 @@ export default Controller.extend({
       later(() => {
         let provider = this.get('useLocalRecovery') ? 'localAuthConfig' : undefined;
         this.get('access').login(code, provider).then((xhr) => {
-          this.handleLoginResponse(xhr.body, true);
+          this.handleLoginResponse(xhr, true);
         }).catch((err) => {
           this.set('waiting', false);
 
@@ -185,7 +185,7 @@ export default Controller.extend({
         recoveryCode: this.get('recoveryCode'),
         emailCode: this.get('emailCode'),
       }).then((xhr) => {
-        this.handleLoginResponse(xhr.body);
+        this.handleLoginResponse(xhr);
       }).catch((err) => {
         this.setProperties({
           errorMsg: localizedMfaError(err, this.get('intl')),
@@ -208,7 +208,7 @@ export default Controller.extend({
           webAuthnResponse: response,
         });
       }).then((xhr) => {
-        this.handleLoginResponse(xhr.body);
+        this.handleLoginResponse(xhr);
       }).catch((err) => {
         this.setProperties({
           errorMsg: localizedMfaError(err, this.get('intl')),
@@ -260,8 +260,12 @@ export default Controller.extend({
     },
   },
 
-  handleLoginResponse(body, resetMfaSelection) {
+  handleLoginResponse(xhr, resetMfaSelection) {
+    let body = xhr && xhr.body ? xhr.body : xhr;
     this.set('waiting', false);
+    if ( xhr && xhr.authSessionSuperseded ) {
+      return;
+    }
     if ( body && body.mfaRequired ) {
       let methods = this._availableMfaMethods(body.mfaMethods || []);
       let primary = methods.filter((method) => {
