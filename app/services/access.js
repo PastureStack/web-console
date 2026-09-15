@@ -120,11 +120,11 @@ export default Service.extend({
   login(code, providerOverride, options, suppliedAttempt) {
     let authSession = this.get('authSession');
     let attempt = suppliedAttempt ? authSession.resumeLogin(suppliedAttempt) : authSession.beginLogin();
-    let request = Object.assign({
+    let request = Object.assign({}, options || {}, {
       code: code,
       authProvider: providerOverride || this.get('provider'),
       clientSessionId: attempt.generation,
-    }, options || {});
+    });
     return authSession.runExclusive(() => {
       if ( authSession.isAttemptSuperseded(attempt) ) {
         authSession.completeLogin(attempt.generation);
@@ -155,13 +155,9 @@ export default Service.extend({
         });
       }
       return xhr;
-    }).catch((res) => {
-      let err = res && res.body ? res.body : res;
-      if ( !err ) {
-        err = {type: 'error', message: 'Error logging in'};
-      }
-      return reject(err);
-    });
+    }).catch((res) => this._handleLoginFailure(
+      res, attempt, 'Error logging in'
+    ));
   },
 
   completeMfa(data) {
@@ -169,10 +165,10 @@ export default Service.extend({
     return this.get('userStore').rawRequest({
       url: 'token',
       method: 'POST',
-      data: Object.assign({
+      data: Object.assign({}, data || {}, {
         authProvider: 'mfa',
         clientSessionId: attempt.generation,
-      }, data || {}),
+      }),
     }).then((xhr) => {
       if ( xhr.body && xhr.body.mfaRequired ) {
         return this._acceptMfaChallenge(xhr, attempt);
@@ -185,13 +181,9 @@ export default Service.extend({
         });
       }
       return xhr;
-    }).catch((res) => {
-      let err = res && res.body ? res.body : res;
-      if ( !err ) {
-        err = {type: 'error', message: 'Error verifying the security factor'};
-      }
-      return reject(err);
-    });
+    }).catch((res) => this._handleLoginFailure(
+      res, attempt, 'Error verifying the security factor'
+    ));
   },
 
   cancelMfa() {
@@ -567,6 +559,33 @@ export default Service.extend({
     authSession.removeShared(generation);
     authSession.forget(generation);
     return true;
+  },
+
+  _handleLoginFailure(response, attempt, fallbackMessage) {
+    if ( this._isSupersededLoginError(response) ) {
+      this.get('authSession').completeLogin(attempt && attempt.generation);
+      return resolve({
+        body: null,
+        authSessionAccepted: false,
+        authSessionSuperseded: true,
+      });
+    }
+
+    let error = response && response.body ? response.body : response;
+    if ( !error ) {
+      error = {type: 'error', message: fallbackMessage};
+    }
+    return reject(error);
+  },
+
+  _isSupersededLoginError(error) {
+    let status = this._errorStatus(error);
+    let code = error && error.body && error.body.code;
+    code = code || (error && error.responseJSON && error.responseJSON.code);
+    code = code || (error && error.xhr && error.xhr.responseJSON &&
+      error.xhr.responseJSON.code);
+    code = code || (error && error.code);
+    return code === 'ClientSessionSuperseded' && (!status || status === 409);
   },
 
   _errorStatus(error) {

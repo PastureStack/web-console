@@ -401,4 +401,90 @@ module('Unit | Service | access session race', function(hooks) {
       auth.destroy();
     });
   });
+
+  test('an in-flight older callback accepts the server superseded result without touching the newer session', async function(assert) {
+    let browser = {cookie: undefined};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let oldAttempt = {
+      baseGeneration: null,
+      generation: generation(625),
+      startedAt: 1726358400625,
+    };
+    let response = deferred();
+    let postedGeneration;
+    let access = createAccess(browser, auth, (options) => {
+      postedGeneration = options.data.clientSessionId;
+      return response.promise;
+    });
+
+    let pending = access.login('old-authorization-code', 'oidcconfig', undefined, oldAttempt);
+    await resolve();
+    let newerGeneration = generation(626);
+    browser.cookie = 'newer-token';
+    auth.commit(newerGeneration, '1a1', browser.cookie);
+    response.reject({
+      status: 409,
+      body: {code: 'ClientSessionSuperseded', message: 'newer session completed'},
+    });
+    let result = await pending;
+
+    assert.strictEqual(postedGeneration, oldAttempt.generation,
+      'the request remains bound to the generation captured before the deferred response');
+    assert.true(result.authSessionSuperseded, 'the precise server conflict is treated as a stale callback');
+    assert.false(result.authSessionAccepted, 'the stale response never completes login');
+    assert.strictEqual(browser.cookie, 'newer-token', 'the newer cookie is untouched');
+    assert.strictEqual(auth.capture(), newerGeneration, 'the newer generation remains owned');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
+
+  test('callers cannot override the provider, authorization value, or bound generation', async function(assert) {
+    let browser = {cookie: undefined};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let loginAttempt = {
+      baseGeneration: null,
+      generation: generation(650),
+      startedAt: 1726358400650,
+    };
+    let requests = [];
+    let access = createAccess(browser, auth, (options) => {
+      requests.push(options.data);
+      if ( requests.length === 1 ) {
+        return resolve({body: {
+          mfaRequired: true,
+          mfaChallengeId: 'opaque-challenge',
+          mfaMethods: ['totp'],
+        }});
+      }
+      return resolve({body: {jwt: 'bound-token', accountId: '1a1'}});
+    });
+
+    await access.login('trusted-code', 'oidcconfig', {
+      code: 'overridden-code',
+      authProvider: 'untrusted-provider',
+      clientSessionId: generation(999),
+    }, loginAttempt);
+    await access.completeMfa({
+      code: 'opaque-challenge',
+      mfaMethod: 'totp',
+      mfaCode: '123456',
+      authProvider: 'untrusted-provider',
+      clientSessionId: generation(999),
+    });
+
+    assert.strictEqual(requests[0].code, 'trusted-code', 'the callback code comes from the route transaction');
+    assert.strictEqual(requests[0].authProvider, 'oidcconfig', 'the route-selected provider cannot be overwritten');
+    assert.strictEqual(requests[0].clientSessionId, loginAttempt.generation,
+      'the primary request uses its captured generation');
+    assert.strictEqual(requests[1].authProvider, 'mfa', 'the continuation provider is fixed');
+    assert.strictEqual(requests[1].clientSessionId, loginAttempt.generation,
+      'the MFA request retains the same bound generation');
+    assert.strictEqual(browser.cookie, 'bound-token', 'the protected response completes normally');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
 });

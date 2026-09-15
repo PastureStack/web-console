@@ -27,8 +27,11 @@ IndexedDB lease fallback when Web Locks is unavailable. OIDC transactions retain
 the generation captured before leaving the origin, stale callbacks cannot
 overwrite a newer login, and waiting tabs validate the shared cookie before
 adopting it. JWTs remain cookie- and memory-only and are never persisted in Web
-Storage. Pair this release with Engine `0.183.302` or newer for session-bound,
-idempotent server logout protection.
+Storage. A precise `409 ClientSessionSuperseded` response from the Engine is
+treated as a stale completion rather than a failed active login, and request
+options cannot override the provider, authorization value, or captured
+generation. Pair this release with Engine `0.183.302` or newer for
+session-bound, ordered, idempotent server logout protection.
 
 Release `1.6.116` recognizes the MFA API's structured error code even when
 the transport wraps it in a generic error. Sensitive settings updates open

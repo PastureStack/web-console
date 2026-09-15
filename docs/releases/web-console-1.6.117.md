@@ -13,6 +13,10 @@
 - Capture the generation before an OIDC redirect and carry it in the tab-scoped
   transaction. A delayed callback, request, timer, or socket event cannot clear
   or replace a newer committed session.
+- Treat the Engine's precise `409 ClientSessionSuperseded` response as a stale
+  login completion, leaving the newer cookie and generation untouched. Token
+  request options cannot override the route-selected provider, authorization
+  value, or captured generation.
 - Let waiting tabs validate `GET /v2-beta/token`, adopt the newer session, and
   safely replace login/MFA/callback routes or reload their existing protected
   route without loops. Manual refresh rebuilds the same session from the cookie
@@ -22,7 +26,8 @@
 - Deterministic browser-unit coverage includes 100 alternating TOTP/Passkey
   delayed-response races, three-tab adoption, same- and different-account
   replacement, duplicate passive failures, refresh, storage/socket/timer/route
-  events, stale OIDC callbacks, cookie repair, and coalesced explicit logout.
+  events, preflight and in-flight stale OIDC callbacks, cookie repair,
+  protected request fields, and coalesced explicit logout.
 - Pair with Orchestration Engine `0.183.302` or newer. New tokens carry the
   client session generation so older JavaScript cannot revoke a newer bound
   token.
