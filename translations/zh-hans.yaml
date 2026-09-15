@@ -3521,6 +3521,13 @@ siteAccess:
   required: '仅允许授权的 {individuals} 和 {collection}'
   listHeader: '授权的 {individuals} 和 {collection}'
   noIdentity: 无
+  errors:
+    authorizedIdentityRequired: 请至少添加一个已授权项目。
+    localRecoveryRequired: 请在五分钟内验证可用的本地系统管理员帐户，再更改 OpenID Connect 身份来源。
+    mfaConfirmationRequired: 请使用多因素身份验证确认此次访问策略更改。
+    mfaConfirmationUnavailable: 暂时无法进行多因素身份验证，请稍后重试。
+    invalidAccessMode: 请选择有效的站点访问模式。
+    invalidAllowedIdentity: 只能授权有效的 OpenID Connect 用户和组。
   users: 用户
   groups: 组
   organizations: 组织机构

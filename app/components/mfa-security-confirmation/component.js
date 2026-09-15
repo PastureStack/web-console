@@ -50,9 +50,9 @@ export default ModalBase.extend({
   },
 
   begin() {
-    return this.request({
+    return this.request(Object.assign({
       operation: 'beginSecurityConfirmation',
-    }).then((challenge) => {
+    }, this.confirmationBinding())).then((challenge) => {
       this.setProperties({
         challenge: challenge,
         method: null,
@@ -70,17 +70,26 @@ export default ModalBase.extend({
     }).then((xhr) => xhr.body);
   },
 
+  confirmationBinding() {
+    let purpose = this.get('opts.purpose');
+    let requestDigest = this.get('opts.requestDigest');
+    if ( purpose && requestDigest ) {
+      return {purpose, requestDigest};
+    }
+    return {};
+  },
+
   finish(webAuthnResponse) {
     let challenge = this.get('challenge');
     this.setProperties({waiting: true, errorMessage: null});
-    return this.request({
+    return this.request(Object.assign({
       operation: 'confirmSecurityConfirmation',
       challengeId: challenge.challengeId,
       method: this.get('method'),
       verificationCode: this.get('verificationCode'),
       recoveryCode: this.get('recoveryCode'),
       webAuthnResponse: webAuthnResponse,
-    }).then((result) => {
+    }, this.confirmationBinding())).then((result) => {
       let onComplete = this.get('opts.onComplete');
       if ( typeof onComplete === 'function' ) {
         onComplete(result.securityConfirmation);

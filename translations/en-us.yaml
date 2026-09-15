@@ -3971,6 +3971,13 @@ siteAccess:
   required: "Restrict access to only Authorized {individuals} and {collection}"
   listHeader: "Authorized {individuals} and {collection}"
   noIdentity: None
+  errors:
+    authorizedIdentityRequired: Add at least one authorized entry.
+    localRecoveryRequired: Verify an active local system-administrator account within five minutes before changing the OpenID Connect identity source.
+    mfaConfirmationRequired: Confirm this access-policy change with multi-factor authentication.
+    mfaConfirmationUnavailable: Multi-factor confirmation is temporarily unavailable. Try again later.
+    invalidAccessMode: Select a valid site access mode.
+    invalidAllowedIdentity: Only valid OpenID Connect users and groups can be authorized.
   users: Users
   groups: Groups
   organizations: Organizations

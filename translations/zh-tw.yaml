@@ -3792,6 +3792,13 @@ siteAccess:
   required: '僅允許授權的 {individuals} 和 {collection}'
   listHeader: '授權的 {individuals} 和 {collection}'
   noIdentity: 無
+  errors:
+    authorizedIdentityRequired: 請至少新增一個已授權項目。
+    localRecoveryRequired: 請在五分鐘內驗證可用的本機系統管理員帳號，再變更 OpenID Connect 身分來源。
+    mfaConfirmationRequired: 請使用多因素驗證確認這次存取政策變更。
+    mfaConfirmationUnavailable: 暫時無法進行多因素驗證，請稍後再試。
+    invalidAccessMode: 請選擇有效的站點存取模式。
+    invalidAllowedIdentity: 只能授權有效的 OpenID Connect 使用者與群組。
   users: 使用者
   groups: 群組
   organizations: 組織

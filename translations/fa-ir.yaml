@@ -3572,6 +3572,13 @@ siteAccess:
   required: 'محدود کردن دسترسی فقط به مجاز {individuals} و {collection}'
   listHeader: 'مجاز {individuals} و {collection}'
   noIdentity: هیچ یک
+  errors:
+    authorizedIdentityRequired: حداقل یک مورد مجاز اضافه کنید.
+    localRecoveryRequired: پیش از تغییر منبع هویت OpenID Connect، یک حساب فعال مدیر محلی سیستم را در بازه پنج دقیقه‌ای تأیید کنید.
+    mfaConfirmationRequired: این تغییر خط‌مشی دسترسی را با احراز هویت چندمرحله‌ای تأیید کنید.
+    mfaConfirmationUnavailable: تأیید چندمرحله‌ای موقتاً در دسترس نیست. بعداً دوباره تلاش کنید.
+    invalidAccessMode: یک حالت معتبر برای دسترسی به سایت انتخاب کنید.
+    invalidAllowedIdentity: فقط کاربران و گروه‌های معتبر OpenID Connect را می‌توان مجاز کرد.
   users: کاربران
   groups: گروه ها
   organizations: سازمان ها

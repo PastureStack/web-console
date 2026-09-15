@@ -35,3 +35,42 @@ test('does not start a passkey confirmation on an insecure connection', function
       'the modal explains why the registered passkey is not shown');
   }).finally(() => destroyOwned(component));
 });
+
+test('binds begin and confirm to the same purpose and request digest', async function(assert) {
+  let requests = [];
+  let digest = 'a'.repeat(64);
+  let completed;
+  let component = createOwned(MfaSecurityConfirmation, {
+    renderer: inertRenderer(),
+    intl: EmberObject.create(),
+    modalService: EmberObject.create({
+      modalOpts: {
+        purpose: 'oidcAccessPolicyUpdate',
+        requestDigest: digest,
+        onComplete(value) { completed = value; },
+      },
+      toggleModal() {},
+    }),
+    userStore: EmberObject.create({
+      rawRequest(options) {
+        requests.push(options.data);
+        if ( options.data.operation === 'beginSecurityConfirmation' ) {
+          return resolve({body: {challengeId: 'challenge-1', methods: ['totp']}});
+        }
+        return resolve({body: {securityConfirmation: 'bound-ticket'}});
+      },
+    }),
+  }, 'component');
+
+  await component.begin();
+  component.setProperties({method: 'totp', verificationCode: '123456'});
+  await component.finish(null);
+
+  assert.strictEqual(requests.length, 2);
+  requests.forEach((request) => {
+    assert.strictEqual(request.purpose, 'oidcAccessPolicyUpdate');
+    assert.strictEqual(request.requestDigest, digest);
+  });
+  assert.strictEqual(completed, 'bound-ticket');
+  destroyOwned(component);
+});

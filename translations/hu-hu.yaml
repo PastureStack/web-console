@@ -3643,6 +3643,13 @@ siteAccess:
   required: 'A hozzáférés korlátozása csak az engedélyezett {individuals} és {collection} számára'
   listHeader: 'Engedélyezett {individuals} és {collection}'
   noIdentity: Semmi
+  errors:
+    authorizedIdentityRequired: Adjon hozzá legalább egy engedélyezett bejegyzést.
+    localRecoveryRequired: Az OpenID Connect-identitásforrás módosítása előtt öt percen belül igazoljon egy aktív helyi rendszergazdai fiókot.
+    mfaConfirmationRequired: Erősítse meg ezt a hozzáférésiszabályzat-módosítást többtényezős hitelesítéssel.
+    mfaConfirmationUnavailable: A többtényezős megerősítés átmenetileg nem érhető el. Próbálja újra később.
+    invalidAccessMode: Válasszon érvényes webhely-hozzáférési módot.
+    invalidAllowedIdentity: Csak érvényes OpenID Connect-felhasználók és -csoportok engedélyezhetők.
   users: Felhasználók
   groups: Csoportok
   organizations: Szervezetek
