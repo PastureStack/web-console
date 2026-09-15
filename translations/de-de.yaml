@@ -3675,6 +3675,13 @@ siteAccess:
   required: 'Schränke den Zugriff auf Authorisierte {individuals} und {collection}'
   listHeader: 'Authorisierte {individuals} und {collection}'
   noIdentity: Kine
+  errors:
+    authorizedIdentityRequired: Fügen Sie mindestens einen autorisierten Eintrag hinzu.
+    localRecoveryRequired: Bestätigen Sie innerhalb von fünf Minuten ein aktives lokales Systemadministratorkonto, bevor Sie die OpenID-Connect-Identitätsquelle ändern.
+    mfaConfirmationRequired: Bestätigen Sie diese Änderung der Zugriffsrichtlinie mit Multi-Faktor-Authentifizierung.
+    mfaConfirmationUnavailable: Die Multi-Faktor-Bestätigung ist vorübergehend nicht verfügbar. Versuchen Sie es später erneut.
+    invalidAccessMode: Wählen Sie einen gültigen Website-Zugriffsmodus aus.
+    invalidAllowedIdentity: Nur gültige OpenID-Connect-Benutzer und -Gruppen können autorisiert werden.
   users: Benutzer
   groups: Gruppen
   organizations: Organizationen

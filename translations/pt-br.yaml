@@ -3626,6 +3626,13 @@ siteAccess:
   required: 'Restringir o acesso apenas a autorizados {individuals} e {collection}'
   listHeader: 'Autorizado {individuals} e {collection}'
   noIdentity: Nenhum
+  errors:
+    authorizedIdentityRequired: Adicione pelo menos uma entrada autorizada.
+    localRecoveryRequired: Verifique uma conta ativa de administrador local do sistema nos cinco minutos anteriores à alteração da origem de identidade OpenID Connect.
+    mfaConfirmationRequired: Confirme esta alteração da política de acesso com autenticação multifator.
+    mfaConfirmationUnavailable: A confirmação multifator está temporariamente indisponível. Tente novamente mais tarde.
+    invalidAccessMode: Selecione um modo de acesso ao site válido.
+    invalidAllowedIdentity: Somente usuários e grupos OpenID Connect válidos podem ser autorizados.
   users: Usuários
   groups: Grupos
   organizations: Organizações

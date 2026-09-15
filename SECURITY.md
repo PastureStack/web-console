@@ -2,7 +2,7 @@
 
 ## Supported state
 
-The maintained compatibility release is the pure numeric `1.6.117` line used
+The maintained compatibility release is the pure numeric `1.6.118` line used
 by the current PastureStack Server release. Earlier branded coordinates are
 historical records and are not current release or deployment targets.
 Authentication-provider combinations must still be validated by an
@@ -37,6 +37,11 @@ administrator before activation.
   authentication material for that account.
 - Authenticator-enrollment QR codes are generated locally in the browser; a
   provisioning secret must never be sent to an external rendering service.
+- OIDC site-access expansion uses a one-time MFA confirmation bound to the
+  authenticated operator, fixed operation purpose, and canonical request
+  digest. The browser retries the save at most once and clears the confirmation
+  ticket on success, cancellation, and failure. Unrestricted mode must submit an
+  explicit empty authorized-identity list.
 - WebAuthn requires user verification, the exact origin, a matching
   relying-party ID, and a non-public-suffix relying-party domain. HTTP is
   accepted only for a loopback test origin.

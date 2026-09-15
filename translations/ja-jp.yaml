@@ -3569,6 +3569,13 @@ siteAccess:
   required: '認証済み {individuals} と {collection} のみに制限'
   listHeader: '認証済み {individuals} と {collection}'
   noIdentity: なし
+  errors:
+    authorizedIdentityRequired: 承認済みの項目を1件以上追加してください。
+    localRecoveryRequired: OpenID Connect の ID ソースを変更する前に、5 分以内に有効なローカルシステム管理者アカウントを確認してください。
+    mfaConfirmationRequired: このアクセス ポリシーの変更を多要素認証で確認してください。
+    mfaConfirmationUnavailable: 多要素認証を一時的に利用できません。後でもう一度お試しください。
+    invalidAccessMode: 有効なサイト アクセス モードを選択してください。
+    invalidAllowedIdentity: 有効な OpenID Connect ユーザーとグループのみ承認できます。
   users: ユーザー
   groups: グループ
   organizations: 組織

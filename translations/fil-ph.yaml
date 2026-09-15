@@ -3627,6 +3627,13 @@ siteAccess:
   required: 'Limitahan ang pag-access sa Awtorisadong {individuals} at {collection} lamang'
   listHeader: 'Awtorisadong {individuals} at {collection}'
   noIdentity: wala
+  errors:
+    authorizedIdentityRequired: Magdagdag ng kahit isang awtorisadong entry.
+    localRecoveryRequired: Patunayan ang isang aktibong lokal na system administrator account sa loob ng limang minuto bago baguhin ang OpenID Connect identity source.
+    mfaConfirmationRequired: Kumpirmahin ang pagbabagong ito sa patakaran sa access gamit ang multi-factor authentication.
+    mfaConfirmationUnavailable: Pansamantalang hindi magagamit ang multi-factor confirmation. Subukan muli mamaya.
+    invalidAccessMode: Pumili ng wastong site access mode.
+    invalidAllowedIdentity: Mga wastong OpenID Connect user at grupo lamang ang maaaring pahintulutan.
   users: Mga gumagamit
   groups: Mga grupo
   organizations: Mga organisasyon

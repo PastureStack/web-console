@@ -3677,6 +3677,13 @@ siteAccess:
   required: 'Обмежити доступ лише до авторизованих {individuals} і {collection}'
   listHeader: 'Авторизовані {individuals} і {collection}'
   noIdentity: Немає
+  errors:
+    authorizedIdentityRequired: Додайте принаймні один дозволений запис.
+    localRecoveryRequired: Підтвердьте активний локальний обліковий запис системного адміністратора протягом п’яти хвилин перед зміною джерела ідентифікації OpenID Connect.
+    mfaConfirmationRequired: Підтвердьте цю зміну політики доступу за допомогою багатофакторної автентифікації.
+    mfaConfirmationUnavailable: Багатофакторне підтвердження тимчасово недоступне. Спробуйте пізніше.
+    invalidAccessMode: Виберіть припустимий режим доступу до сайту.
+    invalidAllowedIdentity: Можна дозволяти лише припустимих користувачів і групи OpenID Connect.
   users: Користувачі
   groups: Групи
   organizations: Організації

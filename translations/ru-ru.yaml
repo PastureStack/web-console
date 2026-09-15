@@ -3653,6 +3653,13 @@ siteAccess:
   required: 'Ограничить доступ только авторизованным {individuals} и {collection}'
   listHeader: 'Авторизованные {individuals} и {collection}'
   noIdentity: Отсутсвует
+  errors:
+    authorizedIdentityRequired: Добавьте хотя бы одну разрешённую запись.
+    localRecoveryRequired: Подтвердите активную локальную учетную запись системного администратора в течение пяти минут перед изменением источника идентификации OpenID Connect.
+    mfaConfirmationRequired: Подтвердите изменение политики доступа с помощью многофакторной аутентификации.
+    mfaConfirmationUnavailable: Многофакторное подтверждение временно недоступно. Повторите попытку позже.
+    invalidAccessMode: Выберите допустимый режим доступа к сайту.
+    invalidAllowedIdentity: Можно разрешать только допустимых пользователей и группы OpenID Connect.
   users: Пользователи
   groups: Группы
   organizations: Организации
