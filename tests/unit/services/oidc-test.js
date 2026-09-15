@@ -21,6 +21,14 @@ function createService(transaction) {
   });
 }
 
+function authAttempt(index) {
+  return {
+    baseGeneration: null,
+    generation: `172635840000${index}.` + String(index).repeat(64),
+    startedAt: 1726358400000 + index,
+  };
+}
+
 test('exchanges a single-use state for an opaque authorization payload', function(assert) {
   let service = createService({
     codeVerifier: 'verifier',
@@ -59,6 +67,58 @@ test('rejects a mismatched state and still consumes the transaction', function(a
   }, /loginOidc\.error\.stateMismatch/);
   assert.strictEqual(service.get('tab-session').get(C.TABSESSION.OIDC_TRANSACTION), undefined, 'failed transaction cannot be replayed');
 
+  run(() => service.destroy());
+});
+
+test('returns the tab-scoped login generation captured before the OIDC redirect', function(assert) {
+  let attempt = authAttempt(1);
+  let service = createService({
+    authSessionAttempt: attempt,
+    codeVerifier: 'verifier',
+    createdAt: Date.now(),
+    nonce: 'nonce',
+    state: 'expected-state',
+  });
+
+  let result = service.consumeLoginAuthorization({
+    code: 'authorization-code',
+    state: 'expected-state',
+  });
+
+  assert.deepEqual(result.authSessionAttempt, attempt,
+    'the callback keeps the generation from before leaving this origin');
+  assert.strictEqual(JSON.parse(result.code).authorizationCode, 'authorization-code');
+  run(() => service.destroy());
+});
+
+test('captures the login generation before constructing the external OIDC redirect', async function(assert) {
+  let attempt = authAttempt(2);
+  let service = createService();
+  service.set('access', EmberObject.create({
+    authSession: EmberObject.create({
+      beginLogin() {
+        return attempt;
+      },
+    }),
+  }));
+  service.createTransaction = function() {
+    return resolve({
+      createdAt: Date.now(),
+      nonce: 'nonce',
+      state: 'state',
+    });
+  };
+
+  let url = await service.getAuthorizeUrl({
+    callbackUrl: 'https://stack.example.test/login/oidc-auth',
+    pkceEnabled: false,
+    redirectUrl: 'https://identity.example.test/authorize',
+  }, true);
+  let transaction = service.get('tab-session').get(C.TABSESSION.OIDC_TRANSACTION);
+
+  assert.deepEqual(transaction.authSessionAttempt, attempt,
+    'the tab persists the exact attempt before navigation leaves the origin');
+  assert.ok(url.includes('state=state'), 'the authorization URL uses the same persisted transaction');
   run(() => service.destroy());
 });
 

@@ -61,6 +61,13 @@ var C = {
     LANG: 'LANG',
   },
 
+  AUTH_SESSION: {
+    STORAGE_KEY: 'pasturestack.authSession.v1',
+    LOCK_NAME: 'pasturestack.authSession',
+    LOCK_DATABASE: 'pasturestack-auth-session',
+    LOGOUT_HEADER: 'X-PastureStack-Client-Session-Id',
+  },
+
   EXTERNAL_ID: {
     KIND_SEPARATOR: '://',
     GROUP_SEPARATOR: ':',

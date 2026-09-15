@@ -5,6 +5,7 @@ import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 import Errors from 'ui/utils/errors';
+import { isAuthenticationPath, safeInternalTarget } from 'ui/utils/auth-navigation';
 
 export default Route.extend({
   access         : service(),
@@ -24,6 +25,10 @@ export default Route.extend({
   loadingWatchdog: null,
   loadingTimeout : 30000,
   previousLang   : null,
+  sessionSyncPromise: null,
+  syncingGeneration: null,
+  lastSyncedGeneration: null,
+  pendingSyncGeneration: null,
 
   init() {
     this._super(...arguments);
@@ -62,6 +67,9 @@ export default Route.extend({
     },
 
     loading(transition) {
+      if ( transition && !transition.authGeneration ) {
+        transition.authGeneration = this.get('access').captureGeneration();
+      }
       this.incrementProperty('loadingId');
       let id = this.get('loadingId');
       this.showLoadingOverlay(id);
@@ -85,9 +93,10 @@ export default Route.extend({
       /*if we dont abort the transition we'll call the model calls again and fail transition correctly*/
       transition.abort();
 
-      if ( [401,403].indexOf(Errors.status(err)) >= 0 )
+      if ( Errors.status(err) === 401 )
       {
-        this.send('logout',transition,true);
+        this.send('sessionInvalid', transition, true, null,
+          transition && transition.authGeneration, 401);
         return;
       }
 
@@ -106,36 +115,79 @@ export default Route.extend({
     },
 
     logout(transition, timedOut, errorMsg) {
-      let session = this.get('session');
-      let access = this.get('access');
-
-      access.clearToken().finally(() => {
-        session.set(C.SESSION.ACCOUNT_ID,null);
-
-        this.get('tab-session').clear();
-
-        access.clearSessionKeys();
-
-        if ( transition && !session.get(C.SESSION.BACK_TO) ) {
-          session.set(C.SESSION.BACK_TO, window.location.href);
+      return this.get('access').explicitLogout().then((outcome) => {
+        if ( outcome && outcome.status === 'stale' ) {
+          this.reloadForSession();
+          return;
         }
-
-        if ( this.get('modal.modalVisible') ) {
-          this.get('modal').toggleModal();
-        }
-
-        let params = {queryParams: {}};
-
-        if ( timedOut ) {
-          params.queryParams.timedOut = true;
-        }
-
-        if ( errorMsg ) {
-          params.queryParams.errorMsg = errorMsg;
-        }
-
-        this.get('router').transitionTo('login', params);
+        this.transitionToLogin(transition, timedOut, errorMsg);
+      }).catch((error) => {
+        this.controllerFor('application').set('error', error);
+        this.get('router').transitionTo('failWhale');
       });
+    },
+
+    sessionInvalid(transition, timedOut, errorMsg, generation, status=401) {
+      generation = generation || (transition && transition.authGeneration) ||
+        this.get('access').captureGeneration();
+      return this.get('access').handlePassiveFailure(generation, status).then((outcome) => {
+        if ( outcome.status === 'adopted' || outcome.status === 'stale' ) {
+          this.reloadForSession();
+        } else if ( outcome.status === 'active' && transition ) {
+          // A pre-fix tab can still remove the shared JavaScript cookie after
+          // its protected DELETE is rejected by the server.  If this tab
+          // restored its own in-memory token snapshot, the failed transition
+          // was already aborted and must be resumed without another login.
+          this.reloadForSession();
+        } else if ( outcome.status === 'invalid' ) {
+          this.transitionToLogin(transition, timedOut, errorMsg);
+        } else if ( outcome.status === 'forbidden' ) {
+          this.get('router').replaceWith('authenticated');
+        }
+      }).catch((error) => {
+        this.controllerFor('application').set('error', error);
+        this.get('router').transitionTo('failWhale');
+      });
+    },
+
+    authSessionChanged(change) {
+      let generation = change && change.newRecord && change.newRecord.generation;
+      if ( generation && generation === this.get('lastSyncedGeneration') ) {
+        return this.get('sessionSyncPromise');
+      }
+      if ( this.get('sessionSyncPromise') ) {
+        if ( generation && generation === this.get('syncingGeneration') ) {
+          return this.get('sessionSyncPromise');
+        }
+        this.set('pendingSyncGeneration', generation || 'removed');
+        return this.get('sessionSyncPromise');
+      }
+
+      this.set('syncingGeneration', generation || 'removed');
+      let promise = this.get('access').adoptSharedSession().then((outcome) => {
+        if ( outcome.status === 'adopted' ) {
+          this.set('lastSyncedGeneration', outcome.generation);
+          this.reloadForSession();
+        } else if ( outcome.status === 'invalid' ) {
+          this.transitionToLogin(null, true);
+        }
+        return outcome;
+      }).finally(() => {
+        this.setProperties({
+          sessionSyncPromise: null,
+          syncingGeneration : null,
+        });
+        if ( this.get('pendingSyncGeneration') ) {
+          this.set('pendingSyncGeneration', null);
+          scheduleOnce('actions', this, function() {
+            this.send('authSessionChanged', {
+              newRecord: this.get('access.authSession').readShared(),
+            });
+          });
+        }
+      });
+      this.set('sessionSyncPromise', promise);
+      return promise;
     },
 
     langToggle() {
@@ -207,12 +259,49 @@ export default Route.extend({
     let backTo = session.get(C.SESSION.BACK_TO);
     session.set(C.SESSION.BACK_TO, undefined);
 
-    if ( backTo ) {
-      console.log('Going back to', backTo);
-      window.location.href = backTo;
+    let target = safeInternalTarget(backTo);
+    if ( target ) {
+      window.location.replace(target);
     } else {
       this.get('router').replaceWith('authenticated');
     }
+  },
+
+  transitionToLogin(transition, timedOut, errorMsg) {
+    let session = this.get('session');
+    session.set(C.SESSION.ACCOUNT_ID, null);
+    this.get('tab-session').clear();
+
+    if ( transition && !session.get(C.SESSION.BACK_TO) ) {
+      let returnTo = safeInternalTarget(window.location.href);
+      if ( returnTo && !isAuthenticationPath(returnTo) ) {
+        session.set(C.SESSION.BACK_TO, returnTo);
+      }
+    }
+
+    if ( this.get('modal.modalVisible') ) {
+      this.get('modal').toggleModal();
+    }
+
+    let params = {queryParams: {}};
+    if ( timedOut ) {
+      params.queryParams.timedOut = true;
+    }
+    if ( errorMsg ) {
+      params.queryParams.errorMsg = errorMsg;
+    }
+    this.get('router').transitionTo('login', params);
+  },
+
+  reloadForSession() {
+    let current = safeInternalTarget(window.location.href);
+    let backTo = safeInternalTarget(this.get(`session.${C.SESSION.BACK_TO}`));
+    let target = current && !isAuthenticationPath(current) ? current : backTo;
+    if ( !target || isAuthenticationPath(target) ) {
+      this.get('router').replaceWith('authenticated');
+      return;
+    }
+    window.location.replace(target);
   },
 
   model(params, transition) {
@@ -233,8 +322,8 @@ export default Route.extend({
     });
 
     if ( params.redirectTo ) {
-      let path = params.redirectTo;
-      if ( path.substr(0,1) === '/' ) {
+      let path = safeInternalTarget(params.redirectTo);
+      if ( path ) {
         this.get('session').set(C.SESSION.BACK_TO, path);
       }
     }
@@ -253,9 +342,9 @@ export default Route.extend({
         return reject('oidcTest');
       }
 
-      let oidcCode;
+      let oidcLogin;
       try {
-        oidcCode = this.get('oidc').consumeAuthorization({
+        oidcLogin = this.get('oidc').consumeLoginAuthorization({
           code: params.code,
           error: params.oidcError,
           errorDescription: params.error_description,
@@ -269,9 +358,13 @@ export default Route.extend({
         return reject(err);
       }
 
-      return languagePromise.then(() => this.get('access').login(oidcCode)).then((xhr) => {
+      return languagePromise.then(() => this.get('access').login(
+        oidcLogin.code, undefined, undefined, oidcLogin.authSessionAttempt
+      )).then((xhr) => {
         transition.abort();
-        if ( xhr.body && xhr.body.mfaRequired ) {
+        if ( xhr.authSessionSuperseded ) {
+          this.reloadForSession();
+        } else if ( xhr.body && xhr.body.mfaRequired ) {
           this.get('router').transitionTo('login');
         } else {
           this.finishLogin();
@@ -302,7 +395,9 @@ export default Route.extend({
           // if we dont then model hook runs twice to finish the transition itself
           transition.abort();
           // Can't call this.send() here because the initial transition isn't done yet
-          if ( xhr.body && xhr.body.mfaRequired ) {
+          if ( xhr.authSessionSuperseded ) {
+            this.reloadForSession();
+          } else if ( xhr.body && xhr.body.mfaRequired ) {
             this.get('router').transitionTo('login');
           } else {
             this.finishLogin();

@@ -2,7 +2,7 @@
 
 ## Supported state
 
-The maintained compatibility release is the pure numeric `1.6.115` line used
+The maintained compatibility release is the pure numeric `1.6.117` line used
 by the current PastureStack Server release. Earlier branded coordinates are
 historical records and are not current release or deployment targets.
 Authentication-provider combinations must still be validated by an
@@ -27,6 +27,10 @@ administrator before activation.
 - MFA login must complete before a browser session is stored. TOTP and email
   challenges are rate-limited, single-use, and short-lived; email is an
   account-recovery channel, not an authentication factor.
+- Browser tabs share one origin-level authentication mutex. Only explicit user
+  logout may revoke a server token; passive failures reconcile session
+  generation ownership without clearing or revoking a newer session. JWTs must
+  never be written to Web Storage, URLs, or diagnostics.
 - MFA enrollment, recovery-code generation, and recovery-address verification
   require the account holder's own authenticated session. Administrators may
   inspect and revoke another account's factors, but cannot create or retrieve

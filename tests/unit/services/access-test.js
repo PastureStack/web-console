@@ -7,6 +7,82 @@ import AccessService from 'ui/services/access';
 
 module('Unit | Service | access');
 
+function authSessionStub() {
+  let generation = '1726358400000.0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+  let pending;
+  let shared;
+
+  return EmberObject.create({
+    beginLogin() {
+      pending = {baseGeneration: shared && shared.generation, generation, startedAt: 1726358400000};
+      return pending;
+    },
+    resumeLogin(attempt) {
+      pending = attempt;
+      return attempt;
+    },
+    currentLogin() {
+      return pending || this.beginLogin();
+    },
+    completeLogin() {
+      pending = null;
+    },
+    runExclusive(callback) {
+      return resolve().then(callback);
+    },
+    readShared() {
+      return shared;
+    },
+    commit(committedGeneration, accountId, tokenSnapshot) {
+      shared = {generation: committedGeneration, accountId: accountId || null, committedAt: Date.now()};
+      this.setProperties({tabGeneration: committedGeneration, tokenSnapshot});
+      return shared;
+    },
+    adopt(record, tokenSnapshot) {
+      shared = record;
+      this.setProperties({tabGeneration: record.generation, tokenSnapshot});
+    },
+    isNewer() {
+      return false;
+    },
+    isAttemptSuperseded() {
+      return false;
+    },
+    capture() {
+      return this.get('tabGeneration');
+    },
+    owns(value) {
+      return value === this.get('tabGeneration');
+    },
+    removeShared() {
+      shared = null;
+    },
+    forget() {
+      this.setProperties({tabGeneration: null, tokenSnapshot: null});
+    },
+  });
+}
+
+function cookieJar(onWrite) {
+  let value;
+  return EmberObject.create({
+    get() {
+      return value;
+    },
+    setWithOptions(name, next, options) {
+      value = next;
+      if ( onWrite ) {
+        onWrite(name, next, options);
+      }
+      return true;
+    },
+    remove() {
+      value = undefined;
+      return true;
+    },
+  });
+}
+
 test('uses an explicit provider only for the activation token exchange', function(assert) {
   assert.expect(4);
 
@@ -14,10 +90,9 @@ test('uses an explicit provider only for the activation token exchange', functio
   let sessionValues;
   let request;
   let service = AccessService.create({
-    cookies: EmberObject.create({
-      setWithOptions(name, value) {
-        cookie = {name, value};
-      },
+    authSession: authSessionStub(),
+    cookies: cookieJar((name, value) => {
+      cookie = {name, value};
     }),
     provider: 'localauthconfig',
     session: EmberObject.create({
@@ -57,6 +132,7 @@ test('suspends and restores the current provider session around activation', fun
     [C.SESSION.USER_ID]: '1u1',
   };
   let service = AccessService.create({
+    authSession: authSessionStub(),
     cookies: EmberObject.create({
       get() {
         return cookieValue;
@@ -106,6 +182,7 @@ test('holds an MFA challenge without creating a browser session', function(asser
     mfaMethods: ['totp'],
   };
   let service = AccessService.create({
+    authSession: authSessionStub(),
     cookies: EmberObject.create({
       setWithOptions() {
         cookieWritten = true;
@@ -140,10 +217,9 @@ test('creates the browser session only after MFA succeeds', function(assert) {
   let cookie;
   let sessionValues;
   let service = AccessService.create({
-    cookies: EmberObject.create({
-      setWithOptions(name, value) {
-        cookie = {name, value};
-      },
+    authSession: authSessionStub(),
+    cookies: cookieJar((name, value) => {
+      cookie = {name, value};
     }),
     mfaChallenge: {mfaRequired: true},
     session: EmberObject.create({
@@ -185,6 +261,7 @@ test('preserves other factor options while an email recovery code is requested',
     webAuthnOptions: {challenge: 'browser-challenge'},
   };
   let service = AccessService.create({
+    authSession: authSessionStub(),
     mfaChallenge: original,
     userStore: EmberObject.create({
       rawRequest(options) {
