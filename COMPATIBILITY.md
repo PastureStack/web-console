@@ -16,6 +16,14 @@ and the normal platform token endpoint; an authorization code is never reused.
 The Web Console stores PKCE verifier, state, and nonce only for the active
 browser flow and clears them after completion or failure.
 
+Authentication errors may arrive either as a transport wrapper or as a
+top-level structured rejection. Both forms must retain the stable error code
+and the operation-bound MFA request digest; malformed digests never trigger a
+confirmation retry. Load-balancer target selectors use explicit one-way data
+flow back to the owning `PortRule.serviceId`, and the resource serializer must
+carry that value in editing PUT requests. API hydration remains authoritative
+over local model defaults, including nullable health states.
+
 Catalog localization is additive. The canonical `name` and `description`
 fields remain unchanged, while optional
 `io.pasturestack.catalog.name.<locale>` and

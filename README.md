@@ -8,13 +8,25 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.118`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.119`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.119` closes three persistence regressions found during the
+`1.6.442` integrated runtime review. External-service API hydration can now
+replace the local healthy default, including with `null`, without assigning to
+a getter-only computed property. OIDC site-access updates retain stable error
+codes and bound MFA request digests when a rejection object is returned at the
+top level. Load-balancer backend selection now follows an explicit child action
+to the owning `PortRule`, so edit and upgrade PUT payloads retain the selected
+`serviceId`. Browser tests cover the real model setter, the strict one-retry MFA
+boundary, and the production DOM selector through the submitted API payload.
+Pair this release with Authentication Service `v0.4.38` and Engine `0.183.304`
+or newer.
 
 Release `1.6.118` fixes OIDC site-access policy editing without weakening the
 provider enablement boundary. Unrestricted mode clears stale authorized

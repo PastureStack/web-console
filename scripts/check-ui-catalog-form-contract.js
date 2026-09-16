@@ -158,6 +158,20 @@ if ( !catalogTemplate.includes('{{component question.inputComponent field=questi
   issues.push('app/components/new-catalog/template.hbs: dynamic Catalog question renderer contract changed');
 }
 
+const serviceInputTemplate = fs.readFileSync(
+  path.join(appRoot, 'components/schema/input-service/template.hbs'), 'utf8'
+);
+if ( !serviceInputTemplate.includes('onchange={{action "selectService" value="target.value"}}') ) {
+  issues.push('app/components/schema/input-service/template.hbs: explicit selection action is missing');
+}
+
+const balancerRulesTemplate = fs.readFileSync(
+  path.join(appRoot, 'components/form-balancer-rules/template.hbs'), 'utf8'
+);
+if ( !balancerRulesTemplate.includes('changed=(action "setRuleService" rule)') ) {
+  issues.push('app/components/form-balancer-rules/template.hbs: backend selection is not owned by the PortRule');
+}
+
 function memberChain(node) {
   if ( !node ) {
     return [];

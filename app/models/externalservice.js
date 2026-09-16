@@ -6,9 +6,7 @@ const esc = escapeHtml;
 var ExternalService = Service.extend({
   type: 'externalService',
 
-  healthState: function() {
-    return 'healthy';
-  }.property(),
+  healthState: 'healthy',
 
   displayDetail: function() {
     var out = '';

@@ -113,7 +113,12 @@
                   {{#if rule.isSelector}}
                     {{input type="text" class="form-control input-sm" value=rule.selector placeholder=(t 'formBalancerRules.selector.placeholder')}}
                   {{else}}
-                    {{schema/input-service selectClass="form-control input-sm" canBalanceTo=true selected=rule.serviceId}}
+                    {{schema/input-service
+                      selectClass="form-control input-sm"
+                      canBalanceTo=true
+                      selected=rule.serviceId
+                      changed=(action "setRuleService" rule)
+                    }}
                   {{/if}}
                 </td>
               {{/if}}
