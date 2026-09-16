@@ -1,5 +1,5 @@
 <div class="input-service">
-  <select class="{{this.selectClass}}" onchange={{action (mut this.selected) value="target.value"}}>
+  <select class="{{this.selectClass}}" onchange={{action "selectService" value="target.value"}}>
     <option selected={{and (eq this.selected null) (not-eq this.customMode true)}}>{{t 'schema.inputService.prompt'}}</option>
     {{#if this.showCustomOption}}
       <option value="customMode" selected={{eq this.customMode true}}>{{t 'schema.inputService.custom.prompt'}}</option>

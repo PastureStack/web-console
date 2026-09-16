@@ -18,6 +18,13 @@ export default Component.extend({
   field: null,              // Read default from a schema resourceField
   value: null,              // stackName/serviceName string output
 
+  actions: {
+    selectService(id) {
+      this.set('selected', id || null);
+      this.sendAction('changed', id || null);
+    },
+  },
+
   init() {
     this._super(...arguments);
 

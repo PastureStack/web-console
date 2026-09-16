@@ -115,6 +115,12 @@ test('retries an access expansion only with the bound MFA confirmation', async f
 });
 
 test('extracts stable errors from direct and xhr response shapes', function(assert) {
+  let direct = {
+    code: 'MfaConfirmationRequired',
+    requestDigest: 'd'.repeat(64),
+  };
+  assert.strictEqual(configUpdateErrorBody(direct), direct,
+    'a top-level rejection keeps its bound MFA challenge fields');
   assert.deepEqual(configUpdateErrorBody({body: '{"code":"LocalRecoveryRequired"}'}),
     {code: 'LocalRecoveryRequired'});
   assert.deepEqual(configUpdateErrorBody({xhr: {responseJSON: {code: 'MfaConfirmationRequired'}}}),

@@ -23,7 +23,7 @@ export function configUpdateErrorBody(err) {
       body = null;
     }
   }
-  return body || {};
+  return body || err || {};
 }
 
 export function configUpdateErrorCode(err) {

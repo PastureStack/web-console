@@ -65,6 +65,10 @@ export default Component.extend({
   }.on('init'),
 
   actions: {
+    setRuleService(rule, serviceId) {
+      rule.set('serviceId', serviceId || null);
+    },
+
     addRule(isSelector) {
       let max = 0;
       let rules = this.get('rules');
