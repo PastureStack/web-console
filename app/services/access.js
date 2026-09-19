@@ -273,16 +273,25 @@ export default Service.extend({
   },
 
   adoptSharedSession() {
-    let shared = this.get('authSession').readShared();
-    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
-    if ( !shared || !cookie ) {
-      return this.get('authSession').runExclusive(() => {
+    let authSession = this.get('authSession');
+    // Read the cookie and generation only after entering the same mutex used
+    // by login commit.  Reading first allowed a peer notification to observe
+    // the cookie write but miss the immediately following generation commit,
+    // then incorrectly conclude that the new session was invalid.
+    return authSession.runExclusive(() => {
+      let shared = authSession.readShared();
+      let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+      if ( !shared || !cookie ) {
         this._clearOwnedLocalState(this.captureGeneration());
         return {status: 'invalid'};
-      });
-    }
-
-    return this._validateAndAdopt(shared, cookie);
+      }
+      return {status: 'validate', shared, cookie};
+    }).then((outcome) => {
+      if ( outcome.status !== 'validate' ) {
+        return outcome;
+      }
+      return this._validateAndAdopt(outcome.shared, outcome.cookie);
+    });
   },
 
   handlePassiveFailure(generation, status) {

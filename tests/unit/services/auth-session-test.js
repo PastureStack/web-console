@@ -154,27 +154,21 @@ module('Unit | Service | auth-session', function(hooks) {
   });
 
   test('storage events report ownership changes without invoking logout', function(assert) {
-    assert.expect(4);
-    let originalLookup = window.lc;
+    assert.expect(3);
     let generation = '1726358400000.' + 'a'.repeat(64);
     let record = {generation, accountId: '1a1', committedAt: 1726358400100};
     let service;
-    window.lc = function(name) {
-      assert.strictEqual(name, 'application', 'the existing application route receives the change');
-      return {
-        send(action, change) {
-          assert.strictEqual(action, 'authSessionChanged', 'the event is reconciliation, never logout');
-          assert.strictEqual(change.newRecord.generation, generation, 'the committed generation is forwarded');
-          assert.deepEqual(Object.keys(change.newRecord).sort(), ['accountId', 'committedAt', 'generation'],
-            'only non-sensitive metadata crosses tabs');
-        },
-      };
-    };
 
     try {
       service = AuthSessionService.create({lockManager: {request(name, options, callback) {
         return resolve().then(callback);
       }}});
+      service.on('changed', (change) => {
+        assert.strictEqual(change.newRecord.generation, generation, 'the committed generation is forwarded');
+        assert.deepEqual(Object.keys(change.newRecord).sort(), ['accountId', 'committedAt', 'generation'],
+          'only non-sensitive metadata crosses tabs');
+        assert.strictEqual(change.oldRecord, null, 'the event preserves the previous ownership record');
+      });
       // Invoke the service-owned listener directly.  The full Ember test app
       // can also have its singleton service alive; dispatching globally would
       // test both instances and double the assertions without adding coverage.
@@ -185,10 +179,63 @@ module('Unit | Service | auth-session', function(hooks) {
         storageArea: window.localStorage,
       }));
     } finally {
-      window.lc = originalLookup;
       if ( service ) {
         run(() => service.destroy());
       }
+    }
+  });
+
+  test('BroadcastChannel delivers committed and removed generations when storage events are unavailable', function(assert) {
+    assert.expect(6);
+    let originalBroadcastChannel = window.BroadcastChannel;
+    let channels = [];
+    class FakeBroadcastChannel {
+      constructor(name) {
+        this.name = name;
+        channels.push(this);
+      }
+
+      postMessage(data) {
+        channels.filter((channel) => channel !== this && channel.name === this.name)
+          .forEach((channel) => channel.onmessage && channel.onmessage({data}));
+      }
+
+      close() {
+        channels = channels.filter((channel) => channel !== this);
+      }
+    }
+
+    let first;
+    let second;
+    try {
+      window.BroadcastChannel = FakeBroadcastChannel;
+      let lockManager = {request(name, options, callback) {
+        return resolve().then(callback);
+      }};
+      first = AuthSessionService.create({lockManager});
+      second = AuthSessionService.create({lockManager});
+      let generation = '1726358400000.' + 'b'.repeat(64);
+      let changes = [];
+      second.on('changed', (change) => changes.push(change));
+
+      first.commit(generation, '1a1', 'memory-only-jwt');
+      assert.strictEqual(changes.length, 1, 'a peer receives the committed generation without a storage event');
+      assert.strictEqual(changes[0].newRecord.generation, generation, 'the committed generation is preserved');
+      assert.deepEqual(Object.keys(changes[0].newRecord).sort(), ['accountId', 'committedAt', 'generation'],
+        'the channel carries only non-sensitive ownership metadata');
+      assert.notOk(JSON.stringify(changes[0]).includes('memory-only-jwt'), 'the token snapshot is never broadcast');
+
+      first.removeShared(generation);
+      assert.strictEqual(changes.length, 2, 'a peer also receives explicit session removal');
+      assert.strictEqual(changes[1].newRecord, null, 'session removal is represented without a replacement generation');
+    } finally {
+      if ( first ) {
+        run(() => first.destroy());
+      }
+      if ( second ) {
+        run(() => second.destroy());
+      }
+      window.BroadcastChannel = originalBroadcastChannel;
     }
   });
 });

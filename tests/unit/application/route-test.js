@@ -118,17 +118,52 @@ test('a route 401 uses passive generation-aware reconciliation', function(assert
     abort() {
       assert.ok(true, 'the failed transition is stopped');
     },
+    send(action, sentTransition, timedOut, error, generation) {
+      assert.strictEqual(action, 'sessionInvalid', 'route failures cannot invoke explicit logout');
+      assert.strictEqual(sentTransition, transition, 'the failed transition is retained');
+      assert.strictEqual(timedOut, true, 'the user sees the expired-session reason if ownership is confirmed');
+      assert.strictEqual(generation, 'request-generation', 'the request starting generation is retained');
+    },
   };
   let route = ApplicationRoute.create();
   route.hideLoadingOverlay = function() {};
-  route.send = function(action, sentTransition, timedOut, error, generation) {
-    assert.strictEqual(action, 'sessionInvalid', 'route failures cannot invoke explicit logout');
-    assert.strictEqual(sentTransition, transition, 'the failed transition is retained');
-    assert.strictEqual(timedOut, true, 'the user sees the expired-session reason if ownership is confirmed');
-    assert.strictEqual(generation, 'request-generation', 'the request starting generation is retained');
+  route.send = function() {
+    assert.ok(false, 'the application route must not dispatch into an uncommitted route hierarchy');
   };
 
   route.get('actions').error.call(route, {xhr: {status: 401}}, transition);
+  run(() => route.destroy());
+});
+
+test('an initial 401 without a transition uses direct passive recovery', async function(assert) {
+  let loginTransitions = 0;
+  let route = ApplicationRoute.create({
+    access: {
+      captureGeneration() {
+        return 'initial-generation';
+      },
+      handlePassiveFailure(generation, status) {
+        assert.strictEqual(generation, 'initial-generation', 'the current tab generation is retained');
+        assert.strictEqual(status, 401, 'the failure remains passive authentication recovery');
+        return Promise.resolve({status: 'invalid'});
+      },
+    },
+  });
+  route.hideLoadingOverlay = function() {};
+  route.send = function() {
+    assert.ok(false, 'Route#send is illegal before the first hierarchy commits');
+  };
+  route.transitionToLogin = function(transition, timedOut) {
+    assert.strictEqual(transition, null, 'there is no fabricated transition');
+    assert.strictEqual(timedOut, true, 'confirmed invalid ownership preserves the timeout reason');
+    loginTransitions++;
+  };
+
+  let handled = route.get('actions').error.call(route, {xhr: {status: 401}}, null);
+  assert.strictEqual(handled, false, 'the initial error is handled without bubbling');
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.strictEqual(loginTransitions, 1, 'direct recovery reaches the login route exactly once');
   run(() => route.destroy());
 });
 
@@ -202,4 +237,80 @@ test('duplicate cross-tab generation events validate and reload exactly once', a
   assert.strictEqual(reloads, 1, 'the route reloads once without a generation loop');
   assert.strictEqual(route.get('lastSyncedGeneration'), generation, 'the applied generation is remembered');
   run(() => route.destroy());
+});
+
+test('a login generation queued behind logout removal is reconciled after the barrier releases', async function(assert) {
+  let releaseRemoval;
+  let removal = new Promise((resolve) => {
+    releaseRemoval = resolve;
+  });
+  let generation = '1726358400001.' + 'b'.repeat(64);
+  let calls = 0;
+  let reloads = 0;
+  let loginTransitions = 0;
+  let route = ApplicationRoute.create({
+    authSession: {
+      readShared() {
+        return {generation, accountId: '1a1', committedAt: 1726358400100};
+      },
+    },
+    access: {
+      adoptSharedSession() {
+        calls++;
+        return calls === 1 ? removal : Promise.resolve({status: 'adopted', generation});
+      },
+    },
+  });
+  route.reloadForSession = function() {
+    reloads++;
+  };
+  route.transitionToLogin = function() {
+    loginTransitions++;
+  };
+
+  let removing = route.syncAuthSessionChange({newRecord: null});
+  let queued = route.syncAuthSessionChange({newRecord: {generation}});
+  assert.strictEqual(queued, removing, 'the login event waits behind the active removal reconciliation');
+  releaseRemoval({status: 'invalid'});
+  await removing;
+  let adopting = route.get('sessionSyncPromise');
+  if ( adopting ) {
+    await adopting;
+  }
+
+  assert.strictEqual(calls, 2, 'the latest shared generation is validated after removal settles');
+  assert.strictEqual(loginTransitions, 1, 'the confirmed removal may show the login route once');
+  assert.strictEqual(reloads, 1, 'the queued login then reloads the tab into the authenticated session');
+  assert.strictEqual(route.get('lastSyncedGeneration'), generation, 'the queued generation becomes the applied owner');
+  run(() => route.destroy());
+});
+
+test('the application route subscribes with a stable Evented callback', function(assert) {
+  let listener;
+  let removed;
+  let service = {
+    on(name, callback) {
+      assert.strictEqual(name, 'changed', 'the route subscribes to ownership changes');
+      assert.strictEqual(typeof callback, 'function', 'the compatible two-argument Evented form receives a callback');
+      listener = callback;
+    },
+    off(name, callback) {
+      removed = {name, callback};
+    },
+  };
+  let received;
+  let route = ApplicationRoute.create({authSession: service});
+  route.syncAuthSessionChange = function(change) {
+    received = change;
+  };
+
+  route.ensureAuthSessionSubscription();
+  let change = {newRecord: {generation: '1726358400002.' + 'c'.repeat(64)}};
+  listener(change);
+  assert.strictEqual(received, change, 'the Evented callback reaches reconciliation directly');
+  let stable = listener;
+  route.ensureAuthSessionSubscription();
+  assert.strictEqual(listener, stable, 'repeated route hooks do not replace or duplicate the listener');
+  run(() => route.destroy());
+  assert.deepEqual(removed, {name: 'changed', callback: stable}, 'destruction removes the exact callback');
 });
