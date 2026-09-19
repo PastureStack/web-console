@@ -1,4 +1,6 @@
 import Service from '@ember/service';
+import Evented from '@ember/object/evented';
+import { run } from '@ember/runloop';
 import { Promise, reject, resolve } from 'rsvp';
 import C from 'ui/utils/constants';
 
@@ -6,6 +8,7 @@ const GENERATION_RE = /^\d{13}\.[0-9a-f]{64}$/;
 const LOCK_STORE = 'locks';
 const LOCK_LEASE_MS = 30000;
 const LOCK_RETRY_MS = 25;
+const SESSION_CHANNEL = 'pasturestack.authSession.v1.events';
 
 function randomHex(bytes) {
   let crypto = window.crypto;
@@ -69,7 +72,7 @@ function parseAttempt(value) {
 
 export { GENERATION_RE, parseRecord, parseAttempt, generationStartedAt };
 
-export default Service.extend({
+export default Service.extend(Evented, {
   tabGeneration: null,
   tokenSnapshot: null,
   accountId: null,
@@ -88,20 +91,51 @@ export default Service.extend({
         newRecord: parseRecord(event.newValue),
       };
 
-      try {
-        window.lc('application').send('authSessionChanged', change);
-      } catch (e) {
-        // The application route may not exist yet during initial boot.  The
-        // authenticated route will reconcile the shared cookie before use.
-      }
+      this._emitChange(change);
     };
     window.addEventListener('storage', this._storageHandler);
+
+    if ( typeof window.BroadcastChannel === 'function' ) {
+      this._sessionChannel = new window.BroadcastChannel(SESSION_CHANNEL);
+      this._sessionChannel.onmessage = (event) => {
+        let value = event && event.data;
+        if ( !value || value.type !== 'sessionChanged' ) {
+          return;
+        }
+        this._emitChange({
+          oldRecord: parseRecord(value.oldRecord),
+          newRecord: parseRecord(value.newRecord),
+        });
+      };
+    }
   },
 
   willDestroy() {
     window.removeEventListener('storage', this._storageHandler);
     this._storageHandler = null;
+    if ( this._sessionChannel ) {
+      this._sessionChannel.close();
+      this._sessionChannel = null;
+    }
     this._super(...arguments);
+  },
+
+  _emitChange(change) {
+    // Keep the service boundary explicit.  window.lc() resolves a
+    // controller, not the application route that owns session actions; the
+    // resulting exception used to be swallowed and left peer tabs stranded
+    // on the login screen despite a valid shared cookie.
+    run(() => this.trigger('changed', change));
+  },
+
+  _broadcastChange(oldRecord, newRecord) {
+    if ( this._sessionChannel ) {
+      this._sessionChannel.postMessage({
+        type: 'sessionChanged',
+        oldRecord: parseRecord(oldRecord),
+        newRecord: parseRecord(newRecord),
+      });
+    }
   },
 
   createGeneration() {
@@ -186,6 +220,7 @@ export default Service.extend({
     };
     window.localStorage.setItem(C.AUTH_SESSION.STORAGE_KEY, JSON.stringify(record));
     this.adopt(record, tokenSnapshot);
+    this._broadcastChange(previous, record);
     return record;
   },
 
@@ -221,6 +256,7 @@ export default Service.extend({
     let shared = this.readShared();
     if ( shared && (!generation || shared.generation === generation) ) {
       window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+      this._broadcastChange(shared, null);
       return true;
     }
     return false;

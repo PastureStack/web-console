@@ -238,6 +238,44 @@ module('Unit | Service | access session race', function(hooks) {
     });
   });
 
+  test('a peer reads cookie and generation only after the login mutex releases', async function(assert) {
+    let browser = {cookie: undefined};
+    let releaseLock = deferred();
+    let lockManager = {
+      request(name, options, callback) {
+        return releaseLock.promise.then(callback);
+      },
+    };
+    let auth = AuthSessionService.create({lockManager});
+    let tokenReads = 0;
+    let access = createAccess(browser, auth, () => {
+      tokenReads++;
+      return resolve({body: {data: [{accountId: '1a1', user: 'administrator'}]}});
+    });
+    let committed = generation(360);
+
+    let adopting = access.adoptSharedSession();
+    // Model acceptLogin's ordering while it still owns the cross-tab mutex:
+    // cookie first, then the non-sensitive generation commit.
+    browser.cookie = 'fresh-login-token';
+    window.localStorage.setItem(C.AUTH_SESSION.STORAGE_KEY, JSON.stringify({
+      generation: committed,
+      accountId: '1a1',
+      committedAt: 1726358400360,
+    }));
+    releaseLock.resolve();
+    let outcome = await adopting;
+
+    assert.strictEqual(outcome.status, 'adopted', 'the waiting tab adopts instead of caching a pre-lock empty read');
+    assert.strictEqual(tokenReads, 1, 'the committed session is validated once');
+    assert.strictEqual(auth.capture(), committed, 'the peer owns the generation committed behind the barrier');
+    assert.strictEqual(browser.cookie, 'fresh-login-token', 'the peer never clears the newly written cookie');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
+
   test('a manual refresh rebuilds the in-memory session from the cookie and committed generation', async function(assert) {
     let browser = {cookie: 'refresh-token'};
     let generationBeforeRefresh = generation(375);
@@ -263,6 +301,44 @@ module('Unit | Service | access session race', function(hooks) {
       'the token snapshot is rebuilt only in memory');
     assert.notOk(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY).includes('refresh-token'),
       'the JWT remains absent from Web Storage');
+    run(() => {
+      access.destroy();
+      refreshedAuth.destroy();
+    });
+  });
+
+  test('a direct logout after refresh adopts then revokes exactly the revalidated session', async function(assert) {
+    let browser = {cookie: 'refreshed-owned-token'};
+    let generationBeforeRefresh = generation(390);
+    window.localStorage.setItem(C.AUTH_SESSION.STORAGE_KEY, JSON.stringify({
+      generation: generationBeforeRefresh,
+      accountId: '1a1',
+      committedAt: 1726358400390,
+    }));
+    let refreshedAuth = AuthSessionService.create({lockManager: serialLockManager()});
+    let reads = 0;
+    let deletes = 0;
+    let header;
+    let access = createAccess(browser, refreshedAuth, (options) => {
+      if ( options.method === 'DELETE' ) {
+        deletes++;
+        header = options.headers[C.AUTH_SESSION.LOGOUT_HEADER];
+        return resolve({status: 204});
+      }
+      reads++;
+      return resolve({body: {data: [{accountId: '1a1', user: 'administrator'}]}});
+    });
+
+    await access.ensureSession();
+    let outcome = await access.explicitLogout();
+
+    assert.strictEqual(reads, 1, 'the refreshed tab validates the existing cookie once');
+    assert.strictEqual(deletes, 1, 'the explicit action issues exactly one DELETE');
+    assert.strictEqual(header, generationBeforeRefresh, 'the DELETE remains bound to the adopted generation');
+    assert.strictEqual(outcome.status, 'complete', 'the bound logout completes');
+    assert.strictEqual(browser.cookie, undefined, 'the adopted cookie is cleared after the response');
+    assert.strictEqual(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY), null,
+      'the matching shared generation is cleared');
     run(() => {
       access.destroy();
       refreshedAuth.destroy();

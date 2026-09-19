@@ -2,7 +2,7 @@
 
 ## Supported state
 
-The maintained compatibility release is the pure numeric `1.6.118` line used
+The maintained compatibility release is the pure numeric `1.6.120` line used
 by the current PastureStack Server release. Earlier branded coordinates are
 historical records and are not current release or deployment targets.
 Authentication-provider combinations must still be validated by an
@@ -29,8 +29,11 @@ administrator before activation.
   account-recovery channel, not an authentication factor.
 - Browser tabs share one origin-level authentication mutex. Only explicit user
   logout may revoke a server token; passive failures reconcile session
-  generation ownership without clearing or revoking a newer session. JWTs must
-  never be written to Web Storage, URLs, or diagnostics.
+  generation ownership without clearing or revoking a newer session. Cookie and
+  generation reads occur after acquiring that mutex, and login-route recovery
+  revalidates a committed session if a storage or channel notification was
+  missed during navigation. JWTs must never be written to Web Storage, URLs, or
+  diagnostics.
 - MFA enrollment, recovery-code generation, and recovery-address verification
   require the account holder's own authenticated session. Administrators may
   inspect and revoke another account's factors, but cannot create or retrieve

@@ -30,7 +30,8 @@ export default Route.extend({
   loadingError(err, transition, ret) {
     if ( err && err.status === 401 )
     {
-      this.send('sessionInvalid', transition, true, null,
+      let target = transition && typeof transition.send === 'function' ? transition : this;
+      target.send('sessionInvalid', transition, true, null,
         transition && transition.authGeneration, 401);
       return;
     }

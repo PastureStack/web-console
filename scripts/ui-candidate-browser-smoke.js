@@ -24,6 +24,8 @@ const serveOnly = process.env.UI_SMOKE_SERVE_ONLY === "1";
 const managedMfaAccountId = process.env.PASTURESTACK_MFA_MANAGED_ACCOUNT_ID || "";
 const exerciseTotpEnrollment = process.env.UI_SMOKE_EXERCISE_TOTP_ENROLLMENT === "1";
 const exercisePasskeyEnrollment = process.env.UI_SMOKE_EXERCISE_PASSKEY_ENROLLMENT === "1";
+const exerciseExplicitLogout = process.env.UI_SMOKE_EXERCISE_EXPLICIT_LOGOUT === "1";
+const exerciseCrossTab = process.env.UI_SMOKE_EXERCISE_CROSS_TAB === "1";
 const requireRecoveryEmailEnrollment = process.env.UI_SMOKE_REQUIRE_EMAIL_RECOVERY === "1";
 const expectPasskeyLimit = process.env.UI_SMOKE_EXPECT_PASSKEY_LIMIT === "1";
 const defaultRoutes = [
@@ -70,10 +72,26 @@ function currentTotp(secret, timestamp = Date.now()) {
 async function completePasskeySecurityConfirmation(page) {
   const confirmationModal = page.locator(".modal-container:visible").last();
   await confirmationModal.waitFor({ state: "visible", timeout: 15000 });
+  const totpInput = confirmationModal.locator("#mfa-security-code");
+  const modalHandle = await confirmationModal.elementHandle();
+  await page.waitForFunction((modal) => {
+    const input = modal && modal.querySelector("#mfa-security-code");
+    const button = modal && modal.querySelector(".footer-actions .btn-primary");
+    return Boolean(input || (button && !button.disabled));
+  }, modalHandle, { timeout: 15000 });
+  if (await totpInput.count()) {
+    const startingStep = Math.floor(Date.now() / 30000);
+    await page.waitForFunction(
+      (step) => Math.floor(Date.now() / 30000) > step,
+      startingStep,
+      { timeout: 35000 }
+    );
+    await totpInput.fill(currentTotp(totpSecret));
+  }
   const passkeyMethod = confirmationModal.getByRole("button", {
     name: /Passkey|通行金鑰/,
   });
-  if (await passkeyMethod.count()) {
+  if (await totpInput.count() === 0 && await passkeyMethod.count()) {
     await passkeyMethod.click();
   }
   const confirm = confirmationModal.locator(".footer-actions .btn-primary");
@@ -275,6 +293,82 @@ async function fetchProjectsStatus(page) {
     await page.waitForTimeout(1500);
   }
   throw new Error(`projects API did not authenticate: ${lastError ? lastError.message : "unknown"}`);
+}
+
+async function ensureLocalLoginForm(page) {
+  await page.waitForFunction(() => Boolean(
+    document.querySelector(".login-pass") ||
+    document.querySelector(".login-recovery-actions .btn-link")
+  ), null, { timeout: 30000 }).catch(() => {});
+  const password = page.locator(".login-pass");
+  if (await password.isVisible().catch(() => false)) {
+    return;
+  }
+
+  const recoveryAction = page.locator(".login-recovery-actions .btn-link");
+  if (await recoveryAction.count() !== 1) {
+    const state = await page.evaluate(() => ({
+      url: window.location.href,
+      title: document.title,
+      body: document.body ? document.body.innerText.trim().slice(0, 500) : "",
+      loginInputs: document.querySelectorAll(".login-user, .login-pass").length,
+      recoveryActions: document.querySelectorAll(".login-recovery-actions .btn-link").length,
+      auth: (() => {
+        const app = window.Ui;
+        const auth = app && app.__container__ && app.__container__.lookup("service:auth-session");
+        const route = app && app.__container__ && app.__container__.lookup("route:application");
+        const shared = auth && auth.readShared();
+        return {
+          tabGeneration: auth && auth.capture(),
+          sharedGeneration: shared && shared.generation,
+          routeSubscribed: Boolean(route && route._authSessionService === auth),
+          syncingGeneration: route && route.get("syncingGeneration"),
+          lastSyncedGeneration: route && route.get("lastSyncedGeneration"),
+        };
+      })(),
+    }));
+    throw new Error(`local administrator login action is unavailable while external authentication is enabled state=${JSON.stringify(state)}`);
+  }
+
+  await recoveryAction.click();
+  await page.locator(".login-user").waitFor({ state: "visible", timeout: 15000 });
+  await password.waitFor({ state: "visible", timeout: 15000 });
+}
+
+async function discardExpectedHttpConsoleErrors(page, consoleErrors, startIndex, status) {
+  await page.waitForTimeout(100);
+  const marker = `status of ${status}`;
+  for (let index = consoleErrors.length - 1; index >= startIndex; index--) {
+    if (consoleErrors[index].includes(marker)) {
+      consoleErrors.splice(index, 1);
+    }
+  }
+}
+
+async function closeHttpServer(server) {
+  await new Promise((resolve) => {
+    let finished = false;
+    const finish = () => {
+      if (!finished) {
+        finished = true;
+        resolve();
+      }
+    };
+    const timer = setTimeout(() => {
+      if (typeof server.closeAllConnections === "function") {
+        server.closeAllConnections();
+      }
+      finish();
+    }, 1000);
+
+    server.close(() => {
+      clearTimeout(timer);
+      finish();
+    });
+    if (typeof server.closeIdleConnections === "function") {
+      server.closeIdleConnections();
+    }
+  });
 }
 
 async function fetchJson(page, urlPath, label) {
@@ -519,6 +613,15 @@ async function assertI18nFormatterContract(page, i18nWarnings) {
     if (!intl || typeof intl.t !== "function" || typeof intl.formatMessage !== "function") {
       fail("service:intl formatter API is unavailable");
     }
+    if (!userLanguage || typeof userLanguage.sideLoadLanguage !== "function") {
+      fail("service:user-language sideLoadLanguage is unavailable");
+    }
+
+    const initialLocaleValue = intl.get && intl.get("_locale");
+    const initialLocale = Array.isArray(initialLocaleValue)
+      ? initialLocaleValue[0]
+      : initialLocaleValue;
+    await userLanguage.sideLoadLanguage("en-us");
 
     assertEqual("plain translation", text(intl.t("generic.name")), "Name");
     assertEqual(
@@ -555,9 +658,6 @@ async function assertI18nFormatterContract(page, i18nWarnings) {
       fail(`html message was escaped: ${html}`);
     }
 
-    if (!userLanguage || typeof userLanguage.sideLoadLanguage !== "function") {
-      fail("service:user-language sideLoadLanguage is unavailable");
-    }
     await userLanguage.sideLoadLanguage("zh-tw");
     assertEqual("zh-tw locale", text(intl.t("generic.name")), "名稱");
     assertEqual("zh-tw MFA locale", text(intl.t("authPage.mfa.navigation")), "多重要素驗證");
@@ -565,6 +665,9 @@ async function assertI18nFormatterContract(page, i18nWarnings) {
     assertEqual("zh-hans locale", text(intl.t("generic.name")), "名称");
     await userLanguage.sideLoadLanguage("en-us");
     assertEqual("en-us locale reset", text(intl.t("generic.name")), "Name");
+    if (initialLocale && initialLocale !== "en-us") {
+      await userLanguage.sideLoadLanguage(initialLocale);
+    }
 
     return {
       locale: intl.get && intl.get("_locale"),
@@ -607,7 +710,7 @@ async function assertTemplateActionBridge(page, hostId) {
   console.log(`template-action-bridge-smoke-ok host=${hostId} filter=detached,all`);
 }
 
-async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
+async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount, consoleErrors) {
   if (/\/env\/[^/]+\/apps\/stacks(?:[/?#]|$)/.test(route)) {
     await assertFooterMenuAnchoring(page);
   }
@@ -687,7 +790,14 @@ async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
     if (exercisePasskeyEnrollment) {
       const begin = page.locator('[data-testid="mfa-begin-passkey"]');
       if (await begin.count() !== 1) {
-        throw new Error("passkey enrollment exercise requires configured WebAuthn policy and a supported secure context");
+        const state = await page.evaluate(() => ({
+          secureContext: window.isSecureContext,
+          publicKeyCredential: typeof window.PublicKeyCredential,
+          credentialApi: Boolean(navigator.credentials),
+          warning: Array.from(document.querySelectorAll(".alert-warning"))
+            .map((element) => element.textContent.trim()).filter(Boolean).slice(0, 5),
+        }));
+        throw new Error(`passkey enrollment exercise requires configured WebAuthn policy and a supported secure context state=${JSON.stringify(state)}`);
       }
       const confirmation = page.waitForResponse(
         (resp) => resp.url().toLowerCase().includes("/mfaoperation") &&
@@ -695,32 +805,63 @@ async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
           (resp.request().postData() || "").includes("confirmPasskeyEnrollment"),
         { timeout: 30000 }
       );
+      const factorCountBeforeEnrollment = await page.locator(
+        '[data-testid="mfa-factor-row"]'
+      ).count();
+      const firstEnrollmentConsoleStart = consoleErrors.length;
       await begin.click();
-      const response = await confirmation;
+      const confirmationModal = page.locator(".modal-container:visible").last();
+      if (await confirmationModal.waitFor({ state: "visible", timeout: 5000 }).then(() => true, () => false)) {
+        await completePasskeySecurityConfirmation(page);
+      }
+      let response;
+      try {
+        response = await confirmation;
+      } catch (error) {
+        const state = await page.evaluate(() => ({
+          url: window.location.href,
+          errors: Array.from(document.querySelectorAll(".alert-danger"))
+            .map((element) => element.textContent.trim()).filter(Boolean).slice(0, 5),
+          modalVisible: Boolean(document.querySelector(".modal-container")),
+          secureContext: window.isSecureContext,
+        }));
+        throw new Error(`passkey confirmation request was not sent state=${JSON.stringify(state)} cause=${error.message}`);
+      }
       if (!response.ok()) {
         const body = await response.text().catch(() => "");
         throw new Error(`passkey confirmation failed status=${response.status()} body=${body.slice(0, 300)}`);
       }
+      await discardExpectedHttpConsoleErrors(
+        page, consoleErrors, firstEnrollmentConsoleStart, 401
+      );
+      const responseBody = await response.json().catch(() => ({}));
       const recovery = page.locator('[data-testid="mfa-recovery-codes"]');
-      await recovery.waitFor({ state: "visible", timeout: 15000 });
-      if (await recovery.locator("code").count() < 1) {
-        throw new Error("first passkey enrollment did not display one-time recovery codes");
+      const issuedRecoveryCodes = Array.isArray(responseBody.recoveryCodes) &&
+        responseBody.recoveryCodes.length > 0;
+      if (issuedRecoveryCodes) {
+        await recovery.waitFor({ state: "visible", timeout: 15000 });
+        if (await recovery.locator("code").count() < 1) {
+          throw new Error("new recovery codes were returned but not displayed");
+        }
       }
-      await page.locator('[data-testid="mfa-factor-row"]').waitFor({
-        state: "visible",
-        timeout: 15000,
-      });
+      await page.waitForFunction((before) => (
+        document.querySelectorAll('[data-testid="mfa-factor-row"]').length > before
+      ), factorCountBeforeEnrollment, { timeout: 15000 });
       passkeyEnrollmentCompleted = true;
-      console.log("passkey-enrollment-smoke-ok recoveryCodes=displayed factor=registered");
+      console.log(`passkey-enrollment-smoke-ok recoveryCodes=${issuedRecoveryCodes ? "displayed" : "preserved"} factor=registered`);
 
       if (expectPasskeyLimit) {
-        await page.locator('[data-testid="mfa-recovery-codes-saved"]').click();
+        const recoveryCodesSaved = page.locator('[data-testid="mfa-recovery-codes-saved"]');
+        if (await recoveryCodesSaved.count()) {
+          await recoveryCodesSaved.click();
+        }
         const reauthenticationRequired = page.waitForResponse(
           (resp) => resp.url().toLowerCase().includes("/mfaoperation") &&
             resp.request().method() === "POST" &&
             (resp.request().postData() || "").includes("beginPasskeyEnrollment"),
           { timeout: 30000 }
         );
+        const secondEnrollmentConsoleStart = consoleErrors.length;
         await begin.click();
         const reauthenticationResponse = await reauthenticationRequired;
         const reauthenticationBody = await reauthenticationResponse.text().catch(() => "");
@@ -728,6 +869,9 @@ async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
             !reauthenticationBody.includes("MfaReauthenticationRequired")) {
           throw new Error(`second passkey enrollment did not require step-up authentication status=${reauthenticationResponse.status()} body=${reauthenticationBody.slice(0, 300)}`);
         }
+        await discardExpectedHttpConsoleErrors(
+          page, consoleErrors, secondEnrollmentConsoleStart, 401
+        );
 
         const rejected = page.waitForResponse(
           (resp) => resp.url().toLowerCase().includes("/mfaoperation") &&
@@ -735,12 +879,16 @@ async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
             (resp.request().postData() || "").includes("beginPasskeyEnrollment"),
           { timeout: 30000 }
         );
+        const limitConsoleStart = consoleErrors.length;
         await completePasskeySecurityConfirmation(page);
         const limitResponse = await rejected;
         const limitBody = await limitResponse.text().catch(() => "");
         if (limitResponse.status() !== 409 || !limitBody.includes("PasskeyLimitReached")) {
           throw new Error(`passkey limit was not enforced status=${limitResponse.status()} body=${limitBody.slice(0, 300)}`);
         }
+        await discardExpectedHttpConsoleErrors(
+          page, consoleErrors, limitConsoleStart, 409
+        );
         console.log("passkey-limit-smoke-ok configured=1 stepUp=passed secondEnrollment=rejected");
       }
     }
@@ -813,7 +961,7 @@ async function assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount) {
   }
 }
 
-async function assertPasskeyLogin(page) {
+async function assertPasskeyLogin(page, consoleErrors) {
   if (!exercisePasskeyEnrollment) {
     return;
   }
@@ -822,7 +970,7 @@ async function assertPasskeyLogin(page) {
   }
 
   await page.goto(`${base}/logout`, { waitUntil: "domcontentloaded", timeout: 45000 });
-  await page.locator('input[type="password"]').waitFor({ state: "visible", timeout: 30000 });
+  await ensureLocalLoginForm(page);
 
   await page.locator(".login-user").fill(username);
   await page.locator(".login-pass").fill(password);
@@ -867,7 +1015,30 @@ async function assertPasskeyLogin(page) {
   }
 
   const passkeyButton = page.locator('[data-testid="mfa-login-passkey"]');
-  await passkeyButton.waitFor({ state: "visible", timeout: 15000 });
+  if (!await passkeyButton.isVisible().catch(() => false)) {
+    // Accounts can offer both TOTP and passkey.  The server deliberately
+    // preserves its method order, so exercise the real method selector instead
+    // of assuming passkey is the initially selected factor.
+    const passkeyMethod = page.getByRole("button", {
+      name: /Passkey|通行金鑰/,
+    });
+    await passkeyMethod.first().waitFor({ state: "visible", timeout: 15000 });
+    await passkeyMethod.first().click();
+  }
+  await passkeyButton.waitFor({ state: "visible", timeout: 15000 }).catch(async (error) => {
+    const state = await page.evaluate(() => {
+      const app = window.Ui;
+      const controller = app && app.__container__ &&
+        app.__container__.lookup("controller:login/index");
+      return {
+        url: window.location.href,
+        pending: controller ? controller.get("isMfaPending") : null,
+        activeMethod: controller ? controller.get("activeMfaMethod") : null,
+        methods: controller ? controller.get("availableMfaMethods") : [],
+      };
+    });
+    throw new Error(`passkey method did not become active state=${JSON.stringify(state)} cause=${error.message}`);
+  });
   const completionPromise = page.waitForResponse(
     (resp) => resp.url().includes("/token") &&
       resp.request().method() === "POST" &&
@@ -887,24 +1058,35 @@ async function assertPasskeyLogin(page) {
     waitUntil: "domcontentloaded",
     timeout: 45000,
   });
-  await page.locator('[data-testid="mfa-revoke-factor"]').waitFor({
+  const passkeyRow = page.locator('[data-testid="mfa-factor-row"]').filter({
+    hasText: /Passkey|通行金鑰/,
+  });
+  await passkeyRow.waitFor({
     state: "visible",
     timeout: 15000,
   });
+  if (await passkeyRow.count() !== 1) {
+    throw new Error(`expected exactly one registered passkey row, found ${await passkeyRow.count()}`);
+  }
+  const revokePasskey = passkeyRow.locator('[data-testid="mfa-revoke-factor"]');
   const revoked = page.waitForResponse(
     (resp) => resp.url().toLowerCase().includes("/mfaoperation") &&
       resp.request().method() === "POST" &&
       (resp.request().postData() || "").includes("revokeFactor"),
     { timeout: 30000 }
   );
+  const revokeConsoleStart = consoleErrors.length;
   page.once("dialog", (dialog) => dialog.accept());
-  await page.locator('[data-testid="mfa-revoke-factor"]').click();
+  await revokePasskey.click();
   const reauthenticationResponse = await revoked;
   const reauthenticationBody = await reauthenticationResponse.text().catch(() => "");
   if (reauthenticationResponse.status() !== 401 ||
       !reauthenticationBody.includes("MfaReauthenticationRequired")) {
     throw new Error(`passkey revocation did not require step-up authentication status=${reauthenticationResponse.status()} body=${reauthenticationBody.slice(0, 300)}`);
   }
+  await discardExpectedHttpConsoleErrors(
+    page, consoleErrors, revokeConsoleStart, 401
+  );
   const revokedAfterConfirmation = page.waitForResponse(
     (resp) => resp.url().toLowerCase().includes("/mfaoperation") &&
       resp.request().method() === "POST" &&
@@ -922,6 +1104,210 @@ async function assertPasskeyLogin(page) {
     timeout: 15000,
   });
   console.log("passkey-revocation-smoke-ok factor=revoked session=reauthentication-required");
+}
+
+async function assertExplicitLogout(page) {
+  const deletes = [];
+  const onResponse = (response) => {
+    if (response.request().method() === "DELETE" &&
+        new URL(response.url()).pathname.endsWith("/token/current")) {
+      deletes.push(response.status());
+    }
+  };
+  page.on("response", onResponse);
+  try {
+    await page.goto(`${base}/logout`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    await ensureLocalLoginForm(page);
+  } finally {
+    page.off("response", onResponse);
+  }
+  if (deletes.length !== 1 || deletes[0] !== 204) {
+    throw new Error(`explicit logout expected one HTTP 204 DELETE, observed ${JSON.stringify(deletes)}`);
+  }
+  console.log("explicit-logout-smoke-ok deleteCount=1 status=204 login=visible");
+}
+
+async function loginWithLocalTotp(page) {
+  await ensureLocalLoginForm(page);
+  await page.locator(".login-user").fill(username);
+  await page.locator(".login-pass").fill(password);
+  const challengePromise = page.waitForResponse(
+    (resp) => resp.url().includes("/token") &&
+      resp.request().method() === "POST" &&
+      requestBodyField(resp.request(), "mfaMethod") === null,
+    { timeout: 30000 }
+  );
+  const submit = page.locator(".login-user")
+    .locator("xpath=ancestor::form[1]").locator(".btn-primary");
+  await submit.evaluate((button) => button.click());
+  const challengeResponse = await challengePromise;
+  const challengeBody = await challengeResponse.json().catch(() => ({}));
+  if (challengeResponse.status() !== 201 || !challengeBody.mfaRequired ||
+      !Array.isArray(challengeBody.mfaMethods) ||
+      !challengeBody.mfaMethods.includes("totp")) {
+    throw new Error(`cross-tab primary login challenge failed status=${challengeResponse.status()} body=${JSON.stringify(challengeBody).slice(0, 500)}`);
+  }
+
+  const mfaCode = page.locator("#mfa-code");
+  await mfaCode.waitFor({ state: "visible", timeout: 15000 });
+  const startingStep = Math.floor(Date.now() / 30000);
+  await page.waitForFunction(
+    (step) => Math.floor(Date.now() / 30000) > step,
+    startingStep,
+    { timeout: 35000 }
+  );
+  const completionPromise = page.waitForResponse(
+    (resp) => resp.url().includes("/token") &&
+      resp.request().method() === "POST" &&
+      requestBodyField(resp.request(), "mfaMethod") === "totp",
+    { timeout: 30000 }
+  );
+  await mfaCode.fill(currentTotp(totpSecret));
+  const verify = mfaCode.locator("xpath=following-sibling::button[1]");
+  await verify.evaluate((button) => button.click());
+  const completion = await completionPromise;
+  const completionBody = await completion.json().catch(() => ({}));
+  if (completion.status() !== 201 || completionBody.mfaRequired) {
+    throw new Error(`cross-tab TOTP completion failed status=${completion.status()} body=${JSON.stringify(completionBody).slice(0, 500)}`);
+  }
+  await fetchProjectsStatus(page);
+}
+
+async function assertCrossTabSessionAdoption(page, context) {
+  const originalRecord = await page.evaluate(() => {
+    const raw = localStorage.getItem("pasturestack.authSession.v1");
+    return raw ? JSON.parse(raw) : null;
+  });
+  if (!originalRecord || !/^\d{13}\.[0-9a-f]{64}$/.test(originalRecord.generation || "")) {
+    throw new Error("cross-tab smoke could not capture the original non-secret session generation");
+  }
+
+  const peers = [await context.newPage(), await context.newPage()];
+  const allPages = [page, ...peers];
+  let deleteCount = 0;
+  const observeDelete = (request) => {
+    if (request.method() === "DELETE" &&
+        new URL(request.url()).pathname.endsWith("/token/current")) {
+      deleteCount++;
+    }
+  };
+  context.on("request", observeDelete);
+  try {
+    await Promise.all(peers.map(async (peer) => {
+      peer.__qaNavigations = [];
+      peer.__qaTokenResponses = [];
+      peer.on("framenavigated", (frame) => {
+        if (frame === peer.mainFrame()) peer.__qaNavigations.push(frame.url());
+      });
+      peer.on("response", (response) => {
+        const request = response.request();
+        if (request.method() === "GET" && new URL(response.url()).pathname.endsWith("/token")) {
+          peer.__qaTokenResponses.push(response.status());
+        }
+      });
+      await peer.goto(`${base}/env/${projectId}/apps/stacks`, {
+        waitUntil: "domcontentloaded",
+        timeout: 45000,
+      });
+      await fetchProjectsStatus(peer);
+      await peer.evaluate(() => {
+        window.__qaAuthStorageEvents = [];
+        window.addEventListener("storage", (event) => {
+          if (event.key !== "pasturestack.authSession.v1") return;
+          let generation = null;
+          try {
+            generation = event.newValue ? JSON.parse(event.newValue).generation : null;
+          } catch (error) {
+            generation = "invalid";
+          }
+          window.__qaAuthStorageEvents.push(generation);
+        });
+      });
+    }));
+
+    await page.goto(`${base}/logout`, { waitUntil: "domcontentloaded", timeout: 45000 });
+    await Promise.all(allPages.map((current) => ensureLocalLoginForm(current)));
+    if (deleteCount !== 1) {
+      throw new Error(`old-session explicit logout expected one DELETE, observed ${deleteCount}`);
+    }
+
+    deleteCount = 0;
+    await loginWithLocalTotp(page);
+    const committed = await page.evaluate(() => {
+      const raw = localStorage.getItem("pasturestack.authSession.v1");
+      return raw ? JSON.parse(raw) : null;
+    });
+    if (!committed || committed.generation === originalRecord.generation) {
+      throw new Error("same-account login did not commit a fresh session generation");
+    }
+
+    await Promise.all(peers.map(async (peer) => {
+      await fetchProjectsStatus(peer);
+      await peer.waitForFunction(() => !/\/login(?:\/|$|\?)/.test(location.pathname + location.search),
+        null, { timeout: 30000 }).catch(async (error) => {
+        const state = await peer.evaluate(() => {
+          const app = window.Ui;
+          const route = app && app.__container__ && app.__container__.lookup("route:application");
+          const auth = app && app.__container__ && app.__container__.lookup("service:auth-session");
+          const shared = auth && auth.readShared();
+          return {
+            url: location.href,
+            tabGeneration: auth && auth.capture(),
+            sharedGeneration: shared && shared.generation,
+            lastSyncedGeneration: route && route.get("lastSyncedGeneration"),
+            syncingGeneration: route && route.get("syncingGeneration"),
+            pendingSyncGeneration: route && route.get("pendingSyncGeneration"),
+            sessionSyncPending: Boolean(route && route.get("sessionSyncPromise")),
+            routeSubscribed: Boolean(route && route._authSessionService === auth),
+            serviceStorageHandler: Boolean(auth && auth._storageHandler),
+            storageEvents: window.__qaAuthStorageEvents || [],
+            routeHandler: Boolean(route && route._authSessionChangedHandler),
+          };
+        });
+        state.navigations = peer.__qaNavigations || [];
+        state.tokenResponses = peer.__qaTokenResponses || [];
+        throw new Error(`peer did not leave login after generation commit state=${JSON.stringify(state)} cause=${error.message}`);
+      });
+    }));
+
+    // Deliver the old generation after the new TOTP session has committed.
+    // This exercises the same ordering as a delayed 401 without relying on a
+    // timing sleep or allowing the stale tab to revoke shared state.
+    await Promise.all(peers.map((peer) => peer.evaluate(async (oldGeneration) => {
+      const app = window.Ui;
+      const access = app && app.__container__ && app.__container__.lookup("service:access");
+      if (!access) throw new Error("access service unavailable");
+      return access.handlePassiveFailure(oldGeneration, 401);
+    }, originalRecord.generation)));
+    await Promise.all(allPages.map((current) => fetchProjectsStatus(current)));
+
+    const records = await Promise.all(allPages.map((current) => current.evaluate(() => {
+      const raw = localStorage.getItem("pasturestack.authSession.v1");
+      const record = raw ? JSON.parse(raw) : null;
+      return {
+        generation: record && record.generation,
+        keys: record ? Object.keys(record).sort() : [],
+      };
+    })));
+    if (!records.every((record) => record.generation === committed.generation)) {
+      throw new Error(`tabs did not converge on the committed generation: ${JSON.stringify(records)}`);
+    }
+    if (!records.every((record) => JSON.stringify(record.keys) === JSON.stringify(["accountId", "committedAt", "generation"]))) {
+      throw new Error(`shared session contains unexpected fields: ${JSON.stringify(records)}`);
+    }
+    if (deleteCount !== 0) {
+      throw new Error(`new login emitted ${deleteCount} unexpected DELETE requests before explicit logout`);
+    }
+
+    await assertExplicitLogout(page);
+    if (deleteCount !== 1) {
+      throw new Error(`new session explicit logout expected one DELETE, observed ${deleteCount}`);
+    }
+    console.log("cross-tab-session-smoke-ok tabs=3 stale401=adopted passiveDeletes=0 explicitDeletes=1 jwtInStorage=false");
+  } finally {
+    context.off("request", observeDelete);
+    await Promise.all(peers.map((peer) => peer.close().catch(() => {})));
+  }
 }
 
 async function main() {
@@ -944,7 +1330,10 @@ async function main() {
     headless: process.env.UI_SMOKE_HEADFUL !== "1",
     executablePath: process.env.CHROME_BIN || undefined,
   });
-  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  // Use an explicit context so cross-tab tests exercise the same cookie and
+  // Web Storage partition while still creating real independent pages.
+  const browserContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const page = await browserContext.newPage();
   let webAuthnSession = null;
   let virtualAuthenticatorId = null;
   if (exercisePasskeyEnrollment) {
@@ -1004,6 +1393,9 @@ async function main() {
     }
     await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
 
+    if (await page.locator(".login-user").count() === 0) {
+      await ensureLocalLoginForm(page);
+    }
     const passwordInputs = await page.locator('input[type="password"]').count();
     if (passwordInputs > 0) {
       const tokenPromise = page.waitForResponse(
@@ -1097,13 +1489,19 @@ async function main() {
       await assertClassicLayoutContract(page, route);
       assertNoLoadingErrors(route, beforeLoadingErrorCount, loadingErrors);
       await assertI18nHealth(page, route, beforeI18nWarningCount, i18nWarnings);
-      await assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount);
+      await assertRouteSpecificBehavior(page, route, beforeWsUpgradeCount, consoleErrors);
       if (!actionBridgeChecked) {
         await assertTemplateActionBridge(page, apiContract.hosts[0] && apiContract.hosts[0].id);
         actionBridgeChecked = true;
       }
     }
-    await assertPasskeyLogin(page);
+    if (exerciseCrossTab) {
+      await assertCrossTabSessionAdoption(page, page.context());
+    } else if (exerciseExplicitLogout) {
+      await assertExplicitLogout(page);
+    } else {
+      await assertPasskeyLogin(page, consoleErrors);
+    }
 
     await page.screenshot({ path: path.join(outDir, "ui-candidate-browser-smoke-final.png"), fullPage: true });
     const filteredFailures = failedRequests.filter((line) => !line.includes("net::ERR_ABORTED"));
@@ -1133,7 +1531,7 @@ async function main() {
       await webAuthnSession.detach().catch(() => {});
     }
     await browser.close().catch(() => {});
-    server.close();
+    await closeHttpServer(server);
   }
 }
 

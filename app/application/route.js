@@ -9,6 +9,7 @@ import { isAuthenticationPath, safeInternalTarget } from 'ui/utils/auth-navigati
 
 export default Route.extend({
   access         : service(),
+  authSession    : service('auth-session'),
   cookies        : service(),
   github         : service(),
   intl           : service(),
@@ -36,11 +37,79 @@ export default Route.extend({
   },
 
   willDestroy() {
+    if ( this._authSessionService ) {
+      this._authSessionService.off('changed', this._authSessionChangedHandler);
+      this._authSessionService = null;
+    }
+    this._authSessionChangedHandler = null;
     cancel(this.get('hideTimer'));
     cancel(this.get('loadingWatchdog'));
     this.hideLoadingOverlay();
     this.unregisterShortcuts();
     this._super(...arguments);
+  },
+
+  handleAuthSessionChanged(change) {
+    // Cross-tab storage/channel callbacks are not route transitions.  Invoke
+    // the reconciliation method directly so a login event that arrives while
+    // the tab is moving to /login cannot be dropped by Ember's action router.
+    return this.syncAuthSessionChange(change);
+  },
+
+  ensureAuthSessionSubscription() {
+    let service = this.get('authSession');
+    if ( !service || this._authSessionService === service ) {
+      return;
+    }
+    if ( this._authSessionService ) {
+      this._authSessionService.off('changed', this._authSessionChangedHandler);
+    }
+    if ( !this._authSessionChangedHandler ) {
+      // This Ember/Evented version reliably supports the two-argument
+      // signature.  Keeping one stable closure also makes unsubscribe exact.
+      this._authSessionChangedHandler = (change) => this.handleAuthSessionChanged(change);
+    }
+    this._authSessionService = service;
+    service.on('changed', this._authSessionChangedHandler);
+  },
+
+  syncAuthSessionChange(change) {
+    let generation = change && change.newRecord && change.newRecord.generation;
+    if ( generation && generation === this.get('lastSyncedGeneration') ) {
+      return this.get('sessionSyncPromise');
+    }
+    if ( this.get('sessionSyncPromise') ) {
+      if ( generation && generation === this.get('syncingGeneration') ) {
+        return this.get('sessionSyncPromise');
+      }
+      this.set('pendingSyncGeneration', generation || 'removed');
+      return this.get('sessionSyncPromise');
+    }
+
+    this.set('syncingGeneration', generation || 'removed');
+    let promise = this.get('access').adoptSharedSession().then((outcome) => {
+      if ( outcome.status === 'adopted' ) {
+        this.set('lastSyncedGeneration', outcome.generation);
+        this.reloadForSession();
+      } else if ( outcome.status === 'invalid' ) {
+        this.transitionToLogin(null, true);
+      }
+      return outcome;
+    }).finally(() => {
+      let pending = this.get('pendingSyncGeneration');
+      this.setProperties({
+        sessionSyncPromise    : null,
+        syncingGeneration     : null,
+        pendingSyncGeneration : null,
+      });
+      if ( pending ) {
+        this.syncAuthSessionChange({
+          newRecord: this.get('authSession').readShared(),
+        });
+      }
+    });
+    this.set('sessionSyncPromise', promise);
+    return promise;
   },
 
   registerShortcuts() {
@@ -90,14 +159,30 @@ export default Route.extend({
     error(err, transition) {
       this.hideLoadingOverlay();
 
-      /*if we dont abort the transition we'll call the model calls again and fail transition correctly*/
-      transition.abort();
-
       if ( Errors.status(err) === 401 )
       {
-        this.send('sessionInvalid', transition, true, null,
-          transition && transition.authGeneration, 401);
-        return;
+        // During the initial transition Ember has not committed a current
+        // route hierarchy yet, so Route#send cannot safely target the
+        // destination action handlers.  Dispatch through the failed
+        // transition itself, which is the owner of both the destination and
+        // the captured authentication generation.
+        if ( transition && typeof transition.send === 'function' ) {
+          transition.send('sessionInvalid', transition, true, null,
+            transition.authGeneration, 401);
+          // Transition#send needs the still-active destination hierarchy.
+          // Aborting first discards it and makes Ember fall back to
+          // Route#send, which is illegal while the first route is unresolved.
+          transition.abort();
+        } else {
+          this.send('sessionInvalid', transition, true, null,
+            transition && transition.authGeneration, 401);
+        }
+        return false;
+      }
+
+      /*if we dont abort the transition we'll call the model calls again and fail transition correctly*/
+      if ( transition ) {
+        transition.abort();
       }
 
       this.controllerFor('application').set('error',err);
@@ -151,43 +236,7 @@ export default Route.extend({
     },
 
     authSessionChanged(change) {
-      let generation = change && change.newRecord && change.newRecord.generation;
-      if ( generation && generation === this.get('lastSyncedGeneration') ) {
-        return this.get('sessionSyncPromise');
-      }
-      if ( this.get('sessionSyncPromise') ) {
-        if ( generation && generation === this.get('syncingGeneration') ) {
-          return this.get('sessionSyncPromise');
-        }
-        this.set('pendingSyncGeneration', generation || 'removed');
-        return this.get('sessionSyncPromise');
-      }
-
-      this.set('syncingGeneration', generation || 'removed');
-      let promise = this.get('access').adoptSharedSession().then((outcome) => {
-        if ( outcome.status === 'adopted' ) {
-          this.set('lastSyncedGeneration', outcome.generation);
-          this.reloadForSession();
-        } else if ( outcome.status === 'invalid' ) {
-          this.transitionToLogin(null, true);
-        }
-        return outcome;
-      }).finally(() => {
-        this.setProperties({
-          sessionSyncPromise: null,
-          syncingGeneration : null,
-        });
-        if ( this.get('pendingSyncGeneration') ) {
-          this.set('pendingSyncGeneration', null);
-          scheduleOnce('actions', this, function() {
-            this.send('authSessionChanged', {
-              newRecord: this.get('access.authSession').readShared(),
-            });
-          });
-        }
-      });
-      this.set('sessionSyncPromise', promise);
-      return promise;
+      return this.syncAuthSessionChange(change);
     },
 
     langToggle() {
@@ -442,6 +491,11 @@ export default Route.extend({
   }.observes('settings.appName'),
 
   beforeModel() {
+    // Service injection is not guaranteed to have an owner during Route#init
+    // in this Ember version.  Subscribe at the first route hook instead so a
+    // login/removal notification cannot be silently dropped for the lifetime
+    // of the tab.
+    this.ensureAuthSessionSubscription();
     this.updateWindowTitle();
 
     let agent = window.navigator.userAgent.toLowerCase();

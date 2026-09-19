@@ -24,6 +24,13 @@ flow back to the owning `PortRule.serviceId`, and the resource serializer must
 carry that value in editing PUT requests. API hydration remains authoritative
 over local model defaults, including nullable health states.
 
+Same-origin tabs coordinate login commit, session adoption, and explicit logout
+through one mutex. A peer must read both the cookie and the non-sensitive
+generation only after it owns that mutex, validate `GET /token`, and recover on
+the login route if a storage or `BroadcastChannel` notification was missed.
+Passive 401, 403, WebSocket, timer, storage, and route errors must never invoke
+server-side logout; only a user action may issue the generation-bound DELETE.
+
 Catalog localization is additive. The canonical `name` and `description`
 fields remain unchanged, while optional
 `io.pasturestack.catalog.name.<locale>` and

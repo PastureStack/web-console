@@ -8,19 +8,47 @@ module('Unit | Route | authenticated');
 test('logs out only for an actual authentication failure', function(assert) {
   assert.expect(5);
 
-  let transition = {targetName: 'authenticated.project.index', authGeneration: 'generation-a'};
+  let transition = {
+    targetName: 'authenticated.project.index',
+    authGeneration: 'generation-a',
+    send(action, sentTransition, timedOut, error, generation) {
+      assert.strictEqual(action, 'sessionInvalid', 'the passive session action is used');
+      assert.strictEqual(sentTransition, transition, 'the failed transition is retained');
+      assert.strictEqual(timedOut, true, 'the login page explains that authentication expired');
+      assert.strictEqual(generation, 'generation-a', 'the request generation is retained');
+    },
+  };
   let route = AuthenticatedRoute.create({
     access: EmberObject.create({enabled: true}),
   });
-  route.send = function(action, sentTransition, timedOut, error, generation) {
-    assert.strictEqual(action, 'sessionInvalid', 'the passive session action is used');
-    assert.strictEqual(sentTransition, transition, 'the failed transition is retained');
-    assert.strictEqual(timedOut, true, 'the login page explains that authentication expired');
-    assert.strictEqual(generation, 'generation-a', 'the request generation is retained');
+  route.send = function() {
+    assert.ok(false, 'an in-flight transition must own its authentication failure');
   };
+
 
   route.loadingError({xhr: {status: 401}}, transition, EmberObject.create(), 'generation-a');
   assert.strictEqual(route.get('access.enabled'), true, 'access control remains enabled');
+  run(() => route.destroy());
+});
+
+test('the authenticated error action dispatches through an in-flight transition', function(assert) {
+  assert.expect(5);
+  let transition = {
+    authGeneration: 'generation-b',
+    send(action, sentTransition, timedOut, error, generation) {
+      assert.strictEqual(action, 'sessionInvalid', 'the passive session action is used');
+      assert.strictEqual(sentTransition, transition, 'the failed transition is retained');
+      assert.strictEqual(timedOut, true, 'the expiry explanation is retained');
+      assert.strictEqual(generation, 'generation-b', 'the request generation is retained');
+    },
+  };
+  let route = AuthenticatedRoute.create();
+  route.send = function() {
+    assert.ok(false, 'the route hierarchy is not ready during the transition');
+  };
+
+  let bubbles = route.get('actions').error.call(route, {xhr: {status: 401}}, transition);
+  assert.strictEqual(bubbles, false, 'the handled authentication failure does not bubble');
   run(() => route.destroy());
 });
 

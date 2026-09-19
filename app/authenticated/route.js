@@ -165,7 +165,8 @@ export default Route.extend(Subscribe, PromiseToCb, {
     console.log('Loading Error:', err);
     if ( Errors.status(err) === 401 ) {
       this.set('access.enabled', true);
-      this.send('sessionInvalid', transition,
+      let target = transition && typeof transition.send === 'function' ? transition : this;
+      target.send('sessionInvalid', transition,
         (transition.targetName !== 'authenticated.index'), null,
         generation || transition.authGeneration, 401);
       return;
@@ -279,7 +280,8 @@ export default Route.extend(Subscribe, PromiseToCb, {
       // Unauthorized error, send back to login screen
       if ( Errors.status(err) === 401 )
       {
-        this.send('sessionInvalid', transition, true, null,
+        let target = transition && typeof transition.send === 'function' ? transition : this;
+        target.send('sessionInvalid', transition, true, null,
           transition && transition.authGeneration, 401);
         return false;
       }
