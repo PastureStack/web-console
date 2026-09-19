@@ -112,6 +112,29 @@ export default Route.extend({
     return promise;
   },
 
+  handleSessionInvalid(transition, timedOut, errorMsg, generation, status=401) {
+    generation = generation || (transition && transition.authGeneration) ||
+      this.get('access').captureGeneration();
+    return this.get('access').handlePassiveFailure(generation, status).then((outcome) => {
+      if ( outcome.status === 'adopted' || outcome.status === 'stale' ) {
+        this.reloadForSession();
+      } else if ( outcome.status === 'active' && transition ) {
+        // A pre-fix tab can still remove the shared JavaScript cookie after
+        // its protected DELETE is rejected by the server.  If this tab
+        // restored its own in-memory token snapshot, the failed transition
+        // was already aborted and must be resumed without another login.
+        this.reloadForSession();
+      } else if ( outcome.status === 'invalid' ) {
+        this.transitionToLogin(transition, timedOut, errorMsg);
+      } else if ( outcome.status === 'forbidden' ) {
+        this.get('router').replaceWith('authenticated');
+      }
+    }).catch((error) => {
+      this.controllerFor('application').set('error', error);
+      this.get('router').transitionTo('failWhale');
+    });
+  },
+
   registerShortcuts() {
     let manager = this.get('shortcutManager');
     if (manager && typeof manager.register === 'function') {
@@ -174,7 +197,10 @@ export default Route.extend({
           // Route#send, which is illegal while the first route is unresolved.
           transition.abort();
         } else {
-          this.send('sessionInvalid', transition, true, null,
+          // Ember can omit the transition from an initial-route error.  There
+          // is no committed hierarchy to receive Route#send in that state, so
+          // call the same passive recovery boundary directly.
+          this.handleSessionInvalid(transition, true, null,
             transition && transition.authGeneration, 401);
         }
         return false;
@@ -213,26 +239,9 @@ export default Route.extend({
     },
 
     sessionInvalid(transition, timedOut, errorMsg, generation, status=401) {
-      generation = generation || (transition && transition.authGeneration) ||
-        this.get('access').captureGeneration();
-      return this.get('access').handlePassiveFailure(generation, status).then((outcome) => {
-        if ( outcome.status === 'adopted' || outcome.status === 'stale' ) {
-          this.reloadForSession();
-        } else if ( outcome.status === 'active' && transition ) {
-          // A pre-fix tab can still remove the shared JavaScript cookie after
-          // its protected DELETE is rejected by the server.  If this tab
-          // restored its own in-memory token snapshot, the failed transition
-          // was already aborted and must be resumed without another login.
-          this.reloadForSession();
-        } else if ( outcome.status === 'invalid' ) {
-          this.transitionToLogin(transition, timedOut, errorMsg);
-        } else if ( outcome.status === 'forbidden' ) {
-          this.get('router').replaceWith('authenticated');
-        }
-      }).catch((error) => {
-        this.controllerFor('application').set('error', error);
-        this.get('router').transitionTo('failWhale');
-      });
+      return this.handleSessionInvalid(
+        transition, timedOut, errorMsg, generation, status
+      );
     },
 
     authSessionChanged(change) {

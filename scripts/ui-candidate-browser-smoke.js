@@ -24,8 +24,11 @@ const serveOnly = process.env.UI_SMOKE_SERVE_ONLY === "1";
 const managedMfaAccountId = process.env.PASTURESTACK_MFA_MANAGED_ACCOUNT_ID || "";
 const exerciseTotpEnrollment = process.env.UI_SMOKE_EXERCISE_TOTP_ENROLLMENT === "1";
 const exercisePasskeyEnrollment = process.env.UI_SMOKE_EXERCISE_PASSKEY_ENROLLMENT === "1";
-const exerciseExplicitLogout = process.env.UI_SMOKE_EXERCISE_EXPLICIT_LOGOUT === "1";
-const exerciseCrossTab = process.env.UI_SMOKE_EXERCISE_CROSS_TAB === "1";
+const sessionScenario = process.env.UI_SMOKE_SESSION_SCENARIO || "passkey";
+const allowedSessionScenarios = new Set(["passkey", "explicit-logout", "cross-tab"]);
+if (!allowedSessionScenarios.has(sessionScenario)) {
+  throw new Error(`Unsupported UI_SMOKE_SESSION_SCENARIO: ${sessionScenario}`);
+}
 const requireRecoveryEmailEnrollment = process.env.UI_SMOKE_REQUIRE_EMAIL_RECOVERY === "1";
 const expectPasskeyLimit = process.env.UI_SMOKE_EXPECT_PASSKEY_LIMIT === "1";
 const defaultRoutes = [
@@ -1495,13 +1498,12 @@ async function main() {
         actionBridgeChecked = true;
       }
     }
-    if (exerciseCrossTab) {
-      await assertCrossTabSessionAdoption(page, page.context());
-    } else if (exerciseExplicitLogout) {
-      await assertExplicitLogout(page);
-    } else {
-      await assertPasskeyLogin(page, consoleErrors);
-    }
+    const sessionScenarioRunners = new Map([
+      ["passkey", () => assertPasskeyLogin(page, consoleErrors)],
+      ["explicit-logout", () => assertExplicitLogout(page)],
+      ["cross-tab", () => assertCrossTabSessionAdoption(page, page.context())],
+    ]);
+    await sessionScenarioRunners.get(sessionScenario)();
 
     await page.screenshot({ path: path.join(outDir, "ui-candidate-browser-smoke-final.png"), fullPage: true });
     const filteredFailures = failedRequests.filter((line) => !line.includes("net::ERR_ABORTED"));

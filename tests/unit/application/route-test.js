@@ -135,6 +135,38 @@ test('a route 401 uses passive generation-aware reconciliation', function(assert
   run(() => route.destroy());
 });
 
+test('an initial 401 without a transition uses direct passive recovery', async function(assert) {
+  let loginTransitions = 0;
+  let route = ApplicationRoute.create({
+    access: {
+      captureGeneration() {
+        return 'initial-generation';
+      },
+      handlePassiveFailure(generation, status) {
+        assert.strictEqual(generation, 'initial-generation', 'the current tab generation is retained');
+        assert.strictEqual(status, 401, 'the failure remains passive authentication recovery');
+        return Promise.resolve({status: 'invalid'});
+      },
+    },
+  });
+  route.hideLoadingOverlay = function() {};
+  route.send = function() {
+    assert.ok(false, 'Route#send is illegal before the first hierarchy commits');
+  };
+  route.transitionToLogin = function(transition, timedOut) {
+    assert.strictEqual(transition, null, 'there is no fabricated transition');
+    assert.strictEqual(timedOut, true, 'confirmed invalid ownership preserves the timeout reason');
+    loginTransitions++;
+  };
+
+  let handled = route.get('actions').error.call(route, {xhr: {status: 401}}, null);
+  assert.strictEqual(handled, false, 'the initial error is handled without bubbling');
+  await Promise.resolve();
+  await Promise.resolve();
+  assert.strictEqual(loginTransitions, 1, 'direct recovery reaches the login route exactly once');
+  run(() => route.destroy());
+});
+
 test('a restored current session resumes an aborted route without another login', async function(assert) {
   let reloads = 0;
   let loginTransitions = 0;

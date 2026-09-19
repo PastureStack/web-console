@@ -10,9 +10,10 @@
   or a notification missed during navigation resumes the authenticated session
   without repeating OIDC, TOTP, or Passkey. Active OIDC callbacks retain their
   captured generation and continue through the stale-callback guard.
-- Route initial-transition 401 failures through the owning transition, preserve
-  ordinary 403 permission failures, and keep direct post-refresh logout bound
-  to the generation that was actually revalidated.
+- Route initial-transition 401 failures through the owning transition, or call
+  the same passive recovery boundary directly when Ember has not supplied a
+  transition yet. Preserve ordinary 403 permission failures and keep direct
+  post-refresh logout bound to the generation that was actually revalidated.
 - Add deterministic barriers for cookie/generation commit ordering, queued
   removal/login events, refresh recovery, and TOTP/Passkey delayed-401 races.
   The race suite repeats the critical ordering 100 times.
