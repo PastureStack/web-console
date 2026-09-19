@@ -298,6 +298,20 @@ async function fetchProjectsStatus(page) {
   throw new Error(`projects API did not authenticate: ${lastError ? lastError.message : "unknown"}`);
 }
 
+async function waitForAuthSessionSubscription(page) {
+  await page.waitForFunction(() => {
+    const app = window.Ui;
+    const container = app && app.__container__;
+    const auth = container && container.lookup("service:auth-session");
+    const route = container && container.lookup("route:application");
+    const shared = auth && auth.readShared();
+    return Boolean(
+      auth && route && route._authSessionService === auth &&
+      shared && auth.capture() === shared.generation
+    );
+  }, null, { timeout: 30000 });
+}
+
 async function ensureLocalLoginForm(page) {
   await page.waitForFunction(() => Boolean(
     document.querySelector(".login-pass") ||
@@ -1167,9 +1181,20 @@ async function loginWithLocalTotp(page) {
   );
   await mfaCode.fill(currentTotp(totpSecret));
   const verify = mfaCode.locator("xpath=following-sibling::button[1]");
-  await verify.evaluate((button) => button.click());
+  await page.waitForFunction(() => {
+    const app = window.Ui;
+    const controller = app && app.__container__ && app.__container__.lookup("controller:login/index");
+    return Boolean(controller && /^\d{6}$/.test(controller.get("mfaCode") || ""));
+  }, { timeout: 10000 });
+  await verify.click();
   const completion = await completionPromise;
   const completionBody = await completion.json().catch(() => ({}));
+  const submittedCodeLength = String(
+    requestBodyField(completion.request(), "mfaCode") || ""
+  ).length;
+  if (submittedCodeLength !== 6) {
+    throw new Error(`cross-tab TOTP request carried ${submittedCodeLength} code characters`);
+  }
   if (completion.status() !== 201 || completionBody.mfaRequired) {
     throw new Error(`cross-tab TOTP completion failed status=${completion.status()} body=${JSON.stringify(completionBody).slice(0, 500)}`);
   }
@@ -1212,6 +1237,12 @@ async function assertCrossTabSessionAdoption(page, context) {
         waitUntil: "domcontentloaded",
         timeout: 45000,
       });
+      // DOMContentLoaded only proves that index.html arrived.  The race
+      // scenario requires an already-open authenticated tab, so hold the
+      // barrier until Ember has adopted the shared session and installed its
+      // cross-tab listener.  Otherwise the test measures an interrupted boot
+      // rather than a delayed event from an established old tab.
+      await waitForAuthSessionSubscription(peer);
       await fetchProjectsStatus(peer);
       await peer.evaluate(() => {
         window.__qaAuthStorageEvents = [];
@@ -1451,7 +1482,12 @@ async function main() {
           { timeout: 30000 }
         );
         await mfaCode.fill(currentTotp(totpSecret));
-        await verifyButton.evaluate((button) => button.click());
+        await page.waitForFunction(() => {
+          const app = window.Ui;
+          const controller = app && app.__container__ && app.__container__.lookup("controller:login/index");
+          return Boolean(controller && /^\d{6}$/.test(controller.get("mfaCode") || ""));
+        }, { timeout: 10000 });
+        await verifyButton.click();
         let completion;
         try {
           completion = await completionPromise;
@@ -1467,6 +1503,12 @@ async function main() {
             };
           });
           throw new Error(`TOTP completion did not issue a token request state=${JSON.stringify(state)}`);
+        }
+        const submittedCodeLength = String(
+          requestBodyField(completion.request(), "mfaCode") || ""
+        ).length;
+        if (submittedCodeLength !== 6) {
+          throw new Error(`TOTP request carried ${submittedCodeLength} code characters`);
         }
         if (completion.status() !== 201) {
           const body = await completion.json().catch(() => ({}));
