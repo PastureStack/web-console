@@ -8,13 +8,26 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.120`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.121`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.121` closes the expired-session loading loop without changing the
+server authentication contract. `GET /token` may return HTTP 200 with provider
+login options when a Cookie is missing, invalid, or expired; the console now
+requires an identity-bearing `accountId`, `user`, or `userIdentity` before it
+adopts that response as an authenticated session. The unauthenticated object is
+normalized to the existing local 401 path, where the origin-level mutex clears
+only a still-matching Cookie and generation before routing to the login page.
+Passive failures still issue no DELETE, and a delayed result cannot clear a
+newer session. Deterministic tests cover simultaneous 401 recovery, single
+invalidation, newer-generation protection, masked JWT responses, and the
+existing TOTP, Passkey, callback, explicit-logout, and 403 boundaries. Pair this
+release with Authentication Service `v0.4.41` and Engine `0.183.309` or newer.
 
 Release `1.6.120` completes the cross-tab session boundary under real browser
 ordering. Shared cookie and generation reads now occur only after acquiring the

@@ -467,7 +467,19 @@ export default Service.extend({
     }).then((xhr) => {
       let data = xhr && xhr.body && xhr.body.data;
       let token = data && data[0];
-      if ( !token ) {
+      // GET /token deliberately returns the configured login options with
+      // HTTP 200 when there is no authenticated browser session.  A current
+      // session carries at least one identity-bearing field; JWT is not used
+      // as the discriminator because current-token responses may mask it.
+      let accountId = token && token.accountId;
+      let user = token && token.user;
+      let userIdentity = token && token.userIdentity;
+      let hasAccountId = typeof accountId === 'string' && accountId.trim().length > 0;
+      let hasUser = typeof user === 'string' && user.trim().length > 0;
+      let hasUserIdentity = !!(userIdentity && typeof userIdentity === 'object' &&
+        Object.keys(userIdentity).length > 0);
+
+      if ( !token || (!hasAccountId && !hasUser && !hasUserIdentity) ) {
         return reject({status: 401, message: 'No authenticated session'});
       }
       return token;
@@ -516,6 +528,12 @@ export default Service.extend({
         let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
         if ( current && current.generation === shared.generation && currentCookie === cookie ) {
           this._clearOwnedLocalState(shared.generation);
+          return {status: 'invalid'};
+        }
+        if ( !current && !currentCookie ) {
+          // A concurrent passive failure already invalidated this exact
+          // session.  Converge on login without clearing again or treating an
+          // absent session as a newer one that needs a route reload.
           return {status: 'invalid'};
         }
         return {status: 'stale', generation: current && current.generation};
