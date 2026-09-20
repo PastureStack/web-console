@@ -179,18 +179,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
   },
 
   cbFind(type, store='store', opt=null) {
-    return (results, cb) => {
-      if ( typeof results === 'function' ) {
-        cb = results;
-        results = null;
-      }
-
-      return this.get(store).find(type,null,opt).then(function(res) {
-        cb(null, res);
-      }).catch(function(err) {
-        cb(err, null);
-      });
-    };
+    return this.toCb(() => this.get(store).find(type,null,opt));
   },
 
   loadPreferences() {

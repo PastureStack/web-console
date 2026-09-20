@@ -6,6 +6,7 @@ import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
 import { minorVersion } from 'ui/utils/parse-version';
 import { displayOrchestrationName } from 'ui/utils/orchestration-name';
+import promiseToCallback from 'ui/utils/promise-to-callback';
 
 export function normalizeName(str) {
   return str.replace(/\./g, C.SETTING.DOT_CHAR).toLowerCase();
@@ -113,10 +114,10 @@ export default Service.extend(Evented, {
 
     var promise = new Promise((resolve, reject) => {
       async.eachLimit(names, 3, function(name, cb) {
-        userStore
-          .find('setting', denormalizeName(name))
-          .then(function() { cb(); })
-          .catch(function(err) { cb(err); });
+        return promiseToCallback(
+          () => userStore.find('setting', denormalizeName(name)),
+          cb
+        );
       }, function(err) {
         if ( err ) {
           reject(err);
