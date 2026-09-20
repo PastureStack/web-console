@@ -99,6 +99,27 @@ test('a duplicate submission cannot clear the active owner lock', async function
   run(() => subject.destroy());
 });
 
+test('a submission that only observes an existing saving lock cannot take ownership or clear it', async function(assert) {
+  let callbacks = [];
+  let saves = 0;
+  let subject = subjectWith({
+    doSave() {
+      saves++;
+      return resolve('unexpected-save');
+    },
+  });
+
+  subject.set('saving', true);
+  let outcome = await save(subject, (success) => callbacks.push(success));
+
+  assert.deepEqual(outcome, {saved: false, reason: 'busy'}, 'the pre-existing lock is reported as busy');
+  assert.strictEqual(saves, 0, 'a second persistence operation is not started');
+  assert.deepEqual(callbacks, [false], 'the rejected duplicate callback completes once');
+  assert.strictEqual(subject.get('saving'), true, 'the observed lock remains owned by the first operation');
+  assert.strictEqual(subject._saveOwner, undefined, 'the duplicate never claims private ownership');
+  run(() => subject.destroy());
+});
+
 test('every save hook handles synchronous throws and asynchronous rejections consistently', async function(assert) {
   let hooks = ['willSave', 'doSave', 'didSave', 'doneSaving', 'errorSaving'];
   let modes = ['sync', 'async'];

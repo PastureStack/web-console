@@ -57,7 +57,7 @@ export default Mixin.create({
       // gap in which two clicks could both observe saving=false. A duplicate
       // submission completes its own callback but never owns or clears the
       // first submission's lock.
-      if ( this._saveOwner ) {
+      if ( this._saveOwner || this.get('saving') ) {
         return resolve().then(() => {
           if ( cb ) {
             cb(false);
