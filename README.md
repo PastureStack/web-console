@@ -8,13 +8,32 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.121`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.122`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.122` restores environment view and edit loading after the Ember 7
+compatibility migration. Promise-to-callback adapters now distinguish source
+Promise rejection from exceptions raised by downstream `async` completion, so
+one operation can call its callback only once and the original error remains
+diagnosable. The project route imports members through the supported
+`followLink` contract before cloning the editable model; the removed
+`importLink` helper can no longer leave the transition pending. Synchronous and
+asynchronous failures from projects, members, networks, and policy managers now
+reject the route and reach the normal error page instead of leaving the static
+loading overlay in place. Focused tests cover resolved, rejected, downstream
+callback, concurrent `async.auto`, every environment-loading dependency, and
+the adjacent authenticated initialization path. The shared create/edit mixin
+now returns one owned Promise across validation, persistence, dependent saves,
+completion, error handling, and cleanup. Duplicate submissions cannot release
+another request's saving lock, while synchronous hook, callback, and finalizer
+exceptions remain diagnosable. Environment and load-balancer component tests
+exercise the same lifecycle used by the browser. Pair this release with
+Authentication Service `v0.4.41` and Engine `0.183.309` or newer.
 
 Release `1.6.121` closes the expired-session loading loop without changing the
 server authentication contract. `GET /token` may return HTTP 200 with provider

@@ -51,38 +51,129 @@ export default Mixin.create({
     },
 
     save: function(cb) {
-      // Will save can return true/false or a promise
-      resolve(this.willSave()).then((ok) => {
-        if ( !ok )
-        {
-          // Validation or something else said not to save
-          if ( cb )
-          {
-            cb();
+      let owner = {};
+
+      // Reserve this submission before entering an RSVP turn. This closes the
+      // gap in which two clicks could both observe saving=false. A duplicate
+      // submission completes its own callback but never owns or clears the
+      // first submission's lock.
+      if ( this._saveOwner || this.get('saving') ) {
+        return resolve().then(() => {
+          if ( cb ) {
+            cb(false);
           }
-          return;
-        }
+          return {saved: false, reason: 'busy'};
+        });
+      }
 
-        this.doSave()
-        .then(this.didSave.bind(this))
-        .then(this.doneSaving.bind(this))
-        .catch((err) => {
-          this.send('error', err);
-          this.errorSaving(err);
-        }).finally(() => {
-          try {
-            this.set('saving',false);
+      this._saveOwner = owner;
+      let initialSaving = this.get('saving');
+      let ownsSaving = false;
+      let callbackSuccess = false;
 
-            if ( cb )
-            {
-              cb();
+      // Starting with an empty RSVP turn makes synchronous hook exceptions
+      // indistinguishable from Promise rejections and adopts plain values and
+      // thenables returned by every hook.
+      return resolve()
+        .then(() => this.willSave())
+        .then((ok) => {
+          if ( !ok ) {
+            return {saved: false, reason: 'cancelled'};
+          }
+
+          ownsSaving = true;
+          if ( !this.get('saving') ) {
+            this.set('saving', true);
+          }
+
+          return resolve()
+            .then(() => this.doSave())
+            .then((result) => this.didSave(result))
+            .then((result) => this.doneSaving(result))
+            .then((result) => {
+              callbackSuccess = true;
+              return {saved: true, value: result};
+            });
+        })
+        .then(null, (error) => {
+          return this._handleSaveFailure(error).then(() => {
+            return {saved: false, error};
+          });
+        })
+        .finally(() => {
+          let finalizerError = null;
+
+          if ( this._saveOwner === owner ) {
+            this._saveOwner = null;
+            // A hook that turned saving on and then threw still owns that
+            // state, but a submission which found a pre-existing saving=true
+            // must not clear another operation's lock.
+            if (
+              !this.isDestroyed &&
+              !this.isDestroying &&
+              (ownsSaving || (!initialSaving && this.get('saving')))
+            ) {
+              try {
+                this.set('saving', false);
+              } catch (error) {
+                finalizerError = error;
+              }
             }
           }
-          catch(e) {
+
+          try {
+            if ( cb ) {
+              cb(callbackSuccess);
+            }
+          } catch (error) {
+            if ( finalizerError && error && typeof error === 'object' && !error.cause ) {
+              error.cause = finalizerError;
+            }
+            throw error;
           }
-        });
-      });
+
+          if ( finalizerError ) {
+            throw finalizerError;
+          }
+        })
+        .then((outcome) => outcome.saved ? outcome.value : outcome);
     }
+  },
+
+  _handleSaveFailure(error) {
+    // The display action and the overridable cleanup hook both participate in
+    // the returned lifecycle. If displaying the first error itself fails, the
+    // cleanup hook still runs. A display/finalizer exception remains an
+    // observable rejection instead of being reduced to outcome metadata.
+    let displayError = null;
+
+    return resolve()
+      .then(() => this.send('error', error))
+      .then(
+        () => undefined,
+        (failure) => {
+          displayError = failure;
+        }
+      )
+      .then(() => resolve().then(() => this.errorSaving(error)))
+      .then(
+        () => {
+          if ( displayError ) {
+            throw displayError;
+          }
+        },
+        (cleanupError) => {
+          if (
+            displayError &&
+            cleanupError &&
+            typeof cleanupError === 'object' &&
+            !cleanupError.cause
+          ) {
+            cleanupError.cause = displayError;
+          }
+          throw cleanupError;
+        }
+      );
   },
 
   // willSave happens before save and can stop the save from happening

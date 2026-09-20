@@ -28,7 +28,12 @@ export default Route.extend(PromiseToCb, {
       let tasks = {
         allProjects:                        this.toCb(() => { return userStore.findAll('project'); }),
         project:            ['allProjects', this.toCb(() => { return userStore.find('project', params.project_id); })],
-        importMembers:      ['project',     this.toCb((results) => { return results.project.importLink('projectMembers'); })],
+        importMembers:      ['project',     this.toCb((results) => {
+          return results.project.followLink('projectMembers').then((members) => {
+            results.project.set('projectMembers', members);
+            return results.project;
+          });
+        })],
         networks:                           this.toCb(() => { return userStore.find('network', null, {filter: {accountId: params.project_id}}); }),
         policyManagers:                     this.toCb(() => { return userStore.find('stack', null, policyManagerOpt); }),
       };

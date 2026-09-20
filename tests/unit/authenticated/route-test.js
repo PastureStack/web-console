@@ -5,6 +5,30 @@ import AuthenticatedRoute from 'ui/authenticated/route';
 
 module('Unit | Route | authenticated');
 
+test('cbFind preserves a downstream callback exception without calling it twice', function(assert) {
+  let calls = 0;
+  let failure = new Error('authenticated dependency failed');
+  let route = AuthenticatedRoute.create({
+    store: {
+      find(type) {
+        assert.strictEqual(type, 'instance', 'the requested resource type is retained');
+        return Promise.resolve(['instance']);
+      },
+    },
+  });
+
+  return route.cbFind('instance')(() => {
+    calls++;
+    throw failure;
+  }).then(() => {
+    assert.ok(false, 'the downstream exception must remain observable');
+  }, (err) => {
+    assert.strictEqual(err, failure, 'the original exception is retained');
+    assert.strictEqual(calls, 1, 'the callback is invoked once');
+    run(() => route.destroy());
+  });
+});
+
 test('logs out only for an actual authentication failure', function(assert) {
   assert.expect(5);
 

@@ -37,6 +37,23 @@ not a session. The console converts it to its stable local 401 contract and may
 clear shared state only while the same Cookie and generation still match under
 the authentication mutex; recovery routes to login instead of reloading.
 
+Promise-to-callback adapters used by concurrent route loading must attach
+separate fulfillment and rejection handlers to the source Promise. Exceptions
+raised by a downstream callback are not source-request failures and must not
+invoke the same callback again. Environment editing loads project members
+through the supported resource-link contract before cloning; any project,
+member, network, or policy-manager failure rejects the transition so the
+application error boundary can remove the loading overlay and display the
+original diagnostic.
+
+Create and edit screens share one owned save lifecycle. The returned Promise
+covers validation, the primary and dependent saves, completion hooks, error
+handling, and cleanup. Synchronous hook failures are adopted like rejected
+Promises; a duplicate submission cannot release the active submission's lock;
+and callback or cleanup exceptions remain observable instead of being hidden.
+Cancellation never writes data and always releases only the state owned by that
+submission.
+
 Catalog localization is additive. The canonical `name` and `description`
 fields remain unchanged, while optional
 `io.pasturestack.catalog.name.<locale>` and
