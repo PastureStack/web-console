@@ -90,6 +90,204 @@ module('Unit | Service | access session race', function(hooks) {
     window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
   });
 
+  test('a 200 login-options object is rejected instead of creating a session', async function(assert) {
+    let browser = {cookie: 'expired-token'};
+    let shared = {
+      generation: generation(10),
+      accountId: '1a1',
+      committedAt: 1726358400010,
+    };
+    window.localStorage.setItem(C.AUTH_SESSION.STORAGE_KEY, JSON.stringify(shared));
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let access = createAccess(browser, auth, (options) => {
+      assert.strictEqual(options.url, 'token', 'the current-token endpoint is queried once');
+      return resolve({body: {data: [{
+        accountId: null,
+        jwt: null,
+        user: null,
+        userIdentity: null,
+        redirectUrl: 'https://identity.example.invalid/authorize',
+        security: true,
+      }]}});
+    });
+    let error;
+
+    try {
+      await access.ensureSession();
+    } catch (caught) {
+      error = caught;
+    }
+
+    assert.deepEqual(error, {status: 401, message: 'No authenticated session'},
+      'the unauthenticated 200 response becomes the stable 401 contract');
+    assert.strictEqual(auth.capture(), null, 'the tab never adopts the stale generation');
+    assert.deepEqual(JSON.parse(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY)), shared,
+      'ensureSession does not create or update a generation after validation fails');
+    assert.strictEqual(browser.cookie, 'expired-token',
+      'session cleanup remains in the generation-aware passive recovery path');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
+
+  test('validation clears one matching expired session and then stays invalid', async function(assert) {
+    let browser = {cookie: 'expired-owned-token'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let owned = auth.commit(generation(20), '1a1', browser.cookie);
+    let access = createAccess(browser, auth, () => resolve({body: {data: [{
+      accountId: null,
+      jwt: null,
+      user: null,
+      userIdentity: null,
+      security: true,
+    }]}}));
+    let clears = 0;
+    let clearOwnedLocalState = access._clearOwnedLocalState.bind(access);
+    access._clearOwnedLocalState = (sessionGeneration) => {
+      clears++;
+      return clearOwnedLocalState(sessionGeneration);
+    };
+
+    let first = await access._validateAndAdopt(owned, browser.cookie);
+    let second = await access._validateAndAdopt(owned, 'expired-owned-token');
+
+    assert.strictEqual(first.status, 'invalid', 'the matching expired session becomes invalid');
+    assert.strictEqual(second.status, 'invalid', 'a duplicate result converges without a route reload');
+    assert.strictEqual(clears, 1, 'shared and local state are cleared exactly once');
+    assert.strictEqual(browser.cookie, undefined, 'the matching expired cookie is removed');
+    assert.strictEqual(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY), null,
+      'the matching shared generation is removed');
+    assert.strictEqual(auth.capture(), null, 'the tab no longer owns an authenticated session');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
+
+  test('simultaneous passive 401s converge without DELETE or a new generation', async function(assert) {
+    let browser = {cookie: 'expired-passive-token'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let expiredGeneration = generation(30);
+    auth.commit(expiredGeneration, '1a1', browser.cookie);
+    let response = deferred();
+    let allReads = deferred();
+    let reads = 0;
+    let deletes = 0;
+    let access = createAccess(browser, auth, (options) => {
+      if ( options.method === 'DELETE' ) {
+        deletes++;
+        return resolve({status: 204});
+      }
+      reads++;
+      if ( reads === 3 ) {
+        allReads.resolve();
+      }
+      return response.promise;
+    });
+    let clears = 0;
+    let clearOwnedLocalState = access._clearOwnedLocalState.bind(access);
+    access._clearOwnedLocalState = (sessionGeneration) => {
+      clears++;
+      return clearOwnedLocalState(sessionGeneration);
+    };
+
+    let recoveries = [
+      access.handlePassiveFailure(expiredGeneration, 401),
+      access.handlePassiveFailure(expiredGeneration, 401),
+      access.handlePassiveFailure(expiredGeneration, 401),
+    ];
+    await allReads.promise;
+    response.resolve({body: {data: [{
+      accountId: null,
+      jwt: null,
+      user: null,
+      userIdentity: null,
+      security: true,
+    }]}});
+    let results = await Promise.all(recoveries);
+
+    assert.strictEqual(deletes, 0, 'passive expiry never revokes a server token');
+    assert.strictEqual(reads, 3, 'the barrier releases only after every recovery validates');
+    assert.ok(results.every((result) => result.status === 'invalid'),
+      'every duplicate result converges directly on the login state');
+    assert.strictEqual(clears, 1, 'only one recovery clears the matching shared session');
+    assert.strictEqual(browser.cookie, undefined, 'all passive failures converge on no cookie');
+    assert.strictEqual(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY), null,
+      'no replacement generation is created');
+    assert.strictEqual(auth.capture(), null, 'the tab converges to the unauthenticated state');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
+
+  test('an expired-token response cannot clear a newer committed session', async function(assert) {
+    let browser = {cookie: 'old-token'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let oldRecord = auth.commit(generation(40), '1a1', browser.cookie);
+    let response = deferred();
+    let requested = deferred();
+    let access = createAccess(browser, auth, () => {
+      requested.resolve();
+      return response.promise;
+    });
+    let clears = 0;
+    let clearOwnedLocalState = access._clearOwnedLocalState.bind(access);
+    access._clearOwnedLocalState = (sessionGeneration) => {
+      clears++;
+      return clearOwnedLocalState(sessionGeneration);
+    };
+
+    let validating = access._validateAndAdopt(oldRecord, browser.cookie);
+    await requested.promise;
+    browser.cookie = 'new-token';
+    let newRecord = auth.commit(generation(41), '1a2', browser.cookie);
+    response.resolve({body: {data: [{
+      accountId: null,
+      jwt: null,
+      user: null,
+      userIdentity: null,
+      security: true,
+    }]}});
+    let outcome = await validating;
+
+    assert.strictEqual(outcome.status, 'stale', 'the old validation loses ownership');
+    assert.strictEqual(outcome.generation, newRecord.generation, 'the newer generation is reported');
+    assert.strictEqual(clears, 0, 'the old response cannot clear newer local or shared state');
+    assert.strictEqual(browser.cookie, 'new-token', 'the newer cookie survives');
+    assert.strictEqual(auth.capture(), newRecord.generation, 'the tab retains the newer generation');
+    assert.strictEqual(auth.readShared().generation, newRecord.generation,
+      'the newer shared session remains committed');
+    run(() => {
+      access.destroy();
+      auth.destroy();
+    });
+  });
+
+  test('identity-bearing current-token responses remain authenticated without requiring jwt', async function(assert) {
+    let responses = [
+      {accountId: '1a1', user: 'administrator'},
+      {accountId: null, user: null, userIdentity: {externalIdType: 'oidc_user', externalId: 'subject-1'}},
+    ];
+
+    for (let index = 0; index < responses.length; index++) {
+      let browser = {cookie: `valid-token-${index}`};
+      let auth = AuthSessionService.create({lockManager: serialLockManager()});
+      let access = createAccess(browser, auth, () => resolve({body: {data: [responses[index]]}}));
+      let result = await access.ensureSession();
+
+      assert.strictEqual(result.status, 'active', 'the authenticated token is accepted');
+      assert.ok(auth.capture(), 'a generation is committed for the authenticated response');
+      assert.notOk(responses[index].jwt, 'acceptance does not depend on an exposed jwt field');
+      run(() => {
+        access.destroy();
+        auth.destroy();
+      });
+      window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+    }
+  });
+
   test('a delayed 401 cannot revoke or clear a newer TOTP or Passkey session in 100 deterministic runs', async function(assert) {
     assert.expect(504);
     let methods = ['totp', 'webauthn'];

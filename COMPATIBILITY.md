@@ -30,6 +30,12 @@ generation only after it owns that mutex, validate `GET /token`, and recover on
 the login route if a storage or `BroadcastChannel` notification was missed.
 Passive 401, 403, WebSocket, timer, storage, and route errors must never invoke
 server-side logout; only a user action may issue the generation-bound DELETE.
+The current-token collection is authenticated only when its first token carries
+a non-empty `accountId`, `user`, or `userIdentity`. A provider login-options
+object returned with HTTP 200 and no identity is an unauthenticated response,
+not a session. The console converts it to its stable local 401 contract and may
+clear shared state only while the same Cookie and generation still match under
+the authentication mutex; recovery routes to login instead of reloading.
 
 Catalog localization is additive. The canonical `name` and `description`
 fields remain unchanged, while optional
