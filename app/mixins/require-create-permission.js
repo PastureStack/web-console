@@ -30,7 +30,7 @@ export default Mixin.create({
         return;
       }
 
-      return this.replaceWith('stacks');
+      return this.get('router').replaceWith('stacks');
     });
   },
 

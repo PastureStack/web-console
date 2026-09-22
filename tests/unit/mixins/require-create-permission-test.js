@@ -11,6 +11,11 @@ test('allows a route only when the effective schema exposes POST', function(asse
   let redirects = 0;
   let route = Route.extend(RequireCreatePermission).create({
     requiredCreateType: 'stack',
+    router: EmberObject.create({
+      replaceWith() {
+        redirects++;
+      },
+    }),
     store: EmberObject.create({
       canCreate(type) {
         assert.strictEqual(type, 'stack', 'the route checks its declared resource type');
@@ -18,10 +23,6 @@ test('allows a route only when the effective schema exposes POST', function(asse
       },
     }),
   });
-  route.replaceWith = function() {
-    redirects++;
-  };
-
   return route.beforeModel({}).then(() => {
     assert.strictEqual(redirects, 0, 'an authorized route is not redirected');
     assert.strictEqual(route.get('requiredCreateType'), 'stack', 'the capability is explicit');
@@ -33,6 +34,12 @@ test('redirects direct navigation when POST is absent', function(assert) {
   assert.expect(3);
   let route = Route.extend(RequireCreatePermission).create({
     requiredCreateType: 'service',
+    router: EmberObject.create({
+      replaceWith(target) {
+        assert.strictEqual(target, 'stacks', 'the denied route returns to the safe read-only list');
+        return 'redirected';
+      },
+    }),
     store: EmberObject.create({
       canCreate(type) {
         assert.strictEqual(type, 'service', 'the service capability is checked');
@@ -40,11 +47,6 @@ test('redirects direct navigation when POST is absent', function(assert) {
       },
     }),
   });
-  route.replaceWith = function(target) {
-    assert.strictEqual(target, 'stacks', 'the denied route returns to the safe read-only list');
-    return 'redirected';
-  };
-
   return route.beforeModel({}).then((result) => {
     assert.strictEqual(result, 'redirected', 'the redirect transition is returned');
     run(() => route.destroy());
@@ -58,6 +60,11 @@ test('an upgrade uses PUT capability without opening create-only routes', functi
     requiredCreateType: 'service',
     requiredUpdateType: 'service',
     updateWhenQueryParam: 'upgrade',
+    router: EmberObject.create({
+      replaceWith() {
+        redirects++;
+      },
+    }),
     store: EmberObject.create({
       canCreate() {
         assert.ok(false, 'an upgrade must not be evaluated as a create');
@@ -69,10 +76,6 @@ test('an upgrade uses PUT capability without opening create-only routes', functi
       },
     }),
   });
-  route.replaceWith = function() {
-    redirects++;
-  };
-
   return route.beforeModel({to: {queryParams: {upgrade: 'true'}}}).then(() => {
     assert.strictEqual(redirects, 0, 'PUT capability preserves the upgrade workflow');
     assert.strictEqual(route.get('updateWhenQueryParam'), 'upgrade', 'only explicit upgrade flows use PUT');
@@ -86,6 +89,12 @@ test('upgrade=false remains a create request', function(assert) {
     requiredCreateType: 'service',
     requiredUpdateType: 'service',
     updateWhenQueryParam: 'upgrade',
+    router: EmberObject.create({
+      replaceWith(target) {
+        assert.strictEqual(target, 'stacks', 'a denied create request is redirected');
+        return 'redirected';
+      },
+    }),
     store: EmberObject.create({
       canCreate(type) {
         assert.strictEqual(type, 'service', 'the declared create capability is checked');
@@ -96,11 +105,6 @@ test('upgrade=false remains a create request', function(assert) {
       },
     }),
   });
-  route.replaceWith = function(target) {
-    assert.strictEqual(target, 'stacks', 'a denied create request is redirected');
-    return 'redirected';
-  };
-
   return route.beforeModel({to: {queryParams: {upgrade: 'false'}}}).then(() => {
     run(() => route.destroy());
   });
