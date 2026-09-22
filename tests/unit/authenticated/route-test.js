@@ -1,9 +1,74 @@
 import EmberObject from '@ember/object';
 import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
-import AuthenticatedRoute from 'ui/authenticated/route';
+import AuthenticatedRoute, { projectIdFromTransition } from 'ui/authenticated/route';
 
 module('Unit | Route | authenticated');
+
+test('reads the requested environment from the Ember 7 RouteInfo tree', function(assert) {
+  let transition = {
+    to: {
+      name: 'authenticated.project.applications-tab.stacks.index',
+      params: {},
+      parent: {
+        name: 'authenticated.project.applications-tab.stacks',
+        params: {},
+        parent: {
+          name: 'authenticated.project',
+          params: {project_id: '1a1848'},
+          parent: {
+            name: 'authenticated',
+            params: {},
+            parent: null,
+          },
+        },
+      },
+    },
+  };
+
+  assert.strictEqual(
+    projectIdFromTransition(transition),
+    '1a1848',
+    'a directly opened environment wins over saved tab and preference defaults'
+  );
+});
+
+test('keeps compatibility with legacy transition parameter stubs', function(assert) {
+  assert.strictEqual(projectIdFromTransition({
+    params: {
+      'authenticated.project': {project_id: '1a5'},
+    },
+  }), '1a5');
+  assert.strictEqual(projectIdFromTransition({to: null}), null);
+});
+
+test('selectProject passes the URL environment to the project service', function(assert) {
+  assert.expect(2);
+  let route = AuthenticatedRoute.create({
+    projects: {
+      selectDefault(projectId) {
+        assert.strictEqual(projectId, '1a1848', 'the URL environment is selected');
+        return Promise.resolve(projectId);
+      },
+    },
+  });
+  let transition = {
+    to: {
+      name: 'authenticated.project.index',
+      params: {},
+      parent: {
+        name: 'authenticated.project',
+        params: {project_id: '1a1848'},
+        parent: null,
+      },
+    },
+  };
+
+  return route.selectProject(transition).then((projectId) => {
+    assert.strictEqual(projectId, '1a1848', 'selection completes for the requested environment');
+    run(() => route.destroy());
+  });
+});
 
 test('cbFind preserves a downstream callback exception without calling it twice', function(assert) {
   let calls = 0;

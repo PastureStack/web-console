@@ -12,6 +12,30 @@ import Errors from 'ui/utils/errors';
 
 const CHECK_AUTH_TIMER = 60*10*1000;
 
+export function projectIdFromTransition(transition) {
+  // Ember 7 keeps the public destination parameters on the RouteInfo tree.
+  // `transition.params` was an internal/legacy shape and is no longer exposed,
+  // so relying on it silently discarded a project ID from a directly opened
+  // /env/:project_id URL and fell back to the user's saved Default project.
+  let routeInfo = transition && transition.to;
+
+  while ( routeInfo ) {
+    if ( routeInfo.name === 'authenticated.project' &&
+      routeInfo.params && routeInfo.params.project_id ) {
+      return routeInfo.params.project_id;
+    }
+
+    routeInfo = routeInfo.parent;
+  }
+
+  // Keep compatibility with the transition stub used by older addons and
+  // downstream builds without making it the primary source of truth.
+  let legacy = transition && transition.params &&
+    transition.params['authenticated.project'];
+
+  return legacy && legacy.project_id || null;
+}
+
 export default Route.extend(Subscribe, PromiseToCb, {
   catalog   : service(),
   prefs     : service(),
@@ -254,14 +278,8 @@ export default Route.extend(Subscribe, PromiseToCb, {
   },
 
   selectProject(transition) {
-    let projectId = null;
-    if ( transition.params && transition.params['authenticated.project'] && transition.params['authenticated.project'].project_id )
-    {
-      projectId = transition.params['authenticated.project'].project_id;
-    }
-
     // Make sure a valid project is selected
-    return this.get('projects').selectDefault(projectId);
+    return this.get('projects').selectDefault(projectIdFromTransition(transition));
   },
 
   actions: {
