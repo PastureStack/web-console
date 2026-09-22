@@ -1,7 +1,7 @@
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import { run } from '@ember/runloop';
-import { resolve } from 'rsvp';
+import { reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import AccountsRoute from 'ui/admin-tab/accounts/index/route';
 
@@ -43,6 +43,66 @@ test('loads authoritative login identities for each account with an exact accoun
     assert.strictEqual(result, accounts, 'the original account collection is retained');
     assert.deepEqual(queried.sort(), ['1a1', '1a2'], 'each query is bound to one exact account');
     assert.strictEqual(accounts[1].get('_authIdentityLinks'), links['1a2'], 'OIDC links are attached without changing account data');
+    run(() => route.destroy());
+  });
+});
+
+test('isolates a missing inactive account identity without hiding other failures', function(assert) {
+  assert.expect(5);
+  let accounts = A([
+    EmberObject.create({id: '1a1', kind: 'admin', state: 'active'}),
+    EmberObject.create({id: '1a5', kind: 'user', state: 'inactive', externalIdType: 'oidc_user', externalId: 'retired-subject'}),
+  ]);
+  let activeLinks = A([EmberObject.create({externalIdType: 'rancher_id', externalId: '1'})]);
+  let userStore = EmberObject.create({
+    find(type, id, options) {
+      if ( type === 'password' ) {
+        return resolve(A([]));
+      }
+      if ( type === 'account' ) {
+        return resolve(accounts);
+      }
+      if ( type === 'authIdentityLink' && options.filter.accountId === '1a1' ) {
+        return resolve(activeLinks);
+      }
+      if ( type === 'authIdentityLink' && options.filter.accountId === '1a5' ) {
+        return reject({status: 404, code: 'AccountNotFound'});
+      }
+      return reject({status: 503, code: 'UnexpectedLookup'});
+    },
+  });
+  let route = AccountsRoute.create({userStore});
+
+  return route.model().then((result) => {
+    assert.strictEqual(result, accounts, 'the account inventory remains visible');
+    assert.strictEqual(accounts[0].get('_authIdentityLinks'), activeLinks, 'active identity links remain authoritative');
+    assert.deepEqual(accounts[1].get('_authIdentityLinks'), [], 'only the missing row falls back to embedded identity fields');
+    assert.strictEqual(accounts[1].get('externalIdType'), 'oidc_user', 'the row fallback identity is preserved');
+    assert.strictEqual(accounts[1].get('externalId'), 'retired-subject', 'the row fallback subject is preserved');
+    run(() => route.destroy());
+  });
+});
+
+test('propagates non-404 identity lookup failures', function(assert) {
+  assert.expect(1);
+  let accounts = A([EmberObject.create({id: '1a1', kind: 'admin'})]);
+  let userStore = EmberObject.create({
+    find(type) {
+      if ( type === 'password' ) {
+        return resolve(A([]));
+      }
+      if ( type === 'account' ) {
+        return resolve(accounts);
+      }
+      return reject({status: 503, code: 'ServiceUnavailable'});
+    },
+  });
+  let route = AccountsRoute.create({userStore});
+
+  return route.model().then(() => {
+    assert.ok(false, 'the route must reject');
+  }, (error) => {
+    assert.strictEqual(error.status, 503, 'non-404 failures remain diagnosable');
     run(() => route.destroy());
   });
 });
