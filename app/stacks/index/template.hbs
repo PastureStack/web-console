@@ -3,12 +3,14 @@
     {{t this.pageHeader name=this.which tags=this.tags}}
   </h1>
 
-  {{#if (eq this.which "infra")}}
-    <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all" templateBase="infra"}} class="btn btn-sm btn-primary">{{t 'stacksPage.catalogButton'}}</LinkTo>
-  {{else}}
-    <LinkTo @route="stacks.new" class="btn btn-sm btn-primary">{{t 'stacksPage.actionButton'}}</LinkTo>
-    {{#if this.arranged.length}}
-      <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all"}} class="btn btn-sm btn-primary">{{t 'stacksPage.catalogButton'}}</LinkTo>
+  {{#if this.canCreateStack}}
+    {{#if (eq this.which "infra")}}
+      <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all" templateBase="infra"}} class="btn btn-sm btn-primary" data-testid="stacks-catalog-create">{{t 'stacksPage.catalogButton'}}</LinkTo>
+    {{else}}
+      <LinkTo @route="stacks.new" class="btn btn-sm btn-primary" data-testid="stacks-create">{{t 'stacksPage.actionButton'}}</LinkTo>
+      {{#if this.arranged.length}}
+        <LinkTo @route="catalog-tab" @model={{this.projects.current.id}} @query={{hash catalogId="all"}} class="btn btn-sm btn-primary" data-testid="stacks-catalog-create">{{t 'stacksPage.catalogButton'}}</LinkTo>
+      {{/if}}
     {{/if}}
   {{/if}}
 
@@ -24,7 +26,7 @@
 <section class="stacks-wrap r-pl0 r-pr0">
   <div>
     {{#each this.arranged as |stack|}}
-      {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(not stack.system)}}
+      {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(and this.canCreateService (not stack.system))}}
     {{else}}
       {{#if (and this.model.stacks.length this.tags)}}
         <div class="r-m20 text-center text-muted">{{t 'stacksPage.noMatch'}}</div>

@@ -4,6 +4,7 @@ import Route from '@ember/routing/route';
 import EmberObject, { get } from '@ember/object';
 import C from 'ui/utils/constants';
 import { catalogVersionOptions } from 'ui/utils/catalog-version-options';
+import RequireCreatePermission from 'ui/mixins/require-create-permission';
 
 function resourceValue(resource, path) {
   if ( !resource ) {
@@ -17,8 +18,12 @@ function resourceValue(resource, path) {
   return get(resource, path);
 }
 
-export default Route.extend({
+export default Route.extend(RequireCreatePermission, {
   catalog: service(),
+
+  requiredCreateType: 'stack',
+  requiredUpdateType: 'stack',
+  updateWhenQueryParam: 'upgrade',
 
   parentRoute: 'catalog-tab',
 

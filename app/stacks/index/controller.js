@@ -1,3 +1,4 @@
+import { computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Controller, { inject as controller } from '@ember/controller';
@@ -16,6 +17,14 @@ export default Controller.extend(Sortable, {
   tags: alias('stacksController.tags'),
   showAddtlInfo: false,
   selectedService: null,
+
+  canCreateStack: computed('projects.current.id', function() {
+    return this.get('store').canCreate('stack');
+  }),
+
+  canCreateService: computed('projects.current.id', function() {
+    return this.get('store').canCreate('service');
+  }),
 
   actions: {
     showAddtlInfo(service) {

@@ -8,6 +8,16 @@ The published package identity is `@pasturestack/web-console`, while the Ember 2
 
 Before release, validate login and logout, environment selection, hosts, stacks, services, containers, shell, logs, console, catalog, storage, networking, access control, settings, API errors, browser navigation, `en-US`, and `zh-TW` against an isolated compatible server.
 
+Create and update controls must be derived from the current environment's
+effective schema and project action links. Hiding a control is only a usability
+boundary: direct create and upgrade routes must repeat the same POST or PUT
+check before loading their forms. A project switch must invalidate cached
+capability decisions. Owner, member, restricted, read-only, and no-access
+behavior remains defined by the Server schema; the console must not invent a
+broader role contract. Account administration obtains login identities from
+`authIdentityLink` records filtered by account ID rather than assuming the
+legacy account identity fields contain the current OpenID Connect principal.
+
 The generic OpenID Connect interface depends on the authentication service
 publishing `oidcconfig` and the staged `POST /v1-auth/redirectUrl` contract.
 Configuration validation and the first real provider sign-in do not replace

@@ -6,7 +6,7 @@ var Account = Resource.extend(PolledResource, {
   type: 'account',
   modalService: service('modal'),
 
-  reservedKeys: ['_allPasswords'],
+  reservedKeys: ['_allPasswords', '_authIdentityLinks'],
 
   actions: {
     deactivate() {

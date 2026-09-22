@@ -41,6 +41,7 @@ export default ModalBase.extend(NewOrEdit, {
   init() {
     this._super(...arguments);
     var accountClone = this.get('originalModel').clone();
+    accountClone.set('_authIdentityLinks', this.get('originalModel._authIdentityLinks'));
     var credential = this.get('originalModel.passwordCredential');
     var credentialClone = (credential ? credential.clone() : null);
 

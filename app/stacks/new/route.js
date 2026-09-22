@@ -1,6 +1,7 @@
 import { hashSettled } from 'rsvp';
 import Route from '@ember/routing/route';
 import { ajaxPromise } from 'ember-api-store/utils/ajax-promise';
+import RequireCreatePermission from 'ui/mixins/require-create-permission';
 
 const DOCKER = 'docker-compose.yml';
 const RANCHER = 'rancher-compose.yml';
@@ -18,7 +19,9 @@ function githubUrl(repo,branch,file) {
     '/' + encodeURIComponent(file);
 }
 
-export default Route.extend({
+export default Route.extend(RequireCreatePermission, {
+  requiredCreateType: 'stack',
+
   model: function(params/*, transition*/) {
     var stack = this.get('store').createRecord({
       type: 'stack',
