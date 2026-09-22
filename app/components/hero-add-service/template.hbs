@@ -1,4 +1,4 @@
-{{#if this.showUser}}
+{{#if (and this.showUser this.canAddService)}}
   <section class="well welcome">
     <h2>{{t 'heroAddService.service.header'}}</h2>
     <p>
@@ -8,8 +8,8 @@
       {{t 'heroAddService.service.paragraph2' appName=this.settings.appName}}
       <a href="{{this.settings.docsBase}}/services/" target="_blank" rel="noopener noreferrer">{{t 'heroAddService.service.contentLink'}}</a>
     </p>
-    <button role="button" class="btn btn-primary" {{action "newService"}}>{{t 'heroAddService.addService'}}</button>
-    <LinkTo @route="catalog-tab" class="btn btn-primary">{{t 'heroAddService.linkToCatalog'}}</LinkTo>
+    <button role="button" class="btn btn-primary" data-testid="hero-add-service" {{action "newService"}}>{{t 'heroAddService.addService'}}</button>
+    <LinkTo @route="catalog-tab" class="btn btn-primary" data-testid="hero-catalog-create">{{t 'heroAddService.linkToCatalog'}}</LinkTo>
   </section>
 {{/if}}
 

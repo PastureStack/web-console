@@ -25,10 +25,10 @@
         {{sortable-th sortable=this action="changeSort" name="kind" label="accountsPage.index.table.kind" width="120"}}
         {{#if this.isLocal}}
           {{sortable-th sortable=this action="changeSort" name="username" label="accountsPage.index.table.username"}}
-          {{sortable-th sortable=this action="changeSort" name="name" label="generic.name"}}
-        {{else}}
-          <th>{{t 'accountsPage.index.table.identity'}}</th>
         {{/if}}
+        {{sortable-th sortable=this action="changeSort" name="name" label="generic.name"}}
+        <th>{{t 'generic.description'}}</th>
+        <th>{{t 'accountsPage.index.table.identity'}}</th>
         <th class="actions" width="125">&nbsp;</th>
       </tr>
     </thead>
@@ -36,7 +36,7 @@
       {{#each this.arranged as |account|}}
         {{account-row model=account isLocal=this.isLocal}}
       {{else}}
-        <tr><td colspan="{{if this.isLocal '6' '5'}}" class="text-center text-muted">{{t 'accountsPage.index.table.noData'}}</td></tr>
+        <tr><td colspan="{{if this.isLocal '8' '7'}}" class="text-center text-muted">{{t 'accountsPage.index.table.noData'}}</td></tr>
       {{/each}}
     </tbody>
   </table>

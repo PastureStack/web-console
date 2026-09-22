@@ -93,13 +93,17 @@
         <label class="form-control-static">{{t 'editAccount.form.identity.label'}}</label>
       </div>
       <div class="col-sm-12 col-md-7">
-        {{#if (and this.model.account.externalId this.model.account.externalIdType)}}
-          {{identity-block externalIdType=this.model.account.externalIdType externalId=this.model.account.externalId}}
+        {{#each this.model.account._authIdentityLinks as |identity|}}
+          {{identity-block identity=identity avatar=false link=false size=0}}
         {{else}}
-          <div class="form-control-static text-muted">
-            {{t 'generic.none'}}
-          </div>
-        {{/if}}
+          {{#if (and this.model.account.externalId this.model.account.externalIdType)}}
+            {{identity-block externalIdType=this.model.account.externalIdType externalId=this.model.account.externalId avatar=false link=false size=0}}
+          {{else}}
+            <div class="form-control-static text-muted">
+              {{t 'generic.none'}}
+            </div>
+          {{/if}}
+        {{/each}}
       </div>
     </div>
   {{/if}}

@@ -1,7 +1,10 @@
 import { all } from 'rsvp';
 import Route from '@ember/routing/route';
+import RequireCreatePermission from 'ui/mixins/require-create-permission';
 
-export default Route.extend({
+export default Route.extend(RequireCreatePermission, {
+  requiredCreateType: 'dnsService',
+
   model: function(params/*, transition*/) {
     var store = this.get('store');
 

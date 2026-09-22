@@ -1,4 +1,4 @@
-import EmberObject from '@ember/object';
+import EmberObject, { computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
@@ -7,6 +7,10 @@ export default Component.extend({
   settings: service(),
   projects: service(),
   hasVm: alias('projects.current.virtualMachine'),
+
+  canCreateService: computed('projects.current.id', function() {
+    return this.get('store').canCreate('service');
+  }),
 
   actions: {
     changeStack(stack) {

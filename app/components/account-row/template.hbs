@@ -15,18 +15,32 @@
       <span class="text-muted">{{t 'accountsPage.index.table.noName'}}</span>
     {{/if}}
   </td>
-  <td data-title="{{t 'generic.name'}}:" class="force-wrap">
-    {{this.model.displayName}}
-  </td>
-{{else}}
-  <td data-title="{{t 'accountsPage.index.table.identity'}}" >
+{{/if}}
+<td data-title="{{t 'generic.name'}}:" class="force-wrap">
+  {{#if this.model.name}}
+    {{this.model.name}}
+  {{else}}
+    <span class="text-muted">{{t 'generic.none'}}</span>
+  {{/if}}
+</td>
+<td data-title="{{t 'generic.description'}}:" class="force-wrap">
+  {{#if this.model.description}}
+    {{this.model.description}}
+  {{else}}
+    <span class="text-muted">{{t 'generic.none'}}</span>
+  {{/if}}
+</td>
+<td data-title="{{t 'accountsPage.index.table.identity'}}" class="force-wrap">
+  {{#each this.model._authIdentityLinks as |identity|}}
+    {{identity-block identity=identity avatar=false link=false size=0}}
+  {{else}}
     {{#if (and this.model.externalId this.model.externalIdType)}}
-      {{identity-block externalIdType=this.model.externalIdType externalId=this.model.externalId}}
+      {{identity-block externalIdType=this.model.externalIdType externalId=this.model.externalId avatar=false link=false size=0}}
     {{else}}
       <span class="text-muted">{{t 'accountsPage.index.table.noName'}}</span>
     {{/if}}
-  </td>
-{{/if}}
+  {{/each}}
+</td>
 <td data-title="{{t 'generic.actions'}}:" class="actions">
   <LinkTo @route="admin-tab.auth.mfa" @query={{hash accountId=this.model.id}} class="btn btn-xs btn-default account-row-manage-mfa" data-testid="account-row-manage-mfa" title={{t 'authPage.mfa.manageAccount' account=this.model.displayName}}>
     <i class="icon icon-shield"></i>

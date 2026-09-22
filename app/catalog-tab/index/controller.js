@@ -25,8 +25,25 @@ export default Controller.extend({
 
   updating: 'no',
 
+  canCreateStack: computed('projects.current.id', function() {
+    return this.get('store').canCreate('stack');
+  }),
+
+  canManageCatalog: computed(
+    'projects.current.actionLinks',
+    'projects.current.actionLinks.{update,setmembers}',
+    function() {
+      let actions = this.get('projects.current.actionLinks') || {};
+      return Boolean(actions.update || actions.setmembers);
+    }
+  ),
+
   actions: {
     addEnvCatalog() {
+      if ( !this.get('canManageCatalog') ) {
+        return false;
+      }
+
       this.get('modalService').toggleModal('modal-edit-env-catalogs', {
         project: this.get('projects.current'),
         catalogs: this.get('catalog.catalogs'),
@@ -36,6 +53,10 @@ export default Controller.extend({
       this.set('search', '');
     },
     launch(id, onlyAlternate) {
+      if ( !this.get('canCreateStack') ) {
+        return false;
+      }
+
       if ( onlyAlternate && !isAlternate(event) ) {
         return false;
       }
@@ -44,6 +65,10 @@ export default Controller.extend({
     },
 
     update() {
+      if ( !this.get('canManageCatalog') ) {
+        return false;
+      }
+
       this.set('updating', 'yes');
       this.get('catalog').refresh().then(() => {
         this.set('updating', 'no');

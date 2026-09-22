@@ -1,8 +1,9 @@
 <section class="header clearfix">
   <h1>{{t 'catalogPage.index.header'}} <span class="text-capitalize">{{if (eq this.catalogId "all") (t "nav.catalog.all") this.catalogId}}</span></h1>
 
+  {{#if this.canManageCatalog}}
   <div class="pull-right">
-    <button type="button" class="btn btn-default btn-sm" disabled={{eq this.updating 'yes'}} {{action "update"}}>
+    <button type="button" class="btn btn-default btn-sm" data-testid="catalog-refresh" disabled={{eq this.updating 'yes'}} {{action "update"}}>
       {{#if (eq this.updating "yes")}}
         <i class="icon icon-spinner icon-spin"></i>
       {{else}}
@@ -13,10 +14,11 @@
         {{/if}}
       {{/if}}
     </button>
-    <button type="button" class="btn bg-primary btn-sm" {{ action "addEnvCatalog" }}>
+    <button type="button" class="btn bg-primary btn-sm" data-testid="catalog-manage" {{ action "addEnvCatalog" }}>
       {{t 'catalogPage.index.manage'}} <i class="icon icon-edit"></i>
     </button>
   </div>
+  {{/if}}
 
   <div class="btn-group pull-right r-ml10">
     <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">{{t 'catalogPage.index.category'}} <span class="text-capitalize">{{if (eq this.category "all") (t "nav.catalog.all") this.category}}</span> <i class="icon icon-chevron-down"></i></button>
@@ -46,16 +48,18 @@
   {{#each this.arrangedContent as |catalogItem|}}
     {{#catalog-box model=catalogItem showSource=this.showCatalogDropdown as |section|}}
       {{#if (eq section 'footer')}}
-        {{#if (eq catalogItem.templateBase 'infra')}}
-          {{#if catalogItem.exists}}
-            <button type="button" class="btn btn-sm btn-default btn-disabled" {{action "launch" catalogItem.id true allowedKeys="meta ctrl"}}>{{t 'catalogPage.index.action.alreadyDeployed'}}</button>
-          {{else if catalogItem.supported}}
-            <button class="btn btn-sm btn-primary" {{action "launch" catalogItem.id}}>{{t 'catalogPage.index.action.launch'}}</button>
+        {{#if this.canCreateStack}}
+          {{#if (eq catalogItem.templateBase 'infra')}}
+            {{#if catalogItem.exists}}
+              <button type="button" class="btn btn-sm btn-default btn-disabled" {{action "launch" catalogItem.id true allowedKeys="meta ctrl"}}>{{t 'catalogPage.index.action.alreadyDeployed'}}</button>
+            {{else if catalogItem.supported}}
+              <button class="btn btn-sm btn-primary" data-testid="catalog-launch" {{action "launch" catalogItem.id}}>{{t 'catalogPage.index.action.launch'}}</button>
+            {{else}}
+              <button type="button" class="btn btn-sm btn-default btn-disabled" {{action "launch" catalogItem.id true allowedKeys="meta ctrl"}}>{{t 'catalogPage.index.action.notCompatible'}}</button>
+            {{/if}}
           {{else}}
-            <button type="button" class="btn btn-sm btn-default btn-disabled" {{action "launch" catalogItem.id true allowedKeys="meta ctrl"}}>{{t 'catalogPage.index.action.notCompatible'}}</button>
+            <button class="btn btn-sm btn-primary" data-testid="catalog-launch" {{action "launch" catalogItem.id}}>{{t 'catalogPage.index.action.launch'}}</button>
           {{/if}}
-        {{else}}
-          <button type="button" class="btn btn-sm btn-primary" {{action "launch" catalogItem.id}}>{{t 'catalogPage.index.action.launch'}}</button>
         {{/if}}
       {{/if}}
     {{/catalog-box}}

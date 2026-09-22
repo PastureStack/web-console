@@ -2,9 +2,14 @@ import { hash } from 'rsvp';
 import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
+import RequireCreatePermission from 'ui/mixins/require-create-permission';
 
-export default Route.extend({
+export default Route.extend(RequireCreatePermission, {
   settings: service(),
+
+  requiredCreateType: 'loadBalancerService',
+  requiredUpdateType: 'loadBalancerService',
+  updateWhenQueryParam: 'upgrade',
 
   model: function(params/*, transition*/) {
     var store = this.get('store');

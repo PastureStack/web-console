@@ -3,8 +3,13 @@ import { all } from 'rsvp';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
+import RequireCreatePermission from 'ui/mixins/require-create-permission';
 
-export default Route.extend({
+export default Route.extend(RequireCreatePermission, {
+  requiredCreateType: 'service',
+  requiredUpdateType: 'service',
+  updateWhenQueryParam: 'upgrade',
+
   model: function(params/*, transition*/) {
     var store = this.get('store');
 

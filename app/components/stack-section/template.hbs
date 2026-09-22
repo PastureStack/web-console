@@ -50,9 +50,9 @@
 
     <div class="header-right right-divider stack-template">
       {{upgrade-btn model=this.model}}
-      {{#if this.showAddService}}
+      {{#if (and this.showAddService this.canCreateService)}}
         <div class="btn-group">
-          <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-default btn-sm">{{t 'stackSection.add.service'}}</LinkTo>
+          <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-default btn-sm" data-testid="stack-add-service">{{t 'stackSection.add.service'}}</LinkTo>
 
             <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="true">
               <i class="icon icon-fw icon-chevron-down"></i>
