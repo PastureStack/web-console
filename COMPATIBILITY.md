@@ -17,6 +17,11 @@ behavior remains defined by the Server schema; the console must not invent a
 broader role contract. Account administration obtains login identities from
 `authIdentityLink` records filtered by account ID rather than assuming the
 legacy account identity fields contain the current OpenID Connect principal.
+Direct `/env/:project_id` navigation and refresh must select that permitted
+environment from the router's public RouteInfo parameters before consulting a
+tab or user default. An inaccessible or inactive environment may use the
+existing authorized fallback, but a valid URL environment must never be
+silently replaced by a saved Default preference.
 
 The generic OpenID Connect interface depends on the authentication service
 publishing `oidcconfig` and the staged `POST /v1-auth/redirectUrl` contract.
