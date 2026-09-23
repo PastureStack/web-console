@@ -17,8 +17,8 @@
   </td>
 {{/if}}
 <td data-title="{{t 'generic.name'}}:" class="force-wrap">
-  {{#if this.model.name}}
-    {{this.model.name}}
+  {{#if this.model.resolvedName}}
+    {{this.model.resolvedName}}
   {{else}}
     <span class="text-muted">{{t 'generic.none'}}</span>
   {{/if}}
@@ -42,9 +42,9 @@
   {{/each}}
 </td>
 <td data-title="{{t 'generic.actions'}}:" class="actions">
-  <LinkTo @route="admin-tab.auth.mfa" @query={{hash accountId=this.model.id}} class="btn btn-xs btn-default account-row-manage-mfa" data-testid="account-row-manage-mfa" title={{t 'authPage.mfa.manageAccount' account=this.model.displayName}}>
+  <LinkTo @route="admin-tab.auth.mfa" @query={{hash accountId=this.model.id}} class="btn btn-xs btn-default account-row-manage-mfa" data-testid="account-row-manage-mfa" title={{t 'authPage.mfa.manageAccount' account=this.model.resolvedName}}>
     <i class="icon icon-shield"></i>
-    <span class="sr-only">{{t 'authPage.mfa.manageAccount' account=this.model.displayName}}</span>
+    <span class="sr-only">{{t 'authPage.mfa.manageAccount' account=this.model.resolvedName}}</span>
   </LinkTo>
   {{action-menu model=this.model}}
 </td>

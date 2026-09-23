@@ -39,9 +39,9 @@ export default Service.extend({
   },
 
   refreshAll: function() {
-    this.getAll().then((all) => {
+    return this.getAll().then((all) => {
       this.set('all', all);
-      this.selectDefault();
+      return this.selectDefault();
     });
   },
 
@@ -114,9 +114,10 @@ export default Service.extend({
     }
 
     function fail() {
-      // Then cry
-      select(null);
-      return reject();
+      // An authenticated account can legitimately have no active environment.
+      // Clear stale tab state and continue into the explicit empty-state route
+      // instead of turning the absence of a project into a loading failure.
+      return select(null);
     }
   },
 

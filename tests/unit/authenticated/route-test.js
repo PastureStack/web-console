@@ -94,6 +94,45 @@ test('cbFind preserves a downstream callback exception without calling it twice'
   });
 });
 
+test('project-scoped initialization is empty and does not issue requests without an environment', async function(assert) {
+  assert.expect(7);
+  let route = AuthenticatedRoute.create({
+    projects: EmberObject.create({current: null}),
+    store: {
+      resetType(type) {
+        assert.strictEqual(type, 'schema', 'stale project schemas are cleared');
+      },
+      rawRequest() {
+        assert.ok(false, 'project schema API is not requested');
+      },
+      find() {
+        assert.ok(false, 'project resource collections are not requested');
+      },
+      getById() {
+        assert.ok(false, 'project secret schema is not inspected');
+      },
+    },
+    catalog: {
+      fetchCatalogs() {
+        assert.ok(false, 'project catalogs are not requested');
+      },
+    },
+  });
+
+  assert.strictEqual(await route.loadProjectSchemas(), undefined, 'schema loading resolves cleanly');
+  assert.deepEqual(await route.loadCatalogs(), [], 'catalog loading resolves to an empty collection');
+  assert.deepEqual(await route.loadSecrets(), [], 'secret loading resolves to an empty collection');
+
+  let callbackCalls = 0;
+  await route.cbFindProject('instance')((err, value) => {
+    callbackCalls++;
+    assert.strictEqual(err, null, 'the async adapter reports no error');
+    assert.deepEqual(value, [], 'the project collection is explicitly empty');
+  });
+  assert.strictEqual(callbackCalls, 1, 'the project collection callback runs exactly once');
+  run(() => route.destroy());
+});
+
 test('logs out only for an actual authentication failure', function(assert) {
   assert.expect(5);
 

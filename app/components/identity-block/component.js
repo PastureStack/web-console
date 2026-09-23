@@ -1,4 +1,5 @@
 import { alias } from '@ember/object/computed';
+import EmberObject from '@ember/object';
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import C from 'ui/utils/constants';
@@ -29,7 +30,17 @@ export default Component.extend({
      id =`1i!${eType}:${eId}`;
     }
 
-    if ( !this.get('identity') )
+    let suppliedIdentity = this.get('identity');
+
+    if ( !suppliedIdentity && eType && eId ) {
+      this.set('identity', EmberObject.create({
+        externalId     : eId,
+        externalIdType : eType,
+        login          : eId,
+      }));
+    }
+
+    if ( !suppliedIdentity )
     {
       if ( id )
       {
@@ -54,31 +65,40 @@ export default Component.extend({
   },
 
   classNames: ['gh-block'],
-  attributeBindings: ['aria-label:identity.name'],
+  attributeBindings: ['ariaLabel:aria-label', 'role'],
+  role             : 'group',
 
   avatarSrc: alias('identity.profilePicture'),
   url: alias('identity.profileUrl'),
   login: alias('identity.login'),
 
+  ariaLabel: function() {
+    return this.get('identity.name') || this.get('identity.login') || this.get('identity.externalId');
+  }.property('identity.{name,login,externalId}'),
+
   displayDescription: function() {
     var out;
     var name = this.get('identity.name');
+    var login = this.get('identity.login');
     if ( name === 'System Service' )
     {
       out = this.get('intl').t('identityBlock.systemService');
     }
-    else if ( this.get('identity.externalIdType') === C.PROJECT.TYPE_GITHUB_TEAM )
+    else if ( name && this.get('identity.externalIdType') === C.PROJECT.TYPE_GITHUB_TEAM )
     {
       out = name.replace(/:.*/,'') + ' team';
     }
     else
     {
-      if (name) {
+      if ( name && name !== login ) {
         out = name;
       } else {
-        out = this.get('identity.externalId');
+        let externalId = this.get('identity.externalId');
+        if ( externalId && externalId !== login ) {
+          out = externalId;
+        }
       }
     }
     return out;
-  }.property('identity.{externalIdType,name,externalId}', 'intl._locale'),
+  }.property('identity.{externalIdType,name,login,externalId}', 'intl._locale'),
 });

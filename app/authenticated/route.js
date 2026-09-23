@@ -126,14 +126,14 @@ export default Route.extend(Subscribe, PromiseToCb, {
         projectSchemas:     ['project',                 this.toCb('loadProjectSchemas')],
         catalogs:           ['project',                 this.toCb('loadCatalogs')],
         orchestrationState: ['projectSchemas',          this.toCb('updateOrchestration')],
-        instances:          ['projectSchemas',          this.cbFind('instance')],
-        services:           ['projectSchemas',          this.cbFind('service')],
-        hosts:              ['projectSchemas',          this.cbFind('host')],
-        stacks:             ['projectSchemas',          this.cbFind('stack')],
-        mounts:             ['projectSchemas',          this.cbFind('mount', 'store', {filter: {state_ne: 'inactive'}})],
-        storagePools:       ['projectSchemas',          this.cbFind('storagepool')],
-        volumes:            ['projectSchemas',          this.cbFind('volume')],
-        certificate:        ['projectSchemas',          this.cbFind('certificate')],
+        instances:          ['projectSchemas',          this.cbFindProject('instance')],
+        services:           ['projectSchemas',          this.cbFindProject('service')],
+        hosts:              ['projectSchemas',          this.cbFindProject('host')],
+        stacks:             ['projectSchemas',          this.cbFindProject('stack')],
+        mounts:             ['projectSchemas',          this.cbFindProject('mount', 'store', {filter: {state_ne: 'inactive'}})],
+        storagePools:       ['projectSchemas',          this.cbFindProject('storagepool')],
+        volumes:            ['projectSchemas',          this.cbFindProject('volume')],
+        certificate:        ['projectSchemas',          this.cbFindProject('certificate')],
         secret:             ['projectSchemas',          this.toCb('loadSecrets')],
         identities:         ['userSchemas',             this.cbFind('identity', 'userStore')],
       };
@@ -206,6 +206,16 @@ export default Route.extend(Subscribe, PromiseToCb, {
     return this.toCb(() => this.get(store).find(type,null,opt));
   },
 
+  cbFindProject(type, store='store', opt=null) {
+    return this.toCb(() => {
+      if ( !this.get('projects.current') ) {
+        return resolve([]);
+      }
+
+      return this.get(store).find(type,null,opt);
+    });
+  },
+
   loadPreferences() {
     return this.get('userStore').find('userpreference', null, {url: 'userpreferences', forceReload: true}).then((res) => {
       // Save the account ID from the response headers into session
@@ -228,6 +238,10 @@ export default Route.extend(Subscribe, PromiseToCb, {
   loadProjectSchemas() {
     var store = this.get('store');
     store.resetType('schema');
+    if ( !this.get('projects.current') ) {
+      return resolve();
+    }
+
     return store.rawRequest({url:'schema', dataType: 'json'}).then((xhr) => {
       store._bulkAdd('schema', xhr.body.data);
     });
@@ -250,6 +264,10 @@ export default Route.extend(Subscribe, PromiseToCb, {
   },
 
   loadCatalogs() {
+    if ( !this.get('projects.current') ) {
+      return resolve([]);
+    }
+
     return this.get('catalog').fetchCatalogs();
   },
 
@@ -270,6 +288,10 @@ export default Route.extend(Subscribe, PromiseToCb, {
   },
 
   loadSecrets() {
+    if ( !this.get('projects.current') ) {
+      return resolve([]);
+    }
+
     if ( this.get('store').getById('schema','secret') ) {
       return this.get('store').find('secret');
     } else {

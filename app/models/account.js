@@ -2,6 +2,18 @@ import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
 import PolledResource from 'ui/mixins/cattle-polled-resource';
 
+function value(record, key) {
+  if ( record && typeof record.get === 'function' ) {
+    return record.get(key);
+  }
+  return record && record[key];
+}
+
+function nonEmpty(input) {
+  let text = input === null || input === undefined ? '' : String(input).trim();
+  return text || null;
+}
+
 var Account = Resource.extend(PolledResource, {
   type: 'account',
   modalService: service('modal'),
@@ -41,6 +53,25 @@ var Account = Resource.extend(PolledResource, {
   username: function() {
     return this.get('passwordCredential.publicValue');
   }.property('passwordCredential.publicValue'),
+
+  resolvedName: function() {
+    let accountName = nonEmpty(this.get('name'));
+    if ( accountName ) {
+      return accountName;
+    }
+
+    let links = this.get('_authIdentityLinks') || [];
+    for ( let link of links ) {
+      for ( let key of ['name', 'login', 'externalId'] ) {
+        let candidate = nonEmpty(value(link, key));
+        if ( candidate ) {
+          return candidate;
+        }
+      }
+    }
+
+    return nonEmpty(this.get('username')) || nonEmpty(this.get('externalId'));
+  }.property('name', 'username', 'externalId', '_authIdentityLinks.[]', '_authIdentityLinks.@each.{name,login,externalId}'),
 
   passwordCredential: function() {
     return (this.get('passwords')||[]).objectAt(0);
