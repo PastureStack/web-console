@@ -2613,6 +2613,11 @@ inputIdentity:
   dropdownLabel:
     teams: Vos équipes et organisations
     groups: Vos Groupes
+  error:
+    notFound: Aucun utilisateur ou groupe correspondant n'a été trouvé.
+    forbidden: Vous n'avez pas l'autorisation de rechercher des utilisateurs ou des groupes.
+    sessionExpired: Votre session a expiré. Veuillez vous reconnecter.
+    unavailable: La recherche d'utilisateurs et de groupes est momentanément indisponible. Veuillez réessayer plus tard.
 inputPassword:
   buttonText: Générer
 inputTextFile:
@@ -3744,6 +3749,17 @@ viewEditDescription:
       placeholder: par exemple l’environnement d’expérimentation des développeurs
 viewEditProject:
   nativeEngine: Moteur natif
+  error:
+    projectUnavailable: Cet environnement n'existe pas ou vous n'êtes pas autorisé à le consulter. Actualisez la page ou contactez un administrateur.
+    membersUnavailable: Impossible de charger les membres de l'environnement. Cet environnement n'existe peut-être plus ou vous n'y avez peut-être plus accès. Actualisez la page ou contactez un administrateur.
+    projectNotSaved: Les paramètres de l'environnement n'ont pas été enregistrés. Cet environnement n'existe peut-être plus ou vous n'êtes peut-être pas autorisé à le modifier. Actualisez la page pour vérifier.
+    projectFailed: Les paramètres de l'environnement n'ont pas été enregistrés, car le serveur ne peut pas traiter la demande pour le moment. Actualisez la page plus tard pour vérifier.
+    membersNotSaved: Les modifications des membres n'ont pas été effectuées. Cet environnement n'existe peut-être plus ou vous n'êtes peut-être pas autorisé à gérer ses membres. D'autres paramètres ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
+    membersFailed: Les modifications des membres n'ont pas été effectuées, car le serveur ne peut pas traiter la demande pour le moment. Les paramètres de l'environnement ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
+    networkNotSaved: Les modifications de la politique réseau n'ont pas été effectuées. Cet environnement n'existe peut-être plus ou vous n'êtes peut-être pas autorisé à gérer sa politique réseau. Les paramètres de l'environnement et les modifications des membres ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
+    networkFailed: Les modifications de la politique réseau n'ont pas été effectuées, car le serveur ne peut pas traiter la demande pour le moment. Les paramètres de l'environnement et les modifications des membres ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
+    relatedUnavailable: Impossible de charger les données associées à cet environnement. Elles n'existent peut-être plus ou vous n'êtes peut-être pas autorisé à y accéder. Actualisez la page ou contactez un administrateur.
+    loadFailed: Impossible de charger les données de l'environnement pour le moment, car le serveur ne peut pas traiter la demande. Actualisez la page plus tard ; si le problème persiste, contactez un administrateur.
   showEdit:
     edit: "Modifier l’Environnement\_:"
     add: Ajouter un Environnement

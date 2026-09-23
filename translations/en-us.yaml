@@ -2933,6 +2933,11 @@ inputIdentity:
   dropdownLabel:
     teams: Your Teams and Organizations
     groups: Your Groups
+  error:
+    notFound: No matching user or group was found.
+    forbidden: You do not have permission to search for users or groups.
+    sessionExpired: Your session has expired. Please sign in again.
+    unavailable: Users and groups cannot be searched right now. Please try again later.
 
 inputPassword:
   buttonText: Generate
@@ -4109,6 +4114,17 @@ viewEditDescription:
 
 viewEditProject:
   nativeEngine: Native Engine
+  error:
+    projectUnavailable: This environment does not exist or you do not have permission to view it. Refresh the page or contact an administrator.
+    membersUnavailable: Environment members cannot be loaded. This environment may no longer exist or you may no longer have access. Refresh the page or contact an administrator.
+    projectNotSaved: Environment settings were not saved. This environment may no longer exist or you may not have permission to edit it. Refresh the page to check.
+    projectFailed: Environment settings were not saved because the server cannot process the request right now. Refresh the page later to check.
+    membersNotSaved: Member changes were not completed. This environment may no longer exist or you may not have permission to manage its members. Other settings may already be saved; refresh the page to check.
+    membersFailed: Member changes were not completed because the server cannot process the request right now. Environment settings may already be saved; refresh the page to check.
+    networkNotSaved: Network policy changes were not completed. This environment may no longer exist or you may not have permission to manage its network policy. Environment settings and member changes may already be saved; refresh the page to check.
+    networkFailed: Network policy changes were not completed because the server cannot process the request right now. Environment settings and member changes may already be saved; refresh the page to check.
+    relatedUnavailable: Related data for this environment cannot be loaded. The data may no longer exist, or you may not have permission to access it. Refresh the page or contact an administrator.
+    loadFailed: Environment data cannot be loaded right now because the server cannot process the request. Refresh the page later; if the problem persists, contact an administrator.
   showEdit:
     edit: "Edit Environment:"
     add: Add Environment

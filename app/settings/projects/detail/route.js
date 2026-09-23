@@ -2,10 +2,13 @@ import EmberObject from '@ember/object';
 import { Promise } from 'rsvp';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
+import Errors from 'ui/utils/errors';
 import { xhrConcur } from 'ui/utils/platform';
 import PromiseToCb from 'ui/mixins/promise-to-cb';
+import { service } from '@ember/service';
 
 export default Route.extend(PromiseToCb, {
+  intl: service(),
   queryParams: {
     editing: {
       refreshModel: true
@@ -26,16 +29,37 @@ export default Route.extend(PromiseToCb, {
 
     let promise = new Promise((resolve, reject) => {
       let tasks = {
-        allProjects:                        this.toCb(() => { return userStore.findAll('project'); }),
-        project:            ['allProjects', this.toCb(() => { return userStore.find('project', params.project_id); })],
-        importMembers:      ['project',     this.toCb((results) => {
-          return results.project.followLink('projectMembers').then((members) => {
-            results.project.set('projectMembers', members);
-            return results.project;
+        allProjects:                        this.toCb(() => {
+          return userStore.findAll('project').then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
+          });
+        }),
+        project:            ['allProjects', this.toCb(() => {
+          return userStore.find('project', params.project_id).then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.projectUnavailable');
           });
         })],
-        networks:                           this.toCb(() => { return userStore.find('network', null, {filter: {accountId: params.project_id}}); }),
-        policyManagers:                     this.toCb(() => { return userStore.find('stack', null, policyManagerOpt); }),
+        importMembers:      ['project',     this.toCb((results) => {
+          return results.project.followLink('projectMembers').then(
+            (members) => {
+              results.project.set('projectMembers', members);
+              return results.project;
+            },
+            (err) => {
+              throw this.environmentLoadError(err, 'viewEditProject.error.membersUnavailable');
+            }
+          );
+        })],
+        networks:                           this.toCb(() => {
+          return userStore.find('network', null, {filter: {accountId: params.project_id}}).then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
+          });
+        }),
+        policyManagers:                     this.toCb(() => {
+          return userStore.find('stack', null, policyManagerOpt).then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
+          });
+        }),
       };
 
       async.auto(tasks, xhrConcur, function(err, res) {
@@ -96,5 +120,18 @@ export default Route.extend(PromiseToCb, {
 
       return out;
     });
+  },
+
+  environmentLoadError(err, key) {
+    let status = Errors.status(err);
+    if ( status === 403 || status === 404 ) {
+      // failWhale renders the status as well as the message. Present denied
+      // and missing resources identically to avoid revealing their existence.
+      return {status: 404, message: this.get('intl').t(key)};
+    }
+    if ( status >= 500 && status <= 599 ) {
+      return {status, message: this.get('intl').t('viewEditProject.error.loadFailed')};
+    }
+    return err;
   },
 });

@@ -2802,6 +2802,11 @@ inputIdentity:
   dropdownLabel:
     teams: 您的團隊和組織
     groups: 您的群組
+  error:
+    notFound: 找不到符合的使用者或群組。
+    forbidden: 您沒有權限搜尋使用者或群組。
+    sessionExpired: 工作階段已失效，請重新登入。
+    unavailable: 目前無法搜尋使用者或群組，請稍後再試。
 inputPassword:
   buttonText: 產生
 inputTextFile:
@@ -3916,6 +3921,17 @@ viewEditDescription:
       placeholder: 例如：開發試驗環境
 viewEditProject:
   nativeEngine: 原生引擎
+  error:
+    projectUnavailable: 找不到此環境，或您沒有權限檢視。請重新整理或聯絡管理員。
+    membersUnavailable: 無法讀取環境成員：此環境可能不存在，或您已沒有存取權限。請重新整理或聯絡管理員。
+    projectNotSaved: 環境設定未儲存：此環境可能不存在，或您沒有修改權限。請重新整理確認。
+    projectFailed: 環境設定未儲存：伺服器暫時無法處理。請稍後重新整理確認。
+    membersNotSaved: 成員變更未完成：此環境可能不存在，或您沒有管理成員的權限。其他設定可能已儲存，請重新整理確認。
+    membersFailed: 成員變更未完成：伺服器暫時無法處理。先前的環境設定可能已儲存，請重新整理確認。
+    networkNotSaved: 網路策略變更未完成：此環境可能不存在，或您沒有管理網路策略的權限。先前的環境設定與成員變更可能已儲存，請重新整理確認。
+    networkFailed: 網路策略變更未完成：伺服器暫時無法處理。先前的環境設定與成員可能已儲存，請重新整理確認。
+    relatedUnavailable: 無法讀取此環境的相關資料：資料可能不存在，或您沒有存取權限。請重新整理或聯絡管理員。
+    loadFailed: 暫時無法載入環境資料，伺服器目前無法處理。請稍後重新整理；若持續發生，請聯絡管理員。
   showEdit:
     edit: 編輯環境
     add: 新增環境

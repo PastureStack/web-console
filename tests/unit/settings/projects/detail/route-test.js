@@ -7,8 +7,7 @@ import ProjectDetailRoute from 'ui/settings/projects/detail/route';
 
 module('Unit | Route | settings projects detail');
 
-function fixture(failureAt) {
-  let failure = new Error(`${failureAt} failed`);
+function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
   let members = A([EmberObject.create({id: '1pm1', role: 'owner'})]);
   let project = EmberObject.create({
     id: '1a21',
@@ -88,6 +87,62 @@ test('every environment loading task rejects with its original failure instead o
     await route.model({project_id: '1a21', editing: false}).then(
       () => assert.ok(false, `${failureAt} must reject`),
       (err) => assert.strictEqual(err, data.failure, `${failureAt} retains the original failure`)
+    );
+    run(() => route.destroy());
+  }
+});
+
+test('environment load errors distinguish access, server failures, and expired sessions', async function(assert) {
+  const translations = {
+    'viewEditProject.error.projectUnavailable': 'Environment unavailable',
+    'viewEditProject.error.membersUnavailable': 'Members unavailable',
+    'viewEditProject.error.relatedUnavailable': 'Environment data unavailable',
+    'viewEditProject.error.loadFailed': 'Server temporarily unavailable',
+  };
+  const intl = EmberObject.create({t(key) { return translations[key]; }});
+
+  for (let [task, status, expected] of [
+    ['project', 403, 'Environment unavailable'],
+    ['project', 404, 'Environment unavailable'],
+    ['members', 403, 'Members unavailable'],
+    ['members', 404, 'Members unavailable'],
+    ['allProjects', 403, 'Environment data unavailable'],
+    ['networks', 403, 'Environment data unavailable'],
+    ['policyManagers', 404, 'Environment data unavailable'],
+  ]) {
+    let data = fixture(task, {status, message: 'Raw API message'});
+    let route = ProjectDetailRoute.create({userStore: data.store, intl});
+    await route.model({project_id: '1a21', editing: false}).then(
+      () => assert.ok(false, `${task} ${status} must reject`),
+      (err) => {
+        assert.strictEqual(err.status, 404, 'denied and missing resources have the same visible status');
+        assert.strictEqual(err.message, expected, 'the existing error view receives a human message');
+        assert.notOk(err.detail, 'the API does not disclose extra details');
+      }
+    );
+    run(() => route.destroy());
+  }
+
+  for (let [task, status] of [['project', 500], ['members', 500], ['networks', 503], ['policyManagers', 500]]) {
+    let data = fixture(task, {status, message: 'QA simulated raw server error'});
+    let route = ProjectDetailRoute.create({userStore: data.store, intl});
+    await route.model({project_id: '1a21', editing: false}).then(
+      () => assert.ok(false, `${task} ${status} must reject`),
+      (err) => {
+        assert.strictEqual(err.status, status, 'the real server failure status is retained');
+        assert.strictEqual(err.message, 'Server temporarily unavailable', 'the raw API error is not shown');
+      }
+    );
+    run(() => route.destroy());
+  }
+
+  for (let [task, status] of [['members', 401], ['networks', 400]]) {
+    let failure = {status, message: 'Original failure'};
+    let data = fixture(task, failure);
+    let route = ProjectDetailRoute.create({userStore: data.store, intl});
+    await route.model({project_id: '1a21', editing: false}).then(
+      () => assert.ok(false, `${task} ${status} must reject`),
+      (err) => assert.strictEqual(err, failure, `${task} ${status} keeps its normal error handling`)
     );
     run(() => route.destroy());
   }

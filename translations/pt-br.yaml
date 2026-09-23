@@ -2612,6 +2612,11 @@ inputIdentity:
   dropdownLabel:
     teams: Suas equipes e organizações
     groups: Seus grupos
+  error:
+    notFound: Nenhum usuário ou grupo correspondente foi encontrado.
+    forbidden: Você não tem permissão para pesquisar usuários ou grupos.
+    sessionExpired: Sua sessão expirou. Entre novamente.
+    unavailable: Não é possível pesquisar usuários e grupos no momento. Tente novamente mais tarde.
 inputPassword:
   buttonText: Gerar
 inputTextFile:
@@ -3749,6 +3754,17 @@ viewEditDescription:
       placeholder: p.ex. Ambiente para experimentação de desenvolvedor
 viewEditProject:
   nativeEngine: Motor nativo
+  error:
+    projectUnavailable: Este ambiente não existe ou você não tem permissão para visualizá-lo. Atualize a página ou entre em contato com um administrador.
+    membersUnavailable: Não foi possível carregar os membros do ambiente. Este ambiente pode não existir mais ou você pode não ter mais acesso a ele. Atualize a página ou entre em contato com um administrador.
+    projectNotSaved: As configurações do ambiente não foram salvas. Este ambiente pode não existir mais ou você pode não ter permissão para editá-lo. Atualize a página para conferir.
+    projectFailed: As configurações do ambiente não foram salvas porque o servidor não pode processar a solicitação no momento. Atualize a página mais tarde para conferir.
+    membersNotSaved: As alterações nos membros não foram concluídas. Este ambiente pode não existir mais ou você pode não ter permissão para gerenciar seus membros. Outras configurações podem já ter sido salvas; atualize a página para conferir.
+    membersFailed: As alterações nos membros não foram concluídas. O servidor não pode processar a solicitação no momento. As configurações do ambiente podem já ter sido salvas; atualize a página para conferir.
+    networkNotSaved: As alterações na política de rede não foram concluídas. Este ambiente pode não existir mais ou você pode não ter permissão para gerenciar sua política de rede. As configurações do ambiente e as alterações nos membros podem já ter sido salvas; atualize a página para conferir.
+    networkFailed: As alterações na política de rede não foram concluídas. O servidor não pode processar a solicitação no momento. As configurações do ambiente e as alterações nos membros podem já ter sido salvas; atualize a página para conferir.
+    relatedUnavailable: Não foi possível carregar os dados relacionados a este ambiente. Os dados podem não existir mais ou você pode não ter permissão para acessá-los. Atualize a página ou entre em contato com um administrador.
+    loadFailed: Não é possível carregar os dados do ambiente no momento porque o servidor não consegue processar a solicitação. Atualize a página mais tarde; se o problema persistir, entre em contato com um administrador.
   showEdit:
     edit: 'Editar Ambiente:'
     add: Adicionar Ambiente

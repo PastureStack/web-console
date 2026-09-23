@@ -2656,6 +2656,11 @@ inputIdentity:
   dropdownLabel:
     teams: Ihre Teams und Organizationen
     groups: Ihre Gruppen
+  error:
+    notFound: Es wurde kein passender Benutzer und keine passende Gruppe gefunden.
+    forbidden: Sie haben keine Berechtigung, nach Benutzern oder Gruppen zu suchen.
+    sessionExpired: Ihre Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.
+    unavailable: Benutzer und Gruppen können derzeit nicht gesucht werden. Bitte versuchen Sie es später erneut.
 inputPassword:
   buttonText: Generieren
 inputTextFile:
@@ -3800,6 +3805,17 @@ viewEditDescription:
       placeholder: z.B. Umgebung für Entwicklertests
 viewEditProject:
   nativeEngine: Native Engine
+  error:
+    projectUnavailable: Diese Umgebung ist nicht vorhanden oder Sie sind nicht berechtigt, sie anzuzeigen. Laden Sie die Seite neu oder wenden Sie sich an einen Administrator.
+    membersUnavailable: Die Mitglieder der Umgebung konnten nicht geladen werden. Möglicherweise ist die Umgebung nicht mehr vorhanden oder Sie haben keinen Zugriff mehr. Laden Sie die Seite neu oder wenden Sie sich an einen Administrator.
+    projectNotSaved: Die Umgebungseinstellungen wurden nicht gespeichert. Möglicherweise ist die Umgebung nicht mehr vorhanden oder Sie dürfen sie nicht bearbeiten. Laden Sie die Seite neu, um den aktuellen Stand zu prüfen.
+    projectFailed: Die Umgebungseinstellungen wurden nicht gespeichert, da der Server die Anfrage derzeit nicht verarbeiten kann. Laden Sie die Seite später neu, um den aktuellen Stand zu prüfen.
+    membersNotSaved: Die Änderungen an den Mitgliedern wurden nicht abgeschlossen. Möglicherweise ist die Umgebung nicht mehr vorhanden oder Sie dürfen ihre Mitglieder nicht verwalten. Andere Einstellungen wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
+    membersFailed: Die Änderungen an den Mitgliedern wurden nicht abgeschlossen, da der Server die Anfrage derzeit nicht verarbeiten kann. Die Umgebungseinstellungen wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
+    networkNotSaved: Die Änderungen an der Netzwerkrichtlinie wurden nicht abgeschlossen. Möglicherweise ist diese Umgebung nicht mehr vorhanden oder Sie dürfen ihre Netzwerkrichtlinie nicht verwalten. Die Umgebungseinstellungen und Änderungen an Mitgliedern wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
+    networkFailed: Die Änderungen an der Netzwerkrichtlinie wurden nicht abgeschlossen, da der Server die Anfrage derzeit nicht verarbeiten kann. Die Umgebungseinstellungen und Änderungen an Mitgliedern wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
+    relatedUnavailable: Zugehörige Daten dieser Umgebung konnten nicht geladen werden. Die Daten sind möglicherweise nicht mehr vorhanden oder Sie haben keinen Zugriff darauf. Laden Sie die Seite neu oder wenden Sie sich an einen Administrator.
+    loadFailed: Die Umgebungsdaten können derzeit nicht geladen werden, da der Server die Anfrage nicht verarbeiten kann. Laden Sie die Seite später neu; falls das Problem weiterhin auftritt, wenden Sie sich an einen Administrator.
   showEdit:
     edit: 'Umgebung bearbeiten:'
     add: Umgebung hinzufügen

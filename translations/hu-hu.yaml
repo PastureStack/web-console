@@ -2620,6 +2620,11 @@ inputIdentity:
   dropdownLabel:
     teams: Az Ön csapatai és szervezetei
     groups: Az Ön csoportjai
+  error:
+    notFound: Nem található megfelelő felhasználó vagy csoport.
+    forbidden: Nincs jogosultsága felhasználók vagy csoportok kereséséhez.
+    sessionExpired: A munkamenete lejárt. Jelentkezzen be újra.
+    unavailable: A felhasználók és csoportok keresése jelenleg nem érhető el. Próbálja újra később.
 inputPassword:
   buttonText: Generál
 inputTextFile:
@@ -3763,6 +3768,17 @@ viewEditDescription:
       placeholder: pl. Környezet a fejlesztői kísérletezéshez
 viewEditProject:
   nativeEngine: Natív motor
+  error:
+    projectUnavailable: Ez a környezet nem létezik, vagy nincs jogosultsága a megtekintéséhez. Frissítse az oldalt, vagy forduljon egy rendszergazdához.
+    membersUnavailable: A környezet tagjai nem tölthetők be. Lehet, hogy a környezet már nem létezik, vagy már nincs hozzáférése. Frissítse az oldalt, vagy forduljon egy rendszergazdához.
+    projectNotSaved: A környezet beállításai nem lettek mentve. Lehet, hogy ez a környezet már nem létezik, vagy nincs jogosultsága a szerkesztéséhez. Frissítse az oldalt az ellenőrzéshez.
+    projectFailed: A környezet beállításai nem lettek mentve, mert a kiszolgáló átmenetileg nem tudja feldolgozni a kérést. Frissítse az oldalt később az ellenőrzéshez.
+    membersNotSaved: A tagok módosítása nem fejeződött be. Lehet, hogy ez a környezet már nem létezik, vagy nincs jogosultsága a tagok kezeléséhez. Más beállítások már mentésre kerülhettek; frissítse az oldalt az ellenőrzéshez.
+    membersFailed: A tagok módosítása nem fejeződött be, mert a kiszolgáló átmenetileg nem tudja feldolgozni a kérést. A környezet beállításai már mentésre kerülhettek; frissítse az oldalt az ellenőrzéshez.
+    networkNotSaved: A hálózati házirend módosítása nem fejeződött be. Lehet, hogy ez a környezet már nem létezik, vagy nincs jogosultsága a hálózati házirend kezeléséhez. A környezet beállításai és a tagok módosításai már mentésre kerülhettek; frissítse az oldalt az ellenőrzéshez.
+    networkFailed: A hálózati házirend módosítása nem fejeződött be, mert a kiszolgáló átmenetileg nem tudja feldolgozni a kérést. A környezet beállításai és a tagok módosításai már mentésre kerülhettek; frissítse az oldalt az ellenőrzéshez.
+    relatedUnavailable: Nem tölthetők be az ehhez a környezethez tartozó adatok. Lehet, hogy az adatok már nem léteznek, vagy nincs jogosultsága hozzáférni hozzájuk. Frissítse az oldalt, vagy forduljon egy rendszergazdához.
+    loadFailed: A környezet adatai jelenleg nem tölthetők be, mert a kiszolgáló nem tudja feldolgozni a kérést. Frissítse az oldalt később; ha a probléma továbbra is fennáll, forduljon egy rendszergazdához.
   showEdit:
     edit: 'Környezet szerkesztése:'
     add: Környezet hozzáadása
