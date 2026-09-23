@@ -138,8 +138,8 @@ test('environment member server failure reports possible earlier settings save',
   destroyOwned(component);
 });
 
-test('environment project save distinguishes permission failures from server failures', async function(assert) {
-  for (let status of [403, 404, 500]) {
+test('environment project save distinguishes expired, denied, server, and validation failures', async function(assert) {
+  for (let status of [401, 403, 404, 500, 422]) {
     let project = EmberObject.create({
       id: '1a21',
       actionLinks: {update: '/projects/1a21'},
@@ -162,7 +162,10 @@ test('environment project save distinguishes permission failures from server fai
 
     let outcome = await invokeSave(component);
     assert.strictEqual(outcome.saved, false, `HTTP ${status} reports failure`);
-    assert.deepEqual(component.get('errors'), [status === 500 ? 'Original server error' : 'viewEditProject.error.projectNotSaved'], `HTTP ${status} shows the correct message`);
+    let expected = status === 401 ? 'login.error.timedOut' :
+      status === 403 || status === 404 ? 'viewEditProject.error.projectNotSaved' :
+        status === 500 ? 'viewEditProject.error.projectFailed' : 'Original server error';
+    assert.deepEqual(component.get('errors'), [expected], `HTTP ${status} shows the correct message`);
     assert.strictEqual(component.get('saving'), false, `HTTP ${status} releases the lock`);
     destroyOwned(component);
   }

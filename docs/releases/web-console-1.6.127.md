@@ -10,7 +10,9 @@ ownership, or the underlying API authorization rules.
   a distinct, understandable temporary-failure message instead of raw API text.
 - Project, member, and network-policy save failures use the existing form error
   block. Dependent-save failures explicitly warn that earlier steps may have
-  succeeded; the form remains open and the save lock is released.
+  succeeded; the form remains open and the save lock is released. Expired
+  sessions, permission denial, temporary server failures, and field validation
+  retain distinct messages.
 - Identity search distinguishes an empty successful search from HTTP 401, 403,
   and service failures. It does not falsely label a rejected request as an
   unknown identity.

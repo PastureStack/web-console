@@ -3755,6 +3755,7 @@ viewEditProject:
     projectUnavailable: Hindi umiiral ang environment na ito o wala kang pahintulot na tingnan ito. I-refresh ang pahina o makipag-ugnayan sa administrator.
     membersUnavailable: Hindi ma-load ang mga miyembro ng environment. Maaaring wala na ang environment na ito o wala ka nang access dito. I-refresh ang pahina o makipag-ugnayan sa administrator.
     projectNotSaved: Hindi na-save ang mga setting ng environment. Maaaring wala na ang environment na ito o wala kang pahintulot na i-edit ito. I-refresh ang pahina upang masuri.
+    projectFailed: Hindi na-save ang mga setting ng environment dahil pansamantalang hindi maproseso ng server ang kahilingan. I-refresh ang pahina mamaya upang masuri.
     membersNotSaved: Hindi nakumpleto ang mga pagbabago sa mga miyembro. Maaaring wala na ang environment na ito o wala kang pahintulot na pamahalaan ang mga miyembro nito. Maaaring na-save na ang ibang mga setting; i-refresh ang pahina upang masuri.
     membersFailed: Hindi nakumpleto ang mga pagbabago sa mga miyembro dahil pansamantalang hindi maproseso ng server ang kahilingan. Maaaring na-save na ang mga setting ng environment; i-refresh ang pahina upang masuri.
     networkNotSaved: Hindi nakumpleto ang mga pagbabago sa patakaran sa network. Maaaring wala na ang environment na ito o wala kang pahintulot na pamahalaan ang patakaran sa network nito. Maaaring na-save na ang mga setting ng environment at mga pagbabago sa miyembro; i-refresh ang pahina upang masuri.

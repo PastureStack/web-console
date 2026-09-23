@@ -3758,6 +3758,7 @@ viewEditProject:
     projectUnavailable: Este ambiente não existe ou você não tem permissão para visualizá-lo. Atualize a página ou entre em contato com um administrador.
     membersUnavailable: Não foi possível carregar os membros do ambiente. Este ambiente pode não existir mais ou você pode não ter mais acesso a ele. Atualize a página ou entre em contato com um administrador.
     projectNotSaved: As configurações do ambiente não foram salvas. Este ambiente pode não existir mais ou você pode não ter permissão para editá-lo. Atualize a página para conferir.
+    projectFailed: As configurações do ambiente não foram salvas porque o servidor não pode processar a solicitação no momento. Atualize a página mais tarde para conferir.
     membersNotSaved: As alterações nos membros não foram concluídas. Este ambiente pode não existir mais ou você pode não ter permissão para gerenciar seus membros. Outras configurações podem já ter sido salvas; atualize a página para conferir.
     membersFailed: As alterações nos membros não foram concluídas. O servidor não pode processar a solicitação no momento. As configurações do ambiente podem já ter sido salvas; atualize a página para conferir.
     networkNotSaved: As alterações na política de rede não foram concluídas. Este ambiente pode não existir mais ou você pode não ter permissão para gerenciar sua política de rede. As configurações do ambiente e as alterações nos membros podem já ter sido salvas; atualize a página para conferir.

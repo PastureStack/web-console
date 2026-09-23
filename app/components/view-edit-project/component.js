@@ -175,7 +175,7 @@ export default Component.extend(NewOrEdit, Sortable, {
   doSave() {
     if ( this.get('canEditProject') ) {
       return this._super(...arguments).then(null, (err) => {
-        throw this.projectSaveError(err, 'viewEditProject.error.projectNotSaved');
+        throw this.saveError(err, 'viewEditProject.error.projectNotSaved', 'viewEditProject.error.projectFailed');
       });
     } else {
       return resolve();
@@ -200,11 +200,7 @@ export default Component.extend(NewOrEdit, Sortable, {
         setMembers = resolve()
           .then(() => this.get('project').doAction('setmembers', {members}))
           .then(null, (err) => {
-            let status = Errors.status(err);
-            let key = status === 403 || status === 404 ?
-              'viewEditProject.error.membersNotSaved' :
-              'viewEditProject.error.membersFailed';
-            throw {status, message: this.get('intl').t(key)};
+            throw this.saveError(err, 'viewEditProject.error.membersNotSaved', 'viewEditProject.error.membersFailed');
           });
       }
     }
@@ -219,11 +215,7 @@ export default Component.extend(NewOrEdit, Sortable, {
             }
           }))
           .then(null, (err) => {
-            let status = Errors.status(err);
-            let key = status === 403 || status === 404 ?
-              'viewEditProject.error.networkNotSaved' :
-              'viewEditProject.error.networkFailed';
-            throw {status, message: this.get('intl').t(key)};
+            throw this.saveError(err, 'viewEditProject.error.networkNotSaved', 'viewEditProject.error.networkFailed');
           });
       }
     });
@@ -236,14 +228,21 @@ export default Component.extend(NewOrEdit, Sortable, {
     return out;
   },
 
-  projectSaveError(err, key) {
+  saveError(err, deniedKey, failedKey) {
     let status = Errors.status(err);
-    if ( status !== 403 && status !== 404 ) {
-      return err;
+    if ( status === 401 ) {
+      return {status, message: this.get('intl').t('login.error.timedOut')};
+    }
+    if ( status === 403 || status === 404 ) {
+      return {status, message: this.get('intl').t(deniedKey)};
+    }
+    if ( status >= 500 && status <= 599 ) {
+      return {status, message: this.get('intl').t(failedKey)};
     }
 
     // The shared NewOrEdit error action displays this in the existing
-    // top-errors block. The project save may have completed before setmembers.
-    return {status, message: this.get('intl').t(key)};
+    // top-errors block. Preserve validation errors so their field details
+    // remain available; 401/403/404/5xx must be understandable and distinct.
+    return err;
   },
 });

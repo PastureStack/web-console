@@ -4118,6 +4118,7 @@ viewEditProject:
     projectUnavailable: This environment does not exist or you do not have permission to view it. Refresh the page or contact an administrator.
     membersUnavailable: Environment members cannot be loaded. This environment may no longer exist or you may no longer have access. Refresh the page or contact an administrator.
     projectNotSaved: Environment settings were not saved. This environment may no longer exist or you may not have permission to edit it. Refresh the page to check.
+    projectFailed: Environment settings were not saved because the server cannot process the request right now. Refresh the page later to check.
     membersNotSaved: Member changes were not completed. This environment may no longer exist or you may not have permission to manage its members. Other settings may already be saved; refresh the page to check.
     membersFailed: Member changes were not completed because the server cannot process the request right now. Environment settings may already be saved; refresh the page to check.
     networkNotSaved: Network policy changes were not completed. This environment may no longer exist or you may not have permission to manage its network policy. Environment settings and member changes may already be saved; refresh the page to check.
