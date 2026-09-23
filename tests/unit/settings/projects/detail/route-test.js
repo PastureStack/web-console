@@ -7,8 +7,7 @@ import ProjectDetailRoute from 'ui/settings/projects/detail/route';
 
 module('Unit | Route | settings projects detail');
 
-function fixture(failureAt) {
-  let failure = new Error(`${failureAt} failed`);
+function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
   let members = A([EmberObject.create({id: '1pm1', role: 'owner'})]);
   let project = EmberObject.create({
     id: '1a21',
@@ -88,6 +87,44 @@ test('every environment loading task rejects with its original failure instead o
     await route.model({project_id: '1a21', editing: false}).then(
       () => assert.ok(false, `${failureAt} must reject`),
       (err) => assert.strictEqual(err, data.failure, `${failureAt} retains the original failure`)
+    );
+    run(() => route.destroy());
+  }
+});
+
+test('project and member-link access errors show a safe message without hiding unrelated failures', async function(assert) {
+  const translations = {
+    'viewEditProject.error.projectUnavailable': 'Environment unavailable',
+    'viewEditProject.error.membersUnavailable': 'Members unavailable',
+  };
+  const intl = EmberObject.create({t(key) { return translations[key]; }});
+
+  for (let [task, status, expected] of [
+    ['project', 403, 'Environment unavailable'],
+    ['project', 404, 'Environment unavailable'],
+    ['members', 403, 'Members unavailable'],
+    ['members', 404, 'Members unavailable'],
+  ]) {
+    let data = fixture(task, {status, message: 'Raw API message'});
+    let route = ProjectDetailRoute.create({userStore: data.store, intl});
+    await route.model({project_id: '1a21', editing: false}).then(
+      () => assert.ok(false, `${task} ${status} must reject`),
+      (err) => {
+        assert.strictEqual(err.status, 404, 'denied and missing resources have the same visible status');
+        assert.strictEqual(err.message, expected, 'the existing error view receives a human message');
+        assert.notOk(err.detail, 'the API does not disclose extra details');
+      }
+    );
+    run(() => route.destroy());
+  }
+
+  for (let [task, status] of [['members', 401], ['members', 500], ['networks', 403]]) {
+    let failure = {status, message: 'Original failure'};
+    let data = fixture(task, failure);
+    let route = ProjectDetailRoute.create({userStore: data.store, intl});
+    await route.model({project_id: '1a21', editing: false}).then(
+      () => assert.ok(false, `${task} ${status} must reject`),
+      (err) => assert.strictEqual(err, failure, `${task} ${status} keeps its normal error handling`)
     );
     run(() => route.destroy());
   }

@@ -2612,6 +2612,11 @@ inputIdentity:
   dropdownLabel:
     teams: Iyong Mga Koponan at Organisasyon
     groups: Iyong mga Grupo
+  error:
+    notFound: Walang nahanap na tumutugmang user o grupo.
+    forbidden: Wala kang pahintulot na maghanap ng mga user o grupo.
+    sessionExpired: Nag-expire na ang iyong session. Mag-sign in muli.
+    unavailable: Hindi makapaghanap ng mga user o grupo sa ngayon. Subukan muli mamaya.
 inputPassword:
   buttonText: Bumuo
 inputTextFile:
@@ -3746,6 +3751,14 @@ viewEditDescription:
       placeholder: hal. Kapaligiran para sa eksperimento ng developer
 viewEditProject:
   nativeEngine: Built-in na Engine
+  error:
+    projectUnavailable: Hindi umiiral ang environment na ito o wala kang pahintulot na tingnan ito. I-refresh ang pahina o makipag-ugnayan sa administrator.
+    membersUnavailable: Hindi ma-load ang mga miyembro ng environment. Maaaring wala na ang environment na ito o wala ka nang access dito. I-refresh ang pahina o makipag-ugnayan sa administrator.
+    projectNotSaved: Hindi na-save ang mga setting ng environment. Maaaring wala na ang environment na ito o wala kang pahintulot na i-edit ito. I-refresh ang pahina upang masuri.
+    membersNotSaved: Hindi nakumpleto ang mga pagbabago sa mga miyembro. Maaaring wala na ang environment na ito o wala kang pahintulot na pamahalaan ang mga miyembro nito. Maaaring na-save na ang ibang mga setting; i-refresh ang pahina upang masuri.
+    membersFailed: Hindi nakumpleto ang mga pagbabago sa mga miyembro dahil pansamantalang hindi maproseso ng server ang kahilingan. Maaaring na-save na ang mga setting ng environment; i-refresh ang pahina upang masuri.
+    networkNotSaved: Hindi nakumpleto ang mga pagbabago sa patakaran sa network. Maaaring wala na ang environment na ito o wala kang pahintulot na pamahalaan ang patakaran sa network nito. Maaaring na-save na ang mga setting ng environment at mga pagbabago sa miyembro; i-refresh ang pahina upang masuri.
+    networkFailed: Hindi nakumpleto ang mga pagbabago sa patakaran sa network dahil pansamantalang hindi maproseso ng server ang kahilingan. Maaaring na-save na ang mga setting ng environment at mga pagbabago sa miyembro; i-refresh ang pahina upang masuri.
   showEdit:
     edit: 'I-edit ang Environment:'
     add: Magdagdag ng Kapaligiran

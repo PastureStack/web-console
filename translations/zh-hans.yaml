@@ -2536,6 +2536,11 @@ inputIdentity:
   dropdownLabel:
     teams: 你的团队和组织
     groups: 你的组
+  error:
+    notFound: 找不到匹配的用户或群组。
+    forbidden: 您没有权限搜索用户或群组。
+    sessionExpired: 会话已过期，请重新登录。
+    unavailable: 目前无法搜索用户或群组，请稍后重试。
 inputPassword:
   buttonText: 生成
 inputTextFile:
@@ -3645,6 +3650,14 @@ viewEditDescription:
       placeholder: '例如:开发试验环境'
 viewEditProject:
   nativeEngine: 原生引擎
+  error:
+    projectUnavailable: 此环境不存在，或您没有权限查看。请刷新页面或联系管理员。
+    membersUnavailable: 无法加载环境成员。此环境可能已不存在，或您已失去访问权限。请刷新页面或联系管理员。
+    projectNotSaved: 环境设置未保存。此环境可能已不存在，或您没有权限编辑。请刷新页面确认。
+    membersNotSaved: 成员更改未完成。此环境可能已不存在，或您没有权限管理其成员。其他设置可能已保存，请刷新页面确认。
+    membersFailed: 成员更改未完成：服务器暂时无法处理。先前的环境设置可能已保存，请刷新页面确认。
+    networkNotSaved: 网络策略更改未完成：此环境可能不存在，或您没有管理网络策略的权限。先前的环境设置与成员更改可能已保存，请刷新页面确认。
+    networkFailed: 网络策略更改未完成：服务器暂时无法处理。先前的环境设置与成员可能已保存，请刷新页面确认。
   showEdit:
     edit: 编辑环境
     add: 添加环境

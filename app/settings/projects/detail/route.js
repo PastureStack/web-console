@@ -2,10 +2,13 @@ import EmberObject from '@ember/object';
 import { Promise } from 'rsvp';
 import Route from '@ember/routing/route';
 import C from 'ui/utils/constants';
+import Errors from 'ui/utils/errors';
 import { xhrConcur } from 'ui/utils/platform';
 import PromiseToCb from 'ui/mixins/promise-to-cb';
+import { service } from '@ember/service';
 
 export default Route.extend(PromiseToCb, {
+  intl: service(),
   queryParams: {
     editing: {
       refreshModel: true
@@ -27,12 +30,21 @@ export default Route.extend(PromiseToCb, {
     let promise = new Promise((resolve, reject) => {
       let tasks = {
         allProjects:                        this.toCb(() => { return userStore.findAll('project'); }),
-        project:            ['allProjects', this.toCb(() => { return userStore.find('project', params.project_id); })],
-        importMembers:      ['project',     this.toCb((results) => {
-          return results.project.followLink('projectMembers').then((members) => {
-            results.project.set('projectMembers', members);
-            return results.project;
+        project:            ['allProjects', this.toCb(() => {
+          return userStore.find('project', params.project_id).then(null, (err) => {
+            throw this.projectAccessError(err, 'viewEditProject.error.projectUnavailable');
           });
+        })],
+        importMembers:      ['project',     this.toCb((results) => {
+          return results.project.followLink('projectMembers').then(
+            (members) => {
+              results.project.set('projectMembers', members);
+              return results.project;
+            },
+            (err) => {
+              throw this.projectAccessError(err, 'viewEditProject.error.membersUnavailable');
+            }
+          );
         })],
         networks:                           this.toCb(() => { return userStore.find('network', null, {filter: {accountId: params.project_id}}); }),
         policyManagers:                     this.toCb(() => { return userStore.find('stack', null, policyManagerOpt); }),
@@ -96,5 +108,20 @@ export default Route.extend(PromiseToCb, {
 
       return out;
     });
+  },
+
+  projectAccessError(err, key) {
+    let status = Errors.status(err);
+    if ( status !== 403 && status !== 404 ) {
+      return err;
+    }
+
+    // failWhale renders the status as well as the message. Present both a
+    // denied and a missing resource identically; 401 and server failures keep
+    // their original path.
+    return {
+      status: 404,
+      message: this.get('intl').t(key),
+    };
   },
 });

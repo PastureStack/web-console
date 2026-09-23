@@ -1,6 +1,7 @@
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import C from 'ui/utils/constants';
+import Errors from 'ui/utils/errors';
 
 export default Component.extend({
   access: service(),
@@ -15,7 +16,9 @@ export default Component.extend({
 
   init: function() {
     this.set('allIdentities', this.get('userStore').all('identity'));
-    this.get('userStore').findAll('identity');
+    this.get('userStore').findAll('identity').then(null, (err) => {
+      this.sendAction('onError', this.identitySearchError(err));
+    });
     this._super();
   },
 
@@ -29,20 +32,23 @@ export default Component.extend({
       this.set('checking', true);
       var input = this.get('addInput').trim();
 
-      this.get('userStore').find('identity', null, {filter: {name: input}}).then((info) => {
-        var obj = info.objectAt(0);
-        if (obj)
-        {
-          this.set('addInput','');
-          this.send('addObject', obj);
+      return this.get('userStore').find('identity', null, {filter: {name: input}}).then(
+        (info) => {
+          var obj = info.objectAt(0);
+          if (obj)
+          {
+            this.set('addInput','');
+            this.send('addObject', obj);
+          }
+          else
+          {
+            this.sendAction('onError', this.get('intl').t('inputIdentity.error.notFound'));
+          }
+        },
+        (err) => {
+          this.sendAction('onError', this.identitySearchError(err));
         }
-        else
-        {
-          this.sendAction('onError','Identity not found: ' + input);
-        }
-      }).catch(() => {
-        this.sendAction('onError','Identity not found: ' + input);
-      }).finally(() => {
+      ).finally(() => {
         this.set('checking', false);
       });
     },
@@ -50,6 +56,17 @@ export default Component.extend({
     addObject: function(info) {
       this.sendAction('action', info);
     }
+  },
+
+  identitySearchError(err) {
+    let status = Errors.status(err);
+    let key = 'unavailable';
+    if ( status === 401 ) {
+      key = 'sessionExpired';
+    } else if ( status === 403 ) {
+      key = 'forbidden';
+    }
+    return this.get('intl').t(`inputIdentity.error.${key}`);
   },
 
   addDisabled: function() {

@@ -5,12 +5,14 @@ import Component from '@ember/component';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
 import NewOrEdit from 'ui/mixins/new-or-edit';
+import Errors from 'ui/utils/errors';
 import { sortInsensitiveBy } from 'ui/utils/sort';
 
 export default Component.extend(NewOrEdit, Sortable, {
   projects: service(),
   access: service(),
   growl: service(),
+  intl: service(),
   accessEnabled: alias('access.enabled'),
   queryParams: ['editing'],
 
@@ -172,7 +174,9 @@ export default Component.extend(NewOrEdit, Sortable, {
 
   doSave() {
     if ( this.get('canEditProject') ) {
-      return this._super(...arguments);
+      return this._super(...arguments).then(null, (err) => {
+        throw this.projectSaveError(err, 'viewEditProject.error.projectNotSaved');
+      });
     } else {
       return resolve();
     }
@@ -193,18 +197,34 @@ export default Component.extend(NewOrEdit, Sortable, {
           };
         });
 
-        setMembers = this.get('project').doAction('setmembers',{members: members});
+        setMembers = resolve()
+          .then(() => this.get('project').doAction('setmembers', {members}))
+          .then(null, (err) => {
+            let status = Errors.status(err);
+            let key = status === 403 || status === 404 ?
+              'viewEditProject.error.membersNotSaved' :
+              'viewEditProject.error.membersFailed';
+            throw {status, message: this.get('intl').t(key)};
+          });
       }
     }
 
     return setMembers.then(() => {
       if ( this.get('project.id') && this.get('network') && !this.get('hasUnsupportedPolicy') )
       {
-        return this.get('network').save({
-          headers: {
-            [C.HEADER.PROJECT_ID]: this.get('project.id'),
-          }
-        });
+        return resolve()
+          .then(() => this.get('network').save({
+            headers: {
+              [C.HEADER.PROJECT_ID]: this.get('project.id'),
+            }
+          }))
+          .then(null, (err) => {
+            let status = Errors.status(err);
+            let key = status === 403 || status === 404 ?
+              'viewEditProject.error.networkNotSaved' :
+              'viewEditProject.error.networkFailed';
+            throw {status, message: this.get('intl').t(key)};
+          });
       }
     });
   },
@@ -214,5 +234,16 @@ export default Component.extend(NewOrEdit, Sortable, {
     this.get('projects').refreshAll();
     this.sendAction('done');
     return out;
+  },
+
+  projectSaveError(err, key) {
+    let status = Errors.status(err);
+    if ( status !== 403 && status !== 404 ) {
+      return err;
+    }
+
+    // The shared NewOrEdit error action displays this in the existing
+    // top-errors block. The project save may have completed before setmembers.
+    return {status, message: this.get('intl').t(key)};
   },
 });
