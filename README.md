@@ -8,13 +8,22 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.125`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.126`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.126` treats an authenticated account with no active environment
+as a valid empty state. It clears stale tab and store scope, skips every
+project-scoped request, and avoids a permanent loading error. Account rows use
+the authoritative login identity fallback order `name`, `login`, then
+`externalId` only when the account name is empty. Descriptions continue to
+show only the real `account.description`; identity names and e-mail addresses
+are never substituted. Pair this release with Engine `0.183.319` and Server
+`v1.6.462`.
 
 Release `1.6.125` keeps account administration available when the account
 inventory contains an inactive historical row. The page still loads fresh,
