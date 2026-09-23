@@ -3813,6 +3813,8 @@ viewEditProject:
     membersFailed: Die Änderungen an den Mitgliedern wurden nicht abgeschlossen, da der Server die Anfrage derzeit nicht verarbeiten kann. Die Umgebungseinstellungen wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
     networkNotSaved: Die Änderungen an der Netzwerkrichtlinie wurden nicht abgeschlossen. Möglicherweise ist diese Umgebung nicht mehr vorhanden oder Sie dürfen ihre Netzwerkrichtlinie nicht verwalten. Die Umgebungseinstellungen und Änderungen an Mitgliedern wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
     networkFailed: Die Änderungen an der Netzwerkrichtlinie wurden nicht abgeschlossen, da der Server die Anfrage derzeit nicht verarbeiten kann. Die Umgebungseinstellungen und Änderungen an Mitgliedern wurden möglicherweise bereits gespeichert; laden Sie die Seite neu, um dies zu prüfen.
+    relatedUnavailable: Zugehörige Daten dieser Umgebung konnten nicht geladen werden. Die Daten sind möglicherweise nicht mehr vorhanden oder Sie haben keinen Zugriff darauf. Laden Sie die Seite neu oder wenden Sie sich an einen Administrator.
+    loadFailed: Die Umgebungsdaten können derzeit nicht geladen werden, da der Server die Anfrage nicht verarbeiten kann. Laden Sie die Seite später neu; falls das Problem weiterhin auftritt, wenden Sie sich an einen Administrator.
   showEdit:
     edit: 'Umgebung bearbeiten:'
     add: Umgebung hinzufügen

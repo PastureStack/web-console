@@ -4122,6 +4122,8 @@ viewEditProject:
     membersFailed: Member changes were not completed because the server cannot process the request right now. Environment settings may already be saved; refresh the page to check.
     networkNotSaved: Network policy changes were not completed. This environment may no longer exist or you may not have permission to manage its network policy. Environment settings and member changes may already be saved; refresh the page to check.
     networkFailed: Network policy changes were not completed because the server cannot process the request right now. Environment settings and member changes may already be saved; refresh the page to check.
+    relatedUnavailable: Related data for this environment cannot be loaded. The data may no longer exist, or you may not have permission to access it. Refresh the page or contact an administrator.
+    loadFailed: Environment data cannot be loaded right now because the server cannot process the request. Refresh the page later; if the problem persists, contact an administrator.
   showEdit:
     edit: "Edit Environment:"
     add: Add Environment

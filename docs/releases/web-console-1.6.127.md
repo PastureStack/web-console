@@ -4,9 +4,10 @@ This release closes the environment-permission error-display gap exposed by
 the OpenID Connect role matrix. It does not change authentication, token
 ownership, or the underlying API authorization rules.
 
-- Environment view/edit now reports an inaccessible or missing project and an
-  unavailable member list through the existing route error view, without
-  disclosing whether an inaccessible project exists.
+- Environment view/edit now reports inaccessible or missing project, member,
+  and related data through the existing route error view, without disclosing
+  whether an inaccessible resource exists. Server-side loading failures show
+  a distinct, understandable temporary-failure message instead of raw API text.
 - Project, member, and network-policy save failures use the existing form error
   block. Dependent-save failures explicitly warn that earlier steps may have
   succeeded; the form remains open and the save lock is released.

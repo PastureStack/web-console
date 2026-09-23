@@ -3759,6 +3759,8 @@ viewEditProject:
     membersFailed: Hindi nakumpleto ang mga pagbabago sa mga miyembro dahil pansamantalang hindi maproseso ng server ang kahilingan. Maaaring na-save na ang mga setting ng environment; i-refresh ang pahina upang masuri.
     networkNotSaved: Hindi nakumpleto ang mga pagbabago sa patakaran sa network. Maaaring wala na ang environment na ito o wala kang pahintulot na pamahalaan ang patakaran sa network nito. Maaaring na-save na ang mga setting ng environment at mga pagbabago sa miyembro; i-refresh ang pahina upang masuri.
     networkFailed: Hindi nakumpleto ang mga pagbabago sa patakaran sa network dahil pansamantalang hindi maproseso ng server ang kahilingan. Maaaring na-save na ang mga setting ng environment at mga pagbabago sa miyembro; i-refresh ang pahina upang masuri.
+    relatedUnavailable: Hindi ma-load ang kaugnay na datos ng environment na ito. Maaaring wala na ang datos o wala kang pahintulot na i-access ito. I-refresh ang pahina o makipag-ugnayan sa administrator.
+    loadFailed: Hindi muna ma-load ang datos ng environment dahil hindi maproseso ng server ang kahilingan sa ngayon. I-refresh ang pahina mamaya; kung magpatuloy ang problema, makipag-ugnayan sa administrator.
   showEdit:
     edit: 'I-edit ang Environment:'
     add: Magdagdag ng Kapaligiran

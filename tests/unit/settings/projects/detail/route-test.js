@@ -92,10 +92,12 @@ test('every environment loading task rejects with its original failure instead o
   }
 });
 
-test('project and member-link access errors show a safe message without hiding unrelated failures', async function(assert) {
+test('environment load errors distinguish access, server failures, and expired sessions', async function(assert) {
   const translations = {
     'viewEditProject.error.projectUnavailable': 'Environment unavailable',
     'viewEditProject.error.membersUnavailable': 'Members unavailable',
+    'viewEditProject.error.relatedUnavailable': 'Environment data unavailable',
+    'viewEditProject.error.loadFailed': 'Server temporarily unavailable',
   };
   const intl = EmberObject.create({t(key) { return translations[key]; }});
 
@@ -104,6 +106,9 @@ test('project and member-link access errors show a safe message without hiding u
     ['project', 404, 'Environment unavailable'],
     ['members', 403, 'Members unavailable'],
     ['members', 404, 'Members unavailable'],
+    ['allProjects', 403, 'Environment data unavailable'],
+    ['networks', 403, 'Environment data unavailable'],
+    ['policyManagers', 404, 'Environment data unavailable'],
   ]) {
     let data = fixture(task, {status, message: 'Raw API message'});
     let route = ProjectDetailRoute.create({userStore: data.store, intl});
@@ -118,7 +123,20 @@ test('project and member-link access errors show a safe message without hiding u
     run(() => route.destroy());
   }
 
-  for (let [task, status] of [['members', 401], ['members', 500], ['networks', 403]]) {
+  for (let [task, status] of [['project', 500], ['members', 500], ['networks', 503], ['policyManagers', 500]]) {
+    let data = fixture(task, {status, message: 'QA simulated raw server error'});
+    let route = ProjectDetailRoute.create({userStore: data.store, intl});
+    await route.model({project_id: '1a21', editing: false}).then(
+      () => assert.ok(false, `${task} ${status} must reject`),
+      (err) => {
+        assert.strictEqual(err.status, status, 'the real server failure status is retained');
+        assert.strictEqual(err.message, 'Server temporarily unavailable', 'the raw API error is not shown');
+      }
+    );
+    run(() => route.destroy());
+  }
+
+  for (let [task, status] of [['members', 401], ['networks', 400]]) {
     let failure = {status, message: 'Original failure'};
     let data = fixture(task, failure);
     let route = ProjectDetailRoute.create({userStore: data.store, intl});

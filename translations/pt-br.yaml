@@ -3762,6 +3762,8 @@ viewEditProject:
     membersFailed: As alterações nos membros não foram concluídas. O servidor não pode processar a solicitação no momento. As configurações do ambiente podem já ter sido salvas; atualize a página para conferir.
     networkNotSaved: As alterações na política de rede não foram concluídas. Este ambiente pode não existir mais ou você pode não ter permissão para gerenciar sua política de rede. As configurações do ambiente e as alterações nos membros podem já ter sido salvas; atualize a página para conferir.
     networkFailed: As alterações na política de rede não foram concluídas. O servidor não pode processar a solicitação no momento. As configurações do ambiente e as alterações nos membros podem já ter sido salvas; atualize a página para conferir.
+    relatedUnavailable: Não foi possível carregar os dados relacionados a este ambiente. Os dados podem não existir mais ou você pode não ter permissão para acessá-los. Atualize a página ou entre em contato com um administrador.
+    loadFailed: Não é possível carregar os dados do ambiente no momento porque o servidor não consegue processar a solicitação. Atualize a página mais tarde; se o problema persistir, entre em contato com um administrador.
   showEdit:
     edit: 'Editar Ambiente:'
     add: Adicionar Ambiente

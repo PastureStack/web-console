@@ -3757,6 +3757,8 @@ viewEditProject:
     membersFailed: Les modifications des membres n'ont pas été effectuées, car le serveur ne peut pas traiter la demande pour le moment. Les paramètres de l'environnement ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
     networkNotSaved: Les modifications de la politique réseau n'ont pas été effectuées. Cet environnement n'existe peut-être plus ou vous n'êtes peut-être pas autorisé à gérer sa politique réseau. Les paramètres de l'environnement et les modifications des membres ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
     networkFailed: Les modifications de la politique réseau n'ont pas été effectuées, car le serveur ne peut pas traiter la demande pour le moment. Les paramètres de l'environnement et les modifications des membres ont peut-être déjà été enregistrés ; actualisez la page pour vérifier.
+    relatedUnavailable: Impossible de charger les données associées à cet environnement. Elles n'existent peut-être plus ou vous n'êtes peut-être pas autorisé à y accéder. Actualisez la page ou contactez un administrateur.
+    loadFailed: Impossible de charger les données de l'environnement pour le moment, car le serveur ne peut pas traiter la demande. Actualisez la page plus tard ; si le problème persiste, contactez un administrateur.
   showEdit:
     edit: "Modifier l’Environnement\_:"
     add: Ajouter un Environnement

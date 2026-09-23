@@ -29,10 +29,14 @@ export default Route.extend(PromiseToCb, {
 
     let promise = new Promise((resolve, reject) => {
       let tasks = {
-        allProjects:                        this.toCb(() => { return userStore.findAll('project'); }),
+        allProjects:                        this.toCb(() => {
+          return userStore.findAll('project').then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
+          });
+        }),
         project:            ['allProjects', this.toCb(() => {
           return userStore.find('project', params.project_id).then(null, (err) => {
-            throw this.projectAccessError(err, 'viewEditProject.error.projectUnavailable');
+            throw this.environmentLoadError(err, 'viewEditProject.error.projectUnavailable');
           });
         })],
         importMembers:      ['project',     this.toCb((results) => {
@@ -42,12 +46,20 @@ export default Route.extend(PromiseToCb, {
               return results.project;
             },
             (err) => {
-              throw this.projectAccessError(err, 'viewEditProject.error.membersUnavailable');
+              throw this.environmentLoadError(err, 'viewEditProject.error.membersUnavailable');
             }
           );
         })],
-        networks:                           this.toCb(() => { return userStore.find('network', null, {filter: {accountId: params.project_id}}); }),
-        policyManagers:                     this.toCb(() => { return userStore.find('stack', null, policyManagerOpt); }),
+        networks:                           this.toCb(() => {
+          return userStore.find('network', null, {filter: {accountId: params.project_id}}).then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
+          });
+        }),
+        policyManagers:                     this.toCb(() => {
+          return userStore.find('stack', null, policyManagerOpt).then(null, (err) => {
+            throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
+          });
+        }),
       };
 
       async.auto(tasks, xhrConcur, function(err, res) {
@@ -110,18 +122,16 @@ export default Route.extend(PromiseToCb, {
     });
   },
 
-  projectAccessError(err, key) {
+  environmentLoadError(err, key) {
     let status = Errors.status(err);
-    if ( status !== 403 && status !== 404 ) {
-      return err;
+    if ( status === 403 || status === 404 ) {
+      // failWhale renders the status as well as the message. Present denied
+      // and missing resources identically to avoid revealing their existence.
+      return {status: 404, message: this.get('intl').t(key)};
     }
-
-    // failWhale renders the status as well as the message. Present both a
-    // denied and a missing resource identically; 401 and server failures keep
-    // their original path.
-    return {
-      status: 404,
-      message: this.get('intl').t(key),
-    };
+    if ( status >= 500 && status <= 599 ) {
+      return {status, message: this.get('intl').t('viewEditProject.error.loadFailed')};
+    }
+    return err;
   },
 });
