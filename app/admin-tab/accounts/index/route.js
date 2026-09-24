@@ -3,6 +3,7 @@ import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import Errors from 'ui/utils/errors';
 import resourceLoadError from 'ui/utils/resource-load-error';
+import isDisplayedAccount from 'ui/utils/is-displayed-account';
 
 export default Route.extend({
   intl: service(),
@@ -11,7 +12,10 @@ export default Route.extend({
     return this.get('userStore').find('password').then(() => {
       return this.get('userStore').find('account', null, {filter: {'kind_ne': ['service','agent']}, forceReload: true});
     }).then((accounts) => {
-      return all(accounts.map((account) => {
+      // The account collection also contains project accounts (including
+      // Default), but the identity-link resource only accepts user/admin
+      // accounts.  Query exactly the rows this page displays.
+      return all(accounts.filter(isDisplayedAccount).map((account) => {
         return this.get('userStore').find('authIdentityLink', null, {
           filter: {accountId: account.get('id')},
           forceReload: true,
