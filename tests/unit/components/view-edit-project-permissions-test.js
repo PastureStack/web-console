@@ -106,6 +106,26 @@ test('member actions cannot mutate a readonly membership list', function(assert)
   destroyOwned(component);
 });
 
+test('member validation errors use translated messages', function(assert) {
+  let owner = EmberObject.create({externalIdType: 'oidc_user', externalId: 'owner-1', role: 'owner'});
+  let project = EmberObject.create({
+    id: '1a21',
+    actionLinks: {setmembers: '/projects/1a21?action=setmembers'},
+    projectMembers: A([owner]),
+    validationErrors() { return A([]); },
+  });
+  let component = makeComponent(project, null);
+  let duplicate = EmberObject.create({externalIdType: 'oidc_user', externalId: 'owner-1'});
+
+  component.send('checkMember', duplicate);
+  assert.deepEqual(component.get('errors'), ['viewEditProject.error.memberAlreadyListed']);
+
+  component.send('removeMember', owner);
+  assert.false(component.validate());
+  assert.deepEqual(component.get('errors'), ['viewEditProject.error.ownerRequired']);
+  destroyOwned(component);
+});
+
 test('new environment still saves its initial members in the project request', async function(assert) {
   let owner = EmberObject.create({externalIdType: 'oidc_user', externalId: 'owner-1', role: 'owner'});
   let project = EmberObject.create({

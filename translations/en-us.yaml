@@ -91,6 +91,9 @@ accountsPage:
       noName: None
   new:
     header: Add Account
+    error:
+      usernameRequired: Login username is required.
+      passwordRequired: Password is required.
     form:
       username:
         labelText: Login Username
@@ -990,6 +993,13 @@ failWhalePage:
   reloadButton: |
     <a href="#" onclick="window.location.href = window.location.href; return false;">Reload</a> to try again or
   logoutButton: log out
+resourceLoadError:
+  stackUnavailable: This stack does not exist or you do not have permission to view it. Refresh the page or contact an administrator.
+  stackFailed: The stack cannot be loaded right now because the server cannot process the request. Try again later.
+  accountsUnavailable: Accounts cannot be loaded. They may no longer exist, or you may not have permission to view them. Refresh the page or contact an administrator.
+  accountsFailed: Accounts cannot be loaded right now because the server cannot process the request. Try again later.
+  accountSecurityUnavailable: Account security settings cannot be loaded. The account may no longer exist, or you may not have permission to view it. Refresh the page or contact an administrator.
+  accountSecurityFailed: Account security settings cannot be loaded right now because the server cannot process the request. Try again later.
 
 haPage:
   header: High Availability
@@ -1953,6 +1963,10 @@ devicePermissions:
 
 editAccount:
   title: Edit Account
+  error:
+    currentPasswordRequired: Current password is required.
+    newPasswordsMismatch: New passwords do not match.
+    currentPasswordIncorrect: Current password is incorrect.
   form:
     name:
       label: Name
@@ -4115,6 +4129,8 @@ viewEditDescription:
 viewEditProject:
   nativeEngine: Native Engine
   error:
+    memberAlreadyListed: This member is already in the list.
+    ownerRequired: Add at least one environment owner.
     projectUnavailable: This environment does not exist or you do not have permission to view it. Refresh the page or contact an administrator.
     membersUnavailable: Environment members cannot be loaded. This environment may no longer exist or you may no longer have access. Refresh the page or contact an administrator.
     projectNotSaved: Environment settings were not saved. This environment may no longer exist or you may not have permission to edit it. Refresh the page to check.

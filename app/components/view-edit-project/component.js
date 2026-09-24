@@ -58,7 +58,7 @@ export default Component.extend(NewOrEdit, Sortable, {
 
       if ( existing.get('length') )
       {
-        this.send('error','Member is already in the list');
+        this.send('error', this.get('intl').t('viewEditProject.error.memberAlreadyListed'));
         return;
       }
 
@@ -169,7 +169,7 @@ export default Component.extend(NewOrEdit, Sortable, {
 
     if ( !this.get('hasOwner') && this.get('access.enabled') && this.get('canEditMembers') )
     {
-      errors.push('You must have at least one owner');
+      errors.push(this.get('intl').t('viewEditProject.error.ownerRequired'));
     }
 
     if ( errors.length )

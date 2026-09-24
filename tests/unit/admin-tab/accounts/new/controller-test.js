@@ -31,3 +31,19 @@ test('new local accounts always receive a human-readable name', function(assert)
 
   destroyOwned(controller);
 });
+
+test('required account fields use localized validation messages', function(assert) {
+  let model = modelFor('', '');
+  model.set('credential.secretValue', '');
+  let controller = createOwned(NewAccountController, {
+    intl: EmberObject.create({t(key) { return key; }}),
+    model,
+  }, 'controller');
+
+  assert.false(controller.validate());
+  assert.deepEqual(controller.get('errors'), [
+    'accountsPage.new.error.usernameRequired',
+    'accountsPage.new.error.passwordRequired',
+  ]);
+  destroyOwned(controller);
+});

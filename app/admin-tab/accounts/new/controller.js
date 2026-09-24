@@ -7,6 +7,7 @@ import C from 'ui/utils/constants';
 
 export default Controller.extend(NewOrEdit, {
   primaryResource: alias('model.account'),
+  intl: service(),
   settings: service(),
 
   actions: {
@@ -30,7 +31,7 @@ export default Controller.extend(NewOrEdit, {
 
     if ( username.length === 0 )
     {
-      errors.push('Login Username is requried');
+      errors.push(this.get('intl').t('accountsPage.new.error.usernameRequired'));
     }
 
     if ( (this.get('model.account.name')||'').trim().length === 0 && username.length > 0 )
@@ -40,7 +41,7 @@ export default Controller.extend(NewOrEdit, {
 
     if ( (this.get('model.credential.secretValue')||'').trim().length === 0 )
     {
-      errors.push('Password is requried');
+      errors.push(this.get('intl').t('accountsPage.new.error.passwordRequired'));
     }
 
     if ( errors.length )

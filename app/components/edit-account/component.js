@@ -9,6 +9,7 @@ import ModalBase from 'lacsso/components/modal-base';
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
   access: service(),
+  intl: service(),
   primaryResource: alias('model.account'),
   settings: service(),
 
@@ -61,12 +62,12 @@ export default ModalBase.extend(NewOrEdit, {
     {
       if ( this.get('needOld') && !old )
       {
-        errors.push('Current password is required');
+        errors.push(this.get('intl').t('editAccount.error.currentPasswordRequired'));
       }
 
       if ( this.get('showConfirm') && neu !== neu2 )
       {
-        errors.push('New passwords do not match');
+        errors.push(this.get('intl').t('editAccount.error.newPasswordsMismatch'));
       }
     }
 
@@ -121,7 +122,7 @@ export default ModalBase.extend(NewOrEdit, {
     error(err) {
       if ( err.get('code') === 'InvalidOldPassword' )
       {
-        this.set('errors',['Current password is incorrect']);
+        this.set('errors', [this.get('intl').t('editAccount.error.currentPasswordIncorrect')]);
       }
       else
       {

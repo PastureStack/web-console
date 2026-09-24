@@ -79,6 +79,9 @@ accountsPage:
       noName: 無
   new:
     header: 新增帳號
+    error:
+      usernameRequired: 必須輸入登入使用者名稱。
+      passwordRequired: 必須輸入密碼。
     form:
       username:
         labelText: 登入使用者名稱
@@ -960,6 +963,13 @@ failWhalePage:
   reloadButton: |
     <a href="#" onclick="window.location.href = window.location.href; return false;">重新載入</a> 以重試或
   logoutButton: 登出
+resourceLoadError:
+  stackUnavailable: 找不到此應用堆疊，或您沒有權限檢視。請重新整理或聯絡管理員。
+  stackFailed: 暫時無法載入應用堆疊，伺服器目前無法處理。請稍後再試。
+  accountsUnavailable: 無法載入帳號資料：帳號可能不存在，或您沒有檢視權限。請重新整理或聯絡管理員。
+  accountsFailed: 暫時無法載入帳號資料，伺服器目前無法處理。請稍後再試。
+  accountSecurityUnavailable: 無法載入帳號安全性設定：帳號可能不存在，或您沒有檢視權限。請重新整理或聯絡管理員。
+  accountSecurityFailed: 暫時無法載入帳號安全性設定，伺服器目前無法處理。請稍後再試。
 haPage:
   header: 高可用
   setup:
@@ -1869,6 +1879,10 @@ devicePermissions:
   mknod: 建立裝置節點（mknod）
 editAccount:
   title: 編輯帳號
+  error:
+    currentPasswordRequired: 必須輸入目前密碼。
+    newPasswordsMismatch: 新密碼與確認密碼不一致。
+    currentPasswordIncorrect: 目前密碼不正確。
   form:
     name:
       label: 名稱
@@ -3922,6 +3936,8 @@ viewEditDescription:
 viewEditProject:
   nativeEngine: 原生引擎
   error:
+    memberAlreadyListed: 此成員已在清單中。
+    ownerRequired: 環境至少需要一位擁有者。
     projectUnavailable: 找不到此環境，或您沒有權限檢視。請重新整理或聯絡管理員。
     membersUnavailable: 無法讀取環境成員：此環境可能不存在，或您已沒有存取權限。請重新整理或聯絡管理員。
     projectNotSaved: 環境設定未儲存：此環境可能不存在，或您沒有修改權限。請重新整理確認。

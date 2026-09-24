@@ -1,8 +1,10 @@
 import { hash } from 'rsvp';
 import { service } from '@ember/service';
 import Route from '@ember/routing/route';
+import resourceLoadError from 'ui/utils/resource-load-error';
 
 export default Route.extend({
+  intl: service(),
   session: service(),
   userStore: service('user-store'),
 
@@ -18,6 +20,9 @@ export default Route.extend({
         filter: {accountId: accountId},
         forceReload: true,
       }),
+    }).then(null, (err) => {
+      throw resourceLoadError(err, this.get('intl'),
+        'resourceLoadError.accountSecurityUnavailable', 'resourceLoadError.accountSecurityFailed');
     });
   },
 
