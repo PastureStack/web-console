@@ -69,7 +69,7 @@
   <h4>{{t 'viewEditProject.showEdit.accessControl'}}</h4>
   <hr/>
   <div class="well">
-    {{#if (and this.accessEnabled this.showEdit)}}
+    {{#if (and this.accessEnabled this.showEdit this.canEditMembers)}}
       <div class="form-group">
         {{input-identity action="checkMember" onError="error"}}
       </div>
@@ -82,7 +82,7 @@
             {{sortable-th sortable=this action="changeSort" name="name" label="generic.name"}}
             {{sortable-th sortable=this action="changeSort" name="type" label="generic.type"}}
             {{sortable-th sortable=this action="changeSort" name="role" label="generic.role"}}
-            {{#if this.showEdit}}<th width="40">&nbsp;</th>{{/if}}
+            {{#if (and this.showEdit this.canEditMembers)}}<th width="40">&nbsp;</th>{{/if}}
           </tr>
         </thead>
         <tbody>
@@ -93,7 +93,7 @@
               </td>
               <td>{{member.displayType}}</td>
               <td>
-                {{#if this.showEdit}}
+                {{#if (and this.showEdit this.canEditMembers)}}
                   <select class="form-control input-sm" onchange={{action (mut member.role) value="target.value"}}>
                     {{#each this.roleOptions as |choice|}}
                       <option value={{choice.value}} selected={{eq member.role choice.value}}>{{t choice.label}}</option>
@@ -103,7 +103,7 @@
                   {{uc-first member.role}}
                 {{/if}}
               </td>
-              {{#if this.showEdit}}
+              {{#if (and this.showEdit this.canEditMembers)}}
                 <td>
                   {{#if this.accessEnabled}}
                     <button class="btn btn-primary btn-sm pull-right gh-action" {{action "removeMember" member}}><i class="icon icon-minus"/></button>
@@ -159,7 +159,7 @@
         <div class="row">
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.withinLinked'}}</label>
-            {{#if this.showEdit}}
+            {{#if (and this.showEdit this.canEditNetwork)}}
               <div class="radio">
                 <label>{{radio-button selection=this.npWithinLinked.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
@@ -167,16 +167,12 @@
                 <label>{{radio-button selection=this.npWithinLinked.action value="deny"}}&nbsp;{{t 'viewEditProject.networkPolicy.deny'}}</label>
               </div>
             {{else}}
-              <div class="row">
-                <div class="col-xs-12">
-                  <p class="text-muted">{{t 'viewEditProject.networkPolicy.description'}}</p>
-                </div>
-              </div>
+              <div>{{uc-first this.npWithinLinked.action}}</div>
             {{/if}}
           </div>
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.withinService'}}</label>
-            {{#if this.showEdit}}
+            {{#if (and this.showEdit this.canEditNetwork)}}
               <div class="radio">
                 <label>{{radio-button selection=this.npWithinService.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
@@ -189,7 +185,7 @@
           </div>
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.withinStack'}}</label>
-            {{#if this.showEdit}}
+            {{#if (and this.showEdit this.canEditNetwork)}}
               <div class="radio">
                 <label>{{radio-button selection=this.npWithinStack.action value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
@@ -202,7 +198,7 @@
           </div>
           <div class="col-md-3 col-sm-6">
             <label>{{t 'viewEditProject.networkPolicy.default'}}</label>
-            {{#if this.showEdit}}
+            {{#if (and this.showEdit this.canEditNetwork)}}
               <div class="radio">
                 <label>{{radio-button selection=this.network.defaultPolicyAction value="allow"}}&nbsp;{{t 'viewEditProject.networkPolicy.allow'}}</label>
               </div>
@@ -221,5 +217,11 @@
 
 {{#if this.showEdit}}
   {{top-errors errors=this.errors}}
-  {{save-cancel editing=this.editing save="save" cancel="cancel"}}
+  {{#if this.canSave}}
+    {{save-cancel editing=this.editing save="save" cancel="cancel"}}
+  {{else}}
+    <div class="footer-actions">
+      <button {{action "cancel"}} class="btn btn-link">{{t 'saveCancel.cancel'}}</button>
+    </div>
+  {{/if}}
 {{/if}}

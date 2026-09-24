@@ -48,6 +48,10 @@ export default Component.extend(NewOrEdit, Sortable, {
     },
 
     checkMember(member) {
+      if ( !this.get('canEditMembers') ) {
+        return;
+      }
+
       var existing = this.get('project.projectMembers')
                       .filterBy('externalIdType', member.get('externalIdType'))
                       .filterBy('externalId', member.get('externalId'));
@@ -65,7 +69,9 @@ export default Component.extend(NewOrEdit, Sortable, {
     },
 
     removeMember(item) {
-      this.get('project.projectMembers').removeObject(item);
+      if ( this.get('canEditMembers') ) {
+        this.get('project.projectMembers').removeObject(item);
+      }
     },
   },
 
@@ -137,7 +143,21 @@ export default Component.extend(NewOrEdit, Sortable, {
 
   canEditProject: function() {
     return !this.get('project.id') || !!this.get('project.actionLinks.update');
-  }.property('project.actionLinks.update'),
+  }.property('project.id', 'project.actionLinks.update'),
+
+  canEditMembers: function() {
+    return !this.get('project.id') || !!this.get('project.actionLinks.setmembers');
+  }.property('project.id', 'project.actionLinks.setmembers'),
+
+  canEditNetwork: function() {
+    return !!this.get('network.actionLinks.update') && !this.get('missingManager') && !this.get('hasUnsupportedPolicy');
+  }.property('network.actionLinks.update', 'missingManager', 'hasUnsupportedPolicy'),
+
+  canSave: function() {
+    return this.get('canEditProject') ||
+      (this.get('accessEnabled') && this.get('canEditMembers')) ||
+      this.get('canEditNetwork');
+  }.property('canEditProject', 'accessEnabled', 'canEditMembers', 'canEditNetwork'),
 
   hasUnsupportedPolicy: function() {
     return this.get('network.policy').filter((x) => { return !!!(x.get('within')); }).length > 0;
@@ -147,7 +167,7 @@ export default Component.extend(NewOrEdit, Sortable, {
     this._super();
     var errors = this.get('errors')||[];
 
-    if ( !this.get('hasOwner') && this.get('access.enabled') )
+    if ( !this.get('hasOwner') && this.get('access.enabled') && this.get('canEditMembers') )
     {
       errors.push('You must have at least one owner');
     }
@@ -162,6 +182,10 @@ export default Component.extend(NewOrEdit, Sortable, {
   },
 
   willSave() {
+    if ( !this.get('canSave') ) {
+      return false;
+    }
+
     var out = this._super();
     if ( out && !this.get('project.id') )
     {
@@ -186,7 +210,7 @@ export default Component.extend(NewOrEdit, Sortable, {
     let setMembers = resolve();
     if ( this.get('editing') )
     {
-      if ( this.get('access.enabled') )
+      if ( this.get('access.enabled') && this.get('canEditMembers') )
       {
         var members = this.get('project.projectMembers').map((member) => {
           return {
@@ -206,7 +230,7 @@ export default Component.extend(NewOrEdit, Sortable, {
     }
 
     return setMembers.then(() => {
-      if ( this.get('project.id') && this.get('network') && !this.get('hasUnsupportedPolicy') )
+      if ( this.get('project.id') && this.get('canEditNetwork') )
       {
         return resolve()
           .then(() => this.get('network').save({
