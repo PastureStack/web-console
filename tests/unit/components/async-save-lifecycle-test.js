@@ -74,7 +74,7 @@ test('environment member permission failure uses the existing error block and re
   let done = 0;
   let project = EmberObject.create({
     id: '1a21',
-    actionLinks: {update: '/projects/1a21'},
+    actionLinks: {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers'},
     projectMembers: A([{externalIdType: 'oidc_user', externalId: 'user-1', role: 'owner'}]),
     validationErrors() { return A([]); },
     save() {
@@ -114,7 +114,7 @@ test('environment member permission failure uses the existing error block and re
 test('environment member server failure reports possible earlier settings save', async function(assert) {
   let project = EmberObject.create({
     id: '1a21',
-    actionLinks: {update: '/projects/1a21'},
+    actionLinks: {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers'},
     projectMembers: A([{externalIdType: 'oidc_user', externalId: 'user-1', role: 'owner'}]),
     validationErrors() { return A([]); },
     save() { return resolve(this); },
@@ -142,7 +142,7 @@ test('environment project save distinguishes expired, denied, server, and valida
   for (let status of [401, 403, 404, 500, 422]) {
     let project = EmberObject.create({
       id: '1a21',
-      actionLinks: {update: '/projects/1a21'},
+      actionLinks: {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers'},
       projectMembers: A([{externalIdType: 'oidc_user', externalId: 'user-1', role: 'owner'}]),
       validationErrors() { return A([]); },
       save() { return reject({status, message: 'Original server error'}); },
@@ -177,13 +177,14 @@ test('environment network save failure reports partial success and leaves the fo
     let memberSaves = 0;
     let project = EmberObject.create({
       id: '1a21',
-      actionLinks: {update: '/projects/1a21'},
+      actionLinks: {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers'},
       projectMembers: A([{externalIdType: 'oidc_user', externalId: 'user-1', role: 'owner'}]),
       validationErrors() { return A([]); },
       save() { projectSaves++; return resolve(this); },
       doAction() { memberSaves++; return resolve(); },
     });
     let network = EmberObject.create({
+      actionLinks: {update: '/networks/1n1'},
       policy: A([]),
       save() { return reject({status, message: 'Original network failure'}); },
     });
@@ -193,6 +194,7 @@ test('environment network save failure reports partial success and leaves the fo
       growl: EmberObject.create(),
       intl: EmberObject.create({t(key) { return key; }}),
       network,
+      policyManager: EmberObject.create({id: '1st1'}),
       project,
       projects: EmberObject.create({refreshAll() { assert.ok(false, 'failed save must not refresh'); }}),
       renderer: inertRenderer(),
