@@ -7,6 +7,7 @@ import { click, find, findAll, render, settled, setupContext, setupRenderingCont
 import { module, test } from 'qunit';
 
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
+import Router from 'ui/router';
 import resolver from '../../helpers/resolver';
 
 module('Integration | Component | view edit project permissions', function(hooks) {
@@ -100,5 +101,53 @@ module('Integration | Component | view edit project permissions', function(hooks
     assert.false(find('input[type="text"]').disabled, 'metadata link unlocks project fields');
     assert.ok(findAll('.radio input').length > 0, 'network link unlocks its policy controls');
     assert.strictEqual(findAll('.footer-actions button').length, 2);
+  });
+
+  test('network-only environment can reach its edit form from the detail header', async function(assert) {
+    this.owner.register('router:main', Router);
+    this.owner.register('component:action-menu', Component.extend({
+      layout: precompileTemplate('<span data-test-action-menu></span>'),
+    }));
+    this.owner.register('component:header-state', Component.extend({
+      layout: precompileTemplate('<span></span>'),
+    }));
+    this.owner.register('component:power-select', Component.extend({
+      layout: precompileTemplate('<span></span>'),
+    }));
+    this.allProjects = A([this.project]);
+    this.network.set('actionLinks', {update: '/networks/1n1'});
+    this.owner.lookup('router:main').setupRouter();
+    let routeTarget = this.owner.lookup('service:router').urlFor('settings.projects.detail', '1a21', {
+      queryParams: {editing: true},
+    });
+    assert.ok(routeTarget.endsWith('/settings/env/1a21?editing=true'), `the application route targets this edit form: ${routeTarget}`);
+
+    await render(precompileTemplate(`{{view-edit-project
+      project=this.project originalProject=this.originalProject allProjects=this.allProjects
+      network=this.network policyManager=this.policyManager userStore=this.userStore
+      showEdit=this.showEdit editing=true
+    }}`));
+
+    let edit = find('[data-test-network-only-edit]');
+    assert.ok(edit, 'the network capability exposes Edit from the detail view');
+
+    this.network.set('actionLinks', {});
+    await settled();
+    assert.notOk(find('[data-test-network-only-edit]'), 'without network update the link disappears');
+
+    this.network.set('actionLinks', {update: '/networks/1n1'});
+    this.project.set('actionLinks', {update: '/projects/1a21'});
+    await settled();
+    assert.notOk(find('[data-test-network-only-edit]'), 'metadata editors get no duplicate header Edit link');
+
+    this.project.set('actionLinks', {setmembers: '/projects/1a21?action=setmembers'});
+    await settled();
+    assert.notOk(find('[data-test-network-only-edit]'), 'member editors get no duplicate header Edit link');
+    assert.ok(find('[data-test-action-menu]'), 'the existing action menu remains');
+
+    this.project.set('actionLinks', {});
+    this.set('showEdit', true);
+    await settled();
+    assert.notOk(find('[data-test-network-only-edit]'), 'the link is absent inside the edit form');
   });
 });
