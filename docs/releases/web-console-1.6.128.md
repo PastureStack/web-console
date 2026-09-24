@@ -17,6 +17,6 @@ form, not the API authorization rules.
 Focused component and rendered-template tests cover read-only, individual
 capabilities, their combination, and new environment creation. This release
 does not assert a live network-policy PUT authorization matrix; the browser
-uses the network capability returned by the API. Server `v1.6.466` packages
-this Web Console artifact with Orchestration Engine `v0.183.321`. The browser
+uses the network capability returned by the API. The Server release consuming
+this browser artifact declares its Server and Engine pairing. This browser
 change does not alter backend authorization.

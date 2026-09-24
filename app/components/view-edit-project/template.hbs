@@ -16,6 +16,11 @@
     <div class="pull-right">
       {{header-state model=this.project}}
       {{action-menu model=this.project size="sm" classNames="r-ml10"}}
+      {{#if (and this.canEditNetwork (not this.canEditProject) (not this.canEditMembers))}}
+        <LinkTo @route="settings.projects.detail" @model={{this.project.id}} @query={{hash editing=true}} class="btn btn-default btn-sm r-ml10" data-test-network-only-edit>
+          <i class="icon icon-edit"></i> {{t 'action.edit'}}
+        </LinkTo>
+      {{/if}}
     </div>
   {{/if}}
 </section>
