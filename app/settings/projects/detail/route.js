@@ -51,7 +51,10 @@ export default Route.extend(PromiseToCb, {
           );
         })],
         networks:                           this.toCb(() => {
-          return userStore.find('network', null, {filter: {accountId: params.project_id}}).then(null, (err) => {
+          return userStore.find('network', null, {
+            filter: {accountId: params.project_id},
+            headers: {[C.HEADER.PROJECT_ID]: params.project_id},
+          }).then(null, (err) => {
             throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
           });
         }),

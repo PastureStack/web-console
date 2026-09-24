@@ -46,6 +46,7 @@ function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
         return failureAt === 'project' ? reject(failure) : resolve(project);
       }
       if ( type === 'network' ) {
+        this.set('networkOptions', opt);
         return failureAt === 'networks' ? reject(failure) : resolve(A([]));
       }
       if ( type === 'stack' ) {
@@ -71,6 +72,8 @@ test('loads project members through the supported link contract before cloning f
     assert.notStrictEqual(model.get('project'), data.project, 'editing uses a clone');
     assert.strictEqual(model.get('project.projectMembers'), data.members, 'the imported members reach the editable clone');
     assert.strictEqual(model.get('policyManager'), data.policyManager, 'the policy manager is loaded');
+    assert.strictEqual(data.store.get('networkOptions.filter.accountId'), '1a21', 'the network lookup stays in the selected project');
+    assert.strictEqual(data.store.get('networkOptions.headers.X-Api-Project-Id'), '1a21', 'the network lookup uses its project policy');
     assert.strictEqual(data.store.get('policyManagerOptions.headers.X-Api-Project-Id'), '1a21', 'policy manager lookup is scoped to the project');
     run(() => route.destroy());
   });
