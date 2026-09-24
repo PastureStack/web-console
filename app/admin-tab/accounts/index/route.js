@@ -1,8 +1,12 @@
 import { all } from 'rsvp';
+import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import Errors from 'ui/utils/errors';
+import resourceLoadError from 'ui/utils/resource-load-error';
 
 export default Route.extend({
+  intl: service(),
+
   model: function() {
     return this.get('userStore').find('password').then(() => {
       return this.get('userStore').find('account', null, {filter: {'kind_ne': ['service','agent']}, forceReload: true});
@@ -21,13 +25,18 @@ export default Route.extend({
           // let account-row use its embedded identity fields; one stale row
           // must not make the entire administration page fail.  Other errors
           // remain fatal so authorization and backend outages are not hidden.
-          if ( Errors.status(error) === 404 ) {
+          let code = error && (typeof error.get === 'function' ? error.get('code') : error.code);
+          if ( account.get('state') === 'inactive' &&
+               Errors.status(error) === 404 && code === 'AccountNotFound' ) {
             account.set('_authIdentityLinks', []);
             return account;
           }
           throw error;
         });
       })).then(() => accounts);
+    }).then(null, (err) => {
+      throw resourceLoadError(err, this.get('intl'),
+        'resourceLoadError.accountsUnavailable', 'resourceLoadError.accountsFailed');
     });
   },
 });

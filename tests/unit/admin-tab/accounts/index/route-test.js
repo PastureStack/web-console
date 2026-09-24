@@ -7,6 +7,8 @@ import AccountsRoute from 'ui/admin-tab/accounts/index/route';
 
 module('Unit | Route | admin tab accounts index');
 
+const intl = EmberObject.create({t(key) { return key; }});
+
 test('loads authoritative login identities for each account with an exact account filter', function(assert) {
   assert.expect(7);
   let accounts = A([
@@ -37,7 +39,7 @@ test('loads authoritative login identities for each account with an exact accoun
       throw new Error(`unexpected lookup ${type}:${id}`);
     },
   });
-  let route = AccountsRoute.create({userStore});
+  let route = AccountsRoute.create({userStore, intl});
 
   return route.model().then((result) => {
     assert.strictEqual(result, accounts, 'the original account collection is retained');
@@ -71,7 +73,7 @@ test('isolates a missing inactive account identity without hiding other failures
       return reject({status: 503, code: 'UnexpectedLookup'});
     },
   });
-  let route = AccountsRoute.create({userStore});
+  let route = AccountsRoute.create({userStore, intl});
 
   return route.model().then((result) => {
     assert.strictEqual(result, accounts, 'the account inventory remains visible');
@@ -97,7 +99,7 @@ test('propagates non-404 identity lookup failures', function(assert) {
       return reject({status: 503, code: 'ServiceUnavailable'});
     },
   });
-  let route = AccountsRoute.create({userStore});
+  let route = AccountsRoute.create({userStore, intl});
 
   return route.model().then(() => {
     assert.ok(false, 'the route must reject');
@@ -105,4 +107,35 @@ test('propagates non-404 identity lookup failures', function(assert) {
     assert.strictEqual(error.status, 503, 'non-404 failures remain diagnosable');
     run(() => route.destroy());
   });
+});
+
+test('masked authorization 404 is never treated as a stale account row', async function(assert) {
+  for (let [state, code] of [
+    ['active', 'AccountNotFound'],
+    ['inactive', 'PermissionDenied'],
+  ]) {
+    let account = EmberObject.create({id: '1a1', state});
+    let userStore = EmberObject.create({
+      find(type) {
+        if ( type === 'account' ) {
+          return resolve(A([account]));
+        }
+        if ( type === 'authIdentityLink' ) {
+          return reject({status: 404, code, message: 'Raw API response'});
+        }
+        return resolve(A([]));
+      },
+    });
+    let route = AccountsRoute.create({userStore, intl});
+
+    await route.model().then(
+      () => assert.ok(false, `${state} ${code} must remain a visible error`),
+      (error) => {
+        assert.strictEqual(error.status, 404);
+        assert.strictEqual(error.message, 'resourceLoadError.accountsUnavailable');
+        assert.notOk(account.get('_authIdentityLinks'), 'the denied identity was not replaced by an empty row');
+      }
+    );
+    run(() => route.destroy());
+  }
 });

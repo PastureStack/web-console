@@ -11,5 +11,11 @@ module.exports = Object.freeze([
   'loginOidc.',
   'loginPage.oidcMessage',
   'loginPage.localRecovery.',
-  'loginPage.mfa.'
+  'loginPage.mfa.',
+  // Permission and account-validation errors must never render a missing-key
+  // marker. Keep reviewed English copy as the fallback outside zh-tw.
+  'resourceLoadError.',
+  'accountsPage.new.error.',
+  'editAccount.error.',
+  'viewEditProject.error.'
 ]);
