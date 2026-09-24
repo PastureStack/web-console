@@ -3,8 +3,7 @@ import { service } from '@ember/service';
 import Controller from '@ember/controller';
 import Sortable from 'ui/mixins/sortable';
 import FilterState from 'ui/mixins/filter-state';
-
-const showKinds = ['user','admin'];
+import isDisplayedAccount from 'ui/utils/is-displayed-account';
 
 export default Controller.extend(FilterState, Sortable, {
   access: service(),
@@ -22,10 +21,7 @@ export default Controller.extend(FilterState, Sortable, {
   },
 
   filteredByKind: function() {
-    return this.get('filtered').filter((row) => {
-      var kind = (row.get('kind')||'').toLowerCase();
-      return showKinds.indexOf(kind) !== -1;
-    });
+    return this.get('filtered').filter(isDisplayedAccount);
   }.property('filtered.@each.kind'),
 
   isLocal: function() {

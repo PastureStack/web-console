@@ -9,11 +9,12 @@ module('Unit | Route | admin tab accounts index');
 
 const intl = EmberObject.create({t(key) { return key; }});
 
-test('loads authoritative login identities for each account with an exact account filter', function(assert) {
-  assert.expect(7);
+test('loads identities only for displayed user/admin accounts with an exact account filter', function(assert) {
+  assert.expect(8);
   let accounts = A([
     EmberObject.create({id: '1a1', kind: 'admin'}),
     EmberObject.create({id: '1a2', kind: 'user'}),
+    EmberObject.create({id: '1a5', kind: 'project'}),
   ]);
   let links = {
     '1a1': A([EmberObject.create({externalIdType: 'rancher_id', externalId: '1'})]),
@@ -45,6 +46,7 @@ test('loads authoritative login identities for each account with an exact accoun
     assert.strictEqual(result, accounts, 'the original account collection is retained');
     assert.deepEqual(queried.sort(), ['1a1', '1a2'], 'each query is bound to one exact account');
     assert.strictEqual(accounts[1].get('_authIdentityLinks'), links['1a2'], 'OIDC links are attached without changing account data');
+    assert.notOk(accounts[2].get('_authIdentityLinks'), 'project accounts are not queried for login identities');
     run(() => route.destroy());
   });
 });
@@ -114,7 +116,7 @@ test('masked authorization 404 is never treated as a stale account row', async f
     ['active', 'AccountNotFound'],
     ['inactive', 'PermissionDenied'],
   ]) {
-    let account = EmberObject.create({id: '1a1', state});
+    let account = EmberObject.create({id: '1a1', kind: 'admin', state});
     let userStore = EmberObject.create({
       find(type) {
         if ( type === 'account' ) {
