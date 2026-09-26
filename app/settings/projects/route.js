@@ -9,7 +9,7 @@ export default Route.extend({
     var userStore = this.get('userStore');
     var projects = this.get('projects');
     return hash({
-      projects: projects.refreshAll(),
+      projects: projects.getAll().then((all) => projects.set('all', all)),
       projectTemplates: userStore.find('projecttemplate', null, {url: 'projectTemplates', forceReload: true, removeMissing: true}),
     }).then(() => {
       return {

@@ -20,9 +20,10 @@ Release `1.6.136` keeps the environment switcher inside the viewport in
 left-to-right and right-to-left layouts, including narrow screens and long
 environment names. It also preserves right-to-left text direction on the
 shared error page. A stored environment selection is rechecked with the API;
-after access is revoked, the console selects an accessible fallback and the
-environment management list uses the refreshed collection. Authentication and
-server failures still surface as errors. Server authorization is unchanged.
+when the authenticated console loads after access is revoked, it selects an
+accessible fallback. The environment management list uses a fresh collection
+without resetting the active environment's schema. Authentication and server
+failures still surface as errors. Server authorization is unchanged.
 
 Release `1.6.135` keeps the administrator environment switcher behavior from
 `1.6.134` and corrects the switcher list labels in French and Russian. The
