@@ -29,7 +29,10 @@ $teal: null !default;
   }
 
   html[dir="rtl"] & .error {
+    // This selector is already RTL-specific; retain its values in .rtl.css.
+    /*rtl:ignore*/
     direction: rtl;
+    /*rtl:ignore*/
     text-align: right;
   }
 
