@@ -843,6 +843,7 @@ helpPage:
     content: |
       A PastureStack közösség által fenntartott, és nem állítja, hogy kereskedelmi támogatást nyújt.
 hostsPage:
+  permissionDenied: Nincs jogosultsága gazdagépet hozzáadni ebben a környezetben.
   addContainer: Konténer hozzáadása
   index:
     header: Hosztok

@@ -49,6 +49,62 @@ test('retired Packet provider is excluded from new host choices', function(asser
   assert.ok(isSelectableMachineDriver(EmberObject.create({ name: 'amazonec2' })));
 });
 
+test('a direct add-host URL denies read-only access before loading registration data', function(assert) {
+  assert.expect(7);
+  let route = createOwned(HostsNewRoute, {
+    projects: {
+      canCreateResource(type) {
+        assert.strictEqual(type, 'host', 'checks the current project host schema');
+        return false;
+      },
+    },
+    userStore: {
+      find() {
+        assert.ok(false, 'denied users must not load machine drivers or registration tokens');
+      },
+    },
+    intl: {
+      t(key) {
+        assert.ok(['hostsPage.new.header.text', 'hostsPage.permissionDenied'].includes(key));
+        return key === 'hostsPage.new.header.text' ? 'Add Host' :
+          'You do not have permission to add hosts in this environment.';
+      },
+    },
+  }, 'route');
+
+  return route.beforeModel().then(() => {
+    assert.ok(false, 'the denied route must reject');
+  }, (error) => {
+    assert.strictEqual(error.status, 403);
+    assert.strictEqual(error.code, 'Forbidden');
+    assert.strictEqual(error.title, 'Add Host');
+    assert.strictEqual(error.message,
+      'You do not have permission to add hosts in this environment.');
+  }).finally(() => destroyOwned(route));
+});
+
+test('an authorized add-host route still loads available machine drivers', function(assert) {
+  assert.expect(3);
+  let route = createOwned(HostsNewRoute, {
+    projects: {
+      canCreateResource(type) {
+        assert.strictEqual(type, 'host');
+        return true;
+      },
+    },
+    userStore: {
+      find(type) {
+        assert.strictEqual(type, 'machinedriver');
+        return Promise.resolve({filterBy: () => []});
+      },
+    },
+  }, 'route');
+
+  return route.beforeModel().then(() => {
+    assert.deepEqual(route.get('machineDrivers'), []);
+  }).finally(() => destroyOwned(route));
+});
+
 test('getHost clones a host and carries over the driver config', function(assert) {
   assert.expect(7);
 

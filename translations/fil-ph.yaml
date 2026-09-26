@@ -832,6 +832,7 @@ helpPage:
     content: |
       PastureStack ay pinananatili ng komunidad at hindi inaangkin na nagbibigay ng komersyal na suporta.
 hostsPage:
+  permissionDenied: Wala kang pahintulot na magdagdag ng host sa environment na ito.
   addContainer: Magdagdag ng Container
   index:
     header: Mga host

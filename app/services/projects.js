@@ -17,6 +17,13 @@ export default Service.extend({
 
   current: null,
   all: null,
+  schemaProjectId: null,
+  schemaLoadGeneration: 0,
+
+  canCreateResource(type) {
+    let projectId = this.get('current.id');
+    return Boolean(projectId && this.get('schemaProjectId') === projectId && this.get('store').canCreate(type));
+  },
 
   active: function() {
     return this.get('all').filter((project) => {
@@ -122,6 +129,8 @@ export default Service.extend({
   },
 
   setCurrent: function(project) {
+    this.incrementProperty('schemaLoadGeneration');
+    this.set('schemaProjectId', null);
     this.set('current', project);
     if ( project ) {
       this.set('store.baseUrl', `${this.get('app.apiEndpoint')}/projects/${project.get('id')}`);

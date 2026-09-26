@@ -847,6 +847,7 @@ helpPage:
     content: |
       PastureStack wird von der Community gepflegt und erhebt keinen Anspruch auf kommerzielle Unterstützung.
 hostsPage:
+  permissionDenied: Sie haben in dieser Umgebung keine Berechtigung, Hosts hinzuzufügen.
   addContainer: Container hinzufügen
   index:
     header: Gastgeber

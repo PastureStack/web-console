@@ -2,7 +2,7 @@
   <div class="error">
     <h2 class="bg-danger">{{t 'failWhalePage.header'}}</h2>
     <div class="r-p20">
-      <h4 class="r-mt20">{{this.model.code}} {{#if this.model.status}}({{this.model.status}}){{/if}}</h4>
+      <h4 class="r-mt20">{{if this.model.title this.model.title this.model.code}} {{#if this.model.status}}({{this.model.status}}){{/if}}</h4>
       <p>{{this.model.message}}</p>
       <p class="small">{{this.model.detail}}</p>
       <div class="r-mt20">

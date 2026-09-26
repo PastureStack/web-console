@@ -17,8 +17,17 @@
       <div class="flex-content well">
         <h3>{{t 'helpPage.host.header'}}</h3>
         <hr/>
-        <p>{{t 'helpPage.host.content' appName=this.settings.appName}} <a href="{{this.docsLink}}/hosts/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.host.contentLink'}}</a></p>
-        <LinkTo @route="hosts.new" class="btn btn-primary">{{t 'helpPage.host.addHostLink'}}</LinkTo>
+        <p>
+          {{#if (or this.canAddHost this.hasHosts)}}
+            {{t 'helpPage.host.content' appName=this.settings.appName}}
+          {{else}}
+            {{t 'hostsPage.index.columns.emptyMessage'}}
+          {{/if}}
+          <a href="{{this.docsLink}}/hosts/" target="_blank" rel="noopener noreferrer">{{t 'helpPage.host.contentLink'}}</a>
+        </p>
+        {{#if this.canAddHost}}
+          <LinkTo @route="hosts.new" class="btn btn-primary">{{t 'helpPage.host.addHostLink'}}</LinkTo>
+        {{/if}}
       </div>
     </div>
 
@@ -32,11 +41,15 @@
 
         {{#if this.hasHosts}}
           <LinkTo @route="applications-tab" class="btn btn-primary r-mb10"> {{t 'helpPage.stacks.addServiceLink'}}</LinkTo>
-          <LinkTo @route="catalog-tab" class="btn btn-primary"> {{t 'helpPage.stacks.addCatalogLink'}}</LinkTo>
+          {{#if this.canAddFromCatalog}}
+            <LinkTo @route="catalog-tab" class="btn btn-primary"> {{t 'helpPage.stacks.addCatalogLink'}}</LinkTo>
+          {{/if}}
         {{else}}
-          <div class="alert alert-danger">{{t 'helpPage.stacks.noHosts'}}</div>
+          <div class="alert alert-danger">{{t (if this.canAddHost 'helpPage.stacks.noHosts' 'hostsPage.index.columns.emptyMessage')}}</div>
           <LinkTo @route="applications-tab" class="btn btn-primary r-mb10" @disabled={{true}}>{{t 'helpPage.stacks.manageServiceLink'}}</LinkTo>
-          <LinkTo @route="catalog-tab" class="btn btn-primary" @disabled={{true}}>{{t 'helpPage.stacks.addCatalogLink'}}</LinkTo>
+          {{#if this.canAddFromCatalog}}
+            <LinkTo @route="catalog-tab" class="btn btn-primary" @disabled={{true}}>{{t 'helpPage.stacks.addCatalogLink'}}</LinkTo>
+          {{/if}}
         {{/if}}
       </div>
     </div>

@@ -237,13 +237,21 @@ export default Route.extend(Subscribe, PromiseToCb, {
 
   loadProjectSchemas() {
     var store = this.get('store');
+    let projects = this.get('projects');
+    let schemaLoadGeneration = projects.incrementProperty('schemaLoadGeneration');
+    projects.set('schemaProjectId', null);
     store.resetType('schema');
-    if ( !this.get('projects.current') ) {
+    let projectId = projects.get('current.id');
+    if ( !projectId ) {
       return resolve();
     }
 
     return store.rawRequest({url:'schema', dataType: 'json'}).then((xhr) => {
-      store._bulkAdd('schema', xhr.body.data);
+      if ( projects.get('current.id') === projectId &&
+        projects.get('schemaLoadGeneration') === schemaLoadGeneration ) {
+        store._bulkAdd('schema', xhr.body.data);
+        projects.set('schemaProjectId', projectId);
+      }
     });
   },
 

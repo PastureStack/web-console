@@ -50,19 +50,19 @@ export default Route.extend(PromiseToCb, {
             }
           );
         })],
-        networks:                           this.toCb(() => {
+        networks:          ['project',      this.toCb(() => {
           return userStore.find('network', null, {
             filter: {accountId: params.project_id},
             headers: {[C.HEADER.PROJECT_ID]: params.project_id},
           }).then(null, (err) => {
             throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
           });
-        }),
-        policyManagers:                     this.toCb(() => {
+        })],
+        policyManagers:    ['project',      this.toCb(() => {
           return userStore.find('stack', null, policyManagerOpt).then(null, (err) => {
             throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
           });
-        }),
+        })],
       };
 
       async.auto(tasks, xhrConcur, function(err, res) {
