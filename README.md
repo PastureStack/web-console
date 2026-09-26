@@ -8,13 +8,18 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.136`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.137`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.137` lets empty pod-list messages wrap within narrow screens.
+This fixes a Russian no-hosts message that caused 6px of horizontal overflow
+at 320px. Pod columns keep their existing layout, and the environment switcher
+and error-page behavior from `1.6.136` are unchanged.
 
 Release `1.6.136` keeps the environment switcher inside the viewport in
 left-to-right and right-to-left layouts, including narrow screens and long
