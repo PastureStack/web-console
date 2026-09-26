@@ -121,6 +121,8 @@ const requiredValues = {
   },
   'fr-fr': {
     languageName: 'Français (France)',
+    'nav.environment.all': 'Tous les environnements',
+    'nav.environment.your': 'Vos environnements',
     'uiText.childExecution': 'Exécution secondaire',
     'generic.environment': 'Environnement',
     'auditLogsPage.header': 'Journaux d’audit',
@@ -171,6 +173,8 @@ const requiredValues = {
   },
   'ru-ru': {
     languageName: 'Русский (Россия)',
+    'nav.environment.all': 'Все окружения',
+    'nav.environment.your': 'Ваши окружения',
     'uiText.childExecution': 'Дочернее выполнение',
     'generic.environment': 'Среда',
     'auditLogsPage.header': 'Журнал аудита',

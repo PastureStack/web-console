@@ -3859,8 +3859,8 @@ nav:
   srToggleDropdown: Выпадающий список
   environment:
     label: Окружения
-    all: Весь Список
-    your: Мои Окружения
+    all: Все окружения
+    your: Ваши окружения
     selected: Выбранные Окружения
     manage: Управлять Окружениями
     edit: 'Редактировать «{name}»'
