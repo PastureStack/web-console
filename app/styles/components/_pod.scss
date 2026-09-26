@@ -22,6 +22,11 @@ $subpod-detail   : $table-bg-accent;
 .pods {
   overflow    : visible;
   white-space : nowrap;
+
+  .pod-empty-message {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
 }
 
 .pod-column {
