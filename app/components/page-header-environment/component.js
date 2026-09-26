@@ -8,6 +8,8 @@ export default Component.extend({
 
   tagName     : '',
 
+  access      : service(),
+  accessEnabled: alias('access.enabled'),
   projects    : service(),
   project     : alias('projects.current'),
 
