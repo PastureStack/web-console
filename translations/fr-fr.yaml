@@ -3832,8 +3832,8 @@ nav:
   srToggleDropdown: Activer/Désactiver la liste déroulante
   environment:
     label: Environnement
-    all: All Environnements
-    your: Your Environnements
+    all: Tous les environnements
+    your: Vos environnements
     selected: Environnement Sélectionné
     manage: Manage Environnements
     edit: 'Éditer "{name}"'
