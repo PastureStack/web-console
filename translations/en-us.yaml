@@ -1068,6 +1068,7 @@ helpPage:
 
 hostsPage:
   addContainer: Add Container
+  permissionDenied: You do not have permission to add hosts in this environment.
   index:
     header: Hosts
     addHost: Add Host

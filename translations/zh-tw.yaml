@@ -1033,6 +1033,7 @@ helpPage:
       PastureStack 由社群維護，未宣稱提供商業支援服務。
 hostsPage:
   addContainer: 新增容器
+  permissionDenied: 您沒有權限在此環境中新增主機。
   index:
     header: 主機
     addHost: 新增主機

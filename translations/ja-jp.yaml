@@ -829,6 +829,7 @@ helpPage:
     content: |
       PastureStack はコミュニティによって管理されており、商業的なサポートを提供するとは主張しません。
 hostsPage:
+  permissionDenied: この環境にホストを追加する権限がありません。
   addContainer: コンテナを追加
   index:
     header: ホスト

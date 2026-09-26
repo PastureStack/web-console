@@ -848,6 +848,7 @@ helpPage:
     content: |
       PastureStack підтримується спільнотою і не претендує на комерційну підтримку.
 hostsPage:
+  permissionDenied: У вас немає дозволу додавати хости в цьому середовищі.
   addContainer: Додати контейнер
   index:
     header: Хости

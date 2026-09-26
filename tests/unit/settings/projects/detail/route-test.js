@@ -8,6 +8,7 @@ import ProjectDetailRoute from 'ui/settings/projects/detail/route';
 module('Unit | Route | settings projects detail');
 
 function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
+  let relatedCalls = [];
   let members = A([EmberObject.create({id: '1pm1', role: 'owner'})]);
   let project = EmberObject.create({
     id: '1a21',
@@ -46,10 +47,12 @@ function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
         return failureAt === 'project' ? reject(failure) : resolve(project);
       }
       if ( type === 'network' ) {
+        relatedCalls.push(type);
         this.set('networkOptions', opt);
         return failureAt === 'networks' ? reject(failure) : resolve(A([]));
       }
       if ( type === 'stack' ) {
+        relatedCalls.push(type);
         if ( failureAt === 'policyManagers' ) {
           return reject(failure);
         }
@@ -60,8 +63,22 @@ function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
     },
   });
 
-  return {failure, members, policyManager, project, store};
+  return {failure, members, policyManager, project, store, relatedCalls};
 }
+
+test('a denied project cannot start unrelated network or policy-manager reads', async function(assert) {
+  let data = fixture('project', {status: 404, message: 'Environment unavailable'});
+  let route = ProjectDetailRoute.create({userStore: data.store, intl: EmberObject.create({
+    t() { return 'Environment unavailable'; },
+  })});
+
+  await route.model({project_id: 'forbidden-project', editing: false}).then(
+    () => assert.ok(false, 'the denied environment must not load'),
+    (error) => assert.strictEqual(error.status, 404)
+  );
+  assert.deepEqual(data.relatedCalls, [], 'no network or stack API request is sent');
+  run(() => route.destroy());
+});
 
 test('loads project members through the supported link contract before cloning for edit', function(assert) {
   let data = fixture();

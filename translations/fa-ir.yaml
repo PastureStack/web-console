@@ -810,6 +810,7 @@ helpPage:
     content: |
       PastureStack توسط جامعه نگهداری می‌شود و ادعای ارائه پشتیبانی تجاری ندارد.
 hostsPage:
+  permissionDenied: شما اجازه افزودن میزبان در این محیط را ندارید.
   addContainer: افزودن کانتینر
   index:
     header: میزبان‌ها

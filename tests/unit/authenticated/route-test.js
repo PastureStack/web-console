@@ -133,6 +133,53 @@ test('project-scoped initialization is empty and does not issue requests without
   run(() => route.destroy());
 });
 
+test('project schema readiness is committed only after the matching project schemas arrive', async function(assert) {
+  let project = EmberObject.create({id: '1a1'});
+  let projects = EmberObject.create({current: project, schemaProjectId: 'stale-project', schemaLoadGeneration: 0});
+  let finishRequest;
+  let loaded = [];
+  let route = AuthenticatedRoute.create({
+    projects,
+    store: {
+      resetType(type) {
+        assert.strictEqual(type, 'schema');
+      },
+      rawRequest() {
+        return new Promise((resolve) => { finishRequest = resolve; });
+      },
+      _bulkAdd(type, data) {
+        loaded.push({type, data});
+      },
+    },
+  });
+
+  let first = route.loadProjectSchemas();
+  assert.strictEqual(projects.get('schemaProjectId'), null, 'the previous schema capability is invalidated immediately');
+  finishRequest({body: {data: [{id: 'host'}]}});
+  await first;
+  assert.strictEqual(projects.get('schemaProjectId'), '1a1', 'the matching schema is marked ready after insertion');
+  assert.strictEqual(loaded.length, 1, 'matching data was loaded');
+
+  let second = route.loadProjectSchemas();
+  project.set('id', '1a2');
+  finishRequest({body: {data: [{id: 'host'}]}});
+  await second;
+  assert.strictEqual(projects.get('schemaProjectId'), null, 'late data from an old project cannot restore its capability');
+  assert.strictEqual(loaded.length, 1, 'late old-project schemas were not inserted');
+
+  project.set('id', '1a1');
+  let oldRequest = route.loadProjectSchemas();
+  let finishOldRequest = finishRequest;
+  let newRequest = route.loadProjectSchemas();
+  finishRequest({body: {data: [{id: 'readonly-host'}]}});
+  await newRequest;
+  assert.strictEqual(projects.get('schemaProjectId'), '1a1', 'the newest same-project schema becomes authoritative');
+  finishOldRequest({body: {data: [{id: 'stale-owner-host'}]}});
+  await oldRequest;
+  assert.strictEqual(loaded.length, 2, 'an older same-project response cannot restore stale create access');
+  run(() => route.destroy());
+});
+
 test('logs out only for an actual authentication failure', function(assert) {
   assert.expect(5);
 

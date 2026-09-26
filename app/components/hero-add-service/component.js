@@ -11,9 +11,9 @@ export default Component.extend({
 
   stackId: null,
 
-  canAddService: computed('projects.current.id', 'stackId', function() {
-    return this.get('store').canCreate('service') &&
-      (Boolean(this.get('stackId')) || this.get('store').canCreate('stack'));
+  canAddService: computed('projects.current.id', 'projects.schemaProjectId', 'stackId', function() {
+    return this.get('projects').canCreateResource('service') &&
+      (Boolean(this.get('stackId')) || this.get('projects').canCreateResource('stack'));
   }),
 
   actions: {

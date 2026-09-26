@@ -25,8 +25,8 @@ export default Controller.extend({
 
   updating: 'no',
 
-  canCreateStack: computed('projects.current.id', function() {
-    return this.get('store').canCreate('stack');
+  canCreateStack: computed('projects.current.id', 'projects.schemaProjectId', function() {
+    return this.get('projects').canCreateResource('stack');
   }),
 
   canManageCatalog: computed(

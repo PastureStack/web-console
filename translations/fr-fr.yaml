@@ -839,6 +839,7 @@ helpPage:
     content: |
       PastureStack est maintenu par la communauté et ne prétend pas fournir de support commercial.
 hostsPage:
+  permissionDenied: Vous n’avez pas l’autorisation d’ajouter des hôtes dans cet environnement.
   addContainer: Ajouter un conteneur
   index:
     header: Hôtes

@@ -1,4 +1,5 @@
 import { once } from '@ember/runloop';
+import { computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
@@ -58,6 +59,10 @@ export default Component.extend(HoverDropdown, {
   mesosReady           : alias('projects.orchestrationState.mesosReady'),
   stacks               : null,
   services             : null,
+
+  canAddHost: computed('projects.current.id', 'projects.schemaProjectId', function() {
+    return this.get('projects').canCreateResource('host');
+  }),
 
   // Component options
   tagName              : 'header',

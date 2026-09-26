@@ -11,6 +11,7 @@ import { satisfies, compare } from 'ui/utils/parse-version';
 var Host = Resource.extend({
   type: 'host',
   modalService: service('modal'),
+  projects: service(),
   settings: service(),
 
   instances: denormalizeIdArray('instanceIds'),
@@ -80,11 +81,12 @@ var Host = Resource.extend({
       out.push({ label: 'action.machineConfig', icon: 'icon icon-download', action: 'machineConfig', enabled: true});
     }
 
-    out.push({ label: 'action.clone', icon: 'icon icon-copy', action: 'clone', enabled: !!this.get('driver') });
+    let canAddHost = this.get('projects').canCreateResource('host');
+    out.push({ label: 'action.clone', icon: 'icon icon-copy', action: 'clone', enabled: Boolean(this.get('driver') && canAddHost) });
     out.push({ label: 'action.edit', icon: 'icon icon-edit', action: 'edit', enabled: !!a.update });
 
     return out;
-  }.property('actionLinks.{activate,deactivate,evacuate,remove,purge,update}','links.config','driver'),
+  }.property('actionLinks.{activate,deactivate,evacuate,remove,purge,update}','links.config','driver','projects.current.id','projects.schemaProjectId'),
 
   displayIp: alias('agentIpAddress'),
 

@@ -32,6 +32,7 @@ export function proxifyUrl(url, proxyBase) {
 
 export default Route.extend({
   access         : service(),
+  intl           : service(),
   projects       : service(),
   settings       : service(),
   backTo         : null,
@@ -89,26 +90,37 @@ export default Route.extend({
 
   // Loads all the machine drivers and selects the active ones with a corresponding schema into machineDrivers
   beforeModel(/*transition*/) {
-    this._super(...arguments);
+    let parent = this._super(...arguments);
 
-    let us = this.get('userStore');
-    let drivers = [];
+    return resolve(parent).then(() => {
+      if ( !this.get('projects').canCreateResource('host') ) {
+        return reject({
+          status: 403,
+          code: 'Forbidden',
+          title: this.get('intl').t('hostsPage.new.header.text'),
+          message: this.get('intl').t('hostsPage.permissionDenied'),
+        });
+      }
 
-    return us.find('machinedriver', null, {forceReload: true}).then((possible) => {
-      let promises = [];
+      let us = this.get('userStore');
+      let drivers = [];
 
-      possible.filterBy('state','active').filter(isSelectableMachineDriver).forEach((driver) => {
-        let schemaName = driver.get('name') + 'Config';
-        promises.push(us.find('schema', schemaName).then(() => {
-          drivers.push(driver);
-        }).catch(() => {
-          return resolve();
-        }));
+      return us.find('machinedriver', null, {forceReload: true}).then((possible) => {
+        let promises = [];
+
+        possible.filterBy('state','active').filter(isSelectableMachineDriver).forEach((driver) => {
+          let schemaName = driver.get('name') + 'Config';
+          promises.push(us.find('schema', schemaName).then(() => {
+            drivers.push(driver);
+          }).catch(() => {
+            return resolve();
+          }));
+        });
+
+        return all(promises);
+      }).then(() => {
+        this.set('machineDrivers', drivers);
       });
-
-      return all(promises);
-    }).then(() => {
-      this.set('machineDrivers', drivers);
     });
   },
 

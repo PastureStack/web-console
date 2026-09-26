@@ -14,8 +14,8 @@ export default Component.extend({
   single            : false,
   showAddService    : true,
 
-  canCreateService: computed('projects.current.id', function() {
-    return this.get('store').canCreate('service');
+  canCreateService: computed('projects.current.id', 'projects.schemaProjectId', function() {
+    return this.get('projects').canCreateResource('service');
   }),
 
   collapsed         : true,

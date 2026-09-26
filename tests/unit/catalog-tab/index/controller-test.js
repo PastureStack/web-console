@@ -9,8 +9,18 @@ test('catalog write controls follow current environment capabilities', function(
   assert.expect(8);
   let modalCalls = 0;
   let createAllowed = false;
+  let store = EmberObject.create({
+    canCreate(type) {
+      assert.strictEqual(type, 'stack', 'the launch capability is derived from the stack schema');
+      return createAllowed;
+    },
+  });
   let projects = EmberObject.create({
     current: EmberObject.create({id: '1a1', actionLinks: {}}),
+    schemaProjectId: '1a1',
+    canCreateResource(type) {
+      return this.get('schemaProjectId') === this.get('current.id') && store.canCreate(type);
+    },
   });
   let controller = CatalogController.create({
     projects,
@@ -20,12 +30,7 @@ test('catalog write controls follow current environment capabilities', function(
         modalCalls++;
       },
     }),
-    store: EmberObject.create({
-      canCreate(type) {
-        assert.strictEqual(type, 'stack', 'the launch capability is derived from the stack schema');
-        return createAllowed;
-      },
-    }),
+    store,
   });
 
   assert.notOk(controller.get('canManageCatalog'), 'a read-only project cannot manage catalogs');
@@ -36,6 +41,7 @@ test('catalog write controls follow current environment capabilities', function(
   projects.set('current.actionLinks', {update: '/v2-beta/projects/1a1'});
   createAllowed = true;
   projects.set('current.id', '1a2');
+  projects.set('schemaProjectId', '1a2');
 
   assert.ok(controller.get('canManageCatalog'), 'project update capability enables catalog management');
   assert.ok(controller.get('canCreateStack'), 'a project switch re-evaluates the effective schema');

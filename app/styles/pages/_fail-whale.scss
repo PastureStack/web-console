@@ -12,8 +12,12 @@ $teal: null !default;
   left: 0;
 
   .error {
-    width: 30%;
-    margin: 0 auto;
+    width: calc(100% - 32px);
+    max-width: 560px;
+    max-height: calc(100vh - 32px);
+    margin: 16px auto;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
     z-index: 3;
     position: relative;
     background: white;
@@ -22,6 +26,11 @@ $teal: null !default;
       padding: 20px;
       text-align: center;
     }
+  }
+
+  html[dir="rtl"] & .error {
+    direction: rtl;
+    text-align: right;
   }
 
   .failplane {

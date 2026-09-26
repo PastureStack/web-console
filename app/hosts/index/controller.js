@@ -5,9 +5,14 @@ import C from 'ui/utils/constants';
 
 export default Controller.extend({
   prefs: service(),
+  projects: service(),
 
   mode        : 'grouped',
   queryParams : ['mode'],
+
+  canAddHost: computed('projects.current.id', 'projects.schemaProjectId', function() {
+    return this.get('projects').canCreateResource('host');
+  }),
 
   actions: {
     newContainer(hostId) {

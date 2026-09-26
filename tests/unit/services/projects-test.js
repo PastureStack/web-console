@@ -8,6 +8,30 @@ import C from 'ui/utils/constants';
 
 module('Unit | Service | projects');
 
+test('create capability follows the current project and its loaded schema', function(assert) {
+  let project = EmberObject.create({id: '1a-owner'});
+  let allowed = true;
+  let service = ProjectsService.create({
+    current: project,
+    schemaProjectId: null,
+    store: {
+      canCreate(type) {
+        assert.strictEqual(type, 'host');
+        return allowed;
+      },
+    },
+  });
+
+  assert.false(service.canCreateResource('host'), 'a stale schema cannot grant create access');
+  service.set('schemaProjectId', '1a-owner');
+  assert.true(service.canCreateResource('host'), 'matching creator schema grants access');
+  allowed = false;
+  assert.false(service.canCreateResource('host'), 'same-project read-only schema revokes access');
+  project.set('id', '1a-other');
+  assert.false(service.canCreateResource('host'), 'project switch never borrows old create access');
+  run(() => service.destroy());
+});
+
 test('no active environment is a valid empty selection', async function(assert) {
   let tabSession = EmberObject.create({[C.TABSESSION.PROJECT]: 'stale-tab-project'});
   let prefs = EmberObject.create({[C.PREFS.PROJECT_DEFAULT]: 'stale-preference-project'});

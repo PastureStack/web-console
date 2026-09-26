@@ -813,6 +813,7 @@ helpPage:
     content: |
       PastureStack 由社区维护，不声称提供商业支持。
 hostsPage:
+  permissionDenied: 您没有权限在此环境中添加主机。
   addContainer: 添加容器
   index:
     header: 主机

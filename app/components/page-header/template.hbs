@@ -99,7 +99,7 @@
     </div>
   </div>
 </nav>
-{{#if (and this.projects.current (not this.hosts.length))}}
+{{#if (and this.projects.current (not this.hosts.length) this.canAddHost)}}
   <div class="lacsso banner bg-info m-0 p-0">
     <div class="lacsso banner-icon" style="width: 68px;"><span class="icon icon-2x icon-alert"></span></div>
     <div class="lacsso banner-message">
