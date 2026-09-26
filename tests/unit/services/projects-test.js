@@ -123,3 +123,107 @@ test('refreshAll waits for reselection and clears a revoked current environment'
 
   run(() => service.destroy());
 });
+
+test('refreshAll rechecks a cached environment after membership is revoked', async function(assert) {
+  for (let status of [403, 404]) {
+    let revoked = EmberObject.create({id: '1a-revoked', state: 'active'});
+    let allowed = EmberObject.create({id: '1a-allowed', state: 'active'});
+    let requests = [];
+    let tabSession = EmberObject.create({[C.TABSESSION.PROJECT]: revoked.id});
+    let prefs = EmberObject.create({[C.PREFS.PROJECT_DEFAULT]: allowed.id});
+    let store = EmberObject.create({baseUrl: '/v2-beta/projects/1a-revoked'});
+    let service = ProjectsService.create({
+      access: EmberObject.create({enabled: true, admin: false}),
+      app: EmberObject.create({apiEndpoint: '/v2-beta'}),
+      current: revoked,
+      prefs,
+      store,
+      'tab-session': tabSession,
+      userStore: {
+        find(type, id, options) {
+          requests.push({type, id, options});
+          if (id === null) {
+            return Promise.resolve(A([allowed]));
+          }
+          if (id === revoked.id) {
+            return options.forceReload ? reject({status}) : Promise.resolve(revoked);
+          }
+          return Promise.resolve(allowed);
+        },
+      },
+    });
+
+    assert.strictEqual(await service.refreshAll(), allowed, `${status}: the allowed default is selected`);
+    assert.deepEqual(service.get('all').mapBy('id'), [allowed.id], `${status}: the list follows the fresh response`);
+    assert.strictEqual(service.get('current'), allowed, `${status}: the revoked project is no longer current`);
+    assert.strictEqual(tabSession.get(C.TABSESSION.PROJECT), allowed.id, `${status}: the tab selection is updated`);
+    assert.strictEqual(store.get('baseUrl'), '/v2-beta/projects/1a-allowed', `${status}: resource requests use the allowed project`);
+    assert.deepEqual(requests.map(({id, options}) => ({id, forceReload: options.forceReload})), [
+      {id: null, forceReload: true},
+      {id: revoked.id, forceReload: true},
+      {id: allowed.id, forceReload: true},
+    ], `${status}: each selected ID is rechecked against the API`);
+
+    run(() => service.destroy());
+  }
+});
+
+test('a permitted direct environment remains selectable even when absent from the collection', async function(assert) {
+  let direct = EmberObject.create({id: '1a-direct', state: 'active'});
+  let requests = [];
+  let tabSession = EmberObject.create();
+  let store = EmberObject.create({baseUrl: '/v2-beta'});
+  let service = ProjectsService.create({
+    access: EmberObject.create({enabled: true, admin: false}),
+    all: A([]),
+    app: EmberObject.create({apiEndpoint: '/v2-beta'}),
+    prefs: EmberObject.create(),
+    store,
+    'tab-session': tabSession,
+    userStore: {
+      find(type, id, options) {
+        requests.push({type, id, options});
+        return Promise.resolve(direct);
+      },
+    },
+  });
+
+  assert.strictEqual(await service.selectDefault(direct.id), direct);
+  assert.strictEqual(service.get('current'), direct);
+  assert.strictEqual(tabSession.get(C.TABSESSION.PROJECT), direct.id);
+  assert.strictEqual(store.get('baseUrl'), '/v2-beta/projects/1a-direct');
+  assert.deepEqual(requests.map(({id, options}) => ({id, forceReload: options.forceReload})), [
+    {id: direct.id, forceReload: true},
+  ]);
+  run(() => service.destroy());
+});
+
+test('authentication and server errors do not select another environment', async function(assert) {
+  for (let status of [401, 500]) {
+    let failure = {status};
+    let requests = [];
+    let service = ProjectsService.create({
+      access: EmberObject.create({enabled: true, admin: false}),
+      all: A([EmberObject.create({id: '1a-fallback', state: 'active'})]),
+      prefs: EmberObject.create({[C.PREFS.PROJECT_DEFAULT]: '1a-fallback'}),
+      'tab-session': EmberObject.create({[C.TABSESSION.PROJECT]: '1a-fallback'}),
+      userStore: {
+        find(type, id) {
+          requests.push(id);
+          return reject(failure);
+        },
+      },
+    });
+
+    let caught;
+    try {
+      await service.selectDefault('1a-requested');
+    } catch (err) {
+      caught = err;
+    }
+    assert.strictEqual(caught, failure, `${status}: the original error reaches the route`);
+    assert.deepEqual(requests, ['1a-requested'], `${status}: no fallback project is selected`);
+    assert.strictEqual(service.get('current'), null);
+    run(() => service.destroy());
+  }
+});
