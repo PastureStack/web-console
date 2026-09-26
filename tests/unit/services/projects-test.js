@@ -8,6 +8,47 @@ import C from 'ui/utils/constants';
 
 module('Unit | Service | projects');
 
+test('authenticated administrator requests all environments for project switching', async function(assert) {
+  let requests = [];
+  let projects = A([EmberObject.create({id: '1a-default'}), EmberObject.create({id: '1a-qa'})]);
+  let service = ProjectsService.create({
+    access: EmberObject.create({enabled: true, admin: true}),
+    userStore: {
+      find(type, id, options) {
+        requests.push({type, id, options});
+        return Promise.resolve(projects);
+      },
+    },
+  });
+
+  assert.strictEqual(await service.getAll(), projects);
+  assert.deepEqual(requests, [{
+    type: 'project', id: null,
+    options: {url: 'projects', forceReload: true, filter: {all: 'true'}},
+  }], 'the administrator asks the API for projects without direct membership');
+  run(() => service.destroy());
+});
+
+test('authenticated non-administrator requests only member environments', async function(assert) {
+  let requests = [];
+  let service = ProjectsService.create({
+    access: EmberObject.create({enabled: true, admin: false}),
+    userStore: {
+      find(type, id, options) {
+        requests.push({type, id, options});
+        return Promise.resolve(A([]));
+      },
+    },
+  });
+
+  await service.getAll();
+  assert.deepEqual(requests, [{
+    type: 'project', id: null,
+    options: {url: 'projects', forceReload: true},
+  }], 'ordinary users do not request the administrator-only collection');
+  run(() => service.destroy());
+});
+
 test('create capability follows the current project and its loaded schema', function(assert) {
   let project = EmberObject.create({id: '1a-owner'});
   let allowed = true;

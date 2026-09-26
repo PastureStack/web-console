@@ -37,7 +37,9 @@ export default Service.extend({
       forceReload: true,
     };
 
-    if ( !this.get('access.enabled') )
+    // Site administrators may manage projects without being project members.
+    // The API only includes those projects when the caller requests all=true.
+    if ( !this.get('access.enabled') || this.get('access.admin') )
     {
       opt.filter = {all: 'true'};
     }

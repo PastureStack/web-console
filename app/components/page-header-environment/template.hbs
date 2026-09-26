@@ -11,7 +11,7 @@
     <ul class="dropdown-menu dropdown-menu-end project-menu" role="menu" data-dropdown-id="enviroment">
       {{#if this.projectChoices.length}}
         <li role="presentation" class="dropdown-header">
-          {{#if this.accessEnabled}}
+          {{#if (and this.accessEnabled (not this.access.admin))}}
             {{t 'nav.environment.your'}}
           {{else}}
             {{t 'nav.environment.all'}}
