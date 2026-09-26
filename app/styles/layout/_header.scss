@@ -329,6 +329,20 @@ HEADER {
       .dropdown-menu {
         &.project-menu {
           z-index: 2000;
+          // The switcher follows the logo at the start of the header. The RTL
+          // stylesheet mirrors this anchor to the right side of the viewport.
+          left: 0;
+          right: auto;
+          width: max-content;
+          min-width: 0;
+          max-width: calc(100vw - 68px);
+
+          .dropdown-header,
+          li > a {
+            white-space: normal;
+            overflow-wrap: anywhere;
+          }
+
           .active a {
             cursor: $cursor-disabled;
           }

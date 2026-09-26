@@ -1,7 +1,8 @@
 import { once } from '@ember/runloop';
-import { reject, resolve, Promise, all } from 'rsvp';
+import { reject, resolve, all } from 'rsvp';
 import Service, { service } from '@ember/service';
 import C from 'ui/utils/constants';
+import Errors from 'ui/utils/errors';
 
 let ACTIVEISH = ['active','upgrading','updating-active'];
 
@@ -57,49 +58,41 @@ export default Service.extend({
   selectDefault: function(desired) {
     var self = this;
     var tabSession = this.get('tab-session');
+    var candidates = [
+      () => desired,
+      () => tabSession.get(C.TABSESSION.PROJECT),
+      () => this.get('prefs').get(C.PREFS.PROJECT_DEFAULT),
+    ];
 
-    // The one specifically asked for
-    return this._activeProjectFromId(desired).then(select)
-    .catch(() => {
-      // Try the project ID in the session
-      return this._activeProjectFromId(tabSession.get(C.TABSESSION.PROJECT)).then(select)
-      .catch(() => {
-        // Then the default project ID from the prefs
-        return this._activeProjectFromId(this.get('prefs').get(C.PREFS.PROJECT_DEFAULT)).then(select)
-        .catch(() => {
-          // Then the first active project you're a member of
-          var project = this.get('active.firstObject');
-          if ( project )
-          {
-            return select(project, true);
-          }
-          else if ( this.get('access.admin') )
-          {
-            // Then if you're an admin the first active of any kind
-            return this.getAll().then((all) => {
-              var firstActive = all.find((project) => {
-                return ACTIVEISH.includes(project.get('state'));
-              });
+    return tryCandidate(0);
 
-              if ( firstActive )
-              {
-                return select(firstActive, true);
-              }
-              else
-              {
-                return fail();
-              }
-            }).catch(() => {
-              return fail();
-            });
-          }
-          else
-          {
-            return fail();
-          }
-        });
+    function tryCandidate(index) {
+      if ( index >= candidates.length ) {
+        return selectFirstActive();
+      }
+
+      return self._activeProjectFromId(candidates[index]()).then(select, (err) => {
+        let status = Errors.status(err);
+        if ( status === 403 || status === 404 ) {
+          return tryCandidate(index + 1);
+        }
+        throw err;
       });
-    });
+    }
+
+    function selectFirstActive() {
+      var project = self.get('active.firstObject');
+      if ( project ) {
+        return select(project, true);
+      }
+      if ( self.get('access.admin') ) {
+        return self.getAll().then((all) => {
+          var firstActive = all.find((item) => ACTIVEISH.includes(item.get('state')));
+          return firstActive ? select(firstActive, true) : fail();
+        });
+      }
+      return fail();
+    }
 
     function select(project, overwriteDefault) {
       if ( project )
@@ -143,25 +136,15 @@ export default Service.extend({
   },
 
   _activeProjectFromId: function(projectId) {
-    return new Promise((resolve, reject) => {
-      if ( !projectId )
-      {
-        reject();
-        return;
-      }
+    if ( !projectId ) {
+      return reject({status: 404});
+    }
 
-      this.get('userStore').find('project', projectId, {url: 'projects/'+encodeURIComponent(projectId)}).then((project) => {
-        if ( ACTIVEISH.includes(project.get('state')) )
-        {
-          resolve(project);
-        }
-        else
-        {
-          reject();
-        }
-      }).catch(() => {
-        reject();
-      });
+    return this.get('userStore').find('project', projectId, {
+      url: 'projects/'+encodeURIComponent(projectId),
+      forceReload: true,
+    }).then((project) => {
+      return ACTIVEISH.includes(project.get('state')) ? project : reject({status: 404});
     });
   },
 
