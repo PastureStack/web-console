@@ -827,6 +827,7 @@ consolePage:
   header: 命令列：
   closeButton: 關閉
 certificatesPage:
+  encryptedKeyError: 私鑰不可設定密碼保護。
   permissionDenied: 您沒有權限在此環境中新增憑證。
   table:
     cn: 網域名稱

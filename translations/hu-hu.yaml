@@ -633,6 +633,7 @@ consolePage:
   header: 'Rendszerhéj:'
   closeButton: Bezár
 certificatesPage:
+  encryptedKeyError: A privát kulcs nem lehet jelszóval védett.
   table:
     cn: Tartománynév
     expiresDate: Lejár

@@ -625,6 +625,7 @@ consolePage:
   header: 'シェル:'
   closeButton: 閉じる
 certificatesPage:
+  encryptedKeyError: 秘密鍵にパスワードを設定することはできません。
   permissionDenied: この環境に証明書を追加する権限がありません。
   table:
     cn: ドメイン名

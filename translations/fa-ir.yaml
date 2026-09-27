@@ -604,6 +604,7 @@ consolePage:
   header: 'پوسته:'
   closeButton: بستن
 certificatesPage:
+  encryptedKeyError: کلید خصوصی نباید با گذرواژه محافظت شده باشد.
   table:
     cn: نام دامنه
     expiresDate: منقضی می شود

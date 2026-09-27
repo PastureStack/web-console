@@ -629,6 +629,7 @@ consolePage:
   header: 'Console :'
   closeButton: Fermer
 certificatesPage:
+  encryptedKeyError: La clé privée ne doit pas être protégée par un mot de passe.
   table:
     cn: Nom de domaine
     expiresDate: Expire le

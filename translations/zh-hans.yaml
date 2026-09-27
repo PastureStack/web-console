@@ -615,6 +615,7 @@ consolePage:
   header: '命令行:'
   closeButton: 关闭
 certificatesPage:
+  encryptedKeyError: 私钥不能设置密码保护。
   table:
     cn: 域名
     expiresDate: 过期时间

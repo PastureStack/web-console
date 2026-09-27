@@ -850,6 +850,7 @@ consolePage:
   closeButton: Close
 
 certificatesPage:
+  encryptedKeyError: The private key cannot be password-protected.
   permissionDenied: You do not have permission to add certificates in this environment.
   table:
     cn: Domain Name

@@ -628,6 +628,7 @@ consolePage:
   header: 'Консоль:'
   closeButton: Закрыть
 certificatesPage:
+  encryptedKeyError: Закрытый ключ не должен быть защищён паролем.
   table:
     cn: Доменное имя
     expiresDate: Истекает

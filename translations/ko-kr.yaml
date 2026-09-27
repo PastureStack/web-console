@@ -597,6 +597,7 @@ consolePage:
   header: '껍질:'
   closeButton: 닫기
 certificatesPage:
+  encryptedKeyError: 개인 키는 암호로 보호할 수 없습니다.
   table:
     cn: 도메인 이름
     expiresDate: 만료
