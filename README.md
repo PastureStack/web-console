@@ -20,8 +20,8 @@ Release `1.6.147` limits Service Edit to the editable name, description, and
 scale fields so saving does not resubmit cloned launch configuration or upgrade
 strategy. The scale form preserves an initial value of zero and applies quick
 scale selections during editing; quick scale writes submit only the scale
-field. See the [release note](docs/releases/web-console-1.6.147.md). Unit,
-build, and isolated browser acceptance are pending for this candidate.
+field. See the [release note](docs/releases/web-console-1.6.147.md) for
+the change scope and validation boundary.
 
 Release `1.6.146` makes required-field errors use the visible translated form
 labels for Secret, Certificate, Registry, and RegistryCredential instead of

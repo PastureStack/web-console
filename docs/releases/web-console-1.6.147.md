@@ -9,7 +9,8 @@ selection updates the model immediately; the separate quick scale action
 submits only `scale` after its debounce. These changes target the Service
 edit and scale write payloads without changing the Server API contract.
 
-Focused unit tests were added for the Service Edit payload and scale behavior.
-Their execution, the full Web Console validation/build, the immutable release
-artifact, and isolated 8080 browser acceptance are all pending. No production
-acceptance is claimed by this source candidate.
+Focused unit tests cover the Service Edit payload and scale behavior. The
+full source/build gate and isolated 8080 browser workflow remain separate
+acceptance evidence; this source change alone does not prove a deployed
+Service edit, retry, or removal workflow. Production deployment is not part
+of this release note.
