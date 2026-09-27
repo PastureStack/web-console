@@ -310,7 +310,60 @@ body.table-column-resizing * {
 @media (max-width: 694px) {
   .table-column-scroll-host,
   .table-column-scroll-host.table-column-scroll-host-overflowing {
-    overflow-x: visible;
+    // Keep any genuinely unbreakable content inside this table, not the page.
+    overflow-x: auto;
+  }
+
+  .table-column-scroll-host {
+    // StickyTableHeader writes desktop pixel widths and fixed offsets inline.
+    // The small-screen grid is a labelled card, so its controls and hidden
+    // heading must use the card width even after a desktop-to-mobile resize.
+    .fixed-header-actions,
+    thead tr.fixed-header {
+      width: 100% !important;
+      max-width: 100%;
+      position: relative !important;
+      top: auto !important;
+      left: auto !important;
+      height: auto !important;
+      transform: none !important;
+    }
+
+    .fixed-header-actions {
+      margin: 0;
+      min-width: 0;
+    }
+
+    .sortable-table-filter-bar,
+    .sortable-table-pagination {
+      flex-wrap: wrap;
+      white-space: normal;
+    }
+
+    .sortable-table-pagination {
+      flex: 1 1 100%;
+      min-width: 0;
+    }
+
+    .sortable-table-pagination .pagination-centered {
+      width: 100%;
+    }
+
+    .sortable-table-pagination .pagination {
+      display: flex;
+      flex-wrap: wrap;
+    }
+
+    .sortable-table-search {
+      flex: 1 1 100%;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .sortable-table-page-size {
+      min-width: 0;
+      white-space: normal;
+    }
   }
 
   table.grid[data-resizable-columns="true"] {
