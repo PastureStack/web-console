@@ -8,13 +8,21 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current compatibility release is `1.6.138`. It retains the existing Node 24, Ember, Sass,
+The current compatibility release is `1.6.139`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.139` derives Container, project API-key, and Receiver Hook write
+controls from the current project's API schema. Direct routes repeat capability
+checks instead of relying on hidden buttons. Receiver role-aware controls require
+Webhook Automation Service `v0.10.3` or newer; the Server remains responsible
+for authorization. Container editing now waits for its dependent saves and keeps
+the form open on a failed update. See the [release note](docs/releases/web-console-1.6.139.md)
+for the precise behavior and retry boundary.
 
 Release `1.6.138` keeps delete confirmation open while requests run, prevents
 duplicate submissions, and allows retry after a failed deletion. Denied and
