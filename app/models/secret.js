@@ -21,7 +21,7 @@ export default Resource.extend({
       { divider: true },
       { label: 'action.viewInApi',  icon: 'icon icon-external-link',  action: 'goToApi',      enabled: true },
       { divider: true },
-      { label: 'action.edit',       icon: 'icon icon-edit',           action: 'edit',         enabled: !!a.update || true },
+      { label: 'action.edit',       icon: 'icon icon-edit',           action: 'edit',         enabled: !!a.update },
     ];
 
     return choices;

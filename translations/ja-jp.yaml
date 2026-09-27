@@ -625,6 +625,7 @@ consolePage:
   header: 'シェル:'
   closeButton: 閉じる
 certificatesPage:
+  permissionDenied: この環境に証明書を追加する権限がありません。
   table:
     cn: ドメイン名
     expiresDate: 期限
@@ -1039,6 +1040,7 @@ projectList:
       body:
         noData: まだ環境のテンプレートはありません
 registriesPage:
+  permissionDenied: この環境にレジストリを追加する権限がありません。
   index:
     header: レジストリ
     linkTo: レジストリを追加
@@ -1068,6 +1070,7 @@ registriesPage:
         labelText: パスワード
         placeholder: '例: password'
 secretsPage:
+  permissionDenied: この環境にシークレットを追加する権限がありません。
   index:
     header: シークレット
     linkTo: シークレットを追加

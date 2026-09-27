@@ -1,7 +1,9 @@
 <section class="header clearfix">
   <h1>{{t 'registriesPage.index.header'}}</h1>
 
-  <LinkTo @route="registries.new" class="btn btn-sm btn-primary">{{t 'registriesPage.index.linkTo'}}</LinkTo>
+  {{#if this.canCreateRegistry}}
+    <LinkTo @route="registries.new" class="btn btn-sm btn-primary">{{t 'registriesPage.index.linkTo'}}</LinkTo>
+  {{/if}}
 </section>
 
 <section class="well instances">
