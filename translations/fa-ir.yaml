@@ -641,6 +641,7 @@ certificatesPage:
       description:
         placeholder: 'برای مثال: گواهی EV برای mydomain.com'
 containersPage:
+  permissionDenied: شما اجازه افزودن کانتینر در این محیط را ندارید.
   table:
     ipAddress: آدرس IP
     primaryHost: میزبان اصلی
@@ -2467,6 +2468,8 @@ heroAddService:
   linkToCatalog: Browse کاتالوگ
 hookPage:
   receiver:
+    permissionDenied: شما اجازه افزودن قلاب‌های گیرنده در این محیط را ندارید.
+    editPermissionDenied: ویرایش قلاب‌های گیرنده در این محیط در دسترس نیست.
     header: قلاب گیرنده
     buttonText: افزودن گیرنده
     content: 'قلاب‌های گیرنده یک URL به شما می‌دهند که می‌توان آن را برای شروع یک عمل در داخل {appName} ضربه زد.'

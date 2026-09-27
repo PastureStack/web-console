@@ -675,6 +675,7 @@ certificatesPage:
       description:
         placeholder: напр. EV cert для mydomain.com
 containersPage:
+  permissionDenied: У вас немає дозволу додавати контейнери в цьому середовищі.
   table:
     ipAddress: IP-адреса
     primaryHost: Основний хост
@@ -2554,6 +2555,8 @@ heroAddService:
   linkToCatalog: Переглянути каталог
 hookPage:
   receiver:
+    permissionDenied: У вас немає дозволу додавати хуки отримувача в цьому середовищі.
+    editPermissionDenied: Редагування хуків отримувача в цьому середовищі недоступне.
     header: Ствольні гачки
     buttonText: Додати приймача
     content: 'Перехоплювачі дають вам URL, який можна вдарити, щоб викликати дію всередині {appName}.'

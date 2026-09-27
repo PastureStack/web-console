@@ -671,6 +671,7 @@ certificatesPage:
       description:
         placeholder: z.B. EV cert for mydomain.com
 containersPage:
+  permissionDenied: Sie haben in dieser Umgebung keine Berechtigung, Container hinzuzufügen.
   table:
     ipAddress: IP-Adresse
     primaryHost: Hauptveranstalter
@@ -2559,6 +2560,8 @@ heroAddService:
   linkToCatalog: Katalog durchsuchen
 hookPage:
   receiver:
+    permissionDenied: Sie haben in dieser Umgebung keine Berechtigung, Empfänger-Hooks hinzuzufügen.
+    editPermissionDenied: Das Bearbeiten von Empfänger-Hooks ist in dieser Umgebung nicht verfügbar.
     header: Empfängerhaken
     buttonText: Empfänger hinzufügen
     content: >-

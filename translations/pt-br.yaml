@@ -653,6 +653,7 @@ certificatesPage:
       description:
         placeholder: p.ex. EV cert para meudominio.com
 containersPage:
+  permissionDenied: Você não tem permissão para adicionar contêineres neste ambiente.
   table:
     ipAddress: Endereço IP
     primaryHost: Host Primário
@@ -2518,6 +2519,8 @@ heroAddService:
   linkToCatalog: Navegar no catálogo
 hookPage:
   receiver:
+    permissionDenied: Você não tem permissão para adicionar hooks de receptor neste ambiente.
+    editPermissionDenied: A edição de hooks de receptor não está disponível neste ambiente.
     header: Ganchos receptores
     buttonText: Adicionar receptor
     content: 'Os ganchos do receptor fornecem um URL que pode ser atingido para desencadear uma ação dentro de {appName}.'

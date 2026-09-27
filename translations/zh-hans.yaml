@@ -652,6 +652,7 @@ certificatesPage:
       description:
         placeholder: '例如:mydomain.com的EV证书'
 containersPage:
+  permissionDenied: 您没有权限在此环境中添加容器。
   table:
     ipAddress: IP 地址
     primaryHost: 主机
@@ -2444,6 +2445,8 @@ heroAddService:
   linkToCatalog: 浏览应用商店
 hookPage:
   receiver:
+    permissionDenied: 您没有权限在此环境中添加接收端 Webhook。
+    editPermissionDenied: 此环境不提供编辑接收端 Webhook 的功能。
     header: 接收器挂钩
     buttonText: 添加接收器
     content: 'Receiver hooks 提供一个URL，在访问该URL时能够触发{appName}内部相应的动作。'
