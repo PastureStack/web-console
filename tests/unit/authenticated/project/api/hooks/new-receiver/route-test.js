@@ -79,3 +79,27 @@ test('cloning a receiver keeps inert settings but never copies its URL or state'
   assert.strictEqual(source.url, 'existing-capability', 'the source is untouched');
   destroyOwned(route);
 });
+
+test('a receiver driver without a form is rejected before a clone can be saved', async function(assert) {
+  let route = createOwned(NewReceiverRoute, {
+    intl: {t(key) { return key; }},
+    webhookStore: {
+      find() {
+        return Promise.resolve({cloneForNew() {
+          return {type: 'receiver', driver: 'forwardPost',
+            forwardPostConfig: {url: 'https://example.invalid'}};
+        }});
+      },
+    },
+  }, 'route');
+
+  try {
+    await route.model({receiverId: '1go11'});
+    assert.ok(false, 'unsupported source must not open a saveable form');
+  } catch (error) {
+    assert.strictEqual(error.status, 422);
+    assert.strictEqual(error.code, 'UnsupportedReceiverDriver');
+    assert.strictEqual(error.messageKey, 'newReceiver.unsupportedDriver');
+  }
+  destroyOwned(route);
+});

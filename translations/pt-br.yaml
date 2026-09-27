@@ -3461,6 +3461,7 @@ newExternalService:
   header: Adicionar Serviço Externo
   alert: 'Nota: Isto só será usado se o serviço externo é um destino de um balanceador de carga.'
 newReceiver:
+  unsupportedDriver: Este tipo de receptor não pode ser clonado neste formulário. Escolha um tipo compatível.
   title:
     edit: Editar receptor
     add: Adicionar receptor

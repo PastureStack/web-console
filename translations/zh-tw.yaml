@@ -3644,6 +3644,7 @@ newExternalService:
   header: 新增外部服務
   alert: 注意：此設定僅當外部服務為負載平衡的目標服務時可用。
 newReceiver:
+  unsupportedDriver: 此接收器類型無法在此表單複製。請選擇表單支援的類型建立新接收器。
   title:
     edit: 編輯接收器
     add: 新增接收器

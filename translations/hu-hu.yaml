@@ -3478,6 +3478,7 @@ newExternalService:
   header: Külső szolgáltatás hozzáadása
   alert: 'Megjegyzés: Ez kizárólag akkor lesz használva, ha a külső szolgáltatás a célpontja a terheléselosztónak.'
 newReceiver:
+  unsupportedDriver: Ez a fogadótípus nem másolható ezen az űrlapon. Válasszon támogatott típust.
   title:
     edit: Vevő szerkesztése
     add: Vevő hozzáadása

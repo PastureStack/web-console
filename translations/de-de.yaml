@@ -3510,6 +3510,7 @@ newExternalService:
   header: Externen Service hinzufügen
   alert: 'Hinweis: Wird nur genutzt wenn der externe Service das Ziel für eine Load-Balancer ist.'
 newReceiver:
+  unsupportedDriver: Dieser Empfängertyp kann in diesem Formular nicht dupliziert werden. Wählen Sie einen unterstützten Typ.
   title:
     edit: Empfänger bearbeiten
     add: Empfänger hinzufügen

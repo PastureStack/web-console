@@ -3808,6 +3808,7 @@ newExternalService:
   alert: "Note: This will only be used if the external service is a target of a load balancer."
 
 newReceiver:
+  unsupportedDriver: This receiver type cannot be cloned in this form. Choose a supported receiver type to create a new hook.
   title:
     edit: Edit Receiver
     add: Add Receiver

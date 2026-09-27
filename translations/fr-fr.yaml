@@ -3459,6 +3459,7 @@ newExternalService:
   header: Ajouter un Service Externe
   alert: "Remarque\_: Cela seulement servira si le service externe est une cible d’un équilibreur de charge."
 newReceiver:
+  unsupportedDriver: Ce type de récepteur ne peut pas être cloné dans ce formulaire. Choisissez un type pris en charge.
   title:
     edit: Modifier le Récepteur
     add: Ajouter un Récepteur
