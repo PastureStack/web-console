@@ -44,6 +44,16 @@ The Server must issue a fresh URL. Container list actions stay inside their
 horizontal scroll host while data columns keep their current widths; fixed
 and normal header positions must agree in LTR and RTL layouts.
 
+When creating a private ProjectTemplate from Default, copy only editable stack
+content into a new record. Do not send the Default template's created timestamp,
+lifecycle state, ID, UUID, or external catalog identity. Editing the new stacks
+must not mutate the in-memory Default template.
+The shared new-resource clone helpers apply the same top-level lifecycle
+boundary to other create flows, without changing existing-resource edit or
+upgrade requests. Receiver clone forms clear every inactive driver config,
+including the API-only `forwardPost` type; that unsupported source type must
+not open a saveable clone form.
+
 The generic OpenID Connect interface depends on the authentication service
 publishing `oidcconfig` and the staged `POST /v1-auth/redirectUrl` contract.
 Configuration validation and the first real provider sign-in do not replace

@@ -41,6 +41,20 @@ export default Route.extend({
     return promise.then((receiver) => {
       let copy = receiver.cloneForNew();
 
+      // Do not present a Save button for a driver this form cannot configure.
+      if ( !['scaleService', 'scaleHost', 'serviceUpgrade'].includes(copy.driver) ) {
+        const titleKey = 'newReceiver.title.add';
+        const messageKey = 'newReceiver.unsupportedDriver';
+        throw {
+          status: 422,
+          code: 'UnsupportedReceiverDriver',
+          title: this.get('intl').t(titleKey),
+          titleKey,
+          message: this.get('intl').t(messageKey),
+          messageKey,
+        };
+      }
+
       // A Receiver URL is a server-issued capability. Cloning its settings
       // must not copy the old capability or the old lifecycle state.
       delete copy.url;

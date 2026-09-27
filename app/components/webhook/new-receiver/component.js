@@ -2,7 +2,9 @@ import { service } from '@ember/service';
 import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 
-const DRIVERS = ['scaleService','scaleHost','serviceUpgrade'];
+// The API also supports forwardPost, but this form does not offer it. Clear
+// its configuration when another driver is selected or cloned.
+const DRIVERS = ['scaleService','scaleHost','serviceUpgrade','forwardPost'];
 
 export default Component.extend(NewOrEdit, {
   projects: service(),

@@ -3462,6 +3462,7 @@ newExternalService:
   header: Magdagdag ng Panlabas na Serbisyo
   alert: 'Tandaan: Gagamitin lang ito kung ang panlabas na serbisyo ay target ng isang load balancer.'
 newReceiver:
+  unsupportedDriver: Hindi maaaring kopyahin ang ganitong uri ng receiver sa form na ito. Pumili ng sinusuportahang uri.
   title:
     edit: I-edit ang Receiver
     add: Magdagdag ng Receiver

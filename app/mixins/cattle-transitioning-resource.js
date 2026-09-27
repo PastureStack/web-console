@@ -53,6 +53,19 @@ const stateColorSortMap = {
 };
 const stateColorUnknown = 5;
 
+// These describe an existing resource, not a user-requested new one. Keep
+// cloneForNew and serializeForNew aligned so all create flows have the same
+// top-level lifecycle boundary, without changing edit/upgrade clones.
+const newResourceExcludedFields = [
+  'id', 'actionLinks', 'links', 'uuid', 'created', 'createdTS', 'removed',
+  'state', 'transitioning', 'transitioningMessage', 'transitioningProgress',
+];
+
+function withoutExistingResourceFields(copy) {
+  newResourceExcludedFields.forEach((field) => delete copy[field]);
+  return copy;
+}
+
 export default Mixin.create({
   endpointSvc: service('endpoint'), // Some machine drivers have a property called 'endpoint'
   cookies: service(),
@@ -504,21 +517,11 @@ export default Mixin.create({
   },
 
   cloneForNew: function() {
-    var copy = this.clone();
-    delete copy.id;
-    delete copy.actionLinks;
-    delete copy.links;
-    delete copy.uuid;
-    return copy;
+    return withoutExistingResourceFields(this.clone());
   },
 
   serializeForNew: function() {
-    var copy = this.serialize();
-    delete copy.id;
-    delete copy.actionLinks;
-    delete copy.links;
-    delete copy.uuid;
-    return copy;
+    return withoutExistingResourceFields(this.serialize());
   },
 
   // Show growls for errors on actions

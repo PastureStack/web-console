@@ -3327,6 +3327,7 @@ newExternalService:
   header: 외부 서비스 추가
   alert: '참고: 외부 서비스가 로드 밸런서의 대상인 경우에만 사용됩니다.'
 newReceiver:
+  unsupportedDriver: 이 수신기 유형은 이 양식에서 복제할 수 없습니다. 지원되는 유형을 선택하세요.
   title:
     edit: 수신기 편집
     add: 수신기 추가

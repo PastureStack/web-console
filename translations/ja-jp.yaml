@@ -3406,6 +3406,7 @@ newExternalService:
   header: 外部サービスを追加
   alert: 'Note: 外部サービスがロードバランサーのターゲットである場合にのみ利用されます。'
 newReceiver:
+  unsupportedDriver: この受信先の種類は、このフォームでは複製できません。対応する種類を選択してください。
   title:
     edit: レシーバーを編集
     add: レシーバーを追加

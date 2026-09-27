@@ -14,14 +14,16 @@ export default Route.extend({
 
       let def = existing.find((tpl) => (tpl.get('name')||'').toLowerCase() === C.PROJECT_TEMPLATE.DEFAULT);
       if ( def ) {
-        let tpl = def.cloneForNew();
-        tpl.isPublic = false;
-        tpl.name = '';
-        tpl.description = '';
-        // A new private template may inherit the Default template's catalog
-        // identity for its initial stacks, but must not claim that identity.
-        tpl.externalId = null;
-        hash.projectTemplate = tpl;
+        // Only copy editable stack content. A new private template must not
+        // inherit Default's catalog identity or top-level lifecycle data.
+        hash.projectTemplate = this.get('userStore').createRecord({
+          type: 'projectTemplate',
+          name: '',
+          description: '',
+          isPublic: false,
+          externalId: null,
+          stacks: JSON.parse(JSON.stringify(def.get('stacks') || [])),
+        });
       } else {
         hash.projectTemplate = this.get('userStore').createRecord({
           type: 'projectTemplate',
