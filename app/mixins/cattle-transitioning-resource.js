@@ -45,6 +45,30 @@ const defaultStateMap = {
   'waiting':                  {icon: 'icon icon-tag',           color: 'text-info'   },
 };
 
+// The schema does not carry translated field labels. Reuse the labels shown by
+// these forms when a model-specific translation is absent, so validation and
+// the visible input describe the same field in every supported locale.
+const formValidationLabels = {
+  certificate: {
+    name: 'formNameDescription.name.label',
+    description: 'formNameDescription.description.label',
+    cert: 'inputCertificate.cert.label',
+    key: 'inputCertificate.key.label',
+  },
+  registry: {
+    serverAddress: 'registriesPage.new.form.custom.labelText',
+  },
+  registrycredential: {
+    publicValue: 'registriesPage.new.form.username.labelText',
+    secretValue: 'registriesPage.new.form.password.labelText',
+  },
+  secret: {
+    name: 'formNameDescription.name.label',
+    description: 'formNameDescription.description.label',
+    value: 'newSecret.value.label',
+  },
+};
+
 const stateColorSortMap = {
   'danger':   1,
   'warning':  2,
@@ -387,10 +411,13 @@ export default Mixin.create({
       val = this.get(key);
 
       intlKey = `model.${this.get('type')}.${key}`;
+      const formLabelKey = (formValidationLabels[type] || {})[key];
       if ( intl.exists(`${intlKey}.label`) ) {
         displayKey = intl.t(`${intlKey}.label`);
       } else if ( intl.exists(intlKey) ) {
         displayKey = intl.t(intlKey);
+      } else if ( formLabelKey && intl.exists(formLabelKey) ) {
+        displayKey = intl.t(formLabelKey);
       } else {
         displayKey = Util.camelToTitle(key);
       }
