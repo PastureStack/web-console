@@ -17,6 +17,17 @@ behavior remains defined by the Server schema; the console must not invent a
 broader role contract. Account administration obtains login identities from
 `authIdentityLink` records filtered by account ID rather than assuming the
 legacy account identity fields contain the current OpenID Connect principal.
+
+In the `1.6.140` source target, ProjectTemplate edit and remove controls require
+an administrator or a non-empty template `accountId` exactly matching the
+authenticated session `accountId`. Missing ownership data denies editing;
+`isPublic` may be omitted by field-level authorization, and neither a `remove`
+action link nor type-level schema methods prove per-object write access. Direct
+edit URLs repeat the ownership check before loading the catalog or cloning the
+template. The Server remains the authorization authority. Closing an API-key
+modal cancels its delayed input focus; a missing input is ignored and
+cancellation remains write-free.
+
 Direct `/env/:project_id` navigation and refresh must select that permitted
 environment from the router's public RouteInfo parameters before consulting a
 tab or user default. An inaccessible or inactive environment may use the

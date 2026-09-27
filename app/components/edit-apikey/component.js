@@ -16,9 +16,27 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   didInsertElement() {
-    setTimeout(() => {
-      this.$('INPUT[type="text"]')[0].focus();
+    this._super(...arguments);
+    this._focusTimer = setTimeout(() => {
+      this._focusTimer = null;
+      if (this.isDestroying || this.isDestroyed) {
+        return;
+      }
+
+      let inputs = this.$('INPUT[type="text"]');
+      let input = inputs && inputs[0];
+      if (input) {
+        input.focus();
+      }
     }, 250);
+  },
+
+  willDestroyElement() {
+    if (this._focusTimer) {
+      clearTimeout(this._focusTimer);
+      this._focusTimer = null;
+    }
+    this._super(...arguments);
   },
 
   editing: function() {

@@ -6,12 +6,18 @@ export default Route.extend({
   catalog: service(),
 
   model(params) {
-    return hash({
-      catalogInfo: this.get('catalog').fetchTemplates({templateBase: 'infra', category: 'all'}),
-      originalProjectTemplate: this.get('userStore').find('projecttemplate', params.template_id),
-    }).then((hash) => {
-      hash.projectTemplate = hash.originalProjectTemplate.clone();
-      return hash;
+    return this.get('userStore').find('projecttemplate', params.template_id).then((originalProjectTemplate) => {
+      if ( !originalProjectTemplate.get('canEdit') ) {
+        throw {status: 403, code: 'Forbidden'};
+      }
+
+      return hash({
+        catalogInfo: this.get('catalog').fetchTemplates({templateBase: 'infra', category: 'all'}),
+        originalProjectTemplate,
+      }).then((model) => {
+        model.projectTemplate = originalProjectTemplate.clone();
+        return model;
+      });
     });
   }
 });
