@@ -30,7 +30,9 @@ test('direct add-container URL rejects without loading resource dependencies', a
     assert.strictEqual(error.status, 403);
     assert.strictEqual(error.code, 'Forbidden');
     assert.strictEqual(error.title, 'Add Container');
+    assert.strictEqual(error.titleKey, 'containersPage.index.linkTo');
     assert.strictEqual(error.message, 'You do not have permission to add containers in this environment.');
+    assert.strictEqual(error.messageKey, 'containersPage.permissionDenied');
   }
   assert.strictEqual(requests, 0, 'no host/volume/service data was loaded');
   destroyOwned(route);

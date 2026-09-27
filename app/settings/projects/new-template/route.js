@@ -18,6 +18,9 @@ export default Route.extend({
         tpl.isPublic = false;
         tpl.name = '';
         tpl.description = '';
+        // A new private template may inherit the Default template's catalog
+        // identity for its initial stacks, but must not claim that identity.
+        tpl.externalId = null;
         hash.projectTemplate = tpl;
       } else {
         hash.projectTemplate = this.get('userStore').createRecord({

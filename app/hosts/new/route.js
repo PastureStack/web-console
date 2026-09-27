@@ -94,11 +94,15 @@ export default Route.extend({
 
     return resolve(parent).then(() => {
       if ( !this.get('projects').canCreateResource('host') ) {
+        const titleKey = 'hostsPage.new.header.text';
+        const messageKey = 'hostsPage.permissionDenied';
         return reject({
           status: 403,
           code: 'Forbidden',
-          title: this.get('intl').t('hostsPage.new.header.text'),
-          message: this.get('intl').t('hostsPage.permissionDenied'),
+          title: this.get('intl').t(titleKey),
+          titleKey,
+          message: this.get('intl').t(messageKey),
+          messageKey,
         });
       }
 

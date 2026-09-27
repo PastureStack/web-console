@@ -12,11 +12,15 @@ export default Route.extend({
 
     return resolve(parent).then(() => {
       if ( !this.get('webhookStore').canCreate('receiver') ) {
+        const titleKey = 'hookPage.receiver.buttonText';
+        const messageKey = 'hookPage.receiver.permissionDenied';
         throw {
           status: 403,
           code: 'Forbidden',
-          title: this.get('intl').t('hookPage.receiver.buttonText'),
-          message: this.get('intl').t('hookPage.receiver.permissionDenied'),
+          title: this.get('intl').t(titleKey),
+          titleKey,
+          message: this.get('intl').t(messageKey),
+          messageKey,
         };
       }
     });
@@ -35,8 +39,14 @@ export default Route.extend({
     }
 
     return promise.then((receiver) => {
+      let copy = receiver.cloneForNew();
+
+      // A Receiver URL is a server-issued capability. Cloning its settings
+      // must not copy the old capability or the old lifecycle state.
+      delete copy.url;
+      delete copy.state;
       return EmberObject.create({
-        receiver: receiver.cloneForNew(),
+        receiver: copy,
       });
     });
   },

@@ -15,11 +15,15 @@ export default Route.extend({
       let methods = schema && schema.get('resourceMethods');
 
       if ( !methods || !methods.includes('PUT') ) {
+        const titleKey = 'newReceiver.title.edit';
+        const messageKey = 'hookPage.receiver.editPermissionDenied';
         throw {
           status: 403,
           code: 'Forbidden',
-          title: this.get('intl').t('newReceiver.title.edit'),
-          message: this.get('intl').t('hookPage.receiver.editPermissionDenied'),
+          title: this.get('intl').t(titleKey),
+          titleKey,
+          message: this.get('intl').t(messageKey),
+          messageKey,
         };
       }
     });

@@ -18,7 +18,7 @@ broader role contract. Account administration obtains login identities from
 `authIdentityLink` records filtered by account ID rather than assuming the
 legacy account identity fields contain the current OpenID Connect principal.
 
-In the `1.6.141` source target, ProjectTemplate edit and remove controls require
+In the `1.6.142` source target, ProjectTemplate edit and remove controls require
 an administrator or a non-empty template `accountId` exactly matching the
 authenticated session `accountId`. Missing ownership data denies editing;
 `isPublic` may be omitted by field-level authorization, and neither a `remove`
@@ -33,9 +33,16 @@ showing newly created key values.
 
 Direct `/env/:project_id` navigation and refresh must select that permitted
 environment from the router's public RouteInfo parameters before consulting a
-tab or user default. An inaccessible or inactive environment may use the
-existing authorized fallback, but a valid URL environment must never be
-silently replaced by a saved Default preference.
+tab or user default. An inaccessible or inactive environment must show the
+same localized missing-or-denied page for all callers, without revealing
+whether its ID exists. A valid URL environment must never be silently
+replaced by a saved Default preference.
+
+When cloning a Receiver, preserve editable configuration but omit the old
+server-issued webhook URL and lifecycle state from the new resource payload.
+The Server must issue a fresh URL. Container list actions stay inside their
+horizontal scroll host while data columns keep their current widths; fixed
+and normal header positions must agree in LTR and RTL layouts.
 
 The generic OpenID Connect interface depends on the authentication service
 publishing `oidcconfig` and the staged `POST /v1-auth/redirectUrl` contract.

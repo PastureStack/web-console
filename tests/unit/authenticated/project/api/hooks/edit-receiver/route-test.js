@@ -32,7 +32,9 @@ test('direct Edit Receiver URL requires receiver PUT before loading its record',
     assert.strictEqual(error.status, 403);
     assert.strictEqual(error.code, 'Forbidden');
     assert.strictEqual(error.title, 'Edit Receiver');
+    assert.strictEqual(error.titleKey, 'newReceiver.title.edit');
     assert.strictEqual(error.message, 'Editing receiver hooks is not available in this environment.');
+    assert.strictEqual(error.messageKey, 'hookPage.receiver.editPermissionDenied');
   }
   assert.strictEqual(reads, 0, 'the receiver was not fetched');
 

@@ -8,13 +8,20 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.141`. It retains the existing Node 24, Ember, Sass,
+The current source compatibility target is `1.6.142`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.142` stops a cloned Receiver from reusing its source's issued
+webhook URL or lifecycle state; the server issues the new URL. It also keeps
+the container table's actions visible during horizontal scrolling without
+changing data-column widths, clears catalog identity when creating a private
+ProjectTemplate, and shows localized denial for direct create routes and an
+inaccessible environment. See the [release note](docs/releases/web-console-1.6.142.md).
 
 Release `1.6.141` gives denied or missing ProjectTemplate edit URLs the same
 localized message in English and Traditional Chinese. Failed API-key saves now

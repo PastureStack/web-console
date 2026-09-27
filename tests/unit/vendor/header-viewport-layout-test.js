@@ -1,4 +1,7 @@
 import { module, test } from 'qunit';
+import EmberObject from '@ember/object';
+import { run } from '@ember/runloop';
+import StickyTableHeader from 'lacsso/mixins/sticky-table-header';
 
 module('Unit | Vendor | Header viewport layout');
 
@@ -62,7 +65,7 @@ test('failure page follows the selected document direction in both themes', asyn
 
 module('Unit | Vendor | Sortable table viewport layout');
 
-function sortableTableFrame(asset, language, list) {
+function sortableTableFrame(asset, language, list, direction = 'ltr') {
   return new Promise((resolve, reject) => {
     let frame = document.createElement('iframe');
     let timer = setTimeout(() => reject(new Error(`Timed out loading ${asset}`)), 10000);
@@ -108,7 +111,7 @@ function sortableTableFrame(asset, language, list) {
       host.appendChild(table);
       resolve(frame);
     };
-    frame.srcdoc = `<!doctype html><html lang="${language}"><head><link rel="stylesheet" href="/assets/${asset}"></head><body style="margin:0"><main style="padding:0 40px"><div class="table-column-scroll-host table-column-scroll-host-overflowing"></div></main></body></html>`;
+    frame.srcdoc = `<!doctype html><html lang="${language}" dir="${direction}"><head><link rel="stylesheet" href="/assets/${asset}"></head><body style="margin:0"><main style="padding:0 40px"><div class="table-column-scroll-host table-column-scroll-host-overflowing"></div></main></body></html>`;
     document.getElementById('qunit-fixture').appendChild(frame);
   });
 }
@@ -122,6 +125,7 @@ test('Container and adjacent Host Container lists stay within 375px cards withou
       let table = host.querySelector('table');
       let actions = host.querySelector('.fixed-header-actions');
       let header = host.querySelector('tr.fixed-header');
+      let subject = EmberObject.extend(StickyTableHeader).create({element: host, showHeader: true});
 
       for (let width of [1440, 375]) {
         frame.style.width = `${width}px`;
@@ -134,6 +138,21 @@ test('Container and adjacent Host Container lists stay within 375px cards withou
         if (width === 1440) {
           assert.ok(host.scrollWidth > host.clientWidth, `${context}: wide table still scrolls inside its host`);
           assert.ok(table.getBoundingClientRect().width >= 1700, `${context}: desktop column widths remain intact`);
+          // Execute the real mixin transition; styling the fixture directly
+          // would not catch a broken fixed-to-normal lifecycle.
+          subject.removePositions();
+          host.scrollLeft = host.scrollWidth - host.clientWidth;
+          subject.syncHorizontalPosition();
+          await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+          let actionBounds = actions.getBoundingClientRect();
+          let hostBounds = host.getBoundingClientRect();
+
+          assert.ok(actionBounds.left >= hostBounds.left - 1 &&
+            actionBounds.right <= hostBounds.right + 1,
+          `${context}: toolbar remains reachable after horizontal table scroll ` +
+            `(host ${hostBounds.left}/${hostBounds.right}, actions ` +
+            `${actionBounds.left}/${actionBounds.right}, scroll ${host.scrollLeft})`);
+          host.scrollLeft = 0;
         } else {
           assert.ok(table.getBoundingClientRect().width <= host.clientWidth + 1, `${context}: table becomes a card`);
           assert.ok(actions.getBoundingClientRect().width <= host.clientWidth + 1, `${context}: action row drops its desktop width`);
@@ -156,7 +175,189 @@ test('Container and adjacent Host Container lists stay within 375px cards withou
         }
       }
 
+      run(() => subject.destroy());
       frame.remove();
     }
   }
+});
+
+test('a floating table toolbar aligns with its scroll host in LTR and RTL', async function(assert) {
+  for (let direction of ['ltr', 'rtl']) {
+    let frame = await sortableTableFrame(`ui-light${direction === 'rtl' ? '.rtl' : ''}.css`,
+      'en-us', 'containers', direction);
+    let host = frame.contentDocument.querySelector('.table-column-scroll-host');
+    let actions = host.querySelector('.fixed-header-actions');
+    let hostBounds = host.getBoundingClientRect();
+    let subject = EmberObject.extend(StickyTableHeader).create({element: host, showHeader: true});
+
+    subject.positionHeaders();
+    await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+
+    let bounds = actions.getBoundingClientRect();
+
+    assert.ok(Math.abs(bounds.left - hostBounds.left) <= 1 &&
+      Math.abs(bounds.right - hostBounds.right) <= 1,
+    `${direction}: fixed toolbar remains aligned with host, not viewport edge`);
+    host.scrollLeft = direction === 'rtl' ? -320 : 320;
+    subject.syncHorizontalPosition();
+    await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+    let headingCell = host.querySelector('tr.fixed-header th').getBoundingClientRect();
+    let dataCell = host.querySelector('tbody td').getBoundingClientRect();
+    let leadingEdge = direction === 'rtl' ? 'right' : 'left';
+    assert.ok(Math.abs(headingCell[leadingEdge] - dataCell[leadingEdge]) <= 1,
+    `${direction}: floating first column lines up with the data column ` +
+      `(heading ${headingCell.left}/${headingCell.right}, data ${dataCell.left}/${dataCell.right})`);
+    subject.removePositions();
+    host.scrollLeft = direction === 'rtl' ? -320 : 320;
+    subject.syncHorizontalPosition();
+    await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+    bounds = actions.getBoundingClientRect();
+    hostBounds = host.getBoundingClientRect();
+    assert.ok(Math.abs(bounds.left - hostBounds.left) <= 1 &&
+      Math.abs(bounds.right - hostBounds.right) <= 1,
+    `${direction}: normal toolbar remains aligned after horizontal scrolling`);
+    assert.strictEqual(actions.style.transform, '',
+      `${direction}: dropdown remains outside a transformed containing block`);
+    run(() => subject.destroy());
+    frame.remove();
+  }
+});
+
+test('a desktop side panel does not hide table actions or the last page', async function(assert) {
+  for (let direction of ['ltr', 'rtl']) {
+    let asset = `ui-light${direction === 'rtl' ? '.rtl' : ''}.css`;
+    let frame = await sortableTableFrame(asset, 'en-us', 'containers', direction);
+    let host = frame.contentDocument.querySelector('.table-column-scroll-host');
+    let subject = EmberObject.extend(StickyTableHeader).create({element: host, showHeader: true});
+
+    host.style.width = '700px';
+    await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+    subject.removePositions();
+    host.scrollLeft = direction === 'rtl' ? -300 : 300;
+    subject.syncHorizontalPosition();
+    await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+    let bounds = host.getBoundingClientRect();
+    let controls = [];
+
+    for (let selector of ['.sortable-table-action-controls button',
+      '.sortable-table-page-size select', '.sortable-table-search input',
+      '.pagination li:last-child a']) {
+      let element = host.querySelector(selector);
+      let item = element.getBoundingClientRect();
+      assert.ok(item.width > 0 && item.left >= bounds.left - 1 &&
+        item.right <= bounds.right + 1,
+      `${direction} 700px host: ${selector} remains usable inside the panel ` +
+        `(host ${bounds.left}/${bounds.right}, item ${item.left}/${item.right})`);
+      let hit = frame.contentDocument.elementFromPoint(
+        (item.left + item.right) / 2, (item.top + item.bottom) / 2);
+      assert.ok(hit && (hit === element || element.contains(hit)),
+        `${direction} 700px host: ${selector} is not covered by another control`);
+      controls.push({selector, item});
+    }
+    for (let i = 0; i < controls.length; i++) {
+      for (let j = i + 1; j < controls.length; j++) {
+        let a = controls[i].item;
+        let b = controls[j].item;
+        let overlapX = Math.min(a.right, b.right) - Math.max(a.left, b.left);
+        let overlapY = Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top);
+
+        assert.ok(overlapX <= 1 || overlapY <= 1,
+          `${direction} 700px host: ${controls[i].selector} and ` +
+          `${controls[j].selector} do not overlap (${overlapX}/${overlapY})`);
+      }
+    }
+    subject.positionHeaders();
+    await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+    let floatingHeadingTop = host.querySelector('tr.fixed-header').getBoundingClientRect().top;
+    let lowestControlBottom = Math.max(...controls.map(({selector}) =>
+      host.querySelector(selector).getBoundingClientRect().bottom));
+
+    assert.ok(lowestControlBottom <= floatingHeadingTop + 1,
+      `${direction} 700px host: floating column headings start below all controls ` +
+      `(controls ${lowestControlBottom}, headings ${floatingHeadingTop})`);
+    run(() => subject.destroy());
+    frame.remove();
+  }
+});
+
+test('desktop floating controls return to the mobile card without leaving a gap', async function(assert) {
+  let frame = await sortableTableFrame('ui-light.css', 'zh-tw', 'containers');
+  let host = frame.contentDocument.querySelector('.table-column-scroll-host');
+  let table = host.querySelector('table');
+  let actions = host.querySelector('.fixed-header-actions');
+  let header = host.querySelector('tr.fixed-header');
+  let subject = EmberObject.extend(StickyTableHeader).create({element: host, showHeader: true});
+
+  subject.positionHeaders();
+  assert.ok(parseInt(table.style.marginTop, 10) >= 100, 'desktop floating rows reserve their height');
+  frame.style.width = '375px';
+  await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+  subject.onResize();
+  assert.strictEqual(table.style.marginTop, '', 'mobile card has no stale desktop spacer');
+  assert.strictEqual(frame.contentWindow.getComputedStyle(actions).position, 'relative', 'mobile toolbar flows in the card');
+  assert.strictEqual(frame.contentWindow.getComputedStyle(header).position, 'relative', 'mobile heading is not fixed');
+
+  frame.style.width = '1440px';
+  await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+  subject.positionHeaders();
+  assert.strictEqual(frame.contentWindow.getComputedStyle(header).position, 'fixed', 'desktop floating header can be entered again');
+  assert.ok(parseInt(table.style.marginTop, 10) >= 100, 'desktop spacer is restored only while floating');
+  run(() => subject.destroy());
+  frame.remove();
+});
+
+test('floating controls remeasure when a desktop side panel narrows their host', async function(assert) {
+  let frame = await sortableTableFrame('ui-light.css', 'en-us', 'containers');
+  let host = frame.contentDocument.querySelector('.table-column-scroll-host');
+  let table = host.querySelector('table');
+  let actions = host.querySelector('.fixed-header-actions');
+  let heading = host.querySelector('tr.fixed-header');
+  let subject = EmberObject.extend(StickyTableHeader).create({element: host, showHeader: true});
+
+  subject.didInsertElement();
+  subject.positionHeaders();
+  let wideHeight = actions.getBoundingClientRect().height;
+  let resized = new Promise((resolve) => {
+    let observer = new frame.contentWindow.ResizeObserver(() => {
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(host);
+  });
+  host.style.width = '700px';
+  await resized;
+  await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+
+  let lastControlBottom = Math.max(...['.sortable-table-action-controls button',
+    '.sortable-table-page-size select', '.sortable-table-search input',
+    '.pagination li:last-child a'].map((selector) =>
+    host.querySelector(selector).getBoundingClientRect().bottom));
+  let headingTop = heading.getBoundingClientRect().top;
+  let hostBounds = host.getBoundingClientRect();
+  let actionBounds = actions.getBoundingClientRect();
+  assert.ok(actions.getBoundingClientRect().height > wideHeight, 'narrow host wraps controls into a taller toolbar');
+  assert.ok(lastControlBottom <= headingTop + 1, `headings start below wrapped controls (${lastControlBottom}/${headingTop})`);
+  assert.ok(parseInt(table.style.marginTop, 10) >= actions.getBoundingClientRect().height + 40,
+    'table spacer follows the measured toolbar height');
+  assert.ok(Math.abs(actionBounds.left - hostBounds.left) <= 1 &&
+    Math.abs(actionBounds.right - hostBounds.right) <= 1, 'floating toolbar stays aligned with narrow host');
+
+  resized = new Promise((resolve) => {
+    let observer = new frame.contentWindow.ResizeObserver(() => {
+      observer.disconnect();
+      resolve();
+    });
+    observer.observe(host);
+  });
+  host.style.width = '';
+  await resized;
+  await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+  assert.ok(actions.getBoundingClientRect().height <= wideHeight + 1, 'wide host returns to one toolbar row');
+  assert.strictEqual(parseInt(table.style.marginTop, 10),
+    Math.max(60, Math.ceil(actions.getBoundingClientRect().height)) + 40,
+  'desktop spacer shrinks to the measured toolbar height');
+
+  subject.willDestroyElement();
+  run(() => subject.destroy());
+  frame.remove();
 });
