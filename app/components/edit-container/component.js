@@ -1,9 +1,20 @@
 import EmberObject, { get } from '@ember/object';
-import { all } from 'rsvp';
+import { all, allSettled, resolve } from 'rsvp';
 import { next } from '@ember/runloop';
 import { alias } from '@ember/object/computed';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
+
+function settleSaves(promises) {
+  return allSettled(promises).then((results) => {
+    let failed = results.find((result) => result.state === 'rejected');
+    if ( failed ) {
+      throw failed.reason;
+    }
+
+    return results.map((result) => result.value);
+  });
+}
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
@@ -32,8 +43,15 @@ export default ModalBase.extend(NewOrEdit, {
     },
 
     save() {
-      this._super(...arguments);
-      this.send('cancel');
+      return this._super(...arguments).then((outcome) => {
+        // NewOrEdit waits for the container, ports, and links before resolving.
+        // Keep the modal (and its error display) open if any save failed.
+        if ( !outcome || outcome.saved !== false ) {
+          this.send('cancel');
+        }
+
+        return outcome;
+      });
     }
   },
 
@@ -65,47 +83,59 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   didSave: function() {
-    return all([
-      this.savePorts(),
-      this.saveLinks(),
+    return settleSaves([
+      resolve().then(() => this.savePorts()),
+      resolve().then(() => this.saveLinks()),
     ]);
   },
 
   savePorts: function() {
     var promises = [];
     this.get('portsArray').forEach(function(port) {
-      var neu = parseInt(port.public,10);
-      if ( isNaN(neu) )
-      {
-        neu = null;
-      }
+      promises.push(resolve().then(() => {
+        var neu = parseInt(port.public,10);
+        if ( isNaN(neu) )
+        {
+          neu = null;
+        }
 
-      var obj = port.obj;
-      if ( neu !== get(obj,'publicPort') )
-      {
-        //console.log('Changing port',obj.serialize(),'to',neu);
-        obj.set('publicPort', neu);
-        promises.push(obj.save());
-      }
+        var obj = port.obj;
+        var old = get(obj,'publicPort');
+        if ( neu !== old )
+        {
+          //console.log('Changing port',obj.serialize(),'to',neu);
+          obj.set('publicPort', neu);
+          return resolve().then(() => obj.save()).catch((error) => {
+            obj.set('publicPort', old);
+            throw error;
+          });
+        }
+      }));
     });
 
-    return all(promises);
+    return settleSaves(promises);
   },
 
   saveLinks: function() {
     var promises = [];
     this.get('linksArray').forEach(function(link) {
-      var neu = link.targetInstanceId;
-      var obj = link.obj;
-      if ( neu !== get(obj,'targetInstanceId') )
-      {
-        //console.log('Changing link',obj.serialize(),'to',neu);
-        obj.set('targetInstanceId', neu);
-        promises.push(obj.save());
-      }
+      promises.push(resolve().then(() => {
+        var neu = link.targetInstanceId;
+        var obj = link.obj;
+        var old = get(obj,'targetInstanceId');
+        if ( neu !== old )
+        {
+          //console.log('Changing link',obj.serialize(),'to',neu);
+          obj.set('targetInstanceId', neu);
+          return resolve().then(() => obj.save()).catch((error) => {
+            obj.set('targetInstanceId', old);
+            throw error;
+          });
+        }
+      }));
     });
 
-    return all(promises);
+    return settleSaves(promises);
   },
 
   doneSaving: function() {

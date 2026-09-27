@@ -16,7 +16,9 @@ export default Controller.extend({
 
   actions: {
     newContainer(hostId) {
-      this.get('router').transitionTo('containers.new', {queryParams: {hostId: hostId}});
+      if ( this.get('projects').canCreateResource('container') ) {
+        this.get('router').transitionTo('containers.new', {queryParams: {hostId: hostId}});
+      }
     },
 
   },

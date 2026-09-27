@@ -26,6 +26,14 @@ export default Controller.extend(Sortable, {
   endpointService: service('endpoint'),
   modalService: service('modal'),
 
+  canCreateAccountKey: function() {
+    return Boolean(this.get('userStore').canCreate('apikey'));
+  }.property('model.account'),
+
+  canCreateEnvironmentKey: function() {
+    return this.get('projects').canCreateResource('apikey');
+  }.property('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
+
   accountArranged: function() {
     var me = this.get(`session.${C.SESSION.ACCOUNT_ID}`);
     let sort = this.get('sorts')[this.get('sortBy')];
@@ -61,6 +69,9 @@ export default Controller.extend(Sortable, {
       var cred;
       if ( kind === 'account' )
       {
+        if ( !this.get('canCreateAccountKey') ) {
+          return;
+        }
         cred = this.get('userStore').createRecord({
           type: 'apikey',
           accountId: this.get(`session.${C.SESSION.ACCOUNT_ID}`),
@@ -68,6 +79,9 @@ export default Controller.extend(Sortable, {
       }
       else
       {
+        if ( kind !== 'environment' || !this.get('canCreateEnvironmentKey') ) {
+          return;
+        }
         cred = this.get('store').createRecord({
           type: 'apikey',
           accountId: this.get('projects.current.id'),

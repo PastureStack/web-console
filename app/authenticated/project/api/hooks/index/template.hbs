@@ -10,7 +10,9 @@
 <section class="header clearfix">
   <h1>{{t 'hookPage.receiver.header'}}</h1>
 
-  <LinkTo @route="authenticated.project.api.hooks.new-receiver" class="btn btn-sm btn-primary">{{t 'hookPage.receiver.buttonText'}}</LinkTo>
+  {{#if this.canAddReceiver}}
+    <LinkTo @route="authenticated.project.api.hooks.new-receiver" class="btn btn-sm btn-primary">{{t 'hookPage.receiver.buttonText'}}</LinkTo>
+  {{/if}}
 </section>
 
 <section class="well">

@@ -37,16 +37,20 @@ var Receiver = Resource.extend(PolledResource, {
   },
 
   availableActions: function() {
+    let methods = this.get('schema.resourceMethods') || [];
+    let canRead = methods.includes('GET') && this.hasLink('self');
+    let canDelete = methods.includes('DELETE') && this.hasLink('self');
+    let canClone = canRead && Boolean(this.get('store').canCreate('receiver'));
     var choices = [
-      { label: 'action.remove',         icon: 'icon icon-trash',            action: 'promptDelete',   enabled: true, altAction: 'delete'},
+      { label: 'action.remove',         icon: 'icon icon-trash',            action: 'promptDelete',   enabled: canDelete, altAction: 'delete'},
       { divider: true },
       { label: 'action.viewInApi',      icon: 'icon icon-external-link',    action: 'goToApi',        enabled: true },
-      { label: 'action.clone',          icon: 'icon icon-copy',             action: 'clone',          enabled: true },
+      { label: 'action.clone',          icon: 'icon icon-copy',             action: 'clone',          enabled: canClone },
 //      { label: 'action.edit',           icon: 'icon icon-edit',             action: 'edit',           enabled: true },
     ];
 
     return choices;
-  }.property('actionLinks.{update,remove}'),
+  }.property('schema.collectionMethods.[]','schema.resourceMethods.[]','links.self'),
 
   needsPolling: function() {
     return ['requested','activating','removing'].includes(this.get('state'));

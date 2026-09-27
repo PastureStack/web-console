@@ -1,4 +1,4 @@
-import { equal, alias, or } from '@ember/object/computed';
+import { equal, or } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import ManageLabels from 'ui/mixins/manage-labels';
@@ -6,6 +6,7 @@ import GroupedInstances from 'ui/mixins/grouped-instances';
 
 export default Component.extend(ManageLabels, GroupedInstances, {
   settings: service(),
+  projects: service(),
 
   model: null,
   mode: null,
@@ -21,6 +22,9 @@ export default Component.extend(ManageLabels, GroupedInstances, {
 
   actions: {
     newContainer() {
+      if ( !this.get('canCreateContainer') ) {
+        return;
+      }
       this.sendAction('newContainer', this.get('model.id'));
     },
   },
@@ -48,7 +52,12 @@ export default Component.extend(ManageLabels, GroupedInstances, {
   isActive: equal('model.state','active'),
   isProvisioning: equal('model.state','provisioning'),
   isError: equal('model.state','error'),
-  showAdd: alias('isActive'),
+  canCreateContainer: function() {
+    return this.get('projects').canCreateResource('container');
+  }.property('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
+  showAdd: function() {
+    return this.get('isActive') && this.get('canCreateContainer');
+  }.property('isActive', 'canCreateContainer'),
   showOnlyMessage: or('isProvisioning','isError'),
 
   stateBackground: function() {

@@ -5,6 +5,22 @@ import Route from '@ember/routing/route';
 
 export default Route.extend({
   webhookStore: service(),
+  intl: service(),
+
+  beforeModel() {
+    let parent = this._super(...arguments);
+
+    return resolve(parent).then(() => {
+      if ( !this.get('webhookStore').canCreate('receiver') ) {
+        throw {
+          status: 403,
+          code: 'Forbidden',
+          title: this.get('intl').t('hookPage.receiver.buttonText'),
+          message: this.get('intl').t('hookPage.receiver.permissionDenied'),
+        };
+      }
+    });
+  },
 
   model(params) {
     let promise;

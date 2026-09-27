@@ -4,6 +4,11 @@ import Sortable from 'ui/mixins/sortable';
 
 export default Controller.extend(Sortable, {
   settings: service(),
+  webhookStore: service(),
+
+  canAddReceiver: function() {
+    return Boolean(this.get('webhookStore').canCreate('receiver'));
+  }.property('model.receiverSchema.collectionMethods.[]'),
 
   sortableContent: function() {
     let receivers = this.get('model.receivers');
