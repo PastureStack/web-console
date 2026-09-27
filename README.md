@@ -19,7 +19,8 @@ models and protocol fields remain compatible.
 Release `1.6.146` makes required-field errors use the visible translated form
 labels for Secret, Certificate, Registry, and RegistryCredential instead of
 schema-derived English names. It retains model-specific translations and the
-existing fallback for fields without a form label. See the
+existing fallback for fields without a form label. The encrypted-key error on
+Certificate submission is localized as well. See the
 [release note](docs/releases/web-console-1.6.146.md). Browser acceptance is
 tracked separately from the unit test.
 

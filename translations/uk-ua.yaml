@@ -638,6 +638,7 @@ consolePage:
   header: 'Консоль:'
   closeButton: Закрити
 certificatesPage:
+  encryptedKeyError: Закритий ключ не має бути захищений паролем.
   table:
     cn: Доменне ім'я
     expiresDate: Закінчується

@@ -634,6 +634,7 @@ consolePage:
   header: 'Schale:'
   closeButton: Schließen
 certificatesPage:
+  encryptedKeyError: Der private Schlüssel darf nicht mit einem Passwort geschützt sein.
   table:
     cn: Domainname
     expiresDate: Läuft ab

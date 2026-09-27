@@ -623,6 +623,7 @@ consolePage:
   header: 'Shell:'
   closeButton: Isara
 certificatesPage:
+  encryptedKeyError: Hindi maaaring protektahan ng password ang pribadong key.
   table:
     cn: Domain Name
     expiresDate: Mag-e-expire

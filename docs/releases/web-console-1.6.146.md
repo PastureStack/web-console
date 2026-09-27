@@ -7,6 +7,8 @@ field errors. The common resource validator now uses the same translated label
 as each affected form when the schema has no model-specific label. Existing
 model-specific translations take precedence; unrelated fields retain their
 previous fallback. RegistryCredential uses the Registry form labels too.
+The Certificate form's encrypted-private-key rejection also uses a translated
+message instead of an English-only string.
 
 Unit tests cover the affected resource fields, model-specific precedence, and
 the fallback. The isolated 8080 zh-TW, en-US, and ja-JP browser matrix must

@@ -616,6 +616,7 @@ consolePage:
   header: 'Concha:'
   closeButton: Fechar
 certificatesPage:
+  encryptedKeyError: A chave privada não pode estar protegida por senha.
   table:
     cn: Nome do domínio
     expiresDate: Expira
