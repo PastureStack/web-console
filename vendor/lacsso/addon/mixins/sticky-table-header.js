@@ -24,20 +24,42 @@ export default Mixin.create(ThrottledResize, {
     };
 
     $(window).on('scroll', this._boundStickyWindowScroll);
-    $(this.element).find('table').parent().on('scroll', this._boundStickyHostScroll);
+    let host = $(this.element).find('table').parent()[0];
+    $(host).on('scroll', this._boundStickyHostScroll);
+    let ResizeObserver = host && host.ownerDocument.defaultView.ResizeObserver;
+    if ( ResizeObserver ) {
+      this._stickyHostObserver = new ResizeObserver(() => this.onResize());
+      this._stickyHostObserver.observe(host);
+    }
   },
 
   willDestroyElement() {
     $(window).off('scroll', this._boundStickyWindowScroll);
     $(this.element).find('table').parent().off('scroll', this._boundStickyHostScroll);
+    if ( this._stickyHostObserver ) {
+      this._stickyHostObserver.disconnect();
+      this._stickyHostObserver = null;
+    }
     this._boundStickyWindowScroll = null;
     this._boundStickyHostScroll = null;
     this._super(...arguments);
   },
 
   onResize() {
+    let view = this.element && this.element.ownerDocument.defaultView;
+    if ( view && view.matchMedia('(max-width: 694px)').matches ) {
+      this.tearDownTableWidths();
+      this.removePositions();
+      return;
+    }
     this.buildTableWidths();
-    this.syncHorizontalPosition();
+    let $fixedHeader = $(this.element).find('table thead tr.fixed-header');
+
+    if ( $fixedHeader[0] && $fixedHeader[0].style.position === 'fixed' ) {
+      this.positionHeaders();
+    } else {
+      this.syncHorizontalPosition();
+    }
   },
 
   buildTableWidths() {
@@ -55,7 +77,8 @@ export default Mixin.create(ThrottledResize, {
     if ( this.get('showHeader') ) {
       let $actionRow = $table.find('thead .fixed-header-actions');
       let host = $table.parent()[0];
-      let width = $actionRow.css('position') === 'fixed' && host ? host.clientWidth : $table.width();
+      // Controls belong to the visible scroll host, not the wider table.
+      let width = host ? host.clientWidth : $table.width();
 
       $actionRow.css({'width': width});
     }
@@ -72,22 +95,30 @@ export default Mixin.create(ThrottledResize, {
     let $actionRow = $table.find('thead .fixed-header-actions');
     let $fixedHeader = $table.find('thead tr.fixed-header');
     let showHeader = this.get('showHeader');
+    let actionHeight = 0;
 
     if ( showHeader ) {
+      let host = $table.parent()[0];
       $actionRow.css({
         'position': 'fixed',
         'top': 0,
-        'height': tableProps.actionsHeight,
+        // Override any logical inset while fixed, including RTL.
+        'right': 'auto',
+        'height': 'auto',
+        'width': host ? host.clientWidth : $table.width(),
       });
+      actionHeight = Math.max(parseInt(tableProps.actionsHeight, 10),
+        Math.ceil($actionRow.outerHeight()));
+      $actionRow.css('height', `${actionHeight}px`);
     }
     $fixedHeader.css({
       'position': 'fixed',
-      'top': showHeader ? tableProps.actionsHeight : 0,
+      'top': actionHeight,
       'height': tableProps.fixedHeaderHeight,
     });
 
     $table.css({
-      'margin-top': (parseInt(tableProps.actionsHeight, 10) + parseInt(tableProps.fixedHeaderHeight, 10)) + 'px'
+      'margin-top': (actionHeight + parseInt(tableProps.fixedHeaderHeight, 10)) + 'px'
     });
     this.syncHorizontalPosition();
   },
@@ -101,7 +132,9 @@ export default Mixin.create(ThrottledResize, {
       $actionRow.css({
         'position': 'relative',
         'top': '',
+        'height': '',
         'left': '',
+        'right': '',
       });
     }
 
@@ -124,21 +157,39 @@ export default Mixin.create(ThrottledResize, {
     let $actionRow = $table.find('thead .fixed-header-actions');
     let $fixedHeader = $table.find('thead tr.fixed-header');
 
-    if ( !host || $fixedHeader.css('position') !== 'fixed' ) {
+    if ( !host ) {
+      return;
+    }
+
+    if ( $fixedHeader.css('position') !== 'fixed' ) {
+      // The action row is inside THEAD; CSS sticky does not keep it visible
+      // when the whole wide table scrolls. Counter-scroll with a physical
+      // offset, preserving dropdown positioning (no transform containing block).
+      if ( this.get('showHeader') ) {
+        $actionRow.css({
+          'left': `${host.scrollLeft}px`,
+          'width': `${host.clientWidth}px`,
+        });
+      }
       return;
     }
 
     let hostRect = host.getBoundingClientRect();
+    let tableRect = $table[0].getBoundingClientRect();
 
     $fixedHeader.css({
-      'left': `${hostRect.left}px`,
-      'transform': `translateX(${-host.scrollLeft}px)`,
+      // The table's physical left edge includes RTL's initial overflow
+      // offset as well as scrollLeft. Following that edge keeps TH aligned
+      // with TD in both writing directions.
+      'left': `${tableRect.left}px`,
+      'transform': '',
       'width': `${$table.outerWidth()}px`,
     });
 
     if ( this.get('showHeader') ) {
       $actionRow.css({
         'left': `${hostRect.left}px`,
+        'right': 'auto',
         'width': `${host.clientWidth}px`,
       });
     }

@@ -30,7 +30,9 @@ test('direct Add Receiver URL fails before loading or cloning a receiver without
     assert.strictEqual(error.status, 403);
     assert.strictEqual(error.code, 'Forbidden');
     assert.strictEqual(error.title, 'Add Receiver');
+    assert.strictEqual(error.titleKey, 'hookPage.receiver.buttonText');
     assert.strictEqual(error.message, 'You do not have permission to add receiver hooks in this environment.');
+    assert.strictEqual(error.messageKey, 'hookPage.receiver.permissionDenied');
   }
   assert.strictEqual(reads, 0, 'no receiver data was touched');
   destroyOwned(route);
@@ -48,5 +50,32 @@ test('a schema with POST permits the receiver form', async function(assert) {
 
   await route.beforeModel();
   assert.ok(true, 'the form may load for a creator');
+  destroyOwned(route);
+});
+
+test('cloning a receiver keeps inert settings but never copies its URL or state', async function(assert) {
+  let source = {type: 'receiver', name: 'source', url: 'existing-capability',
+    state: 'active', driver: 'scaleHost',
+    scaleHostConfig: {action: 'up', amount: 1, hostSelector: {qa: 'only'}}};
+  let route = createOwned(NewReceiverRoute, {
+    webhookStore: {
+      find(type, id) {
+        assert.strictEqual(type, 'receiver');
+        assert.strictEqual(id, '1go10');
+        return Promise.resolve({cloneForNew() { return {...source}; }});
+      },
+    },
+  }, 'route');
+
+  let result = await route.model({receiverId: '1go10'});
+  let copy = result.get('receiver');
+
+  assert.notOk(Object.prototype.hasOwnProperty.call(copy, 'url'),
+    'the old server-issued URL must not be sent as a new capability');
+  assert.notOk(Object.prototype.hasOwnProperty.call(copy, 'state'),
+    'the old lifecycle state must not be copied');
+  assert.strictEqual(copy.scaleHostConfig, source.scaleHostConfig,
+    'the chosen config remains available for the new form');
+  assert.strictEqual(source.url, 'existing-capability', 'the source is untouched');
   destroyOwned(route);
 });

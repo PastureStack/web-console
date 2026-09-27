@@ -80,6 +80,8 @@ TH.sortable {
 }
 
 .table-column-scroll-host {
+  container-name: sortable-table-host;
+  container-type: inline-size;
   max-width: 100%;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -88,6 +90,9 @@ TH.sortable {
     align-items: center;
     display: flex;
     gap: 12px;
+    // Horizontal alignment is maintained by sticky-table-header.js because
+    // this row lives inside THEAD of a wider scrolling table.
+    position: relative;
   }
 
   .sortable-table-action-controls {
@@ -178,6 +183,23 @@ TH.sortable {
     margin: 0;
     min-width: 180px;
     width: auto;
+  }
+}
+
+// A desktop viewport can still place the table inside a narrow side panel.
+// The viewport media query below remains the fallback for older browsers.
+@container sortable-table-host (max-width: 959px) {
+  .fixed-header-actions {
+    flex-wrap: wrap;
+  }
+
+  .sortable-table-action-controls,
+  .sortable-table-filter-controls {
+    flex: 1 1 100%;
+  }
+
+  .sortable-table-pagination {
+    margin-left: 0;
   }
 }
 

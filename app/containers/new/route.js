@@ -13,11 +13,15 @@ export default Route.extend({
 
     return resolve(parent).then(() => {
       if ( !this.get('projects').canCreateResource('container') ) {
+        const titleKey = 'containersPage.index.linkTo';
+        const messageKey = 'containersPage.permissionDenied';
         throw {
           status: 403,
           code: 'Forbidden',
-          title: this.get('intl').t('containersPage.index.linkTo'),
-          message: this.get('intl').t('containersPage.permissionDenied'),
+          title: this.get('intl').t(titleKey),
+          titleKey,
+          message: this.get('intl').t(messageKey),
+          messageKey,
         };
       }
     });

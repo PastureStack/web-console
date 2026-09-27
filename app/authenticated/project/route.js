@@ -4,22 +4,15 @@ import Route from '@ember/routing/route';
 
 export default Route.extend({
   access    : service(),
+  intl      : service(),
   projects  : service(),
 
   model(params/*, transition*/) {
     var project = this.get('projects.current');
 
-    if ( !project )
-    {
-      this.get('router').replaceWith('settings.projects');
-      return;
-    }
-
-    // If the project ID in the URL is out of sync somehow, bail & try again
-    if ( project.get('id') !== params.project_id )
-    {
-      this.get('router').replaceWith('authenticated');
-      return;
+    if ( !project || project.get('id') !== params.project_id ) {
+      let messageKey = 'viewEditProject.error.projectUnavailable';
+      throw {status: 404, message: this.get('intl').t(messageKey), messageKey};
     }
 
     return EmberObject.create({

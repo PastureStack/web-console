@@ -50,9 +50,38 @@ module('Integration | Route | fail whale localized error', function(hooks) {
 
   test('untranslated errors retain their original message', async function(assert) {
     this.intl.setLocale(['zh-tw', 'en-us']);
-    this.model = {status: 500, message: 'Unexpected failure'};
+    this.model = {status: 500, title: 'Unexpected error', message: 'Unexpected failure'};
     await render(FailWhaleTemplate);
+    assert.strictEqual(find('.fail-whale h4').textContent.trim(), 'Unexpected error (500)');
     assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), 'Unexpected failure');
+  });
+
+  [
+    ['add container', 'containersPage.index.linkTo', 'containersPage.permissionDenied',
+      'Add Container', 'You do not have permission to add containers in this environment.',
+      '新增容器', '您沒有權限在此環境中新增容器。'],
+    ['add host', 'hostsPage.new.header.text', 'hostsPage.permissionDenied',
+      'Add Host', 'You do not have permission to add hosts in this environment.',
+      '新增主機', '您沒有權限在此環境中新增主機。'],
+    ['add receiver', 'hookPage.receiver.buttonText', 'hookPage.receiver.permissionDenied',
+      'Add Receiver', 'You do not have permission to add receiver hooks in this environment.',
+      '新增接收器', '您沒有權限在此環境中新增接收端 Webhook。'],
+    ['edit receiver', 'newReceiver.title.edit', 'hookPage.receiver.editPermissionDenied',
+      'Edit Receiver', 'Editing receiver hooks is not available in this environment.',
+      '編輯接收器', '此環境不提供編輯接收端 Webhook 的功能。'],
+  ].forEach(([label, titleKey, messageKey, englishTitle, englishMessage, chineseTitle, chineseMessage]) => {
+    test(`${label} denial re-translates on the same error page`, async function(assert) {
+      this.intl.setLocale(['en-us']);
+      this.model = {status: 403, title: englishTitle, titleKey, message: englishMessage, messageKey};
+      await render(FailWhaleTemplate);
+      assert.strictEqual(find('.fail-whale h4').textContent.trim(), `${englishTitle} (403)`);
+      assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), englishMessage);
+
+      this.intl.setLocale(['zh-tw', 'en-us']);
+      await settled();
+      assert.strictEqual(find('.fail-whale h4').textContent.trim(), `${chineseTitle} (403)`);
+      assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), chineseMessage);
+    });
   });
 
   test('a missing or denied template edit shows a human message in both locales', async function(assert) {

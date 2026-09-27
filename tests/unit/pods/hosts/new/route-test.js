@@ -50,7 +50,7 @@ test('retired Packet provider is excluded from new host choices', function(asser
 });
 
 test('a direct add-host URL denies read-only access before loading registration data', function(assert) {
-  assert.expect(7);
+  assert.expect(9);
   let route = createOwned(HostsNewRoute, {
     projects: {
       canCreateResource(type) {
@@ -78,8 +78,10 @@ test('a direct add-host URL denies read-only access before loading registration 
     assert.strictEqual(error.status, 403);
     assert.strictEqual(error.code, 'Forbidden');
     assert.strictEqual(error.title, 'Add Host');
+    assert.strictEqual(error.titleKey, 'hostsPage.new.header.text');
     assert.strictEqual(error.message,
       'You do not have permission to add hosts in this environment.');
+    assert.strictEqual(error.messageKey, 'hostsPage.permissionDenied');
   }).finally(() => destroyOwned(route));
 });
 
