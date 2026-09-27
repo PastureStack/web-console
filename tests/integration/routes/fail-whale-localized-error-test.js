@@ -66,6 +66,15 @@ module('Integration | Route | fail whale localized error', function(hooks) {
     ['add receiver', 'hookPage.receiver.buttonText', 'hookPage.receiver.permissionDenied',
       'Add Receiver', 'You do not have permission to add receiver hooks in this environment.',
       '新增接收器', '您沒有權限在此環境中新增接收端 Webhook。'],
+    ['add secret', 'secretsPage.index.linkTo', 'secretsPage.permissionDenied',
+      'Add Secret', 'You do not have permission to add secrets in this environment.',
+      '新增機密資料', '您沒有權限在此環境中新增機密資料。'],
+    ['add certificate', 'certificatesPage.index.linkTo', 'certificatesPage.permissionDenied',
+      'Add Certificate', 'You do not have permission to add certificates in this environment.',
+      '新增憑證', '您沒有權限在此環境中新增憑證。'],
+    ['add registry', 'registriesPage.index.linkTo', 'registriesPage.permissionDenied',
+      'Add Registry', 'You do not have permission to add registries in this environment.',
+      '新增映像庫', '您沒有權限在此環境中新增映像庫。'],
     ['edit receiver', 'newReceiver.title.edit', 'hookPage.receiver.editPermissionDenied',
       'Edit Receiver', 'Editing receiver hooks is not available in this environment.',
       '編輯接收器', '此環境不提供編輯接收端 Webhook 的功能。'],
@@ -81,6 +90,35 @@ module('Integration | Route | fail whale localized error', function(hooks) {
       await settled();
       assert.strictEqual(find('.fail-whale h4').textContent.trim(), `${chineseTitle} (403)`);
       assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), chineseMessage);
+    });
+  });
+
+  [
+    ['secret', 'secretsPage', 'この環境にシークレットを追加する権限がありません。',
+      'You do not have permission to add secrets in this environment.'],
+    ['certificate', 'certificatesPage', 'この環境に証明書を追加する権限がありません。',
+      'You do not have permission to add certificates in this environment.'],
+    ['registry', 'registriesPage', 'この環境にレジストリを追加する権限がありません。',
+      'You do not have permission to add registries in this environment.'],
+  ].forEach(([label, page, japaneseMessage, englishMessage]) => {
+    test(`${label} denial uses Japanese copy and an English fallback in other locales`, async function(assert) {
+      for (let locale of ['ja-jp', 'de-de']) {
+        let messages = await (await fetch(`/translations/${locale}.json`)).json();
+        this.intl.addTranslations(locale, messages);
+      }
+      this.intl.setLocale(['ja-jp', 'en-us']);
+      this.model = {
+        status: 403,
+        titleKey: `${page}.index.linkTo`,
+        messageKey: `${page}.permissionDenied`,
+      };
+      await render(FailWhaleTemplate);
+      assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), japaneseMessage);
+
+      this.intl.setLocale(['de-de', 'en-us']);
+      await settled();
+      assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), englishMessage);
+      assert.notOk(find('.fail-whale').textContent.includes('Missing translation'));
     });
   });
 

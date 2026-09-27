@@ -827,6 +827,7 @@ consolePage:
   header: 命令列：
   closeButton: 關閉
 certificatesPage:
+  permissionDenied: 您沒有權限在此環境中新增憑證。
   table:
     cn: 網域名稱
     expiresDate: 過期時間
@@ -1293,6 +1294,7 @@ projectList:
       body:
         noData: 目前沒有任何環境範本
 registriesPage:
+  permissionDenied: 您沒有權限在此環境中新增映像庫。
   index:
     header: 映像庫
     linkTo: 新增映像庫
@@ -1322,6 +1324,7 @@ registriesPage:
         labelText: 密碼
         placeholder: 例如：password
 secretsPage:
+  permissionDenied: 您沒有權限在此環境中新增機密資料。
   index:
     header: 機密資料
     linkTo: 新增機密資料

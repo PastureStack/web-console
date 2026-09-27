@@ -17,6 +17,11 @@ export default Controller.extend({
   ],
   sortBy: 'name',
   prefs: service(),
+  projects: service(),
+
+  canCreateSecret: function() {
+    return this.get('projects').canCreateResource('secret');
+  }.property('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
 
   queryParams: ['sortBy'],
 

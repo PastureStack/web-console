@@ -1,7 +1,32 @@
 import EmberObject from '@ember/object';
 import Route from '@ember/routing/route';
+import { service } from '@ember/service';
+import { resolve } from 'rsvp';
 
 export default Route.extend({
+  projects: service(),
+  intl: service(),
+
+  beforeModel() {
+    let parent = this._super(...arguments);
+
+    return resolve(parent).then(() => {
+      let projects = this.get('projects');
+      if (!projects.canCreateResource('registry') || !projects.canCreateResource('registryCredential')) {
+        const titleKey = 'registriesPage.index.linkTo';
+        const messageKey = 'registriesPage.permissionDenied';
+        throw {
+          status: 403,
+          code: 'Forbidden',
+          title: this.get('intl').t(titleKey),
+          titleKey,
+          message: this.get('intl').t(messageKey),
+          messageKey,
+        };
+      }
+    });
+  },
+
   model: function(/*params, transition*/) {
     var store = this.get('store');
     var registry = store.createRecord({

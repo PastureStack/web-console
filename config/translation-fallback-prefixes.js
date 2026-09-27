@@ -15,6 +15,9 @@ module.exports = Object.freeze([
   // Permission and account-validation errors must never render a missing-key
   // marker. Keep reviewed English copy as the fallback outside zh-tw.
   'resourceLoadError.',
+  'certificatesPage.permissionDenied',
+  'registriesPage.permissionDenied',
+  'secretsPage.permissionDenied',
   'accountsPage.new.error.',
   'editAccount.error.',
   'viewEditProject.error.'
