@@ -54,4 +54,21 @@ module('Integration | Route | fail whale localized error', function(hooks) {
     await render(FailWhaleTemplate);
     assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(), 'Unexpected failure');
   });
+
+  test('a missing or denied template edit shows a human message in both locales', async function(assert) {
+    this.intl.setLocale(['en-us']);
+    this.model = {
+      status: 404,
+      messageKey: 'resourceLoadError.projectTemplateUnavailable',
+    };
+
+    await render(FailWhaleTemplate);
+    assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(),
+      'This environment template does not exist or you do not have permission to edit it. Refresh the page or contact an administrator.');
+
+    this.intl.setLocale(['zh-tw', 'en-us']);
+    await settled();
+    assert.strictEqual(find('.fail-whale .r-p20 > p').textContent.trim(),
+      '找不到此環境範本，或您沒有權限編輯。請重新整理或聯絡管理員。');
+  });
 });

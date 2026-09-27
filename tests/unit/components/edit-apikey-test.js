@@ -1,7 +1,9 @@
+import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
 import { find, render, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
+import { reject } from 'rsvp';
 import { module, test } from 'qunit';
 
 import EditApiKey from 'ui/components/edit-apikey/component';
@@ -111,5 +113,38 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
     } finally {
       window.removeEventListener('error', onError);
     }
+  });
+
+  test('a denied Save shows its error without exposing key values', async function(assert) {
+    let writes = 0;
+    let newKey = () => EmberObject.create({
+      name: 'Disposable test key',
+      publicValue: 'PUBLIC-NEVER-RENDER',
+      secretValue: 'SECRET-NEVER-RENDER',
+      clone: newKey,
+      validationErrors() { return A([]); },
+      save() {
+        writes++;
+        return reject({status: 403, message: 'You do not have permission to create API keys.'});
+      },
+    });
+
+    this.owner.register('service:modal', Service.extend({
+      modalVisible: true,
+      modalOpts: null,
+      toggleModal() { this.set('modalVisible', false); },
+    }));
+    this.modal = this.owner.lookup('service:modal');
+    this.modal.set('modalOpts', newKey());
+
+    await render(precompileTemplate('{{#if this.modal.modalVisible}}{{edit-apikey}}{{/if}}'));
+    find('.footer-actions .btn-primary').click();
+    await settled();
+
+    assert.strictEqual(writes, 1, 'one save attempt reached the resource');
+    assert.strictEqual(find('.top-errors li').textContent.trim(),
+      'You do not have permission to create API keys.', 'the API error is visible');
+    assert.notOk(this.testRoot.textContent.includes('PUBLIC-NEVER-RENDER'), 'the public key is not in the failed form');
+    assert.notOk(this.testRoot.textContent.includes('SECRET-NEVER-RENDER'), 'the secret key is not in the failed form');
   });
 });

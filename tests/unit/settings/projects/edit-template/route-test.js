@@ -6,6 +6,9 @@ import EditTemplateRoute from 'ui/settings/projects/edit-template/route';
 
 module('Unit | Route | settings projects edit-template');
 
+const unavailableKey = 'resourceLoadError.projectTemplateUnavailable';
+const unavailableMessage = 'This environment template does not exist or you do not have permission to edit it.';
+
 function fixture(canEdit, lookupError) {
   let catalogReads = 0;
   let clones = 0;
@@ -17,6 +20,12 @@ function fixture(canEdit, lookupError) {
     },
   });
   let route = EditTemplateRoute.create({
+    intl: EmberObject.create({t(key) {
+      if ( key !== unavailableKey ) {
+        throw new Error(`unexpected translation ${key}`);
+      }
+      return unavailableMessage;
+    }}),
     userStore: {
       find(type, id) {
         if ( type !== 'projecttemplate' || id !== '1pt-test' ) {
@@ -44,7 +53,7 @@ test('a direct URL to another account\'s public template is denied before catalo
 
   await data.route.model({template_id: '1pt-test'}).then(
     () => assert.ok(false, 'the edit page must not open'),
-    (error) => assert.strictEqual(error.status, 403)
+    (error) => assert.deepEqual(error, {status: 404, message: unavailableMessage, messageKey: unavailableKey})
   );
   assert.strictEqual(data.catalogReads(), 0);
   assert.strictEqual(data.clones(), 0);
@@ -73,16 +82,29 @@ test('an administrator may open a public template edit URL', async function(asse
   run(() => data.route.destroy());
 });
 
-test('another account\'s private template stays invisible through the API 404', async function(assert) {
-  let notFound = {status: 404, code: 'NotFound'};
-  let data = fixture(false, notFound);
+test('API 403 and 404 both become the same localized missing-or-denied message', async function(assert) {
+  for (let status of [403, 404]) {
+    let data = fixture(false, {status, code: status === 403 ? 'Forbidden' : 'NotFound', message: 'Raw API error'});
+
+    await data.route.model({template_id: '1pt-test'}).then(
+      () => assert.ok(false, 'the private template must not open'),
+      (error) => assert.deepEqual(error, {status: 404, message: unavailableMessage, messageKey: unavailableKey})
+    );
+    assert.strictEqual(data.catalogReads(), 0);
+    assert.strictEqual(data.clones(), 0);
+    run(() => data.route.destroy());
+  }
+});
+
+test('API 401 still reaches the shared session recovery', async function(assert) {
+  let expired = {status: 401, message: 'Expired session'};
+  let data = fixture(false, expired);
 
   await data.route.model({template_id: '1pt-test'}).then(
-    () => assert.ok(false, 'the private template must not open'),
-    (error) => assert.strictEqual(error, notFound, 'the API denial is preserved')
+    () => assert.ok(false, 'the expired session must not open the form'),
+    (error) => assert.strictEqual(error, expired)
   );
   assert.strictEqual(data.catalogReads(), 0);
-  assert.strictEqual(data.clones(), 0);
   run(() => data.route.destroy());
 });
 
@@ -91,7 +113,7 @@ test('a template with no owner fails closed on its direct edit URL', async funct
 
   await data.route.model({template_id: '1pt-test'}).then(
     () => assert.ok(false, 'unknown ownership must not open the form'),
-    (error) => assert.strictEqual(error.status, 403)
+    (error) => assert.deepEqual(error, {status: 404, message: unavailableMessage, messageKey: unavailableKey})
   );
   assert.strictEqual(data.catalogReads(), 0);
   assert.strictEqual(data.clones(), 0);

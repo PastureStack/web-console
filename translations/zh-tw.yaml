@@ -965,6 +965,7 @@ failWhalePage:
     <a href="#" onclick="window.location.href = window.location.href; return false;">重新載入</a> 以重試或
   logoutButton: 登出
 resourceLoadError:
+  projectTemplateUnavailable: 找不到此環境範本，或您沒有權限編輯。請重新整理或聯絡管理員。
   stackUnavailable: 找不到此應用堆疊，或您沒有權限檢視。請重新整理或聯絡管理員。
   stackFailed: 暫時無法載入應用堆疊，伺服器目前無法處理。請稍後再試。
   accountsUnavailable: 無法載入帳號資料：帳號可能不存在，或您沒有檢視權限。請重新整理或聯絡管理員。
