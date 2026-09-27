@@ -670,6 +670,7 @@ certificatesPage:
       description:
         placeholder: pl. EV tanúsítvány a sajat-domain-nevem.hu webhelyhez
 containersPage:
+  permissionDenied: Nincs jogosultsága konténert hozzáadni ebben a környezetben.
   table:
     ipAddress: IP-cím
     primaryHost: Elsődleges hoszt
@@ -2525,6 +2526,8 @@ heroAddService:
   linkToCatalog: Katalógus böngészése
 hookPage:
   receiver:
+    permissionDenied: Nincs jogosultsága fogadó webhookot hozzáadni ebben a környezetben.
+    editPermissionDenied: A fogadó webhookok szerkesztése nem érhető el ebben a környezetben.
     header: Vevő horgok
     buttonText: Vevő hozzáadása
     content: 'A vevőhorgok egy URL-t adnak, amelyet eltalálva akciót indíthat el a {appName}-n belül.'

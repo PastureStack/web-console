@@ -660,6 +660,7 @@ certificatesPage:
       description:
         placeholder: hal. EV cert para sa mydomain.com
 containersPage:
+  permissionDenied: Wala kang pahintulot na magdagdag ng container sa environment na ito.
   table:
     ipAddress: IP Address
     primaryHost: Pangunahing Host
@@ -2515,6 +2516,8 @@ heroAddService:
   linkToCatalog: Mag-browse ng Catalog
 hookPage:
   receiver:
+    permissionDenied: Wala kang pahintulot na magdagdag ng receiver hook sa environment na ito.
+    editPermissionDenied: Hindi maaaring i-edit ang mga receiver hook sa environment na ito.
     header: Receiver Hooks
     buttonText: Magdagdag ng Receiver
     content: >-

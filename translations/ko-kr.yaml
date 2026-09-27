@@ -634,6 +634,7 @@ certificatesPage:
       description:
         placeholder: 예를 들어 EV mydomain.com에 대한 인증서
 containersPage:
+  permissionDenied: 이 환경에 컨테이너를 추가할 권한이 없습니다.
   table:
     ipAddress: IP 주소
     primaryHost: 기본 호스트
@@ -2406,6 +2407,8 @@ heroAddService:
   linkToCatalog: 카탈로그 찾아보기
 hookPage:
   receiver:
+    permissionDenied: 이 환경에 수신기 후크를 추가할 권한이 없습니다.
+    editPermissionDenied: 이 환경에서는 수신기 후크를 편집할 수 없습니다.
     header: 수신기 후크
     buttonText: 수신기 추가
     content: '리시버 후크는 {appName} 내부에서 작업을 실행하기 위해 타격할 수 있는 URL를 제공합니다.'

@@ -666,6 +666,7 @@ certificatesPage:
       description:
         placeholder: par exemple certificat EV pour mondomaine.fr
 containersPage:
+  permissionDenied: Vous n’avez pas l’autorisation d’ajouter des conteneurs dans cet environnement.
   table:
     ipAddress: Adresse IP
     primaryHost: Hôte Primaire
@@ -2518,6 +2519,8 @@ heroAddService:
   linkToCatalog: Parcourir le Catalogue
 hookPage:
   receiver:
+    permissionDenied: Vous n’avez pas l’autorisation d’ajouter des hooks récepteurs dans cet environnement.
+    editPermissionDenied: La modification des hooks récepteurs n’est pas disponible dans cet environnement.
     header: Récepteurs de déclencheurs
     buttonText: Ajouter un Récepteur
     content: >-

@@ -665,6 +665,7 @@ certificatesPage:
       description:
         placeholder: напр. Сертификат для домена mydomain.com
 containersPage:
+  permissionDenied: У вас нет разрешения добавлять контейнеры в этом окружении.
   table:
     ipAddress: IP-адрес
     primaryHost: Основной хост
@@ -2544,6 +2545,8 @@ heroAddService:
   linkToCatalog: Просмотреть каталог
 hookPage:
   receiver:
+    permissionDenied: У вас нет разрешения добавлять хуки получателя в этом окружении.
+    editPermissionDenied: Редактирование хуков получателя в этом окружении недоступно.
     header: Крючки приемника
     buttonText: Добавить получателя
     content: 'Хуки-приемники дают вам URL, по которому можно нажать, чтобы вызвать действие внутри {appName}.'

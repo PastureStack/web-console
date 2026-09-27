@@ -662,6 +662,7 @@ certificatesPage:
       description:
         placeholder: '例: mydomain.com の EV 証明書'
 containersPage:
+  permissionDenied: この環境にコンテナを追加する権限がありません。
   table:
     ipAddress: IP アドレス
     primaryHost: プライマリホスト
@@ -2480,6 +2481,8 @@ heroAddService:
   linkToCatalog: カタログを参照
 hookPage:
   receiver:
+    permissionDenied: この環境にレシーバーフックを追加する権限がありません。
+    editPermissionDenied: この環境ではレシーバーフックを編集できません。
     header: レシーバー フック
     buttonText: レシーバーを追加
     content: 'レシーバー フックでは、{appName} の内部アクションをトリガーするための URL が提供されます。'
