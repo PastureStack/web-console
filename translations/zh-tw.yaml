@@ -1836,6 +1836,8 @@ confirmDelete:
   environmentNote: '注意：此環境內的所有資源都將被永久性的刪除，包括透過 {appName} 建立的主機。'
   protip: '高階技巧：在按一下刪除時按住 {key} 鍵以跳過確認操作。'
   confirmAction: 刪除
+  deleting: 刪除中…
+  deleteFailed: 刪除失敗
   cancelAction: 取消
   largeDeleteText: '{key} 及 {othersCount} 其他'
 containerLogs:

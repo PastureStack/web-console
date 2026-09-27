@@ -525,7 +525,8 @@ export default Mixin.create({
   delete: function(/*arguments*/) {
     var promise = this._super.apply(this, arguments);
     return promise.catch((err) => {
-      this.get('growl').fromError('Error deleting',err);
+      this.get('growl').fromError(this.get('intl').t('confirmDelete.deleteFailed'), err);
+      return reject(err);
     });
   },
 

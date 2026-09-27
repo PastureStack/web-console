@@ -1622,6 +1622,8 @@ confirmDelete:
     létrehozott hosztokat is.
   protip: 'Profi tipp: Tartsd nyomva a {key} billenytűt, miközben a Törlés-re kattintasz, hogy kikerüld a megerősítést.'
   confirmAction: Törlés
+  deleting: Törlés folyamatban…
+  deleteFailed: A törlés sikertelen
   cancelAction: Mégsem
   largeDeleteText: '{key} és {othersCount} mások'
 containerLogs:

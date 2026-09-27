@@ -137,6 +137,9 @@ test('environment load errors distinguish access, server failures, and expired s
       (err) => {
         assert.strictEqual(err.status, 404, 'denied and missing resources have the same visible status');
         assert.strictEqual(err.message, expected, 'the existing error view receives a human message');
+        assert.strictEqual(err.messageKey, task === 'project' ? 'viewEditProject.error.projectUnavailable' :
+          task === 'members' ? 'viewEditProject.error.membersUnavailable' : 'viewEditProject.error.relatedUnavailable',
+        'the error view can retranslate the message after a locale change');
         assert.notOk(err.detail, 'the API does not disclose extra details');
       }
     );
@@ -151,6 +154,7 @@ test('environment load errors distinguish access, server failures, and expired s
       (err) => {
         assert.strictEqual(err.status, status, 'the real server failure status is retained');
         assert.strictEqual(err.message, 'Server temporarily unavailable', 'the raw API error is not shown');
+        assert.strictEqual(err.messageKey, 'viewEditProject.error.loadFailed');
       }
     );
     run(() => route.destroy());

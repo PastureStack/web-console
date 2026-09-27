@@ -1,9 +1,40 @@
 import EmberObject from '@ember/object';
 import { run } from '@ember/runloop';
+import { defer, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import AuthenticatedRoute, { projectIdFromTransition } from 'ui/authenticated/route';
 
 module('Unit | Route | authenticated');
+
+test('preference loading waits for the selected language before continuing', async function(assert) {
+  let language = defer();
+  let response = {xhr: {headers: {get() { return '1a21'; }}}};
+  let route = AuthenticatedRoute.create({
+    userStore: EmberObject.create({find() { return resolve(response); }}),
+    session: EmberObject.create(),
+    prefs: EmberObject.create(),
+    language: EmberObject.create({
+      initLanguage(save) {
+        assert.true(save, 'the preference language is applied after login');
+        return language.promise;
+      },
+    }),
+    userTheme: EmberObject.create({setupTheme() {}}),
+  });
+  let finished = false;
+  let pending = route.loadPreferences().then((result) => {
+    finished = true;
+    return result;
+  });
+
+  await resolve();
+  await resolve();
+  assert.false(finished, 'the authenticated parent does not release child routes before locale setup');
+  language.resolve();
+  assert.strictEqual(await pending, response, 'the original preference response is retained');
+  assert.strictEqual(route.get('session.accountId'), '1a21');
+  run(() => route.destroy());
+});
 
 test('reads the requested environment from the Ember 7 RouteInfo tree', function(assert) {
   let transition = {

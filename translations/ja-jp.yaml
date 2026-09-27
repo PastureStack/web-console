@@ -1589,6 +1589,8 @@ confirmDelete:
   environmentNote: 'Note: {appName} によって作成されたホストなどこの環境内の全てのリソースは完全に削除されます。'
   protip: 'ProTip: この確認画面を飛ばす場合は削除ボタンのクリック時に {key} キーを長押ししてください。'
   confirmAction: 削除
+  deleting: 削除中…
+  deleteFailed: 削除に失敗しました
   cancelAction: キャンセル
   largeDeleteText: '{key} および {othersCount} その他'
 containerLogs:

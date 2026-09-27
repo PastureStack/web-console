@@ -3,7 +3,7 @@
     <h2 class="bg-danger">{{t 'failWhalePage.header'}}</h2>
     <div class="r-p20">
       <h4 class="r-mt20">{{if this.model.title this.model.title this.model.code}} {{#if this.model.status}}({{this.model.status}}){{/if}}</h4>
-      <p>{{this.model.message}}</p>
+      <p>{{#if this.model.messageKey}}{{t this.model.messageKey}}{{else}}{{this.model.message}}{{/if}}</p>
       <p class="small">{{this.model.detail}}</p>
       <div class="r-mt20">
         {{format-html-message 'failWhalePage.reloadButton'}} <a class="hand" {{action "logout"}}>{{t 'failWhalePage.logoutButton'}}</a>

@@ -1532,6 +1532,8 @@ confirmDelete:
   environmentNote: '참고: {appName}를 통해 생성된 호스트를 포함하여 이 환경 내의 모든 리소스가 영구적으로 제거됩니다.'
   protip: 'ProTip: 이 확인을 우회하려면 삭제를 클릭하는 동안 {key} 키를 누르세요.'
   confirmAction: 삭제
+  deleting: 삭제 중…
+  deleteFailed: 삭제 실패
   cancelAction: 취소
   largeDeleteText: '{key} 및 {othersCount} 기타'
 containerLogs:

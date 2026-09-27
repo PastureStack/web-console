@@ -1636,6 +1636,8 @@ confirmDelete:
     erstellt wurden.
   protip: 'ProTip: Halten Sie die Taste {key} gedrückt, während Sie auf „Löschen“ klicken, um diese Bestätigung zu umgehen.'
   confirmAction: Löschen
+  deleting: Wird gelöscht...
+  deleteFailed: Löschen fehlgeschlagen
   cancelAction: Abbrechen
   largeDeleteText: '{key} und {othersCount} andere'
 containerLogs:

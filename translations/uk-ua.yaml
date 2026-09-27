@@ -1636,6 +1636,8 @@ confirmDelete:
     {appName}.
   protip: 'Порада: Утримуйте клавішу {key} при натисканні Delete, щоб обійти це підтвердження.'
   confirmAction: Видалити
+  deleting: Видалення…
+  deleteFailed: Не вдалося видалити
   cancelAction: Відміна
   largeDeleteText: '{key} і {othersCount} інші'
 containerLogs:
