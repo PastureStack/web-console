@@ -16,8 +16,14 @@ var ProjectTemplate = Resource.extend(PolledResource, {
   }.property('stacks.@each.name'),
 
   canEdit: function() {
-    return !this.get('isPublic') || this.get('access.admin');
-  }.property('access.admin','isPublic'),
+    let ownerAccountId = this.get('accountId');
+    let sessionAccountId = this.get('session.accountId');
+
+    return this.get('access.admin') === true ||
+      (typeof ownerAccountId === 'string' && ownerAccountId.trim().length > 0 &&
+       typeof sessionAccountId === 'string' && sessionAccountId.trim().length > 0 &&
+       ownerAccountId === sessionAccountId);
+  }.property('access.admin','accountId','session.accountId'),
 
   availableActions: function() {
     var choices = [
