@@ -20,6 +20,6 @@
 {{/if}}
 
 <div class="footer-actions">
-  <button {{action "confirm"}} class="btn btn-danger">{{t 'confirmDelete.confirmAction'}}</button>
-  <button {{action "cancel"}} class="btn btn-link">{{t 'confirmDelete.cancelAction'}}</button>
+  <button {{action "confirm"}} disabled={{this.deleting}} class="btn btn-danger">{{t (if this.deleting 'confirmDelete.deleting' 'confirmDelete.confirmAction')}}</button>
+  <button {{action "cancel"}} disabled={{this.deleting}} class="btn btn-link">{{t 'confirmDelete.cancelAction'}}</button>
 </div>

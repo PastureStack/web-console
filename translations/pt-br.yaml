@@ -1600,6 +1600,8 @@ confirmDelete:
     criadas através {appName}.
   protip: 'Dica: Mantenha a chave {key} enquanto clicar Delete para ignorar essa confirmação.'
   confirmAction: Excluir
+  deleting: Excluindo...
+  deleteFailed: Falha ao excluir
   cancelAction: Cancelar
   largeDeleteText: '{key} e {othersCount} outros'
 containerLogs:

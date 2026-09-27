@@ -130,10 +130,11 @@ export default Route.extend(PromiseToCb, {
     if ( status === 403 || status === 404 ) {
       // failWhale renders the status as well as the message. Present denied
       // and missing resources identically to avoid revealing their existence.
-      return {status: 404, message: this.get('intl').t(key)};
+      return {status: 404, message: this.get('intl').t(key), messageKey: key};
     }
     if ( status >= 500 && status <= 599 ) {
-      return {status, message: this.get('intl').t('viewEditProject.error.loadFailed')};
+      const messageKey = 'viewEditProject.error.loadFailed';
+      return {status, message: this.get('intl').t(messageKey), messageKey};
     }
     return err;
   },

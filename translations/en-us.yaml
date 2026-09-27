@@ -1914,6 +1914,8 @@ confirmDelete:
   environmentNote: 'Note: All resources inside this Environment will be permanently removed, including any Hosts that were created through {appName}.'
   protip: 'ProTip: Hold the {key} key while clicking Delete to bypass this confirmation.'
   confirmAction: Delete
+  deleting: Deleting...
+  deleteFailed: Error deleting
   cancelAction: Cancel
   largeDeleteText: '{key} and {othersCount} others'
 

@@ -57,6 +57,8 @@ test('stack, account list, and account security loads show localized denials and
               'denied and missing resources have the same visible status');
             assert.strictEqual(error.message, status >= 500 ? failedKey : unavailableKey,
               'the error view receives the translated message');
+            assert.strictEqual(error.messageKey, status >= 500 ? failedKey : unavailableKey,
+              'the error view can retranslate after a locale change');
             assert.notOk(error.detail, 'raw API details are not shown');
           }
         }

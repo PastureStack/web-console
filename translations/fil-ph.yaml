@@ -1605,6 +1605,8 @@ confirmDelete:
     mga Host na ginawa sa pamamagitan ng {appName}.
   protip: 'ProTip: Hawakan ang {key} key habang nagki-click sa Delete para i-bypass ang kumpirmasyon na ito.'
   confirmAction: Tanggalin
+  deleting: Tinatanggal...
+  deleteFailed: Nabigo ang pagtanggal
   cancelAction: Kanselahin
   largeDeleteText: '{key} at {othersCount} iba pa'
 containerLogs:

@@ -1632,6 +1632,8 @@ confirmDelete:
   environmentNote: 'Примечание: Все ресурсы внутри этой среды будут удалены, включая все хосты, созданные с помощью {appName}.'
   protip: 'ProTip: удерживайте клавишу {key} и нажимайте «Удалить», чтобы обойти это подтверждение.'
   confirmAction: Удалить
+  deleting: Удаление…
+  deleteFailed: Не удалось удалить
   cancelAction: Отмена
   largeDeleteText: '{key} и {othersCount} другие'
 containerLogs:

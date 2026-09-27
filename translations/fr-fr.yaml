@@ -1618,6 +1618,8 @@ confirmDelete:
   environmentNote: "Remarque\_: Toutes les ressources à l’intérieur de cet environnement seront définitivement supprimées, y compris tous les hôtes qui ont été créés par le biais de {appName}."
   protip: "Astuce Pro\_: Maintenez la touche {key} tout en cliquant sur Supprimer afin de contourner cette confirmation."
   confirmAction: Supprimer
+  deleting: Suppression en cours…
+  deleteFailed: Échec de la suppression
   cancelAction: Annuler
   largeDeleteText: '{key} et {othersCount} d’autres'
 containerLogs:

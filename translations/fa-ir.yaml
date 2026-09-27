@@ -1575,6 +1575,8 @@ confirmDelete:
     توجه: همه منابع این محیط، از جمله میزبان‌هایی که از طریق {appName} ایجاد شده‌اند، برای همیشه حذف خواهند شد.
   protip: 'ProTip: کلید {key} را در حین کلیک روی Delete نگه دارید تا این تایید را دور بزنید.'
   confirmAction: حذف کنید
+  deleting: در حال حذف…
+  deleteFailed: حذف ناموفق بود
   cancelAction: لغو
   largeDeleteText: '{key} و {othersCount} دیگران'
 containerLogs:

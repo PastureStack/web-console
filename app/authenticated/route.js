@@ -224,14 +224,14 @@ export default Route.extend(Subscribe, PromiseToCb, {
         this.set(`session.${C.SESSION.ACCOUNT_ID}`, res.xhr.headers.get(C.HEADER.ACCOUNT_ID));
       }
 
-      this.get('language').initLanguage(true);
+      let languagePromise = this.get('language').initLanguage(true);
       this.get('userTheme').setupTheme();
 
       if (this.get(`prefs.${C.PREFS.I_HATE_SPINNERS}`)) {
         $('BODY').addClass('i-hate-spinners');
       }
 
-      return res;
+      return languagePromise.then(() => res);
     });
   },
 
