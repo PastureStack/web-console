@@ -1,8 +1,8 @@
-import { scheduleOnce } from '@ember/runloop';
+import { debounce, scheduleOnce } from '@ember/runloop';
 import Component from '@ember/component';
+import { observer } from '@ember/object';
 import C from 'ui/utils/constants';
 import ManageLabels from 'ui/mixins/manage-labels';
-import { debouncedObserver } from 'ui/utils/debounce';
 
 // Subtract 1 (because 11...), round up to the nearest 10, then double it
 function roundScale(num) {
@@ -23,7 +23,8 @@ export default Component.extend(ManageLabels, {
     this._super(...arguments);
 
 
-    this.set('scale', this.get('initialScale')||1);
+    const initialScale = this.get('initialScale');
+    this.set('scale', initialScale === 0 ? 0 : initialScale || 1);
     this.set('max', Math.max(11, roundScale(this.get('scale'))));
 
     this.initLabels(this.get('initialLabels'), null, C.LABEL.SCHED_GLOBAL);
@@ -51,14 +52,26 @@ export default Component.extend(ManageLabels, {
     this.sendAction('setGlobal', on);
   }.observes('isGlobal'),
 
-  scaleChanged: debouncedObserver('scale', function() {
+  scaleChanged: observer('scale', function() {
+    if ( this.get('editing') ) {
+      this.syncScale();
+    } else {
+      debounce(this, this.syncScale, 500);
+    }
+  }),
+
+  syncScale() {
+    if ( this.isDestroyed || this.isDestroying ) {
+      return;
+    }
+
     if ( this.get('scale') >= this.get('max') )
     {
       this.set('max', roundScale(this.get('scale')));
     }
 
     this.sendAction('setScale', this.get('scale'));
-  }, 500),
+  },
 
   oneLouder: function() {
     return this.get('max')+1;

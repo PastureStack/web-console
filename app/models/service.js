@@ -128,13 +128,13 @@ var Service = Resource.extend({
 
   scaleTimer: null,
   saveScale() {
-    if ( this.get('scaleTimer') )
+    if ( this.get('scaleTimer') !== null )
     {
       cancel(this.get('scaleTimer'));
     }
 
     var timer = later(this, function() {
-      this.save().catch((err) => {
+      this.save({data: {scale: this.get('scale')}}).catch((err) => {
         this.get('growl').fromError('Error updating scale',err);
       });
     }, 500);

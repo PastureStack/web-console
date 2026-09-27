@@ -30,6 +30,23 @@ export default ModalBase.extend(NewOrEdit, {
     this.set('service', this.get('originalModel').clone());
   },
 
+  doSave() {
+    const service = this.get('service');
+    const fields = {
+      name: service.get('name'),
+      description: service.get('description'),
+      scale: service.get('scale'),
+    };
+
+    // Validation also visits the cloned launchConfig and upgrade strategy.
+    // The edit form does not expose those fields, so keep them out of this PUT.
+    return service.save({data: fields}).then(() => {
+      const original = this.get('originalModel');
+      original.setProperties(fields);
+      return original;
+    });
+  },
+
   didSave() {
     var service = this.get('service');
     var ary = [];
