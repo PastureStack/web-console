@@ -7,6 +7,7 @@ import RegistriesIndexController from 'ui/registries/index/controller';
 import SecretsNewRoute from 'ui/secrets/new/route';
 import CertificatesNewRoute from 'ui/certificates/new/route';
 import RegistriesNewRoute from 'ui/registries/new/route';
+import ProjectsService from 'ui/services/projects';
 import { createOwned, destroyOwned } from '../helpers/owned-subject';
 
 const resources = [
@@ -16,6 +17,47 @@ const resources = [
 ];
 
 module('Unit | Secondary resource create permissions');
+
+test('Registry list and Add route use lowercase cached schema IDs', async function(assert) {
+  let cachedSchemas = {
+    registry: {collectionMethods: ['GET', 'POST']},
+    registrycredential: {collectionMethods: ['GET', 'POST']},
+  };
+  let projects = ProjectsService.create({
+    current: EmberObject.create({id: 'owner-project'}),
+    schemaProjectId: 'owner-project',
+    store: {
+      canCreate(type) {
+        let schema = cachedSchemas[type];
+        return Boolean(schema && schema.collectionMethods.includes('POST'));
+      },
+    },
+  });
+  let controller = createOwned(RegistriesIndexController, {projects}, 'controller');
+  let route = createOwned(RegistriesNewRoute, {
+    projects,
+    intl: {t(key) { return key; }},
+  }, 'route');
+
+  assert.true(controller.get('canCreateRegistry'),
+    'Registry Add is visible when both real cached schemas permit POST');
+  await route.beforeModel();
+  assert.ok(true, 'the direct Add route accepts the same capabilities');
+  cachedSchemas.registrycredential.collectionMethods = ['GET'];
+  projects.incrementProperty('schemaLoadGeneration');
+  assert.false(controller.get('canCreateRegistry'),
+    'Registry Add hides when credential POST is revoked');
+  try {
+    await route.beforeModel();
+    assert.ok(false, 'the direct Add route must reject revoked capability');
+  } catch (error) {
+    assert.strictEqual(error.status, 403);
+  }
+
+  destroyOwned(route);
+  destroyOwned(controller);
+  destroyOwned(projects);
+});
 
 resources.forEach(({name, Controller, Route, property, types, page}) => {
   test(`${name} Add visibility tracks the current project schema`, function(assert) {

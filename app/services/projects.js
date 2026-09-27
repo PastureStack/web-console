@@ -23,7 +23,10 @@ export default Service.extend({
 
   canCreateResource(type) {
     let projectId = this.get('current.id');
-    return Boolean(projectId && this.get('schemaProjectId') === projectId && this.get('store').canCreate(type));
+    // ember-api-store caches schema IDs in lowercase, but does not normalize
+    // the ID passed to canCreate(). API resource names can be mixed-case.
+    return Boolean(projectId && this.get('schemaProjectId') === projectId &&
+      typeof type === 'string' && this.get('store').canCreate(type.toLowerCase()));
   },
 
   active: function() {

@@ -73,6 +73,40 @@ test('create capability follows the current project and its loaded schema', func
   run(() => service.destroy());
 });
 
+test('mixed-case resource names use the normalized schema cache key', function(assert) {
+  let inspected = [];
+  let project = EmberObject.create({id: '1a-owner'});
+  let cachedSchemas = {
+    registry: {collectionMethods: ['GET', 'POST']},
+    registrycredential: {collectionMethods: ['GET', 'POST']},
+  };
+  let service = ProjectsService.create({
+    current: project,
+    schemaProjectId: '1a-owner',
+    store: {
+      canCreate(type) {
+        inspected.push(type);
+        let schema = cachedSchemas[type];
+        return Boolean(schema && schema.collectionMethods.includes('POST'));
+      },
+    },
+  });
+
+  assert.true(service.canCreateResource('registry'));
+  assert.true(service.canCreateResource('registryCredential'),
+    'the credential schema is found with its lowercase cache ID');
+  assert.deepEqual(inspected, ['registry', 'registrycredential']);
+  cachedSchemas.registrycredential.collectionMethods = ['GET'];
+  assert.false(service.canCreateResource('registryCredential'),
+    'a missing POST remains denied after normalization');
+  service.set('schemaProjectId', null);
+  assert.false(service.canCreateResource('registryCredential'),
+    'a stale schema remains denied after normalization');
+  assert.false(service.canCreateResource(null), 'an invalid type is not a capability');
+
+  run(() => service.destroy());
+});
+
 test('no active environment is a valid empty selection', async function(assert) {
   let tabSession = EmberObject.create({[C.TABSESSION.PROJECT]: 'stale-tab-project'});
   let prefs = EmberObject.create({[C.PREFS.PROJECT_DEFAULT]: 'stale-preference-project'});

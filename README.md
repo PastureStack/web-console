@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.144`. It retains the existing Node 24, Ember, Sass,
+The current source compatibility target is `1.6.145`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,11 +16,18 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.144` shows Secret, Certificate, and Registry Add controls only
-when the current environment schema permits creation, and denies direct Add
-URLs with localized 403 errors. Secret Edit now follows its update action link
-instead of always appearing. See the [release note](docs/releases/web-console-1.6.144.md).
-The isolated 8080 browser acceptance for this source release remains pending.
+Release `1.6.145` normalizes resource type names before checking the cached
+project schema. It restores Registry Add for authorized users while retaining
+the Registry plus RegistryCredential POST requirement and direct-route denial
+for unauthorized users. See the [release note](docs/releases/web-console-1.6.145.md).
+
+Release `1.6.144` introduced schema-gated Secret, Certificate, and Registry
+Add controls and localized 403 errors on denied direct Add URLs. Secret Edit
+also began following its update action link. Isolated 8080 acceptance found
+that Registry Add was incorrectly hidden even for authorized users because
+the cached schema ID was lowercase. See the [release note](docs/releases/web-console-1.6.144.md).
+That regression is addressed by `1.6.145`; its browser acceptance must be
+recorded separately.
 
 Release `1.6.143` creates a private ProjectTemplate from editable fields only.
 It deep-copies the Default template's stacks without sending the Default's
