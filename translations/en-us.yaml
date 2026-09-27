@@ -888,6 +888,7 @@ certificatesPage:
         placeholder: e.g. EV cert for mydomain.com
 
 containersPage:
+  permissionDenied: You do not have permission to add containers in this environment.
   table:
     ipAddress: IP Address
     primaryHost: Primary Host
@@ -2850,6 +2851,8 @@ hookPage:
   receiver:
     header: Receiver Hooks
     buttonText: Add Receiver
+    permissionDenied: You do not have permission to add receiver hooks in this environment.
+    editPermissionDenied: Editing receiver hooks is not available in this environment.
     content: "Receiver hooks give you a URL that can be hit to trigger an action inside of {appName}."
     noData: No receiver hooks.
   scaleService:

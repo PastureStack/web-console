@@ -864,6 +864,7 @@ certificatesPage:
       description:
         placeholder: 例如：mydomain.com 的 EV 憑證
 containersPage:
+  permissionDenied: 您沒有權限在此環境中新增容器。
   table:
     ipAddress: IP 位址
     primaryHost: 主機
@@ -2725,6 +2726,8 @@ hookPage:
   receiver:
     header: 接收端 Webhook
     buttonText: 新增接收器
+    permissionDenied: 您沒有權限在此環境中新增接收端 Webhook。
+    editPermissionDenied: 此環境不提供編輯接收端 Webhook 的功能。
     content: '接收端 Webhook 提供一個 URL；存取該 URL 時，會觸發 {appName} 中對應的動作。'
     noData: 目前沒有接收端 Webhook。
   scaleService:

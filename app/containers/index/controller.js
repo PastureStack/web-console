@@ -8,6 +8,11 @@ export default Controller.extend({
   bulkActionsList: C.BULK_ACTIONS,
   sortBy: 'name',
   prefs: service(),
+  projects: service(),
+
+  canCreateContainer: function() {
+    return this.get('projects').canCreateResource('container');
+  }.property('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
 
   queryParams: ['sortBy'],
 

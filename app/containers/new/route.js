@@ -1,9 +1,28 @@
 import EmberObject from '@ember/object';
 import { isArray } from '@ember/array';
-import { hash } from 'rsvp';
+import { hash, resolve } from 'rsvp';
 import Route from '@ember/routing/route';
+import { service } from '@ember/service';
 
 export default Route.extend({
+  projects: service(),
+  intl: service(),
+
+  beforeModel() {
+    let parent = this._super(...arguments);
+
+    return resolve(parent).then(() => {
+      if ( !this.get('projects').canCreateResource('container') ) {
+        throw {
+          status: 403,
+          code: 'Forbidden',
+          title: this.get('intl').t('containersPage.index.linkTo'),
+          message: this.get('intl').t('containersPage.permissionDenied'),
+        };
+      }
+    });
+  },
+
   model: function(params/*, transition*/) {
     var store = this.get('store');
 
