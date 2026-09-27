@@ -16,5 +16,8 @@ This release changes browser controls and route feedback, not Server
 authorization or API contracts. Targeted create-permission, action-menu,
 English/Traditional Chinese/Japanese error-page, other-locale fallback, and
 translation-quality tests pass. Browser acceptance of `1.6.144` on the
-isolated 8080 QA environment is still pending; prior 8080 observations do
-not establish that this source release has been deployed or accepted.
+isolated 8080 QA deployment found a Registry regression: the API advertised
+POST for both Registry and RegistryCredential, but Registry Add stayed hidden.
+The cached schema ID is lowercase while the capability check supplied a
+mixed-case ID. Secret and Certificate checks passed; Registry did not. The
+follow-up fix is 1.6.145.
