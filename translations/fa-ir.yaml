@@ -3473,6 +3473,7 @@ newSecret:
     add: راز را اضافه کنید
   name:
     placeholder: به عنوان مثال api-token
+    editHelp: نام پس از ایجاد قابل تغییر نیست.
   description:
     placeholder: به عنوان مثال رمز مخفی برای API
   value:

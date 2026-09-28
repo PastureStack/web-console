@@ -10,6 +10,32 @@ export default Component.extend(NewOrEdit, {
     this.set('primaryResource.value', AWS.util.base64.encode(this.get('userValue')));
   }),
 
+  validate() {
+    const description = this.get('primaryResource.description');
+    const clearingDescription = this.get('editing') &&
+      typeof description === 'string' && description.trim() === '';
+    const valid = this._super(...arguments);
+    if ( clearingDescription ) {
+      this.set('primaryResource.description', '');
+    }
+    return valid;
+  },
+
+  doSave() {
+    if ( !this.get('editing') ) {
+      return this._super(...arguments);
+    }
+
+    const description = this.get('primaryResource.description');
+    return this.get('primaryResource').save({data: {description}}).then(() => {
+      const original = this.get('originalModel');
+      if ( original ) {
+        original.set('description', description);
+      }
+      return original || this.get('primaryResource');
+    });
+  },
+
   actions: {
     cancel() {
       this.sendAction('cancel');

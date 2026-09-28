@@ -8,13 +8,20 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.147`. It retains the existing Node 24, Ember, Sass,
+The current source compatibility target is `1.6.148`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
 activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
+
+Release `1.6.148` makes Secret Edit follow the current Secret schema: the name
+is shown read-only with an explanation, and Save sends only the editable
+description. A successful Save updates the listed Secret; a rejected Save
+leaves the form open. Secret Add continues to accept a name and value. This
+builds on the `1.6.147` Service Edit fix without changing the Server API.
+See the [release note](docs/releases/web-console-1.6.148.md).
 
 Release `1.6.147` limits Service Edit to the editable name, description, and
 scale fields so saving does not resubmit cloned launch configuration or upgrade

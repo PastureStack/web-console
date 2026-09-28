@@ -5,7 +5,9 @@
 <section class="horizontal-form container-fluid well">
   {{form-name-description
     model=this.primaryResource
-    nameRequired=true
+    nameRequired=(not this.editing)
+    nameDisabled=this.editing
+    nameHelpText=(if this.editing (t 'newSecret.name.editHelp'))
     namePlaceholder="newSecret.name.placeholder"
     descriptionPlaceholder="newSecret.description.placeholder"
   }}
