@@ -49,6 +49,15 @@ const defaultStateMap = {
 // these forms when a model-specific translation is absent, so validation and
 // the visible input describe the same field in every supported locale.
 const formValidationLabels = {
+  stack: {
+    name: 'editStack.name.label',
+  },
+  service: {
+    name: 'formNameDescription.name.label',
+  },
+  container: {
+    name: 'formNameDescription.name.label',
+  },
   certificate: {
     name: 'formNameDescription.name.label',
     description: 'formNameDescription.description.label',

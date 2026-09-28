@@ -4,6 +4,7 @@ import { module, test } from 'qunit';
 import CattleTransitioningResource from 'ui/mixins/cattle-transitioning-resource';
 
 const labels = {
+  'editStack.name.label': '堆疊名稱',
   'formNameDescription.name.label': '名稱',
   'formNameDescription.description.label': '描述',
   'inputCertificate.cert.label': '憑證',
@@ -62,6 +63,9 @@ test('required errors use the visible translated labels of the affected forms', 
   assert.deepEqual(errorsFor('registryCredential', ['publicValue', 'secretValue']), [
     '使用者名稱 必須設定', '密碼 必須設定',
   ]);
+  assert.deepEqual(errorsFor('stack', ['name']), ['堆疊名稱 必須設定']);
+  assert.deepEqual(errorsFor('service', ['name']), ['名稱 必須設定']);
+  assert.deepEqual(errorsFor('container', ['name']), ['名稱 必須設定']);
 });
 
 test('model-specific labels retain priority and unknown fields retain their fallback', function(assert) {
@@ -69,6 +73,9 @@ test('model-specific labels retain priority and unknown fields retain their fall
     ...labels,
     'model.secret.name.label': '專用名稱',
   }), ['專用名稱 必須設定', 'Unknown Field 必須設定']);
-  assert.deepEqual(errorsFor('stack', ['name']), ['Name 必須設定'],
-    'stack uses a different visible name label; this patch must not rewrite its validation');
+  assert.deepEqual(errorsFor('stack', ['name'], {
+    ...labels,
+    'editStack.name.label': 'スタック名',
+  }), ['スタック名 必須設定'],
+  'the stack label follows the selected locale');
 });
