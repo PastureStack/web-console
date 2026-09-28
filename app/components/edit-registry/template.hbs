@@ -1,6 +1,9 @@
 <section class="horizontal-form container-fluid">
   <h2>{{t 'editRegistry.title'}}</h2>
   {{top-errors errors=this.errors}}
+  {{#if this.missingCredential}}
+    <div class="alert alert-warning">{{t 'editRegistry.missingCredential'}}</div>
+  {{/if}}
 </section>
 
 <section class="horizontal-form container-fluid">

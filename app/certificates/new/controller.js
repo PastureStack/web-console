@@ -1,13 +1,10 @@
 import Controller from '@ember/controller';
 import { service } from '@ember/service';
 import NewOrEdit from 'ui/mixins/new-or-edit';
+import CertificateKeyValidation from 'ui/mixins/certificate-key-validation';
 
-export default Controller.extend(NewOrEdit,{
-  intl: service(),
-  isEncrypted: function() {
-    var key = this.get('model.key')||'';
-    return key.match(/^Proc-Type: 4,ENCRYPTED$/m) || key.match(/^-----BEGIN ENCRYPTED PRIVATE KEY-----$/m);
-  }.property('model.key'),
+export default Controller.extend(NewOrEdit, CertificateKeyValidation, {
+  store: service(),
 
   actions: {
     cancel() {
@@ -16,19 +13,29 @@ export default Controller.extend(NewOrEdit,{
   },
 
   validate() {
-    this._super();
-    var errors = this.get('errors')||[];
-
-    if ( this.get('isEncrypted') )
-    {
-      errors.push(this.get('intl').t('certificatesPage.encryptedKeyError'));
+    if ( this.get('model.id') ) {
+      this.set('errors', null);
+      return true;
     }
+    return this._super(...arguments);
+  },
 
-    this.set('errors', errors);
-    return this.get('errors.length') === 0;
+  doSave() {
+    if ( this.get('model.id') ) {
+      return this.get('model');
+    }
+    return this._super(...arguments);
   },
 
   doneSaving() {
-    this.get('router').transitionTo('certificates');
+    return this.get('store').find('certificate', this.get('model.id'), {forceReload: true}).then(() => {
+      return this.get('router').transitionTo('certificates');
+    });
+  },
+
+  errorSaving() {
+    if ( this.get('model.id') ) {
+      this.set('errors', [this.get('intl').t('certificatesPage.new.refreshFailed')]);
+    }
   }
 });

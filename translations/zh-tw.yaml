@@ -860,6 +860,7 @@ certificatesPage:
         noData: 目前未新增任何憑證
   new:
     header: 新增憑證
+    refreshFailed: '憑證已儲存，但無法重新取得操作權限。可重試儲存以更新權限；系統不會再次提交憑證。'
     form:
       name:
         placeholder: 例如：mydomain.com
@@ -1310,6 +1311,16 @@ registriesPage:
         noData: 目前未建立任何映像庫
   new:
     header: 新增映像庫
+    duplicateAddress: '位址 {address} 已有映像庫。'
+    registryCreated: '映像庫 {address}（ID：{id}）已建立。請在此完成憑證設定，或稍後從映像庫清單編輯。'
+    partialFailure: '映像庫 {address}（ID：{id}）已建立，但憑證尚未確認完成。您可在此重試，或稍後回來處理；系統不會自動刪除映像庫。'
+    registryOutcomeUnknown: '無法確認映像庫是否建立成功。再次建立此位址前，請先檢查映像庫清單。'
+    credentialOutcomeUnknown: '憑證請求可能已成功，但重新讀取仍無法確認。系統沒有再送出請求；請稍後檢查映像庫，再決定是否重試。'
+    credentialPresent: '此映像庫現在已有憑證，但密碼無法讀回或確認。系統沒有再送出請求；請離開此頁，從清單編輯映像庫並設定要使用的密碼。'
+    refreshFailed: '映像庫與憑證已儲存，但無法重新取得操作權限。可重試儲存以更新權限；系統不會再次提交這兩項資源。'
+    cancelConfirm: '映像庫 {address}（ID：{id}）可能仍需設定憑證。離開會保留映像庫，不會刪除任何資料；稍後可從清單編輯。確定離開？'
+    cancelRefreshConfirm: '映像庫 {address}（ID：{id}）及其憑證已儲存，但操作權限尚未重新取得。離開會保留兩項資源；編輯前請重新載入清單。確定離開？'
+    unknownId: 未知
     form:
       custom:
         labelText: 位址
@@ -2007,6 +2018,9 @@ editProjectTemplate:
     changing: '目前啟用的 {tplCategory} 堆疊「{stackName}」版本不支援 {orchestration} 編排。'
 editRegistry:
   title: 編輯映像庫
+  missingCredential: '此映像庫尚無憑證；儲存時將新增憑證。'
+  credentialAppeared: '此映像庫現在已有憑證，系統沒有再新增。請關閉並重新開啟編輯視窗確認。'
+  credentialOutcomeUnknown: '憑證請求可能已成功，系統沒有再送出。請關閉並重新開啟編輯視窗檢查映像庫。'
   address:
     label: 位址
   email:
@@ -3703,6 +3717,7 @@ newReceiver:
     placeholder: 例如：latest
     help: 僅當映像庫中對應標籤的映像更新時才會觸發服務更新。
 newSecret:
+  refreshFailed: '機密資料已儲存，但無法重新取得操作權限。可重試儲存以更新權限；系統不會再次提交機密資料。'
   title:
     edit: 編輯機密資料
     add: 新增機密資料

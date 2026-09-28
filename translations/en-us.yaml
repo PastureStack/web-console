@@ -883,6 +883,7 @@ certificatesPage:
         noData: You do not have any certificates yet.
   new:
     header: Add Certificate
+    refreshFailed: 'The certificate was saved, but its action permissions could not be refreshed. Retry Save to refresh them; the certificate will not be submitted again.'
     form:
       name:
         placeholder: e.g. mydomain.com
@@ -1361,6 +1362,16 @@ registriesPage:
         noData: "You don't have any registries yet"
   new:
     header: Add Registry
+    duplicateAddress: 'A registry is already defined for {address}.'
+    registryCreated: 'Registry {address} (ID {id}) was created. Complete its credentials here, or return later and edit it from the registry list.'
+    partialFailure: 'Registry {address} (ID {id}) was created, but its credentials were not confirmed. Retry here or leave it for later recovery; it will not be deleted automatically.'
+    registryOutcomeUnknown: 'The registry creation result is unknown. Check the registry list before trying to create this address again.'
+    credentialOutcomeUnknown: 'The credential request may have succeeded, but a fresh read did not confirm it. No second request was sent. Check the registry later before retrying.'
+    credentialPresent: 'Credentials now exist for this registry, but the password cannot be read back or verified. No second request was sent. Leave this form and edit the registry to set the password you want.'
+    refreshFailed: 'The registry and credentials were saved, but their action permissions could not be refreshed. Retry Save to refresh them; neither resource will be submitted again.'
+    cancelConfirm: 'Registry {address} (ID {id}) may still need credentials. Leaving keeps the registry; nothing will be deleted. You can edit it from the registry list later. Leave now?'
+    cancelRefreshConfirm: 'Registry {address} (ID {id}) and its credentials were saved, but action permissions were not refreshed. Leaving keeps both resources; reload the list before editing. Leave now?'
+    unknownId: unknown
     form:
       custom:
         labelText: Address
@@ -2101,6 +2112,9 @@ editProjectTemplate:
 
 editRegistry:
   title: Edit Registry
+  missingCredential: 'This registry has no credentials. Saving will add them.'
+  credentialAppeared: 'Credentials now exist for this registry. No new credentials were sent. Close and reopen the editor to review them.'
+  credentialOutcomeUnknown: 'The credential request may have succeeded. No second request was sent. Close and reopen the editor to check the registry.'
   address:
     label: Address
   email:
@@ -3869,6 +3883,7 @@ newReceiver:
     help: Only registry pushes to the given tag will cause a service upgrade.
 
 newSecret:
+  refreshFailed: 'The secret was saved, but its action permissions could not be refreshed. Retry Save to refresh them; the secret will not be submitted again.'
   title:
     edit: Edit Secret
     add: Add Secret

@@ -28,6 +28,7 @@ test('a denied Secret edit leaves the cached record and form available for retry
   let closes = 0;
   const component = createOwned(NewSecret, {
     renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
     editing: true,
     model: draft,
     originalModel: original,
@@ -60,6 +61,7 @@ test('clearing the description sends an explicit empty string after schema valid
   });
   const component = createOwned(NewSecret, {
     renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
     editing: true,
     model: draft,
     originalModel: original,
@@ -79,17 +81,28 @@ test('clearing the description sends an explicit empty string after schema valid
 });
 
 test('Secret creation still saves its full new record', async function(assert) {
+  const store = EmberObject.create({
+    find(type, id, options) {
+      assert.strictEqual(type, 'secret');
+      assert.strictEqual(id, 'secret-1');
+      assert.true(options.forceReload);
+      return resolve(draft);
+    },
+  });
   const draft = EmberObject.create({
     name: 'new-secret', description: 'new description', value: 'encoded-value',
+    store,
     validationErrors() { return A([]); },
     save(options) {
       assert.strictEqual(options, undefined, 'creation uses the existing resource serialization');
+      this.set('id', 'secret-1');
       return resolve(this);
     },
   });
   let closes = 0;
   const component = createOwned(NewSecret, {
     renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
     editing: false,
     model: draft,
     sendAction() { closes++; },
