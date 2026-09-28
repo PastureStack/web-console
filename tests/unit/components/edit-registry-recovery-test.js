@@ -12,6 +12,7 @@ module('Unit | Component | edit-registry recovery');
 test('a registry without credentials opens safely and checks the server before adding one', async function(assert) {
   let creates = 0;
   let saves = 0;
+  let saveOptions;
   let reads = 0;
   let credentials = A([]);
   const store = EmberObject.create({
@@ -21,7 +22,7 @@ test('a registry without credentials opens safely and checks the server before a
         ...data,
         publicValue: 'test-user',
         validationErrors() { return A([]); },
-        save() { saves++; return resolve(this); },
+        save(options) { saves++; saveOptions = options; return resolve(this); },
       });
     },
     find(type, id, options) {
@@ -59,5 +60,58 @@ test('a registry without credentials opens safely and checks the server before a
   await component.doSave();
   assert.strictEqual(reads, 2);
   assert.strictEqual(saves, 1, 'only the still-empty orphan path submits a credential');
+  assert.strictEqual(saveOptions, undefined, 'the missing-credential POST path keeps its original save call');
+  destroyOwned(component);
+});
+
+test('editing an existing credential sends only the editable fields', async function(assert) {
+  const saveCalls = [];
+  let registrySaves = 0;
+  const saved = EmberObject.create({id: 'credential-1'});
+  const editedCredential = EmberObject.create({
+    id: 'credential-1',
+    type: 'registryCredential',
+    registryId: 'registry-1',
+    email: 'synthetic@invalid.test',
+    state: 'active',
+    created: '2026-01-01T00:00:00Z',
+    publicValue: 'edited-user',
+    secretValue: 'synthetic-test-value',
+    save(options) {
+      saveCalls.push(options);
+      return resolve(saved);
+    },
+  });
+  const registry = EmberObject.create({
+    id: 'registry-1',
+    serverAddress: 'registry.invalid.test',
+    clone() { return EmberObject.create({id: this.get('id')}); },
+    save() { registrySaves++; return resolve(this); },
+  });
+  const component = createOwned(EditRegistry, {
+    renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
+    modalService: EmberObject.create({modalOpts: EmberObject.create({
+      registry,
+      credential: EmberObject.create({clone() { return editedCredential; }}),
+      registries: A([registry]),
+    })}),
+  }, 'component');
+
+  assert.false(component.get('missingCredential'));
+  assert.strictEqual(await component.doSave(), saved, 'the inherited save result is preserved');
+  assert.deepEqual(Object.keys(saveCalls[0]), ['data']);
+  assert.deepEqual(JSON.parse(JSON.stringify(saveCalls[0].data)), {
+    publicValue: 'edited-user',
+    secretValue: 'synthetic-test-value',
+  }, 'cloned metadata and registry fields are excluded');
+
+  editedCredential.set('secretValue', '');
+  await component.doSave();
+  assert.deepEqual(JSON.parse(JSON.stringify(saveCalls[1].data)), {
+    publicValue: 'edited-user',
+    secretValue: '',
+  }, 'an explicitly empty password input is retained');
+  assert.strictEqual(registrySaves, 0, 'the registry itself is not saved by this editor');
   destroyOwned(component);
 });
