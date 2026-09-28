@@ -56,7 +56,7 @@ test('Certificate create refreshes only its new ID and retries a failed refresh 
   controller.destroy();
 });
 
-test('Secret create follows the same targeted refresh pattern without changing Edit', async function(assert) {
+test('Secret create refreshes its new ID without requiring an update action link', async function(assert) {
   let saves = 0;
   let refreshes = 0;
   let closes = 0;
@@ -66,7 +66,7 @@ test('Secret create follows the same targeted refresh pattern without changing E
       assert.strictEqual(id, 'secret-1');
       assert.true(options.forceReload);
       refreshes++;
-      secret.set('actionLinks', {update: `/secrets/${id}`});
+      secret.set('actionLinks', {remove: `/secrets/${id}?action=remove`});
       return resolve(secret);
     },
   });
@@ -89,7 +89,7 @@ test('Secret create follows the same targeted refresh pattern without changing E
 
   await save(component);
   assert.deepEqual({saves, refreshes, closes}, {saves: 1, refreshes: 1, closes: 1});
-  assert.ok(secret.get('actionLinks.update'), 'the new Secret row receives Edit on direct GET');
+  assert.notOk(secret.get('actionLinks.update'), 'the direct GET has no update action link');
   destroyOwned(component);
 });
 
