@@ -3522,6 +3522,7 @@ newSecret:
     add: Ajouter un Secret
   name:
     placeholder: par exemple api-token
+    editHelp: Le nom ne peut pas être modifié après la création.
   description:
     placeholder: p. ex. jeton Secret pour l’API
   value:

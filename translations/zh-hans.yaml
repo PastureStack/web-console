@@ -3422,6 +3422,7 @@ newSecret:
     add: 添加密文
   name:
     placeholder: '例如: api-token'
+    editHelp: 创建后无法更改名称。
   description:
     placeholder: 例如：API 的密钥令牌
   value:

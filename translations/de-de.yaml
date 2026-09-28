@@ -3573,6 +3573,7 @@ newSecret:
     add: Geheimnis hinzufügen
   name:
     placeholder: z.B. API-Token
+    editHelp: Der Name kann nach der Erstellung nicht geändert werden.
   description:
     placeholder: z.B. Geheimer Token für den API
   value:

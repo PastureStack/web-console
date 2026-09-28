@@ -72,7 +72,10 @@ export default Component.extend({
         return;
       }
 
-      this.$('INPUT')[0].focus();
+      const firstEditableField = this.$('INPUT:enabled, TEXTAREA:enabled')[0];
+      if ( firstEditableField ) {
+        firstEditableField.focus();
+      }
     });
   },
 });

@@ -3388,6 +3388,7 @@ newSecret:
     add: 비밀 추가
   name:
     placeholder: 예를 들어 API 토큰
+    editHelp: 생성 후에는 이름을 변경할 수 없습니다.
   description:
     placeholder: 예를 들어 API의 비밀 토큰
   value:

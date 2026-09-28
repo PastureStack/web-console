@@ -3575,6 +3575,7 @@ newSecret:
     add: Додати секрет
   name:
     placeholder: напр. api-token
+    editHelp: Ім’я не можна змінити після створення.
   description:
     placeholder: напр. Секретний маркер для API
   value:

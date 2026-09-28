@@ -3541,6 +3541,7 @@ newSecret:
     add: Titkos kód hozzáadása
   name:
     placeholder: pl. api-token
+    editHelp: A név létrehozás után nem módosítható.
   description:
     placeholder: pl. titkos API token
   value:

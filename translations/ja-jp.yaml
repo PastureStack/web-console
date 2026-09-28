@@ -3470,6 +3470,7 @@ newSecret:
     add: シークレットを追加
   name:
     placeholder: '例: api-token'
+    editHelp: 作成後は名前を変更できません。
   description:
     placeholder: '例: API 用シークレットトークン'
   value:

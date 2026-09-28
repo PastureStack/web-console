@@ -3874,6 +3874,7 @@ newSecret:
     add: Add Secret
   name:
     placeholder: e.g. api-token
+    editHelp: Name cannot be changed after creation.
   description:
     placeholder: e.g. Secret token for the API
   value:

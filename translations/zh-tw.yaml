@@ -3708,6 +3708,7 @@ newSecret:
     add: 新增機密資料
   name:
     placeholder: 例如：api-token
+    editHelp: 建立後無法變更名稱。
   description:
     placeholder: 例如：API 使用的私密權杖
   value:

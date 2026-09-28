@@ -3525,6 +3525,7 @@ newSecret:
     add: Magdagdag ng Lihim
   name:
     placeholder: hal. api-token
+    editHelp: Hindi na mababago ang pangalan pagkatapos gawin.
   description:
     placeholder: hal. Lihim na token para sa API
   value:
