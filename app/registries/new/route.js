@@ -51,6 +51,15 @@ export default Route.extend({
 
   setupController: function(controller, model) {
     controller.set('model',model);
+    controller.setProperties({
+      registryCreated: false,
+      registrySaveAttempted: false,
+      registryOutcomeUnknown: false,
+      credentialSaveAttempted: false,
+      credentialOutcomeUnknown: false,
+      credentialSaved: false,
+      savedCredentialId: null,
+    });
     controller.send('selectDriver','dockerhub');
   },
 
@@ -58,6 +67,15 @@ export default Route.extend({
     if (isExiting)
     {
       controller.set('errors', null);
+      controller.setProperties({
+        registryCreated: false,
+        registrySaveAttempted: false,
+        registryOutcomeUnknown: false,
+        credentialSaveAttempted: false,
+        credentialOutcomeUnknown: false,
+        credentialSaved: false,
+        savedCredentialId: null,
+      });
     }
   },
 });

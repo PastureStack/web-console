@@ -5,7 +5,7 @@
   <section class="well">
     <div class="nav nav-boxes checked-active">
       {{#each this.drivers as |driver|}}
-        <a href="false" {{action "selectDriver" driver.name}} alt={{driver.label}} class="nav-box-item driver registry-driver {{if driver.active 'active'}} {{driver.css}}"></a>
+        <a href="false" {{action "selectDriver" driver.name}} alt={{driver.label}} class="nav-box-item driver registry-driver {{if driver.active 'active'}} {{if this.registrySaveAttempted 'disabled'}} {{driver.css}}"></a>
       {{/each}}
     </div>
   </section>
@@ -18,7 +18,7 @@
         <label>{{t 'registriesPage.new.form.custom.labelText'}}{{#if this.isCustom}}*{{/if}}</label>
       </div>
       <div>
-        {{input type="text" value=this.model.registry.serverAddress classNames="form-control" placeholder=(t 'registriesPage.new.form.custom.placeholder')}}
+        {{input type="text" value=this.model.registry.serverAddress disabled=this.registrySaveAttempted classNames="form-control" placeholder=(t 'registriesPage.new.form.custom.placeholder')}}
       </div>
       <p class="help-block">{{t 'registriesPage.new.form.custom.help'}}</p>
     </div>
@@ -43,5 +43,8 @@
   </div>
 </section>
 
+{{#if this.registryCreated}}
+  <div class="alert alert-warning">{{t 'registriesPage.new.registryCreated' address=this.model.registry.serverAddress id=this.model.registry.id}}</div>
+{{/if}}
 {{top-errors errors=this.errors}}
-{{save-cancel save="save" cancel="cancel"}}
+{{save-cancel save="save" cancel="cancel" cancelDisabled=this.saving}}

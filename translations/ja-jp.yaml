@@ -658,6 +658,7 @@ certificatesPage:
         noData: まだ証明書はありません
   new:
     header: 証明書を追加
+    refreshFailed: '証明書は保存されましたが、操作権限を再取得できませんでした。再度保存すると権限の取得だけを行い、証明書は再送しません。'
     form:
       name:
         placeholder: '例: mydomain.com'
@@ -1056,6 +1057,16 @@ registriesPage:
         noData: まだレジストリはありません
   new:
     header: レジストリを追加
+    duplicateAddress: 'アドレス {address} のレジストリは既に存在します。'
+    registryCreated: 'レジストリ {address}（ID: {id}）を作成しました。ここで認証情報の設定を完了するか、後で一覧から編集してください。'
+    partialFailure: 'レジストリ {address}（ID: {id}）は作成されましたが、認証情報の保存は確認できませんでした。ここで再試行するか、後で復旧してください。レジストリは自動削除されません。'
+    registryOutcomeUnknown: 'レジストリの作成結果を確認できません。このアドレスで再作成する前に一覧を確認してください。'
+    credentialOutcomeUnknown: '認証情報の要求は成功した可能性がありますが、再取得でも確認できませんでした。要求は再送していません。後でレジストリを確認してください。'
+    credentialPresent: 'このレジストリには認証情報がありますが、パスワードは再取得・確認できません。要求は再送していません。この画面を離れ、一覧からレジストリを編集して希望のパスワードを設定してください。'
+    refreshFailed: 'レジストリと認証情報は保存されましたが、操作権限を再取得できませんでした。再度保存すると権限の取得だけを行い、どちらも再送しません。'
+    cancelConfirm: 'レジストリ {address}（ID: {id}）には認証情報の設定が必要な場合があります。離れてもレジストリは保持され、何も削除されません。後で一覧から編集できます。離れますか？'
+    cancelRefreshConfirm: 'レジストリ {address}（ID: {id}）と認証情報は保存されましたが、操作権限は再取得できませんでした。離れても両方保持されます。編集前に一覧を再読み込みしてください。離れますか？'
+    unknownId: 不明
     form:
       custom:
         labelText: アドレス
@@ -1755,6 +1766,9 @@ editProjectTemplate:
     changing: '現在有効な {tplCategory} スタック "{stackName}" は {orchestration} オーケストレーションをサポートしていません。'
 editRegistry:
   title: レジストリを編集
+  missingCredential: 'このレジストリには認証情報がありません。保存すると追加されます。'
+  credentialAppeared: 'このレジストリには既に認証情報があります。追加要求は送信していません。編集画面を開き直して確認してください。'
+  credentialOutcomeUnknown: '認証情報の要求は成功した可能性があります。再送はしていません。編集画面を開き直してレジストリを確認してください。'
   address:
     label: アドレス
   email:
@@ -3465,6 +3479,7 @@ newReceiver:
     placeholder: '例: latest'
     help: 指定したタグでレジストリにプシュされた場合にサービスはアップグレードされます
 newSecret:
+  refreshFailed: 'シークレットは保存されましたが、操作権限を再取得できませんでした。再度保存すると権限の取得だけを行い、シークレットは再送しません。'
   title:
     edit: シークレットを編集
     add: シークレットを追加
