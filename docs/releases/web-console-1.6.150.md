@@ -12,6 +12,9 @@ collection before its first POST and keeps its uncertain-write retry guard.
 Registry creation, Certificate Add, OIDC, session handling, and other forms
 are unchanged.
 
+The Node 24 package-lock review baseline changes only its two root version
+fields from 1.6.149 to 1.6.150; dependency entries are unchanged.
+
 Focused Chrome unit tests cover both narrowed bodies and the missing-credential
 path. Isolated 8080 browser/API acceptance and Server packaging are separate
 release gates; this source note does not claim they have passed.
