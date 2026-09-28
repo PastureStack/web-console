@@ -14,6 +14,8 @@ are unchanged.
 
 The Node 24 package-lock review baseline changes only its two root version
 fields from 1.6.149 to 1.6.150; dependency entries are unchanged.
+The QUnit source gate keeps the prior 170-import floor without rejecting an
+additional test solely because the import count increased.
 
 Focused Chrome unit tests cover both narrowed bodies and the missing-credential
 path. Isolated 8080 browser/API acceptance and Server packaging are separate
