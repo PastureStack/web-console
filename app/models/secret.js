@@ -16,14 +16,17 @@ export default Resource.extend({
       return [];
     }
 
+    let methods = this.get('schema.resourceMethods') || [];
+    let canEdit = this.get('state') === 'active' && methods.includes('PUT') && this.hasLink('self');
+
     var choices = [
       { label: 'action.remove',     icon: 'icon icon-trash',          action: 'promptDelete', enabled: !!a.remove, altAction: 'delete', bulkable: true },
       { divider: true },
       { label: 'action.viewInApi',  icon: 'icon icon-external-link',  action: 'goToApi',      enabled: true },
       { divider: true },
-      { label: 'action.edit',       icon: 'icon icon-edit',           action: 'edit',         enabled: !!a.update },
+      { label: 'action.edit',       icon: 'icon icon-edit',           action: 'edit',         enabled: canEdit },
     ];
 
     return choices;
-  }.property('actionLinks.{remove,update}'),
+  }.property('actionLinks.remove','schema.resourceMethods.[]','links.self','state'),
 });
