@@ -14,6 +14,19 @@ export default ModalBase.extend(NewOrEdit, CertificateKeyValidation, {
     this.set('model', this.get('originalModel').clone());
   },
 
+  doSave() {
+    const model = this.get('model');
+    const data = {
+      name: model.get('name'),
+      description: model.get('description'),
+      cert: model.get('cert'),
+      key: model.get('key'),
+      certChain: model.get('certChain'),
+    };
+
+    return this._super({data});
+  },
+
   doneSaving() {
     this.send('cancel');
   },

@@ -47,7 +47,13 @@ export default ModalBase.extend(NewOrEdit, {
 
   doSave: function() {
     if ( !this.get('missingCredential') ) {
-      return this._super(...arguments);
+      const credential = this.get('primaryResource');
+      const data = {
+        publicValue: credential.get('publicValue'),
+        secretValue: credential.get('secretValue'),
+      };
+
+      return this._super({data});
     }
 
     const registry = this.get('originalModel.registry');
