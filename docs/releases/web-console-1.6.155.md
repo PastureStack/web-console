@@ -17,3 +17,10 @@ The focused Chrome QUnit layout test covers both themes, both directions and
 fit, dismiss-control placement and opacity. Local production/development
 build and the focused test passed. Official release CI and packaged 8080
 browser acceptance are separate gates and must be recorded after publication.
+
+The subsequent isolated v1.6.489 / 1.6.155 packaged-browser run confirmed
+navigation clearance but found that the fixed notice still obscured the
+375px page title and 1440px right-side sort controls. Thus the layout was not
+accepted despite the original focused runner reporting visibility PASS.
+Web Console 1.6.156 moves authenticated notices into document flow and adds
+content-overlap checks; this note retains the actual 1.6.155 outcome.
