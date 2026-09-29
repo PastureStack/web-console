@@ -20,23 +20,32 @@
       </div>
     {{/if}}
 
-    {{#if this.canCreateService}}
+    {{#if this.createOptions.any}}
     <div class="btn-group r-ml10">
-      <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-primary btn-sm" data-testid="stack-add-service">{{t 'stackHeader.add.service'}}</LinkTo>
-        <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="icon icon-chevron-down"></i>
-          <span class="sr-only">{{t 'nav.srToggleNav'}}</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end" role="menu">
-          {{#unless this.projects.current.isWindows}}
+      {{#if this.createOptions.service}}
+        <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-primary btn-sm" data-testid="stack-add-service">{{t 'stackHeader.add.service'}}</LinkTo>
+      {{/if}}
+      {{#if this.createOptions.other}}
+          <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            {{#unless this.createOptions.service}}{{t 'generic.moreActions'}}{{/unless}}
+            <i class="icon icon-chevron-down"></i>
+            <span class="sr-only">{{t 'nav.srToggleNav'}}</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" role="menu">
+          {{#if this.createOptions.balancer}}
           <li><LinkTo @route="service.new-balancer" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.balancer'}}</LinkTo></li>
-          {{/unless}}
+          {{/if}}
+          {{#if this.createOptions.alias}}
           <li><LinkTo @route="service.new-alias" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.alias'}}</LinkTo></li>
+          {{/if}}
+          {{#if this.createOptions.external}}
           <li><LinkTo @route="service.new-external" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.external'}}</LinkTo></li>
-          {{#if (and this.hasVm (not this.projects.current.isWindows))}}
+          {{/if}}
+          {{#if this.createOptions.vm}}
             <li><LinkTo @route="service.new-virtualmachine" @query={{hash stackId=this.model.id}}>{{t 'stackHeader.add.vm'}}</LinkTo></li>
           {{/if}}
-        </ul>
+          </ul>
+      {{/if}}
     </div>
     {{/if}}
 

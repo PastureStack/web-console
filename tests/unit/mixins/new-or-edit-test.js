@@ -7,6 +7,33 @@ import NewOrEdit from 'ui/mixins/new-or-edit';
 
 module('Unit | Mixin | new or edit');
 
+test('the save error action uses optional localized formatting', function(assert) {
+  let intl = {t(key) {
+    return {
+      'resourceSaveError.unavailable': '無法完成儲存。',
+      'resourceSaveError.validation': '伺服器未接受變更。',
+      'resourceSaveError.failed': '儲存失敗。',
+      'viewEditProject.error.projectNotSaved': '環境設定未儲存。',
+    }[key];
+  }};
+  let Subject = EmberObject.extend(NewOrEdit, {intl});
+  let subject = Subject.create();
+
+  subject.get('actions').error.call(subject, {status: 403});
+  assert.deepEqual(subject.get('errors'), ['無法完成儲存。']);
+  subject.get('actions').error.call(subject, {status: 404, message: 'Private ID exists'});
+  assert.deepEqual(subject.get('errors'), ['無法完成儲存。']);
+  subject.get('actions').error.call(subject, {
+    status: 403,
+    messageKey: 'viewEditProject.error.projectNotSaved',
+    message: '環境設定未儲存。',
+  });
+  assert.deepEqual(subject.get('errors'), ['環境設定未儲存。'], 'Project keeps its stage-specific message');
+  subject.get('actions').error.call(subject, {status: 422, fieldName: 'name', detail: 'already used'});
+  assert.deepEqual(subject.get('errors'), ['伺服器未接受變更。 name: already used']);
+  run(() => subject.destroy());
+});
+
 function subjectWith(overrides={}) {
   let Subject = EmberObject.extend(NewOrEdit, {
     displayedErrors: null,

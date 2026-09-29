@@ -4,7 +4,7 @@ import Route from '@ember/routing/route';
 import EmberObject, { get } from '@ember/object';
 import C from 'ui/utils/constants';
 import { catalogVersionOptions } from 'ui/utils/catalog-version-options';
-import RequireCreatePermission from 'ui/mixins/require-create-permission';
+import Errors from 'ui/utils/errors';
 
 function resourceValue(resource, path) {
   if ( !resource ) {
@@ -18,33 +18,63 @@ function resourceValue(resource, path) {
   return get(resource, path);
 }
 
-export default Route.extend(RequireCreatePermission, {
+export default Route.extend({
   catalog: service(),
-
-  requiredCreateType: 'stack',
-  requiredUpdateType: 'stack',
-  updateWhenQueryParam: 'upgrade',
+  intl: service(),
+  projects: service(),
 
   parentRoute: 'catalog-tab',
 
+  unavailable(key, status=403) {
+    return {status, code: status === 404 ? 'NotFound' : 'Forbidden', messageKey: key, message: this.get('intl').t(key)};
+  },
+
+  fetchTemplate(id, upgrade=false) {
+    return this.get('catalog').fetchTemplate(id, upgrade).catch((err) => {
+      let status = Errors.status(err);
+      if ( status === 403 || status === 404 ) {
+        throw this.unavailable(upgrade ? 'newCatalog.upgradeUnavailable' : 'newCatalog.templateUnavailable', 404);
+      }
+      throw err;
+    });
+  },
+
   model: function(params/*, transition*/) {
     var store = this.get('store');
+    let projectId = this.get('projects.current.id');
+
+    if ( !params.stackId && !this.get('projects').canCreateResource('stack') ) {
+      throw this.unavailable('newCatalog.permissionDenied');
+    }
+    if ( params.upgrade && !params.stackId ) {
+      throw this.unavailable('newCatalog.upgradeUnavailable');
+    }
 
     var dependencies = {
-      tpl: this.get('catalog').fetchTemplate(params.template),
+      tpl: this.fetchTemplate(params.template),
     };
 
     if ( params.upgrade )
     {
-      dependencies.upgrade = this.get('catalog').fetchTemplate(params.upgrade, true);
+      dependencies.upgrade = this.fetchTemplate(params.upgrade, true);
     }
 
     if ( params.stackId )
     {
-      dependencies.stack = store.find('stack', params.stackId);
+      dependencies.stack = store.find('stack', params.stackId).catch((err) => {
+        let status = Errors.status(err);
+        if ( status === 403 || status === 404 ) {
+          throw this.unavailable('resourceLoadError.stackUnavailable', 404);
+        }
+        throw err;
+      });
     }
 
     return hash(dependencies, 'Load dependencies').then((results) => {
+      if ( results.stack && !resourceValue(results.stack, 'actionLinks.upgrade') ) {
+        throw this.unavailable('newCatalog.upgradeUnavailable');
+      }
+
       if ( !results.stack )
       {
         results.stack = store.createRecord({
@@ -73,6 +103,7 @@ export default Route.extend(RequireCreatePermission, {
       let verArr = catalogVersionOptions(links, currentOption);
 
       return EmberObject.create({
+        projectId,
         stack: results.stack,
         tpl: results.tpl,
         upgrade: results.upgrade,

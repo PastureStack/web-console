@@ -24,6 +24,7 @@ export default Component.extend(NewOrEdit, {
   allTemplates: null,
   templateResource: null,
   stackResource: null,
+  projectId: null,
   versionsArray: null,
   versionsLinks: null,
   actuallySave: true,
@@ -44,6 +45,29 @@ export default Component.extend(NewOrEdit, {
   primaryResource: alias('stackResource'),
   templateBase: alias('templateResource.templateBase'),
   editing: notEmpty('stackResource.id'),
+  canSubmit: computed('actuallySave', 'editing', 'projectId', 'projects.current.id',
+    'projects.schemaProjectId', 'projects.schemaLoadGeneration',
+    'stackResource.actionLinks.upgrade', function() {
+      if ( !this.get('actuallySave') ) {
+        return true;
+      }
+
+      let projectId = this.get('projectId');
+      if ( !projectId || this.get('projects.current.id') !== projectId ||
+        this.get('projects.schemaProjectId') !== projectId ) {
+        return false;
+      }
+
+      return this.get('editing') ? !!this.get('stackResource.actionLinks.upgrade') :
+        this.get('projects').canCreateResource('stack');
+    }),
+  submissionErrorKey: computed('editing', 'projectId', 'projects.current.id', function() {
+    if ( this.get('editing') ) {
+      return 'newCatalog.upgradeUnavailable';
+    }
+    return this.get('projectId') === this.get('projects.current.id') ?
+      'newCatalog.permissionDenied' : 'newCatalog.projectChanged';
+  }),
 
   previewOpen: false,
   previewTab: null,
@@ -310,13 +334,13 @@ export default Component.extend(NewOrEdit, {
     var errors = [];
 
     if (!this.get('editing') && !this.get('stackResource.name')) {
-      errors.push('Name is required');
+      errors.push(this.get('intl').t('validation.required', {key: this.get('intl').t('generic.name')}));
     }
 
     if (this.get('selectedTemplateModel.questions')) {
       this.get('selectedTemplateModel.questions').forEach((item) => {
         if (item.required && isCatalogQuestionAnswerMissing(item.answer)) {
-          errors.push(`${item.label} is required`);
+          errors.push(this.get('intl').t('validation.required', {key: item.label}));
         }
       });
     }
@@ -370,6 +394,10 @@ export default Component.extend(NewOrEdit, {
 
   doSave() {
     var stack = this.get('stackResource');
+    if ( !this.get('canSubmit') ) {
+      let messageKey = this.get('submissionErrorKey');
+      throw {status: 403, code: 'Forbidden', messageKey, message: this.get('intl').t(messageKey)};
+    }
     if (this.get('editing')) {
       return stack.doAction('upgrade', {
         dockerCompose: stack.get('dockerCompose'),
@@ -383,7 +411,13 @@ export default Component.extend(NewOrEdit, {
   },
 
   doneSaving() {
-    var projectId = this.get('projects.current.id');
+    const projectId = this.get('projectId');
+    // A save can finish after the user has selected another environment.
+    // Never navigate a completed stack ID under that newer environment.
+    if (!projectId || this.isDestroying || this.isDestroyed ||
+        this.get('projects.current.id') !== projectId) {
+      return;
+    }
     if ( this.get('stackResource.system') )
     {
       return this.get('router').transitionTo('stack', projectId, this.get('primaryResource.id'), {queryParams: {which: 'infra'}});

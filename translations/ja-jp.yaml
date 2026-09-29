@@ -79,6 +79,9 @@ accountsPage:
       noName: なし
   new:
     header: アカウントを追加
+    error:
+      usernameRequired: ログイン用ユーザー名を入力してください。
+      passwordRequired: パスワードを入力してください。
     form:
       username:
         labelText: ログイン ユーザー名
@@ -258,6 +261,148 @@ auditLogsPage:
   first: 最初のページ
   next: 次のページ
 authPage:
+  mfa:
+    navigation: 多要素認証
+    header: 多要素認証
+    account: アカウント
+    manageAccounts: システムのログインセキュリティ
+    manageAccount: '{account} の多要素認証を管理'
+    managedAccountWarning: 別のアカウントを管理しています。セキュリティ上、管理者は認証要素の確認と削除はできますが、アカウント所有者に代わって新しい認証要素の登録、復旧用メールアドレスの確認、リカバリーコードの取得はできません。
+    accountManagement:
+      header: アカウントのセキュリティ管理
+      help: アカウントを選択して、ログインに使用する認証要素を確認または削除します。この選択によって、上のシステム全体のポリシーやメール送信設定は変更されません。
+    sessionRevoked: このセキュリティ変更に伴い、このアカウントの有効なセッションを無効にしました。続行するには再度ログインしてください。
+    signInAgain: 再度ログイン
+    selfService:
+      navigation: ログインセキュリティ
+      header: 自分のログインセキュリティ
+      help: 自分の認証要素とアカウント復旧方法を登録・管理します。セキュリティ設定を変更すると、再度ログインが必要になる場合があります。
+      manageMine: 自分の多要素認証を管理
+    summary:
+      totp: 認証アプリ
+      passkeys: パスキー
+      recoveryCodes: リカバリーコード
+      policy: 登録ポリシー
+      required: 必須
+      optional: 任意
+    recoveryCodes:
+      header: リカバリーコード
+      oneTimeHelp: 使い捨てのコードを今すぐ保存してください。後から再表示することはできません。
+      copy: コードをコピー
+      saved: コードを保存しました
+      help: 登録済みの別の認証方法を使えない場合、リカバリーコードで緊急ログインできます。
+      regenerate: 新しいリカバリーコードを生成
+      confirm: 既存のリカバリーコードは使えなくなります。新しいコードを生成しますか？
+      requiresFactor: リカバリーコードを生成する前に、認証アプリまたはパスキーを登録してください。
+    factor:
+      header: 登録済みの認証要素
+      type: 種類
+      label: 名前
+      created: 登録日時
+      lastUsed: 最終使用日時
+      none: このアカウントには認証要素が登録されていません。
+      types:
+        totp: 認証アプリ
+        passkey: パスキー
+      confirmRevoke: '「{label}」を削除しますか？'
+      confirmRevokeAll: このアカウントの認証要素と復旧方法をすべて削除しますか？
+    totp:
+      header: 認証アプリ
+      scanHelp: 認証アプリでこの QR コードを読み取るか、シークレットを手動で入力し、現在の 6 桁のコードで確認してください。
+      qrAlt: 認証アプリ登録用の QR コード
+      manualSecret: 手動設定用シークレット
+      defaultLabel: 認証アプリ
+      code: 6 桁のコード
+      confirm: 確認して登録
+      help: Google Authenticator や Microsoft Authenticator など、RFC 6238 に対応するアプリを登録できます。
+      add: 認証アプリを登録
+      openAuthenticator: 認証アプリで開く
+    passkey:
+      header: パスキー
+      help: Windows Hello、スマートフォン、ハードウェアセキュリティキーを登録できます。localhost を除き、パスキーには HTTPS が必要です。
+      defaultLabel: パスキー
+      add: パスキーを登録
+      notConfigured: パスキーを登録する前に、HTTPS オリジンとリライングパーティー ID を設定してください。
+      secureContextRequired: このブラウザーでパスキーを登録するには HTTPS が必要です。ただし、管理画面を localhost で開いている場合は除きます。
+    email:
+      header: 自分の復旧用メールアドレス
+      help: このアカウントの復旧先としてのみ使うメールアドレスを確認します。このアドレスは多要素認証の要素にはなりません。
+      systemManaged: メール送信サービスはシステム管理者が設定し、全アカウントで共有します。アカウントには SMTP サーバー、送信元アドレス、パスワードは保存されません。
+      verified: '確認済みの復旧用アドレス：{email}'
+      revoke: 復旧用メールアドレスを削除
+      sent: '6 桁の確認コードを {email} に送信しました。'
+      code: 6 桁の確認コード
+      confirm: アドレスを確認
+      placeholder: name@example.com
+      verify: 確認コードを送信
+      confirmRevoke: 確認済みの復旧用メールアドレスを削除しますか？
+      notConfigured: システム管理者が SMTP のメール送信を設定するまで、メールによるアカウント復旧は利用できません。
+    securityConfirmation:
+      header: このセキュリティ変更を確認
+      help: 登録済みの認証要素を 1 つ使用してください。この短時間有効な確認は、1 回のセキュリティ操作にのみ使用できます。
+      secureContextRequired: この接続では HTTPS または localhost が必要なため、パスキーを使用できません。表示されている別の方法を使うか、HTTPS で接続し直してください。
+      confirm: 確認して続行
+      error: セキュリティ確認を完了できませんでした。
+    settings:
+      header: システム全体のログインセキュリティ
+      scopeHelp: これらの設定は、この PastureStack にあるすべてのアカウントに適用され、システム管理者のみが変更できます。
+      localRecoveryReady: ローカル管理者の緊急ログインは維持されています。シングルサインオンや認証サービスに接続できない場合も利用できますが、プラットフォームの多要素認証が必要です。
+      localRecoveryBlocked: 確認済みのローカル管理者復旧経路がないため、外部認証を安全に使用できません。
+      enforcement: 登録要件
+      optional: すべてのアカウントで任意
+      requiredAdmins: システム管理者に必須
+      requiredAll: すべての対話型アカウントに必須
+      passkeyLimit: アカウントごとのパスキー登録上限
+      issuer: 認証アプリに表示する発行者名
+      webAuthn: パスキー設定
+      rpName: リライングパーティーの表示名
+      rpId: リライングパーティー ID
+      rpIdPlaceholder: console.example.com
+      origin: 管理画面の正確なオリジン
+      originPlaceholder: https://console.example.com
+      webAuthnHelp: リライングパーティー ID は管理画面のホスト名と一致する必要があり、公開サフィックスは指定できません。本番環境では正確な HTTPS オリジンを使用してください。HTTP が許可されるのは localhost のみです。
+      passkeyCounterPolicy: パスキーのカウンター処理
+      passkeyCounterRiskAware: 同期されたパスキーを許可し、カウンターの異常を記録
+      passkeyCounterStrict: パスキーのカウンターが増加しない場合は必ず拒否
+      passkeyCounterHelp: リスクを考慮するモードでは、ユーザー確認済みの同期されたパスキーについて、共有カウンターが増加しなくても受け入れ、異常を記録します。同期されていない認証情報は引き続き拒否します。
+      verificationProtection: 確認試行の保護
+      maximumFailedAttempts: 一時ロックまでに許容する失敗回数
+      lockoutSeconds: 一時ロックの継続時間（秒）
+      securityConfirmationTtlSeconds: セキュリティ確認の有効期間（秒）
+      verificationProtectionHelp: 失敗回数はブラウザーのチャレンジ単位ではなく、アカウント単位で記録されます。ログインをやり直しても回数はリセットされません。
+      federatedMfa: シングルサインオン後の多要素認証の責任範囲
+      federatedMfaMode: OIDC ログイン後の多要素認証方法
+      federatedPlatform: 常に PastureStack で再確認
+      federatedTrustedClaims: 確認済みの OIDC 多要素認証クレームを信頼
+      maximumFederatedAuthenticationAgeSeconds: 上流の多要素認証の最大経過時間（秒）
+      trustedAuthenticationMethods: 信頼する amr 値（カンマ区切り）
+      trustedAuthenticationMethodsPlaceholder: mfa, otp, hwk, webauthn
+      trustedAuthenticationContexts: 信頼する acr 値（カンマ区切り、省略可）
+      federatedMfaWarning: ID プロバイダーが amr、acr、auth_time に確実に署名する場合にのみ OIDC クレームを信頼してください。ローカル管理者の緊急ログインには、常に PastureStack の多要素認証が必要です。
+      smtp: システム共通のメール送信（SMTP）
+      smtpHelp: メール送信サービスはシステム全体で一度だけ設定します。各アカウントには、本人が確認した復旧先メールアドレスのみを保存します。
+      smtpEnabled: アカウント復旧用の共通 SMTP 送信を有効にする
+      smtpHost: SMTP サーバー
+      smtpPort: ポート
+      smtpUsername: ユーザー名
+      smtpPassword: パスワード
+      smtpClearPassword: 保存済みの SMTP パスワードを削除
+      smtpFrom: 送信元アドレス
+      startTls: STARTTLS で接続を暗号化
+      implicitTls: 暗黙的 TLS を使用
+      codeTtl: コードの有効期間（秒）
+      testRecipient: テスト送信先
+      saveAndTest: 保存してテストメールを送信
+      securityEmailLocale: セキュリティメールの言語
+      localeTraditionalChinese: 繁体字中国語（台湾）
+      localeEnglish: 英語
+    danger:
+      header: 認証・復旧手段をすべて削除
+      help: 選択したアカウントの認証アプリ、パスキー、リカバリーコード、確認済みの復旧用メールアドレスをすべて削除します。
+      revokeAll: 認証要素と復旧方法をすべて削除
+    error:
+      generic: 多要素認証のリクエストを完了できませんでした。
+      secureContext: localhost を除き、パスキーには HTTPS が必要です。
   oidc:
     defaultProviderName: OpenID Connect
     status:
@@ -766,6 +911,20 @@ failWhalePage:
     再度試してみるために以下を実施してください<br> <a href="#" onclick="window.location.href = window.location.href; return
     false;">再読み込み</a>または
   logoutButton: ログアウト
+resourceLoadError:
+  projectTemplateUnavailable: この環境テンプレートは存在しないか、編集する権限がありません。ページを再読み込みするか、管理者にお問い合わせください。
+  stackUnavailable: このアプリケーションスタックは存在しないか、表示する権限がありません。ページを再読み込みするか、管理者にお問い合わせください。
+  stackFailed: サーバーが現在リクエストを処理できないため、このアプリケーションスタックを読み込めません。しばらくしてからもう一度お試しください。
+  accountsUnavailable: アカウントを読み込めません。アカウントが存在しないか、表示する権限がない可能性があります。ページを再読み込みするか、管理者にお問い合わせください。
+  accountsFailed: サーバーが現在リクエストを処理できないため、アカウントを読み込めません。しばらくしてからもう一度お試しください。
+  accountSecurityUnavailable: アカウントのセキュリティ設定を読み込めません。アカウントが存在しないか、表示する権限がない可能性があります。ページを再読み込みするか、管理者にお問い合わせください。
+  accountSecurityFailed: サーバーが現在リクエストを処理できないため、アカウントのセキュリティ設定を読み込めません。しばらくしてからもう一度お試しください。
+resourceSaveError:
+  scaleFailed: サービスの数を更新できませんでした。
+  unavailable: 保存を完了できませんでした。リソースを利用できないか、権限がない可能性があります。再試行する前にページを再読み込みして、保存済みの内容を確認してください。
+  actionUnavailable: 操作を完了できませんでした。リソースを利用できないか、権限がない可能性があります。再試行する前にページを再読み込みして、現在の状態を確認してください。
+  validation: サーバーが変更を受け付けませんでした。入力項目を確認して、もう一度お試しください。
+  failed: 保存を完了できませんでした。再試行する前にページを再読み込みして、保存済みの内容を確認してください。
 haPage:
   header: 高可用性
   setup:
@@ -960,6 +1119,62 @@ loginPage:
   greeting: '<br>ようこそ {appName} へ!'
   githubMessage: '{appName} はアカウントやチームの管理に GitHub を利用しています。 ログインしてあなたの GitHub アカウント情報に読み込み権限でアクセスするために以下のボタンを押して下さい。'
   oidcMessage: '{appName} はシングルサインオンに {providerName} を使用します。設定済みの ID プロバイダーに進んでログインしてください。'
+  localRecovery:
+    header: ローカル管理者による復旧
+    help: 外部の ID プロバイダーを利用できない場合にのみ使用してください。ここからログインできるのは、有効なシステム管理者だけです。
+    action: ローカル管理者アカウントでログイン
+    back: シングルサインオンに戻る
+  mfa:
+    header: 本人確認
+    enrollmentRequired: セッションを開始するには、このアカウントで多要素認証を登録する必要があります。
+    methods:
+      totp: 認証アプリ
+      totpEnrollment: 認証アプリを設定
+      webauthn: パスキー
+      webauthnEnrollment: パスキーを設定
+      recoveryCode: リカバリーコード
+      emailRecovery: メールでアカウントを復旧
+    recoveryOptions:
+      show: 認証アプリやパスキーを使用できませんか？
+      header: アカウントの復旧
+      help: 登録済みの認証方法を使用できない場合にのみ、これらの復旧方法を使用してください。
+      back: 通常の本人確認に戻る
+    totp:
+      enrollHelp: 設定用 URI を認証アプリに追加するか、シークレットを手動で入力してから、現在の 6 桁のコードを入力してください。
+      secret: 設定用シークレット
+      code: 6 桁のコード
+      placeholder: '000000'
+      qrAlt: 認証アプリの設定用 QR コード
+    verify: 確認
+    passkey:
+      help: Windows Hello、スマートフォン、ハードウェアセキュリティキーに登録済みのパスキーを使用します。
+      action: パスキーを使用
+      enrollHelp: Windows Hello、スマートフォン、ハードウェアセキュリティキーでパスキーを作成します。
+      enrollAction: パスキーを設定
+      secureContextRequired: パスキーには HTTPS または localhost が必要です。この接続では、認証アプリまたはアカウント復旧方法を使用してください。
+    recoveryCode:
+      help: 未使用のリカバリーコードを 1 つ入力してください。
+      placeholder: リカバリーコード
+    emailRecovery:
+      warning: メールによる復旧では、登録済みの認証要素と有効なセッションがリセットされます。メールは多要素認証の要素としては使用されません。
+      destination: '{email} に復旧コードを送信'
+      placeholder: 6 桁の復旧コード
+      complete: アカウントを復旧
+      send: 復旧コードを送信
+    cancel: ログインを中止
+    recoveryCodes:
+      header: リカバリーコードを保存
+      help: 使い捨てのコードを安全な場所に保存してください。後から再表示することはできません。
+      copy: コードをコピー
+      saved: コードを保存しました
+    error:
+      invalid: 確認に失敗しました。入力内容を確認して、もう一度お試しください。
+      secureContext: localhost を除き、パスキーには HTTPS が必要です。
+      locked: 確認の失敗回数が上限を超えました。一時ロックが解除されてから、もう一度お試しください。
+      factorRequired: このセキュリティ変更を確認する前に、認証アプリまたはパスキーを登録してください。
+      administratorFactorRequired: 別のアカウントを管理する前に、管理者アカウントに認証要素を登録してください。
+      passkeyCounter: このパスキーを安全に確認できませんでした。別の登録済み認証方法をお試しください。
+      passkeyLimit: このアカウントは、設定されたパスキーの登録上限に達しています。
   shibbolethMessage: '{appName} はアカウントの管理にシボレスを利用しています。 設定済みのシボレス IDP にログインするには以下のボタンを押して下さい。'
   shibbolethError:
     '401': 認証に失敗しました
@@ -1651,6 +1866,10 @@ devicePermissions:
   mknod: ムノッド
 editAccount:
   title: アカウントを編集
+  error:
+    currentPasswordRequired: 現在のパスワードを入力してください。
+    newPasswordsMismatch: 新しいパスワードが一致しません。
+    currentPasswordIncorrect: 現在のパスワードが正しくありません。
   form:
     name:
       label: 名前
@@ -2556,7 +2775,10 @@ identityBlock:
   systemService: システムサービス
 infoMultiStats:
   connecting: 接続中...
-  utilizationStats: 利用率の統計はアクティブ/起動中の場合のみ利用できます。
+  utilizationStats: 監視データを一時的に取得できません。リソースとホストの状態を確認してから、もう一度お試しください。
+  authError: 監視セッションを確認できません。ページを再読み込みし、解決しない場合は再度ログインしてください。
+  permissionError: このリソースの監視データを表示する権限がありません。
+  notFound: このリソースの監視データは利用できません。
   time:
     now: 現在
     minutesSecondsAgo: '{minutes}分{seconds}秒前'
@@ -3346,6 +3568,10 @@ newBalancer:
     noTarget: 各ルールには対象が必要です
     needsCertificate: SSL/TLS ポートルールであるため証明書が必要です
 newCatalog:
+  permissionDenied: この環境でスタックを作成する権限がありません。
+  projectChanged: このフォームを開いた後に環境が切り替わりました。対象の環境でスタック作成フォームを開き直してください。
+  templateUnavailable: このカタログテンプレートは存在しないか、使用する権限がありません。ページを再読み込みするか、管理者にお問い合わせください。
+  upgradeUnavailable: このスタックは現在アップグレードできないか、権限がありません。ページを更新して状態を確認してください。
   version:
     prompt: バージョンを選択してください...
     default: '当時のデフォルト（現在は{version}）'
@@ -3523,6 +3749,7 @@ projectUpgrade:
   header: 環境をアップグレード
   detail: '{appName} {appVersion} には、既存のシステムサービスやロードバランサーコンテナをアップグレードする必要がある変更が含まれています。'
   notOwner: この環境のオーナーまたは管理者だけがアップグレードを実行できます。
+  notAvailable: この環境は現在アップグレードできません。
   actionButton: 今すぐアップグレード
   banner: 環境をアップグレード中...
 registryRow:
@@ -3726,6 +3953,8 @@ viewEditDescription:
 viewEditProject:
   nativeEngine: ネイティブエンジン
   error:
+    memberAlreadyListed: このメンバーはすでに一覧に追加されています。
+    ownerRequired: 環境のオーナーを 1 人以上追加してください。
     projectUnavailable: この環境は存在しないか、表示する権限がありません。ページを再読み込みするか、管理者にお問い合わせください。
     membersUnavailable: 環境のメンバーを読み込めませんでした。この環境が存在しなくなったか、アクセス権がなくなった可能性があります。ページを再読み込みするか、管理者にお問い合わせください。
     projectNotSaved: 環境の設定は保存されませんでした。この環境が存在しなくなったか、編集権限がない可能性があります。ページを再読み込みして確認してください。

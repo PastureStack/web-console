@@ -90,6 +90,29 @@ test('unchanged parent stats survive child-route attribute refreshes', function(
   destroyOwned(component);
 });
 
+test('an unavailable stats link shows a message instead of a permanent spinner', function(assert) {
+  let component = createOwned(InfoMultiStatsComponent, {
+    renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
+    statsSocket: EmberObject.create({available: true, connectError: true}),
+    renderOk: false,
+  }, 'component');
+
+  assert.true(component.get('showUnavailable'), 'the unavailable message is visible');
+  assert.false(component.get('waitingForData'), 'connecting text is hidden');
+  assert.strictEqual(component.get('unavailableMessage'), 'infoMultiStats.utilizationStats',
+    'transport failures use a neutral message');
+
+  for (const [status, key] of [[401, 'authError'], [403, 'permissionError'], [404, 'notFound']]) {
+    component.set('statsSocket.connectErrorStatus', status);
+    assert.strictEqual(component.get('unavailableMessage'), `infoMultiStats.${key}`,
+      `${status} has its own useful message`);
+  }
+
+  component.set('statsSocket', null);
+  destroyOwned(component);
+});
+
 test('Billboard redraws seeded host series without point-node errors', async function(assert) {
   var target = document.createElement('div');
   target.style.width = '540px';

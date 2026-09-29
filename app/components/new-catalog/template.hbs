@@ -173,7 +173,10 @@
   {{/if}}
 
   <div class="footer-actions">
-    {{save-cancel createLabel=(if this.editing this.saveUpgrade this.saveNew) save="save" cancel="cancel"}}
+    {{#unless this.canSubmit}}
+      <div class="alert alert-warning" role="alert">{{t this.submissionErrorKey}}</div>
+    {{/unless}}
+    {{save-cancel createLabel=(if this.editing this.saveUpgrade this.saveNew) save="save" cancel="cancel" saveDisabled=(not this.canSubmit)}}
   </div>
 {{else}}
   <div class="footer-actions">

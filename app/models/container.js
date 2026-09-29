@@ -178,8 +178,9 @@ var Container = Instance.extend({
   }.property('primaryIpAddress','primaryAssociatedIpAddress'),
 
   canDelete: function() {
-    return ['removed','removing','purging','purged'].indexOf(this.get('state')) === -1;
-  }.property('state'),
+    return !!this.get('actionLinks.remove') &&
+      ['removed','removing','purging','purged'].indexOf(this.get('state')) === -1;
+  }.property('state', 'actionLinks.remove'),
 
   isManaged: notEmpty('systemContainer'),
 

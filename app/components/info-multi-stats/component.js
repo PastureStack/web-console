@@ -1,5 +1,5 @@
 import { cancel, next } from '@ember/runloop';
-import { alias, and, not } from '@ember/object/computed';
+import { alias, and, not, or } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import bb from 'billboard.js';
@@ -93,7 +93,18 @@ export default Component.extend({
   active: alias('statsSocket.active'),
   loading: alias('statsSocket.loading'),
   notRenderOk: not('renderOk'),
-  waitingForData: and('available', 'notRenderOk'),
+  statsError: alias('statsSocket.connectError'),
+  statsErrorStatus: alias('statsSocket.connectErrorStatus'),
+  noStatsError: not('statsError'),
+  noStatsAvailable: not('available'),
+  showUnavailable: or('noStatsAvailable', 'statsError'),
+  waitingForData: and('available', 'notRenderOk', 'noStatsError'),
+  unavailableMessage: function() {
+    const status = this.get('statsErrorStatus');
+    const key = status === 401 ? 'authError' : status === 403 ? 'permissionError' :
+      status === 404 ? 'notFound' : 'utilizationStats';
+    return this.get('intl').t(`infoMultiStats.${key}`);
+  }.property('statsErrorStatus'),
 
   cpuCanvas: '#cpuGraph',
   cpuGraph: null,

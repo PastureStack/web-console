@@ -1,6 +1,6 @@
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
-import { resolve } from 'rsvp';
+import { defer, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 
 import EditRegistry from 'ui/components/edit-registry/component';
@@ -15,6 +15,16 @@ test('a registry without credentials opens safely and checks the server before a
   let saveOptions;
   let reads = 0;
   let credentials = A([]);
+  let pendingRead = null;
+  let canCreate = true;
+  const projects = EmberObject.create({
+    current: EmberObject.create({id: 'project-1'}),
+    schemaProjectId: 'project-1',
+    canCreateResource(type) {
+      assert.strictEqual(type, 'registryCredential');
+      return canCreate;
+    },
+  });
   const store = EmberObject.create({
     createRecord(data) {
       creates++;
@@ -30,7 +40,7 @@ test('a registry without credentials opens safely and checks the server before a
       assert.strictEqual(type, 'registrycredential');
       assert.strictEqual(id, null);
       assert.true(options.forceReload, 'the orphan path bypasses a cached collection');
-      return resolve(credentials);
+      return pendingRead ? pendingRead.promise : resolve(credentials);
     },
   });
   const registry = EmberObject.create({
@@ -42,7 +52,8 @@ test('a registry without credentials opens safely and checks the server before a
   const component = createOwned(EditRegistry, {
     renderer: inertRenderer(),
     intl: EmberObject.create({t(key) { return key; }}),
-    modalService: EmberObject.create({modalOpts: EmberObject.create({registry, credential: null, registries: A([registry])})}),
+    projects,
+    modalService: EmberObject.create({modalOpts: EmberObject.create({registry, credential: null, registries: A([registry]), projectId: 'project-1'})}),
   }, 'component');
 
   assert.true(component.get('missingCredential'), 'no clone() call on a missing credential');
@@ -61,12 +72,47 @@ test('a registry without credentials opens safely and checks the server before a
   assert.strictEqual(reads, 2);
   assert.strictEqual(saves, 1, 'only the still-empty orphan path submits a credential');
   assert.strictEqual(saveOptions, undefined, 'the missing-credential POST path keeps its original save call');
+
+  canCreate = false;
+  projects.incrementProperty('schemaLoadGeneration');
+  assert.false(component.get('canSaveCredential'), 'schema revocation disables the open modal');
+  try {
+    await component.doSave();
+    assert.ok(false, 'a revoked creator must not submit');
+  } catch (error) {
+    assert.strictEqual(error.status, 403);
+    assert.strictEqual(error.messageKey, 'resourceSaveError.unavailable');
+  }
+  assert.strictEqual(reads, 2, 'a denied save makes no collection request');
+  assert.strictEqual(saves, 1, 'a denied save makes no POST');
+
+  canCreate = true;
+  projects.incrementProperty('schemaLoadGeneration');
+  pendingRead = defer();
+  const submission = component.doSave();
+  canCreate = false;
+  projects.incrementProperty('schemaLoadGeneration');
+  pendingRead.resolve(A([]));
+  try {
+    await submission;
+    assert.ok(false, 'revocation during the collection read must stop POST');
+  } catch (error) {
+    assert.strictEqual(error.status, 403);
+  }
+  assert.strictEqual(reads, 3);
+  assert.strictEqual(saves, 1);
   destroyOwned(component);
 });
 
 test('editing an existing credential sends only the editable fields', async function(assert) {
   const saveCalls = [];
   let registrySaves = 0;
+  let reads = 0;
+  let freshCredential = EmberObject.create({
+    id: 'credential-1',
+    registryId: 'registry-1',
+    actionLinks: {update: '/credential-1'},
+  });
   const saved = EmberObject.create({id: 'credential-1'});
   const editedCredential = EmberObject.create({
     id: 'credential-1',
@@ -85,16 +131,32 @@ test('editing an existing credential sends only the editable fields', async func
   const registry = EmberObject.create({
     id: 'registry-1',
     serverAddress: 'registry.invalid.test',
+    store: {
+      find(type, id, options) {
+        reads++;
+        assert.strictEqual(type, 'registrycredential');
+        assert.strictEqual(id, 'credential-1');
+        assert.true(options.forceReload, 'PUT capability is fetched again before saving');
+        return resolve(freshCredential);
+      },
+    },
     clone() { return EmberObject.create({id: this.get('id')}); },
     save() { registrySaves++; return resolve(this); },
   });
+  const originalCredential = EmberObject.create({
+    actionLinks: {update: '/credential-1'},
+    clone() { return editedCredential; },
+  });
+  const projects = EmberObject.create({current: EmberObject.create({id: 'project-1'}), schemaProjectId: 'project-1'});
   const component = createOwned(EditRegistry, {
     renderer: inertRenderer(),
     intl: EmberObject.create({t(key) { return key; }}),
+    projects,
     modalService: EmberObject.create({modalOpts: EmberObject.create({
       registry,
-      credential: EmberObject.create({clone() { return editedCredential; }}),
+      credential: originalCredential,
       registries: A([registry]),
+      projectId: 'project-1',
     })}),
   }, 'component');
 
@@ -112,6 +174,41 @@ test('editing an existing credential sends only the editable fields', async func
     publicValue: 'edited-user',
     secretValue: '',
   }, 'an explicitly empty password input is retained');
+  assert.strictEqual(reads, 2, 'each PUT checks current child capabilities');
+
+  freshCredential = EmberObject.create({
+    id: 'credential-1',
+    registryId: 'registry-1',
+    actionLinks: {},
+  });
+  try {
+    await component.doSave();
+    assert.ok(false, 'a revoked child update link must stop PUT');
+  } catch (error) {
+    assert.strictEqual(error.status, 403);
+    assert.strictEqual(error.messageKey, 'resourceSaveError.unavailable');
+  }
+  assert.strictEqual(saveCalls.length, 2);
+
+  freshCredential = EmberObject.create({
+    id: 'credential-1',
+    registryId: 'another-registry',
+    actionLinks: {update: '/credential-1'},
+  });
+  try {
+    await component.doSave();
+    assert.ok(false, 'a credential linked to another registry must not be updated');
+  } catch (error) {
+    assert.strictEqual(error.status, 404);
+    assert.strictEqual(error.messageKey, 'resourceSaveError.unavailable');
+  }
+  assert.strictEqual(saveCalls.length, 2);
+
+  originalCredential.set('actionLinks', {});
+  assert.false(component.get('canSaveCredential'), 'a cached link revocation disables Save');
+  originalCredential.set('actionLinks', {update: '/credential-1'});
+  projects.set('current.id', 'project-2');
+  assert.false(component.get('canSaveCredential'), 'an open editor cannot save into another project');
   assert.strictEqual(registrySaves, 0, 'the registry itself is not saved by this editor');
   destroyOwned(component);
 });

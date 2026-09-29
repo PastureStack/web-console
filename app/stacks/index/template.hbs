@@ -26,7 +26,7 @@
 <section class="stacks-wrap r-pl0 r-pr0">
   <div>
     {{#each this.arranged as |stack|}}
-      {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(and this.canCreateService (not stack.system))}}
+      {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(not stack.system)}}
     {{else}}
       {{#if (and this.model.stacks.length this.tags)}}
         <div class="r-m20 text-center text-muted">{{t 'stacksPage.noMatch'}}</div>

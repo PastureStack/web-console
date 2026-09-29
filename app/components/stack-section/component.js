@@ -14,8 +14,24 @@ export default Component.extend({
   single            : false,
   showAddService    : true,
 
-  canCreateService: computed('projects.current.id', 'projects.schemaProjectId', function() {
-    return this.get('projects').canCreateResource('service');
+  createOptions: computed('projects.current.id', 'projects.current.isWindows', 'projects.current.virtualMachine', 'projects.schemaProjectId', 'projects.schemaLoadGeneration', function() {
+    let projects = this.get('projects');
+    let windows = this.get('projects.current.isWindows');
+    let service = projects.canCreateResource('service');
+    let balancer = !windows && projects.canCreateResource('loadBalancerService');
+    let alias = projects.canCreateResource('dnsService');
+    let external = projects.canCreateResource('externalService');
+    let vm = service && !windows && this.get('hasVm');
+
+    return {
+      service,
+      balancer,
+      alias,
+      external,
+      vm,
+      other: balancer || alias || external || vm,
+      any: service || balancer || alias || external || vm,
+    };
   }),
 
   collapsed         : true,

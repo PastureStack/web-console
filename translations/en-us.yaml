@@ -1005,6 +1005,12 @@ resourceLoadError:
   accountsFailed: Accounts cannot be loaded right now because the server cannot process the request. Try again later.
   accountSecurityUnavailable: Account security settings cannot be loaded. The account may no longer exist, or you may not have permission to view it. Refresh the page or contact an administrator.
   accountSecurityFailed: Account security settings cannot be loaded right now because the server cannot process the request. Try again later.
+resourceSaveError:
+  scaleFailed: The service scale could not be updated.
+  unavailable: The save could not be completed. The resource may be unavailable, or you may not have permission. Refresh to check what was saved before retrying.
+  actionUnavailable: The action could not be completed. The resource may be unavailable, or you may not have permission. Refresh to check its current state before trying again.
+  validation: The server rejected the changes. Check the fields and try again.
+  failed: The save could not be completed. Refresh to check what was saved before retrying.
 
 haPage:
   header: High Availability
@@ -2929,7 +2935,10 @@ identityBlock:
 
 infoMultiStats:
   connecting: Connecting...
-  utilizationStats: Utilization stats are only available while active/running.
+  utilizationStats: Monitoring data is temporarily unavailable. Check the resource and host, then try again.
+  authError: The monitoring session could not be verified. Refresh this page; if the problem persists, sign in again.
+  permissionError: You do not have permission to view this resource's monitoring data.
+  notFound: Monitoring data is not available for this resource.
   time:
     now: Now
     minutesSecondsAgo: "{minutes} min, {seconds} sec ago"
@@ -3745,6 +3754,10 @@ newBalancer:
     needsCertificate: "A certificate is required because there are SSL/TLS port rules"
 
 newCatalog:
+  permissionDenied: You do not have permission to create a stack in this environment.
+  projectChanged: The environment changed while this form was open. Open the stack form again in the intended environment.
+  templateUnavailable: This catalog template does not exist or you do not have permission to use it. Refresh the page or contact an administrator.
+  upgradeUnavailable: This stack cannot be upgraded with your current permissions. Refresh the page and check the stack state before trying again.
   version:
     prompt: Choose a version...
     default: The default at the time (currently {version})
@@ -3932,6 +3945,7 @@ projectUpgrade:
   header: Upgrade Environment
   detail: "{appName} {appVersion} includes changes that require upgrading the existing system services and load balancer containers."
   notOwner: "Only an owner of this environment or an administrator can perform the upgrade."
+  notAvailable: "This environment cannot be upgraded right now."
   actionButton: Upgrade Now
   banner: Upgrading Environment...
 

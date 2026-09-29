@@ -24,6 +24,7 @@ function makeComponent({primarySave, portSave, linkSave}, closed) {
   });
   let component = createOwned(EditContainer, {
     renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
     modalService: EmberObject.create({
       modalOpts: null,
       modalVisible: true,

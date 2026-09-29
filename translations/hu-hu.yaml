@@ -3579,6 +3579,7 @@ projectUpgrade:
     A {appName} {appVersion} olyan változtatásokat tartalmaz, amelyek a meglévő rendszerszolgáltatások és a
     terheléselosztó tárolók frissítését igénylik.
   notOwner: Csak ennek a környezetnek a tulajdonosa vagy rendszergazdája hajthatja végre a frissítést.
+  notAvailable: Ez a környezet jelenleg nem frissíthető.
   actionButton: Frissítsen most
   banner: Környezet frissítése...
 registryRow:

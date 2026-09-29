@@ -1,9 +1,12 @@
 import Service from '@ember/service';
+import { service } from '@ember/service';
 import Errors from 'ui/utils/errors';
 import Util from 'ui/utils/util';
 
 export default Service.extend({
+  intl: service(),
   init: function() {
+    this._super(...arguments);
     $.jGrowl.defaults.pool = 6;
     $.jGrowl.defaults.closeTemplate = '<i class="icon icon-x"></i>';
     $.jGrowl.defaults.closerTemplate = '<div><button type="button" class="btn btn-info btn-xs btn-block">Dismiss All Notifications</button></div>';
@@ -40,7 +43,12 @@ export default Service.extend({
   },
 
   fromError: function(title, err) {
-    var body = Errors.stringify(err);
+    var status = Errors.status(err);
+    // Growls also report deletes and resource actions, not just saves.
+    // Keep denied/missing-resource details private without calling them saves.
+    var body = status === 403 || status === 404 ?
+      this.get('intl').t('resourceSaveError.actionUnavailable') :
+      Errors.stringify(err, this.get('intl'));
     this.error(title,body);
   },
 });

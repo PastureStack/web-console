@@ -1,10 +1,12 @@
 import { resolve } from 'rsvp';
 import { alias } from '@ember/object/computed';
+import { service } from '@ember/service';
 import Mixin from '@ember/object/mixin';
 import Resource from 'ember-api-store/models/resource';
 import Errors from 'ui/utils/errors';
 
 export default Mixin.create({
+  intl: service(),
   originalModel: null,
   errors: null,
   saving: false,
@@ -41,7 +43,7 @@ export default Mixin.create({
     error: function(err) {
       if (err)
       {
-        var body = Errors.stringify(err);
+        var body = Errors.stringify(err, this.get('intl'));
         this.set('errors', [body]);
       }
       else

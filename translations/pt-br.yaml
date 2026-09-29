@@ -3562,6 +3562,7 @@ projectUpgrade:
     {appName} {appVersion} inclui alterações que exigem a atualização dos serviços de sistema existentes e dos
     contêineres do balanceador de carga.
   notOwner: Somente um proprietário deste ambiente ou um administrador pode realizar a atualização.
+  notAvailable: Este ambiente não pode ser atualizado agora.
   actionButton: Atualize agora
   banner: Atualizando o ambiente...
 registryRow:

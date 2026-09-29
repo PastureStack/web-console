@@ -122,10 +122,14 @@ export default Mixin.create({
     this.updateStatus();
   },
 
-  color: computed('upgradeStatus', function() {
+  color: computed('upgradeStatus', 'canApplyUpgrade', function() {
+    if ( this.get('upgradeStatus') === NONE ) {
+      return 'hide';
+    }
+    if ( !this.get('canApplyUpgrade') ) {
+      return 'btn-disabled';
+    }
     switch ( this.get('upgradeStatus') ) {
-      case NONE:
-        return 'hide';
       case CURRENT:
         return 'btn-info';
       case LOADING:
@@ -141,6 +145,15 @@ export default Mixin.create({
     }
   }),
 
+  canApplyUpgrade: computed('upgradeStatus', 'model.actionLinks.{upgrade,finishupgrade}', function() {
+    let status = this.get('upgradeStatus');
+    if ( status === UPGRADED ) {
+      return !!this.get('model.actionLinks.finishupgrade');
+    }
+    return [REQUIRED, AVAILABLE, CURRENT].indexOf(status) >= 0 &&
+      !!this.get('model.actionLinks.upgrade');
+  }),
+
   currentVersion: computed('upgradeInfo','model.externalId', function() {
     let text = this.get('intl').findTranslationByKey('upgradeBtn.version.current');
     let version = this.get('upgradeInfo.version');
@@ -152,6 +165,9 @@ export default Mixin.create({
   }),
 
   doUpgrade() {
+    if ( !this.get('canApplyUpgrade') ) {
+      return;
+    }
     let status = this.get('upgradeStatus');
 
     if ( [REQUIRED,AVAILABLE,CURRENT].indexOf(status) >= 0 )
