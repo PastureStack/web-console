@@ -2808,7 +2808,7 @@ infoMultiStats:
   connecting: 連線中…
   utilizationStats: 暫時無法取得監控資料。請確認資源與主機狀態，稍後再試。
   authError: 無法驗證監控工作階段。請重新整理頁面；若問題持續，請重新登入。
-  permissionError: 你沒有權限查看此資源的監控資料。
+  permissionError: 你沒有權限檢視此資源的監控資料。
   notFound: 此資源目前沒有可用的監控資料。
   time:
     now: 現在
