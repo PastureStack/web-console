@@ -26,5 +26,7 @@ their direct-ID authorization remains untested rather than marked passing.
 Packaged Server browser acceptance must be recorded after this Web Console
 asset is incorporated into a new immutable Server image.
 
-The Node 24 package lock changes only the two root version fields from
-1.6.152 to 1.6.153; dependency entries are unchanged.
+The Node 24 package lock changes its two root version fields from 1.6.152 to
+1.6.153 and updates the development-only `fast-uri` override from 3.1.6 to
+3.1.7 and `morgan` from 1.12.0 to 1.12.1, matching the reviewed lockfile
+baseline. The live dependency audit remains enabled.
