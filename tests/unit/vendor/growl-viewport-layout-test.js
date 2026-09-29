@@ -2,6 +2,17 @@ import { module, test } from 'qunit';
 
 module('Unit | Vendor | Growl viewport layout');
 
+const copy = {
+  'zh-tw': {title: '使用者堆疊', action: '狀態',
+    header: '無法執行此動作', message: '您沒有權限在此環境中建立此資源。'},
+  'en-us': {title: 'User Stacks', action: 'State',
+    header: 'Action unavailable',
+    message: 'You do not have permission to create this resource in this environment.'},
+  'ja-jp': {title: 'ユーザースタック', action: '状態',
+    header: '操作できません',
+    message: 'この環境でこのリソースを作成する権限がありません。'},
+};
+
 function growlFrame(asset, direction, headingLayout) {
   return new Promise((resolve, reject) => {
     let frame = document.createElement('iframe');
@@ -47,37 +58,51 @@ test('global notices clear the navbar and page titles and fit the viewport', asy
         for (let width of [1440, 375, 280]) {
           frame.style.width = `${width}px`;
           await new Promise((resolve) => frame.contentWindow.requestAnimationFrame(resolve));
+          for (let locale of Object.keys(copy)) {
+            page.documentElement.lang = locale;
+            page.querySelector('.jGrowl-header').textContent = copy[locale].header;
+            page.querySelector('.jGrowl-message').textContent = copy[locale].message;
+            page.querySelector('main h1').textContent = copy[locale].title;
+            page.querySelector('main .pull-right button').textContent = copy[locale].action;
 
-          let navbar = page.querySelector('nav.navbar').getBoundingClientRect();
-          let bounds = notice.getBoundingClientRect();
-          let close = page.querySelector('.jGrowl-close').getBoundingClientRect();
-          let main = page.querySelector('main').getBoundingClientRect();
-          let title = page.querySelector('main h1').getBoundingClientRect();
-          let action = page.querySelector('main .btn').getBoundingClientRect();
-          let headerActions = page.querySelector('main .pull-right').getBoundingClientRect();
-          let context = `${asset} ${headingLayout} ${width}px`;
+            let navbar = page.querySelector('nav.navbar').getBoundingClientRect();
+            let mount = page.querySelector('#growl-mount').getBoundingClientRect();
+            let bounds = notice.getBoundingClientRect();
+            let close = page.querySelector('.jGrowl-close').getBoundingClientRect();
+            let main = page.querySelector('main').getBoundingClientRect();
+            let title = page.querySelector('main h1').getBoundingClientRect();
+            let action = page.querySelector('main .btn').getBoundingClientRect();
+            let headerActions = page.querySelector('main .pull-right').getBoundingClientRect();
+            let context = `${asset} ${headingLayout} ${locale} ${width}px`;
 
-          assert.ok(bounds.top >= navbar.bottom, `${context}: notice starts below the navbar`);
-          assert.ok(bounds.left >= -1 && bounds.right <= width + 1,
-            `${context}: notice stays within the viewport`);
-          assert.ok(bounds.bottom <= frame.contentWindow.innerHeight + 1,
-            `${context}: notice stays above the viewport bottom`);
-          assert.ok(bounds.width > 0 && bounds.height > 0, `${context}: notice remains visible`);
-          assert.ok(close.left >= bounds.left && close.right <= bounds.right,
-            `${context}: dismiss control remains inside the notice`);
-          assert.ok(close.top >= bounds.top && close.bottom <= bounds.bottom,
-            `${context}: dismiss control stays within the notice vertically`);
-          assert.strictEqual(frame.contentWindow.getComputedStyle(notice).opacity, '1',
-            `${context}: notice remains opaque and readable`);
+            assert.strictEqual(notice.parentElement.parentElement.id, 'growl-mount',
+              `${context}: notice is inside the authenticated mount`);
+            assert.strictEqual(frame.contentWindow.getComputedStyle(notice.parentElement).position,
+              'static', `${context}: the notice container participates in page layout`);
+            assert.ok(mount.bottom >= bounds.bottom,
+              `${context}: the mount reserves the notice height`);
+            assert.ok(bounds.top >= navbar.bottom, `${context}: notice starts below the navbar`);
+            assert.ok(bounds.left >= -1 && bounds.right <= width + 1,
+              `${context}: notice stays within the viewport`);
+            assert.ok(bounds.bottom <= frame.contentWindow.innerHeight + 1,
+              `${context}: notice stays above the viewport bottom`);
+            assert.ok(bounds.width > 0 && bounds.height > 0, `${context}: notice remains visible`);
+            assert.ok(close.left >= bounds.left && close.right <= bounds.right,
+              `${context}: dismiss control remains inside the notice`);
+            assert.ok(close.top >= bounds.top && close.bottom <= bounds.bottom,
+              `${context}: dismiss control stays within the notice vertically`);
+            assert.strictEqual(frame.contentWindow.getComputedStyle(notice).opacity, '1',
+              `${context}: notice remains opaque and readable`);
 
-          assert.ok(main.top >= bounds.bottom,
-            `${context}: main content starts below the notice`);
-          assert.ok(title.top >= bounds.bottom,
-            `${context}: page title starts below the notice`);
-          assert.ok(action.top >= bounds.bottom,
-            `${context}: page action starts below the notice`);
-          assert.ok(headerActions.top >= bounds.bottom && headerActions.right <= width + 1,
-            `${context}: header actions clear the notice and fit the viewport`);
+            assert.ok(main.top >= bounds.bottom,
+              `${context}: main content starts below the notice`);
+            assert.ok(title.top >= bounds.bottom,
+              `${context}: page title starts below the notice`);
+            assert.ok(action.top >= bounds.bottom,
+              `${context}: page action starts below the notice`);
+            assert.ok(headerActions.top >= bounds.bottom && headerActions.right <= width + 1,
+              `${context}: header actions clear the notice and fit the viewport`);
+          }
         }
 
         frame.remove();

@@ -23,3 +23,12 @@ the navigation, title, and header actions at those widths. These are source
 and local-browser checks; official CI, the immutable Server image, and a new
 QA 8080 packaged-browser receipt must be verified separately. No API,
 Engine, permission, or request-payload contract changes in this release.
+
+The subsequent isolated Server v1.6.490 / Web Console 1.6.156 QA run did not
+accept the layout. On a fresh readonly direct Stack create URL at 1440px, the
+denial notice remained fixed under `BODY` despite an empty `#growl-mount` and
+overlapped the right-side header actions. A same-page client-side transition
+did move the notice into the mount and clear the actions. The route's deferred
+mount callback therefore missed the fresh-load case; `1.6.157` moves the
+placement to the mount component's insertion lifecycle. This note records the
+packaged result separately from the earlier source and local-browser checks.

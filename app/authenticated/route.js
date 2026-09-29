@@ -38,7 +38,6 @@ export function projectIdFromTransition(transition) {
 
 export default Route.extend(Subscribe, PromiseToCb, {
   catalog   : service(),
-  growl     : service(),
   prefs     : service(),
   projects  : service(),
   settings  : service(),
@@ -159,12 +158,6 @@ export default Route.extend(Subscribe, PromiseToCb, {
     let app = this.controllerFor('application');
 
     this._super();
-    scheduleOnce('afterRender', this, function() {
-      let mount = document.getElementById('growl-mount');
-      if (mount && mount.isConnected) {
-        this.get('growl').placeContainer(mount);
-      }
-    });
     if ( !this.controllerFor('application').get('isPopup') && this.get('projects.current') )
     {
       this.connectSubscribe();
@@ -184,9 +177,6 @@ export default Route.extend(Subscribe, PromiseToCb, {
   },
 
   deactivate() {
-    // Keep the plugin's container alive when Ember removes this route's mount.
-    this.get('growl').placeContainer(document.body);
-
     this._super();
     this.disconnectSubscribe();
     cancel(this.get('testTimer'));

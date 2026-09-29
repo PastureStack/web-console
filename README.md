@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.156`. It retains the existing Node 24, Ember, Sass,
+The current source compatibility target is `1.6.157`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,11 +16,17 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.156` places authenticated-page notices in the normal layout flow
-between the navigation and main content, so an error cannot cover the page
-title or right-side actions. Login/MFA notices keep their existing body host.
-See the [release note](docs/releases/web-console-1.6.156.md) for focused tests;
-packaged Server/browser acceptance remains a separate gate.
+Release `1.6.157` mounts authenticated-page notices when their component enters
+the DOM. This covers the fresh direct-URL denial missed by `1.6.156`'s route
+render callback while keeping login/MFA notices on the body. The focused source
+tests pass; packaged Server/browser acceptance is still pending. See the
+[release note](docs/releases/web-console-1.6.157.md).
+
+Release `1.6.156` introduced the in-flow authenticated notice layout, but
+Server v1.6.490 QA found that a fresh readonly direct create URL still left
+the notice fixed on the body and overlapping header actions. An in-app
+transition did mount it correctly. See the
+[1.6.156 release note](docs/releases/web-console-1.6.156.md).
 
 Release `1.6.155` moved global notices below the navigation bar and bounded
 their width. QA 8080 browser acceptance subsequently found that the fixed
