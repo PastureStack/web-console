@@ -19,7 +19,10 @@ models and protocol fields remain compatible.
 Release `1.6.157` mounts authenticated-page notices when their component enters
 the DOM. This covers the fresh direct-URL denial missed by `1.6.156`'s route
 render callback while keeping login/MFA notices on the body. The focused source
-tests pass; packaged Server/browser acceptance is still pending. See the
+tests pass, and the official archive is packaged in Server `v1.6.491`. Isolated
+8080 QA on that image passed 14 scoped Stack and Service direct-create notice
+cases with zero resource writes. This does not establish the broader role and
+resource matrix or a formal company-site deployment. See the
 [release note](docs/releases/web-console-1.6.157.md).
 
 Release `1.6.156` introduced the in-flow authenticated notice layout, but
