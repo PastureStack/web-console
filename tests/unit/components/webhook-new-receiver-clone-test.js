@@ -21,6 +21,7 @@ test('a cloned scaleHost receiver drops every inactive driver configuration', fu
   run(() => {
     component = createOwned(NewReceiver, {
       renderer: inertRenderer(), model,
+      intl: EmberObject.create({t(key) { return key; }}),
       projects: EmberObject.create({}),
       webhookStore: {createRecord(payload) { return payload; }},
     }, 'component');
