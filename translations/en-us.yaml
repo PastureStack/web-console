@@ -1006,6 +1006,10 @@ resourceLoadError:
   projectTemplateUnavailable: This environment template does not exist or you do not have permission to edit it. Refresh the page or contact an administrator.
   stackUnavailable: This stack does not exist or you do not have permission to view it. Refresh the page or contact an administrator.
   stackFailed: The stack cannot be loaded right now because the server cannot process the request. Try again later.
+  serviceUnavailable: This service does not exist or you do not have permission to view it. Refresh the page or contact an administrator.
+  serviceFailed: The service cannot be loaded right now because the server cannot process the request. Try again later.
+  secretsUnavailable: Secrets cannot be loaded. They may be unavailable, or you may not have permission to view them. Refresh the page or contact an administrator.
+  secretsFailed: Secrets cannot be loaded right now because the server cannot process the request. Try again later.
   accountsUnavailable: Accounts cannot be loaded. They may no longer exist, or you may not have permission to view them. Refresh the page or contact an administrator.
   accountsFailed: Accounts cannot be loaded right now because the server cannot process the request. Try again later.
   accountSecurityUnavailable: Account security settings cannot be loaded. The account may no longer exist, or you may not have permission to view it. Refresh the page or contact an administrator.

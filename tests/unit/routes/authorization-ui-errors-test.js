@@ -4,6 +4,8 @@ import { run } from '@ember/runloop';
 import { reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import StackRoute from 'ui/stack/route';
+import ServiceRoute from 'ui/service/route';
+import SecretsRoute from 'ui/secrets/route';
 import AccountsRoute from 'ui/admin-tab/accounts/index/route';
 import AccountSecurityRoute from 'ui/account-security/route';
 
@@ -17,6 +19,22 @@ function routeFor(kind, failure) {
       intl,
       modelFor() { return A([]); },
       store: EmberObject.create({find() { return reject(failure); }}),
+    });
+  }
+  if ( kind === 'service' ) {
+    return ServiceRoute.create({
+      intl,
+      modelFor() { return EmberObject.create({stack: EmberObject.create()}); },
+      store: EmberObject.create({
+        getById() { return null; },
+        find() { return reject(failure); },
+      }),
+    });
+  }
+  if ( kind === 'secrets' ) {
+    return SecretsRoute.create({
+      intl,
+      store: EmberObject.create({findAll() { return reject(failure); }}),
     });
   }
   if ( kind === 'accounts' ) {
@@ -36,16 +54,19 @@ function routeFor(kind, failure) {
   });
 }
 
-test('stack, account list, and account security loads show localized denials and server failures', async function(assert) {
+test('resource loads show localized denials and server failures', async function(assert) {
   for (let [kind, unavailableKey, failedKey] of [
     ['stack', 'resourceLoadError.stackUnavailable', 'resourceLoadError.stackFailed'],
+    ['service', 'resourceLoadError.serviceUnavailable', 'resourceLoadError.serviceFailed'],
+    ['secrets', 'resourceLoadError.secretsUnavailable', 'resourceLoadError.secretsFailed'],
     ['accounts', 'resourceLoadError.accountsUnavailable', 'resourceLoadError.accountsFailed'],
     ['security', 'resourceLoadError.accountSecurityUnavailable', 'resourceLoadError.accountSecurityFailed'],
   ]) {
     for (let status of [403, 404, 500, 503, 401]) {
       let failure = {status, message: 'Raw English API error'};
       let route = routeFor(kind, failure);
-      let model = kind === 'stack' ? route.model({stack_id: '1st1'}) : route.model();
+      let model = kind === 'stack' ? route.model({stack_id: '1st1'}) :
+        kind === 'service' ? route.model({service_id: '1s1'}) : route.model();
 
       await model.then(
         () => assert.ok(false, `${kind} ${status} must reject`),
@@ -65,5 +86,19 @@ test('stack, account list, and account security loads show localized denials and
       );
       run(() => route.destroy());
     }
+  }
+});
+
+test('service and secret load network failures keep their original error', async function(assert) {
+  for (let kind of ['service', 'secrets']) {
+    let failure = {status: 0, message: 'Network unavailable'};
+    let route = routeFor(kind, failure);
+    let model = kind === 'service' ? route.model({service_id: '1s1'}) : route.model();
+
+    await model.then(
+      () => assert.ok(false, `${kind} network failure must reject`),
+      (error) => assert.strictEqual(error, failure, `${kind} network failure is not reported as denied`)
+    );
+    run(() => route.destroy());
   }
 });

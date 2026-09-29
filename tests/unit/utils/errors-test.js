@@ -43,6 +43,7 @@ test('save errors have useful reviewed copy in English, Traditional Chinese, and
     }
     for (let key of [
       'projectTemplateUnavailable', 'stackUnavailable', 'stackFailed',
+      'serviceUnavailable', 'serviceFailed', 'secretsUnavailable', 'secretsFailed',
       'accountsUnavailable', 'accountsFailed',
       'accountSecurityUnavailable', 'accountSecurityFailed'
     ]) {
@@ -58,6 +59,9 @@ test('save errors have useful reviewed copy in English, Traditional Chinese, and
       `${locale} gives a missing resource the same visible explanation`);
     assert.strictEqual(Errors.stringify({status: 403}, intl), lookup('resourceSaveError.unavailable'),
       `${locale} has a nonempty fallback for a status-only denial`);
+    assert.strictEqual(Errors.stringify({status: 405, message: 'Raw English method error'}, intl),
+      lookup('resourceSaveError.unavailable'),
+      `${locale} localizes a denied save when the schema method is unavailable`);
 
     let validation = ApiError.create({status: 422, fieldName: 'name', detail: 'already used', code: 'NotUnique'});
     let validationText = Errors.stringify(validation, intl);
