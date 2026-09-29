@@ -643,7 +643,7 @@ $k8sHeader: theme.$k8sHeader;
 //
 // Component-specific files.
 //******************************************
-@include meta.load-css("app/styles/components/growl", $with: ("brand-danger": $brand-danger));
+@include meta.load-css("app/styles/components/growl", $with: ("brand-danger": $brand-danger, "navbar-height": $navbar-height));
 @include meta.load-css("app/styles/components/resource-actions", $with: ("text-color": $text-color));
 @include meta.load-css("app/styles/components/login", $with: ("primary": $primary));
 @include meta.load-css("app/styles/components/mfa");

@@ -105,7 +105,7 @@ configured_load_css_expected = {
     "app/styles/layout/footer": ['"footer": $footer', '"midGrayDark": $midGrayDark'],
     "app/styles/layout/layout": ['"accent-two": $accent-two', '"body-bg": $body-bg', '"bold-weight": $bold-weight', '"brand-primary": $brand-primary', '"font-size-small": $font-size-small', '"icon-check": $icon-check', '"lightGrayDark": $lightGrayDark', '"lightGrayTwo": $lightGrayTwo', '"lightestGray": $lightestGray', '"line-height-base": $line-height-base', '"line-height-computed": $line-height-computed', '"main-padding": $main-padding', '"midGray": $midGray', '"normal-weight": $normal-weight', '"orange": $orange', '"page-header-border-color": $page-header-border-color', '"primary": $primary', '"tab-bg": $tab-bg', '"tab-color": $tab-color', '"tab-hover": $tab-hover', '"table-bg-accent": $table-bg-accent', '"table-bg-hover": $table-bg-hover', '"table-border-color": $table-border-color', '"table-cell-padding": $table-cell-padding', '"tealTwo": $tealTwo', '"well-bg": $well-bg', '"well-border": $well-border'],
     "app/styles/layout/flex-box": ['"table-border-color": $table-border-color'],
-    "app/styles/components/growl": ['"brand-danger": $brand-danger'],
+    "app/styles/components/growl": ['"brand-danger": $brand-danger', '"navbar-height": $navbar-height'],
     "app/styles/components/resource-actions": ['"text-color": $text-color'],
     "app/styles/components/login": ['"primary": $primary'],
     "app/styles/components/progress-bar": ['"lightestGray": $lightestGray'],

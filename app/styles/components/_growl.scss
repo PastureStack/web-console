@@ -1,6 +1,9 @@
 $brand-danger: null !default;
+$navbar-height: null !default;
 
 .jGrowl.top-right {
+  // jGrowl's notification margin supplies the gap below the top navigation.
+  top: $navbar-height;
   z-index: 10;
 }
 
@@ -14,6 +17,8 @@ $brand-danger: null !default;
   .jGrowl-notification,
   .jGrowl-closer {
     width: 300px;
+    // Leave room for jGrowl's 10px margin on each side of a narrow viewport.
+    max-width: calc(100vw - 20px);
     opacity: 1;
     color: white;
   }
