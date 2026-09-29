@@ -56,7 +56,7 @@ test('denied deletes and actions use neutral, private-safe copy in all supported
     });
 
     assert.ok(messages['resourceSaveError.actionUnavailable'], `${locale} has neutral action copy`);
-    for (let status of [403, 404]) {
+    for (let status of [403, 404, 405]) {
       growl.fromError('Delete failed', {status, message: 'private resource ID 1st-secret'});
       assert.deepEqual(notifications.pop(), {
         title: 'Delete failed',

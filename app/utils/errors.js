@@ -151,7 +151,7 @@ export default {
     if ( intl && typeof intl.t === 'function' ) {
       let status = nestedStatus(err, [], 0);
 
-      if ( status === 403 || status === 404 ) {
+      if ( status === 403 || status === 404 || status === 405 ) {
         // A denied resource and a missing resource must have the same visible
         // explanation. Client-created errors can supply a more specific key.
         let key = nonEmptyString(fieldValue(err, 'messageKey')) || 'resourceSaveError.unavailable';
