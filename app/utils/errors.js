@@ -67,6 +67,53 @@ function nestedMessage(value, seen, depth) {
     nonEmptyString(value.type);
 }
 
+function fieldValue(value, key) {
+  if ( !value || typeof value !== 'object' ) {
+    return null;
+  }
+
+  let direct = value[key];
+  return direct === undefined && typeof value.get === 'function' ? value.get(key) : direct;
+}
+
+function nestedStringField(value, key, seen, depth) {
+  if ( depth > 4 || value === null || value === undefined ) {
+    return null;
+  }
+  if ( typeof value === 'string' ) {
+    let parsed = parsedJSON(value);
+    return parsed ? nestedStringField(parsed, key, seen, depth + 1) : null;
+  }
+  if ( typeof value !== 'object' || seen.indexOf(value) >= 0 ) {
+    return null;
+  }
+  seen.push(value);
+
+  let direct = nonEmptyString(fieldValue(value, key));
+  if ( direct ) {
+    return direct;
+  }
+
+  let response = fieldValue(value, 'response');
+  let xhr = fieldValue(value, 'xhr');
+  for ( let item of [
+    fieldValue(value, 'body'),
+    fieldValue(value, 'responseJSON'),
+    response && fieldValue(response, 'data'),
+    response && fieldValue(response, 'body'),
+    xhr && fieldValue(xhr, 'responseJSON'),
+    xhr && fieldValue(xhr, 'responseText'),
+    response,
+    xhr,
+  ] ) {
+    let result = nestedStringField(item, key, seen, depth + 1);
+    if ( result ) {
+      return result;
+    }
+  }
+  return null;
+}
+
 function nestedStatus(value, seen, depth) {
   if ( depth > 4 || value === null || value === undefined ) {
     return null;
@@ -82,7 +129,7 @@ function nestedStatus(value, seen, depth) {
   }
   seen.push(value);
 
-  for ( let candidate of [value.status, value.statusCode] ) {
+  for ( let candidate of [fieldValue(value, 'status'), fieldValue(value, 'statusCode')] ) {
     let status = Number(candidate);
     if ( Number.isInteger(status) && status >= 100 && status <= 599 ) {
       return status;
@@ -100,7 +147,28 @@ function nestedStatus(value, seen, depth) {
 }
 
 export default {
-  stringify(err) {
+  stringify(err, intl) {
+    if ( intl && typeof intl.t === 'function' ) {
+      let status = nestedStatus(err, [], 0);
+
+      if ( status === 403 || status === 404 ) {
+        // A denied resource and a missing resource must have the same visible
+        // explanation. Client-created errors can supply a more specific key.
+        let key = nonEmptyString(fieldValue(err, 'messageKey')) || 'resourceSaveError.unavailable';
+        return intl.t(key);
+      }
+
+      if ( status === 422 ) {
+        let intro = intl.t('resourceSaveError.validation');
+        let field = nestedStringField(err, 'fieldName', [], 0);
+        let detail = nestedStringField(err, 'detail', [], 0);
+        let explanation = detail || nestedStringField(err, 'message', [], 0) ||
+          nestedStringField(err, 'code', [], 0);
+        let context = [field, explanation].filter(Boolean).join(': ');
+        return context ? `${intro} ${context}` : intro;
+      }
+    }
+
     var str;
     if ( typeof err === 'string' )
     {
@@ -208,7 +276,8 @@ export default {
       str = err;
     }
 
-    return nonEmptyString(str) || nestedMessage(err, [], 0);
+    return nonEmptyString(str) || nestedMessage(err, [], 0) ||
+      (intl && typeof intl.t === 'function' ? intl.t('resourceSaveError.failed') : null);
   },
 
   status(err) {

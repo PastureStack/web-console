@@ -3560,6 +3560,7 @@ projectUpgrade:
     {appName} {appVersion} inclut des modifications qui nécessitent la mise à niveau des services système existants et
     des conteneurs de l’équilibreur de charge.
   notOwner: Seul un propriétaire de cet environnement ou un administrateur peut effectuer la mise à niveau.
+  notAvailable: Cet environnement ne peut pas être mis à niveau pour le moment.
   actionButton: Mettre à jour Maintenant
   banner: Mise à jour de l'Environnement ...
 registryRow:

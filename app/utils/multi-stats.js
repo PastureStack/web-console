@@ -1,6 +1,8 @@
 import { and } from '@ember/object/computed';
+import { cancel, later } from '@ember/runloop';
 import Evented from '@ember/object/evented';
 import EmberObject from '@ember/object';
+import { resolve } from 'rsvp';
 import Socket from "ui/utils/socket";
 import C from 'ui/utils/constants';
 
@@ -23,6 +25,10 @@ export default EmberObject.extend(Evented, {
   connected: false,
   prev: null,
   closed: false,
+  connectError: false,
+  connectErrorStatus: null,
+  connectPending: null,
+  retryTimer: null,
 
   init() {
     this._super();
@@ -30,14 +36,18 @@ export default EmberObject.extend(Evented, {
   },
 
   available: function() {
-    return C.ACTIVEISH_STATES.indexOf(this.get('resource.state')) >= 0 && this.get('resource.healthState') !== 'started-once';
-  }.property('resource.{state,healthState}'),
+    const host = this.get('resource.primaryHost');
+    const hostDisconnected = host && (host.get('state') === 'disconnected' ||
+      host.get('agentState') === 'disconnected');
+    return C.ACTIVEISH_STATES.indexOf(this.get('resource.state')) >= 0 &&
+      this.get('resource.healthState') !== 'started-once' && !hostDisconnected;
+  }.property('resource.{state,healthState}', 'resource.primaryHost.{state,agentState}'),
 
   active: and('available', 'connected'),
 
   loading: function() {
-    return this.get('available') && !this.get('connected');
-  }.property('available','connected'),
+    return this.get('available') && !this.get('connected') && !this.get('connectError');
+  }.property('available','connected','connectError'),
 
   onAvailableChanged: function() {
     if ( this.get('available') )
@@ -51,15 +61,25 @@ export default EmberObject.extend(Evented, {
   }.observes('available'),
 
   connect() {
-    if ( this.get('socket') || this.get('closed') )
+    if ( this.get('socket') || this.get('closed') || !this.get('available') )
     {
       return;
     }
 
+    if (this.get('connectPending')) {
+      return this.get('connectPending');
+    }
+
+    cancel(this.get('retryTimer'));
+    this.setProperties({retryTimer: null, connectError: false, connectErrorStatus: null});
+
     this.set('prev', {});
     if ( this.get('resource').hasLink(this.get('linkName')) )
     {
-      this.get('resource').followLink(this.get('linkName')).then((response) => {
+      const pending = resolve().then(() => this.get('resource').followLink(this.get('linkName'))).then((response) => {
+        if (this.get('closed') || !this.get('available')) {
+          return;
+        }
         if (response.get('url') && response.get('token')) {
           var url = response.get('url') + '?token=' + encodeURIComponent(response.get('token'));
 
@@ -77,6 +97,10 @@ export default EmberObject.extend(Evented, {
           });
 
           socket.on('connected', (/*tries, after*/) => {
+            if (this.get('closed') || !this.get('available')) {
+              socket.disconnect();
+              return;
+            }
             this.set('connected',true);
             this.trigger('connected');
           });
@@ -88,12 +112,56 @@ export default EmberObject.extend(Evented, {
 
           this.set('socket', socket);
           socket.connect();
+        } else {
+          this.statsUnavailable({status: 404}, false);
+        }
+      }).catch((error) => {
+        // An offline host returns 503 here.  It is an unavailable stats
+        // stream, not an unhandled route failure or a reason to clear login.
+        // Also handle a synchronous failure while constructing the socket.
+        if (!this.get('closed')) {
+          const socket = this.get('socket');
+          if (socket) {
+            this.set('socket', null);
+            try {
+              socket.disconnect();
+            } catch (_cleanupError) {
+              // Keep the original connection failure; retry owns a fresh socket.
+            }
+          }
+          const status = Number(error && (error.status || (error.xhr && error.xhr.status)));
+          this.statsUnavailable(error, !status || status >= 500);
         }
       });
+      this.set('connectPending', pending);
+      return pending.finally(() => {
+        if (this.get('connectPending') === pending) {
+          this.set('connectPending', null);
+        }
+      });
+    } else {
+      this.statsUnavailable({status: 404}, false);
+    }
+  },
+
+  statsUnavailable(error, retry = true) {
+    const status = error && (error.status || (error.xhr && error.xhr.status));
+    this.setProperties({connected: false, connectError: true, connectErrorStatus: status || null});
+    if (!retry) {
+      cancel(this.get('retryTimer'));
+      this.set('retryTimer', null);
+    }
+    if (retry && !this.get('closed') && this.get('available') && this.get('retryTimer') === null) {
+      this.set('retryTimer', later(this, function() {
+        this.set('retryTimer', null);
+        this.connect();
+      }, 30000));
     }
   },
 
   disconnect() {
+    cancel(this.get('retryTimer'));
+    this.set('retryTimer', null);
     this.set('connected',false);
 
     var socket = this.get('socket');

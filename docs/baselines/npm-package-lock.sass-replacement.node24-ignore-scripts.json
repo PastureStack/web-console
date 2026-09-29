@@ -1,12 +1,12 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.152",
+  "version": "1.6.153",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@pasturestack/web-console",
-      "version": "1.6.152",
+      "version": "1.6.153",
       "license": "Apache-2.0",
       "dependencies": {
         "sass": "1.103.1"
@@ -12338,9 +12338,9 @@
       }
     },
     "node_modules/fast-uri": {
-      "version": "3.1.6",
-      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.6.tgz",
-      "integrity": "sha512-7Ical1vFEMr0onbVzEDIreM22I4khW+fzyQPwvAFWBp1iwdshSZRsL4jjRvPG9JP1uiqMHRto+YU6R2/CzDz5Q==",
+      "version": "3.1.7",
+      "resolved": "https://registry.npmjs.org/fast-uri/-/fast-uri-3.1.7.tgz",
+      "integrity": "sha512-dOvZVzjdZdz7phd9v6jCbwxrBW3fK6n8Rc0CtdmM4bumzMnxywBYhuph6J819RRw/ku+rLbelwfMunktuzVVHg==",
       "dev": true,
       "funding": [
         {
@@ -15358,9 +15358,9 @@
       }
     },
     "node_modules/morgan": {
-      "version": "1.12.0",
-      "resolved": "https://registry.npmjs.org/morgan/-/morgan-1.12.0.tgz",
-      "integrity": "sha512-OHpTRQwn2ezasILW8iKe+Yww1XsfWsZIpUOLF7RDb2g5GwO3trPaRwi7+8BDiJ7HFx2Kg2mfUdCBcVhwYlOz2g==",
+      "version": "1.12.1",
+      "resolved": "https://registry.npmjs.org/morgan/-/morgan-1.12.1.tgz",
+      "integrity": "sha512-tljKC0ex20AjO58Ob/eZ53JloycbVswbVNCHx6V6VLGzqt/w8dIynVGL0G8qVjNKwiA7sYSogCrN6QtJ82IV+g==",
       "dev": true,
       "license": "MIT",
       "dependencies": {

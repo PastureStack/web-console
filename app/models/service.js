@@ -1,5 +1,6 @@
 import EmberObject, { computed } from '@ember/object';
 import { cancel, later } from '@ember/runloop';
+import { resolve } from 'rsvp';
 import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
@@ -11,6 +12,7 @@ var Service = Resource.extend({
   type: 'service',
   intl: service(),
   growl: service(),
+  projects: service(),
   modalService: service('modal'),
 
   instances: denormalizeIdArray('instanceIds'),
@@ -71,13 +73,24 @@ var Service = Resource.extend({
     },
 
     scaleUp() {
+      if ( !this.get('canScale') ) {
+        return;
+      }
+      if ( this.get('scaleTimer') === null ) {
+        this.set('scaleBeforePending', this.get('scale'));
+        this.set('scaleRequestProjectId', this.get('projectId'));
+      }
       this.incrementProperty('scale');
       this.saveScale();
     },
 
     scaleDown() {
-      if ( this.get('scale') >= 1 )
+      if ( this.get('canScale') && this.get('scale') > 1 )
       {
+        if ( this.get('scaleTimer') === null ) {
+          this.set('scaleBeforePending', this.get('scale'));
+          this.set('scaleRequestProjectId', this.get('projectId'));
+        }
         this.decrementProperty('scale');
         this.saveScale();
       }
@@ -127,6 +140,9 @@ var Service = Resource.extend({
   },
 
   scaleTimer: null,
+  scaleBeforePending: null,
+  scaleRequestProjectId: null,
+  scaleSaving: false,
   saveScale() {
     if ( this.get('scaleTimer') !== null )
     {
@@ -134,12 +150,41 @@ var Service = Resource.extend({
     }
 
     var timer = later(this, function() {
-      this.save({data: {scale: this.get('scale')}}).catch((err) => {
-        this.get('growl').fromError('Error updating scale',err);
-      });
+      this.set('scaleTimer', null);
+      this.persistScale();
     }, 500);
 
     this.set('scaleTimer', timer);
+  },
+
+  persistScale() {
+    let title = this.get('intl').t('resourceSaveError.scaleFailed');
+    let previous = this.get('scaleBeforePending');
+    if ( !this.get('canScale') ||
+         (this.get('scaleRequestProjectId') &&
+          this.get('projectId') !== this.get('scaleRequestProjectId')) ) {
+      if ( previous !== null && previous !== undefined ) {
+        this.set('scale', previous);
+      }
+      this.set('scaleBeforePending', null);
+      this.set('scaleRequestProjectId', null);
+      this.get('growl').fromError(title, {status: 403});
+      return resolve(false);
+    }
+    this.set('scaleSaving', true);
+    return resolve().then(() => this.save({data: {scale: this.get('scale')}})).then(() => {
+      return true;
+    }, (err) => {
+      if ( previous !== null && previous !== undefined ) {
+        this.set('scale', previous);
+      }
+      this.get('growl').fromError(title, err);
+      return false;
+    }).finally(() => {
+      this.set('scaleBeforePending', null);
+      this.set('scaleRequestProjectId', null);
+      this.set('scaleSaving', false);
+    });
   },
 
   availableActions: function() {
@@ -241,15 +286,13 @@ var Service = Resource.extend({
   }.property('launchConfig.labels'),
 
   canScale: function() {
-    if ( this.get('isReal') )
-    {
-      return !this.get('isGlobalScale');
-    }
-    else
-    {
-      return false;
-    }
-  }.property('isReal','isGlobalScale'),
+    const projectId = this.get('projectId');
+    return !!projectId && this.get('projects.current.id') === projectId &&
+      this.get('projects.schemaProjectId') === projectId &&
+      this.get('isReal') && !this.get('isGlobalScale') && !this.get('scaleSaving') &&
+      !!this.get('actionLinks.update');
+  }.property('projectId', 'projects.current.id', 'projects.schemaProjectId',
+    'isReal','isGlobalScale','scaleSaving','actionLinks.update'),
 
   canHaveContainers: function() {
     if ( this.get('isReal') ) {

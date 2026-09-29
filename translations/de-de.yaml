@@ -3611,6 +3611,7 @@ projectUpgrade:
     {appName} {appVersion} enthält Änderungen, die ein Upgrade der vorhandenen Systemdienste und Load Balancer-Container
     erfordern.
   notOwner: Nur ein Besitzer dieser Umgebung oder ein Administrator kann das Upgrade durchführen.
+  notAvailable: Diese Umgebung kann derzeit nicht aktualisiert werden.
   actionButton: Jetzt upgraden
   banner: Umgebung wird aktualisiert...
 registryRow:

@@ -40,6 +40,7 @@ function makeComponent({save, setLinks}, closed) {
   });
   const component = createOwned(EditService, {
     renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
     modalService: EmberObject.create({
       modalOpts: original,
       modalVisible: true,

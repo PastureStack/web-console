@@ -164,7 +164,8 @@ test('environment project save distinguishes expired, denied, server, and valida
     assert.strictEqual(outcome.saved, false, `HTTP ${status} reports failure`);
     let expected = status === 401 ? 'login.error.timedOut' :
       status === 403 || status === 404 ? 'viewEditProject.error.projectNotSaved' :
-        status === 500 ? 'viewEditProject.error.projectFailed' : 'Original server error';
+        status === 500 ? 'viewEditProject.error.projectFailed' :
+          'resourceSaveError.validation Original server error';
     assert.deepEqual(component.get('errors'), [expected], `HTTP ${status} shows the correct message`);
     assert.strictEqual(component.get('saving'), false, `HTTP ${status} releases the lock`);
     destroyOwned(component);

@@ -15,9 +15,25 @@ export default ModalBase.extend(NewOrEdit, {
   editing: true,
   primaryResource: null,
   intl: service(),
+  projects: service(),
   missingCredential: false,
   credentialSaveAttempted: false,
   credentialOutcomeUnknown: false,
+
+  canSaveCredential: function() {
+    let projectId = this.get('originalModel.projectId');
+    let currentProjectId = this.get('projects.current.id');
+    if ( !currentProjectId || this.get('projects.schemaProjectId') !== currentProjectId ||
+      projectId !== currentProjectId ) {
+      return false;
+    }
+
+    let credential = this.get('originalModel.credential');
+    return credential ? Boolean(credential.get('actionLinks.update')) :
+      this.get('projects').canCreateResource('registryCredential');
+  }.property('originalModel.credential', 'originalModel.credential.actionLinks.update',
+    'originalModel.projectId', 'projects.current.id', 'projects.schemaProjectId',
+    'projects.schemaLoadGeneration'),
 
   init: function() {
     this._super(...arguments);
@@ -46,6 +62,10 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   doSave: function() {
+    if ( !this.get('canSaveCredential') ) {
+      throw {status: 403, code: 'Forbidden', messageKey: 'resourceSaveError.unavailable'};
+    }
+
     if ( !this.get('missingCredential') ) {
       const credential = this.get('primaryResource');
       const data = {
@@ -53,11 +73,26 @@ export default ModalBase.extend(NewOrEdit, {
         secretValue: credential.get('secretValue'),
       };
 
-      return this._super({data});
+      const registryId = this.get('originalModel.registry.id');
+      const saveCredential = this._super.bind(this);
+      return this.get('originalModel.registry.store').find('registrycredential', credential.get('id'), {forceReload: true}).then((fresh) => {
+        if ( !fresh || fresh.get('registryId') !== registryId ) {
+          throw {status: 404, code: 'NotFound', messageKey: 'resourceSaveError.unavailable'};
+        }
+        if ( !this.get('canSaveCredential') || !fresh.get('actionLinks.update') ) {
+          throw {status: 403, code: 'Forbidden', messageKey: 'resourceSaveError.unavailable'};
+        }
+
+        return saveCredential({data});
+      });
     }
 
     const registry = this.get('originalModel.registry');
     return registry.get('store').find('registrycredential', null, {forceReload: true}).then((credentials) => {
+      if ( !this.get('canSaveCredential') ) {
+        throw {status: 403, code: 'Forbidden', messageKey: 'resourceSaveError.unavailable'};
+      }
+
       const existing = credentialsForRegistry(credentials, registry.get('id'));
       if ( existing.get('length') ) {
         throw new Error(this.get('intl').t('editRegistry.credentialAppeared'));
@@ -66,8 +101,14 @@ export default ModalBase.extend(NewOrEdit, {
         throw new Error(this.get('intl').t('editRegistry.credentialOutcomeUnknown'));
       }
 
-      this.set('credentialSaveAttempted', true);
-      return resolve().then(() => this.get('primaryResource').save()).then(
+      return resolve().then(() => {
+        if ( !this.get('canSaveCredential') ) {
+          throw {status: 403, code: 'Forbidden', messageKey: 'resourceSaveError.unavailable'};
+        }
+
+        this.set('credentialSaveAttempted', true);
+        return this.get('primaryResource').save();
+      }).then(
         (saved) => this.mergeResult(saved),
         (error) => {
           this.set('credentialOutcomeUnknown', !definitelyRejected(error));

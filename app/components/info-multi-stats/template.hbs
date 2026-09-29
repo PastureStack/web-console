@@ -16,8 +16,8 @@
             <div class="text-center text-muted {{unless this.waitingForData 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
-              {{t 'infoMultiStats.utilizationStats'}}
+            <div class="text-center text-muted {{unless this.showUnavailable 'hide'}}" style="height: 100px; padding-top: 30px;">
+              {{this.unavailableMessage}}
             </div>
           </div>
         </div>
@@ -36,8 +36,8 @@
             <div class="text-center text-muted {{unless this.waitingForData 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
-              {{t 'infoMultiStats.utilizationStats'}}
+            <div class="text-center text-muted {{unless this.showUnavailable 'hide'}}" style="height: 100px; padding-top: 30px;">
+              {{this.unavailableMessage}}
             </div>
           </div>
         </div>
@@ -57,8 +57,8 @@
             <div class="text-center text-muted {{unless this.waitingForData 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
-              {{t 'infoMultiStats.utilizationStats'}}
+            <div class="text-center text-muted {{unless this.showUnavailable 'hide'}}" style="height: 100px; padding-top: 30px;">
+              {{this.unavailableMessage}}
             </div>
           </div>
         </div>
@@ -77,8 +77,8 @@
             <div class="text-center text-muted {{unless this.waitingForData 'hide'}}" style="height: 100px; padding-top: 30px;">
               <i class="icon icon-spinner icon-spin"></i> {{t 'infoMultiStats.connecting'}}
             </div>
-            <div class="text-center text-muted {{if this.available 'hide'}}" style="height: 100px; padding-top: 30px;">
-              {{t 'infoMultiStats.utilizationStats'}}
+            <div class="text-center text-muted {{unless this.showUnavailable 'hide'}}" style="height: 100px; padding-top: 30px;">
+              {{this.unavailableMessage}}
             </div>
           </div>
         </div>

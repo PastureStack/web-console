@@ -3563,6 +3563,7 @@ projectUpgrade:
     Kasama sa {appName} {appVersion} ang mga pagbabago na nangangailangan ng pag-upgrade sa mga kasalukuyang serbisyo ng
     system at mga container ng load balancer.
   notOwner: Tanging isang may-ari ng environment na ito o isang administrator ang maaaring magsagawa ng pag-upgrade.
+  notAvailable: Hindi maaaring i-upgrade ang kapaligirang ito sa ngayon.
   actionButton: Mag-upgrade Ngayon
   banner: Ina-upgrade ang Kapaligiran...
 registryRow:

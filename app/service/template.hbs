@@ -52,17 +52,22 @@
         {{/if}}
         <div>
           <label class="block">{{t 'servicePage.multistat.scale'}}</label>
-          {{#if this.service.canScale}}
-            {{this.service.scale}}
-            &nbsp;
-
-            &nbsp;
-            <div class="btn-group btn-group-xs">
-              <button class="btn btn-default btn-xs" {{action "scaleDown" target=this.service}} disabled={{eq this.service.scale 1}}><i class="icon icon-minus"></i></button>
-              <button class="btn btn-default btn-xs" {{action "scaleUp" target=this.service}}><i class="icon icon-plus"></i></button>
-            </div>
+          {{#if this.service.isGlobalScale}}
+            {{t 'servicePage.multistat.global'}}
           {{else}}
-            {{if this.service.isGlobalScale (t 'servicePage.multistat.global') (t 'generic.na')}}
+            {{#if this.service.isReal}}
+              {{this.service.scale}}
+              {{#if this.service.canScale}}
+                &nbsp;
+                &nbsp;
+                <div class="btn-group btn-group-xs">
+                  <button class="btn btn-default btn-xs" {{action "scaleDown" target=this.service}} disabled={{eq this.service.scale 1}}><i class="icon icon-minus"></i></button>
+                  <button class="btn btn-default btn-xs" {{action "scaleUp" target=this.service}}><i class="icon icon-plus"></i></button>
+                </div>
+              {{/if}}
+            {{else}}
+              {{t 'generic.na'}}
+            {{/if}}
           {{/if}}
         </div>
         {{#if this.service.hasImage}}

@@ -26,6 +26,7 @@ test('cancel clears delayed focus; a stale callback has no input and cannot writ
   let originalClearTimeout = window.clearTimeout;
   let component = createOwned(EditApiKey, {
     renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
     modalService: EmberObject.create({
       modalOpts: null,
       toggleModal() { closed++; inputPresent = false; },
@@ -115,7 +116,7 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
     }
   });
 
-  test('a denied Save shows its error without exposing key values', async function(assert) {
+  test('a denied Save shows a safe error without exposing key values', async function(assert) {
     let writes = 0;
     let newKey = () => EmberObject.create({
       name: 'Disposable test key',
@@ -143,7 +144,8 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
 
     assert.strictEqual(writes, 1, 'one save attempt reached the resource');
     assert.strictEqual(find('.top-errors li').textContent.trim(),
-      'You do not have permission to create API keys.', 'the API error is visible');
+      this.owner.lookup('service:intl').t('resourceSaveError.unavailable'),
+      'the localized denial is visible without exposing the API response');
     assert.notOk(this.testRoot.textContent.includes('PUBLIC-NEVER-RENDER'), 'the public key is not in the failed form');
     assert.notOk(this.testRoot.textContent.includes('SECRET-NEVER-RENDER'), 'the secret key is not in the failed form');
   });

@@ -51,14 +51,18 @@
     <div class="container-dots clearfix">
       <div>
         <label class="text-muted">{{t 'serviceInfoPartial.scale'}}</label>
-        {{#if this.service.canScale}}
-          <span class="r-ml20 r-mr20">{{this.service.scale}}</span>
-          <div class="btn-group btn-group-xs">
-            <button class="btn btn-default btn-xs" {{action "scaleDown" target=this.service}} disabled={{eq this.service.scale 1}}><i class="icon icon-minus"></i></button>
-            <button class="btn btn-default btn-xs" {{action "scaleUp" target=this.service}}><i class="icon icon-plus"></i></button>
-          </div>
+        {{#if this.service.isGlobalScale}}
+          {{t 'serviceInfoPartial.global'}}
         {{else}}
-          {{if this.service.isGlobalScale (t 'serviceInfoPartial.global')}}
+          {{#if this.service.isReal}}
+            <span class="r-ml20 r-mr20">{{this.service.scale}}</span>
+            {{#if this.service.canScale}}
+              <div class="btn-group btn-group-xs">
+                <button class="btn btn-default btn-xs" {{action "scaleDown" target=this.service}} disabled={{eq this.service.scale 1}}><i class="icon icon-minus"></i></button>
+                <button class="btn btn-default btn-xs" {{action "scaleUp" target=this.service}}><i class="icon icon-plus"></i></button>
+              </div>
+            {{/if}}
+          {{/if}}
         {{/if}}
       </div>
       <div style="display:inline-block;">

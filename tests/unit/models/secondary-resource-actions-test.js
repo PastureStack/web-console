@@ -4,11 +4,9 @@ import { module, test } from 'qunit';
 
 import Secret from 'ui/models/secret';
 import Certificate from 'ui/models/certificate';
-import Registry from 'ui/models/registry';
 
 const resources = [
   ['certificate', Certificate],
-  ['registry', Registry],
 ];
 
 module('Unit | Model | secondary resource actions');

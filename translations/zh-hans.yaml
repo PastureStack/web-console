@@ -3457,6 +3457,7 @@ projectUpgrade:
   header: 升级环境
   detail: '{appName} {appVersion} 包含更新需要升级已有的系统服务以及负载均衡器容器。'
   notOwner: 只有环境的所有者或者管理员能够进行升级操作。
+  notAvailable: 此环境目前无法升级。
   actionButton: 立刻升级
   banner: 环境升级中...
 registryRow:

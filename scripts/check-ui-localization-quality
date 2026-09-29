@@ -19,6 +19,38 @@ const requiredLocales = [
   'pt-br', 'ru-ru', 'uk-ua', 'zh-hans', 'zh-tw'
 ];
 
+// These Japanese sign-in and write-error messages are reviewed locally. Other
+// locales, and unrelated Japanese authentication keys, retain English fallback.
+const requiredJapanesePrefixes = [
+  'resourceLoadError.',
+  'resourceSaveError.',
+  'loginPage.localRecovery.',
+  'loginPage.mfa.',
+  'authPage.mfa.',
+  'accountsPage.new.error.',
+  'editAccount.error.'
+];
+const requiredJapaneseKeys = new Set([
+  'newCatalog.permissionDenied',
+  'newCatalog.projectChanged',
+  'newCatalog.templateUnavailable',
+  'newCatalog.upgradeUnavailable',
+  'projectUpgrade.notAvailable',
+  'viewEditProject.error.memberAlreadyListed',
+  'viewEditProject.error.ownerRequired'
+]);
+const japaneseLiteralPlaceholders = new Set([
+  'loginPage.mfa.totp.placeholder',
+  'authPage.mfa.email.placeholder',
+  'authPage.mfa.settings.rpIdPlaceholder',
+  'authPage.mfa.settings.originPlaceholder',
+  'authPage.mfa.settings.trustedAuthenticationMethodsPlaceholder'
+]);
+function requiresJapaneseOwnLocale(key) {
+  return requiredJapaneseKeys.has(key) ||
+    requiredJapanesePrefixes.some((prefix) => key.startsWith(prefix));
+}
+
 const requiredValues = {
   'de-de': {
     languageName: 'Deutsch (Deutschland)',
@@ -517,6 +549,7 @@ requiredLocales.forEach((locale) => {
     const localizedValue = leaves[key];
     if (!(key in leaves)) {
       const inheritsEnglish = locale !== 'zh-tw' &&
+        !(locale === 'ja-jp' && requiresJapaneseOwnLocale(key)) &&
         inheritedTranslationPrefixes.some((prefix) => key.startsWith(prefix));
       if (inheritsEnglish) {
         inheritedEnglishFallbacks += 1;
@@ -530,6 +563,15 @@ requiredLocales.forEach((locale) => {
         failures.push(`empty_value=${locale}:${key}`);
         return;
       }
+      if (locale === 'ja-jp' && requiresJapaneseOwnLocale(key)) {
+        if (japaneseLiteralPlaceholders.has(key)) {
+          if (localizedValue !== englishValue) {
+            failures.push(`changed_japanese_literal_placeholder=${key}`);
+          }
+        } else if (!/[ぁ-んァ-ヶ一-龠々]/u.test(localizedValue)) {
+          failures.push(`missing_japanese_text=${key}`);
+        }
+      }
       try {
         const expectedArguments = messageArguments(englishValue);
         const actualArguments = messageArguments(localizedValue);
@@ -539,7 +581,9 @@ requiredLocales.forEach((locale) => {
       } catch (error) {
         failures.push(`invalid_icu=${locale}:${key}`);
       }
-      if (localizedValue.trim() === englishValue.trim() && !allowedExactEnglish(localizedValue, key, locale)) {
+      if (localizedValue.trim() === englishValue.trim() &&
+          !(locale === 'ja-jp' && japaneseLiteralPlaceholders.has(key)) &&
+          !allowedExactEnglish(localizedValue, key, locale)) {
         failures.push(`untranslated_value=${locale}:${key}`);
       }
       if (localeScriptPatterns[locale] && localeScriptPatterns[locale].test(localizedValue) &&

@@ -258,7 +258,7 @@ export default Component.extend(NewOrEdit, Sortable, {
       return {status, message: this.get('intl').t('login.error.timedOut')};
     }
     if ( status === 403 || status === 404 ) {
-      return {status, message: this.get('intl').t(deniedKey)};
+      return {status, message: this.get('intl').t(deniedKey), messageKey: deniedKey};
     }
     if ( status >= 500 && status <= 599 ) {
       return {status, message: this.get('intl').t(failedKey)};

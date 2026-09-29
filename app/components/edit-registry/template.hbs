@@ -35,4 +35,4 @@
   </div>
 </section>
 
-{{save-cancel editing=this.editing save="save" cancel="cancel"}}
+{{save-cancel editing=this.editing save="save" cancel="cancel" saveDisabled=(not this.canSaveCredential)}}

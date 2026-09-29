@@ -975,6 +975,12 @@ resourceLoadError:
   accountsFailed: 暫時無法載入帳號資料，伺服器目前無法處理。請稍後再試。
   accountSecurityUnavailable: 無法載入帳號安全性設定：帳號可能不存在，或您沒有檢視權限。請重新整理或聯絡管理員。
   accountSecurityFailed: 暫時無法載入帳號安全性設定，伺服器目前無法處理。請稍後再試。
+resourceSaveError:
+  scaleFailed: 無法更新服務數量。
+  unavailable: 無法完成儲存。資源可能無法使用，或您沒有權限。請先重新整理並確認已儲存的內容，再重試。
+  actionUnavailable: 無法完成此操作。資源可能無法使用，或您沒有權限。請先重新整理並確認目前狀態，再重試。
+  validation: 伺服器未接受變更。請檢查欄位後重試。
+  failed: 無法完成儲存。請先重新整理並確認已儲存的內容，再重試。
 haPage:
   header: 高可用
   setup:
@@ -2800,7 +2806,10 @@ identityBlock:
   systemService: 系統服務
 infoMultiStats:
   connecting: 連線中…
-  utilizationStats: 使用率統計資料僅在活動/執行時可見
+  utilizationStats: 暫時無法取得監控資料。請確認資源與主機狀態，稍後再試。
+  authError: 無法驗證監控工作階段。請重新整理頁面；若問題持續，請重新登入。
+  permissionError: 你沒有權限檢視此資源的監控資料。
+  notFound: 此資源目前沒有可用的監控資料。
   time:
     now: 現在
     minutesSecondsAgo: '{minutes}分{seconds}秒前'
@@ -3584,6 +3593,10 @@ newBalancer:
     noTarget: 每條規則必須設定目標連接埠
     needsCertificate: 設定 SSL/TLS 規則時需要憑證
 newCatalog:
+  permissionDenied: 您沒有權限在此環境建立應用堆疊。
+  projectChanged: 此表單開啟後環境已切換。請在目標環境重新開啟建立堆疊表單。
+  templateUnavailable: 找不到此應用目錄範本，或您沒有權限使用。請重新整理或聯絡管理員。
+  upgradeUnavailable: 目前無法升級此應用堆疊，或您沒有升級權限。請重新整理並確認堆疊狀態後再試。
   version:
     prompt: 選擇版本…
     default: '目前預設 (目前版本 {version})'
@@ -3761,6 +3774,7 @@ projectUpgrade:
   header: 升級環境
   detail: '{appName} {appVersion} 包含更新需要升級已有的系統服務以及負載平衡器容器。'
   notOwner: 只有環境的所有者或管理員能夠進行升級操作。
+  notAvailable: 此環境目前無法升級。
   actionButton: 立刻升級
   banner: 環境升級中…
 registryRow:

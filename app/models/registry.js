@@ -7,6 +7,7 @@ var Registry = Resource.extend({
   type: 'registry',
   serverAddress: null,
   modalService: service('modal'),
+  projects: service(),
 
   actions: {
     deactivate: function() {
@@ -18,15 +19,38 @@ var Registry = Resource.extend({
     },
 
     edit: function() {
-      this.get('store').find('registry').then((registries) => {
+      if ( !this.get('canEditCredential') ) {
+        return;
+      }
+
+      let projectId = this.get('projects.current.id');
+      return this.get('store').find('registry').then((registries) => {
+        if ( projectId !== this.get('projects.current.id') || !this.get('canEditCredential') ) {
+          return;
+        }
+
         this.get('modalService').toggleModal('edit-registry', EmberObject.create({
           registries: registries,
           registry: this,
           credential: this.get('credential'),
+          projectId,
         }));
       });
     },
   },
+
+  canEditCredential: function() {
+    let projectId = this.get('projects.current.id');
+    if ( !projectId || this.get('projects.schemaProjectId') !== projectId ) {
+      return false;
+    }
+
+    let credential = this.get('credential');
+
+    return credential ? Boolean(credential.get('actionLinks.update')) :
+      this.get('projects').canCreateResource('registryCredential');
+  }.property('credential', 'credential.actionLinks.update',
+    'projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
 
   availableActions: function() {
     var a = this.get('actionLinks');
@@ -40,9 +64,9 @@ var Registry = Resource.extend({
       { label: 'action.restore',    icon: 'icon icon-medicalcross', action: 'restore',      enabled: !!a.restore },
       { label: 'action.viewInApi',  icon: 'icon icon-external-link',action: 'goToApi',      enabled: true },
       { divider: true },
-      { label: 'action.edit',       icon: 'icon icon-edit',         action: 'edit',         enabled: !!a.update },
+      { label: 'action.edit',       icon: 'icon icon-edit',         action: 'edit',         enabled: this.get('canEditCredential') },
     ];
-  }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}'),
+  }.property('actionLinks.{activate,deactivate,restore,remove,purge}', 'canEditCredential'),
 
   displayName: alias('displayAddress'),
   displayAddress: function() {
