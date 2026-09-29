@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.154`. It retains the existing Node 24, Ember, Sass,
+The current source compatibility target is `1.6.155`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,13 +16,21 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
+Release `1.6.155` positions global notices below the navigation bar using the
+existing navbar height and keeps them inside narrow viewports. This corrects
+the mobile layout overlap found during `1.6.154` acceptance without changing
+authorization or API behavior. See the
+[release note](docs/releases/web-console-1.6.155.md) for focused visual tests;
+packaged Server/browser acceptance must be checked against a new image.
+
 Release `1.6.154` shows a localized, persistent permission error when a direct
 Stack or Service creation URL is denied, then returns to the Stacks list.
 Service upgrade URLs continue to use update permission and receive an update
 error only when that permission is absent. The shared message covers all
 resource types using the route guard. See the
-[release note](docs/releases/web-console-1.6.154.md) for source test evidence;
-packaged browser and Server acceptance remain pending.
+[release note](docs/releases/web-console-1.6.154.md) for source test evidence.
+It was packaged in Server `v1.6.488`; its 8080 browser acceptance identified
+the notification/navbar overlap addressed by `1.6.155`.
 
 Release `1.6.153` makes Stack, Service, and Container write controls check
 their current project/resource capability when the user acts; delayed project
