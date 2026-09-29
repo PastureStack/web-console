@@ -7,6 +7,15 @@ $navbar-height: null !default;
   z-index: 10;
 }
 
+#growl-mount .jGrowl.top-right {
+  // The authenticated layout places this between the navbar and main.
+  // Keep notices in flow so page titles and actions start below them.
+  position: static;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
 .jGrowl {
   .jGrowl-close {
     position: absolute;
@@ -21,6 +30,12 @@ $navbar-height: null !default;
     max-width: calc(100vw - 20px);
     opacity: 1;
     color: white;
+  }
+
+  .jGrowl-notification {
+    // Anchor each dismiss control to its own notice, including in the
+    // in-flow mobile layout and when several notices are visible.
+    position: relative;
   }
 
   .jGrowl-notification .jGrowl-header {

@@ -12,8 +12,20 @@ export default Service.extend({
     $.jGrowl.defaults.closerTemplate = '<div><button type="button" class="btn btn-info btn-xs btn-block">Dismiss All Notifications</button></div>';
   },
 
+  placeContainer(target) {
+    let destination = target || document.getElementById('growl-mount') || document.body;
+    let container = document.getElementById('jGrowl');
+
+    if (container && container.parentNode !== destination) {
+      destination.appendChild(container);
+    }
+
+    return destination;
+  },
+
   raw: function(title, body, opt) {
     opt = opt || {};
+    opt.appendTo = this.placeContainer();
 
     if ( title )
     {
