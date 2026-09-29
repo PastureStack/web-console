@@ -7,7 +7,7 @@
     goToPrevious="goToPrevious"
   }}
 {{/unless}}
-<div id="growl-mount"></div>
+{{growl-mount}}
 <main class="clearfix">
   {{#if (and this.forceUpgrade this.projects.current.needsUpgrade)}}
     {{project-upgrade model=this.projects.current}}
