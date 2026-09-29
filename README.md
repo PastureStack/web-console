@@ -16,12 +16,14 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-The `1.6.158` candidate gives Service direct-ID and Secrets-list load failures
+Release `1.6.158` gives Service direct-ID and Secrets-list load failures
 the same localized, resource-safe handling already used for Stack loads. It
 also gives HTTP 405 save and action failures the existing translated
-unavailable messages. The source tests cover English, Traditional Chinese,
-and Japanese; packaging and live browser acceptance remain pending. See the
-[candidate release note](docs/releases/web-console-1.6.158.md).
+unavailable messages. Focused source tests cover English, Traditional Chinese,
+and Japanese. The official archive is published with SHA-256
+`286833d3313c5bc04469a8fafd41bab7de1c4b60527f91aae9eef8a4016b17f6`;
+Server packaging and live browser acceptance remain separate. See the
+[release note](docs/releases/web-console-1.6.158.md).
 
 Release `1.6.157` mounts authenticated-page notices when their component enters
 the DOM. This covers the fresh direct-URL denial missed by `1.6.156`'s route
