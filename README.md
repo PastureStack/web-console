@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.155`. It retains the existing Node 24, Ember, Sass,
+The current source compatibility target is `1.6.156`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,12 +16,17 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-Release `1.6.155` positions global notices below the navigation bar using the
-existing navbar height and keeps them inside narrow viewports. This corrects
-the mobile layout overlap found during `1.6.154` acceptance without changing
-authorization or API behavior. See the
-[release note](docs/releases/web-console-1.6.155.md) for focused visual tests;
-packaged Server/browser acceptance must be checked against a new image.
+Release `1.6.156` places authenticated-page notices in the normal layout flow
+between the navigation and main content, so an error cannot cover the page
+title or right-side actions. Login/MFA notices keep their existing body host.
+See the [release note](docs/releases/web-console-1.6.156.md) for focused tests;
+packaged Server/browser acceptance remains a separate gate.
+
+Release `1.6.155` moved global notices below the navigation bar and bounded
+their width. QA 8080 browser acceptance subsequently found that the fixed
+notice still covered the mobile page title and desktop header actions. It is
+not the accepted layout; see the
+[1.6.155 release note](docs/releases/web-console-1.6.155.md).
 
 Release `1.6.154` shows a localized, persistent permission error when a direct
 Stack or Service creation URL is denied, then returns to the Stacks list.
