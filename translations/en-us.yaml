@@ -16,6 +16,11 @@ uiText:
 branding:
   recoveryNode: "{appName} recovery node"
 
+routePermission:
+  title: Action unavailable
+  denied: You do not have permission to create this resource in this environment.
+  updateDenied: You do not have permission to update this resource in this environment.
+
 ##############################
 # Really generic things used in multiple places (use sparingly)
 ##############################

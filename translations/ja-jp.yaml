@@ -13,6 +13,11 @@ uiText:
   pastureStackCompose: PastureStack Compose
 branding:
   recoveryNode: '{appName} 復旧ノード'
+routePermission:
+  title: 操作を実行できません
+  denied: この環境でこのリソースを作成する権限がありません。
+  updateDenied: この環境でこのリソースを更新する権限がありません。
+
 generic:
   actions: アクション
   columns: 列

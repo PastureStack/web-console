@@ -7,10 +7,13 @@ import RequireCreatePermission from 'ui/mixins/require-create-permission';
 module('Unit | Mixin | require create permission');
 
 test('allows a route only when the effective schema exposes POST', function(assert) {
-  assert.expect(3);
+  assert.expect(4);
   let redirects = 0;
+  let notifications = [];
   let route = Route.extend(RequireCreatePermission).create({
     requiredCreateType: 'stack',
+    intl: {t: (key) => key},
+    growl: {error(title, body) { notifications.push([title, body]); }},
     router: EmberObject.create({
       replaceWith() {
         redirects++;
@@ -25,15 +28,19 @@ test('allows a route only when the effective schema exposes POST', function(asse
   });
   return route.beforeModel({}).then(() => {
     assert.strictEqual(redirects, 0, 'an authorized route is not redirected');
+    assert.deepEqual(notifications, [], 'an authorized route has no permission notice');
     assert.strictEqual(route.get('requiredCreateType'), 'stack', 'the capability is explicit');
     run(() => route.destroy());
   });
 });
 
 test('redirects direct navigation when POST is absent', function(assert) {
-  assert.expect(3);
+  assert.expect(4);
+  let notifications = [];
   let route = Route.extend(RequireCreatePermission).create({
     requiredCreateType: 'service',
+    intl: {t: (key) => key},
+    growl: {error(title, body) { notifications.push([title, body]); }},
     router: EmberObject.create({
       replaceWith(target) {
         assert.strictEqual(target, 'stacks', 'the denied route returns to the safe read-only list');
@@ -49,17 +56,22 @@ test('redirects direct navigation when POST is absent', function(assert) {
   });
   return route.beforeModel({}).then((result) => {
     assert.strictEqual(result, 'redirected', 'the redirect transition is returned');
+    assert.deepEqual(notifications, [['routePermission.title', 'routePermission.denied']],
+      'a denied create shows exactly one permission notice');
     run(() => route.destroy());
   });
 });
 
 test('an upgrade uses PUT capability without opening create-only routes', function(assert) {
-  assert.expect(4);
+  assert.expect(5);
   let redirects = 0;
+  let notifications = [];
   let route = Route.extend(RequireCreatePermission).create({
     requiredCreateType: 'service',
     requiredUpdateType: 'service',
     updateWhenQueryParam: 'upgrade',
+    intl: {t: (key) => key},
+    growl: {error(title, body) { notifications.push([title, body]); }},
     router: EmberObject.create({
       replaceWith() {
         redirects++;
@@ -78,17 +90,54 @@ test('an upgrade uses PUT capability without opening create-only routes', functi
   });
   return route.beforeModel({to: {queryParams: {upgrade: 'true'}}}).then(() => {
     assert.strictEqual(redirects, 0, 'PUT capability preserves the upgrade workflow');
+    assert.deepEqual(notifications, [], 'an authorized upgrade has no create permission notice');
     assert.strictEqual(route.get('updateWhenQueryParam'), 'upgrade', 'only explicit upgrade flows use PUT');
     run(() => route.destroy());
   });
 });
 
-test('upgrade=false remains a create request', function(assert) {
-  assert.expect(2);
+test('denied upgrades use the update notice rather than the create notice', function(assert) {
+  assert.expect(4);
+  let notifications = [];
   let route = Route.extend(RequireCreatePermission).create({
     requiredCreateType: 'service',
     requiredUpdateType: 'service',
     updateWhenQueryParam: 'upgrade',
+    intl: {t: (key) => key},
+    growl: {error(title, body) { notifications.push([title, body]); }},
+    router: EmberObject.create({
+      replaceWith(target) {
+        assert.strictEqual(target, 'stacks', 'the denied upgrade returns to the safe list');
+        return 'redirected';
+      },
+    }),
+    store: EmberObject.create({
+      canCreate() {
+        assert.ok(false, 'an upgrade must not be evaluated as a create');
+      },
+      getById(type, id) {
+        assert.deepEqual([type, id], ['schema', 'service'], 'the update resource type is checked');
+        return EmberObject.create({resourceMethods: ['GET']});
+      },
+    }),
+  });
+  return route.beforeModel({to: {queryParams: {upgrade: 'true'}}}).then((result) => {
+    assert.strictEqual(result, 'redirected', 'the redirect transition is returned');
+    assert.deepEqual(notifications, [['routePermission.title', 'routePermission.updateDenied']],
+      'the denied upgrade shows exactly one update permission notice');
+    run(() => route.destroy());
+  });
+});
+
+test('upgrade=false remains a create request', function(assert) {
+  assert.expect(3);
+  let notifications = [];
+  let route = Route.extend(RequireCreatePermission).create({
+    requiredCreateType: 'service',
+    requiredUpdateType: 'service',
+    updateWhenQueryParam: 'upgrade',
+    intl: {t: (key) => key},
+    growl: {error(title, body) { notifications.push([title, body]); }},
     router: EmberObject.create({
       replaceWith(target) {
         assert.strictEqual(target, 'stacks', 'a denied create request is redirected');
@@ -106,6 +155,8 @@ test('upgrade=false remains a create request', function(assert) {
     }),
   });
   return route.beforeModel({to: {queryParams: {upgrade: 'false'}}}).then(() => {
+    assert.deepEqual(notifications, [['routePermission.title', 'routePermission.denied']],
+      'upgrade=false uses the create permission notice exactly once');
     run(() => route.destroy());
   });
 });

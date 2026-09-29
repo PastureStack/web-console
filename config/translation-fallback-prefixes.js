@@ -16,6 +16,7 @@ module.exports = Object.freeze([
   // marker. Keep reviewed English copy as the fallback outside zh-tw.
   'resourceLoadError.',
   'resourceSaveError.',
+  'routePermission.',
   'infoMultiStats.',
   'newCatalog.permissionDenied',
   'newCatalog.projectChanged',
