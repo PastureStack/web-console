@@ -22,6 +22,7 @@ const requiredLocales = [
 // These Japanese sign-in and write-error messages are reviewed locally. Other
 // locales, and unrelated Japanese authentication keys, retain English fallback.
 const requiredJapanesePrefixes = [
+  'routePermission.',
   'resourceLoadError.',
   'resourceSaveError.',
   'loginPage.localRecovery.',

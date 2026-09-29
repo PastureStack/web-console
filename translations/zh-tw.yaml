@@ -13,6 +13,11 @@ uiText:
   pastureStackCompose: PastureStack Compose
 branding:
   recoveryNode: '{appName} 復原節點'
+routePermission:
+  title: 無法執行此操作
+  denied: 您沒有權限在此環境中建立此資源。
+  updateDenied: 您沒有權限在此環境中更新此資源。
+
 generic:
   actions: 操作
   columns: 欄位
