@@ -13,8 +13,23 @@ function expansionAt(packagePath) {
   return typeof exported === "function" ? exported : exported.expand;
 }
 
-function checkBraceCase(packagePath, name) {
-  const expand = expansionAt(packagePath);
+function childExpansion(version) {
+  // Child arguments select a reviewed release, never a module path. Keep each
+  // require literal so a CLI caller cannot load a file outside this allowlist.
+  switch (version) {
+    case "1.1.21":
+      return require("../node_modules/brace-expansion");
+    case "2.1.7":
+      return require("../node_modules/babel-plugin-module-resolver/node_modules/brace-expansion");
+    case "5.0.12":
+      return require("../node_modules/@ember/app-blueprint/node_modules/brace-expansion").expand;
+    default:
+      throw new Error("Unsupported brace release selector");
+  }
+}
+
+function checkBraceCase(version, name) {
+  const expand = childExpansion(version);
   const inputs = {
     commaRecursion: "{" + "{a},".repeat(8000) + "b}",
     argumentArray: "{{x}," + "a,".repeat(125000) + "b}",
@@ -45,7 +60,7 @@ function checkBraces() {
     if (checkedVersions.has(info.version)) continue;
     checkedVersions.add(info.version);
     for (const name of ["commaRecursion", "argumentArray", "nestedMembers", "nestedSet", "rewrite"]) {
-      const child = spawnSync(process.execPath, [__filename, "--brace-case", packagePath, name], {
+      const child = spawnSync(process.execPath, [__filename, "--brace-case", info.version, name], {
         encoding: "utf8", timeout: 8000, maxBuffer: 8192,
       });
       assert.equal(child.status, 0, `${info.version} ${name} completed without stack exhaustion or timeout`);
@@ -53,7 +68,15 @@ function checkBraces() {
   }
   assert.ok(instances > 0);
   assert.deepEqual([...checkedVersions].sort(), ["1.1.21", "2.1.7", "5.0.12"]);
+  for (const selector of ["../package.json", "C:/untrusted/module.js", "1.1.22", "__proto__"]) {
+    const child = spawnSync(process.execPath, [__filename, "--brace-case", selector, "nestedSet"], {
+      encoding: "utf8", timeout: 2000, maxBuffer: 8192,
+    });
+    assert.equal(child.status, 1, "unknown release selectors are rejected before loading a module");
+    assert.match(child.stderr, /Unsupported brace release selector/);
+  }
   console.log(`UI_SECURITY_BRACE_COMPAT_OK instances=${instances} release_lines=3 hostile_cases=15`);
+  console.log("UI_SECURITY_CHILD_SELECTOR_REJECTION_OK cases=4");
 }
 
 function checkClient(url, transports, expectedTransport) {
