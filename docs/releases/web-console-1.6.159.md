@@ -29,3 +29,21 @@ values, explicit password replacement, whitespace preservation, clone
 isolation and existing capability/parent checks. Source tests, official
 archive publication, Server image packaging and real browser acceptance are
 separate gates; no full resource or role-matrix completion is claimed here.
+
+The official validation run also exposed High advisories in the build/test
+dependency graph. The release now pins the published compatible patches:
+`brace-expansion` 1.1.21 / 2.1.7 / 5.0.12 on the existing 1 / 2 / 5 major
+lines, and `engine.io` 6.6.10. These address the brace parser's
+[comma-group stack exhaustion](https://github.com/juliangruber/brace-expansion/security/advisories/GHSA-6j4f-fj2g-mc7p),
+[nested-group stack exhaustion](https://github.com/juliangruber/brace-expansion/security/advisories/GHSA-qhr7-859c-m2p7),
+and [Engine.IO protocol-revision mismatch](https://github.com/socketio/socket.io/security/advisories/GHSA-2gc4-cqfq-p2gv).
+The reviewed release-lock baseline and fail-closed dependency checks are
+updated together; `npm audit --audit-level=high` is not relaxed.
+
+Focused checks cover all 14 locked brace-expansion instances, bounded hostile
+patterns on each release line, normal brace/glob behavior, rejection of
+missing or mismatched Engine.IO protocol revisions, and normal polling,
+WebSocket and polling-to-WebSocket upgrades. A clean Node 24/npm 12
+`npm ci --ignore-scripts` install and the local High audit gate passed.
+Remaining Moderate advisories are outside this narrow repair; these results
+do not claim zero findings or replace official publication/browser acceptance.

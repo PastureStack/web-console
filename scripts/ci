@@ -24,6 +24,7 @@ node ./scripts/check-ui-localization-quality
 ./scripts/check-ui-oidc-api-host
 ./scripts/check-ui-oidc-safe-activation
 ./scripts/check-ui-critical-high-dependencies
+node ./scripts/check-ui-security-patch-compat.js
 npm audit --audit-level=high
 ./scripts/check-ui-codeql-critical-high
 ./scripts/check-dependency-baseline
