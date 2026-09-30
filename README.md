@@ -8,6 +8,14 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Release `1.6.161` is being prepared to fix existing Certificate metadata edits
+blocked by the masked private key. Name/description-only edits omit certificate
+material from the PUT body; new certificates and material replacements keep
+full validation. The editor explains this distinction in all supported locales.
+Focused real-model and rendered three-language UI tests passed 25/25; final CI,
+publication and isolated browser acceptance are still pending. See the
+[preparation note](docs/releases/web-console-1.6.161.md).
+
 The current published release is `1.6.160`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with

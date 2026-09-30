@@ -1751,8 +1751,7 @@ editCertificate:
   description:
     placeholder: z.B. EV Zertifikat für mydomain.com
   noteKeyWriteOnly: >-
-    Hinweis: Der Private Key ist bewusst leer, da dieses Feld write-only ist. Sie müssen den Private Key erneut
-    eintragen um das Zertifikat zu aktualisieren, auch wenn er sich nicht verändert hat.
+    Der private Schlüssel wird nicht zurückgegeben und erscheint leer. Wenn Sie nur den Namen oder die Beschreibung ändern, lassen Sie Zertifikat, Zertifikatskette und Schlüssel unverändert. Zum Ersetzen des Zertifikats oder der Kette ist der zugehörige private Schlüssel erforderlich.
 editContainer:
   title:
     vm: VM bearbeiten

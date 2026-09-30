@@ -384,7 +384,7 @@ export default Mixin.create({
     }
   },
 
-  validationErrors: function() {
+  validationErrors: function(options) {
     let intl = this.get('intl');
 
     var errors = [];
@@ -478,7 +478,9 @@ export default Mixin.create({
 
       var len = (val ? get(val,'length') : 0);
 
-      if ( field.required && (val === null || (typeof val === 'string' && len === 0) || (isArray(val) && len === 0) ) )
+      const omittedOnUpdate = this.get('id') && Array.isArray(options?.updateOmittedFields) &&
+        options.updateOmittedFields.includes(key);
+      if ( field.required && !omittedOnUpdate && (val === null || (typeof val === 'string' && len === 0) || (isArray(val) && len === 0) ) )
       {
         errors.push(intl.t('validation.required', {key: displayKey}));
         continue;

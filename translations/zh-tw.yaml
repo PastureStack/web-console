@@ -1977,7 +1977,7 @@ editCertificate:
     placeholder: 例如：mydomain.com
   description:
     placeholder: 例如：mydomain.com 的 EV 憑證
-  noteKeyWriteOnly: 注意：私密金鑰 部分為只寫（write only）因而顯示為空白。更新憑證時您需要重新上傳 私密金鑰，即便 私密金鑰 未發生變化。
+  noteKeyWriteOnly: 私鑰不會回傳，因此顯示為空白。只修改名稱或描述時，請保持憑證、憑證鏈與私鑰欄位不變；更換憑證或憑證鏈時，必須提供對應的私鑰。
 editContainer:
   title:
     vm: 編輯虛擬機器

@@ -1718,8 +1718,7 @@ editCertificate:
   description:
     placeholder: hal. EV cert para sa mydomain.com
   noteKeyWriteOnly: >-
-    Tandaan: Ang Private Key ay sadyang blangko dahil ang field ay write-only.  Kakailanganin mong ibigay muli ang
-    Pribadong Key upang i-update ang certificate, kahit na hindi ito nagbago.
+    Hindi ibinabalik ang pribadong key kaya blangko ito. Kung pangalan o paglalarawan lamang ang babaguhin, huwag baguhin ang certificate, chain at key. Kailangan ang katugmang pribadong key kapag papalitan ang certificate o chain.
 editContainer:
   title:
     vm: I-edit ang VM

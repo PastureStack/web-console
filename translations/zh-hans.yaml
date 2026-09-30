@@ -1667,7 +1667,7 @@ editCertificate:
     placeholder: '例如:mydomain.com'
   description:
     placeholder: '例如:mydomain.com的EV证书'
-  noteKeyWriteOnly: '注意:Private Key部分为只写(write only)因而显示为空白。更新证书时您需要重新上传Private Key，即便Private Key未发生变化。'
+  noteKeyWriteOnly: 私钥不会返回，因此显示为空白。仅修改名称或描述时，请保持证书、证书链和私钥字段不变；更换证书或证书链时，必须提供对应的私钥。
 editContainer:
   title:
     vm: 编辑虚拟机

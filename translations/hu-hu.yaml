@@ -1735,8 +1735,7 @@ editCertificate:
   description:
     placeholder: pl. EV tanúsítvány a sajat-domain-nevem.hu webhelyhez
   noteKeyWriteOnly: >-
-    Megjegyzés: A privát kulcs szándékosan üres, mivel a mező csak írható.  A tanúsítvány módosításához szükséged lesz a
-    privát kulcsra ismét, akkor is ha az nem változott.
+    A privát kulcs nem kerül visszaadásra, ezért üresen jelenik meg. Ha csak a nevet vagy a leírást módosítja, hagyja változatlanul a tanúsítványt, a láncot és a kulcsot. A tanúsítvány vagy a lánc cseréjéhez a hozzá tartozó privát kulcs szükséges.
 editContainer:
   title:
     vm: VM szerkesztése

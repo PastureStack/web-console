@@ -26,9 +26,9 @@ export default Mixin.create({
     this.set('saving',false);
   },
 
-  validate: function() {
+  validate: function(options) {
     var model = this.get('primaryResource');
-    var errors = model.validationErrors();
+    var errors = model.validationErrors(options);
     if ( errors.get('length') )
     {
       this.set('errors', errors);
