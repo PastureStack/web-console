@@ -7,6 +7,18 @@ import NewOrEdit from 'ui/mixins/new-or-edit';
 
 module('Unit | Mixin | new or edit');
 
+test('validation forwards explicit options and leaves the default strict', function(assert) {
+  const received = [];
+  const options = {updateOmittedFields: ['key']};
+  const Subject = EmberObject.extend(NewOrEdit);
+  const subject = Subject.create({model: EmberObject.create({validationErrors(value) { received.push(value); return A([]); }})});
+
+  assert.true(subject.validate());
+  assert.true(subject.validate(options));
+  assert.deepEqual(received, [undefined, options]);
+  run(() => subject.destroy());
+});
+
 test('the save error action uses optional localized formatting', function(assert) {
   let intl = {t(key) {
     return {

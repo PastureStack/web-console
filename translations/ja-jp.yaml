@@ -1938,7 +1938,7 @@ editCertificate:
     placeholder: '例: mydomain.com'
   description:
     placeholder: '例: mydomain.com の EV 証明書'
-  noteKeyWriteOnly: 'Note: プライベートキーは書き込み専用のためあえて空にしています。証明書を更新するには変更が無かったとしても再度プライベートキーを入力する必要があります。'
+  noteKeyWriteOnly: 秘密鍵は返されないため、空欄で表示されます。名前または説明のみを変更する場合は、証明書・証明書チェーン・秘密鍵を変更しないでください。証明書またはチェーンを置き換える場合は、対応する秘密鍵が必要です。
 editContainer:
   title:
     vm: VM を編集

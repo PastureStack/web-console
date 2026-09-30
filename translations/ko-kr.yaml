@@ -1638,7 +1638,7 @@ editCertificate:
     placeholder: 예를 들어 mydomain.com
   description:
     placeholder: 예를 들어 EV mydomain.com에 대한 인증서
-  noteKeyWriteOnly: '참고: 필드가 쓰기 전용이므로 개인 키는 의도적으로 비어 있습니다.  인증서가 변경되지 않은 경우에도 인증서를 업데이트하려면 개인 키를 다시 제공해야 합니다.'
+  noteKeyWriteOnly: 개인 키는 반환되지 않아 빈칸으로 표시됩니다. 이름이나 설명만 변경하려면 인증서, 인증서 체인 및 키를 변경하지 마세요. 인증서나 체인을 교체하려면 해당 개인 키가 필요합니다.
 editContainer:
   title:
     vm: 편집 VM

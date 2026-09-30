@@ -1726,7 +1726,7 @@ editCertificate:
     placeholder: par exemple mondomaine.com
   description:
     placeholder: par exemple certificat EV (vérification approfondie) pour mondomaine.com
-  noteKeyWriteOnly: "Remarque\_: La clé privée est intentionnellement vide car le champ ne peut être réutilisé.  Vous devrez fournir la clé privée à nouveau pour mettre à jour le certificat, même si elle n’a pas changé."
+  noteKeyWriteOnly: "La clé privée n’est pas renvoyée et apparaît vide. Pour modifier uniquement le nom ou la description, laissez le certificat, la chaîne et la clé inchangés. Le remplacement du certificat ou de la chaîne nécessite la clé privée correspondante."
 editContainer:
   title:
     vm: Modifier la Machine Virtuelle (VM)

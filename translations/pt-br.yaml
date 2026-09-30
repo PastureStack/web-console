@@ -1715,8 +1715,7 @@ editCertificate:
   description:
     placeholder: p.ex. EV cert para meudominio.com
   noteKeyWriteOnly: >-
-    Nota: A chave privada é intencionalmente em branco porque o campo é somente leitura.  Você precisará fornecer a
-    chave privada novamente para atualizar o certificado, mesmo que não tenha mudado.
+    A chave privada não é retornada e aparece em branco. Para alterar apenas o nome ou a descrição, mantenha o certificado, a cadeia e a chave inalterados. A substituição do certificado ou da cadeia exige a chave privada correspondente.
 editContainer:
   title:
     vm: Editar VM

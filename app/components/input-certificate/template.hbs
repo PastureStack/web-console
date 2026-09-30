@@ -1,6 +1,6 @@
 <div class="col-md-4 form-group">
   <div class="clearfix r-mb10 r-mt15">
-    <label class="r-pt5">{{t 'inputCertificate.key.label'}}*</label>
+    <label class="r-pt5">{{t 'inputCertificate.key.label'}}{{#if this.keyRequired}}*{{/if}}</label>
   </div>
   {{input-text-file
     value=this.model.key

@@ -4,6 +4,14 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Web Console `1.6.161` preserves an existing Certificate's masked key when only
+name/description are changed. Explicit update-validation options apply only to
+persisted records and explicitly omitted fields; other required and supplied
+value checks remain strict. The editor omits unchanged material from metadata
+PUTs, without modifying authorization, storage, create or replacement contracts.
+Its existing hint and key marker distinguish metadata edits from replacements.
+The earlier failed native editor receipt is not promoted to a pass.
+
 Web Console `1.6.160` recognizes the established post-authorization Certificate
 in-use response (`405`, `InvalidAction`, and the known API message prefix),
 showing reviewed English, Traditional Chinese or Japanese copy that explains

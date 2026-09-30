@@ -12,7 +12,7 @@
     <div class="alert alert-info">{{t 'editCertificate.noteKeyWriteOnly'}}</div>
   </div>
 
-  {{input-certificate model=this.model}}
+  {{input-certificate model=this.model keyRequired=false}}
 </section>
 
 {{top-errors errors=this.errors}}
