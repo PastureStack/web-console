@@ -13,8 +13,11 @@ blocked by the masked private key. Name/description-only edits omit certificate
 material from the PUT body; new certificates and material replacements keep
 full validation. The editor explains this distinction in all supported locales.
 Focused real-model and rendered three-language UI tests passed 25/25; the full
-official CI passed 738/738. Packaged owner/member browser acceptance remains
-pending. See the [release note](docs/releases/web-console-1.6.161.md).
+official CI passed 738/738. Packaged owner/member Certificate browser checks
+passed on isolated Server `v1.6.495`: Cancel, metadata Save, refresh and the
+in-use delete explanation. Earlier HOLD receipts remain HOLD, and the broader
+resource/role matrix remains INCOMPLETE.
+See the [release note](docs/releases/web-console-1.6.161.md).
 
 The numeric [release `1.6.161`](https://github.com/PastureStack/web-console/releases/tag/1.6.161)
 pins source `2ad068d62b5afd3cd213cde8addc5ebbef738130`. Its archive SHA-256 is

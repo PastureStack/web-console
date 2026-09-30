@@ -1,6 +1,7 @@
 # Web Console 1.6.161
 
-Published numeric component release; packaged browser acceptance is pending.
+Published numeric component release; scoped Certificate browser acceptance
+passed on isolated Server `v1.6.495`.
 Source: `2ad068d62b5afd3cd213cde8addc5ebbef738130`.
 Archive SHA-256:
 `fa3ec0bf5173fa75a53dd621b87e1f587b20d9ecc6e5cb42a703ac4f5f7e97e7`.
@@ -34,9 +35,13 @@ required marker and remove it for masked edit keys. The existing hint is present
 in all 13 locales; locale checks report zero missing, orphan or invalid ICU keys.
 [Official CI 36738408143](https://github.com/PastureStack/web-console/actions/runs/36738408143)
 passed 738/738 tests and produced two byte-identical archives. The numeric tag
-and archive are published. Owner/member packaged browser acceptance remains
-pending.
+and archive are published. Packaged owner/member checks passed Cancel,
+metadata Save, refresh and the in-use delete explanation using the actual
+editor, with stored certificate/key material preserved. Exact-owned fixture
+cleanup completed with API/DB terminal readback and unrelated-row protection.
 
 No API, authorization, authentication, session, OIDC, MFA, proxy, firewall or
 stored-data contract changes are introduced. Earlier failed browser receipts
-remain failures; component tests do not complete the resource/role matrix.
+remain HOLD/failures; current scoped evidence does not resolve historical
+foreign-baseline uncertainty. The broader resource/role matrix remains INCOMPLETE.
+No company-site deployment is authorized.
