@@ -22,8 +22,28 @@ editor submits a password only when a new nonempty value is entered, preserving
 its literal whitespace. It retains the exact-resource, parent-registry,
 project and current update-capability checks. This is a browser payload fix;
 Server authorization and Registry credential creation are unchanged. See the
-[release note](docs/releases/web-console-1.6.159.md). Publication and packaged
-browser acceptance are not established by source changes alone.
+[release note](docs/releases/web-console-1.6.159.md).
+
+The official numeric [release `1.6.159`](https://github.com/PastureStack/web-console/releases/tag/1.6.159)
+is published from source commit `aab95cf41ebc45e4c51513d9589602ab990399c9`.
+The `web-console-1.6.159.tar.gz` archive has SHA-256
+`f014083480e10430701e3a08588cf617242188938d9f935fbaac42a3b5feeb90`.
+[Official validation run `36686121660`](https://github.com/PastureStack/web-console/actions/runs/36686121660)
+passed all 723 tests (723/723) and verified deterministic packaging. The earlier
+7/7 result covered only the focused Registry editor tests. Published Server
+[`v1.6.493`](https://github.com/PastureStack/server/releases/tag/v1.6.493)
+packages this archive at immutable image digest
+`sha256:61067362a2d91b791c7e80cb2ec4a5a907bc03884774d2019dccf1bf0e29788f`.
+
+Scoped Registry acceptance on isolated QA 8080 passed 24 GET checks across six
+roles and both API roots, eight no-access PUT/DELETE denials with HTTP 403, two
+API password replacements, and one owner browser username-only save that omitted
+`secretValue`. Eight readonly write cases returned HTTP 405 because the schema
+omits those methods; they remain N/A, not authorization passes. Cancel, refresh,
+credential and parent Registry identity preservation passed. The password hint
+and controls fit in English, Traditional Chinese and Japanese at 1440px and
+390px. Both disposable fixture resources reached their terminal cleanup states.
+Other workflows and the broader role/resource matrix still require acceptance.
 
 The same release also pins official compatible High-severity security fixes for the build
 and test graph: `brace-expansion` 1.1.21 / 2.1.7 / 5.0.12 on their existing
