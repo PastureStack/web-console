@@ -86,6 +86,14 @@ if overrides.get("tmp") != "0.2.7":
     fail(f"tmp override drifted: {overrides.get('tmp')}")
 if overrides.get("nanoid") != "3.3.18":
     fail(f"nanoid override drifted: {overrides.get('nanoid')}")
+for selector, version in {
+    "brace-expansion@^1.0.0": "1.1.21",
+    "brace-expansion@^2.0.0": "2.1.7",
+    "brace-expansion@^5.0.0": "5.0.12",
+    "engine.io": "6.6.10",
+}.items():
+    if overrides.get(selector) != version:
+        fail(f"security patch override drifted: {selector}={overrides.get(selector)}; expected={version}")
 api_store = packages.get("node_modules/ember-api-store", {})
 if api_store.get("resolved") != api_store_compat_spec:
     fail(f"lock resolves unreviewed ember-api-store source: {api_store.get('resolved')}")
@@ -101,6 +109,7 @@ forbidden_names = {
 }
 minimums = {
     "braces": (3, 0, 3),
+    "engine.io": (6, 6, 10),
     "json5": (1, 0, 2),
     "js-yaml": (4, 3, 2),
     "lodash": (4, 18, 0),
@@ -113,12 +122,21 @@ minimums = {
     "tmp": (0, 2, 6),
 }
 checked = {name: 0 for name in minimums}
+checked["brace-expansion"] = 0
+brace_minimums = {1: (1, 1, 21), 2: (2, 1, 7), 3: (3, 0, 9), 5: (5, 0, 12)}
 for path, metadata in packages.items():
     name = package_name(path)
     if not name:
         continue
     if name in forbidden_names:
         fail(f"forbidden obsolete build package remains: {path}@{metadata.get('version')}")
+    if name == "brace-expansion":
+        parsed = version_tuple(metadata.get("version"))
+        minimum = brace_minimums.get(parsed[0]) if parsed else None
+        checked[name] += 1
+        if minimum is None or parsed < minimum:
+            fail(f"vulnerable or unreviewed brace-expansion remains: {path}@{metadata.get('version')}")
+        continue
     if name not in minimums:
         continue
     version = metadata.get("version")
@@ -128,7 +146,7 @@ for path, metadata in packages.items():
         minimum = ".".join(str(part) for part in minimums[name])
         fail(f"vulnerable {name} remains: {path}@{version}; minimum={minimum}")
 
-for required_name in ("braces", "json5", "js-yaml", "lodash", "morgan", "nanoid", "postcss", "qs", "tmp"):
+for required_name in ("brace-expansion", "braces", "engine.io", "json5", "js-yaml", "lodash", "morgan", "nanoid", "postcss", "qs", "tmp"):
     if checked[required_name] == 0:
         fail(f"expected dependency disappeared without review: {required_name}")
 

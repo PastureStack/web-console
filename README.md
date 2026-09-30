@@ -25,6 +25,12 @@ Server authorization and Registry credential creation are unchanged. See the
 [release note](docs/releases/web-console-1.6.159.md). Publication and packaged
 browser acceptance are not established by source changes alone.
 
+The same release also pins official compatible High-severity security fixes for the build
+and test graph: `brace-expansion` 1.1.21 / 2.1.7 / 5.0.12 on their existing
+major lines, and `engine.io` 6.6.10. The reviewed lock baseline and dependency
+gates cover these pins; the live `npm audit --audit-level=high` gate remains
+unchanged. This does not claim that remaining Moderate advisories are fixed.
+
 Release `1.6.158` gives Service direct-ID and Secrets-list load failures
 the same localized, resource-safe handling already used for Stack loads. It
 also gives HTTP 405 save and action failures the existing translated
