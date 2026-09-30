@@ -4,7 +4,7 @@ import { service } from '@ember/service';
 import { resolve } from 'rsvp';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
-import { credentialsForRegistry, definitelyRejected } from 'ui/utils/registry-save';
+import { credentialsForRegistry, credentialUpdateData, definitelyRejected } from 'ui/utils/registry-save';
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
@@ -47,6 +47,10 @@ export default ModalBase.extend(NewOrEdit, {
       email: 'not-really@required.anymore',
     });
 
+    if ( originalCredential ) {
+      credential.set('secretValue', '');
+    }
+
     this.set('model',EmberObject.create({
       allRegistries: orig.get('registries'),
       registry: registry.clone(),
@@ -61,6 +65,22 @@ export default ModalBase.extend(NewOrEdit, {
     });
   },
 
+  validate: function() {
+    if ( this.get('missingCredential') ) {
+      return this._super(...arguments);
+    }
+
+    const credential = this.get('primaryResource');
+    const secretValue = credential.get('secretValue');
+    try {
+      return this._super(...arguments);
+    } finally {
+      // Resource validation trims string fields. Preserve an explicitly entered
+      // password byte-for-byte while retaining its other validation behavior.
+      credential.set('secretValue', secretValue);
+    }
+  },
+
   doSave: function() {
     if ( !this.get('canSaveCredential') ) {
       throw {status: 403, code: 'Forbidden', messageKey: 'resourceSaveError.unavailable'};
@@ -68,10 +88,7 @@ export default ModalBase.extend(NewOrEdit, {
 
     if ( !this.get('missingCredential') ) {
       const credential = this.get('primaryResource');
-      const data = {
-        publicValue: credential.get('publicValue'),
-        secretValue: credential.get('secretValue'),
-      };
+      const data = credentialUpdateData(credential);
 
       const registryId = this.get('originalModel.registry.id');
       const saveCredential = this._super.bind(this);

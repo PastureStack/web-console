@@ -38,6 +38,7 @@ module.exports = Object.freeze([
   'editRegistry.missingCredential',
   'editRegistry.credentialAppeared',
   'editRegistry.credentialOutcomeUnknown',
+  'editRegistry.password.keepExisting',
   'secretsPage.permissionDenied',
   'newSecret.refreshFailed',
   'accountsPage.new.error.',

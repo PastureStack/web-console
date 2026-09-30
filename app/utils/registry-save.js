@@ -9,3 +9,14 @@ export function definitelyRejected(error) {
 export function credentialsForRegistry(credentials, registryId) {
   return credentials.filterBy('registryId', registryId);
 }
+
+export function credentialUpdateData(credential) {
+  const data = {publicValue: credential.get('publicValue')};
+  const secretValue = credential.get('secretValue');
+
+  if ( typeof secretValue === 'string' && secretValue.length > 0 ) {
+    data.secretValue = secretValue;
+  }
+
+  return data;
+}
