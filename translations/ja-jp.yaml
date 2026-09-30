@@ -2008,6 +2008,7 @@ editRegistry:
   password:
     label: パスワード
     placeholder: '例:パスワード'
+    keepExisting: 空欄のままにすると、現在のパスワードを保持します。
 editService:
   title: サービスを編集
 editStack:

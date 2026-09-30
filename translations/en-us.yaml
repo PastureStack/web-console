@@ -2141,6 +2141,7 @@ editRegistry:
   password:
     label: Password
     placeholder: e.g. password
+    keepExisting: Leave blank to keep the current password.
 
 editService:
   title: Edit Service

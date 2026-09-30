@@ -2047,6 +2047,7 @@ editRegistry:
   password:
     label: 密碼
     placeholder: 例如：password
+    keepExisting: 留空保留現有密碼。
 editService:
   title: 編輯服務
 editStack:
