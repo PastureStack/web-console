@@ -22,5 +22,16 @@ Focused native headless Chrome 153 QUnit validation passed 32/32 tests with the
 existing error-display tests, not the full suite. Both localization-quality
 and Traditional Chinese completeness checks passed with no missing keys.
 
-Release publication and native browser acceptance are separate gates. Full
-resource/role-matrix completion is not implied by these formatter tests.
+The official numeric [release `1.6.160`](https://github.com/PastureStack/web-console/releases/tag/1.6.160)
+is published from source commit `63964fa3a6da5cbd452cdc1061c1e18340055362`.
+[Official validation run `36702030007`](https://github.com/PastureStack/web-console/actions/runs/36702030007)
+passed the full 725/725 test suite and produced two byte-identical
+`web-console-1.6.160.tar.gz` archives. The published archive contains
+`VERSION.txt=1.6.160` and has SHA-256
+`705946b96e693c55a8ab5de3bc96b14020a52a050bf3992c302b9fb3c1408a51`;
+the remote published asset's hash was independently read back and matched.
+The earlier 32/32 result is the focused formatter/growl check, not the full
+suite count.
+
+Server artifact and native browser acceptance remain pending. Neither
+component publication nor these tests complete the resource/role matrix.

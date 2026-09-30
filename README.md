@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-The current source compatibility target is `1.6.160`. It retains the existing Node 24, Ember, Sass,
+The current published release is `1.6.160`. It retains the existing Node 24, Ember, Sass,
 dependency, browser-smoke, terminal, console, and test-harness modernization.
 It adds a provider-neutral OpenID Connect administration and sign-in flow with
 PKCE S256, staged configuration validation, a real test login before
@@ -16,13 +16,22 @@ activation, and local-authentication recovery. Product-owned names, logos,
 icons, package metadata, and visible text use PastureStack branding. API
 models and protocol fields remain compatible.
 
-The `1.6.160` source adds a clear, localized explanation when the API rejects
+Release `1.6.160` adds a clear, localized explanation when the API rejects
 deleting a certificate still referenced by a load balancer. It tells the user
 to remove those references first, without exposing service names. Denied or
 missing resources and unrelated action failures retain neutral messages;
 authorization, delete behavior, session and MFA contracts do not change. See
-the [release note](docs/releases/web-console-1.6.160.md). Publication and live
-acceptance evidence are recorded separately from this source target.
+the [release note](docs/releases/web-console-1.6.160.md).
+
+The official numeric [release `1.6.160`](https://github.com/PastureStack/web-console/releases/tag/1.6.160)
+is published from source commit `63964fa3a6da5cbd452cdc1061c1e18340055362`.
+The `web-console-1.6.160.tar.gz` archive has SHA-256
+`705946b96e693c55a8ab5de3bc96b14020a52a050bf3992c302b9fb3c1408a51`.
+[Official validation run `36702030007`](https://github.com/PastureStack/web-console/actions/runs/36702030007)
+passed 725/725 tests and produced two byte-identical archives. The published
+asset's hash was independently read back and matched. Server artifact and
+isolated browser acceptance remain pending; this component publication does
+not complete the resource/role matrix.
 
 Release `1.6.159` preserves an existing Registry credential's password when
 the editor changes only its username or leaves the password input blank. The
