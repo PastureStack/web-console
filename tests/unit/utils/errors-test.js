@@ -30,6 +30,41 @@ test('finds authentication status codes in nested request failures', function(as
   assert.strictEqual(Errors.status({xhr: {status: 0}}), null, 'a network failure is not authentication failure');
 });
 
+test('only recognized authorized certificate lifecycle errors have specific action copy', function(assert) {
+  let message = 'Certificate is in use by load balancer services: private-balancer';
+  let body = {status: 405, code: 'InvalidAction', message};
+  let key = 'resourceSaveError.certificateInUse';
+  assert.strictEqual(Errors.actionMessageKey(body), key, 'the existing API contract is recognized');
+  assert.strictEqual(Errors.actionMessageKey(ApiError.create(body)), key, 'API error models are supported');
+  assert.strictEqual(Errors.actionMessageKey({xhr: {status: 405, responseJSON: body}}), key,
+    'nested response envelopes use the same classification');
+  for (let status of [403, 404]) {
+    assert.strictEqual(Errors.actionMessageKey({status, body}), null,
+      `${status} remains neutral even with a nested lifecycle message`);
+  }
+  for (let error of [
+    {status: 405, message},
+    {status: 405, code: 'ActionNotAvailable', message},
+    {status: 405, code: 'InvalidAction', message: 'Another action is unavailable'},
+    {status: 405, code: 'InvalidAction', message: 'Certificate is in use by load balancer services:'},
+  ]) {
+    assert.strictEqual(Errors.actionMessageKey(error), null, 'other lifecycle failures are not guessed');
+  }
+});
+
+test('certificate-in-use copy is localized and never reveals referenced service names', async function(assert) {
+  for (let locale of ['en-us', 'zh-tw', 'ja-jp']) {
+    let response = await fetch(`/translations/${locale}.json`);
+    let messages = await response.json();
+    let key = 'resourceSaveError.certificateInUse';
+    assert.ok(messages[key], `${locale} has a human-readable explanation`);
+    let error = ApiError.create({status: 405, code: 'InvalidAction',
+      message: 'Certificate is in use by load balancer services: <private-balancer> 1s-secret'});
+    assert.strictEqual(Errors.stringify(error, {t: k => messages[k]}), messages[key],
+      `${locale} shows only reviewed copy, not service names or raw API text`);
+  }
+});
+
 test('save errors have useful reviewed copy in English, Traditional Chinese, and Japanese', async function(assert) {
   for (let locale of ['en-us', 'zh-tw', 'ja-jp']) {
     let response = await fetch(`/translations/${locale}.json`);
