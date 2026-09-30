@@ -64,6 +64,18 @@ test('denied deletes and actions use neutral, private-safe copy in all supported
       }, `${locale} ${status} does not call a delete failure a save or expose its resource ID`);
     }
 
+    let inUse = {status: 405, code: 'InvalidAction',
+      message: 'Certificate is in use by load balancer services: private-balancer 1s-secret'};
+    growl.fromError('Delete failed', inUse);
+    assert.ok(messages['resourceSaveError.certificateInUse'], `${locale} has certificate lifecycle copy`);
+    assert.strictEqual(notifications.pop().body, messages['resourceSaveError.certificateInUse'],
+      `${locale} explains the blocked delete without disclosing service names`);
+    for (let status of [403, 404]) {
+      growl.fromError('Delete failed', {status, body: inUse});
+      assert.strictEqual(notifications.pop().body, messages['resourceSaveError.actionUnavailable'],
+        `${locale} denied/missing resources retain the same neutral growl`);
+    }
+
     growl.fromError('Validation failed', {status: 422, fieldName: 'name', detail: 'already used'});
     assert.ok(notifications.pop().body.startsWith(messages['resourceSaveError.validation']),
       `${locale} validation still uses the existing localized formatter`);

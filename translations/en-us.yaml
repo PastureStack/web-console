@@ -1018,6 +1018,7 @@ resourceSaveError:
   scaleFailed: The service scale could not be updated.
   unavailable: The save could not be completed. The resource may be unavailable, or you may not have permission. Refresh to check what was saved before retrying.
   actionUnavailable: The action could not be completed. The resource may be unavailable, or you may not have permission. Refresh to check its current state before trying again.
+  certificateInUse: This certificate is still used by a load balancer service. Remove its certificate references before deleting it.
   validation: The server rejected the changes. Check the fields and try again.
   failed: The save could not be completed. Refresh to check what was saved before retrying.
 

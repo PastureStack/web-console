@@ -4,6 +4,13 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Web Console `1.6.160` recognizes the established post-authorization Certificate
+in-use response (`405`, `InvalidAction`, and the known API message prefix),
+showing reviewed English, Traditional Chinese or Japanese copy that explains
+how to release the reference. It never renders the response's load-balancer
+names. `403`, `404`, and unrecognized `405` responses remain neutral. This is
+display-only; API authorization, DELETE/remove and authentication are unchanged.
+
 The published package identity is `@pasturestack/web-console`, while the Ember 2 runtime keeps the neutral internal `ui/` module prefix used by existing imports. The static server artifact must contain a fingerprinted `/assets/ui*.js` entry and matching `index.html` reference; changing either side requires a coordinated Server packaging test.
 
 Before release, validate login and logout, environment selection, hosts, stacks, services, containers, shell, logs, console, catalog, storage, networking, access control, settings, API errors, browser navigation, `en-US`, and `zh-TW` against an isolated compatible server.

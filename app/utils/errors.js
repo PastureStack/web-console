@@ -146,6 +146,20 @@ function nestedStatus(value, seen, depth) {
   return null;
 }
 
+function actionMessageKey(err) {
+  // Only this established, post-authorization lifecycle rejection is specific.
+  // Do not expose the server's load balancer names, or specialize 403/404.
+  if ( nestedStatus(err, [], 0) !== 405 ||
+       nestedStringField(err, 'code', [], 0) !== 'InvalidAction' ) {
+    return null;
+  }
+
+  let message = nestedStringField(err, 'message', [], 0);
+  let prefix = 'Certificate is in use by load balancer services: ';
+  return message && message.startsWith(prefix) && message.length > prefix.length ?
+    'resourceSaveError.certificateInUse' : null;
+}
+
 export default {
   stringify(err, intl) {
     if ( intl && typeof intl.t === 'function' ) {
@@ -154,7 +168,8 @@ export default {
       if ( status === 403 || status === 404 || status === 405 ) {
         // A denied resource and a missing resource must have the same visible
         // explanation. Client-created errors can supply a more specific key.
-        let key = nonEmptyString(fieldValue(err, 'messageKey')) || 'resourceSaveError.unavailable';
+        let key = actionMessageKey(err) || nonEmptyString(fieldValue(err, 'messageKey')) ||
+          'resourceSaveError.unavailable';
         return intl.t(key);
       }
 
@@ -283,4 +298,6 @@ export default {
   status(err) {
     return nestedStatus(err, [], 0);
   },
+
+  actionMessageKey,
 };

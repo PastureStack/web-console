@@ -59,7 +59,7 @@ export default Service.extend({
     // Growls also report deletes and resource actions, not just saves.
     // Keep denied/missing-resource details private without calling them saves.
     var body = status === 403 || status === 404 || status === 405 ?
-      this.get('intl').t('resourceSaveError.actionUnavailable') :
+      this.get('intl').t(Errors.actionMessageKey(err) || 'resourceSaveError.actionUnavailable') :
       Errors.stringify(err, this.get('intl'));
     this.error(title,body);
   },
