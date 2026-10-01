@@ -1,8 +1,15 @@
 # Web Console 1.6.163
 
-Source preparation only. Official validation, deterministic candidate packaging,
-public release and packaged browser acceptance are pending. No `1.6.163` release
-asset or Server deployment is claimed.
+Published immutable numeric component release. Packaged browser acceptance
+remains separate; publication does not declare Server packaging or deployment.
+The signed [numeric tag](https://github.com/PastureStack/web-console/releases/tag/1.6.163)
+pins validated source `5db737a5e04c4cc15672f97296d5bf521ab9a8da`.
+Archive SHA-256:
+`54ef4e0726c6564abfb0b16727e991ef8a2258d9655cd1e603f43d6a557f8d27`.
+The [archive](https://github.com/PastureStack/web-console/releases/download/1.6.163/web-console-1.6.163.tar.gz)
+is 2,975,898 bytes; its [portable SHA-256 file](https://github.com/PastureStack/web-console/releases/download/1.6.163/web-console-1.6.163.tar.gz.sha256)
+uses the asset basename. Public downloads match the reviewed candidate's bytes,
+hash and size; the existing candidate was published without rebuilding.
 
 ## Narrow shared display-locale fixes
 
@@ -34,12 +41,16 @@ skips or todos:
 - Two existing user-language tests retain document language/direction and
   English fallback loading behavior.
 
-These local tests used an existing dependency installation. They are not a fresh
-locked CI run or packaged acceptance. The subsequent version/documentation-only
-preparation does not change the tested locale semantics. The normal
-`validate.yml` workflow dispatch remains the required formal source validation:
-it runs `scripts/ci`, builds twice and compares the deterministic candidate
-archives. The disabled historical `scripts/build-static` path is not used.
+Those earlier local tests used an existing dependency installation and remain
+separate from fresh locked CI and packaged acceptance.
+[Official validation 36827428183](https://github.com/PastureStack/web-console/actions/runs/36827428183)
+then passed 755/755 actual Chrome 154 tests, including all 12 locale cases, with
+zero failures, skips or todos. The normal `validate.yml` dispatch used the pinned
+source and toolchain, ran `scripts/ci`, and produced two byte-identical production
+archives with the hash above. The signed source tag and published asset preserve
+that source/artifact binding, not a later documentation commit. The disabled
+historical `scripts/build-static` path was not used. PR CodeQL source checks
+completed successfully; no all-findings-zero claim is made.
 
 No full-language, responsive/mobile layout, backend-write, authentication, MFA,
 database, runtime-host or VM acceptance is claimed. Earlier HOLD evidence remains
