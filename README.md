@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Release `1.6.163` is being prepared for two shared display-locale fixes.
+Published release `1.6.163` contains two shared display-locale fixes.
 Relative dates recompute when the selected language changes and use a Moment
 instance locale, without changing the global locale during formatting. State
 badges translate seven known display labels through existing translations;
@@ -16,10 +16,17 @@ unknown labels and model health/connection overrides such as Disconnected
 remain unchanged. Icons, colors, model state and API behavior are preserved.
 Focused native Chrome 153 source validation passed 12/12 tests: seven rendering
 checks, three relative-date/helper checks and two existing user-language checks.
-Official validation, deterministic candidate packaging, publication and packaged
-browser acceptance are still pending. This is not full-language or resource/role
-matrix acceptance; earlier HOLD evidence remains HOLD. See the
-[preparation note](docs/releases/web-console-1.6.163.md).
+[Official validation 36827428183](https://github.com/PastureStack/web-console/actions/runs/36827428183)
+passed 755/755 tests, including those 12 locale cases, and produced two
+byte-identical production archives. The immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.163)
+pins source `5db737a5e04c4cc15672f97296d5bf521ab9a8da`. Its archive SHA-256 is
+`54ef4e0726c6564abfb0b16727e991ef8a2258d9655cd1e603f43d6a557f8d27`;
+public downloads match the reviewed candidate's hash and size. Component
+publication does not declare Server packaging, deployment or packaged browser
+acceptance. This is not full-language or resource/role matrix acceptance;
+earlier HOLD evidence remains HOLD. See the
+[release note](docs/releases/web-console-1.6.163.md).
 
 Published release `1.6.162` contains two narrow desktop fixes. The Secrets
 table headers use the existing generic translations while retaining their
