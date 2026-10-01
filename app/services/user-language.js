@@ -21,6 +21,12 @@ const MOMENT_LOCALES = {
   'zh-tw': 'zh-tw',
 };
 
+export function momentLocale(lang) {
+  const normalized = (lang || C.LANGUAGE.DEFAULT).toLowerCase();
+
+  return MOMENT_LOCALES[normalized] || 'en';
+}
+
 export default Service.extend({
   prefs         : service(),
   session       : service(),
@@ -101,8 +107,7 @@ export default Service.extend({
   },
 
   setMomentLocale(lang) {
-    const normalized = this.normalizeLang(lang || C.LANGUAGE.DEFAULT);
-    moment.locale(MOMENT_LOCALES[normalized] || 'en');
+    moment.locale(momentLocale(lang));
   },
 
   setDocumentLanguage(lang) {

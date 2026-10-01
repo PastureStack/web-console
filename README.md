@@ -8,6 +8,19 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Release `1.6.163` is being prepared for two shared display-locale fixes.
+Relative dates recompute when the selected language changes and use a Moment
+instance locale, without changing the global locale during formatting. State
+badges translate seven known display labels through existing translations;
+unknown labels and model health/connection overrides such as Disconnected
+remain unchanged. Icons, colors, model state and API behavior are preserved.
+Focused native Chrome 153 source validation passed 12/12 tests: seven rendering
+checks, three relative-date/helper checks and two existing user-language checks.
+Official validation, deterministic candidate packaging, publication and packaged
+browser acceptance are still pending. This is not full-language or resource/role
+matrix acceptance; earlier HOLD evidence remains HOLD. See the
+[preparation note](docs/releases/web-console-1.6.163.md).
+
 Published release `1.6.162` contains two narrow desktop fixes. The Secrets
 table headers use the existing generic translations while retaining their
 sorting, search and QA mapping fields. Host details show Add Container only
@@ -18,8 +31,8 @@ unchanged. The permission gate uses schema capabilities, not role-name checks.
 Focused source validation passed Secrets 2/2 and Host 8/8 tests (four new Host
 cases plus four adjacent existing cases), plus two desktop rendering checks.
 Official CI passed 746/746 tests and produced two byte-identical archives.
-Current Server packaging remains `v1.6.495` / Web Console `1.6.161`; packaged
-browser acceptance of `1.6.162` is still pending. Responsive/mobile Secrets
+At component publication, Server packaging remained `v1.6.495` / Web Console
+`1.6.161`; packaged browser acceptance of `1.6.162` was still pending. Responsive/mobile Secrets
 labels and all-language layout acceptance are not claimed. Earlier HOLD evidence remains
 HOLD and the broader resource/role matrix remains INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.162.md).
