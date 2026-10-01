@@ -76,6 +76,34 @@ const formValidationLabels = {
     description: 'formNameDescription.description.label',
     value: 'newSecret.value.label',
   },
+  receiver: {
+    name: 'generic.name',
+    driver: 'newReceiver.driver.label',
+  },
+  scaleservice: {
+    action: 'newReceiver.action.label',
+    serviceId: 'newReceiver.service.label',
+    amount: 'newReceiver.amount.label',
+    min: 'newReceiver.min.label',
+    max: 'newReceiver.max.label',
+  },
+  scalehost: {
+    action: 'newReceiver.action.label',
+    hostSelector: 'newReceiver.hostSelector.label',
+    amount: 'newReceiver.amount.label',
+    min: 'newReceiver.min.label',
+    max: 'newReceiver.max.label',
+    deleteOption: 'newReceiver.deleteOption.label',
+  },
+  serviceupgrade: {
+    payloadFormat: 'newReceiver.payloadFormat.label',
+    addressType: 'newReceiver.addressType.label',
+    tag: 'newReceiver.tag.label',
+    serviceSelector: 'newReceiver.serviceSelector.label',
+    batchSize: 'formUpgrade.size',
+    intervalMillis: 'formUpgrade.interval',
+    startFirst: 'formUpgrade.behavior',
+  },
 };
 
 const stateColorSortMap = {
