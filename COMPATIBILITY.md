@@ -4,16 +4,22 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Web Console `1.6.164` is a source-only Receiver validation-label candidate.
+Published Web Console `1.6.164` localizes Receiver validation labels.
 Required-field and numeric errors reuse the visible labels from the Receiver,
 scale-service, scale-host and service-upgrade forms. Embedded schema scopes,
 model-specific translation precedence and unknown-field fallback are retained.
 The existing scale minimum/maximum condition is unchanged; only its message
 uses the existing numeric translation. No required, numeric or save guard,
 API/schema, permission, payload or driver action changes. Focused local source
-validation passed 12/12 tests and 61/61 assertions; full CI, component
-publication and packaged-browser acceptance remain
-separate. Published `1.6.163` and earlier HOLD evidence are not overwritten.
+validation passed 12/12 tests and 61/61 assertions; official CI passed 763/763
+including those cases and the twelve retained Web163 locale cases. Its signed
+immutable numeric tag pins runtime source
+`c3c0779d930d4d0367ec0517166ca21f6b3dc6d4`, not later documentation commits.
+Both public files match the reviewed deterministic candidate's bytes and
+checksums. Component publication does not establish Server packaging, QA or
+production deployment, native packaged-browser or full-language/matrix
+acceptance. Published `1.6.163`, the initial fixture failure and earlier HOLD
+evidence are not overwritten.
 
 Published Web Console `1.6.163` localizes state badges only from seven recognized
 `model.displayState` labels using existing translation keys. Unknown labels and
