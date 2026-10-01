@@ -8,7 +8,7 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Release `1.6.162` is being prepared for two narrow desktop fixes. The Secrets
+Published release `1.6.162` contains two narrow desktop fixes. The Secrets
 table headers use the existing generic translations while retaining their
 sorting, search and QA mapping fields. Host details show Add Container only
 when the current environment's loaded container schema permits creation;
@@ -16,11 +16,20 @@ schema reloads and environment changes cannot reuse stale create access.
 Container-list and Host-card capability checks and the direct Add route remain
 unchanged. The permission gate uses schema capabilities, not role-name checks.
 Focused source validation passed Secrets 2/2 and Host 8/8 tests (four new Host
-cases plus four adjacent existing cases). Official CI, publication and packaged
-browser acceptance are still pending. Responsive/mobile Secrets labels and
-all-language layout acceptance are not claimed. Earlier HOLD evidence remains
+cases plus four adjacent existing cases), plus two desktop rendering checks.
+Official CI passed 746/746 tests and produced two byte-identical archives.
+Current Server packaging remains `v1.6.495` / Web Console `1.6.161`; packaged
+browser acceptance of `1.6.162` is still pending. Responsive/mobile Secrets
+labels and all-language layout acceptance are not claimed. Earlier HOLD evidence remains
 HOLD and the broader resource/role matrix remains INCOMPLETE. See the
-[preparation note](docs/releases/web-console-1.6.162.md).
+[release note](docs/releases/web-console-1.6.162.md).
+
+The numeric [release `1.6.162`](https://github.com/PastureStack/web-console/releases/tag/1.6.162)
+pins source `46501e31071b3d74595aea91908876eec32b7fd6`. Its archive SHA-256 is
+`9c5b34d2cdf7ad354e1dab199795b12e5de119e47dc342547d5cdc84c7911581`.
+See [official run 36810596087](https://github.com/PastureStack/web-console/actions/runs/36810596087).
+Component publication does not establish packaged browser or backend-write
+acceptance.
 
 Published release `1.6.161` fixes existing Certificate metadata edits
 blocked by the masked private key. Name/description-only edits omit certificate
