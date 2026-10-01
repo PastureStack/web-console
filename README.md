@@ -8,6 +8,20 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Release `1.6.162` is being prepared for two narrow desktop fixes. The Secrets
+table headers use the existing generic translations while retaining their
+sorting, search and QA mapping fields. Host details show Add Container only
+when the current environment's loaded container schema permits creation;
+schema reloads and environment changes cannot reuse stale create access.
+Container-list and Host-card capability checks and the direct Add route remain
+unchanged. The permission gate uses schema capabilities, not role-name checks.
+Focused source validation passed Secrets 2/2 and Host 8/8 tests (four new Host
+cases plus four adjacent existing cases). Official CI, publication and packaged
+browser acceptance are still pending. Responsive/mobile Secrets labels and
+all-language layout acceptance are not claimed. Earlier HOLD evidence remains
+HOLD and the broader resource/role matrix remains INCOMPLETE. See the
+[preparation note](docs/releases/web-console-1.6.162.md).
+
 Published release `1.6.161` fixes existing Certificate metadata edits
 blocked by the masked private key. Name/description-only edits omit certificate
 material from the PUT body; new certificates and material replacements keep

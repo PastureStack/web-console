@@ -7,7 +7,9 @@
 
   <div class="pull-right">
     {{#action-menu model=this.host size="sm" classNames="r-ml10 pull-right"}}
-      <LinkTo @route="containers.new" @query={{hash hostId=this.host.id}} class="btn btn-sm btn-primary">{{t 'hostsPage.hostPage.addContainer.linkTo'}}</LinkTo>
+      {{#if this.canCreateContainer}}
+        <LinkTo @route="containers.new" @query={{hash hostId=this.host.id}} class="btn btn-sm btn-primary">{{t 'hostsPage.hostPage.addContainer.linkTo'}}</LinkTo>
+      {{/if}}
     {{/action-menu}}
 
     {{header-state model=this.host classNames="pull-right"}}

@@ -49,6 +49,7 @@ export default Controller.extend({
   headers: [
     {
       displayName: 'State',
+      translationKey: 'generic.state',
       name: 'stateSort',
       sort: ['stateSort','name','id'],
       type: 'string',
@@ -58,18 +59,21 @@ export default Controller.extend({
     },
     {
       displayName: 'Name',
+      translationKey: 'generic.name',
       name: 'name',
       sort: ['name','id'],
       type: 'string',
     },
     {
       displayName: 'Description',
+      translationKey: 'generic.description',
       name: 'description',
       sort: ['description','name','id'],
       type: 'string',
     },
     {
       displayName: 'Created',
+      translationKey: 'generic.created',
       name: 'created',
       sort: ['primaryHost.displayName','name','id'],
       searchField: false,
