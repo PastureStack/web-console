@@ -8,6 +8,19 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Source candidate `1.6.164` reuses visible Receiver form labels for shared
+required-field and numeric validation errors. The three supported driver
+configurations retain their own label scopes; model-specific translations still
+take precedence and unknown fields keep their existing fallback. The scale
+models' existing minimum-greater-than-maximum checks use the existing localized
+numeric error. No validation rule, API, schema, permission or driver behavior is
+changed. Focused Chrome 153 source validation passed 12/12 tests with 61/61
+assertions (eight new Receiver cases and four adjacent existing cases); no
+`1.6.164` archive, full CI,
+Server packaging, deployment or complete-language/matrix acceptance is claimed.
+Published `1.6.163` and historical HOLDs remain unchanged. See the
+[candidate note](docs/releases/web-console-1.6.164.md).
+
 Published release `1.6.163` contains two shared display-locale fixes.
 Relative dates recompute when the selected language changes and use a Moment
 instance locale, without changing the global locale during formatting. State
