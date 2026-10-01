@@ -4,6 +4,16 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+The `1.6.163` source candidate localizes state badges only from seven recognized
+`model.displayState` labels using existing translation keys. Unknown labels and
+health/connection display overrides retain their original text; a machine state
+must not replace the model's display semantics. State, icons, colors, API payloads
+and authorization remain unchanged. Relative dates recompute on locale changes
+and use the existing language-to-Moment mapping on each instance, without
+mutating the global Moment locale during formatting. Focused local source tests
+passed 12/12; publication, packaged acceptance and full-language acceptance are
+not claimed.
+
 Web Console `1.6.161` preserves an existing Certificate's masked key when only
 name/description are changed. Explicit update-validation options apply only to
 persisted records and explicitly omitted fields; other required and supplied
