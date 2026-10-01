@@ -8,18 +8,26 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Source candidate `1.6.164` reuses visible Receiver form labels for shared
+Published release `1.6.164` reuses visible Receiver form labels for shared
 required-field and numeric validation errors. The three supported driver
 configurations retain their own label scopes; model-specific translations still
 take precedence and unknown fields keep their existing fallback. The scale
 models' existing minimum-greater-than-maximum checks use the existing localized
 numeric error. No validation rule, API, schema, permission or driver behavior is
 changed. Focused Chrome 153 source validation passed 12/12 tests with 61/61
-assertions (eight new Receiver cases and four adjacent existing cases); no
-`1.6.164` archive, full CI,
-Server packaging, deployment or complete-language/matrix acceptance is claimed.
-Published `1.6.163` and historical HOLDs remain unchanged. See the
-[candidate note](docs/releases/web-console-1.6.164.md).
+assertions (eight new Receiver cases and four adjacent existing cases).
+[Official validation 36831735186](https://github.com/PastureStack/web-console/actions/runs/36831735186)
+passed 763/763 actual tests, including those cases and the twelve retained
+Web163 locale cases, with two byte-identical production archives. The signed
+immutable numeric [release](https://github.com/PastureStack/web-console/releases/tag/1.6.164)
+pins source `c3c0779d930d4d0367ec0517166ca21f6b3dc6d4`; its archive SHA-256 is
+`734898ac6ed2fe8774e5bb947988da9720a3a65aa0bb7ec09a89420adc0acc20`.
+Anonymous public downloads match the reviewed candidate's hash and size; the
+existing candidate was published without rebuilding. This does not establish
+Server packaging, QA or production deployment, native packaged-browser,
+complete-language or complete-matrix acceptance. The initial fixture failure,
+published `1.6.163` and historical HOLDs remain unchanged. See the
+[release note](docs/releases/web-console-1.6.164.md).
 
 Published release `1.6.163` contains two shared display-locale fixes.
 Relative dates recompute when the selected language changes and use a Moment
