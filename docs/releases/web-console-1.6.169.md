@@ -1,5 +1,7 @@
 # Web Console 1.6.169
 
+Published immutable component; Server packaging and native QA acceptance are separate.
+
 ## Scope and root cause
 
 The shared unallocated-local-volume classifier incorrectly required `externalId`
@@ -18,15 +20,37 @@ transition changes; inactive volumes use their existing advertised remove action
 
 ## Verification and publication
 
-Focused real Store/Volume/Collection regression tests and formal build validation
-are pending. Packaged browser create, cancel, refresh, readonly same-ID denial and
-remove acceptance are also pending. Historical failed acceptance receipts remain
-failed and are not retrospectively promoted. The full permission matrix remains
+Three real Store/Volume/Collection regression cases passed in official Chrome
+154 validation. They cover generated, hashed and custom identifiers on inactive
+unallocated local volumes; typed input, pool allocation and inactive mounts;
+and completed or late relationship-proof invalidation after identifier changes.
+[Official exact-source run 37078265265](https://github.com/PastureStack/web-console/actions/runs/37078265265)
+passed 791/791 tests, with zero failures, skips or todo. Two production archives
+are byte-identical: 2,981,057 bytes, SHA-256
+`e2bcb97b0da810f2ff216f9738739235e3c6f29ef46f1d99b623cf9c9f7258e2`.
+
+The signed immutable numeric
+[release 1.6.169](https://github.com/PastureStack/web-console/releases/tag/1.6.169)
+pins signed source `5962f57fccb4062a65b5921646c06b4663713b9b`,
+tree `cc5ababfff8c6a108f39687e5758f00c2b46970f`.
+[PR157](https://github.com/PastureStack/web-console/pull/157) merged normally as
+`9b886cdde091364f5865bbb8a257a6bdc826751c` with the same tested tree.
+Anonymous public downloads of the archive and checksum asset match the formal
+artifact's hashes and sizes. This is component publication/readback, not Server
+deployment or native lifecycle acceptance.
+
+Server `v1.6.506` is a source candidate in
+[PR231](https://github.com/PastureStack/server/pull/231); its formal publisher
+has not completed. Packaged native existing-volume terminal and fresh browser
+create, cancel, refresh, readonly same-ID denial and remove acceptance remain
+pending. Historical failed acceptance receipts remain failed and are not
+retrospectively promoted. The complete permission/resource/locale matrix remains
 INCOMPLETE. No company deployment is part of this repair.
 
 ## Upgrade and rollback
 
-Use a new immutable component tag and a new Server patch image after publication;
-do not overwrite `1.6.168` or Server `v1.6.505`. The change requires no migration.
+Use the published immutable `1.6.169` component with a separately published
+Server patch image; the Server506 source candidate is not yet that artifact.
+Do not overwrite `1.6.168` or Server `v1.6.505`. The change requires no migration.
 Existing persistent volumes, runtime configuration and the previous immutable
 Server image remain the rollback boundary.
