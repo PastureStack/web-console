@@ -8,13 +8,16 @@ const allocationFields = ['id', 'accountId', 'driver', 'state', 'removed', 'isNa
   'hostId', 'imageId', 'instanceId', 'externalId', 'links.storagePools', 'store.generation', 'store.baseUrl'];
 
 function isCandidate(volume, projectId) {
+  // Engine may generate this identifier from the name; it is not allocation.
+  const externalId = volume && get(volume, 'externalId');
   return Boolean(volume && typeof projectId === 'string' && projectId &&
     typeof get(volume, 'id') === 'string' && get(volume, 'id') &&
     get(volume, 'type') === 'volume' && get(volume, 'accountId') === projectId &&
     get(volume, 'driver') === 'local' && get(volume, 'isNative') === false &&
     get(volume, 'isHostPath') === false && get(volume, 'removed') === null &&
     typeof get(volume, 'state') === 'string' && !C.REMOVEDISH_STATES.includes(get(volume, 'state')) &&
-    ['hostId', 'imageId', 'instanceId', 'externalId'].every((field) => get(volume, field) === null));
+    (externalId === null || typeof externalId === 'string') &&
+    ['hostId', 'imageId', 'instanceId'].every((field) => get(volume, field) === null));
 }
 
 function emptyArray(value) {

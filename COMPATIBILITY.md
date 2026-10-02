@@ -4,6 +4,14 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Web Console `1.6.169` treats Volume `externalId` as an identifier rather than an
+allocation reference, matching the existing engine pre-create contract. The
+field remains part of relationship-proof invalidation. Host, image, instance,
+storage-pool and mount checks, current-project schema ownership, permission
+notices and backend authorization are unchanged. No forced activation or
+deactivation is added: an inactive unallocated volume uses its advertised remove
+action. Publication and packaged lifecycle acceptance remain pending.
+
 Published Web Console `1.6.167` normalizes only schema-cache lookup IDs, matching
 the existing `_bulkAdd` producer. Mixed-case API types resolve the same cached
 schema through `Resource.schema`, `canCreate`, `canList` and schema-based update

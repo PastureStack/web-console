@@ -79,7 +79,7 @@ module('Unit | Utils | unallocated volumes', function() {
         driver: ['docker', null, 'external'], accountId: ['1a2541', null],
         isNative: [true, undefined], isHostPath: [true, undefined],
         hostId: ['1h1', undefined], imageId: ['1i1', undefined], instanceId: ['1i2', undefined],
-        removed: ['2026-10-03T00:00:00Z', undefined], externalId: ['docker-id', undefined, false, 0],
+        removed: ['2026-10-03T00:00:00Z', undefined], externalId: [undefined, false, 0, {}],
         state: ['removed', 'purging', 'purged', undefined],
       };
       for (let field of Object.keys(exclusions)) {
@@ -93,6 +93,79 @@ module('Unit | Utils | unallocated volumes', function() {
       assert.false(isUnallocatedLocalVolume(volume, null), 'no selected environment');
       volume.set('storagePools', []);
       assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'a manufactured/default array is not collection proof');
+    } finally { f.dispose(); }
+  });
+
+  test('inactive local volumes with generated, hashed or custom external IDs remain unallocated', async function(assert) {
+    const f = volumeFixture();
+    const variants = [
+      {name: 'local-volume', externalId: 'local-volume'},
+      // Engine VolumeUtils.externalId produces this for the 128-character name.
+      {name: 'a'.repeat(128), externalId: 'e510683b3f5ffe4093d021808bc6ff70'},
+      {name: 'custom-volume', externalId: 'explicit-custom-id'},
+      {name: 'nullable-volume', externalId: null},
+    ];
+    try {
+      for (let i = 0; i < variants.length; i++) {
+        const id = `1v-external-${i}`;
+        const volume = f.volume({id, state: 'inactive', ...variants[i],
+          links: {storagePools: `/v2-beta/projects/1a2540/volumes/${id}/storagepools`}});
+        assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'metadata does not replace relation proof');
+        await refreshUnallocatedVolumeRelations([volume], '1a2540');
+        assert.true(isUnallocatedLocalVolume(volume, '1a2540'), 'external ID is not a host, pool or mount');
+        assert.strictEqual(volume.get('externalId'), variants[i].externalId, 'never rewrite or derive the ID in UI');
+        assert.strictEqual(volume.get('storagePools.type'), 'collection', 'real Store relationship is preserved');
+      }
+      assert.strictEqual(f.requests.length, variants.length, 'each exact volume relationship is read once');
+    } finally { f.dispose(); }
+  });
+
+  test('external ID metadata cannot bypass typed input, pool allocation or inactive mounts', async function(assert) {
+    const f = volumeFixture();
+    try {
+      for (let i = 0; i < 5; i++) {
+        const value = [undefined, false, 0, {}, []][i];
+        const malformed = f.volume({id: `1v-malformed-${i}`, state: 'inactive', externalId: value});
+        await refreshUnallocatedVolumeRelations([malformed], '1a2540');
+        assert.false(isUnallocatedLocalVolume(malformed, '1a2540'), 'only schema nullable string is accepted');
+      }
+      assert.strictEqual(f.requests.length, 0, 'invalid metadata never starts a relation read');
+      const volume = f.volume({state: 'inactive', externalId: 'custom-id'});
+      f.store.rawRequest = () => resolve({status: 200, body: {type: 'collection', resourceType: 'storagePool',
+        data: [{type: 'storagePool', id: '1sp-mapped'}], pagination: {partial: false}}});
+      await refreshUnallocatedVolumeRelations([volume], '1a2540');
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'actual nonempty pool relationship stays allocated');
+      f.store.rawRequest = () => resolve({status: 200, body: {type: 'collection', resourceType: 'storagePool', data: []}});
+      f.store.incrementProperty('generation');
+      await refreshUnallocatedVolumeRelations([volume], '1a2540');
+      assert.true(isUnallocatedLocalVolume(volume, '1a2540'));
+      f.store._typeify({type: 'mount', id: '1m-external', volumeId: volume.get('id'),
+        instanceId: 'not-in-cache', state: 'inactive'});
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'inactive mount remains binding regardless of external ID');
+    } finally { f.dispose(); }
+  });
+
+  test('external ID changes invalidate completed and late relationship identity proofs', async function(assert) {
+    const f = volumeFixture();
+    const volume = f.volume({state: 'inactive', externalId: 'generated-id'});
+    try {
+      await refreshUnallocatedVolumeRelations([volume], '1a2540');
+      assert.true(isUnallocatedLocalVolume(volume, '1a2540'));
+      volume.set('externalId', 'custom-id');
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'old complete relationship cannot certify changed metadata');
+      await refreshUnallocatedVolumeRelations([volume], '1a2540');
+      assert.strictEqual(f.requests.length, 2, 'changed identity requires its own read');
+      assert.true(isUnallocatedLocalVolume(volume, '1a2540'));
+      const response = defer();
+      f.store.rawRequest = () => response.promise;
+      volume.set('externalId', 'dispatch-id');
+      const loading = refreshUnallocatedVolumeRelations([volume], '1a2540');
+      await resolve();
+      volume.set('externalId', 'later-id');
+      response.resolve({status: 200, body: {type: 'collection', resourceType: 'storagePool', data: []}});
+      await loading;
+      assert.strictEqual(volume.get('storagePools'), undefined, 'late prior-ID relation cannot bind');
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'));
     } finally { f.dispose(); }
   });
 
