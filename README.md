@@ -8,16 +8,30 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Preparing `1.6.167` fixes mixed-case schema-ID lookup in the shared API store.
+Published `1.6.167` fixes mixed-case schema-ID lookup in the shared API store.
 Schema keys use the same normalization as the existing cache producer; ordinary
 resource IDs remain case-sensitive. Inherited resource getters and capability
 checks read the actual project store's schema, without fallback permissions or
 changes to API names, authorization or lifecycle requests. Compatibility archive
-revision 4 replaces revision 3 for this candidate only; earlier archives remain
-unchanged. Focused source validation, official publication, Server packaging and
-native packaged-browser acceptance are separate results. Publication and the
-complete permission/resource/locale matrix are not asserted by this preparation.
-See the [candidate note](docs/releases/web-console-1.6.167.md).
+revision 4 replaces revision 3; earlier archives remain unchanged. Four new
+actual Store/schema regression cases and the local Chrome 4-test/43-assertion
+run passed. Exact-source official validation
+[37012345421](https://github.com/PastureStack/web-console/actions/runs/37012345421)
+passed 772/772 tests, zero failures, skips or todo, and produced two
+byte-identical production archives. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.167)
+pins source `dff35fc4bce340e21cac7204146a7bcb20a7b60b`; archive SHA-256 is
+`e8e714fc06282de75a3570aac1d4d4d04a3c9478d982d0d5aaeae14efa8ebbaf`
+(2,976,297 bytes). Anonymous public downloads match the formal artifact.
+The artifact is separately packaged and QA-deployed in Server503. Its first
+start and one restart returned HTTP 200/pong after nine attempts each, with
+unchanged runtime settings and five-table count baselines. Docker health is
+`null`, not a `healthy` result. Packaged QA confirmed the actual GET-only
+registry/credential models for the readonly role and readable permission errors
+for readonly/no-access roles; their 24 normal-CSRF v1/v2-beta write denials passed. This exact-fixture
+coverage is not all API authorization or full native lifecycle/locale acceptance.
+The complete permission/resource/locale matrix remains INCOMPLETE. See the
+[release note](docs/releases/web-console-1.6.167.md).
 
 Published `1.6.166` completes the shared state-badge display translation for
 `Inactive`. The thirteen supported language files gain that display label;

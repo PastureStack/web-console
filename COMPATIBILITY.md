@@ -4,16 +4,31 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Preparing Web Console `1.6.167` normalizes only schema-cache lookup IDs, matching
+Published Web Console `1.6.167` normalizes only schema-cache lookup IDs, matching
 the existing `_bulkAdd` producer. Mixed-case API types resolve the same cached
 schema through `Resource.schema`, `canCreate`, `canList` and schema-based update
 checks. Non-schema resource IDs remain case-sensitive and project stores remain
 independent. Missing schemas do not grant permissions. Backend schemas, roles,
 API paths, action names, authentication and lifecycle writes are unchanged.
 The local API-store compatibility archive advances to revision 4 with the same
-dependency graph and security thresholds. This is an unpublished source candidate,
-not packaged-browser or complete permission/resource/locale-matrix acceptance.
-See the [candidate note](docs/releases/web-console-1.6.167.md).
+dependency graph and security thresholds. Four new actual Store/schema cases
+and the local Chrome 4-test/43-assertion run passed. Official validation
+37012345421 passed 772/772 tests with zero failures, skips or todo, and produced
+two byte-identical production archives. The signed immutable numeric release
+pins source `dff35fc4bce340e21cac7204146a7bcb20a7b60b`. Anonymous public
+readback matches the formal archive SHA-256
+`e8e714fc06282de75a3570aac1d4d4d04a3c9478d982d0d5aaeae14efa8ebbaf`
+and size 2,976,297 bytes. Separate Server503 QA deployment passed first start
+and one restart with HTTP 200/pong, preserved runtime settings and unchanged
+five-table count baselines. Docker health is `null`, not `healthy`.
+Separate packaged exact-fixture QA confirmed GET-only registry/credential
+models, hidden create and disabled edit/remove controls for the readonly role.
+The no-access role showed the environment-unavailable screen; both roles used
+readable existing permission errors. All 24 normal-CSRF v1/v2-beta
+write-denial checks passed. That scoped result is not all API authorization,
+thirteen-locale badge or full native lifecycle acceptance; the complete matrix
+remains INCOMPLETE.
+See the [release note](docs/releases/web-console-1.6.167.md).
 
 Published Web Console `1.6.166` adds the missing `Inactive` display-label
 branch and its thirteen catalog translations. It does not change stored state,
