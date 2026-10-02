@@ -2109,6 +2109,7 @@ formPorts:
       state: '状态：{value}'
     state:
       active: 使用中
+      inactive: 未激活
       running: 运行中
       stopped: 已停止
       stopping: 停止中

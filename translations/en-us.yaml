@@ -2531,6 +2531,7 @@ formPorts:
       state: "State: {value}"
     state:
       active: Active
+      inactive: Inactive
       running: Running
       stopped: Stopped
       stopping: Stopping

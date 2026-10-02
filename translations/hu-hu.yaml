@@ -2184,6 +2184,7 @@ formPorts:
       state: 'Állapot: {value}'
     state:
       active: Aktív
+      inactive: Inaktív
       running: Fut
       stopped: Leállítva
       stopping: Leállítás alatt

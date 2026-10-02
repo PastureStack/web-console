@@ -63,9 +63,10 @@ module('Integration | Locale | state and relative date', function(hooks) {
     assert.strictEqual(moment.locale(), 'en', 'the mapped locale remains instance-local');
   });
 
-  test('all seven known resource states use the existing translations and rerender on locale change', async function(assert) {
+  test('all eight known resource states use the existing translations and rerender on locale change', async function(assert) {
     this.models = [
       ['active', 'Active', '使用中'],
+      ['inactive', 'Inactive', '未啟用'],
       ['running', 'Running', '執行中'],
       ['stopped', 'Stopped', '已停止'],
       ['stopping', 'Stopping', '停止中'],
@@ -83,6 +84,30 @@ module('Integration | Locale | state and relative date', function(hooks) {
     run(() => this.intl.setLocale(['en-us']));
     await settled();
     assert.deepEqual(labels(), this.models.map((model) => model.displayState));
+  });
+
+  test('inactive uses a resource-state translation in every supported locale', async function(assert) {
+    this.model = EmberObject.create({state: 'inactive', displayState: 'Inactive'});
+    await render(precompileTemplate('{{badge-state model=this.model}}'));
+
+    for (let [locale, expected] of [
+      ['de-de', 'Inaktiv'], ['en-us', 'Inactive'], ['fa-ir', 'غیر فعال'],
+      ['fil-ph', 'Hindi aktibo'], ['fr-fr', 'Inactif'], ['hu-hu', 'Inaktív'],
+      ['ja-jp', '休止'], ['ko-kr', '비활성'], ['pt-br', 'Inativo'],
+      ['ru-ru', 'Выключен'], ['uk-ua', 'Неактивний'], ['zh-hans', '未激活'],
+      ['zh-tw', '未啟用'],
+    ]) {
+      if (!['en-us', 'zh-tw'].includes(locale)) {
+        let response = await fetch(`/translations/${locale}.json`);
+        if (!response.ok) {
+          throw new Error(`Local translation fixture failed: ${locale} ${response.status}`);
+        }
+        this.intl.addTranslations(locale, await response.json());
+      }
+      run(() => this.intl.setLocale([locale, 'en-us']));
+      await settled();
+      assert.strictEqual(find('.badge').textContent.trim(), expected, locale);
+    }
   });
 
   test('unknown states retain the original display text across locale changes', async function(assert) {

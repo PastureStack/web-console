@@ -2130,6 +2130,7 @@ formPorts:
       state: 'وضعیت: {value}'
     state:
       active: فعال
+      inactive: غیر فعال
       running: در حال اجرا
       stopped: متوقف
       stopping: در حال توقف

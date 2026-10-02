@@ -2171,6 +2171,7 @@ formPorts:
       state: 'Estado: {value}'
     state:
       active: Aktibo
+      inactive: Hindi aktibo
       running: Tumatakbo
       stopped: Tumigil
       stopping: Humihinto

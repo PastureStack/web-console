@@ -2,7 +2,7 @@ import Component from '@ember/component';
 import { computed } from '@ember/object';
 import { service } from '@ember/service';
 
-const TRANSLATED_STATES = ['active', 'running', 'stopped', 'stopping', 'created', 'exited', 'error'];
+const TRANSLATED_STATES = ['active', 'inactive', 'running', 'stopped', 'stopping', 'created', 'exited', 'error'];
 
 export default Component.extend({
   intl: service(),

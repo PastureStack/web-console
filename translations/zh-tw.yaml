@@ -2423,6 +2423,7 @@ formPorts:
       state: '狀態：{value}'
     state:
       active: 使用中
+      inactive: 未啟用
       running: 執行中
       stopped: 已停止
       stopping: 停止中
