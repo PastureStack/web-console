@@ -8,21 +8,31 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Release candidate `1.6.168` makes the Volume Add control and direct create route
+Published `1.6.168` makes the Volume Add control and direct create route
 use the current environment's actual schema capability. The shared create/upgrade
 route guard rejects missing or stale environment schemas; upgrades still require
 PUT rather than POST. Existing localized permission notices and backend
 authorization remain unchanged. Nine directly affected Chrome regression tests
-passed with no failures or skips. The candidate also adds an independent local
+passed with no failures or skips. The release also adds an independent local
 Volume entry and an unallocated local-volume list. Classification requires the
 actual complete storage-pool relationship and full environment-scoped mount
 cache, including inactive workloads; missing data does not mean unused. The
 native advertised deactivate action is offered only for a proven unallocated
 volume in the current environment, before the existing remove workflow.
 Relation failures retain the original route/growl error instead of silently
-inventing an empty result. These additional source tests and native lifecycle
-checks are still pending. This is source-test evidence, not packaged
-browser acceptance or complete permission-matrix PASS. See the
+inventing an empty result. Exact-source official validation
+[37061716638](https://github.com/PastureStack/web-console/actions/runs/37061716638)
+passed 788/788 tests, with zero failures, skips or todo, including sixteen new
+scoped Volume cases, and produced two byte-identical production archives.
+The signed immutable numeric [release](https://github.com/PastureStack/web-console/releases/tag/1.6.168)
+pins source `2120e0416fd4a0efb5d351f9da4ec632ac8eacdc`; archive SHA-256 is
+`fdd1d33d47b032eef8b5b6d5dbb1401110daf860d84a6c17003577463d3d2cb5`
+(2,981,125 bytes). Anonymous downloads match the formal artifact.
+Server `v1.6.504` packages this component and passed QA first start/restart
+with unchanged runtime settings and database counts. Native Volume lifecycle
+acceptance remains pending: the first run stopped before resource writes on a
+v1/v2 schema assumption in the acceptance tool. That HOLD is preserved.
+Publication and deployment are not complete permission-matrix PASS. See the
 [release note](docs/releases/web-console-1.6.168.md).
 
 Published `1.6.167` fixes mixed-case schema-ID lookup in the shared API store.
