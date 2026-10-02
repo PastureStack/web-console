@@ -8,14 +8,26 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Web Console `1.6.169` corrects the shared unallocated-local-volume classifier.
+Published `1.6.169` corrects the shared unallocated-local-volume classifier.
 The engine may generate `externalId` from a volume's name; that identifier does
 not allocate the volume to a host, workload or storage pool. Classification
 still requires explicit local/non-native fields, no host/image/instance binding,
 the complete advertised storage-pool relationship and the full scoped mount
 cache. Identifier changes invalidate stale relationship proof. No API permission,
-authentication or lifecycle request is changed. Publication and packaged
-create/refresh/remove acceptance are pending; see the
+authentication or lifecycle request is changed. Exact-source official validation
+[37078265265](https://github.com/PastureStack/web-console/actions/runs/37078265265)
+passed 791/791 tests with zero failures, skips or todo, including three
+identifier/allocation-proof regressions, and produced two byte-identical
+production archives. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.169)
+pins source `5962f57fccb4062a65b5921646c06b4663713b9b`; archive SHA-256 is
+`e2bcb97b0da810f2ff216f9738739235e3c6f29ef46f1d99b623cf9c9f7258e2`
+(2,981,057 bytes). Anonymous public downloads match the formal artifact.
+Server `v1.6.506` remains a source candidate in PR231, not a formally
+published Server artifact. Packaged native existing-volume terminal and fresh
+create/cancel/refresh/readonly-denial/remove acceptance remain pending.
+Historical HOLDs are not promoted; the complete permission/resource/locale
+matrix remains INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.169.md).
 
 Published `1.6.168` makes the Volume Add control and direct create route
