@@ -1268,6 +1268,12 @@ storagePoolsPage:
     backups: Biztonsági mentések
   index:
     noData: Nincsenek tároló-illesztőprogramok
+  unallocated:
+    header: Nem kiosztott helyi kötetek
+    add: Helyi kötet hozzáadása
+    empty: Nincsenek nem kiosztott helyi kötetek.
+    help: Ezek a kötetek nincsenek tárolókészlethez rendelve, és nem használja őket munkaterhelés. Eltávolítás előtt állítsa le az aktív kötetet.
+    relationIncomplete: A kötet tárolókészletének adatai hiányosak. A műveletek nem érhetők el. Töltse újra az oldalt; ha a probléma továbbra is fennáll, forduljon a rendszergazdához.
   newVolume:
     header: Kötet hozzáadása
     form:

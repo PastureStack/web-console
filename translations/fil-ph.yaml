@@ -1254,6 +1254,12 @@ storagePoolsPage:
     backups: Mga backup
   index:
     noData: Walang mga driver ng storage
+  unallocated:
+    header: Mga lokal na volume na hindi pa nakatalaga
+    add: Magdagdag ng lokal na volume
+    empty: Walang lokal na volume na hindi pa nakatalaga.
+    help: Ang mga volume na ito ay hindi nakatalaga sa storage pool at hindi naka-mount sa workload. Ihinto muna ang aktibong volume bago ito alisin.
+    relationIncomplete: Hindi kumpleto ang impormasyon ng storage pool para sa volume na ito. Hindi magagamit ang mga aksyon. I-reload ang pahina; kung magpatuloy ang problema, makipag-ugnayan sa administrator.
   newVolume:
     header: Magdagdag ng Volume
     form:

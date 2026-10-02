@@ -1206,6 +1206,12 @@ storagePoolsPage:
     backups: 백업
   index:
     noData: 스토리지 드라이버 없음
+  unallocated:
+    header: 할당되지 않은 로컬 볼륨
+    add: 로컬 볼륨 추가
+    empty: 할당되지 않은 로컬 볼륨이 없습니다.
+    help: 이 볼륨은 스토리지 풀에 할당되지 않았으며 워크로드에 마운트되지 않았습니다. 활성 볼륨을 제거하기 전에 비활성화하세요.
+    relationIncomplete: 이 볼륨의 스토리지 풀 정보를 완전히 확인할 수 없어 작업을 사용할 수 없습니다. 페이지를 새로 고침하세요. 문제가 계속되면 관리자에게 문의하세요.
   newVolume:
     header: 볼륨 추가
     form:

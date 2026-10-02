@@ -5,6 +5,7 @@ import { resolve } from 'rsvp';
 export default Mixin.create({
   growl: service(),
   intl: service(),
+  projects: service(),
   requiredCreateType: null,
   requiredUpdateType: null,
   updateWhenQueryParam: null,
@@ -27,7 +28,9 @@ export default Mixin.create({
         return;
       }
 
-      let allowed = isUpdate ? this.canUpdateType(type) : this.get('store').canCreate(type);
+      let projectId = this.get('projects.current.id');
+      let schemaCurrent = Boolean(projectId && this.get('projects.schemaProjectId') === projectId);
+      let allowed = schemaCurrent && (isUpdate ? this.canUpdateType(type) : this.get('projects').canCreateResource(type));
 
       if ( allowed ) {
         return;

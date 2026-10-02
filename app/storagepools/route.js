@@ -6,7 +6,9 @@ export default Route.extend({
     let store = this.get('store');
     return hash({
       pools:     store.findAll('storagepool'),
-      mounts:    store.findAll('mounts', {filter: {'state_ne': 'inactive'}}),
+      // Keep inactive mounts too: a stopped workload still owns its volume.
+      mounts:    store.findAll('mount'),
+      volumes:   store.findAll('volume'),
     }).then((hash) => {
       return hash.pools.filter((pool) => {
         return !!pool.get('driverName');

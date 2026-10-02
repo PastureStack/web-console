@@ -1527,6 +1527,12 @@ storagePoolsPage:
     backups: 備份
   index:
     noData: 沒有儲存驅動程式
+  unallocated:
+    header: 尚未配置的本機磁碟區
+    add: 新增本機磁碟區
+    empty: 目前沒有尚未配置的本機磁碟區。
+    help: 這些磁碟區尚未配置到儲存池，也未由工作負載掛載。要移除啟用中的磁碟區，請先停用。
+    relationIncomplete: 無法完整確認此磁碟區的儲存池關聯，因此暫不提供操作。請重新整理；若持續發生，請聯絡管理員。
   newVolume:
     header: 新增磁碟區
     form:

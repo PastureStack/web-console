@@ -1249,6 +1249,12 @@ storagePoolsPage:
     backups: Cópias de segurança
   index:
     noData: Sem drivers de armazenamento
+  unallocated:
+    header: Volumes locais não alocados
+    add: Adicionar volume local
+    empty: Não há volumes locais não alocados.
+    help: Estes volumes não estão atribuídos a um pool de armazenamento nem montados por uma carga de trabalho. Desative um volume ativo antes de removê-lo.
+    relationIncomplete: As informações do pool de armazenamento deste volume estão incompletas. As ações estão indisponíveis. Recarregue a página; se o problema persistir, contate um administrador.
   newVolume:
     header: Adicionar Volume
     form:

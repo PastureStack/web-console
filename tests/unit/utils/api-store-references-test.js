@@ -2,7 +2,9 @@ import { module, test } from 'qunit';
 import { getOwner, setOwner } from '@ember/application';
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
+import { run } from '@ember/runloop';
 import { adoptStoreOwner } from 'ui/utils/initialize-api-store';
+import { volumeFixture } from './unallocated-volumes-test';
 import {
   denormalizeId,
   denormalizeIdArray,
@@ -76,5 +78,22 @@ module('Unit | Utility | API store references', function() {
     assert.deepEqual(store._state.missingReference, {});
 
     resource.destroy();
+  });
+
+  test('hasMany uses the shared boundary and actual Store invalidation without duplicate watches', function(assert) {
+    const fixture = volumeFixture();
+    const volume = fixture.volume();
+    try {
+      assert.deepEqual(volume.get('allMounts'), []);
+      volume.notifyPropertyChange('allMounts');
+      assert.deepEqual(volume.get('allMounts'), []);
+      assert.strictEqual(fixture.store._state.watchHasMany.mount.length, 1);
+      const mount = run(() => fixture.store._typeify({type: 'mount', id: '1m-boundary',
+        volumeId: volume.get('id'), state: 'inactive'}));
+      assert.deepEqual(volume.get('allMounts'), [mount], 'late inactive records invalidate the real relationship');
+      run(() => fixture.store._remove('mount', mount));
+      assert.deepEqual(volume.get('allMounts'), [], 'actual removal invalidates it again');
+      assert.strictEqual(fixture.store._state.watchHasMany.mount.length, 1);
+    } finally { run(() => fixture.dispose()); }
   });
 });

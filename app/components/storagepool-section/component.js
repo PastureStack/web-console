@@ -1,10 +1,17 @@
 import { alias } from '@ember/object/computed';
+import { computed } from '@ember/object';
 import Component from '@ember/component';
+import { service } from '@ember/service';
 import Sortable from 'ui/mixins/sortable';
 
 export default Component.extend(Sortable, {
+  projects: service(),
   model: null,
   single: false,
+
+  canCreateVolume: computed('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration', function() {
+    return this.get('projects').canCreateResource('volume');
+  }),
 
   sortableContent: alias('model.volumes'),
   sortBy: 'name',

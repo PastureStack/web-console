@@ -1583,6 +1583,12 @@ storagePoolsPage:
     backups: Backups
   index:
     noData: No storage drivers
+  unallocated:
+    header: Unallocated local volumes
+    add: Add local volume
+    empty: No unallocated local volumes.
+    help: These volumes are not assigned to a storage pool or mounted by a workload. Stop an active volume before removing it.
+    relationIncomplete: Storage pool information for this volume is incomplete. Actions are unavailable. Reload the page; if this persists, contact an administrator.
   newVolume:
     header: Add Volume
     form:
