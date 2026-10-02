@@ -8,6 +8,16 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Web Console `1.6.169` corrects the shared unallocated-local-volume classifier.
+The engine may generate `externalId` from a volume's name; that identifier does
+not allocate the volume to a host, workload or storage pool. Classification
+still requires explicit local/non-native fields, no host/image/instance binding,
+the complete advertised storage-pool relationship and the full scoped mount
+cache. Identifier changes invalidate stale relationship proof. No API permission,
+authentication or lifecycle request is changed. Publication and packaged
+create/refresh/remove acceptance are pending; see the
+[release note](docs/releases/web-console-1.6.169.md).
+
 Published `1.6.168` makes the Volume Add control and direct create route
 use the current environment's actual schema capability. The shared create/upgrade
 route guard rejects missing or stale environment schemas; upgrades still require
