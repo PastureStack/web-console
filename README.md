@@ -8,15 +8,28 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.165` fixes ambiguous container names on Host cards. Long names
+Published `1.6.165` fixes ambiguous container names on Host cards. Long names
 now wrap within the existing card instead of hiding distinguishing rollback
 suffixes. IP addresses and action triggers retain their own space. The change
 is scoped to the shared container/VM subpod; global clipped labels, Host titles,
 names, IDs, API requests and authorization remain unchanged. Compiled-CSS
 regressions passed four Chrome cases and 744 assertions across light/dark,
-LTR/RTL and desktop/narrow viewports. Publication
-and packaged QA visual acceptance remain pending; earlier receipts are not
-promoted to a full matrix PASS. See the [release note](docs/releases/web-console-1.6.165.md).
+LTR/RTL and desktop/narrow viewports. Exact-source validation
+[36979009940](https://github.com/PastureStack/web-console/actions/runs/36979009940)
+passed 767/767 tests, zero failures or skips, and produced two byte-identical
+production archives. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.165)
+pins source `00bcd9fdc92afead708dffb4a2b3b01f4ebaeaa0`; archive SHA-256 is
+`5baaa4879fe5548cc8b66cd1c7a2005edf586d4b5f12b6dbb3796b6692e41959`.
+Anonymous public downloads match the reviewed artifact's hash and size;
+publication did not rebuild it. Packaged Server501 native initial/reload
+matched six exact Docker IDs and complete names, including all five readable
+rollback suffixes. Root reviewed both actual screenshots; IP/action separation
+and native menu open/close passed, with zero resource writes or
+page/console/loading errors. WebSocket connected and a real server message was
+observed. These scoped checks do not promote earlier receipts or the complete
+permission/resource/locale matrix to PASS; that matrix remains INCOMPLETE.
+See the [release note](docs/releases/web-console-1.6.165.md).
 
 Published release `1.6.164` reuses visible Receiver form labels for shared
 required-field and numeric validation errors. The three supported driver

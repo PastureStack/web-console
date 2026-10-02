@@ -4,13 +4,21 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Candidate Web Console `1.6.165` changes only Host container/VM subpod layout:
+Published Web Console `1.6.165` changes only Host container/VM subpod layout:
 names wrap in the remaining flex space, while IP and action areas do not shrink.
 The full source name and existing stack-prefix display contract are preserved.
 No global clipping rule, resource ID, schema, API, permission, lifecycle or
 authentication behavior changes. Four focused Chrome cases and 744 assertions
-passed against the actual compiled CSS. Publication and packaged-browser visual
-acceptance remain separate from source layout tests.
+passed against the actual compiled CSS. Official CI passed 767/767 tests and
+produced byte-identical archives; the signed immutable release pins exact
+source `00bcd9fdc92afead708dffb4a2b3b01f4ebaeaa0`. Anonymous public readback
+matches the published archive SHA-256
+`5baaa4879fe5548cc8b66cd1c7a2005edf586d4b5f12b6dbb3796b6692e41959`.
+Packaged Server501 native initial/reload separately accepted six complete
+Docker names/IDs and readable rollback suffixes. Both actual screenshots and
+native menu open/close were reviewed; IP/action areas remain separate, with
+zero resource writes or page/console/loading errors. This does not establish
+the complete permission/resource/locale matrix, which remains INCOMPLETE.
 
 Published Web Console `1.6.164` localizes Receiver validation labels.
 Required-field and numeric errors reuse the visible labels from the Receiver,
