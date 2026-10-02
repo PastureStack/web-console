@@ -4,6 +4,14 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Candidate Web Console `1.6.165` changes only Host container/VM subpod layout:
+names wrap in the remaining flex space, while IP and action areas do not shrink.
+The full source name and existing stack-prefix display contract are preserved.
+No global clipping rule, resource ID, schema, API, permission, lifecycle or
+authentication behavior changes. Four focused Chrome cases and 744 assertions
+passed against the actual compiled CSS. Publication and packaged-browser visual
+acceptance remain separate from source layout tests.
+
 Published Web Console `1.6.164` localizes Receiver validation labels.
 Required-field and numeric errors reuse the visible labels from the Receiver,
 scale-service, scale-host and service-upgrade forms. Embedded schema scopes,

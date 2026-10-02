@@ -200,6 +200,19 @@ $subpod-detail   : $table-bg-accent;
     flex: 1 1 auto;
   }
 
+  // Keep distinguishing suffixes visible without shrinking the IP or actions.
+  > .subpod-name {
+    flex: 1 1 0;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+  }
+
+  > .subpod-detail {
+    flex: 0 0 auto;
+  }
+
   .resource-actions {
     margin-right  : -5px;
     margin-top    : -5px;
