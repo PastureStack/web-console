@@ -1,7 +1,12 @@
 # Web Console 1.6.168
 
-Release candidate for the immutable numeric `1.6.168` component. Publication and
-packaged browser acceptance will be recorded after their actual results are known.
+Published immutable numeric `1.6.168` component. Source is
+`2120e0416fd4a0efb5d351f9da4ec632ac8eacdc`; archive SHA-256 is
+`fdd1d33d47b032eef8b5b6d5dbb1401110daf860d84a6c17003577463d3d2cb5`
+(2,981,125 bytes). The SSH-signed tag, anonymous public downloads and official
+validation [37061716638](https://github.com/PastureStack/web-console/actions/runs/37061716638)
+match the tested source. Final validation passed 788/788 tests, with no
+failures, skips or todo, and two byte-identical production archives.
 
 ## Current-environment Volume permissions
 
@@ -22,7 +27,7 @@ permission, alternate request method or fallback capability is introduced.
 
 Local Volume creation does not create a storage-pool map. The previous pool-only
 list therefore offered no reliable independent Add entry or visible row for that
-resource. The candidate keeps the existing storage-pool sections and adds a
+resource. The release keeps the existing storage-pool sections and adds a
 separate native local-volume entry and list, without inventing a pool or binding
 a host. Exact resource IDs, the current environment, explicit local/non-native
 resource fields, the actual complete storage-pool relationship and the full
@@ -58,15 +63,15 @@ reads, exact-ID classification, inactive/unresolved mounts, generation changes,
 late responses, error propagation, live rows and advertised-action dispatch.
 Their local Chrome runs passed in affected-case groups after directly observed
 failures were corrected; this is not a complete final-source suite result.
-The localized incomplete-relationship assertions were added afterward and
-await the final immutable-source CI run. Earlier failed logs are retained.
+The localized incomplete-relationship assertions were included in the final
+passing immutable-source CI run. Earlier failed logs are retained.
 
 The first expanded immutable-source CI run passed all fifteen new scoped cases,
 but its complete suite was 786/787: an existing storagepools/pools test omitted
 the Store and expected the old synchronous return. That adjacent test now awaits
 the route using the actual Store fixture and checks the retained parent array
-and both live collections. The failed run is not a publishable result; final CI
-is pending after this test-contract correction. A second run also passed all
+and both live collections. The failed run is not a publishable result.
+A second run also passed all
 fifteen new cases, but exposed an incorrect identity assertion in the adjacent
 test: `Store.all()` creates separate ArrayProxy wrappers over the same live
 content. The test now verifies shared content and actual live cache additions,
@@ -79,7 +84,18 @@ reference boundary and the Store's existing invalidation contract. An additional
 actual-Store regression checks late inactive mounts, removal and watch deduplication.
 The five shared-reference cases passed in local Chrome 153 with no failures,
 skips or todo, using the newly compiled source rather than an older build.
-Final immutable-source CI and packaging remain pending.
+The subsequent final immutable-source run passed 788/788 tests and its two
+archives matched the published component; none of the earlier failed runs is
+promoted to a passing result.
+
+Server `v1.6.504` packages this component at immutable digest
+`sha256:11393d4a5189601464d2a2e1ffc823160bedd6bda6c1fbae12457337f7cb9e2f`.
+Official Server publisher and public readback passed. QA first start and one
+restart returned HTTP 200/pong with runtime settings, environment overrides,
+named mounts and database counts preserved. Docker health is `null`, not
+`healthy`. The first native Volume run stopped before resource writes because
+the acceptance tool required a v2-only field in the v1 schema. Its HOLD is
+preserved; native lifecycle and the complete matrix remain pending.
 
 Production changes are confined to the shared guard, storage-pool section,
 new-volume route and the local-volume list/relationship/action paths described
