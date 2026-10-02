@@ -29,8 +29,12 @@ test('model wraps the parent storagepools model', async function(assert) {
   try {
     let model = await route.model();
     assert.strictEqual(model.get('all'), pools);
-    assert.strictEqual(model.get('volumes'), fixture.store.all('volume'));
-    assert.strictEqual(model.get('mounts'), fixture.store.all('mount'));
+    assert.strictEqual(model.get('volumes.content'), fixture.store.all('volume').get('content'));
+    assert.strictEqual(model.get('mounts.content'), fixture.store.all('mount').get('content'));
+    fixture.store._bulkAdd('volume', [{type: 'volume', id: '1v-live'}]);
+    fixture.store._bulkAdd('mount', [{type: 'mount', id: '1m-live'}]);
+    assert.strictEqual(model.get('volumes.firstObject.id'), '1v-live', 'volume rows remain live');
+    assert.strictEqual(model.get('mounts.firstObject.id'), '1m-live', 'mount rows remain live');
   } finally {
     run(() => { route.destroy(); projects.destroy(); fixture.dispose(); });
   }

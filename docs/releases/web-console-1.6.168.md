@@ -66,7 +66,11 @@ but its complete suite was 786/787: an existing storagepools/pools test omitted
 the Store and expected the old synchronous return. That adjacent test now awaits
 the route using the actual Store fixture and checks the retained parent array
 and both live collections. The failed run is not a publishable result; final CI
-is pending after this test-contract correction.
+is pending after this test-contract correction. A second run also passed all
+fifteen new cases, but exposed an incorrect identity assertion in the adjacent
+test: `Store.all()` creates separate ArrayProxy wrappers over the same live
+content. The test now verifies shared content and actual live cache additions,
+not wrapper identity. Neither failed run is a publishable result.
 
 Production changes are confined to the shared guard, storage-pool section,
 new-volume route and the local-volume list/relationship/action paths described
