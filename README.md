@@ -8,6 +8,16 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.165` fixes ambiguous container names on Host cards. Long names
+now wrap within the existing card instead of hiding distinguishing rollback
+suffixes. IP addresses and action triggers retain their own space. The change
+is scoped to the shared container/VM subpod; global clipped labels, Host titles,
+names, IDs, API requests and authorization remain unchanged. Compiled-CSS
+regressions passed four Chrome cases and 744 assertions across light/dark,
+LTR/RTL and desktop/narrow viewports. Publication
+and packaged QA visual acceptance remain pending; earlier receipts are not
+promoted to a full matrix PASS. See the [release note](docs/releases/web-console-1.6.165.md).
+
 Published release `1.6.164` reuses visible Receiver form labels for shared
 required-field and numeric validation errors. The three supported driver
 configurations retain their own label scopes; model-specific translations still
