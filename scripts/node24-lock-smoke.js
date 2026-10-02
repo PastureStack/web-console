@@ -701,7 +701,7 @@ function expectEmberApiStoreFetchUpgrade() {
   if (JSON.stringify(apiStoreInfo.dependencies) !== JSON.stringify(expectedApiStoreDependencies)) {
     fail(`ember-api-store reviewed dependency boundary changed: ${JSON.stringify(apiStoreInfo.dependencies)}`);
   }
-  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 3) {
+  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 4) {
     fail("ember-api-store compatibility revision is missing");
   }
   if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 6) {
@@ -797,7 +797,7 @@ function expectEmberApiStoreFetchUpgrade() {
     fail("ember-fetch native production wrapper smoke failed");
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=3 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=4 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {
