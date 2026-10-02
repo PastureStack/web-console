@@ -8,6 +8,17 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Preparing `1.6.167` fixes mixed-case schema-ID lookup in the shared API store.
+Schema keys use the same normalization as the existing cache producer; ordinary
+resource IDs remain case-sensitive. Inherited resource getters and capability
+checks read the actual project store's schema, without fallback permissions or
+changes to API names, authorization or lifecycle requests. Compatibility archive
+revision 4 replaces revision 3 for this candidate only; earlier archives remain
+unchanged. Focused source validation, official publication, Server packaging and
+native packaged-browser acceptance are separate results. Publication and the
+complete permission/resource/locale matrix are not asserted by this preparation.
+See the [candidate note](docs/releases/web-console-1.6.167.md).
+
 Published `1.6.166` completes the shared state-badge display translation for
 `Inactive`. The thirteen supported language files gain that display label;
 icons, colors, API states and health/connection overrides are unchanged.

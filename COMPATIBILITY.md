@@ -4,6 +4,17 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Preparing Web Console `1.6.167` normalizes only schema-cache lookup IDs, matching
+the existing `_bulkAdd` producer. Mixed-case API types resolve the same cached
+schema through `Resource.schema`, `canCreate`, `canList` and schema-based update
+checks. Non-schema resource IDs remain case-sensitive and project stores remain
+independent. Missing schemas do not grant permissions. Backend schemas, roles,
+API paths, action names, authentication and lifecycle writes are unchanged.
+The local API-store compatibility archive advances to revision 4 with the same
+dependency graph and security thresholds. This is an unpublished source candidate,
+not packaged-browser or complete permission/resource/locale-matrix acceptance.
+See the [candidate note](docs/releases/web-console-1.6.167.md).
+
 Published Web Console `1.6.166` adds the missing `Inactive` display-label
 branch and its thirteen catalog translations. It does not change stored state,
 API/schema, permissions, request methods, authentication, icons or colors.

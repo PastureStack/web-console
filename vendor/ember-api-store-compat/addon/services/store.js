@@ -105,6 +105,10 @@ var Store = Service.extend({
   // Returns undefined if the record is not in cache, does not talk to API.
   getById(type, id) {
     type = normalizeType(type, this);
+    // _bulkAdd stores schema IDs normalized; resource IDs remain opaque.
+    if ( type === 'schema' ) {
+      id = normalizeType(id, this);
+    }
     var group = this._groupMap(type);
     if ( group ) {
       return group[id];

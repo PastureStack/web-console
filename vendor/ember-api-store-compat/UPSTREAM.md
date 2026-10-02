@@ -18,4 +18,13 @@ Compatibility revision 3 fixes duplicate in-flight request coalescing. The
 upstream local variable previously shadowed RSVP's `defer` import and crashed
 before initialization whenever two callers requested the same resource together.
 
+Compatibility revision 4 aligns schema-ID lookup with the normalization already
+used by `_bulkAdd`. `getById` normalizes its ID argument only for the `schema`
+cache, including mixed-case resource types such as `registryCredential`.
+Inherited `Resource.schema`, `canCreate`, `canList` and schema-based update checks
+therefore read the actual store's cached schema. Other resource IDs remain opaque
+and case-sensitive. Missing schemas do not gain fallback permissions; project
+stores remain separate. Resource names, server schemas, authorization and request
+methods are unchanged.
+
 This compatibility packaging preserves upstream authorship. PastureStack does not claim authorship of the imported runtime source.
