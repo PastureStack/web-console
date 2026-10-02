@@ -8,6 +8,16 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.166` completes the shared state-badge display translation for
+`Inactive`. The thirteen supported language files gain that display label;
+icons, colors, API states and health/connection overrides are unchanged.
+Eight focused Chrome rendering tests passed all 34 assertions, including
+switching the actual thirteen language catalogs and retaining unknown-state
+and override behavior. This source result does not establish immutable
+publication, Server packaging or complete permission/locale-matrix acceptance.
+Until publication is verified, `1.6.165` remains the latest published release.
+See the [candidate release note](docs/releases/web-console-1.6.166.md).
+
 Published `1.6.165` fixes ambiguous container names on Host cards. Long names
 now wrap within the existing card instead of hiding distinguishing rollback
 suffixes. IP addresses and action triggers retain their own space. The change

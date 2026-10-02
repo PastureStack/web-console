@@ -2077,6 +2077,7 @@ formPorts:
       state: '상태: {value}'
     state:
       active: 활성
+      inactive: 비활성
       running: 실행 중
       stopped: 중지됨
       stopping: 중지 중

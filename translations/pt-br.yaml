@@ -2166,6 +2166,7 @@ formPorts:
       state: 'Estado: {value}'
     state:
       active: Ativo
+      inactive: Inativo
       running: Em execução
       stopped: Parado
       stopping: Parando

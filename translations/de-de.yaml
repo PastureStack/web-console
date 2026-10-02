@@ -2208,6 +2208,7 @@ formPorts:
       state: 'Status: {value}'
     state:
       active: Aktiv
+      inactive: Inaktiv
       running: Wird ausgeführt
       stopped: Gestoppt
       stopping: Wird gestoppt
