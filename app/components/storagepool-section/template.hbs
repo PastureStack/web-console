@@ -18,7 +18,9 @@
 
   <div class="header-right right-divider stack-actions" style="width: auto">
     {{#unless this.single}}
-      <LinkTo @route="storagepools.new-volume" @query={{hash driverName=this.model.driverName}} class="btn btn-primary btn-sm">{{t 'storagePoolSection.volumes.add'}}</LinkTo>
+      {{#if this.canCreateVolume}}
+        <LinkTo @route="storagepools.new-volume" @query={{hash driverName=this.model.driverName}} class="btn btn-primary btn-sm">{{t 'storagePoolSection.volumes.add'}}</LinkTo>
+      {{/if}}
     {{/unless}}
   </div>
 </div>

@@ -8,6 +8,15 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Release candidate `1.6.168` makes the Volume Add control and direct create route
+use the current environment's actual schema capability. The shared create/upgrade
+route guard rejects missing or stale environment schemas; upgrades still require
+PUT rather than POST. Existing localized permission notices and backend
+authorization remain unchanged. Nine directly affected Chrome regression tests
+passed with no failures or skips. This is source-test evidence, not packaged
+browser acceptance or complete permission-matrix PASS. See the
+[release note](docs/releases/web-console-1.6.168.md).
+
 Published `1.6.167` fixes mixed-case schema-ID lookup in the shared API store.
 Schema keys use the same normalization as the existing cache producer; ordinary
 resource IDs remain case-sensitive. Inherited resource getters and capability

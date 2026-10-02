@@ -3,6 +3,23 @@ import Route from '@ember/routing/route';
 import { run } from '@ember/runloop';
 import { module, test } from 'qunit';
 import RequireCreatePermission from 'ui/mixins/require-create-permission';
+import ProjectsService from 'ui/services/projects';
+
+function beforeModel(route, transition) {
+  let current = EmberObject.create({id: 'current-project'});
+  let projects = ProjectsService.create({
+    current,
+    schemaProjectId: 'current-project',
+    store: route.get('store'),
+  });
+  route.set('projects', projects);
+  return route.beforeModel(transition).finally(() => {
+    run(() => {
+      projects.destroy();
+      current.destroy();
+    });
+  });
+}
 
 module('Unit | Mixin | require create permission');
 
@@ -26,7 +43,7 @@ test('allows a route only when the effective schema exposes POST', function(asse
       },
     }),
   });
-  return route.beforeModel({}).then(() => {
+  return beforeModel(route, {}).then(() => {
     assert.strictEqual(redirects, 0, 'an authorized route is not redirected');
     assert.deepEqual(notifications, [], 'an authorized route has no permission notice');
     assert.strictEqual(route.get('requiredCreateType'), 'stack', 'the capability is explicit');
@@ -54,7 +71,7 @@ test('redirects direct navigation when POST is absent', function(assert) {
       },
     }),
   });
-  return route.beforeModel({}).then((result) => {
+  return beforeModel(route, {}).then((result) => {
     assert.strictEqual(result, 'redirected', 'the redirect transition is returned');
     assert.deepEqual(notifications, [['routePermission.title', 'routePermission.denied']],
       'a denied create shows exactly one permission notice');
@@ -88,7 +105,7 @@ test('an upgrade uses PUT capability without opening create-only routes', functi
       },
     }),
   });
-  return route.beforeModel({to: {queryParams: {upgrade: 'true'}}}).then(() => {
+  return beforeModel(route, {to: {queryParams: {upgrade: 'true'}}}).then(() => {
     assert.strictEqual(redirects, 0, 'PUT capability preserves the upgrade workflow');
     assert.deepEqual(notifications, [], 'an authorized upgrade has no create permission notice');
     assert.strictEqual(route.get('updateWhenQueryParam'), 'upgrade', 'only explicit upgrade flows use PUT');
@@ -121,7 +138,7 @@ test('denied upgrades use the update notice rather than the create notice', func
       },
     }),
   });
-  return route.beforeModel({to: {queryParams: {upgrade: 'true'}}}).then((result) => {
+  return beforeModel(route, {to: {queryParams: {upgrade: 'true'}}}).then((result) => {
     assert.strictEqual(result, 'redirected', 'the redirect transition is returned');
     assert.deepEqual(notifications, [['routePermission.title', 'routePermission.updateDenied']],
       'the denied upgrade shows exactly one update permission notice');
@@ -154,7 +171,7 @@ test('upgrade=false remains a create request', function(assert) {
       },
     }),
   });
-  return route.beforeModel({to: {queryParams: {upgrade: 'false'}}}).then(() => {
+  return beforeModel(route, {to: {queryParams: {upgrade: 'false'}}}).then(() => {
     assert.deepEqual(notifications, [['routePermission.title', 'routePermission.denied']],
       'upgrade=false uses the create permission notice exactly once');
     run(() => route.destroy());
