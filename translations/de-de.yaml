@@ -1271,6 +1271,12 @@ storagePoolsPage:
     backups: Sicherungen
   index:
     noData: Keine Storage-Treiber
+  unallocated:
+    header: Nicht zugewiesene lokale Volumes
+    add: Lokales Volume hinzufügen
+    empty: Keine nicht zugewiesenen lokalen Volumes.
+    help: Diese Volumes sind keinem Speicherpool zugewiesen und von keiner Arbeitslast eingebunden. Deaktivieren Sie ein aktives Volume, bevor Sie es entfernen.
+    relationIncomplete: Die Speicherpool-Zuordnung dieses Volumes konnte nicht vollständig geprüft werden. Aktionen sind vorübergehend nicht verfügbar. Laden Sie die Seite neu; wenden Sie sich bei anhaltenden Problemen an einen Administrator.
   newVolume:
     header: Volume hinzufügen
     form:

@@ -13,7 +13,15 @@ use the current environment's actual schema capability. The shared create/upgrad
 route guard rejects missing or stale environment schemas; upgrades still require
 PUT rather than POST. Existing localized permission notices and backend
 authorization remain unchanged. Nine directly affected Chrome regression tests
-passed with no failures or skips. This is source-test evidence, not packaged
+passed with no failures or skips. The candidate also adds an independent local
+Volume entry and an unallocated local-volume list. Classification requires the
+actual complete storage-pool relationship and full environment-scoped mount
+cache, including inactive workloads; missing data does not mean unused. The
+native advertised deactivate action is offered only for a proven unallocated
+volume in the current environment, before the existing remove workflow.
+Relation failures retain the original route/growl error instead of silently
+inventing an empty result. These additional source tests and native lifecycle
+checks are still pending. This is source-test evidence, not packaged
 browser acceptance or complete permission-matrix PASS. See the
 [release note](docs/releases/web-console-1.6.168.md).
 

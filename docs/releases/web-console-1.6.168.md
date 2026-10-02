@@ -18,6 +18,32 @@ retain the existing localized permission error and safe route replacement.
 The API remains the authorization boundary: no role-name override, new backend
 permission, alternate request method or fallback capability is introduced.
 
+## Unallocated local Volume lifecycle
+
+Local Volume creation does not create a storage-pool map. The previous pool-only
+list therefore offered no reliable independent Add entry or visible row for that
+resource. The candidate keeps the existing storage-pool sections and adds a
+separate native local-volume entry and list, without inventing a pool or binding
+a host. Exact resource IDs, the current environment, explicit local/non-native
+resource fields, the actual complete storage-pool relationship and the full
+scoped mount cache establish that a volume is unallocated. Inactive and
+unresolved workload mounts still exclude it. Missing or failed relationship
+reads are not empty proof.
+
+The current environment's schema controls Add; a genuine advertised deactivate
+action and current schema ownership control stopping an unallocated active
+volume. After the server transitions it to detached, the existing native remove
+action remains responsible for deletion. Dispatch rechecks the relationships.
+Late relationship reads, allocation changes and project/store generations may
+not restore stale capability. Initial read failures use the existing route
+error path; background failures use the existing localized growl API with the
+original error and no automatic retry.
+
+The new section uses existing table, state and action-menu components, with
+translations for all thirteen existing locales. No global layout or other
+resource lifecycle is redesigned. Packaged native create/cancel/refresh/
+deactivate/remove, readonly same-ID denial and visual acceptance remain pending.
+
 ## Verification
 
 Local Chrome 153 passed all nine directly affected QUnit tests, with zero
@@ -27,8 +53,17 @@ cover schema-generation revocation, missing/stale/switched environments, direct
 route rejection before form-model creation, allowed local-volume form creation,
 and the existing PUT/POST upgrade distinction. `git diff --check` passed.
 
-Production changes are confined to the shared guard, storage-pool section
-component/template and new-volume route. Package/lock/source-gate versions
+Eleven additional focused cases cover actual Store/Collection relationship
+reads, exact-ID classification, inactive/unresolved mounts, generation changes,
+late responses, error propagation, live rows and advertised-action dispatch.
+Their local Chrome runs passed in affected-case groups after directly observed
+failures were corrected; this is not a complete final-source suite result.
+The localized incomplete-relationship assertions were added afterward and
+await the final immutable-source CI run. Earlier failed logs are retained.
+
+Production changes are confined to the shared guard, storage-pool section,
+new-volume route and the local-volume list/relationship/action paths described
+above. Package/lock/source-gate versions
 advance together without dependency or security-threshold changes.
 
 Local source tests are not native create/remove, cross-account API, mobile or

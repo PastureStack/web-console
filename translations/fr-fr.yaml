@@ -1259,6 +1259,12 @@ storagePoolsPage:
     backups: Sauvegarde
   index:
     noData: Aucun pilote de stockage
+  unallocated:
+    header: Volumes locaux non affectés
+    add: Ajouter un volume local
+    empty: Aucun volume local non affecté.
+    help: Ces volumes ne sont affectés à aucun pool de stockage et ne sont montés par aucune charge de travail. Désactivez un volume actif avant de le supprimer.
+    relationIncomplete: Les informations du pool de stockage de ce volume sont incomplètes. Les actions sont indisponibles. Rechargez la page ; si le problème persiste, contactez un administrateur.
   newVolume:
     header: Ajouter un Volume
     form:

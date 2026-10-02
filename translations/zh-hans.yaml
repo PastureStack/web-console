@@ -1221,6 +1221,12 @@ storagePoolsPage:
     backups: 备份
   index:
     noData: 没有存储驱动
+  unallocated:
+    header: 尚未分配的本地卷
+    add: 添加本地卷
+    empty: 目前没有尚未分配的本地卷。
+    help: 这些卷尚未分配到存储池，也未由工作负载挂载。要移除启用中的卷，请先停用。
+    relationIncomplete: 无法完整确认此卷的存储池关联，因此暂不提供操作。请刷新页面；若问题持续，请联系管理员。
   newVolume:
     header: 添加卷
     form:

@@ -4,8 +4,12 @@
 
 <td>
   <div class="clip">
-    {{this.model.displayUri}}
-    {{copy-to-clipboard clipboardText=this.model.displayUri class="with-clip" size="small"}}
+    {{#if this.showName}}
+      {{this.model.displayName}}
+    {{else}}
+      {{this.model.displayUri}}
+      {{copy-to-clipboard clipboardText=this.model.displayUri class="with-clip" size="small"}}
+    {{/if}}
   </div>
 </td>
 

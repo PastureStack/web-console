@@ -3,3 +3,34 @@
 {{else}}
   <div class="text-muted text-center">{{t 'storagePoolsPage.index.noData'}}</div>
 {{/each}}
+
+<section class="r-mt20" data-testid="unallocated-local-volumes">
+  <div class="header clearfix">
+    <div class="header-left"><h3>{{t 'storagePoolsPage.unallocated.header'}}</h3></div>
+    <div class="header-right">
+      {{#if this.canCreateVolume}}
+        <LinkTo @route="storagepools.new-volume" @query={{hash driverName="local"}} class="btn btn-primary btn-sm">{{t 'storagePoolsPage.unallocated.add'}}</LinkTo>
+      {{/if}}
+    </div>
+  </div>
+  <p class="text-muted">{{t 'storagePoolsPage.unallocated.help'}}</p>
+  {{#if this.unallocatedVolumes.length}}
+    <table class="grid">
+      <thead>
+        <tr>
+          <th width="115">{{t 'generic.state'}}</th>
+          <th>{{t 'generic.name'}}</th>
+          <th>{{t 'storagePoolSection.models.table.header.mounts'}}</th>
+          <th width="75">&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each this.unallocatedVolumes key="id" as |volume|}}
+          <tr data-volume-id={{volume.id}}>{{volume-row model=volume showName=true}}</tr>
+        {{/each}}
+      </tbody>
+    </table>
+  {{else}}
+    <p class="text-muted text-center">{{t 'storagePoolsPage.unallocated.empty'}}</p>
+  {{/if}}
+</section>
