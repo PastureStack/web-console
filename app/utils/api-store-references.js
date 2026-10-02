@@ -1,4 +1,5 @@
 import { computed, get } from '@ember/object';
+import { normalizeType } from 'ember-api-store/utils/normalize';
 
 function getReference(store, referencedType, referencedId, thisType, thisId, computedKey) {
   if (!referencedId) {
@@ -95,6 +96,28 @@ export function denormalizeIdArray(field, referencedType = null, storeName = 'st
 
     set(_computedKey, value) {
       return value;
+    },
+  });
+}
+
+// Register the Store's existing hasMany invalidation contract at the same
+// compatibility boundary as the other resource relationships.
+export function hasMany(matchField, targetType, targetField, storeName = 'store') {
+  const type = normalizeType(targetType);
+
+  return computed(matchField, `${ storeName }.generation`, `${ storeName }.baseUrl`, {
+    get(computedKey) {
+      const store = this.get(storeName);
+      const thisType = normalizeType(this.get('type'));
+      const key = `${ computedKey }/${ thisType }/${ matchField }/${ targetField }`;
+      const watches = store._state.watchHasMany[type] || (store._state.watchHasMany[type] = []);
+
+      if (!watches.find((watch) => watch.key === key)) {
+        watches.push({ key, thisField: computedKey, thisType, matchField, targetField });
+      }
+
+      const value = this.get(matchField);
+      return store.all(type).filter((record) => get(record, targetField) === value);
     },
   });
 }

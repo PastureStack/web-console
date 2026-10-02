@@ -1,8 +1,7 @@
 import { notEmpty } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Resource from 'ember-api-store/models/resource';
-import { hasMany } from 'ember-api-store/utils/denormalize';
-import { denormalizeIdArray } from 'ui/utils/api-store-references';
+import { denormalizeIdArray, hasMany } from 'ui/utils/api-store-references';
 import { isUnallocatedLocalVolume } from 'ui/utils/unallocated-volumes';
 
 var Volume = Resource.extend({

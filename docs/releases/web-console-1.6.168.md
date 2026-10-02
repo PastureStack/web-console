@@ -72,6 +72,15 @@ test: `Store.all()` creates separate ArrayProxy wrappers over the same live
 content. The test now verifies shared content and actual live cache additions,
 not wrapper identity. Neither failed run is a publishable result.
 
+The following run passed 787/787 browser tests but was correctly blocked by the
+API-store compatibility source gate: the new all-mounts relationship imported
+the old addon helper directly. The relationship now uses the common local
+reference boundary and the Store's existing invalidation contract. An additional
+actual-Store regression checks late inactive mounts, removal and watch deduplication.
+The five shared-reference cases passed in local Chrome 153 with no failures,
+skips or todo, using the newly compiled source rather than an older build.
+Final immutable-source CI and packaging remain pending.
+
 Production changes are confined to the shared guard, storage-pool section,
 new-volume route and the local-volume list/relationship/action paths described
 above. Package/lock/source-gate versions
