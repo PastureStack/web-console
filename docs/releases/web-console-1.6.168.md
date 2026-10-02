@@ -61,6 +61,13 @@ failures were corrected; this is not a complete final-source suite result.
 The localized incomplete-relationship assertions were added afterward and
 await the final immutable-source CI run. Earlier failed logs are retained.
 
+The first expanded immutable-source CI run passed all fifteen new scoped cases,
+but its complete suite was 786/787: an existing storagepools/pools test omitted
+the Store and expected the old synchronous return. That adjacent test now awaits
+the route using the actual Store fixture and checks the retained parent array
+and both live collections. The failed run is not a publishable result; final CI
+is pending after this test-contract correction.
+
 Production changes are confined to the shared guard, storage-pool section,
 new-volume route and the local-volume list/relationship/action paths described
 above. Package/lock/source-gate versions
