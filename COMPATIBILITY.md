@@ -4,12 +4,17 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Candidate Web Console `1.6.166` adds the missing `Inactive` display-label
+Published Web Console `1.6.166` adds the missing `Inactive` display-label
 branch and its thirteen catalog translations. It does not change stored state,
 API/schema, permissions, request methods, authentication, icons or colors.
 Unknown states and existing health/connection overrides retain their display
-contracts. Eight focused Chrome rendering tests passed 34 assertions; this
-source-only result is not packaged native-browser or full-matrix acceptance.
+contracts. Eight focused Chrome rendering tests passed 34 assertions;
+official CI passed 768/768 tests and produced identical archives. The signed
+immutable release pins source `b63fa15f6726cb78659ae43258dfc802b30d6d04`.
+Anonymous public readback matches archive SHA-256
+`9205fbaec6e80f31846212f0949c3eac0fae083f80c6c46a3122d64c4d9da6c6`.
+Component publication is not Server packaging/deployment, packaged
+native-browser or full-matrix acceptance.
 The package bump changes only root version metadata and version-gate literals;
 dependency graphs and security thresholds remain unchanged.
 
