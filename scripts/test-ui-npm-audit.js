@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
-const { evaluateAudit, validateReviewedImports, readReviewedSources, runAudit } = require('./check-ui-npm-audit');
+const { evaluateAudit, validateReviewedImports, readReviewedSources, npmInvocation, runAudit } = require('./check-ui-npm-audit');
 const root = path.resolve(__dirname, '..');
 const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
 const pending = JSON.parse(fs.readFileSync(path.join(root, 'docs/security/npm-vendor-pending.json'), 'utf8'));
@@ -159,30 +159,103 @@ test('npm non-audit failures and inconsistent exit status never become allowed p
   for (const status of [null, 2, 127, 0]) { const value = input(); value.npmExitCode = status; fail(value, 'NPM_EXIT_OR_NETWORK_ERROR'); }
 });
 test('main runner truly selects high JSON audit once, never install/fix, and emits no raw stderr/error', () => {
-  let calls = 0;
-  const result = runAudit(root, (command, args, options) => {
+  for (const platform of ['linux', 'win32']) {
+   let calls = 0;
+   const result = runAudit(root, (command, args, options) => {
     calls++;
-    assert.deepEqual(args.slice(-3), ['audit', '--audit-level=high', '--json']);
+    assert.deepEqual({ command, args }, npmInvocation(platform, calls === 1));
     assert.equal(options.shell, false);
     assert.equal(options.cwd, root);
     assert.equal(args.includes('fix'), false);
+    if (calls === 1) return { status: 0, stdout: '12.0.2\n' };
     return { status: 1, stdout: JSON.stringify(report()), stderr: 'private stderr marker' };
-  });
-  assert.equal(calls, 1, JSON.stringify(result)); assert.equal(result.ok, true);
-  assert.equal(JSON.stringify(result).includes('private'), false);
+   }, platform);
+   assert.equal(calls, 2, JSON.stringify(result)); assert.equal(result.ok, true);
+   assert.equal(JSON.stringify(result).includes('private'), false);
+  }
 });
 test('runner malformed JSON, network errors and thrown process errors are finite safe codes with no retry', () => {
   for (const returned of [{ status: 1, stdout: 'secret invalid body' },
     { status: 1, stdout: JSON.stringify({ error: { code: 'ENOTFOUND', detail: 'secret' } }) },
     { status: null, error: new Error('secret network failure'), stdout: '' }]) {
     let calls = 0;
-    const result = runAudit(root, () => { calls++; return returned; });
-    assert.equal(calls, 1, JSON.stringify(result)); assert.equal(result.ok, false);
+    const result = runAudit(root, () => { calls++; return calls === 1 ? { status: 0, stdout: '12.0.2\n' } : returned; });
+    assert.equal(calls, 2, JSON.stringify(result)); assert.equal(result.ok, false);
     assert.equal(JSON.stringify(result).includes('secret'), false);
   }
   let calls = 0;
   const result = runAudit(root, () => { calls++; throw new Error('secret thrown failure'); });
   assert.equal(calls, 1, JSON.stringify(result)); assert.equal(result.failureCode, 'NPM_PROCESS_ERROR');
+  let auditCalls = 0;
+  const auditThrow = runAudit(root, () => {
+    auditCalls++;
+    if (auditCalls === 1) return { status: 0, stdout: '12.0.2\n' };
+    throw new Error('secret audit thrown failure');
+  });
+  assert.equal(auditCalls, 2); assert.equal(auditThrow.failureCode, 'NPM_PROCESS_ERROR');
+});
+
+test('npm version failures stop before audit on both platforms without retry or raw output', () => {
+  for (const platform of ['linux', 'win32']) for (const returned of [null,
+    { status: 1, stdout: '12.0.2' }, { status: 0, stdout: '11.0.0' },
+    { status: 0, stdout: '12.0.2 secret additional output' }, { status: 0 },
+    { status: 0, stdout: '12.0.2', signal: 'SIGTERM' },
+    { status: 0, stdout: '12.0.2', error: new Error('secret process failure') }]) {
+    let calls = 0;
+    const result = runAudit(root, () => { calls++; return returned; }, platform);
+    assert.equal(calls, 1); assert.equal(result.failureCode, 'NPM_VERSION_REQUIRED');
+    assert.equal(JSON.stringify(result).includes('secret'), false);
+  }
+});
+
+test('npm command mapping is literal and never probes APPDATA or executable metadata paths', () => {
+  assert.deepEqual(npmInvocation('linux', true), { command: 'npm', args: ['--version'] });
+  assert.deepEqual(npmInvocation('linux'), { command: 'npm', args: ['audit', '--audit-level=high', '--json'] });
+  assert.deepEqual(npmInvocation('win32', true), { command: 'cmd.exe', args: ['/d', '/s', '/c', 'npm --version'] });
+  assert.deepEqual(npmInvocation('win32'), { command: 'cmd.exe', args: ['/d', '/s', '/c', 'npm audit --audit-level=high --json'] });
+  const saved = process.env.APPDATA;
+  const oldExists = fs.existsSync;
+  try {
+    fs.existsSync = () => { throw new Error('Environment executable path must not be probed'); };
+    for (const value of ['../../outside', 'C:\\untrusted\\npm & injected', '']) {
+      process.env.APPDATA = value;
+      let calls = 0;
+      const result = runAudit(root, (command, args) => {
+        calls++;
+        assert.deepEqual({ command, args }, npmInvocation('win32', calls === 1));
+        return calls === 1 ? { status: 0, stdout: '12.0.2\n' } : { status: 1, stdout: JSON.stringify(report()) };
+      }, 'win32');
+      assert.equal(calls, 2); assert.equal(result.ok, true);
+    }
+  } finally {
+    fs.existsSync = oldExists;
+    if (saved === undefined) delete process.env.APPDATA;
+    else process.env.APPDATA = saved;
+  }
+});
+
+test('Windows launcher and npm skip implicit cwd while synchronous environment ownership is restored', () => {
+  const saved = process.env.NoDefaultCurrentDirectoryInExePath;
+  try {
+    for (const previous of [undefined, '', 'existing-value']) for (const failure of ['none', 'version', 'audit']) {
+      if (previous === undefined) delete process.env.NoDefaultCurrentDirectoryInExePath;
+      else process.env.NoDefaultCurrentDirectoryInExePath = previous;
+      let calls = 0;
+      const result = runAudit(root, () => {
+        calls++;
+        assert.equal(process.env.NoDefaultCurrentDirectoryInExePath, '1');
+        if ((calls === 1 && failure === 'version') || (calls === 2 && failure === 'audit')) throw new Error('safe synthetic failure');
+        return calls === 1 ? { status: 0, stdout: '12.0.2\n' } : { status: 1, stdout: JSON.stringify(report()) };
+      }, 'win32');
+      assert.equal(process.env.NoDefaultCurrentDirectoryInExePath, previous);
+      assert.equal(calls, failure === 'version' ? 1 : 2);
+      assert.equal(result.ok, failure === 'none');
+      if (failure !== 'none') assert.equal(result.failureCode, 'NPM_PROCESS_ERROR');
+    }
+  } finally {
+    if (saved === undefined) delete process.env.NoDefaultCurrentDirectoryInExePath;
+    else process.env.NoDefaultCurrentDirectoryInExePath = saved;
+  }
 });
 test('reviewed runtime import boundary refuses every pending consumer while exact Ember build entry is allowed', () => {
   const sources = { 'ember-cli-build.js': "var EmberApp = require('ember-cli/lib/broccoli/ember-app');",

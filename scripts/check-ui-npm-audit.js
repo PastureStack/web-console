@@ -213,7 +213,30 @@ function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) 
   }
 }
 
-function runAudit(repoRoot, runner = spawnSync) {
+function npmInvocation(platform, versionOnly = false) {
+  // The SDK on PATH is the toolchain trust boundary on both platforms.
+  // Never discover executable files beneath an environment-provided root.
+  // cmd is needed for npm.cmd; /d disables AutoRun and every argument is literal.
+  if (platform === 'win32') return { command: 'cmd.exe', args: ['/d', '/s', '/c',
+    versionOnly ? 'npm --version' : 'npm audit --audit-level=high --json'] };
+  return { command: 'npm', args: versionOnly ? ['--version'] : ['audit', '--audit-level=high', '--json'] };
+}
+
+function runNpm(invocation, options, runner, platform) {
+  if (platform !== 'win32') return runner(invocation.command, invocation.args, options);
+  // libuv resolves the launcher using the parent's environment; cmd then
+  // resolves npm in the child. A child-only env override protects only npm.
+  // This synchronous boundary guards both lookups and restores every exit.
+  const previous = process.env.NoDefaultCurrentDirectoryInExePath;
+  process.env.NoDefaultCurrentDirectoryInExePath = '1';
+  try { return runner(invocation.command, invocation.args, options); }
+  finally {
+    if (previous === undefined) delete process.env.NoDefaultCurrentDirectoryInExePath;
+    else process.env.NoDefaultCurrentDirectoryInExePath = previous;
+  }
+}
+
+function runAudit(repoRoot, runner = spawnSync, platform = process.platform) {
   let lock, pending;
   try {
     lock = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package-lock.json'), 'utf8'));
@@ -224,21 +247,17 @@ function runAudit(repoRoot, runner = spawnSync) {
     return { ok: false, outcome: 'FAIL_CLOSED', totals: null,
       failureCode: /^[A-Z0-9_]+$/.test(error.message) ? error.message : 'PREFLIGHT_INPUT_ERROR' };
   }
-  let command = 'npm';
-  let args = ['audit', '--audit-level=high', '--json'];
-  if (process.platform === 'win32') {
-    const candidates = [path.join(process.env.APPDATA || '', 'npm/node_modules/npm/bin/npm-cli.js'),
-      path.join(path.dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js')];
-    const cli = candidates.find(p => {
-      try { return fs.existsSync(p) && JSON.parse(fs.readFileSync(path.resolve(p, '../../package.json'), 'utf8')).version === '12.0.2'; }
-      catch (_) { return false; }
-    });
-    if (!cli) return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_CLI_UNAVAILABLE' };
-    command = process.execPath;
-    args = [cli, ...args];
-  }
+  const options = { cwd: repoRoot, encoding: 'utf8', shell: false, timeout: 120000, maxBuffer: 8 * 1024 * 1024 };
+  const version = npmInvocation(platform, true);
+  let installed;
+  try { installed = runNpm(version, options, runner, platform); }
+  catch (_) { return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_PROCESS_ERROR' }; }
+  if (!installed || installed.error || installed.signal || installed.status !== 0 ||
+    typeof installed.stdout !== 'string' || installed.stdout.trim() !== '12.0.2')
+    return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_VERSION_REQUIRED' };
+  const invocation = npmInvocation(platform);
   let result;
-  try { result = runner(command, args, { cwd: repoRoot, encoding: 'utf8', shell: false, timeout: 120000, maxBuffer: 8 * 1024 * 1024 }); }
+  try { result = runNpm(invocation, options, runner, platform); }
   catch (_) { return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_PROCESS_ERROR' }; }
   if (!result || result.error || result.signal || ![0, 1].includes(result.status))
     return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_EXIT_OR_NETWORK_ERROR' };
@@ -248,7 +267,7 @@ function runAudit(repoRoot, runner = spawnSync) {
   return evaluateAudit({ audit, lock, pending, npmExitCode: result.status });
 }
 
-module.exports = { evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, runAudit };
+module.exports = { evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, npmInvocation, runAudit };
 if (require.main === module) {
   const result = runAudit(path.resolve(__dirname, '..'));
   console.log(JSON.stringify(result));
