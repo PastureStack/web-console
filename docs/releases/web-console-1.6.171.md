@@ -1,6 +1,6 @@
 # Web Console 1.6.171
 
-Candidate shared Store fix; publication and packaged QA remain separate gates.
+Published shared Store fix; component publication is not packaged QA acceptance.
 
 ## Root cause and changes
 
@@ -41,8 +41,24 @@ Focused local Chrome 153 validation passed 36/36 tests with zero failure, skip
 or todo, including all ten new cases and 100 deferred-barrier iterations.
 Adjacent Store/schema/reference, allocation-proof, route and subscribe-session
 cases remain passing. The installed revision-5 archive matches the runtime source.
-Exact-source official validation, signed numeric release and packaged native
-fresh-volume create/cancel/refresh/denial/removal remain pending.
+Exact-source official validation
+[37094728912](https://github.com/PastureStack/web-console/actions/runs/37094728912)
+passed 802/802 tests with zero failures, skips or todo, including all ten
+create-order regressions; all 22 audit-gate selftests passed. Two production
+builds produced the same archive SHA-256:
+`49fac41ca93eb628d0877104f9512ef382ffd9dbc89e04c940196b3a9c57798b`
+(2,981,230 bytes).
+
+The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.171)
+pins tested source `fc37f5af9320e492bec7e7244cd62144908b720e`.
+PR161 squash-merged as `f7e0eefdd8322e5d0b5ab6c2d8cf427ad35f59f8`;
+its tree `5f81762a276d9212adcaf2469134a88beb0339ec` is identical to the
+tested source. Anonymous archive and checksum downloads match the formal
+artifact; publication reused those bytes without rebuilding.
+
+Server508 packaging and packaged native fresh-volume
+create/cancel/refresh/denial/removal remain pending.
 Historical failed QA receipts stay HOLD; the complete
 permission/resource/locale matrix remains INCOMPLETE.
 
@@ -61,6 +77,14 @@ expired review or audit failure. Only this exact reviewed build-only closure
 may remain vendor-pending until 2026-10-10. That exception is not a claim that
 the vulnerable package is patched or that the source graph has zero High
 findings. The packaged static artifact must exclude the affected Node package.
+
+The successful official run retained the raw audit totals: seven High, three
+Moderate and zero Critical findings. Its bounded build-only result was
+`PASS_BUILD_VENDOR_PENDING`; the High advisory remains unresolved until the
+existing 2026-10-10 review boundary. Formal package checks found no affected
+build-package modules in the static artifact, without making a runtime
+not-affected VEX or zero-vulnerability claim. No dependency or security-policy
+change is introduced by this documentation update.
 
 ## Upgrade and rollback
 
