@@ -18,7 +18,7 @@ local Chrome tests have not run because of incomplete shared dependencies.
 Official tests, publication and packaged native acceptance are pending, not
 full-matrix PASS. See the [release note](docs/releases/web-console-1.6.172.md).
 
-Candidate `1.6.171` confines create-response adoption to ID-less POST/201 and an
+Published `1.6.171` confines create-response adoption to ID-less POST/201 and an
 existing exact-ID/concrete-type canonical model in the same Store, generation
 and API base. It does not re-import stale scalar or nested create fields over
 that model. The original draft-save completion identity and subtype/base aliases
@@ -28,8 +28,15 @@ GET, PUT, action POST (including reused options), uncached creates, non-201,
 MFA, payload, resource lifecycle or backend changes are introduced.
 Revision 5 is a new archive; revision 4 is not overwritten. Focused Chrome
 validation passed 36/36, including ten new cases and 100 barrier iterations;
-failure, skip and todo counts are zero. Official validation, publication and
-packaged fresh-volume acceptance remain pending, not full-matrix PASS.
+failure, skip and todo counts are zero. Exact-source official validation
+37094728912 passed 802/802 tests, including the ten create-order cases, with
+zero failures, skips or todo; all 22 audit-gate selftests passed. Both production
+archives and anonymous public downloads match SHA-256
+`49fac41ca93eb628d0877104f9512ef382ffd9dbc89e04c940196b3a9c57798b`
+and size 2,981,230 bytes. The signed immutable numeric release pins source
+`fc37f5af9320e492bec7e7244cd62144908b720e`. Separate Server508 packaging and
+packaged fresh-volume acceptance remain pending; historical HOLDs and the
+complete permission/resource/locale matrix are not promoted.
 See the [release note](docs/releases/web-console-1.6.171.md).
 
 The live npm audit retains its Critical/High threshold. An explicit dated

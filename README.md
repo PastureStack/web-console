@@ -21,7 +21,7 @@ tests, publication and packaged native acceptance remain pending. Historical
 HOLDs remain HOLD; the full matrix is INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.172.md).
 
-Candidate `1.6.171` repairs a shared Store ordering defect: a delayed initial
+Published `1.6.171` repairs a shared Store ordering defect: a delayed initial
 create response could overwrite a newer subscribe model and leave a successfully
 created local Volume stuck in its initial state. Only ID-less create POST/201
 uses an existing exact-ID, concrete-type canonical model in the same Store,
@@ -30,9 +30,18 @@ keep their existing contracts. API-store compatibility revision 5 replaces
 revision 4 without changing the dependency graph; earlier archives are retained.
 Focused Chrome validation passed 36/36 tests, including ten new regressions and
 100 deterministic subscribe-before-201 barrier iterations, with no failures,
-skips or todo. Official validation, immutable publication and packaged fresh-volume
-acceptance are separate pending gates. The complete permission /
-resource / locale matrix remains INCOMPLETE. See the
+skips or todo. Exact-source official validation
+[37094728912](https://github.com/PastureStack/web-console/actions/runs/37094728912)
+passed 802/802 tests with zero failures, skips or todo, including the ten new
+create-order cases; all 22 audit-gate selftests passed. Two production archives
+are byte-identical. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.171)
+pins source `fc37f5af9320e492bec7e7244cd62144908b720e`; archive SHA-256 is
+`49fac41ca93eb628d0877104f9512ef382ffd9dbc89e04c940196b3a9c57798b`
+(2,981,230 bytes). Anonymous public downloads match the formal artifact.
+Server508 packaging and native fresh-volume create/cancel/refresh/denial/removal
+acceptance remain separate pending gates. Historical HOLDs are not promoted;
+the complete permission / resource / locale matrix remains INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.171.md).
 
 The first exact-source official run stopped before tests on newly reviewed
