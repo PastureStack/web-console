@@ -4,6 +4,7 @@ import { resolve } from 'rsvp';
 import { module, test } from 'qunit';
 
 import ViewEditProject from 'ui/components/view-edit-project/component';
+import ProjectTemplate from 'ui/models/projecttemplate';
 import inertRenderer from '../../helpers/inert-renderer';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
@@ -24,6 +25,62 @@ function makeComponent(project, network, options = {}) {
     ...options,
   }, 'component');
 }
+
+test('native project template choices use names, keep IDs, and react to renames', function(assert) {
+  let app = EmberObject.create({baseAssets: '/'});
+  let zulu = ProjectTemplate.create({id: '1pt-zulu', name: 'Zulu environment', stacks: A([]), app});
+  let alpha = ProjectTemplate.create({id: '1pt-alpha', name: 'alpha environment', stacks: A([]), app});
+  let project = EmberObject.create({id: null, projectTemplateId: zulu.id, projectMembers: A([])});
+  let component = makeComponent(project, null, {app, editing: false, projectTemplates: A([zulu, alpha])});
+
+  try {
+    assert.strictEqual(zulu.get('localizedName'), undefined, 'the real native model has no catalog localizedName');
+    assert.strictEqual(alpha.get('localizedName'), undefined, 'no fixture alias hides a missing native name');
+    assert.deepEqual(component.get('templateChoices').map(({id, name, image}) => ({id, name, image})), [
+      {id: alpha.id, name: 'alpha environment', image: alpha.get('orchestrationIcon')},
+      {id: zulu.id, name: 'Zulu environment', image: zulu.get('orchestrationIcon')},
+    ], 'user-defined names are sorted case-insensitively without losing IDs or icons');
+
+    component.send('selectTemplate', alpha.id);
+    assert.strictEqual(project.get('projectTemplateId'), alpha.id, 'the action stores the selected native ID, not its name');
+    assert.strictEqual(component.get('selectedProjectTemplate'), alpha, 'the selection resolves the actual native model');
+
+    alpha.set('name', 'zz renamed environment');
+    assert.deepEqual(component.get('templateChoices').map(({id, name}) => ({id, name})), [
+      {id: zulu.id, name: 'Zulu environment'},
+      {id: alpha.id, name: 'zz renamed environment'},
+    ], 'the existing name dependency refreshes both labels and order');
+    assert.strictEqual(project.get('projectTemplateId'), alpha.id, 'renaming does not replace the selected ID');
+  } finally {
+    destroyOwned(component);
+    destroyOwned(zulu);
+    destroyOwned(alpha);
+  }
+});
+
+test('an empty native project template list keeps the None choice', function(assert) {
+  let project = EmberObject.create({id: null, projectTemplateId: '1pt-stale', projectMembers: A([])});
+  let component = makeComponent(project, null, {
+    app: EmberObject.create({baseAssets: '/'}),
+    editing: false,
+    projectTemplates: A([]),
+  });
+
+  try {
+    let choices = component.get('templateChoices');
+    assert.strictEqual(choices.length, 1);
+    assert.deepEqual({id: choices[0].id, name: choices[0].name, image: choices[0].image}, {
+      id: null,
+      name: 'None',
+      image: '/assets/images/logos/pasturestack-mark.svg',
+    }, 'the no-template fallback remains a null-ID native choice');
+    component.send('selectTemplate', choices[0].id);
+    assert.strictEqual(project.get('projectTemplateId'), null, 'the fallback clears a stale template ID');
+    assert.strictEqual(component.get('selectedProjectTemplate'), undefined);
+  } finally {
+    destroyOwned(component);
+  }
+});
 
 test('existing environment writes only resources advertised by their own capabilities', async function(assert) {
   let cases = [

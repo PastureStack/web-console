@@ -7,7 +7,9 @@ import { click, find, findAll, render, settled, setupContext, setupRenderingCont
 import { module, test } from 'qunit';
 
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
+import ProjectTemplate from 'ui/models/projecttemplate';
 import Router from 'ui/router';
+import { destroyOwned } from '../../helpers/owned-subject';
 import resolver from '../../helpers/resolver';
 
 module('Integration | Component | view edit project permissions', function(hooks) {
@@ -61,7 +63,63 @@ module('Integration | Component | view edit project permissions', function(hooks
 
   hooks.afterEach(async function() {
     await teardownContext(this);
+    (this.nativeTemplates || []).forEach((template) => destroyOwned(template));
     this.testRoot.remove();
+  });
+
+  test('new environment cards render real native names and select the same ID after a rename', async function(assert) {
+    this.app = EmberObject.create({baseAssets: '/'});
+    let zulu = ProjectTemplate.create({id: '1pt-zulu', name: 'Zulu environment', stacks: A([]), app: this.app});
+    let alpha = ProjectTemplate.create({id: '1pt-alpha', name: 'alpha environment', stacks: A([]), app: this.app});
+    this.nativeTemplates = [zulu, alpha];
+    this.projectTemplates = A(this.nativeTemplates);
+    this.project.setProperties({id: null, projectTemplateId: zulu.id});
+    assert.strictEqual(alpha.get('localizedName'), undefined, 'the real native model supplies no catalog name alias');
+
+    await render(precompileTemplate(`{{view-edit-project
+      project=this.project originalProject=this.originalProject projectTemplates=this.projectTemplates
+      app=this.app network=this.network policyManager=this.policyManager userStore=this.userStore
+      showEdit=true editing=false
+    }}`));
+
+    assert.deepEqual(findAll('.orchestration-driver .clip').map((label) => label.textContent.trim()),
+      ['alpha environment', 'Zulu environment'], 'native user-defined labels render in case-insensitive order');
+    assert.strictEqual(findAll('.orchestration-driver.active').length, 1, 'one native ID is selected');
+    assert.strictEqual(find('.orchestration-driver.active .clip').textContent.trim(), 'Zulu environment');
+
+    await click(findAll('.orchestration-driver')[0]);
+    assert.strictEqual(this.project.get('projectTemplateId'), alpha.id, 'the real card action stores its exact model ID');
+    assert.strictEqual(find('.orchestration-driver.active .clip').textContent.trim(), 'alpha environment');
+
+    alpha.set('name', 'zz renamed environment');
+    await settled();
+    assert.deepEqual(findAll('.orchestration-driver .clip').map((label) => label.textContent.trim()),
+      ['Zulu environment', 'zz renamed environment'], 'renaming updates the rendered label and card order');
+    assert.strictEqual(this.project.get('projectTemplateId'), alpha.id, 'the selected ID survives reordering');
+    assert.strictEqual(findAll('.orchestration-driver.active').length, 1);
+    assert.strictEqual(find('.orchestration-driver.active .clip').textContent.trim(), 'zz renamed environment');
+  });
+
+  test('new environment renders and selects the None card for an empty native template list', async function(assert) {
+    this.app = EmberObject.create({baseAssets: '/'});
+    this.projectTemplates = A([]);
+    this.project.setProperties({id: null, projectTemplateId: '1pt-stale'});
+
+    await render(precompileTemplate(`{{view-edit-project
+      project=this.project originalProject=this.originalProject projectTemplates=this.projectTemplates
+      app=this.app network=this.network policyManager=this.policyManager userStore=this.userStore
+      showEdit=true editing=false
+    }}`));
+
+    assert.strictEqual(findAll('.orchestration-driver').length, 1);
+    assert.strictEqual(find('.orchestration-driver .clip').textContent.trim(), 'None');
+    assert.strictEqual(find('.orchestration-driver img').getAttribute('src'), '/assets/images/logos/pasturestack-mark.svg');
+    assert.strictEqual(findAll('.orchestration-driver.active').length, 0, 'a stale ID is not selected');
+    assert.ok(find('.well .text-center').textContent.includes('viewEditProject.nativeEngine'), 'the empty-list summary stays native');
+
+    await click('.orchestration-driver');
+    assert.strictEqual(this.project.get('projectTemplateId'), null, 'the native fallback action clears the stale ID');
+    assert.strictEqual(findAll('.orchestration-driver.active').length, 1, 'the null-ID card becomes selected');
   });
 
   test('direct edit URL follows member, metadata, and network links independently', async function(assert) {

@@ -103,7 +103,7 @@ export default Component.extend(NewOrEdit, Sortable, {
     var active = this.get('project.projectTemplateId');
 
     var choices = this.get('projectTemplates').map((tpl) => {
-      return {id: tpl.id, name: tpl.get('localizedName'), image: tpl.get('orchestrationIcon')};
+      return {id: tpl.id, name: tpl.get('name'), image: tpl.get('orchestrationIcon')};
     });
 
     if ( !choices.length ) {
