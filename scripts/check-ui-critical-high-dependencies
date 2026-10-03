@@ -57,7 +57,7 @@ for gate in ("node ./scripts/test-ui-npm-audit.js", "node ./scripts/check-ui-npm
 for evidence in ("scripts/check-ui-npm-audit.js", "scripts/test-ui-npm-audit.js", "docs/security/npm-vendor-pending.json"):
     if not Path(evidence).is_file():
         fail(f"reviewed live audit evidence is missing: {evidence}")
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.5.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.6.tgz"
 lock_bytes = lock_path.read_bytes()
 baseline_bytes = baseline_path.read_bytes()
 if lock_bytes != baseline_bytes:
@@ -70,7 +70,7 @@ if lock_bytes != baseline_bytes:
 lock = json.loads(lock_bytes)
 packages = lock.get("packages", {})
 root = packages.get("", {})
-if package.get("version") != "1.6.171":
+if package.get("version") != "1.6.172":
     fail(f"unexpected Web Console version: {package.get('version')}")
 if root.get("version") != package.get("version"):
     fail(f"lock root version differs: {root.get('version')}")

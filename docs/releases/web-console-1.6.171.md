@@ -85,7 +85,6 @@ existing 2026-10-10 review boundary. Formal package checks found no affected
 build-package modules in the static artifact, without making a runtime
 not-affected VEX or zero-vulnerability claim. No dependency or security-policy
 change is introduced by this documentation update.
-
 ## Upgrade and rollback
 
 Use the separately released Server patch that packages this exact component.

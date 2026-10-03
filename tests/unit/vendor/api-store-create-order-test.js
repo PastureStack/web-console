@@ -6,14 +6,23 @@ import Store from 'ember-api-store/services/store';
 import Resource from 'ember-api-store/models/resource';
 import Schema from 'ember-api-store/models/schema';
 import Collection from 'ember-api-store/models/collection';
+import { bindCreateOnlyDelivery, cloneCreateOnlyDelivery, takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
+import EditApiKey from 'ui/components/edit-apikey/component';
+import EmberObject from '@ember/object';
+import Service from '@ember/service';
+import inertRenderer from '../../helpers/inert-renderer';
+import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
 // Real installed compatibility package and Type.save. Only the HTTP boundary
 // is deferred: subscribe import must complete before the original 201 arrives.
-function fixture(project = '1a-test') {
+function fixture(project = '1a-test', baseUrl = `/v2-beta/projects/${project}`) {
   const objects = new Set();
   const requests = [];
-  const store = Store.create({ baseUrl: `/v2-beta/projects/${project}` });
+  const intl = Service.create({exists() { return false; }, t(key) { return key; }});
+  objects.add(intl);
+  const store = Store.create({ baseUrl });
   setOwner(store, { lookup(name) {
+    if ( name === 'service:intl' ) { return intl; }
     if ( name === 'service:fastboot' ) { return { isFastBoot: false }; }
     const Factory = name === 'model:schema' ? Schema :
       name === 'model:collection' ? Collection : Resource;
@@ -24,16 +33,31 @@ function fixture(project = '1a-test') {
   const createRecord = store.createRecord.bind(store);
   store.createRecord = (...args) => {
     const object = createRecord(...args);
+    // The real Resource validator reads model.intl, not component.intl.
+    // Service injection is not an enumerable resource/API payload field.
+    Object.defineProperty(object, 'intl', {value: intl, configurable: true});
     objects.add(object);
     return object;
   };
   const response = defer();
-  store.rawRequest = (options) => { requests.push(options); return response.promise; };
+  const requestEntered = defer();
+  store.rawRequest = (options) => {
+    requests.push(options);
+    requestEntered.resolve(options);
+    return response.promise;
+  };
   store._bulkAdd('schema', ['volume', 'loadBalancerService', 'service'].map(id => ({
     type: 'schema', id, resourceFields: {}, collectionMethods: ['GET', 'POST'],
     links: { collection: `${store.baseUrl}/${id}s` },
   })));
-  return { store, requests, response,
+  store._bulkAdd('schema', [{type: 'schema', id: 'apiKey',
+    collectionMethods: ['GET', 'POST'], resourceFields: {
+      name: {type: 'string', create: true},
+      publicValue: {type: 'string', create: false},
+      secretValue: {type: 'password', create: false, update: false, readOnCreateOnly: true},
+      nested: {type: 'service'},
+    }, links: {collection: `${store.baseUrl}/apikeys`}}]);
+  return { store, requests, response, requestEntered, intl,
     destroy() {
       store.all('schema').forEach(object => objects.add(object));
       run(() => {
@@ -52,6 +76,162 @@ const current = (type = 'volume', id = 'Opaque-ID') => ({
 });
 
 module('Unit | Vendor | API store create response order', function() {
+  test('apiKey first delivery survives redacted subscribe before 201 and later redaction in personal and project stores, 100 deterministic barriers each', async function(assert) {
+    for ( const [accountId, baseUrl] of [['1a-owner', '/v2-beta'], ['1a-project', '/v2-beta/projects/1a-project']] ) {
+      for ( let index = 0; index < 100; index++ ) {
+        const f = fixture(accountId, baseUrl);
+        let subject;
+        try {
+          const original = f.store.createRecord({type: 'apiKey', name: 'created', accountId});
+          const draft = original.clone();
+          subject = createOwned(EditApiKey, {
+            renderer: inertRenderer(),
+            intl: f.intl,
+            modalService: EmberObject.create({modalOpts: original}),
+            model: draft,
+            clone: original.clone(),
+            didSave(resource) {
+              assert.strictEqual(imports, 0, '201 adoption performs no stale mangleIn or nested import');
+              return resource;
+            },
+          }, 'component');
+          const savingModel = subject.get('primaryResource');
+          assert.strictEqual(savingModel, subject.get('model'), 'actual editor saves its model');
+          assert.strictEqual(savingModel.get('intl'), f.intl, 'actual Resource receives the shared intl service');
+          assert.deepEqual(savingModel.validationErrors(), [], 'real model validation accepts the fixture without bypassing willSave');
+          assert.notOk(Object.hasOwn(savingModel.serialize(), 'intl'), 'service is not serialized into create payload');
+          assert.strictEqual(savingModel.get('accountId'), accountId);
+          assert.notOk(savingModel.get('id'), 'actual editor starts with an ID-less draft');
+          const completion = [];
+          const saving = run(() => subject.get('actions').save.call(subject, success => completion.push(success)));
+          // Wait for real transport entry. A cancelled/failed lifecycle wins
+          // the race instead of hanging or assuming N microtask turns suffice.
+          const boundary = await Promise.race([
+            f.requestEntered.promise.then(options => ({options})),
+            saving.then(outcome => ({earlyOutcome: outcome}), error => ({earlyError: error})),
+          ]);
+          const earlyError = boundary.earlyError || (boundary.earlyOutcome && boundary.earlyOutcome.error);
+          const diagnosis = {reason: boundary.earlyOutcome && boundary.earlyOutcome.reason,
+            saved: boundary.earlyOutcome && boundary.earlyOutcome.saved,
+            error: earlyError && earlyError.message, errors: subject.get('errors')};
+          assert.ok(boundary.options, `actual request entered, otherwise early lifecycle: ${JSON.stringify(diagnosis)}`);
+          assert.strictEqual(f.requests.length, 1, 'the actual save reaches its deferred HTTP boundary');
+          if ( !boundary.options ) { return; }
+          const nested = run(() => f.store._typeify({...current('service', 'Nested-ID'), state: 'active'}));
+          run(() => f.store._typeify({type: 'apiKey', id: 'Key-ID', accountId,
+            name: 'created', state: 'active', publicValue: 'PUBLIC-TEST', secretValue: null, nested}));
+          let imports = 0;
+          const createRecord = f.store.createRecord;
+          f.store.createRecord = (...args) => { imports++; return createRecord(...args); };
+          const body = {type: 'apiKey', id: 'Key-ID', accountId, name: 'created',
+            state: 'registering', publicValue: 'PUBLIC-TEST', secretValue: 'SECRET-TEST',
+            nested: {...initial('service', 'Nested-ID'), state: 'creating'}};
+          const xhr = {status: 201, body};
+          run(() => f.response.resolve(xhr));
+          await saving;
+          const canonical = f.store.getById('apiKey', 'Key-ID');
+          const clone = subject.get('clone');
+          assert.strictEqual(canonical, savingModel, 'actual editor draft canonical save identity is retained');
+          assert.strictEqual(canonical.get('state'), 'active', 'newer cached state wins');
+          assert.strictEqual(nested.get('state'), 'active', 'stale nested 201 is not imported');
+          assert.strictEqual(clone.get('secretValue'), 'SECRET-TEST', 'actual API-key doneSaving receives one-time secret');
+          assert.strictEqual(clone.get('publicValue'), 'PUBLIC-TEST');
+          assert.strictEqual(canonical.get('secretValue'), null, 'canonical store never needs to retain secret');
+          assert.notOk(JSON.stringify(canonical.serialize()).includes('SECRET-TEST'));
+          assert.notOk(Object.hasOwn(f.requests[0].data, 'createIdentity'));
+          assert.notOk(Object.keys(f.requests[0]).includes('createIdentity'), 'create marker is nonenumerable');
+          assert.notOk(JSON.stringify(f.requests[0]).includes('SECRET-TEST'), 'request metadata contains no secret');
+          assert.deepEqual(completion, [true]);
+          assert.strictEqual(subject._createOnlyDelivery, null);
+          assert.strictEqual(subject._createOnlyRequest, null);
+          assert.strictEqual(subject._saveOwner, null);
+          assert.strictEqual(subject.get('saving'), false);
+          assert.notOk(xhr.body, 'raw 201 body is not retained');
+          run(() => f.store._typeify({type: 'apiKey', id: 'Key-ID', accountId,
+            name: 'created', state: 'active', publicValue: 'PUBLIC-TEST', secretValue: null}));
+          assert.strictEqual(canonical.get('secretValue'), null);
+          assert.strictEqual(clone.get('secretValue'), 'SECRET-TEST', 'later WS cannot erase detached visible delivery');
+          assert.strictEqual(f.requests.length, 1, 'no replay or extra request');
+        } finally {
+          if ( subject ) { destroyOwned(subject); }
+          f.destroy();
+        }
+      }
+    }
+  });
+
+  test('uncached API-key create-only delivery is one-shot and schema-bound, with private request metadata', async function(assert) {
+    const f = fixture();
+    try {
+      let data, calls = 0;
+      const options = {};
+      bindCreateOnlyDelivery(options, value => { data = value; calls++; });
+      const draft = f.store.createRecord({type: 'apiKey', name: 'created'});
+      const saving = run(() => draft.save(options));
+      run(() => f.response.resolve({status: 201, body: {type: 'apiKey', id: 'Key-ID',
+        state: 'requested', name: 'created', secretValue: 'SECRET-TEST', publicValue: 'PUBLIC-TEST'}}));
+      assert.strictEqual(await saving, draft);
+      assert.strictEqual(calls, 1);
+      assert.deepEqual(data.fields, {secretValue: 'SECRET-TEST'}, 'only exact readOnCreateOnly=true fields are delivered');
+      assert.strictEqual(draft.get('secretValue'), null);
+      const clone = cloneCreateOnlyDelivery(draft, data);
+      assert.strictEqual(clone.get('secretValue'), 'SECRET-TEST');
+      assert.strictEqual(data.fields, null, 'delivery is consumed');
+      assert.throws(() => cloneCreateOnlyDelivery(draft, data), /no longer belongs/);
+      assert.strictEqual(takeCreateOnlyDelivery(options), null);
+    } finally { f.destroy(); }
+  });
+
+  test('create-only delivery rejects changed store, generation, base, concrete type and owner without importing its secret', async function(assert) {
+    for ( const change of ['generation', 'base', 'type', 'owner'] ) {
+      const f = fixture();
+      try {
+        let calls = 0;
+        const options = {};
+        bindCreateOnlyDelivery(options, () => calls++);
+        const draft = f.store.createRecord({type: 'apiKey', accountId: '1a-test'});
+        const saving = run(() => draft.save(options));
+        if ( change === 'generation' ) { run(() => f.store.reset()); }
+        if ( change === 'base' ) { f.store.set('baseUrl', '/v2-beta/projects/other'); }
+        if ( change === 'owner' ) { run(() => f.store._typeify({type: 'apiKey', id: 'Key-ID', accountId: '1a-other', state: 'active', secretValue: null})); }
+        run(() => f.response.resolve({status: 201, body: {type: change === 'type' ? 'volume' : 'apiKey', id: 'Key-ID', accountId: '1a-test', secretValue: 'SECRET-TEST'}}));
+        await saving;
+        assert.strictEqual(calls, 0, `${change} cannot receive first delivery`);
+        assert.notStrictEqual(draft.get('secretValue'), 'SECRET-TEST');
+      } finally { f.destroy(); }
+    }
+    const f = fixture(), other = fixture();
+    try {
+      const resource = other.store._typeify({type: 'apiKey', id: 'Key-ID'});
+      assert.throws(() => cloneCreateOnlyDelivery(resource, {id: 'Key-ID', type: 'apikey',
+        store: f.store, generation: f.store.generation, baseUrl: f.store.baseUrl, fields: {secretValue: 'SECRET-TEST'}}), /no longer belongs/);
+    } finally { f.destroy(); other.destroy(); }
+  });
+
+  test('a synchronous first-delivery callback exception is consumed once and cannot replay create', async function(assert) {
+    const f = fixture();
+    try {
+      let calls = 0, delivered;
+      const options = {};
+      const failure = new Error('delivery callback failed');
+      bindCreateOnlyDelivery(options, value => { delivered = value; calls++; throw failure; });
+      const draft = f.store.createRecord({type: 'apiKey'});
+      const saving = run(() => draft.save(options));
+      // Attach before fulfilling HTTP: RSVP must not report an unhandled
+      // rejection while the native async test has not resumed yet.
+      const handled = saving.then(value => ({value}), error => ({error}));
+      run(() => f.response.resolve({status: 201, body: {type: 'apiKey', id: 'Key-ID', secretValue: 'SECRET-TEST'}}));
+      const outcome = await handled;
+      assert.ok(outcome.error, 'callback failure rejects create completion');
+      assert.strictEqual(outcome.error.get('message'), failure.message, 'existing API error message is retained');
+      assert.strictEqual(outcome.error.xhr, failure, 'existing API error wrapper retains the exact original exception');
+      assert.strictEqual(calls, 1);
+      assert.strictEqual(delivered.fields, null, 'synchronous callback failure clears one-time values');
+      assert.strictEqual(takeCreateOnlyDelivery(options), null);
+      assert.strictEqual(f.requests.length, 1);
+      assert.strictEqual(f.store.getById('apiKey', 'Key-ID').get('secretValue'), null);
+    } finally { f.destroy(); }
+  });
   test('delayed 201 cannot overwrite the newer subscribe model, repeated with deterministic barriers 100 times', async function(assert) {
     for ( let index = 0; index < 100; index++ ) {
       const f = fixture();

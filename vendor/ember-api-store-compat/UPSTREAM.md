@@ -38,3 +38,13 @@ body. Save completion, base-type aliases, HTTP metadata and errors retain their
 existing contracts. GET, PUT, actions, non-201 responses and uncached creates
 continue through the original import path. This does not order resource states
 or event timestamps, grant permissions, change API responses, or add requests.
+
+Compatibility revision 6 adds opt-in first delivery of Schema fields explicitly
+marked `readOnCreateOnly`, exported by the Engine auth overlay's `o` permission.
+The create request captures only their field names. A request-private,
+nonenumerable callback transports the successful 201 values once to a detached
+consumer clone, outside the canonical store and serialized request. This keeps
+revision 5's newer subscribe state and nested-resource adoption intact, validates
+the same store, generation, API base, generated ID, concrete type and owner, and
+does not require a canonical resource to retain secrets after create. Existing
+save hooks, non-opted-in consumers, errors, and request counts are unchanged.
