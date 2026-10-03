@@ -8,6 +8,15 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.173` repairs empty environment-template choice labels. These
+choices are native `ProjectTemplate` resources, not Catalog templates: their
+authoritative label is `name`, and selection remains bound to the template ID.
+The focused regression covers the actual model, rendered choices, renaming and
+selection. Official validation, immutable publication, Server packaging and
+packaged native acceptance are pending; this candidate does not promote any
+historical HOLD or claim the complete permission matrix is finished. See the
+[release note](docs/releases/web-console-1.6.173.md).
+
 Published `1.6.172` preserves API-key create-only first delivery when a redacted
 subscribe model arrives before POST/201. Only the API-key editor opts into a
 request-private, Schema-bound delivery to its detached clone; newer canonical
