@@ -8,13 +8,39 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.173` repairs empty environment-template choice labels. These
+Published `1.6.173` repairs empty environment-template choice labels. These
 choices are native `ProjectTemplate` resources, not Catalog templates: their
 authoritative label is `name`, and selection remains bound to the template ID.
-The focused regression covers the actual model, rendered choices, renaming and
-selection. Official validation, immutable publication, Server packaging and
-packaged native acceptance are pending; this candidate does not promote any
-historical HOLD or claim the complete permission matrix is finished. See the
+Four focused regressions cover the actual model, rendered choices, renaming and
+selection. Exact-source official validation
+[37115288389](https://github.com/PastureStack/web-console/actions/runs/37115288389)
+passed 812/812 tests with zero failures, skips or todo and two byte-identical
+production archives. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.173)
+pins source `c8b8bb2659fdad3539cf6a72866c94a77ec516b6`; anonymous public archive
+and checksum downloads match SHA256
+`a566684e6e0831630a15cb7212989c0e9fe707ed07965156c2b664b9cdb5ba27`
+(2,982,104 bytes). Publication reused the formal CI artifact without rebuilding.
+[Server `v1.6.511`](https://github.com/PastureStack/server/releases/tag/v1.6.511)
+officially packages Engine333 and this exact component; its isolated artifact
+and public readback gates passed. QA125/8080 upgrade and independent read-only
+checks passed with first-start11/restart10 HTTP200/pong and unchanged runtime/DB
+counts; this image has no Healthcheck, so Docker healthy is not claimed.
+The version-bound native read-only proof for existing Template117 passed with
+3 Full17/14 guards, zero resource writes and source-bound same-ID empty
+stacks/services verification; it is not a native-create finalizer.
+Process native list/link/detail and same-ID direct GET passed for one current ID:
+two API roots × six roles, 12/12 cells and zero resource writes. Other IDs and
+write methods remain untested.
+Fresh Project key `1c6998` is independently verified as
+`DERIVED_SCOPED_KEY511_VERIFIED_NOT_ORIGINAL_PASS`: the same actual child run has
+4 native writes, 13 guards, 6 cookie-free issued Basic GETs before deactivate/delete,
+4 barriers and 18 first-delivery checks. Its original parent QA-receipt identity-schema HOLD is retained;
+the read-only derived check did not rewrite receipts or replay writes. See the
+[release note for evidence and limits](docs/releases/web-console-1.6.173.md).
+Native Project/Host acceptance remains independently pending; publication or
+this key scoped result does not promote historical HOLDs or establish those outcomes.
+The complete permission/resource/locale matrix remains INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.173.md).
 
 Published `1.6.172` preserves API-key create-only first delivery when a redacted
