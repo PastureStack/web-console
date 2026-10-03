@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
-const { evaluateAudit, validateReviewedImports, runAudit } = require('./check-ui-npm-audit');
+const { evaluateAudit, validateReviewedImports, readReviewedSources, runAudit } = require('./check-ui-npm-audit');
 const root = path.resolve(__dirname, '..');
 const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
 const pending = JSON.parse(fs.readFileSync(path.join(root, 'docs/security/npm-vendor-pending.json'), 'utf8'));
@@ -198,4 +198,30 @@ test('reviewed runtime import boundary refuses every pending consumer while exac
   }
   assert.throws(() => validateReviewedImports({ ...sources, 'ember-cli-build.js': "app.import('node_modules/braces/index.js');" }, pending),
     { message: 'PENDING_NODE_BROWSER_IMPORT' });
+});
+
+test('cold-installed addon node_modules are audited packages, while owned source symlinks remain blocked', () => {
+  const entry = (name, kind) => ({ name, isDirectory: () => kind === 'dir',
+    isFile: () => kind === 'file', isSymbolicLink: () => kind === 'link' });
+  const tree = { app: [entry('app.js', 'file')], config: [],
+    vendor: [entry('lacsso', 'dir')],
+    'vendor/lacsso': [entry('index.js', 'file'), entry('node_modules', 'dir')],
+    'vendor/lacsso/node_modules': [entry('.bin', 'dir')],
+    'vendor/lacsso/node_modules/.bin': [entry('rimraf', 'link')] };
+  const visited = [];
+  const io = { readFileSync: () => '', readdirSync: file => {
+    const relative = path.relative(root, file).split(path.sep).join('/');
+    visited.push(relative); return tree[relative];
+  } };
+  const sources = readReviewedSources(root, io);
+  assert.deepEqual(Object.keys(sources), ['ember-cli-build.js', 'app/app.js', 'vendor/lacsso/index.js']);
+  assert.equal(visited.includes('vendor/lacsso/node_modules'), false);
+  tree['vendor/lacsso'].push(entry('source.js', 'link'));
+  assert.throws(() => readReviewedSources(root, io), { message: 'BROWSER_SOURCE_SYMLINK_UNREVIEWED' });
+  tree['vendor/lacsso'].pop();
+  tree.app.push(entry('node_modules', 'dir'));
+  assert.throws(() => readReviewedSources(root, io), { message: 'BROWSER_SOURCE_DEPENDENCY_BOUNDARY_INVALID' });
+  tree.app.pop();
+  tree['vendor/lacsso'][1] = entry('node_modules', 'link');
+  assert.throws(() => readReviewedSources(root, io), { message: 'BROWSER_SOURCE_SYMLINK_UNREVIEWED' });
 });

@@ -103,14 +103,22 @@ function validateReviewedImports(sources, pending) {
   // requires the separate packaged-browser inventory; never emit notAffected.
 }
 
-function readReviewedSources(repoRoot) {
-  const sources = { 'ember-cli-build.js': fs.readFileSync(path.join(repoRoot, 'ember-cli-build.js'), 'utf8') };
+function readReviewedSources(repoRoot, io = fs) {
+  const sources = { 'ember-cli-build.js': io.readFileSync(path.join(repoRoot, 'ember-cli-build.js'), 'utf8') };
   function walk(relative) {
-    for (const entry of fs.readdirSync(path.join(repoRoot, relative), { withFileTypes: true })) {
+    for (const entry of io.readdirSync(path.join(repoRoot, relative), { withFileTypes: true })) {
       const file = relative + '/' + entry.name;
+      // Cold npm ci installs local-addon dependencies here, including Unix
+      // .bin symlinks. They are audited by the full lock/report, not owned JS.
+      // Only that exact directory boundary is excluded; source links and
+      // node_modules under app/config are still refused.
+      if (entry.name === 'node_modules' && entry.isDirectory()) {
+        need(/^vendor\/[^/]+$/.test(relative), 'BROWSER_SOURCE_DEPENDENCY_BOUNDARY_INVALID');
+        continue;
+      }
       need(!entry.isSymbolicLink(), 'BROWSER_SOURCE_SYMLINK_UNREVIEWED');
       if (entry.isDirectory()) walk(file);
-      else if (entry.isFile() && entry.name.endsWith('.js')) sources[file] = fs.readFileSync(path.join(repoRoot, file), 'utf8');
+      else if (entry.isFile() && entry.name.endsWith('.js')) sources[file] = io.readFileSync(path.join(repoRoot, file), 'utf8');
     }
   }
   for (const directory of ['app', 'config', 'vendor']) walk(directory);
@@ -240,7 +248,7 @@ function runAudit(repoRoot, runner = spawnSync) {
   return evaluateAudit({ audit, lock, pending, npmExitCode: result.status });
 }
 
-module.exports = { evaluateAudit, validatePending, validateReviewedImports, runAudit };
+module.exports = { evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, runAudit };
 if (require.main === module) {
   const result = runAudit(path.resolve(__dirname, '..'));
   console.log(JSON.stringify(result));
