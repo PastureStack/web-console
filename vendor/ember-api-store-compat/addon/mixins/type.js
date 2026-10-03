@@ -164,11 +164,13 @@ var Type = Mixin.create(Serializable,{
       // A generated ID may arrive over subscribe before its original 201.
       // Bind this create-only adoption to the store that started the request.
       if ( opt.method === 'POST' ) {
-        opt.createIdentity = {
-          type,
-          generation: get(store, 'generation'),
-          baseUrl: get(store, 'baseUrl'),
-        };
+        const schema = store.getById('schema', type);
+        const fields = schema && get(schema, 'store') === store ? get(schema, 'resourceFields') || {} : {};
+        Object.defineProperty(opt, 'createIdentity', {
+          configurable: true,
+          value: { type, generation: get(store, 'generation'), baseUrl: get(store, 'baseUrl'),
+            readOnCreateFields: Object.keys(fields).filter(key => fields[key].readOnCreateOnly === true) },
+        });
       }
     }
 

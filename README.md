@@ -8,6 +8,19 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.172` preserves API-key create-only first delivery when a redacted
+subscribe model arrives before POST/201. Only the API-key editor opts into a
+request-private, Schema-bound delivery to its detached clone; newer canonical
+state and nested resources remain intact, and the canonical Store does not need
+to retain the secret. Compatibility revision 6 replaces revision 5 without
+changing dependency versions or the graph. Source/package checks pass; new
+installed-Store and save-owner regressions have been added, including personal
+and project stores with 100 deterministic barriers each. Local Chrome tests
+have not run because the local shared dependency layout is incomplete. Official
+tests, publication and packaged native acceptance remain pending. Historical
+HOLDs remain HOLD; the full matrix is INCOMPLETE. See the
+[release note](docs/releases/web-console-1.6.172.md).
+
 Candidate `1.6.171` repairs a shared Store ordering defect: a delayed initial
 create response could overwrite a newer subscribe model and leave a successfully
 created local Volume stuck in its initial state. Only ID-less create POST/201

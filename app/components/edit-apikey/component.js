@@ -8,6 +8,7 @@ export default ModalBase.extend(NewOrEdit, {
   model: null,
   clone: null,
   justCreated: false,
+  createOnlyDelivery: true,
 
   didReceiveAttrs() {
     this.set('clone', this.get('originalModel').clone());
@@ -52,7 +53,7 @@ export default ModalBase.extend(NewOrEdit, {
     {
       this.setProperties({
         justCreated: true,
-        clone: neu.clone()
+        clone: this.cloneForCreateDelivery(neu)
       });
     }
   },

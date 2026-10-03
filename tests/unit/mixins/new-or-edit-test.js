@@ -4,6 +4,7 @@ import { run } from '@ember/runloop';
 import { defer, reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import NewOrEdit from 'ui/mixins/new-or-edit';
+import { takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
 
 module('Unit | Mixin | new or edit');
 
@@ -81,6 +82,79 @@ function subjectWith(overrides={}) {
 function save(subject, callback) {
   return subject.get('actions').save.call(subject, callback);
 }
+
+test('opt-in delivery belongs to one save owner and is cleared on success, rejection and synchronous callback failures', async function(assert) {
+  for ( const mode of ['success', 'request-reject', 'doneSaving-throw', 'completion-throw'] ) {
+    const pending = defer();
+    const failure = new Error(mode);
+    let options, callbackCalls = 0;
+    const subject = subjectWith({
+      createOnlyDelivery: true,
+      doneSaving(value) {
+        assert.strictEqual(value, 'saved', 'existing hook argument is unchanged');
+        if ( mode === 'doneSaving-throw' ) { throw failure; }
+        return value;
+      },
+    });
+    subject.get('model').save = value => { options = value; return pending.promise; };
+    const operation = save(subject, () => {
+      callbackCalls++;
+      if ( mode === 'completion-throw' ) { throw failure; }
+    });
+    for ( let turn = 0; !options && turn < 20; turn++ ) { await resolve(); }
+    assert.ok(options, 'base doSave binds private delivery options');
+    const data = {fields: {secretValue: 'SECRET-TEST'}};
+    takeCreateOnlyDelivery(options)(data);
+    assert.notOk(Object.keys(subject).includes('_createOnlyDelivery'), 'delivery metadata is nonenumerable');
+    assert.notOk(Object.keys(subject).includes('_createOnlyRequest'), 'request metadata is nonenumerable');
+    const owner = subject._saveOwner;
+    assert.deepEqual(await save(subject), {saved: false, reason: 'busy'});
+    assert.strictEqual(subject._saveOwner, owner, 'duplicate cannot clear the owner');
+    assert.strictEqual(subject._createOnlyDelivery.data, data, 'duplicate cannot consume the owner delivery');
+    if ( mode === 'request-reject' ) { pending.reject(failure); } else { pending.resolve('saved'); }
+    try {
+      const result = await operation;
+      if ( mode === 'completion-throw' ) { assert.ok(false, 'callback failure must reject'); }
+      else if ( mode === 'success' ) { assert.strictEqual(result, 'saved', 'existing result is unchanged'); }
+      else { assert.strictEqual(result.error, failure); }
+    } catch (error) {
+      assert.strictEqual(error, failure);
+      assert.strictEqual(mode, 'completion-throw');
+    }
+    assert.strictEqual(callbackCalls, 1);
+    assert.strictEqual(data.fields, null, `${mode} clears unconsumed one-time values`);
+    assert.strictEqual(takeCreateOnlyDelivery(options), null);
+    assert.strictEqual(subject._createOnlyRequest, null);
+    assert.strictEqual(subject._createOnlyDelivery, null);
+    assert.strictEqual(subject._saveOwner, null);
+    assert.strictEqual(subject.get('saving'), false);
+    run(() => subject.destroy());
+  }
+});
+
+test('synchronous persistence failure clears private callback, while ordinary consumers keep their options and result', async function(assert) {
+  let options;
+  const subject = subjectWith({createOnlyDelivery: true});
+  const failure = new Error('synchronous save failed');
+  subject.get('model').save = value => { options = value; throw failure; };
+  const outcome = await save(subject);
+  assert.strictEqual(outcome.error, failure);
+  assert.strictEqual(takeCreateOnlyDelivery(options), null);
+  assert.strictEqual(subject._createOnlyRequest, null);
+  assert.strictEqual(subject._saveOwner, null);
+  assert.strictEqual(subject.get('saving'), false);
+  run(() => subject.destroy());
+
+  const ordinary = subjectWith();
+  ordinary.get('model').save = value => {
+    assert.strictEqual(value, undefined, 'non-opted-in consumers keep their previous arguments');
+    return resolve('ordinary-saved');
+  };
+  assert.strictEqual(await save(ordinary), 'ordinary-saved');
+  assert.strictEqual(ordinary._createOnlyRequest, undefined);
+  assert.strictEqual(ordinary._createOnlyDelivery, undefined);
+  run(() => ordinary.destroy());
+});
 
 test('validation cancellation returns an awaitable outcome and completes once', function(assert) {
   let callbacks = [];
