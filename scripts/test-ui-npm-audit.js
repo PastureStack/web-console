@@ -168,7 +168,7 @@ test('main runner truly selects high JSON audit once, never install/fix, and emi
     assert.equal(args.includes('fix'), false);
     return { status: 1, stdout: JSON.stringify(report()), stderr: 'private stderr marker' };
   });
-  assert.equal(calls, 1); assert.equal(result.ok, true);
+  assert.equal(calls, 1, JSON.stringify(result)); assert.equal(result.ok, true);
   assert.equal(JSON.stringify(result).includes('private'), false);
 });
 test('runner malformed JSON, network errors and thrown process errors are finite safe codes with no retry', () => {
@@ -177,12 +177,12 @@ test('runner malformed JSON, network errors and thrown process errors are finite
     { status: null, error: new Error('secret network failure'), stdout: '' }]) {
     let calls = 0;
     const result = runAudit(root, () => { calls++; return returned; });
-    assert.equal(calls, 1); assert.equal(result.ok, false);
+    assert.equal(calls, 1, JSON.stringify(result)); assert.equal(result.ok, false);
     assert.equal(JSON.stringify(result).includes('secret'), false);
   }
   let calls = 0;
   const result = runAudit(root, () => { calls++; throw new Error('secret thrown failure'); });
-  assert.equal(calls, 1); assert.equal(result.failureCode, 'NPM_PROCESS_ERROR');
+  assert.equal(calls, 1, JSON.stringify(result)); assert.equal(result.failureCode, 'NPM_PROCESS_ERROR');
 });
 test('reviewed runtime import boundary refuses every pending consumer while exact Ember build entry is allowed', () => {
   const sources = { 'ember-cli-build.js': "var EmberApp = require('ember-cli/lib/broccoli/ember-app');",

@@ -129,6 +129,9 @@ function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) 
       [...LEVELS, 'total'].every(k => Number.isSafeInteger(counts[k]) && counts[k] >= 0) &&
       LEVELS.reduce((n, k) => n + counts[k], 0) === counts.total, 'NPM_AUDIT_TOTALS_INVALID');
     totals = Object.fromEntries([...LEVELS, 'total'].map(k => [k, counts[k]]));
+    // A reported Critical always blocks before meta-severity consistency;
+    // a newly promoted child must not be hidden by its old High wrappers.
+    need(totals.critical === 0, 'CRITICAL_VULNERABILITY');
     need(sameSet(Object.keys(audit.metadata.dependencies), ['prod', 'dev', 'optional', 'peer', 'peerOptional', 'total']) &&
       Object.values(audit.metadata.dependencies).every(n => Number.isSafeInteger(n) && n >= 0), 'NPM_AUDIT_DEPENDENCIES_INVALID');
     const vulnerabilities = audit.vulnerabilities;
@@ -161,7 +164,6 @@ function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) 
     }
     need(LEVELS.every(k => observed[k] === totals[k]), 'NPM_AUDIT_TOTALS_MISMATCH');
     need(npmExitCode === (totals.high + totals.critical > 0 ? 1 : 0), 'NPM_EXIT_OR_NETWORK_ERROR');
-    need(totals.critical === 0, 'CRITICAL_VULNERABILITY');
     const visiting = new Set();
     const verified = new Set();
     function knownClosure(name) {
