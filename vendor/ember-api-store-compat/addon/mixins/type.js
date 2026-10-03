@@ -130,6 +130,7 @@ var Type = Mixin.create(Serializable,{
     }
 
     opt = opt || {};
+    delete opt.createIdentity;
     opt.method = 'POST';
     opt.url = opt.url || url;
     if ( data ) {
@@ -144,6 +145,7 @@ var Type = Mixin.create(Serializable,{
     var self = this;
     var store = get(this, 'store');
     opt = opt || {};
+    delete opt.createIdentity;
 
     var id = get(this, 'id');
     var type = normalizeType(get(this, 'type'));
@@ -159,6 +161,15 @@ var Type = Mixin.create(Serializable,{
 
       opt.method = opt.method || 'POST';
       opt.url = opt.url || type;
+      // A generated ID may arrive over subscribe before its original 201.
+      // Bind this create-only adoption to the store that started the request.
+      if ( opt.method === 'POST' ) {
+        opt.createIdentity = {
+          type,
+          generation: get(store, 'generation'),
+          baseUrl: get(store, 'baseUrl'),
+        };
+      }
     }
 
     if ( opt.qp ) {

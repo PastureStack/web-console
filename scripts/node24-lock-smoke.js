@@ -701,7 +701,7 @@ function expectEmberApiStoreFetchUpgrade() {
   if (JSON.stringify(apiStoreInfo.dependencies) !== JSON.stringify(expectedApiStoreDependencies)) {
     fail(`ember-api-store reviewed dependency boundary changed: ${JSON.stringify(apiStoreInfo.dependencies)}`);
   }
-  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 4) {
+  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 5) {
     fail("ember-api-store compatibility revision is missing");
   }
   if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 6) {
@@ -736,6 +736,40 @@ function expectEmberApiStoreFetchUpgrade() {
       !storeService.includes("later = deferredRequest.promise;") ||
       storeService.includes("let defer = defer();")) {
     fail("ember-api-store deferred request initialization fix is missing");
+  }
+
+  expectVendoredFileSha256("vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.5.tgz",
+    "90da9ebdc36a8069629086d011e799691ace8f88c13d9c9df1333c77015a2ab8");
+  const typeMixin = fs.readFileSync(path.join(apiStoreDir, "addon/mixins/type.js"), "utf8");
+  const actionDispatch = typeMixin.split("  doAction: function(name, data, opt) {")[1].split("  save: function(opt) {")[0];
+  if (!actionDispatch.includes("delete opt.createIdentity;")) {
+    fail("ember-api-store action POST must clear any reused create identity");
+  }
+  for (const marker of ["delete opt.createIdentity;", "if ( opt.method === 'POST' )", "opt.createIdentity = {",
+    "generation: get(store, 'generation')", "baseUrl: get(store, 'baseUrl')"]) {
+    if (!typeMixin.includes(marker)) {
+      fail(`ember-api-store create-only save identity marker missing: ${marker}`);
+    }
+  }
+  for (const marker of ["xhr.status === 201 && opt.method === 'POST' && creation",
+    "creation.generation === get(this, 'generation')", "creation.baseUrl === get(this, 'baseUrl')",
+    "cached.get('id') === xhr.body.id", "get(cached, 'store') === this && this.hasRecord(cached)",
+    "response = response || this._typeify(xhr.body);"]) {
+    if (!storeService.includes(marker)) {
+      fail(`ember-api-store same-store create response adoption marker missing: ${marker}`);
+    }
+  }
+  const createOrderTests = fs.readFileSync("tests/unit/vendor/api-store-create-order-test.js", "utf8");
+  for (const marker of ["delayed 201 cannot overwrite the newer subscribe model",
+    "cached create adoption does not run stale mangleIn or nested resource imports",
+    "another project store, reset generation and changed API base cannot use create adoption",
+    "GET, PUT, action POST and non-201 responses preserve normal imports",
+    "204 and errors keep their HTTP semantics without importing a model",
+    "reusing save options cannot carry a create marker into an existing record save",
+    "action POST cannot reuse an old create marker even when the action returns 201"]) {
+    if (!createOrderTests.includes(marker)) {
+      fail(`ember-api-store create response order regression missing: ${marker}`);
+    }
   }
 
   const fetchRuntimePath = path.join(emberFetchDir, "vendor/ember-fetch.js");
@@ -797,7 +831,7 @@ function expectEmberApiStoreFetchUpgrade() {
     fail("ember-fetch native production wrapper smoke failed");
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=4 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=5 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {

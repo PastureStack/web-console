@@ -28,3 +28,13 @@ stores remain separate. Resource names, server schemas, authorization and reques
 methods are unchanged.
 
 This compatibility packaging preserves upstream authorship. PastureStack does not claim authorship of the imported runtime source.
+
+Compatibility revision 5 prevents an initial HTTP 201 create snapshot from
+overwriting a newer subscribe model for the same generated resource ID. Only
+an ID-less `Type.save` POST opts into canonical model adoption, and only within
+its captured store generation and API base URL. Opaque resource IDs and concrete
+types must match; cached nested relationships are not re-imported from the older
+body. Save completion, base-type aliases, HTTP metadata and errors retain their
+existing contracts. GET, PUT, actions, non-201 responses and uncached creates
+continue through the original import path. This does not order resource states
+or event timestamps, grant permissions, change API responses, or add requests.

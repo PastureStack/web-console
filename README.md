@@ -8,6 +8,29 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.171` repairs a shared Store ordering defect: a delayed initial
+create response could overwrite a newer subscribe model and leave a successfully
+created local Volume stuck in its initial state. Only ID-less create POST/201
+uses an existing exact-ID, concrete-type canonical model in the same Store,
+generation and API base. Ordinary reads, updates, actions and backend permissions
+keep their existing contracts. API-store compatibility revision 5 replaces
+revision 4 without changing the dependency graph; earlier archives are retained.
+Focused Chrome validation passed 36/36 tests, including ten new regressions and
+100 deterministic subscribe-before-201 barrier iterations, with no failures,
+skips or todo. Official validation, immutable publication and packaged fresh-volume
+acceptance are separate pending gates. The complete permission /
+resource / locale matrix remains INCOMPLETE. See the
+[release note](docs/releases/web-console-1.6.171.md).
+
+The first exact-source official run stopped before tests on newly reviewed
+`GHSA-vfj7-8cjw-p6xm` in build-only `braces@3.0.3`; upstream has no patched
+release. It remains a High vendor-pending finding, not a zero-vulnerability
+claim. The live audit preserves the High threshold and rejects unexpected
+advisories, dependency drift, non-development exposure and expired reviews.
+Only the exact reviewed advisory's dependency closure may remain pending until
+2026-10-10. No third-party runtime patch or toolchain downgrade is applied.
+See the [bounded risk record](docs/security/npm-vendor-pending.json).
+
 Published `1.6.170` corrects an optional `mounts: null` projection being
 mistaken for a real allocation in the shared local-volume list. It preserves
 the complete advertised pool relationship, full scoped mount cache, exact-volume

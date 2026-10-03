@@ -4,6 +4,28 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Candidate `1.6.171` confines create-response adoption to ID-less POST/201 and an
+existing exact-ID/concrete-type canonical model in the same Store, generation
+and API base. It does not re-import stale scalar or nested create fields over
+that model. The original draft-save completion identity and subtype/base aliases
+remain intact. Resource IDs are not normalized. Missing schemas grant no access.
+GET, PUT, action POST (including reused options), uncached creates, non-201,
+204 and error paths retain normal processing. No API authorization, session,
+MFA, payload, resource lifecycle or backend changes are introduced.
+Revision 5 is a new archive; revision 4 is not overwritten. Focused Chrome
+validation passed 36/36, including ten new cases and 100 barrier iterations;
+failure, skip and todo counts are zero. Official validation, publication and
+packaged fresh-volume acceptance remain pending, not full-matrix PASS.
+See the [release note](docs/releases/web-console-1.6.171.md).
+
+The live npm audit retains its Critical/High threshold. An explicit dated
+vendor-pending record covers only `GHSA-vfj7-8cjw-p6xm` in the exact existing
+development-only `braces@3.0.3` dependency closure, for which upstream has no
+patched release. Unknown findings, changed affected nodes, runtime exposure,
+audit errors and expired reviews fail closed. This is a recorded remaining High
+risk, not a patched or zero-High claim; dependencies and package versions are
+unchanged. See [the review record](docs/security/npm-vendor-pending.json).
+
 Published `1.6.170` accepts null only for the optional expanded `mounts`
 projection while retaining the real complete empty pool relationship and full
 scoped mount-cache proof. It preserves nonempty raw ID binding, current-project

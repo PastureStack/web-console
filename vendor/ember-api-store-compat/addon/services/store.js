@@ -516,7 +516,25 @@ var Store = Service.extend({
     }
 
     if ( xhr.body && typeof xhr.body === 'object' ) {
-      let response = this._typeify(xhr.body);
+      let response;
+      const creation = opt.createIdentity;
+      // Only a new-record save can use this rule. Its 201 is the initial
+      // snapshot; the same generated ID already in this store has arrived
+      // through subscribe while that response was in flight. Do not import
+      // its stale fields (including nested resources) over the live model.
+      if ( xhr.status === 201 && opt.method === 'POST' && creation &&
+           creation.generation === get(this, 'generation') &&
+           creation.baseUrl === get(this, 'baseUrl') &&
+           typeof xhr.body.id === 'string' && xhr.body.id.length > 0 &&
+           normalizeType(xhr.body.type, this) === creation.type ) {
+        const cached = this.getById(creation.type, xhr.body.id);
+        if ( cached && cached.get('id') === xhr.body.id &&
+             normalizeType(cached.get('type'), this) === creation.type &&
+             get(cached, 'store') === this && this.hasRecord(cached) ) {
+          response = cached;
+        }
+      }
+      response = response || this._typeify(xhr.body);
       delete xhr.body;
       Object.defineProperty(response, 'xhr', {value: xhr, configurable: true});
 
