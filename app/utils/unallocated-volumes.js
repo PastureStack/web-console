@@ -21,7 +21,10 @@ function isCandidate(volume, projectId) {
 }
 
 function emptyArray(value) {
-  return isArray(value) && get(value, 'length') === 0;
+  // Ember's isArray also accepts arbitrary objects with a length property.
+  // Require a native array or actual Ember Array API, not an API object impostor.
+  return isArray(value) && (Array.isArray(value) || typeof get(value, 'objectAt') === 'function') &&
+    get(value, 'length') === 0;
 }
 
 function completeCollection(value) {
@@ -42,7 +45,10 @@ export function isUnallocatedLocalVolume(volume, projectId) {
   }
   for (let field of ['storagePoolIds', 'mountIds', 'mounts']) {
     let value = get(volume, field);
-    if (value !== undefined && !emptyArray(value)) {
+    // API can explicitly serialize the optional expanded mounts projection as null.
+    // This is not absence proof: the complete pool read and scoped mount cache
+    // above/below are still mandatory, and nonempty raw IDs remain binding.
+    if (value !== undefined && !(field === 'mounts' && value === null) && !emptyArray(value)) {
       return false;
     }
   }

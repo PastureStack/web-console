@@ -120,6 +120,50 @@ module('Unit | Utils | unallocated volumes', function() {
     } finally { f.dispose(); }
   });
 
+  test('null API mounts projection needs real pool and full mount-cache proof', async function(assert) {
+    const f = volumeFixture();
+    // _typeify exercises the computed relationship setter used by actual API
+    // deserialization; missing mountIds alone otherwise computes an empty array.
+    const volume = f.volume({state: 'inactive', externalId: 'local-volume', mounts: null});
+    try {
+      assert.strictEqual(volume.get('mounts'), null, 'API null is preserved by the expanded relationship setter');
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'null projection alone proves nothing');
+      await refreshUnallocatedVolumeRelations([volume], '1a2540');
+      assert.true(isUnallocatedLocalVolume(volume, '1a2540'), 'complete empty pool and mount evidence admits null projection');
+      f.store._state.foundAll.mount = false;
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'null projection cannot bypass incomplete mount cache');
+      f.store._state.foundAll.mount = true;
+      const mount = f.store._typeify({type: 'mount', id: '1m-nullable', volumeId: volume.get('id'),
+        instanceId: 'not-in-cache', state: 'inactive'});
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'actual inactive mount beats null expanded relationship');
+      f.store._remove('mount', mount);
+      assert.true(isUnallocatedLocalVolume(volume, '1a2540'));
+      for (const field of ['storagePoolIds', 'mountIds', 'mounts']) {
+        for (const value of [['not-in-cache'], false, 0, '', {}, {length: 0}]) {
+          volume.set(field, value);
+          assert.false(isUnallocatedLocalVolume(volume, '1a2540'), `${field} malformed or nonempty cannot qualify`);
+        }
+        if (field === 'mounts') {
+          volume.set(field, null);
+        } else {
+          volume.set(field, null);
+          assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'null raw ID field is not valid array input');
+          volume.set(field, undefined);
+        }
+      }
+      f.store.incrementProperty('generation');
+      f.store.rawRequest = () => resolve({status: 200, body: {type: 'collection', resourceType: 'storagePool',
+        data: [], pagination: {partial: true}}});
+      await assert.rejects(refreshUnallocatedVolumeRelations([volume], '1a2540'));
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'null projection cannot bypass partial pool response');
+      f.store.incrementProperty('generation');
+      f.store.rawRequest = () => resolve({status: 200, body: {type: 'collection', resourceType: 'storagePool',
+        data: [{type: 'storagePool', id: '1sp-nullable'}], pagination: {partial: false}}});
+      await refreshUnallocatedVolumeRelations([volume], '1a2540');
+      assert.false(isUnallocatedLocalVolume(volume, '1a2540'), 'actual pool allocation beats null projection');
+    } finally { f.dispose(); }
+  });
+
   test('external ID metadata cannot bypass typed input, pool allocation or inactive mounts', async function(assert) {
     const f = volumeFixture();
     try {
