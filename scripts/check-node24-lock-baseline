@@ -32,6 +32,8 @@ docker run --rm \
     cp package.json "$tmpdir/package.json"
     cp package-lock.json "$tmpdir/package-lock.json"
     cp scripts/node24-lock-smoke.js "$tmpdir/node24-lock-smoke.js"
+    mkdir -p "$tmpdir/tests/unit/vendor"
+    cp tests/unit/vendor/api-store-create-order-test.js "$tmpdir/tests/unit/vendor/api-store-create-order-test.js"
     mkdir -p "$tmpdir/public/licenses"
     cp public/licenses/qrcode-generator-MIT.txt "$tmpdir/public/licenses/qrcode-generator-MIT.txt"
     mkdir -p "$tmpdir/vendor"
