@@ -4,6 +4,20 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Candidate `1.6.172` adds opt-in first delivery of fields whose actual Schema
+declares `readOnCreateOnly: true`. Only `edit-apikey` enables it. A nonenumerable
+request-private callback delivers the successful create values once to a
+detached clone, not to serialized metadata or canonical cache. Matching Store,
+generation, API base, opaque generated ID, concrete type and owner are required;
+newer subscribe state and nested-resource adoption are preserved. Other
+NewOrEdit hook arguments/results and consumers retain their previous contracts.
+The save owner clears its own pending delivery on success and failure; rejected
+duplicates cannot clear another save's lock or values. Compatibility revision 6
+is a new archive with the same dependency graph. Source/package checks pass;
+local Chrome tests have not run because of incomplete shared dependencies.
+Official tests, publication and packaged native acceptance are pending, not
+full-matrix PASS. See the [release note](docs/releases/web-console-1.6.172.md).
+
 Published `1.6.171` confines create-response adoption to ID-less POST/201 and an
 existing exact-ID/concrete-type canonical model in the same Store, generation
 and API base. It does not re-import stale scalar or nested create fields over

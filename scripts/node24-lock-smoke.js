@@ -701,7 +701,7 @@ function expectEmberApiStoreFetchUpgrade() {
   if (JSON.stringify(apiStoreInfo.dependencies) !== JSON.stringify(expectedApiStoreDependencies)) {
     fail(`ember-api-store reviewed dependency boundary changed: ${JSON.stringify(apiStoreInfo.dependencies)}`);
   }
-  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 5) {
+  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 6) {
     fail("ember-api-store compatibility revision is missing");
   }
   if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 6) {
@@ -725,6 +725,7 @@ function expectEmberApiStoreFetchUpgrade() {
     "addon/utils/fetch.js",
     "addon/utils/denormalize.js",
     "addon/utils/normalize.js",
+    "addon/utils/create-only-delivery.js",
   ]) {
     if (!fs.existsSync(path.join(apiStoreDir, filePath))) {
       fail(`ember-api-store required API file missing: ${filePath}`);
@@ -738,15 +739,15 @@ function expectEmberApiStoreFetchUpgrade() {
     fail("ember-api-store deferred request initialization fix is missing");
   }
 
-  expectVendoredFileSha256("vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.5.tgz",
-    "90da9ebdc36a8069629086d011e799691ace8f88c13d9c9df1333c77015a2ab8");
+  expectVendoredFileSha256("vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.6.tgz",
+    "58079a9d1cc9539d89999f9fb3ac9f89464a1d79f45bb1c8ada18b8eda545bb6");
   const typeMixin = fs.readFileSync(path.join(apiStoreDir, "addon/mixins/type.js"), "utf8");
   const actionDispatch = typeMixin.split("  doAction: function(name, data, opt) {")[1].split("  save: function(opt) {")[0];
   if (!actionDispatch.includes("delete opt.createIdentity;")) {
     fail("ember-api-store action POST must clear any reused create identity");
   }
-  for (const marker of ["delete opt.createIdentity;", "if ( opt.method === 'POST' )", "opt.createIdentity = {",
-    "generation: get(store, 'generation')", "baseUrl: get(store, 'baseUrl')"]) {
+  for (const marker of ["delete opt.createIdentity;", "if ( opt.method === 'POST' )", "Object.defineProperty(opt, 'createIdentity'",
+    "generation: get(store, 'generation')", "baseUrl: get(store, 'baseUrl')", "fields[key].readOnCreateOnly === true"]) {
     if (!typeMixin.includes(marker)) {
       fail(`ember-api-store create-only save identity marker missing: ${marker}`);
     }
@@ -831,7 +832,7 @@ function expectEmberApiStoreFetchUpgrade() {
     fail("ember-fetch native production wrapper smoke failed");
   }
 
-  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=5 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
+  console.log("ember-api-store-fetch-upgrade-smoke-ok version=2.8.5 api_store_compat_revision=6 ember-fetch=5.1.3 fetch_compat_revision=6 native_fetch=ok legacy_build_graph=absent");
 }
 
 function expectBrowserGlobalBundle(file, globalName, expectedVersion) {

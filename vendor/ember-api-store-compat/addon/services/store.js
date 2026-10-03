@@ -11,6 +11,7 @@ import { reject, resolve, defer } from 'rsvp';
 import Service, { service } from '@ember/service';
 import { isArray } from '@ember/array';
 import { parse as setCookieParser } from 'set-cookie-parser';
+import { takeCreateOnlyDelivery } from '../utils/create-only-delivery';
 
 function getOwnerKey() {
   const x = {};
@@ -510,6 +511,7 @@ var Store = Service.extend({
 
   _requestSuccess(xhr,opt) {
     opt.responseStatus = xhr.status;
+    const firstDelivery = takeCreateOnlyDelivery(opt);
 
     if ( xhr.status === 204 ) {
       return;
@@ -517,7 +519,24 @@ var Store = Service.extend({
 
     if ( xhr.body && typeof xhr.body === 'object' ) {
       let response;
+      let delivery;
       const creation = opt.createIdentity;
+      const createOnlyFields = {};
+      // Keep one-time fields out of the canonical import even if the original
+      // store generation changed before the response arrived. A stale marker
+      // must neither deliver its values nor retain them in a different cache.
+      if ( firstDelivery && creation && xhr.status === 201 && opt.method === 'POST' ) {
+        // Field names were captured from this request's actual Schema, so a
+        // later reset cannot turn a one-time value into a canonical field.
+        (creation.readOnCreateFields || []).forEach((key) => {
+          if ( Object.hasOwn(xhr.body, key) ) {
+            if ( xhr.body[key] !== null && xhr.body[key] !== undefined ) {
+              createOnlyFields[key] = JSON.parse(JSON.stringify(xhr.body[key]));
+            }
+            xhr.body[key] = null;
+          }
+        });
+      }
       // Only a new-record save can use this rule. Its 201 is the initial
       // snapshot; the same generated ID already in this store has arrived
       // through subscribe while that response was in flight. Do not import
@@ -533,10 +552,26 @@ var Store = Service.extend({
              get(cached, 'store') === this && this.hasRecord(cached) ) {
           response = cached;
         }
+        if ( Object.keys(createOnlyFields).length &&
+             (!response || get(response, 'accountId') === xhr.body.accountId) ) {
+          // Engine's auth overlay "o" exports readOnCreateOnly. Transport
+          // only those schema-bound values; no stale state or nested imports.
+          delivery = { id: xhr.body.id, type: creation.type, store: this,
+            accountId: xhr.body.accountId, generation: creation.generation,
+            baseUrl: creation.baseUrl, fields: createOnlyFields };
+        }
       }
       response = response || this._typeify(xhr.body);
       delete xhr.body;
       Object.defineProperty(response, 'xhr', {value: xhr, configurable: true});
+      if ( delivery ) {
+        try {
+          firstDelivery(delivery);
+        } catch (error) {
+          delivery.fields = null;
+          throw error;
+        }
+      }
 
       // Depaginate
       if ( opt.depaginate && typeof response.depaginate === 'function' ) {
@@ -554,6 +589,7 @@ var Store = Service.extend({
   },
 
   _requestFailed(xhr,opt) {
+    takeCreateOnlyDelivery(opt);
     var body;
 
     if ( xhr.err ) {

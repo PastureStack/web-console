@@ -3,6 +3,7 @@ import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Mixin from '@ember/object/mixin';
 import Resource from 'ember-api-store/models/resource';
+import { bindCreateOnlyDelivery, cloneCreateOnlyDelivery, takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
 import Errors from 'ui/utils/errors';
 
 export default Mixin.create({
@@ -11,6 +12,7 @@ export default Mixin.create({
   errors: null,
   saving: false,
   editing: true,
+  createOnlyDelivery: false,
   primaryResource: alias('model'),
   originalPrimaryResource: alias('originalModel'),
 
@@ -106,6 +108,14 @@ export default Mixin.create({
           let finalizerError = null;
 
           if ( this._saveOwner === owner ) {
+            if ( this._createOnlyRequest && this._createOnlyRequest.owner === owner ) {
+              takeCreateOnlyDelivery(this._createOnlyRequest.options);
+              this._createOnlyRequest = null;
+            }
+            if ( this._createOnlyDelivery && this._createOnlyDelivery.owner === owner ) {
+              this._createOnlyDelivery.data.fields = null;
+              this._createOnlyDelivery = null;
+            }
             this._saveOwner = null;
             // A hook that turned saving on and then threw still owns that
             // state, but a submission which found a pre-existing saving=true
@@ -199,9 +209,34 @@ export default Mixin.create({
   },
 
   doSave: function(opt) {
+    const owner = this._saveOwner;
+    if ( owner && this.get('createOnlyDelivery') ) {
+      opt = opt || {};
+      Object.defineProperty(this, '_createOnlyRequest', {
+        value: { owner, options: opt }, writable: true, configurable: true,
+      });
+      bindCreateOnlyDelivery(opt, (data) => {
+        if ( this._saveOwner === owner && !this.isDestroyed && !this.isDestroying ) {
+          Object.defineProperty(this, '_createOnlyDelivery', {
+            value: { owner, data }, writable: true, configurable: true,
+          });
+        } else {
+          data.fields = null;
+        }
+      });
+    }
     return this.get('primaryResource').save(opt).then((newData) => {
       return this.mergeResult(newData);
     });
+  },
+
+  cloneForCreateDelivery(resource) {
+    const pending = this._createOnlyDelivery;
+    if ( !pending || pending.owner !== this._saveOwner ) {
+      return resource.clone();
+    }
+    this._createOnlyDelivery = null;
+    return cloneCreateOnlyDelivery(resource, pending.data);
   },
 
   mergeResult: function(newData) {

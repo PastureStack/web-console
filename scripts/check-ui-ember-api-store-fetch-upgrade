@@ -13,7 +13,7 @@ package = json.loads(package_path.read_text(encoding="utf-8"))
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
 compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.6.tgz"
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.5.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.6.tgz"
 
 
 def fail(message):
@@ -110,24 +110,24 @@ with tarfile.open(archive_path, "r:gz") as archive:
         fail("ember-fetch compatibility source and install archive differ")
 
 api_store_compat_dir = repo / "vendor/ember-api-store-compat"
-api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.5.tgz"
+api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.6.tgz"
 api_store_package_path = api_store_compat_dir / "package.json"
 api_store_license_path = api_store_compat_dir / "LICENSE"
 api_store_upstream_path = api_store_compat_dir / "UPSTREAM.md"
 for required in [api_store_archive, api_store_package_path, api_store_license_path, api_store_upstream_path]:
     if not required.is_file():
         fail(f"reviewed ember-api-store compatibility file missing: {required.relative_to(repo)}")
-if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "90da9ebdc36a8069629086d011e799691ace8f88c13d9c9df1333c77015a2ab8":
+if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "58079a9d1cc9539d89999f9fb3ac9f89464a1d79f45bb1c8ada18b8eda545bb6":
     fail("reviewed ember-api-store compatibility archive hash changed")
-if hashlib.sha256(api_store_license_path.read_bytes()).hexdigest() != "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594":
+if hashlib.sha256(api_store_license_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594":
     fail("ember-api-store upstream Apache-2.0 license changed")
 api_store_package = json.loads(api_store_package_path.read_text(encoding="utf-8"))
 if api_store_package.get("dependencies") != expected_api_store_deps:
     fail("ember-api-store compatibility source metadata changed")
-if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 5:
+if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 6:
     fail("ember-api-store compatibility revision marker is missing")
 with tarfile.open(api_store_archive, "r:gz") as archive:
-    for relative in ["package.json", "LICENSE", "UPSTREAM.md", "addon/services/store.js", "addon/mixins/type.js"]:
+    for relative in ["package.json", "LICENSE", "UPSTREAM.md", "addon/services/store.js", "addon/mixins/type.js", "addon/utils/create-only-delivery.js"]:
         archived = archive.extractfile(f"package/{relative}")
         source = api_store_compat_dir / relative
         if archived is None or archived.read() != source.read_bytes():
@@ -154,7 +154,7 @@ action_dispatch = type_runtime.split("  doAction: function(name, data, opt) {", 
 if "delete opt.createIdentity;" not in action_dispatch:
     fail("action POST must clear any reused create identity")
 request_success = api_store_runtime.split("  _requestSuccess(xhr,opt) {", 1)[1].split("  _requestFailed(xhr,opt) {", 1)[0]
-for marker in ["delete opt.createIdentity;", "if ( opt.method === 'POST' )", "opt.createIdentity = {", "generation: get(store, 'generation')", "baseUrl: get(store, 'baseUrl')"]:
+for marker in ["delete opt.createIdentity;", "if ( opt.method === 'POST' )", "Object.defineProperty(opt, 'createIdentity'", "generation: get(store, 'generation')", "baseUrl: get(store, 'baseUrl')", "fields[key].readOnCreateOnly === true"]:
     if marker not in create_save:
         fail(f"create-only save identity marker missing: {marker}")
 for marker in ["xhr.status === 201 && opt.method === 'POST' && creation", "creation.generation === get(this, 'generation')", "creation.baseUrl === get(this, 'baseUrl')", "cached.get('id') === xhr.body.id", "get(cached, 'store') === this && this.hasRecord(cached)", "response = response || this._typeify(xhr.body);"]:
@@ -172,6 +172,10 @@ for marker in [
     "204 and errors keep their HTTP semantics without importing a model",
     "reusing save options cannot carry a create marker into an existing record save",
     "action POST cannot reuse an old create marker even when the action returns 201",
+    "apiKey first delivery survives redacted subscribe before 201 and later redaction in personal and project stores, 100 deterministic barriers each",
+    "uncached API-key create-only delivery is one-shot and schema-bound, with private request metadata",
+    "create-only delivery rejects changed store, generation, base, concrete type and owner without importing its secret",
+    "a synchronous first-delivery callback exception is consumed once and cannot replay create",
 ]:
     if marker not in create_order_tests:
         fail(f"API-store create response order regression missing: {marker}")
@@ -454,7 +458,7 @@ for marker in [
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.8.5 api_store_compat_revision=5 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
+    f"version=2.8.5 api_store_compat_revision=6 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
     f"ember6_template_compat_revision=1 terminal_reconnect_revision=2 "
     f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )
