@@ -9,6 +9,7 @@ import Collection from 'ember-api-store/models/collection';
 import { bindCreateOnlyDelivery, cloneCreateOnlyDelivery, takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
 import EditApiKey from 'ui/components/edit-apikey/component';
 import EmberObject from '@ember/object';
+import Service from '@ember/service';
 import inertRenderer from '../../helpers/inert-renderer';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
@@ -17,8 +18,11 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 function fixture(project = '1a-test', baseUrl = `/v2-beta/projects/${project}`) {
   const objects = new Set();
   const requests = [];
+  const intl = Service.create({exists() { return false; }, t(key) { return key; }});
+  objects.add(intl);
   const store = Store.create({ baseUrl });
   setOwner(store, { lookup(name) {
+    if ( name === 'service:intl' ) { return intl; }
     if ( name === 'service:fastboot' ) { return { isFastBoot: false }; }
     const Factory = name === 'model:schema' ? Schema :
       name === 'model:collection' ? Collection : Resource;
@@ -29,11 +33,19 @@ function fixture(project = '1a-test', baseUrl = `/v2-beta/projects/${project}`) 
   const createRecord = store.createRecord.bind(store);
   store.createRecord = (...args) => {
     const object = createRecord(...args);
+    // The real Resource validator reads model.intl, not component.intl.
+    // Service injection is not an enumerable resource/API payload field.
+    Object.defineProperty(object, 'intl', {value: intl, configurable: true});
     objects.add(object);
     return object;
   };
   const response = defer();
-  store.rawRequest = (options) => { requests.push(options); return response.promise; };
+  const requestEntered = defer();
+  store.rawRequest = (options) => {
+    requests.push(options);
+    requestEntered.resolve(options);
+    return response.promise;
+  };
   store._bulkAdd('schema', ['volume', 'loadBalancerService', 'service'].map(id => ({
     type: 'schema', id, resourceFields: {}, collectionMethods: ['GET', 'POST'],
     links: { collection: `${store.baseUrl}/${id}s` },
@@ -45,7 +57,7 @@ function fixture(project = '1a-test', baseUrl = `/v2-beta/projects/${project}`) 
       secretValue: {type: 'password', create: false, update: false, readOnCreateOnly: true},
       nested: {type: 'service'},
     }, links: {collection: `${store.baseUrl}/apikeys`}}]);
-  return { store, requests, response,
+  return { store, requests, response, requestEntered, intl,
     destroy() {
       store.all('schema').forEach(object => objects.add(object));
       run(() => {
@@ -74,7 +86,7 @@ module('Unit | Vendor | API store create response order', function() {
           const draft = original.clone();
           subject = createOwned(EditApiKey, {
             renderer: inertRenderer(),
-            intl: EmberObject.create({t(key) { return key; }}),
+            intl: f.intl,
             modalService: EmberObject.create({modalOpts: original}),
             model: draft,
             clone: original.clone(),
@@ -83,11 +95,28 @@ module('Unit | Vendor | API store create response order', function() {
               return resource;
             },
           }, 'component');
+          const savingModel = subject.get('primaryResource');
+          assert.strictEqual(savingModel, subject.get('model'), 'actual editor saves its model');
+          assert.strictEqual(savingModel.get('intl'), f.intl, 'actual Resource receives the shared intl service');
+          assert.deepEqual(savingModel.validationErrors(), [], 'real model validation accepts the fixture without bypassing willSave');
+          assert.notOk(Object.hasOwn(savingModel.serialize(), 'intl'), 'service is not serialized into create payload');
+          assert.strictEqual(savingModel.get('accountId'), accountId);
+          assert.notOk(savingModel.get('id'), 'actual editor starts with an ID-less draft');
           const completion = [];
           const saving = run(() => subject.get('actions').save.call(subject, success => completion.push(success)));
-          // Await the actual willSave/doSave RSVP turns, not a clock delay.
-          for ( let turn = 0; !f.requests.length && turn < 20; turn++ ) { await resolve(); }
+          // Wait for real transport entry. A cancelled/failed lifecycle wins
+          // the race instead of hanging or assuming N microtask turns suffice.
+          const boundary = await Promise.race([
+            f.requestEntered.promise.then(options => ({options})),
+            saving.then(outcome => ({earlyOutcome: outcome}), error => ({earlyError: error})),
+          ]);
+          const earlyError = boundary.earlyError || (boundary.earlyOutcome && boundary.earlyOutcome.error);
+          const diagnosis = {reason: boundary.earlyOutcome && boundary.earlyOutcome.reason,
+            saved: boundary.earlyOutcome && boundary.earlyOutcome.saved,
+            error: earlyError && earlyError.message, errors: subject.get('errors')};
+          assert.ok(boundary.options, `actual request entered, otherwise early lifecycle: ${JSON.stringify(diagnosis)}`);
           assert.strictEqual(f.requests.length, 1, 'the actual save reaches its deferred HTTP boundary');
+          if ( !boundary.options ) { return; }
           const nested = run(() => f.store._typeify({...current('service', 'Nested-ID'), state: 'active'}));
           run(() => f.store._typeify({type: 'apiKey', id: 'Key-ID', accountId,
             name: 'created', state: 'active', publicValue: 'PUBLIC-TEST', secretValue: null, nested}));
@@ -102,7 +131,7 @@ module('Unit | Vendor | API store create response order', function() {
           await saving;
           const canonical = f.store.getById('apiKey', 'Key-ID');
           const clone = subject.get('clone');
-          assert.strictEqual(canonical, draft, 'canonical save identity is retained');
+          assert.strictEqual(canonical, savingModel, 'actual editor draft canonical save identity is retained');
           assert.strictEqual(canonical.get('state'), 'active', 'newer cached state wins');
           assert.strictEqual(nested.get('state'), 'active', 'stale nested 201 is not imported');
           assert.strictEqual(clone.get('secretValue'), 'SECRET-TEST', 'actual API-key doneSaving receives one-time secret');
@@ -184,11 +213,18 @@ module('Unit | Vendor | API store create response order', function() {
     try {
       let calls = 0, delivered;
       const options = {};
-      bindCreateOnlyDelivery(options, value => { delivered = value; calls++; throw new Error('delivery callback failed'); });
+      const failure = new Error('delivery callback failed');
+      bindCreateOnlyDelivery(options, value => { delivered = value; calls++; throw failure; });
       const draft = f.store.createRecord({type: 'apiKey'});
       const saving = run(() => draft.save(options));
+      // Attach before fulfilling HTTP: RSVP must not report an unhandled
+      // rejection while the native async test has not resumed yet.
+      const handled = saving.then(value => ({value}), error => ({error}));
       run(() => f.response.resolve({status: 201, body: {type: 'apiKey', id: 'Key-ID', secretValue: 'SECRET-TEST'}}));
-      try { await saving; assert.ok(false); } catch (error) { assert.ok(error); }
+      const outcome = await handled;
+      assert.ok(outcome.error, 'callback failure rejects create completion');
+      assert.strictEqual(outcome.error.get('message'), failure.message, 'existing API error message is retained');
+      assert.strictEqual(outcome.error.xhr, failure, 'existing API error wrapper retains the exact original exception');
       assert.strictEqual(calls, 1);
       assert.strictEqual(delivered.fields, null, 'synchronous callback failure clears one-time values');
       assert.strictEqual(takeCreateOnlyDelivery(options), null);
