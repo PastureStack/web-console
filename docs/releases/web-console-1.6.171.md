@@ -46,6 +46,22 @@ fresh-volume create/cancel/refresh/denial/removal remain pending.
 Historical failed QA receipts stay HOLD; the complete
 permission/resource/locale matrix remains INCOMPLETE.
 
+## Upstream-pending build dependency
+
+Official run 37092519936 stopped before QUnit on the newly reviewed
+[braces stack-exhaustion advisory](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm).
+The registry's latest version remains 3.0.3 and the advisory lists no patched
+release. Existing build-tool consumers remain unchanged. Do not apply the npm
+suggested forced Ember CLI downgrade or privately patch third-party code.
+
+The [dated risk record](../security/npm-vendor-pending.json) keeps this High
+finding visible. The live audit remains fail-closed at High for any other or
+changed advisory, changed affected dependency nodes, non-development exposure,
+expired review or audit failure. Only this exact reviewed build-only closure
+may remain vendor-pending until 2026-10-10. That exception is not a claim that
+the vulnerable package is patched or that the source graph has zero High
+findings. The packaged static artifact must exclude the affected Node package.
+
 ## Upgrade and rollback
 
 Use the separately released Server patch that packages this exact component.

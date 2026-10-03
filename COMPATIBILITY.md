@@ -18,6 +18,14 @@ failure, skip and todo counts are zero. Official validation, publication and
 packaged fresh-volume acceptance remain pending, not full-matrix PASS.
 See the [release note](docs/releases/web-console-1.6.171.md).
 
+The live npm audit retains its Critical/High threshold. An explicit dated
+vendor-pending record covers only `GHSA-vfj7-8cjw-p6xm` in the exact existing
+development-only `braces@3.0.3` dependency closure, for which upstream has no
+patched release. Unknown findings, changed affected nodes, runtime exposure,
+audit errors and expired reviews fail closed. This is a recorded remaining High
+risk, not a patched or zero-High claim; dependencies and package versions are
+unchanged. See [the review record](docs/security/npm-vendor-pending.json).
+
 Published `1.6.170` accepts null only for the optional expanded `mounts`
 projection while retaining the real complete empty pool relationship and full
 scoped mount-cache proof. It preserves nonempty raw ID binding, current-project

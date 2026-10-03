@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "advisoryUrl": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+  "cve": "CVE-2026-93687",
+  "severity": "high",
+  "upstreamPatchedVersion": null,
+  "reviewedAt": "2026-10-03T03:22:25Z",
+  "reviewUntil": "2026-10-10",
+  "scope": "controlled-dev-build-inputs-only",
+  "risk": "Deeply nested brace patterns can exhaust the build Node.js stack. This High finding remains unresolved; reviewed source filenames/glob configuration are controlled build inputs, not browser/user-supplied patterns.",
+  "publicationBlockedIfShippedNodes": true,
+  "shippedNodes": [],
+  "boundaryEvidence": [
+    "The exact reverse lock dependency closure below is dev:true and is not reachable from package-lock root production dependencies.",
+    "The closure enters through ember-cli, a build CLI. The gate checks literal imports in app/config/vendor JavaScript and ember-cli-build.js; only the exact build entry require('ember-cli/lib/broccoli/ember-app') may reach this closure. This static check is not packaged-browser proof.",
+    "CI builds an immutable checkout with npm ci --ignore-scripts; this decision does not authorize running a build on untrusted patterns or shipping these nodes.",
+    "This is a source inventory/build-input review, not a zero-CVE statement or runtime not-affected VEX. If a packaged browser/module inventory includes any reviewed node, publication is blocked and this decision must be re-reviewed."
+  ],
+  "nodes": [
+    { "path": "node_modules/braces", "version": "3.0.3", "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz", "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==", "dev": true },
+    { "path": "node_modules/micromatch", "version": "4.0.8", "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz", "integrity": "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==", "dev": true },
+    { "path": "node_modules/findup-sync", "version": "5.0.0", "resolved": "https://registry.npmjs.org/findup-sync/-/findup-sync-5.0.0.tgz", "integrity": "sha512-MzwXju70AuyflbgeOhzvQWAvvQdo1XL0A9bVvlXsYcFEBM87WR4OakL4OfZq+QRmr+duJubio+UtNQCPsVESzQ==", "dev": true },
+    { "path": "node_modules/find-yarn-workspace-root", "version": "2.0.0", "resolved": "https://registry.npmjs.org/find-yarn-workspace-root/-/find-yarn-workspace-root-2.0.0.tgz", "integrity": "sha512-1IMnbjt4KzsQfnhnzNd8wUEgXZ44IzZaZmnLYx7D5FZlaHt2gW20Cri8Q+E/t5tIj4+epTBub+2Zxu/vNILzqQ==", "dev": true },
+    { "path": "node_modules/sane", "version": "5.0.1", "resolved": "https://registry.npmjs.org/sane/-/sane-5.0.1.tgz", "integrity": "sha512-9/0CYoRz0MKKf04OMCO3Qk3RQl1PAwWAhPSQSym4ULiLpTZnrY1JoZU0IEikHu8kdk2HvKT/VwQMq/xFZ8kh1Q==", "dev": true },
+    { "path": "node_modules/broccoli", "version": "4.0.0", "resolved": "https://registry.npmjs.org/broccoli/-/broccoli-4.0.0.tgz", "integrity": "sha512-p5el5/ig0QeRGFPkLMPdm7KblkTm44eicEWfwnRTz6hncghVuRZ0+XDAtCi7ynxobeE/mey5Q7lAulFkgNzxVA==", "dev": true },
+    { "path": "node_modules/ember-cli", "version": "7.2.0", "resolved": "https://registry.npmjs.org/ember-cli/-/ember-cli-7.2.0.tgz", "integrity": "sha512-EafquLJ+EVHz0nNo32NWwAfHr5UxTXn9zdlukuKZFSFrR4G6RRStmBPQ5O0bLSaQVDtU+jOe5gGTHSS4Xy3uQA==", "dev": true }
+  ],
+  "edges": [
+    { "from": "node_modules/micromatch", "to": "node_modules/braces", "spec": "^3.0.3" },
+    { "from": "node_modules/findup-sync", "to": "node_modules/micromatch", "spec": "^4.0.4" },
+    { "from": "node_modules/find-yarn-workspace-root", "to": "node_modules/micromatch", "spec": "^4.0.2" },
+    { "from": "node_modules/sane", "to": "node_modules/micromatch", "spec": "^4.0.2" },
+    { "from": "node_modules/broccoli", "to": "node_modules/findup-sync", "spec": "^5.0.0" },
+    { "from": "node_modules/broccoli", "to": "node_modules/sane", "spec": "^5.0.1" },
+    { "from": "node_modules/ember-cli", "to": "node_modules/broccoli", "spec": "^4.0.0" },
+    { "from": "node_modules/ember-cli", "to": "node_modules/find-yarn-workspace-root", "spec": "^2.0.0" },
+    { "from": "node_modules/ember-cli", "to": "node_modules/sane", "spec": "^5.0.1" }
+  ]
+}

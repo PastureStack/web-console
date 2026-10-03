@@ -22,6 +22,15 @@ acceptance are separate pending gates. The complete permission /
 resource / locale matrix remains INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.171.md).
 
+The first exact-source official run stopped before tests on newly reviewed
+`GHSA-vfj7-8cjw-p6xm` in build-only `braces@3.0.3`; upstream has no patched
+release. It remains a High vendor-pending finding, not a zero-vulnerability
+claim. The live audit preserves the High threshold and rejects unexpected
+advisories, dependency drift, non-development exposure and expired reviews.
+Only the exact reviewed advisory's dependency closure may remain pending until
+2026-10-10. No third-party runtime patch or toolchain downgrade is applied.
+See the [bounded risk record](docs/security/npm-vendor-pending.json).
+
 Published `1.6.170` corrects an optional `mounts: null` projection being
 mistaken for a real allocation in the shared local-volume list. It preserves
 the complete advertised pool relationship, full scoped mount cache, exact-volume
