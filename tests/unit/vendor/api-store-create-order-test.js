@@ -1,0 +1,225 @@
+import { module, test } from 'qunit';
+import { setOwner } from '@ember/application';
+import { run } from '@ember/runloop';
+import { defer, resolve } from 'rsvp';
+import Store from 'ember-api-store/services/store';
+import Resource from 'ember-api-store/models/resource';
+import Schema from 'ember-api-store/models/schema';
+import Collection from 'ember-api-store/models/collection';
+
+// Real installed compatibility package and Type.save. Only the HTTP boundary
+// is deferred: subscribe import must complete before the original 201 arrives.
+function fixture(project = '1a-test') {
+  const objects = new Set();
+  const requests = [];
+  const store = Store.create({ baseUrl: `/v2-beta/projects/${project}` });
+  setOwner(store, { lookup(name) {
+    if ( name === 'service:fastboot' ) { return { isFastBoot: false }; }
+    const Factory = name === 'model:schema' ? Schema :
+      name === 'model:collection' ? Collection : Resource;
+    const object = Factory.create();
+    objects.add(object);
+    return object;
+  } });
+  const createRecord = store.createRecord.bind(store);
+  store.createRecord = (...args) => {
+    const object = createRecord(...args);
+    objects.add(object);
+    return object;
+  };
+  const response = defer();
+  store.rawRequest = (options) => { requests.push(options); return response.promise; };
+  store._bulkAdd('schema', ['volume', 'loadBalancerService', 'service'].map(id => ({
+    type: 'schema', id, resourceFields: {}, collectionMethods: ['GET', 'POST'],
+    links: { collection: `${store.baseUrl}/${id}s` },
+  })));
+  return { store, requests, response,
+    destroy() {
+      store.all('schema').forEach(object => objects.add(object));
+      run(() => {
+        objects.forEach(object => { if ( !object.isDestroyed ) { object.destroy(); } });
+        store.destroy();
+      });
+    },
+  };
+}
+
+const initial = (type = 'volume', id = 'Opaque-ID') => ({
+  type, id, accountId: '1a-test', name: 'created', state: 'registering', externalId: null,
+});
+const current = (type = 'volume', id = 'Opaque-ID') => ({
+  ...initial(type, id), state: 'inactive', externalId: 'created',
+});
+
+module('Unit | Vendor | API store create response order', function() {
+  test('delayed 201 cannot overwrite the newer subscribe model, repeated with deterministic barriers 100 times', async function(assert) {
+    for ( let index = 0; index < 100; index++ ) {
+      const f = fixture();
+      try {
+        const draft = f.store.createRecord({type: 'volume', name: 'created'});
+        const saving = run(() => draft.save());
+        assert.strictEqual(f.requests.length, 1, 'one create dispatch, no extra GET');
+        const live = run(() => f.store._typeify(current()));
+        const xhr = {status: 201, body: initial()};
+        run(() => f.response.resolve(xhr));
+        const saved = await saving;
+        assert.strictEqual(saved, draft, 'existing save completion identity retained');
+        assert.strictEqual(saved.get('state'), 'inactive');
+        assert.strictEqual(saved.get('externalId'), 'created');
+        assert.strictEqual(f.store.getById('volume', 'Opaque-ID'), draft);
+        assert.strictEqual(f.store.all('volume').get('length'), 1, 'no duplicate canonical resource');
+        assert.strictEqual(live.get('xhr'), xhr, 'actual HTTP metadata remains attached');
+        assert.strictEqual(f.requests[0].responseStatus, 201);
+        assert.notOk(Object.hasOwn(f.requests[0].data, 'createIdentity'), 'internal marker is not payload');
+      } finally { f.destroy(); }
+    }
+  });
+
+  test('uncached creates retain the original response import path', async function(assert) {
+    const f = fixture();
+    try {
+      const draft = f.store.createRecord({type: 'volume', name: 'created'});
+      const saving = run(() => draft.save());
+      run(() => f.response.resolve({status: 201, body: initial()}));
+      assert.strictEqual(await saving, draft);
+      assert.strictEqual(draft.get('state'), 'registering');
+      assert.strictEqual(f.store.getById('volume', 'Opaque-ID'), draft);
+      assert.strictEqual(f.requests.length, 1);
+    } finally { f.destroy(); }
+  });
+
+  test('subtype and base-type aliases adopt one saved model without regressing the subscribe fields', async function(assert) {
+    const f = fixture();
+    try {
+      const draft = f.store.createRecord({type: 'loadBalancerService', baseType: 'service', name: 'created'});
+      const saving = run(() => draft.save());
+      run(() => f.store._typeify({...current('loadBalancerService'), baseType: 'service'}));
+      run(() => f.response.resolve({status: 201, body: {...initial('loadBalancerService'), baseType: 'service'}}));
+      assert.strictEqual(await saving, draft);
+      assert.strictEqual(draft.get('state'), 'inactive');
+      assert.strictEqual(f.store.getById('loadBalancerService', 'Opaque-ID'), draft);
+      assert.strictEqual(f.store.getById('service', 'Opaque-ID'), draft);
+      assert.strictEqual(f.store.all('loadBalancerService').get('length'), 1);
+      assert.strictEqual(f.store.all('service').get('length'), 1);
+    } finally { f.destroy(); }
+  });
+
+  test('cached create adoption does not run stale mangleIn or nested resource imports', function(assert) {
+    const f = fixture();
+    try {
+      const schema = f.store.getById('schema', 'volume');
+      schema.set('resourceFields', { nested: {type: 'service'} });
+      schema.notifyPropertyChange('typeifyFields');
+      const nested = run(() => f.store._typeify({...current('service', 'Nested-ID'), state: 'active'}));
+      const live = run(() => f.store._typeify({...current(), nested}));
+      let conversionCalls = 0;
+      const createRecord = f.store.createRecord;
+      f.store.createRecord = (...args) => { conversionCalls++; return createRecord(...args); };
+      const options = {method: 'POST', createIdentity: {type: 'volume',
+        generation: f.store.get('generation'), baseUrl: f.store.get('baseUrl')}};
+      const response = f.store._requestSuccess({status: 201,
+        body: {...initial(), nested: {...initial('service', 'Nested-ID'), state: 'creating'}}}, options);
+      assert.strictEqual(response, live);
+      assert.strictEqual(conversionCalls, 0, 'neither mangleIn nor nested typeify is invoked');
+      assert.strictEqual(nested.get('state'), 'active');
+      assert.strictEqual(live.get('nested'), nested);
+    } finally { f.destroy(); }
+  });
+
+  test('opaque case-sensitive IDs and exact concrete types do not borrow another canonical model', function(assert) {
+    const f = fixture();
+    try {
+      const other = f.store._typeify(current('volume', 'opaque-id'));
+      const options = {method: 'POST', createIdentity: {type: 'volume',
+        generation: f.store.get('generation'), baseUrl: f.store.get('baseUrl')}};
+      const response = f.store._requestSuccess({status: 201, body: initial()}, options);
+      assert.notStrictEqual(response, other);
+      assert.strictEqual(response.get('id'), 'Opaque-ID');
+      assert.strictEqual(response.get('state'), 'registering');
+      const concrete = f.store._typeify({...current('loadBalancerService', 'Sub-ID'), baseType: 'service'});
+      const base = f.store._requestSuccess({status: 201, body: initial('service', 'Sub-ID')},
+        {...options, createIdentity: {...options.createIdentity, type: 'service'}});
+      assert.strictEqual(base.get('type'), 'service', 'base alias goes through the normal import');
+      assert.strictEqual(concrete.get('state'), 'registering', 'the new rule did not adopt the different concrete type');
+    } finally { f.destroy(); }
+  });
+
+  test('another project store, reset generation and changed API base cannot use create adoption', function(assert) {
+    const f = fixture();
+    const other = fixture('1a-other');
+    try {
+      const foreign = other.store._typeify(current());
+      const marker = {type: 'volume', generation: f.store.get('generation'), baseUrl: f.store.get('baseUrl')};
+      const response = f.store._requestSuccess({status: 201, body: initial()}, {method: 'POST', createIdentity: marker});
+      assert.notStrictEqual(response, foreign);
+      assert.strictEqual(foreign.get('state'), 'inactive');
+      run(() => f.store.reset());
+      const afterReset = f.store._typeify(current());
+      f.store._requestSuccess({status: 201, body: initial()}, {method: 'POST', createIdentity: marker});
+      assert.strictEqual(afterReset.get('state'), 'registering', 'old generation does not opt into the new rule');
+      const beforeBaseChange = {type: 'volume', generation: f.store.get('generation'), baseUrl: f.store.get('baseUrl')};
+      f.store.set('baseUrl', '/v2-beta/projects/1a-changed');
+      afterReset.set('state', 'inactive');
+      f.store._requestSuccess({status: 201, body: initial()}, {method: 'POST', createIdentity: beforeBaseChange});
+      assert.strictEqual(afterReset.get('state'), 'registering', 'different base preserves prior import behavior');
+    } finally { f.destroy(); other.destroy(); }
+  });
+
+  test('GET, PUT, action POST and non-201 responses preserve normal imports', function(assert) {
+    const f = fixture();
+    try {
+      for ( const [method, status, marked] of [['GET', 201, true], ['PUT', 201, true],
+        ['POST', 200, true], ['POST', 201, false]] ) {
+        const live = f.store._typeify(current());
+        const options = {method};
+        if ( marked ) { options.createIdentity = {type: 'volume',
+          generation: f.store.get('generation'), baseUrl: f.store.get('baseUrl')}; }
+        const response = f.store._requestSuccess({status, body: initial()}, options);
+        assert.strictEqual(response, live);
+        assert.strictEqual(response.get('state'), 'registering', `${method}/${status}/${marked} unchanged`);
+      }
+    } finally { f.destroy(); }
+  });
+
+  test('204 and errors keep their HTTP semantics without importing a model', async function(assert) {
+    const f = fixture();
+    try {
+      const options = {method: 'POST', createIdentity: {type: 'volume',
+        generation: f.store.get('generation'), baseUrl: f.store.get('baseUrl')}};
+      const live = f.store._typeify(current());
+      assert.strictEqual(f.store._requestSuccess({status: 204}, options), undefined);
+      assert.strictEqual(options.responseStatus, 204);
+      assert.strictEqual(live.get('state'), 'inactive');
+      f.store.rawRequest = () => Promise.reject({status: 403, body: {type: 'error', status: 403, message: 'Forbidden'}});
+      try { await f.store.request({...options, url: 'volume'}); assert.ok(false); }
+      catch (error) { assert.strictEqual(error.get('status'), 403); }
+      assert.strictEqual(live.get('state'), 'inactive');
+    } finally { f.destroy(); }
+  });
+
+  test('reusing save options cannot carry a create marker into an existing record save', async function(assert) {
+    const f = fixture();
+    try {
+      const record = f.store._typeify({...current(), links: {self: `${f.store.baseUrl}/volumes/Opaque-ID`}});
+      const options = {createIdentity: {type: 'volume', generation: f.store.get('generation'), baseUrl: f.store.baseUrl}};
+      f.store.rawRequest = request => { f.requests.push(request); return resolve({status: 200, body: initial()}); };
+      await run(() => record.save(options));
+      assert.strictEqual(f.requests[0].method, 'PUT');
+      assert.notOk(Object.hasOwn(f.requests[0], 'createIdentity'));
+      assert.strictEqual(record.get('state'), 'registering');
+    } finally { f.destroy(); }
+  });
+
+  test('action POST cannot reuse an old create marker even when the action returns 201', async function(assert) {
+    const f = fixture();
+    try {
+      const record = f.store._typeify({...current(), actionLinks: {reconcile: '/actions/reconcile'}});
+      const options = {createIdentity: {type: 'volume', generation: f.store.get('generation'), baseUrl: f.store.baseUrl}};
+      f.store.rawRequest = request => { f.requests.push(request); return resolve({status: 201, body: initial()}); };
+      assert.strictEqual(await run(() => record.doAction('reconcile', null, options)), record);
+      assert.strictEqual(f.requests[0].method, 'POST');
+      assert.notOk(Object.hasOwn(f.requests[0], 'createIdentity'));
+      assert.strictEqual(record.get('state'), 'registering', 'action response still imports normally');
+    } finally { f.destroy(); }
+  });
+});

@@ -13,7 +13,7 @@ package = json.loads(package_path.read_text(encoding="utf-8"))
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
 compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.6.tgz"
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.4.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.5.tgz"
 
 
 def fail(message):
@@ -110,24 +110,24 @@ with tarfile.open(archive_path, "r:gz") as archive:
         fail("ember-fetch compatibility source and install archive differ")
 
 api_store_compat_dir = repo / "vendor/ember-api-store-compat"
-api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.4.tgz"
+api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.5.tgz"
 api_store_package_path = api_store_compat_dir / "package.json"
 api_store_license_path = api_store_compat_dir / "LICENSE"
 api_store_upstream_path = api_store_compat_dir / "UPSTREAM.md"
 for required in [api_store_archive, api_store_package_path, api_store_license_path, api_store_upstream_path]:
     if not required.is_file():
         fail(f"reviewed ember-api-store compatibility file missing: {required.relative_to(repo)}")
-if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "32120c02f8e8f8fbe98ad643420c2eb5d48382e674e7561631dd5015c28c6fec":
+if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "90da9ebdc36a8069629086d011e799691ace8f88c13d9c9df1333c77015a2ab8":
     fail("reviewed ember-api-store compatibility archive hash changed")
 if hashlib.sha256(api_store_license_path.read_bytes()).hexdigest() != "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594":
     fail("ember-api-store upstream Apache-2.0 license changed")
 api_store_package = json.loads(api_store_package_path.read_text(encoding="utf-8"))
 if api_store_package.get("dependencies") != expected_api_store_deps:
     fail("ember-api-store compatibility source metadata changed")
-if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 4:
+if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 5:
     fail("ember-api-store compatibility revision marker is missing")
 with tarfile.open(api_store_archive, "r:gz") as archive:
-    for relative in ["package.json", "LICENSE", "UPSTREAM.md", "addon/services/store.js"]:
+    for relative in ["package.json", "LICENSE", "UPSTREAM.md", "addon/services/store.js", "addon/mixins/type.js"]:
         archived = archive.extractfile(f"package/{relative}")
         source = api_store_compat_dir / relative
         if archived is None or archived.read() != source.read_bytes():
@@ -147,6 +147,34 @@ schema_lookup_tests = (repo / "tests/unit/vendor/api-store-schema-lookup-test.js
 for marker in ["actual bulk cache and inherited Resource.schema", "mixed-case capability consumers", "separate project stores", "ordinary resource IDs remain opaque and case-sensitive"]:
     if marker not in schema_lookup_tests:
         fail(f"API-store schema lookup regression missing: {marker}")
+
+type_runtime = (api_store_compat_dir / "addon/mixins/type.js").read_text(encoding="utf-8")
+create_save = type_runtime.split("  save: function(opt) {", 1)[1]
+action_dispatch = type_runtime.split("  doAction: function(name, data, opt) {", 1)[1].split("  save: function(opt) {", 1)[0]
+if "delete opt.createIdentity;" not in action_dispatch:
+    fail("action POST must clear any reused create identity")
+request_success = api_store_runtime.split("  _requestSuccess(xhr,opt) {", 1)[1].split("  _requestFailed(xhr,opt) {", 1)[0]
+for marker in ["delete opt.createIdentity;", "if ( opt.method === 'POST' )", "opt.createIdentity = {", "generation: get(store, 'generation')", "baseUrl: get(store, 'baseUrl')"]:
+    if marker not in create_save:
+        fail(f"create-only save identity marker missing: {marker}")
+for marker in ["xhr.status === 201 && opt.method === 'POST' && creation", "creation.generation === get(this, 'generation')", "creation.baseUrl === get(this, 'baseUrl')", "cached.get('id') === xhr.body.id", "get(cached, 'store') === this && this.hasRecord(cached)", "response = response || this._typeify(xhr.body);"]:
+    if marker not in request_success:
+        fail(f"same-store create response adoption marker missing: {marker}")
+create_order_tests = (repo / "tests/unit/vendor/api-store-create-order-test.js").read_text(encoding="utf-8")
+for marker in [
+    "delayed 201 cannot overwrite the newer subscribe model, repeated with deterministic barriers 100 times",
+    "uncached creates retain the original response import path",
+    "subtype and base-type aliases adopt one saved model without regressing the subscribe fields",
+    "cached create adoption does not run stale mangleIn or nested resource imports",
+    "opaque case-sensitive IDs and exact concrete types do not borrow another canonical model",
+    "another project store, reset generation and changed API base cannot use create adoption",
+    "GET, PUT, action POST and non-201 responses preserve normal imports",
+    "204 and errors keep their HTTP semantics without importing a model",
+    "reusing save options cannot carry a create marker into an existing record save",
+    "action POST cannot reuse an old create marker even when the action returns 201",
+]:
+    if marker not in create_order_tests:
+        fail(f"API-store create response order regression missing: {marker}")
 
 for forbidden in [
     "node_modules/ember-network",
@@ -426,7 +454,7 @@ for marker in [
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.8.5 api_store_compat_revision=4 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
+    f"version=2.8.5 api_store_compat_revision=5 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
     f"ember6_template_compat_revision=1 terminal_reconnect_revision=2 "
     f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )
