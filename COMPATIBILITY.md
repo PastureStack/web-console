@@ -4,6 +4,17 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Candidate `1.6.174` changes VM image guidance and defaults only: it does not
+implement a VM runtime or image whitelist. Existing/custom/last-used VM images,
+ordinary container defaults and required validation remain supported. Shared
+image-required errors are localized in English and Traditional Chinese, with
+the existing English fallback for other locales. Backend capabilities,
+payloads, permissions and authentication contracts are unchanged; dependency
+versions and the graph are unchanged. The five added Ember regressions and
+formal release gates remain pending; 817 is only an expected test count.
+Historical releases and HOLDs are not promoted, and the full matrix remains
+INCOMPLETE. See the [candidate release note](docs/releases/web-console-1.6.174.md).
+
 Published `1.6.173` reads native ProjectTemplate card labels from the model's
 existing `name`, not `localizedName`, which native ProjectTemplate does not implement.
 Name-dependent sorting, rename reactivity and exact-ID selection remain native;

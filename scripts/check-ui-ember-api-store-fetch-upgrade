@@ -416,7 +416,8 @@ for marker in [
     if marker not in page_header_sources:
         fail(f"transient service collection regression marker missing: {marker}")
 
-if template_action_count != 563:
+# The two ordinary-container VM quick-pick actions were removed in Web174.
+if template_action_count != 561:
     fail(f"unexpected template action count: {template_action_count}")
 if power_select_count != 15:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")

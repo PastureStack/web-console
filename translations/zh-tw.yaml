@@ -2308,9 +2308,13 @@ formKeyValue:
 formImage:
   label: 選擇映像
   vm:
+    bootImagePlaceholder: VM 專用開機映像
+    bootImageHelp: '請使用相容 -m、-smp 與 /image 開機磁碟契約的 VM 專用映像。請確認目標主機符合映像的虛擬化需求，例如 KVM（/dev/kvm）；一般容器映像不足以啟動 VM。'
+    bootImageRequired: 請填入相容的 VM 專用開機映像。
     placeholder: '例如：ubuntu:26.04'
     dropdownLabel: '{appName} 映像'
   container:
+    imageRequired: 請填入容器映像。
     placeholder: '例如：ubuntu:trusty'
   pullImage:
     label: 建立前總是拉取映像

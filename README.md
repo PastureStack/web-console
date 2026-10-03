@@ -8,6 +8,19 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.174` removes the ordinary-container default and quick picks from
+the VM image field. Custom images, existing image values and the last-used VM
+image remain supported; ordinary container defaults are unchanged. A blank
+image still blocks the existing save lifecycle. VM boot-image guidance and
+required errors for both VM and container images use reviewed English and
+Traditional Chinese copy with the existing English fallback.
+Dependency versions and the dependency graph are unchanged. Five added Ember
+regressions have not yet run; 817 total tests is an expectation, not a result.
+Exact-source CI, reproducible artifacts, signed publication, Server packaging
+and packaged VM acceptance remain pending. Historical releases and HOLDs are
+unchanged; the full matrix remains INCOMPLETE. See the
+[candidate release note](docs/releases/web-console-1.6.174.md).
+
 Published `1.6.173` repairs empty environment-template choice labels. These
 choices are native `ProjectTemplate` resources, not Catalog templates: their
 authoritative label is `name`, and selection remains bound to the template ID.

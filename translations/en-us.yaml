@@ -2413,9 +2413,13 @@ formKeyValue:
 formImage:
   label: Select Image
   vm:
+    bootImagePlaceholder: VM boot image
+    bootImageHelp: "Use a VM boot image compatible with -m, -smp and /image. Verify that the target host meets the image's virtualization requirements, for example KVM (/dev/kvm). An ordinary container image is not sufficient."
+    bootImageRequired: Enter a compatible VM boot image.
     placeholder: e.g. ubuntu:26.04
     dropdownLabel: "{appName} Images"
   container:
+    imageRequired: Image is required
     placeholder: "e.g. ubuntu:trusty"
   pullImage:
     label: Always pull image before creating

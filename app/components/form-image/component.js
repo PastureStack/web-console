@@ -6,10 +6,11 @@ import ManageLabels from 'ui/mixins/manage-labels';
 
 // Remember the last value and use that for new one
 var lastContainer = 'ubuntu:26.04';
-var lastVm = 'ubuntu:26.04';
+var lastVm = null;
 var lastWindows = 'microsoft/nanoserver';
 
 export default Component.extend(ManageLabels, {
+  intl: service(),
   settings: service(),
   projects: service(),
 
@@ -44,10 +45,12 @@ export default Component.extend(ManageLabels, {
 
     if ( !initial )
     {
-      if ( this.get('projects.current.isWindows') ) {
+      if ( this.get('isVm') ) {
+        initial = lastVm;
+      } else if ( this.get('projects.current.isWindows') ) {
         initial = lastWindows;
       } else {
-        initial = ( this.get('isVm') ? lastVm : lastContainer);
+        initial = lastContainer;
       }
     }
 
@@ -83,11 +86,11 @@ export default Component.extend(ManageLabels, {
     }
     else if ( input && input.length )
     {
-      if ( this.get('projects.current.isWindows') ) {
-        lastWindows = input;
-      } else if ( this.get('isVm') )
-      {
+      if ( this.get('isVm') ) {
         lastVm = input;
+      } else if ( this.get('projects.current.isWindows') )
+      {
+        lastWindows = input;
       }
       else
       {
@@ -105,13 +108,13 @@ export default Component.extend(ManageLabels, {
     this.validate();
   }.observes('userInput'),
 
-  validate() {
+  validate: function() {
     var errors = [];
     if ( !this.get('value') )
     {
-      errors.push('Image is required');
+      errors.push(this.get('intl').t(this.get('isVm') ? 'formImage.vm.bootImageRequired' : 'formImage.container.imageRequired'));
     }
 
     this.set('errors', errors);
-  },
+  }.observes('intl._locale'),
 });
