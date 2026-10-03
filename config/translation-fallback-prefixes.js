@@ -43,5 +43,8 @@ module.exports = Object.freeze([
   'newSecret.refreshFailed',
   'accountsPage.new.error.',
   'editAccount.error.',
-  'viewEditProject.error.'
+  'viewEditProject.error.',
+  // VM boot-image guidance uses reviewed English fallback outside zh-tw.
+  'formImage.vm.bootImage',
+  'formImage.container.imageRequired'
 ]);
