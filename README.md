@@ -8,13 +8,25 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Source candidate `1.6.170` corrects an optional `mounts: null` projection being
+Published `1.6.170` corrects an optional `mounts: null` projection being
 mistaken for a real allocation in the shared local-volume list. It preserves
 the complete advertised pool relationship, full scoped mount cache, exact-volume
 binding checks and backend permissions. Raw IDs and malformed values do not
-become empty evidence. Formal publication and packaged native lifecycle
-acceptance remain pending; historical HOLDs and the complete matrix are not
-promoted. See the [release note](docs/releases/web-console-1.6.170.md).
+become empty evidence. Exact-source official validation
+[37082272427](https://github.com/PastureStack/web-console/actions/runs/37082272427)
+passed 792/792 tests with zero failures, skips or todo and two byte-identical
+production archives. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.170)
+pins source `09df1480c5f4b58c6a9a9060ff94d980792f7015`; archive SHA-256 is
+`900974b07bb20ba5b2e7c1dede7012a53c6e2c96cd094c67cb7019434c4f27c9`
+(2,981,065 bytes). Anonymous public downloads match the formal artifact.
+Packaged Server507 acceptance passed the existing-volume Store/list/refresh,
+write-free delete cancellation, exact-ID readonly denial through both API roots,
+and native owner removal for two isolated volumes. Restricted, readonly and
+no-access Host Add entry denials passed separately in Traditional Chinese and
+English. Fresh volume creation remains under investigation; historical HOLDs
+and the complete matrix are not promoted. See the
+[release note](docs/releases/web-console-1.6.170.md).
 
 Published `1.6.169` corrects the shared unallocated-local-volume classifier.
 The engine may generate `externalId` from a volume's name; that identifier does

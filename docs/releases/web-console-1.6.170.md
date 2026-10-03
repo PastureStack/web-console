@@ -1,7 +1,6 @@
 # Web Console 1.6.170
 
-Source candidate; formal component publication and packaged native acceptance
-remain separate gates.
+Published immutable component; packaged native acceptance remains a separate gate.
 
 ## Root cause and scope
 
@@ -32,10 +31,26 @@ mount cache, inactive mounts, nonempty IDs and malformed values remain excluded.
 Focused headless Chrome 153 validation passed 13/13 directly affected classifier
 and storage-route cases, with zero failures, skips or todo. Independent scoped
 review found no blocker. This is source regression evidence, not packaged QA.
-Formal immutable component/archive results and packaged browser lifecycle
-results will be recorded after they are actually complete. Earlier failed
-native row receipts remain HOLD; the complete resource/permission/locale matrix
-is not claimed as PASS.
+Formal validation [37082272427](https://github.com/PastureStack/web-console/actions/runs/37082272427)
+passed 792/792 tests, with zero failures, skips or todo. Signed numerical tag
+`1.6.170` pins source `09df1480c5f4b58c6a9a9060ff94d980792f7015`;
+two production archives and anonymous public downloads match SHA-256
+`900974b07bb20ba5b2e7c1dede7012a53c6e2c96cd094c67cb7019434c4f27c9`
+(2,981,065 bytes).
+
+On packaged Server507, two isolated existing volumes passed real browser
+Store/list/refresh, write-free delete cancellation, exact-ID readonly DELETE
+denial through both API roots (405), and one native owner DELETE each (200),
+followed by absence after refresh. Each case used fresh owner/readonly MFA and
+13 complete DB/API preservation checks. The unallocated section's three text
+keys passed 13-locale observations; this is not whole-page or mobile acceptance.
+Restricted, readonly and no-access Host Add entry denials passed separately in
+Traditional Chinese and English, with human-readable errors and zero resource,
+registration-token or preference writes.
+
+Fresh volume creation remains under investigation. Existing-volume acceptance
+does not establish a fresh create lifecycle. Earlier failed receipts remain
+HOLD; the complete resource/permission/locale matrix is not claimed as PASS.
 
 ## Upgrade and rollback
 
