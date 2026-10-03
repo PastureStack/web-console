@@ -8,17 +8,26 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.172` preserves API-key create-only first delivery when a redacted
+Published `1.6.172` preserves API-key create-only first delivery when a redacted
 subscribe model arrives before POST/201. Only the API-key editor opts into a
 request-private, Schema-bound delivery to its detached clone; newer canonical
 state and nested resources remain intact, and the canonical Store does not need
 to retain the secret. Compatibility revision 6 replaces revision 5 without
-changing dependency versions or the graph. Source/package checks pass; new
-installed-Store and save-owner regressions have been added, including personal
-and project stores with 100 deterministic barriers each. Local Chrome tests
-have not run because the local shared dependency layout is incomplete. Official
-tests, publication and packaged native acceptance remain pending. Historical
-HOLDs remain HOLD; the full matrix is INCOMPLETE. See the
+changing dependency versions or the graph. Exact-source official validation
+[37109872791](https://github.com/PastureStack/web-console/actions/runs/37109872791)
+passed 808/808 tests with zero failures, skips or todo, including fourteen
+installed-Store ordering cases and two save-owner cases. Personal and project
+stores each exercise 100 deterministic barriers. Two production builds are
+byte-identical. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.172)
+pins source `daab6e8ed5206562feb60e6549a3b9e72b4c8381`; archive SHA-256 is
+`9a21c5e6ff9fbb274dbc7c45ec1ccffdbff33a945544b64d5976b14ee9752bfa`
+(2,981,642 bytes). Anonymous public archive and checksum downloads match the
+same formal CI artifact; publication did not rebuild it.
+[Server `v1.6.510`](https://github.com/PastureStack/server/releases/tag/v1.6.510)
+officially packages Engine333 and this exact component. Separate QA deployment
+and fresh-key native first-delivery acceptance remain pending. Historical HOLDs
+remain HOLD; the complete permission/resource/locale matrix is INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.172.md).
 
 Published `1.6.171` repairs a shared Store ordering defect: a delayed initial

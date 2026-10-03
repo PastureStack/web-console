@@ -1,7 +1,8 @@
 # Web Console 1.6.172
 
-Candidate first-delivery repair. Official tests, publication and packaged QA
-are separate pending gates; historical failed receipts remain HOLD.
+Published first-delivery repair. Official tests and signed immutable component
+publication are complete; separate QA deployment and fresh-key native acceptance
+remain pending. Historical failed receipts remain HOLD.
 
 ## Root cause and contract
 
@@ -51,15 +52,40 @@ NewOrEdit tests cover delivery cleanup across success, request rejection,
 synchronous doneSaving/completion exceptions and rejected duplicate submissions;
 ordinary consumers keep their prior options and return value.
 
-Source/package checks pass. The local Chrome suite has not started because the
-local junction-based dependency layout is incomplete; it is not reported as a
-test PASS. Exact-source official tests, immutable publication and packaged native
-first-delivery acceptance remain pending. Historical HOLDs and the complete
-permission/resource/locale matrix are not promoted.
+Exact-source official validation
+[37109872791](https://github.com/PastureStack/web-console/actions/runs/37109872791)
+passed 808/808 tests with zero failures, skips or todo, including fourteen
+installed-Store ordering cases and two save-owner cases. The two production
+builds produced byte-identical archives. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.172)
+pins source `daab6e8ed5206562feb60e6549a3b9e72b4c8381` and tested tree
+`8f6c8eb930fe77d6983a37e9b30912a384af5e7e`; source, merge-source and tag
+signatures were verified. Later documentation commits are not the tested
+runtime source. Archive SHA-256 is
+`9a21c5e6ff9fbb274dbc7c45ec1ccffdbff33a945544b64d5976b14ee9752bfa`
+(2,981,642 bytes). Anonymous public archive and checksum downloads match the
+same formal CI bytes. Publication reused that archive without rebuilding.
+
+The build audit is `PASS_BUILD_VENDOR_PENDING`, not a zero-vulnerability claim.
+The reviewed development-only `GHSA-vfj7-8cjw-p6xm` closure remains vendor
+pending; dependency versions, graph and audit thresholds are unchanged. No
+runtime-not-affected claim is made. See the
+[bounded review record](../security/npm-vendor-pending.json).
+
+Separately published
+[Server `v1.6.510`](https://github.com/PastureStack/server/releases/tag/v1.6.510)
+packages Engine333 and this exact Web Console source/archive. Its
+[official publication run](https://github.com/PastureStack/server/actions/runs/37110936143)
+and public GHCR readback verify the immutable image, component identity and
+release assets; they do not establish QA deployment or native fresh-key
+first-delivery acceptance. Those gates remain pending. Earlier local dependency
+layout failures and native HOLD receipts are not promoted by the official CI
+success. The complete permission/resource/locale matrix remains INCOMPLETE.
 
 ## Upgrade and rollback
 
-Use only a separately published Server package containing this exact component.
+Use only the separately published Server package containing this exact component.
 Retain existing settings, persistent volumes and previous immutable artifacts.
-No database migration or backend change is required. This candidate does not
-authorize deployment, live retries or a change to authentication settings.
+This Web Console repair adds no database migration or backend API/permission
+change. Component and Server publication do not authorize deployment, live
+retries or a change to authentication settings.

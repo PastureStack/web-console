@@ -4,7 +4,7 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Candidate `1.6.172` adds opt-in first delivery of fields whose actual Schema
+Published `1.6.172` adds opt-in first delivery of fields whose actual Schema
 declares `readOnCreateOnly: true`. Only `edit-apikey` enables it. A nonenumerable
 request-private callback delivers the successful create values once to a
 detached clone, not to serialized metadata or canonical cache. Matching Store,
@@ -13,10 +13,21 @@ newer subscribe state and nested-resource adoption are preserved. Other
 NewOrEdit hook arguments/results and consumers retain their previous contracts.
 The save owner clears its own pending delivery on success and failure; rejected
 duplicates cannot clear another save's lock or values. Compatibility revision 6
-is a new archive with the same dependency graph. Source/package checks pass;
-local Chrome tests have not run because of incomplete shared dependencies.
-Official tests, publication and packaged native acceptance are pending, not
-full-matrix PASS. See the [release note](docs/releases/web-console-1.6.172.md).
+is a new archive with the same dependency graph. Exact-source official validation
+[37109872791](https://github.com/PastureStack/web-console/actions/runs/37109872791)
+passed 808/808 tests with zero failures, skips or todo, including fourteen
+installed-Store ordering cases and two save-owner cases. Both production builds
+and anonymous public archive/checksum downloads match the same formal CI artifact:
+SHA-256 `9a21c5e6ff9fbb274dbc7c45ec1ccffdbff33a945544b64d5976b14ee9752bfa`,
+2,981,642 bytes. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.172)
+pins source `daab6e8ed5206562feb60e6549a3b9e72b4c8381`; publication reused the
+CI archive without rebuilding. Separately published
+[Server `v1.6.510`](https://github.com/PastureStack/server/releases/tag/v1.6.510)
+packages Engine333 and this exact component. QA deployment and fresh-key native
+first-delivery acceptance remain pending. Historical HOLDs are not promoted;
+the complete permission/resource/locale matrix remains INCOMPLETE. See the
+[release note](docs/releases/web-console-1.6.172.md).
 
 Published `1.6.171` confines create-response adoption to ID-less POST/201 and an
 existing exact-ID/concrete-type canonical model in the same Store, generation
