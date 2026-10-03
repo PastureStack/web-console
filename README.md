@@ -8,6 +8,14 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Source candidate `1.6.170` corrects an optional `mounts: null` projection being
+mistaken for a real allocation in the shared local-volume list. It preserves
+the complete advertised pool relationship, full scoped mount cache, exact-volume
+binding checks and backend permissions. Raw IDs and malformed values do not
+become empty evidence. Formal publication and packaged native lifecycle
+acceptance remain pending; historical HOLDs and the complete matrix are not
+promoted. See the [release note](docs/releases/web-console-1.6.170.md).
+
 Published `1.6.169` corrects the shared unallocated-local-volume classifier.
 The engine may generate `externalId` from a volume's name; that identifier does
 not allocate the volume to a host, workload or storage pool. Classification
@@ -23,8 +31,9 @@ production archives. The signed immutable numeric
 pins source `5962f57fccb4062a65b5921646c06b4663713b9b`; archive SHA-256 is
 `e2bcb97b0da810f2ff216f9738739235e3c6f29ef46f1d99b623cf9c9f7258e2`
 (2,981,057 bytes). Anonymous public downloads match the formal artifact.
-Server `v1.6.506` remains a source candidate in PR231, not a formally
-published Server artifact. Packaged native existing-volume terminal and fresh
+Server `v1.6.506` is now published and deployed on the QA 8080 host, with initial
+and restart HTTP 200 checks and preserved configuration/volumes. The packaged
+native existing-volume terminal found the null-projection defect above; fresh
 create/cancel/refresh/readonly-denial/remove acceptance remain pending.
 Historical HOLDs are not promoted; the complete permission/resource/locale
 matrix remains INCOMPLETE. See the
