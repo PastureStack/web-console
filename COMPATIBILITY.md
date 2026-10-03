@@ -4,6 +4,32 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Published `1.6.173` reads native ProjectTemplate card labels from the model's
+existing `name`, not `localizedName`, which native ProjectTemplate does not implement.
+Name-dependent sorting, rename reactivity and exact-ID selection remain native;
+Catalog localization, payloads, permissions, memberships and save/auth contracts
+are unchanged. Four regressions and exact-source CI37115288389 passed within
+812/812 tests, with zero failures, skips or todo and identical production builds.
+The signed numeric release pins source `c8b8bb2659fdad3539cf6a72866c94a77ec516b6`;
+anonymous public archive/checksum readback matches SHA256
+`a566684e6e0831630a15cb7212989c0e9fe707ed07965156c2b664b9cdb5ba27`.
+Published Server511 packages this exact Web173 and Engine333; official artifact
+readback and QA125/8080 upgrade are verified, with first-start11/restart10
+HTTP200/pong and unchanged runtime/DB counts. No Docker healthy is claimed;
+The version-bound native Template117 read-only proof passed: three Full17/14
+guards, zero resource writes and source-bound same-ID empty stacks/services;
+not a native-create finalizer. Project/Host acceptance remains pending.
+Fresh Project key `1c6998` is independently verified as
+`DERIVED_SCOPED_KEY511_VERIFIED_NOT_ORIGINAL_PASS`: the same actual child run has
+4 native writes, 13 guards, 6 cookie-free issued Basic GETs before deactivate/delete,
+4 barriers and 18 first-delivery checks. The original parent QA-receipt identity-schema HOLD stays immutable;
+the derived check did not rewrite receipts or replay writes. See the
+[release note for evidence and limits](docs/releases/web-console-1.6.173.md).
+Process native list/link/detail and same-ID direct GET passed for one current ID:
+two API roots × six roles, 12/12 cells and zero resource writes. Other IDs and
+write methods remain untested;
+the full matrix is INCOMPLETE. See the [release note](docs/releases/web-console-1.6.173.md).
+
 Published `1.6.172` adds opt-in first delivery of fields whose actual Schema
 declares `readOnCreateOnly: true`. Only `edit-apikey` enables it. A nonenumerable
 request-private callback delivers the successful create values once to a
