@@ -4,13 +4,21 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Source candidate `1.6.170` accepts null only for the optional expanded `mounts`
+Published `1.6.170` accepts null only for the optional expanded `mounts`
 projection while retaining the real complete empty pool relationship and full
 scoped mount-cache proof. It preserves nonempty raw ID binding, current-project
 ownership, stale-proof invalidation and backend authorization. Null raw IDs and
 malformed array-like objects remain excluded. No API or authentication contract
-changes. Formal publication and packaged native lifecycle acceptance remain
-pending; see the [release note](docs/releases/web-console-1.6.170.md).
+changes. Official validation 37082272427 passed 792/792 with no failure/skip/todo;
+two production archives and anonymous public downloads match SHA-256
+`900974b07bb20ba5b2e7c1dede7012a53c6e2c96cd094c67cb7019434c4f27c9`.
+Signed tag `1.6.170` pins source `09df1480c5f4b58c6a9a9060ff94d980792f7015`.
+Packaged Server507 existing-volume Store/list/refresh, write-free delete cancel,
+both-root readonly denial and native owner removal passed for two isolated IDs.
+Host Add entry denials passed separately for restricted, readonly and no-access
+roles in Traditional Chinese and English. Fresh volume creation remains under
+investigation; historical HOLDs and the complete matrix are not promoted.
+See the [release note](docs/releases/web-console-1.6.170.md).
 
 Published Web Console `1.6.169` treats Volume `externalId` as an identifier rather than an
 allocation reference, matching the existing engine pre-create contract. The
