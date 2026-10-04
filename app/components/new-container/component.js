@@ -462,7 +462,7 @@ export default Component.extend(NewOrEdit, SelectTab, {
   // ----------------------------------
   validate() {
     this._super();
-    var errors = this.get('errors')||[];
+    var errors = (this.get('errors')||[]).slice();
 
     if ( this.get('isService') )
     {
@@ -490,7 +490,6 @@ export default Component.extend(NewOrEdit, SelectTab, {
       hardwareIssues(config, host).forEach((key) => errors.push(this.get('intl').t(key === 'deviceGroup' ? 'formResources.deviceGroupHelp' : `formResources.errors.${key}`)));
     });
     errors.pushObjects(this.get('scaleErrors')||[]);
-    errors.pushObjects(this.get('imageErrors')||[]);
     errors.pushObjects(this.get('portErrors')||[]);
     errors.pushObjects(this.get('diskErrors')||[]);
 
@@ -502,7 +501,10 @@ export default Component.extend(NewOrEdit, SelectTab, {
       errors.push(this.get('intl').t('formPorts.preflight.error.sidekickBlocked'));
     }
 
+    this._nonImageValidationErrors = errors.slice();
+    errors.pushObjects(this.get('imageErrors')||[]);
     errors = errors.uniq();
+    this._imageValidationAggregate = errors.get('length') ? errors : null;
 
     if ( errors.get('length') )
     {
@@ -513,6 +515,19 @@ export default Component.extend(NewOrEdit, SelectTab, {
     this.set('errors', null);
     return true;
   },
+
+  // Refresh only the local aggregate produced by validate(), not a later save error.
+  imageErrorsDidChange: function() {
+    if ( !this._nonImageValidationErrors || this.get('errors') !== this._imageValidationAggregate ) {
+      return;
+    }
+
+    let errors = this._nonImageValidationErrors.slice();
+    errors.pushObjects(this.get('imageErrors')||[]);
+    errors = errors.uniq();
+    this._imageValidationAggregate = errors.get('length') ? errors : null;
+    this.set('errors', this._imageValidationAggregate);
+  }.observes('imageErrors.[]'),
 
   doSave() {
     if ( this.get('isService') && this.get('isUpgrade') )

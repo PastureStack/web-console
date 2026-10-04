@@ -8,18 +8,37 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.174` removes the ordinary-container default and quick picks from
+Candidate `1.6.175` keeps the container/VM form's image validation message in
+sync when the operator corrects the image or changes the locale. Only the
+form's own validation aggregate is refreshed: model/command errors and later
+backend save errors remain intact. The shared save lifecycle, lock ownership,
+payloads, permissions and authentication are unchanged. Local Chrome 153
+verification passed 17/17 related tests with zero failures, skips or todo,
+including four new real-component regression tests. This is source validation,
+not packaged QA acceptance. Formal CI, publication and Server packaging for
+this candidate remain pending; the full matrix remains INCOMPLETE. See the
+[candidate release note](docs/releases/web-console-1.6.175.md).
+
+Published `1.6.174` removes the ordinary-container default and quick picks from
 the VM image field. Custom images, existing image values and the last-used VM
 image remain supported; ordinary container defaults are unchanged. A blank
 image still blocks the existing save lifecycle. VM boot-image guidance and
 required errors for both VM and container images use reviewed English and
 Traditional Chinese copy with the existing English fallback.
-Dependency versions and the dependency graph are unchanged. Five added Ember
-regressions have not yet run; 817 total tests is an expectation, not a result.
-Exact-source CI, reproducible artifacts, signed publication, Server packaging
-and packaged VM acceptance remain pending. Historical releases and HOLDs are
-unchanged; the full matrix remains INCOMPLETE. See the
-[candidate release note](docs/releases/web-console-1.6.174.md).
+Dependency versions and the dependency graph are unchanged. Exact-source
+[CI37152802665](https://github.com/PastureStack/web-console/actions/runs/37152802665)
+passed 817/817 tests with zero failures, skips or todo. The signed numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.174)
+pins source `d24b7f4e164f058e3ef9057347caa2080e2b5407`; both reproducible CI
+archives and anonymous public readback match SHA256
+`6408775898f412e4b27092eeddd9cdc2028ad7b27835f489139c2d0cf62c6776`
+(2,982,022 bytes). Server `v1.6.512` packages this exact component. QA125/8080
+fresh VM/container image forms passed eight scoped English/Traditional Chinese
+cases with zero resource writes. This is not a successful VM boot or full
+permission/resource/locale acceptance; the discovered stale parent image error
+is addressed by the unpublished `1.6.175` candidate above. Historical releases
+and HOLDs are unchanged; the full matrix remains INCOMPLETE. See the
+[published release note](docs/releases/web-console-1.6.174.md).
 
 Published `1.6.173` repairs empty environment-template choice labels. These
 choices are native `ProjectTemplate` resources, not Catalog templates: their

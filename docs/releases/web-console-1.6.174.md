@@ -1,8 +1,16 @@
 # Web Console 1.6.174
 
-Candidate only. Exact-source CI, reproducible production artifacts, signed
-publication, anonymous public readback and Server packaging have not yet been
-completed for this version. No VM lifecycle PASS is claimed.
+Published immutable numeric release. Exact-source CI37152802665 passed 817/817
+tests with zero failures, skips or todo, including the five direct VM-image
+regressions. Signed source `d24b7f4e164f058e3ef9057347caa2080e2b5407` and both
+reproducible CI archives match the anonymous public archive readback: SHA256
+`6408775898f412e4b27092eeddd9cdc2028ad7b27835f489139c2d0cf62c6776`,
+2,982,022 bytes. Publication reused the CI asset without rebuilding.
+Server `v1.6.512` packages this component; immutable image digest
+`sha256:805078de83c0320c751dff90304bd841b8e64bec720079198258d22fa41d0145`.
+QA125/8080 image-form-only acceptance passed eight English/Traditional Chinese
+VM/container cases, with fresh dual MFA, three Full17/14 guards and zero
+resource writes. No successful VM boot or full-matrix PASS is claimed.
 
 ## Root cause and bounded repair
 
@@ -35,16 +43,16 @@ change only their root package version metadata to `1.6.174`.
 Five new real-component Ember regressions cover existing and last-used images,
 blank-image save cancellation, custom VM input without misleading quick picks,
 VM guidance/required-error locale changes and ordinary-container required-error
-locale changes on the same form. They have not yet been executed. The expected
-full test count is 817 (the previous 812 plus these five), not a verified result.
+locale changes on the same form. All five passed in the verified 817-test CI run.
 Offline method controls and syntax checks do not replace Chrome rendering,
 exact-source CI or packaged native VM acceptance.
 
-No source commit, formal run, archive checksum or publication coordinate is
-asserted for this candidate. Reuse only the eventual reviewed exact-source CI
-artifact for publication; do not rebuild or overwrite an older release.
+The published coordinates above do not establish VM runtime acceptance.
+The packaged forms exposed a separate stale parent image-validation error after
+the child input was corrected. That observation remains OPEN on Server512;
+the unpublished Web175 source candidate has four new focused regression tests.
 The existing vendor-pending advisory and audit policy remain unchanged; this
-candidate is not a zero-CVE claim.
+release is not a zero-CVE claim.
 
 The [published Web173 record](web-console-1.6.173.md) and its scoped results
 remain historical evidence, not proof of this candidate's VM lifecycle.
