@@ -1,8 +1,35 @@
 # Web Console 1.6.176
 
-Candidate source only. Exact-source CI, signed immutable publication, Server
-packaging and deployed UI acceptance are pending. Do not promote historical
-Project HOLDs or infer full-matrix acceptance from this correction.
+Published component only. Server514 packaging and deployed UI acceptance remain
+pending. QA125/8080 remains Server512/Web174. The original P9 Project HOLD and
+all historical HOLDs remain unchanged; this publication is not full-matrix PASS.
+
+## Formal publication and limits
+
+Exact-source [CI37175725533](https://github.com/PastureStack/web-console/actions/runs/37175725533)
+passed 824/824 tests with zero failures, skips or todo. Its 32 targeted cases
+retain 29 earlier cases and add three native-mut regressions: plain Project
+member roles, EmberObject Project member roles and a rendered nested schema enum.
+The signed immutable numeric [release](https://github.com/PastureStack/web-console/releases/tag/1.6.176)
+from [PR171](https://github.com/PastureStack/web-console/pull/171) pins source
+`a1bbf172aad8443bfbb1859760d62669d6705189` and tree
+`dfa280c29e241bb815eff852e8a188c101e338eb`. Both reproducible production builds
+and anonymous public archive/checksum downloads match archive SHA256
+`071ce0b7091b323e0d84fe91269684f59fcf2e29000bd8ff94428e8dd03ece52`
+(2,982,158 bytes); publication reused the tested artifact without rebuilding.
+The anonymous publication readback receipt SHA256 is
+`582b2d570f0a28930d0e10fa718632659cc5d4c94a83158223b5d641fe1588db`.
+
+The thirteen packaged locales and source gates passed. Static artifact inventory
+contains no affected build-package modules; this is not a runtime not-affected
+VEX or zero-CVE claim. The unchanged build audit reports 7 High / 3 Moderate.
+The exact reviewed build-only `GHSA-vfj7-8cjw-p6xm` remains vendor-pending through
+2026-10-10, with the existing High threshold and expiry checks retained.
+
+Server514 still awaits Catalog publication, official assembly CI and QA
+deployment. Component QUnit/source/publication results do not accept the
+packaged native Project workflow, promote P9 or any prior HOLD, or establish
+the complete permission/resource/locale matrix, which remains INCOMPLETE.
 
 ## Root cause and minimal repair
 

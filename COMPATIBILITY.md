@@ -4,14 +4,25 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Candidate `1.6.176` preserves native `mut` setters by composing `action` with
+Published `1.6.176` preserves native `mut` setters by composing `action` with
 `fn (mut ...)` in the same 21 existing select bindings. The classic helper's
 event `target.value` conversion is unchanged. Model identities, selected-row
 references, schema choices, member capability checks, metadata/network writes,
 save ownership/finalizers, API payload contracts and authentication are unchanged.
 The shared compatibility helper and dependency graph are unchanged. Exact-source
-CI, publication and packaged UI acceptance are pending; the full matrix remains
-INCOMPLETE and historical HOLDs remain immutable.
+CI37175725533 passed 824/824 tests with zero failures, skips or todo, including
+32 targeted cases (29 retained and three new native-mut regressions). Signed
+numeric publication and anonymous public downloads reuse both byte-identical CI
+archives: source `a1bbf172aad8443bfbb1859760d62669d6705189`, tree
+`dfa280c29e241bb815eff852e8a188c101e338eb`, archive SHA256
+`071ce0b7091b323e0d84fe91269684f59fcf2e29000bd8ff94428e8dd03ece52`.
+Thirteen packaged locales and source gates passed; static absence of affected
+build-package modules does not establish runtime not-affected or zero CVEs.
+The build audit remains 7 High / 3 Moderate; the existing reviewed
+`GHSA-vfj7-8cjw-p6xm` vendor-pending boundary ends 2026-10-10. Server514 packaging
+still awaits Catalog publication and official CI, and QA remains Server512/Web174.
+Packaged UI acceptance is pending; the original P9 Project HOLD and all other
+historical HOLDs remain immutable. The full matrix remains INCOMPLETE.
 See the [release note](docs/releases/web-console-1.6.176.md).
 
 Published `1.6.175` refreshes only the image form's locally owned validation
