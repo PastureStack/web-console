@@ -8,16 +8,31 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.176` repairs native select bindings that passed a `mut` reference
+Published `1.6.176` repairs native select bindings that passed a `mut` reference
 directly to the classic compatibility `action` helper. The helper receives the
 current value instead of a setter; wrap `mut` in native `fn` to retain the setter
 while preserving the existing event value mapping. This covers the same 21
 select bindings in 11 templates, including project roles, schema fields,
 balancer rules, settings and machine-driver fields. Project member capabilities,
 identities, metadata/network write boundaries, save finalizers and authentication
-remain unchanged. Exact-source CI, immutable publication and packaged QA
-acceptance are pending; historical HOLDs are not promoted and the full matrix
-remains INCOMPLETE. See the [release note](docs/releases/web-console-1.6.176.md).
+remain unchanged. Exact-source
+[CI37175725533](https://github.com/PastureStack/web-console/actions/runs/37175725533)
+passed 824/824 tests with zero failures, skips or todo, including 32 targeted
+cases (29 retained and three new native-mut regressions). The signed immutable
+numeric [release](https://github.com/PastureStack/web-console/releases/tag/1.6.176)
+pins source `a1bbf172aad8443bfbb1859760d62669d6705189` and tree
+`dfa280c29e241bb815eff852e8a188c101e338eb`. Both reproducible CI archives and
+anonymous public downloads match SHA256
+`071ce0b7091b323e0d84fe91269684f59fcf2e29000bd8ff94428e8dd03ece52`
+(2,982,158 bytes). Thirteen packaged locales and the source gates passed;
+affected build-package modules are absent from the static artifact inventory,
+not a runtime not-affected or zero-CVE claim. The build audit remains 7 High /
+3 Moderate, with the existing reviewed `GHSA-vfj7-8cjw-p6xm` vendor-pending
+boundary through 2026-10-10. Server `v1.6.514` packaging still awaits Catalog
+publication and official CI; QA125/8080 remains Server512/Web174. Packaged native
+UI acceptance is pending, including the original P9 Project HOLD, which is not
+promoted. The full matrix remains INCOMPLETE. See the
+[release note](docs/releases/web-console-1.6.176.md).
 
 Published `1.6.175` keeps the container/VM form's image validation message in
 sync when the operator corrects the image or changes the locale. Only the
