@@ -11,7 +11,7 @@
         </div>
         <div class="col-md-8">
           {{#if this.isStep1}}
-            <select class="form-control" onchange={{action (mut this.amazonec2Config.region) value="target.value"}}>
+            <select class="form-control" onchange={{action (fn (mut this.amazonec2Config.region)) value="target.value"}}>
               {{#each this.regionChoices as |choice|}}
                 <option value={{choice}} selected={{eq this.amazonec2Config.region choice}}>{{choice}}</option>
               {{/each}}
@@ -77,7 +77,7 @@
       </div>
       <div class="col-md-8">
         {{#if this.isStep3}}
-          <select class="form-control" onchange={{action (mut this.selectedZone) value="target.value"}}>
+          <select class="form-control" onchange={{action (fn (mut this.selectedZone)) value="target.value"}}>
             {{#each this.zoneChoices as |choice|}}
               <option value={{choice}} selected={{eq this.selectedZone choice}}>{{choice}}</option>
             {{/each}}

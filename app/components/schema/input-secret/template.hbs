@@ -1,4 +1,4 @@
-<select class="{{this.selectClass}}" onchange={{action (mut this.selected) value="target.value"}}>
+<select class="{{this.selectClass}}" onchange={{action (fn (mut this.selected)) value="target.value"}}>
   <option selected={{eq this.selected null}}>{{t 'schema.inputSecret.prompt'}}</option>
   {{#each this.filtered as |secret|}}
     <option selected={{eq this.selected secret.id}} value={{secret.id}}>{{secret.name}}</option>

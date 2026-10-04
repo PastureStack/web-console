@@ -120,7 +120,7 @@
 
           <div class="radio"><label>{{radio-button selection=this.whichSecurityGroup value="custom"}} {{t 'machine.driverExoscale.securityGroup.custom'}}</label></div>
           {{#if this.isCustomSecurityGroup}}
-            <select class="form-control" onchange={{action (mut this.selectedSecurityGroup) value="target.value"}}>
+            <select class="form-control" onchange={{action (fn (mut this.selectedSecurityGroup)) value="target.value"}}>
               {{#each this.allSecurityGroups as |choice|}}
                 <option value={{choice.name}} selected={{eq this.selectedSecurityGroup choice.name}}>{{choice.name}}</option>
               {{/each}}
@@ -181,7 +181,7 @@
         <label class="form-control-static">{{t 'machine.driverExoscale.instanceProfile.label'}}</label>
       </div>
       <div class="col-md-4">
-        <select class="form-control" onchange={{action (mut this.exoscaleConfig.instanceProfile) value="target.value"}}>
+        <select class="form-control" onchange={{action (fn (mut this.exoscaleConfig.instanceProfile)) value="target.value"}}>
           {{#each this.allInstanceProfiles as |choice|}}
             <option value={{choice.name}} selected={{eq this.exoscaleConfig.instanceProfile choice.name}}>{{choice.displaytext}}</option>
           {{/each}}
@@ -200,7 +200,7 @@
         <label class="form-control-static">{{t 'machine.driverExoscale.template.label'}}</label>
       </div>
       <div class="col-md-4">
-        <select class="form-control" onchange={{action (mut this.exoscaleConfig.template) value="target.value"}}>
+        <select class="form-control" onchange={{action (fn (mut this.exoscaleConfig.template)) value="target.value"}}>
           {{#each this.allTemplates as |choice|}}
             <option value={{choice}} selected={{eq this.exoscaleConfig.template choice}}>{{choice}}</option>
           {{/each}}

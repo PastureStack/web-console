@@ -35,7 +35,7 @@
         <label class="form-control-static">{{t 'machine.driverPacket.image.label'}}</label>
       </div>
       <div class="col-md-4">
-        <select class="form-control" onchange={{action (mut this.packetConfig.os) value="target.value"}}>
+        <select class="form-control" onchange={{action (fn (mut this.packetConfig.os)) value="target.value"}}>
           {{#each this.osChoices as |choice|}}
             <option disabled={{not choice.enabled}} value={{choice.slug}} selected={{eq this.packetConfig.os choice.slug}}>{{choice.name}}</option>
           {{/each}}
@@ -45,7 +45,7 @@
         <label class="form-control-static">{{t 'machine.driverPacket.size.label'}}</label>
       </div>
       <div class="col-md-4">
-        <select class="form-control" onchange={{action (mut this.packetConfig.plan) value="target.value"}}>
+        <select class="form-control" onchange={{action (fn (mut this.packetConfig.plan)) value="target.value"}}>
           {{#each this.planChoices as |choice|}}
             <option disabled={{not choice.enabled}} value={{choice.slug}} selected={{eq this.packetConfig.plan choice.slug}}>{{choice.name}}</option>
           {{/each}}
@@ -62,7 +62,7 @@
         <label class="form-control-static">{{t 'machine.driverPacket.region.label'}}</label>
       </div>
       <div class="col-md-10">
-        <select class="form-control" onchange={{action (mut this.packetConfig.facilityCode) value="target.value"}}>
+        <select class="form-control" onchange={{action (fn (mut this.packetConfig.facilityCode)) value="target.value"}}>
           {{#each this.facilityChoices as |choice|}}
             <option value={{choice.code}} selected={{eq this.packetConfig.facilityCode choice.code}}>{{choice.name}}</option>
           {{/each}}

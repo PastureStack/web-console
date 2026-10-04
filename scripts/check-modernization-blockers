@@ -41,8 +41,8 @@ with open('package.json', encoding='utf-8') as f:
     print(json.load(f).get('version', ''))
 PY
 )
-if [[ "$version" != "1.6.175" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.175"
+if [[ "$version" != "1.6.176" ]]; then
+  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.176"
   failures=$((failures + 1))
 fi
 
@@ -59,7 +59,7 @@ require_no_pattern 'class="(loader|orbit|loadfield|grass|sun|moon)"' \
   'legacy product loading artwork returned to the application transition' \
   app/application/template.hbs
 
-require_no_pattern '\(action[[:space:]]+\(mut' \
+require_no_pattern '(\{\{|\()action[[:space:]]+\(mut' \
   'removed action-mut composition returned instead of the supported fn-mut contract' \
   app
 

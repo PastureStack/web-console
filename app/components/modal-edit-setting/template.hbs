@@ -23,7 +23,7 @@
           <label>{{radio-button selection=this.value value="false"}} {{t 'schema.inputBoolean.n'}}</label>
         </div>
       {{else if (eq this.model.kind 'enum')}}
-        <select class="form-control" onchange={{action (mut this.value) value="target.value"}}>
+        <select class="form-control" onchange={{action (fn (mut this.value)) value="target.value"}}>
           {{#each this.model.options as |choice|}}
             <option value="{{choice}}" selected={{eq choice this.value}}>{{choice}}</option>
           {{/each}}
