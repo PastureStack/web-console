@@ -28,10 +28,14 @@ anonymous public downloads match SHA256
 affected build-package modules are absent from the static artifact inventory,
 not a runtime not-affected or zero-CVE claim. The build audit remains 7 High /
 3 Moderate, with the existing reviewed `GHSA-vfj7-8cjw-p6xm` vendor-pending
-boundary through 2026-10-10. Server `v1.6.514` packaging still awaits Catalog
-publication and official CI; QA125/8080 remains Server512/Web174. Packaged native
-UI acceptance is pending, including the original P9 Project HOLD, which is not
-promoted. The full matrix remains INCOMPLETE. See the
+boundary through 2026-10-10. The published
+[Server `v1.6.514`](https://github.com/PastureStack/server/releases/tag/v1.6.514)
+includes this component and Catalog Service `0.20.12`; its official packaging,
+startup and restart checks passed. Isolated deployed UI checks also passed for
+the Traditional Chinese and English container/VM forms and INIT layout. These
+form checks do not establish VM boot, GPU runtime or every locale. Resource
+lifecycle and permission acceptance remains in progress; prior incomplete
+results are not promoted, and the full matrix remains INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.176.md).
 
 Published `1.6.175` keeps the container/VM form's image validation message in

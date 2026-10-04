@@ -1,8 +1,9 @@
 # Web Console 1.6.176
 
-Published component only. Server514 packaging and deployed UI acceptance remain
-pending. QA125/8080 remains Server512/Web174. The original P9 Project HOLD and
-all historical HOLDs remain unchanged; this publication is not full-matrix PASS.
+Published and included in
+[Server v1.6.514](https://github.com/PastureStack/server/releases/tag/v1.6.514).
+Official Server packaging, startup and restart checks passed. Deployed UI
+acceptance is scoped below; this publication is not full-matrix PASS.
 
 ## Formal publication and limits
 
@@ -26,10 +27,14 @@ VEX or zero-CVE claim. The unchanged build audit reports 7 High / 3 Moderate.
 The exact reviewed build-only `GHSA-vfj7-8cjw-p6xm` remains vendor-pending through
 2026-10-10, with the existing High threshold and expiry checks retained.
 
-Server514 still awaits Catalog publication, official assembly CI and QA
-deployment. Component QUnit/source/publication results do not accept the
-packaged native Project workflow, promote P9 or any prior HOLD, or establish
-the complete permission/resource/locale matrix, which remains INCOMPLETE.
+Server514 packages this archive with published Catalog Service `0.20.12`.
+Isolated deployed tests cover eight fresh/cache functional observations of the
+Traditional Chinese and English container/VM forms and two INIT checks, with
+zero resource writes or VM starts. The retained fresh-form screenshots and INIT
+screenshots were also visually reviewed. This does not establish VM boot, GPU
+runtime, independent cached-form screenshots or all thirteen locales. Resource
+lifecycle and permission acceptance remains in progress. Prior incomplete
+results remain unchanged; the complete matrix remains INCOMPLETE.
 
 ## Root cause and minimal repair
 
