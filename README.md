@@ -8,16 +8,21 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.175` keeps the container/VM form's image validation message in
+Published `1.6.175` keeps the container/VM form's image validation message in
 sync when the operator corrects the image or changes the locale. Only the
 form's own validation aggregate is refreshed: model/command errors and later
 backend save errors remain intact. The shared save lifecycle, lock ownership,
-payloads, permissions and authentication are unchanged. Local Chrome 153
-verification passed 17/17 related tests with zero failures, skips or todo,
-including four new real-component regression tests. This is source validation,
-not packaged QA acceptance. Formal CI, publication and Server packaging for
-this candidate remain pending; the full matrix remains INCOMPLETE. See the
-[candidate release note](docs/releases/web-console-1.6.175.md).
+payloads, permissions and authentication are unchanged. Exact-source
+[CI37163340764](https://github.com/PastureStack/web-console/actions/runs/37163340764)
+passed 821/821 tests, including four new real-component regressions, with zero
+failures, skips or todo. The signed immutable numeric
+[release](https://github.com/PastureStack/web-console/releases/tag/1.6.175)
+pins source `bb905d092700c262497b88f5773e7714fc1f4be4`. Both reproducible
+builds and anonymous public downloads match archive SHA256
+`9833467b2be47d4fa01f09954fcd35beb292c59d382d5c1aecd76d17c6a387a2`
+(2,982,158 bytes). Server packaging and deployed UI acceptance remain pending;
+the full matrix remains INCOMPLETE. See the
+[release note](docs/releases/web-console-1.6.175.md).
 
 Published `1.6.174` removes the ordinary-container default and quick picks from
 the VM image field. Custom images, existing image values and the last-used VM
@@ -36,7 +41,7 @@ archives and anonymous public readback match SHA256
 fresh VM/container image forms passed eight scoped English/Traditional Chinese
 cases with zero resource writes. This is not a successful VM boot or full
 permission/resource/locale acceptance; the discovered stale parent image error
-is addressed by the unpublished `1.6.175` candidate above. Historical releases
+is addressed by the published `1.6.175` component above, not yet deployed. Historical releases
 and HOLDs are unchanged; the full matrix remains INCOMPLETE. See the
 [published release note](docs/releases/web-console-1.6.174.md).
 

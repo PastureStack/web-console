@@ -1,8 +1,13 @@
 # Web Console 1.6.175
 
-Candidate only. Formal exact-source CI, signed numeric release, reproducible
-archive and Server packaging are pending. Local tests do not establish packaged
-UI acceptance or full permission/resource/locale acceptance.
+Published immutable numeric component, not deployed UI acceptance. Exact-source
+[CI37163340764](https://github.com/PastureStack/web-console/actions/runs/37163340764)
+passed 821/821, with zero failures, skips or todo. Source
+`bb905d092700c262497b88f5773e7714fc1f4be4` and both reproducible builds match
+[the signed release](https://github.com/PastureStack/web-console/releases/tag/1.6.175).
+Anonymous archive/checksum downloads match SHA256
+`9833467b2be47d4fa01f09954fcd35beb292c59d382d5c1aecd76d17c6a387a2`
+(2,982,158 bytes). Server packaging and deployed UI acceptance remain pending.
 
 ## Root cause and minimal repair
 
@@ -20,7 +25,7 @@ change, authorization change or backend patch is introduced.
 Four new real-component QUnit tests cover VM/container correction, preservation
 of non-image errors, locale replacement and a real save failure/errorSaving hook
 followed by image correction. Local Chrome 153 passed 17/17 related tests with
-zero failures, skips or todo. The full CI count is not yet a verified result.
+zero failures, skips or todo; all four also passed in the formal 821-test suite.
 
 Dependency versions and the dependency graph are unchanged. Package metadata
 changes only the root version. Existing session generation, mutex, session-bound
