@@ -61,7 +61,7 @@
                 </td>
 
                 <td data-title="{{t 'formBalancerRules.access.label'}}">
-                  <select class="form-control input-sm" onchange={{action (mut rule.access) value="target.value"}}>
+                  <select class="form-control input-sm" onchange={{action (fn (mut rule.access)) value="target.value"}}>
                     <option value="public" selected={{eq rule.access "public"}}>{{t 'formBalancerRules.access.public'}}</option>
                     <option value="internal" selected={{eq rule.access "internal"}}>{{t 'formBalancerRules.access.internal'}}</option>
                   </select>
@@ -78,7 +78,7 @@
                 {{/if}}
 
                 <td data-title="{{t 'formBalancerRules.protocol.label'}}">
-                  <select class="form-control input-sm" onchange={{action (mut rule.protocol) value="target.value"}}>
+                  <select class="form-control input-sm" onchange={{action (fn (mut rule.protocol)) value="target.value"}}>
                     {{#each this.protocolChoices as |proto|}}
                       <option value={{proto}} selected={{eq rule.protocol proto}}>{{upper-case proto}}</option>
                     {{/each}}

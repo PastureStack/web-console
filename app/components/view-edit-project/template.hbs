@@ -99,7 +99,7 @@
               <td>{{member.displayType}}</td>
               <td>
                 {{#if (and this.showEdit this.canEditMembers)}}
-                  <select class="form-control input-sm" onchange={{action (mut member.role) value="target.value"}}>
+                  <select class="form-control input-sm" onchange={{action (fn (mut member.role)) value="target.value"}}>
                     {{#each this.roleOptions as |choice|}}
                       <option value={{choice.value}} selected={{eq member.role choice.value}}>{{t choice.label}}</option>
                     {{/each}}

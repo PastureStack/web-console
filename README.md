@@ -8,6 +8,17 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.176` repairs native select bindings that passed a `mut` reference
+directly to the classic compatibility `action` helper. The helper receives the
+current value instead of a setter; wrap `mut` in native `fn` to retain the setter
+while preserving the existing event value mapping. This covers the same 21
+select bindings in 11 templates, including project roles, schema fields,
+balancer rules, settings and machine-driver fields. Project member capabilities,
+identities, metadata/network write boundaries, save finalizers and authentication
+remain unchanged. Exact-source CI, immutable publication and packaged QA
+acceptance are pending; historical HOLDs are not promoted and the full matrix
+remains INCOMPLETE. See the [release note](docs/releases/web-console-1.6.176.md).
+
 Published `1.6.175` keeps the container/VM form's image validation message in
 sync when the operator corrects the image or changes the locale. Only the
 form's own validation aggregate is refreshed: model/command errors and later

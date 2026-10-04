@@ -1,9 +1,9 @@
 import { A } from '@ember/array';
 import Component from '@ember/component';
-import EmberObject from '@ember/object';
+import EmberObject, { get } from '@ember/object';
 import Service from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
-import { click, find, findAll, render, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
+import { click, find, findAll, render, select, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
 import { module, test } from 'qunit';
 
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
@@ -66,6 +66,63 @@ module('Integration | Component | view edit project permissions', function(hooks
     (this.nativeTemplates || []).forEach((template) => destroyOwned(template));
     this.testRoot.remove();
   });
+
+  for (let memberType of ['plain object', 'EmberObject']) {
+    test(`native role select updates the selected ${memberType} without metadata or network writes`, async function(assert) {
+      let attributes = {
+        displayType: 'User', externalId: 'member-2', externalIdType: 'oidc_user',
+        name: 'Alpha Member', role: 'member',
+      };
+      let member = memberType === 'plain object' ? {...attributes} : EmberObject.create(attributes);
+      let owner = {displayType: 'User', externalId: 'owner-1', externalIdType: 'oidc_user', name: 'Zulu Owner', role: 'owner'};
+      let writes = {project: 0, members: [], network: 0, refresh: 0, done: 0};
+      this.project.setProperties({
+        actionLinks: {setmembers: '/projects/1a21?action=setmembers'},
+        projectMembers: A([owner, member]),
+        validationErrors() { return A([]); },
+        save() { writes.project++; return Promise.resolve(this); },
+        doAction(action, payload) {
+          assert.strictEqual(action, 'setmembers', 'the native save submits only memberships');
+          writes.members.push(payload);
+          return Promise.resolve();
+        },
+      });
+      this.network.set('save', () => { writes.network++; return Promise.resolve(); });
+      this.owner.lookup('service:projects').set('refreshAll', () => { writes.refresh++; });
+      this.done = () => { writes.done++; };
+      this.userStore = {getById() { return EmberObject.create({resourceFields: {role: {options: ['owner', 'member', 'readonly']}}}); }};
+
+      await render(precompileTemplate(`{{view-edit-project
+        project=this.project originalProject=this.originalProject network=this.network
+        policyManager=this.policyManager userStore=this.userStore showEdit=true editing=true done=this.done
+      }}`));
+
+      let rows = findAll('table.grid tbody tr');
+      let selectedRow = rows.find((row) => row.querySelector('[data-test-member-name]').textContent.trim() === attributes.name);
+      let roleSelect = selectedRow.querySelector('select');
+      assert.strictEqual(rows[0], selectedRow, 'sorting selects the member rather than its original array index');
+      assert.strictEqual(roleSelect.value, 'member');
+      await select(roleSelect, 'readonly');
+      assert.strictEqual(get(member, 'role'), 'readonly', 'input/change writes the real selected model');
+      assert.strictEqual(this.project.get('projectMembers')[1], member, 'the arranged row retains its original model reference');
+      assert.deepEqual({externalId: get(member, 'externalId'), externalIdType: get(member, 'externalIdType'), name: get(member, 'name')},
+        {externalId: attributes.externalId, externalIdType: attributes.externalIdType, name: attributes.name}, 'identity and label are unchanged');
+      assert.strictEqual(owner.role, 'owner', 'the owner row is not changed');
+      assert.strictEqual(this.project.get('description'), 'Description', 'role selection does not change metadata');
+      assert.true(find('input[type="text"]').disabled, 'members-only capability does not unlock metadata');
+      assert.strictEqual(findAll('.radio input').length, 0, 'members-only capability does not unlock network policy');
+      assert.deepEqual(writes.members, [], 'selecting alone sends no save');
+
+      await click('.footer-actions .btn-primary');
+      assert.deepEqual(writes.members, [{members: [
+        {type: 'projectMember', externalId: owner.externalId, externalIdType: owner.externalIdType, role: 'owner'},
+        {type: 'projectMember', externalId: attributes.externalId, externalIdType: attributes.externalIdType, role: 'readonly'},
+      ]}], 'native save sends the selected role with exact original identities');
+      assert.deepEqual({project: writes.project, network: writes.network, refresh: writes.refresh, done: writes.done},
+        {project: 0, network: 0, refresh: 1, done: 1}, 'save capability and finalizer remain scoped to memberships');
+      assert.strictEqual(owner.role, 'owner');
+    });
+  }
 
   test('new environment cards render real native names and select the same ID after a rename', async function(assert) {
     this.app = EmberObject.create({baseAssets: '/'});

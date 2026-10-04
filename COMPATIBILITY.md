@@ -4,6 +4,16 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Candidate `1.6.176` preserves native `mut` setters by composing `action` with
+`fn (mut ...)` in the same 21 existing select bindings. The classic helper's
+event `target.value` conversion is unchanged. Model identities, selected-row
+references, schema choices, member capability checks, metadata/network writes,
+save ownership/finalizers, API payload contracts and authentication are unchanged.
+The shared compatibility helper and dependency graph are unchanged. Exact-source
+CI, publication and packaged UI acceptance are pending; the full matrix remains
+INCOMPLETE and historical HOLDs remain immutable.
+See the [release note](docs/releases/web-console-1.6.176.md).
+
 Published `1.6.175` refreshes only the image form's locally owned validation
 aggregate after image/locale correction. Other validation errors and backend
 save failures are preserved; shared NewOrEdit ownership, hook/finalizer behavior,

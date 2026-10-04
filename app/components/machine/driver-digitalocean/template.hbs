@@ -38,7 +38,7 @@
           <label class="form-control-static">{{t 'machine.driverDigitalocean.region.label'}}</label>
         </div>
         <div class="col-md-10">
-          <select class="form-control" onchange={{action (mut this.digitaloceanConfig.region) value="target.value"}}>
+          <select class="form-control" onchange={{action (fn (mut this.digitaloceanConfig.region)) value="target.value"}}>
             {{#each this.regionChoices as |choice|}}
               <option value={{choice.slug}} selected={{eq this.digitaloceanConfig.region choice.slug}}>{{choice.name}}</option>
             {{/each}}
@@ -55,7 +55,7 @@
           <label class="form-control-static">{{t 'machine.driverDigitalocean.image.label'}}</label>
         </div>
         <div class="col-md-4">
-          <select class="form-control" onchange={{action (mut this.digitaloceanConfig.image) value="target.value"}}>
+          <select class="form-control" onchange={{action (fn (mut this.digitaloceanConfig.image)) value="target.value"}}>
             {{#each this.imageChoices as |choice|}}
               <option value={{choice.slug}} disabled={{choice.disabled}} selected={{eq this.digitaloceanConfig.image choice.slug}}>{{choice.distribution}} {{choice.name}}</option>
             {{/each}}
@@ -65,7 +65,7 @@
           <label class="form-control-static">{{t 'machine.driverDigitalocean.size.label'}}</label>
         </div>
         <div class="col-md-4">
-          <select class="form-control" onchange={{action (mut this.digitaloceanConfig.size) value="target.value"}}>
+          <select class="form-control" onchange={{action (fn (mut this.digitaloceanConfig.size)) value="target.value"}}>
             {{#each this.filteredSizeChoices as |choice|}}
             <option value={{choice.slug}} selected={{eq this.digitaloceanConfig.size choice.slug}}>{{t 'machine.driverDigitalocean.sizeLabel' memoryGb=choice.memoryGb highMem=choice.highMem slug=choice.slug disk=choice.disk vcpus=choice.vcpus}}</option>
             {{/each}}
