@@ -4,14 +4,18 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Candidate `1.6.175` refreshes only the image form's locally owned validation
+Published `1.6.175` refreshes only the image form's locally owned validation
 aggregate after image/locale correction. Other validation errors and backend
 save failures are preserved; shared NewOrEdit ownership, hook/finalizer behavior,
 wire payloads, schema and authorization remain unchanged. Four new real-component
-tests passed within 17/17 local Chrome 153 related tests. Exact-source official
-CI, signed publication and packaged acceptance remain pending. No dependency
+tests passed within 821/821 exact-source CI tests (37163340764), with zero
+failures, skips or todo. Signed numeric publication and anonymous downloads
+reuse the byte-identical formal builds: source
+`bb905d092700c262497b88f5773e7714fc1f4be4`, archive SHA256
+`9833467b2be47d4fa01f09954fcd35beb292c59d382d5c1aecd76d17c6a387a2`.
+Server packaging and deployed UI acceptance remain pending. No dependency
 version or graph change is introduced; the full matrix remains INCOMPLETE.
-See the [candidate release note](docs/releases/web-console-1.6.175.md).
+See the [release note](docs/releases/web-console-1.6.175.md).
 
 Published `1.6.174` changes VM image guidance and defaults only: it does not
 implement a VM runtime or image whitelist. Existing/custom/last-used VM images,
@@ -26,7 +30,7 @@ downloads match archive SHA256
 `6408775898f412e4b27092eeddd9cdc2028ad7b27835f489139c2d0cf62c6776`.
 Server512 packaging and QA512 image-form-only acceptance are verified separately;
 VM boot is not verified and the parent validation-message defect remains pending
-the unpublished Web175 candidate. Historical HOLDs are not promoted. The full
+deployment of the published Web175 component. Historical HOLDs are not promoted. The full
 matrix remains INCOMPLETE. See the [release note](docs/releases/web-console-1.6.174.md).
 
 Published `1.6.173` reads native ProjectTemplate card labels from the model's
