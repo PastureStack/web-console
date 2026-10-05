@@ -8,14 +8,35 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-`1.6.177` source prevents ended log and terminal workspace entries from
+Published `1.6.177` prevents ended log and terminal workspace entries from
 reconnecting after remount/reload or from late access-ticket, broker, socket
 and timer callbacks. Both components share one lifecycle boundary; asynchronous
 work remains bound to its original entry. Explicitly opening a new entry and
 reconnecting a live entry remain supported. Seventeen targeted real-component
-tests passed locally. Formal exact-source CI, numeric publication, Server
-packaging and isolated browser acceptance are pending; this is not full-matrix
-or production acceptance. See the
+tests passed within formal exact-source
+[CI 37255121243](https://github.com/PastureStack/web-console/actions/runs/37255121243):
+841 tests passed with zero failures/todo, and both production archives are byte-identical.
+Numeric lightweight [tag 1.6.177](https://github.com/PastureStack/web-console/releases/tag/1.6.177)
+binds signed source commit `b9b841e65afe1d89a5b03ac767e9168bccd3c3ea`; it is not a signed tag.
+Normal PR #175 squash merge `5d150806be20226657e5caa8a0150d068006c772` has the same reviewed tree
+`109a60fc005d9dc18e38864089dd0055980485c3` and a verified signature.
+Anonymous public archive readback matched SHA256
+`4e34eb2b3165f078134cddcf1721239b3da7baf11dd683991b2d6aa5bae944e0` (2,982,494 bytes).
+Published [Server 515](https://github.com/PastureStack/server/releases/tag/v1.6.515)
+packages this exact component: source `f0267ff3a347ea526088db1749b1d3c8dfd9bd37`, manifest
+`sha256:fcc79f616927040ef2b3a5c58662fa948823220dbc57ffe275dee2ad88764d47`.
+Its official publisher and independent artifact/runtime/security readback passed.
+Separate isolated Server 515 / Web 177 deployment and independent readback passed:
+initial-start and restart polling reached HTTP 200/pong after 10 and 11 attempts,
+respectively. Runtime configuration, environment overrides, three named volumes
+and five core-table counts were preserved,
+with `docker-default`, `unless-stopped`, database backup and 514 rollback retained.
+There is no Docker Healthcheck; running/pong is not Docker healthy.
+Isolated native browser lifecycle acceptance remains pending; the full matrix remains
+INCOMPLETE. A separate fresh Project v2 native run remains HOLD after a successful
+deactivate response and a UI wait timeout; native removal and database cleanup
+are incomplete. Historical HOLDs are unchanged, and this is not production
+acceptance. See the
 [release note](docs/releases/web-console-1.6.177.md).
 
 Published `1.6.176` repairs native select bindings that passed a `mut` reference
