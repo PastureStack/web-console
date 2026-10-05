@@ -3,6 +3,7 @@ import { equal } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import ThrottledResize from 'ui/mixins/throttled-resize';
+import WorkspaceConnectionLifecycle from 'ui/mixins/workspace-connection-lifecycle';
 import { DEFAULT_COMMAND } from 'ui/components/container-shell/component';
 
 const Terminal = window.Terminal;
@@ -21,9 +22,12 @@ function terminalCloseAction(options) {
   if (options.userClosed || options.destroyed) {
     return 'ignore';
   }
+  if (options.entryStatus === 'ended') {
+    return 'ended';
+  }
 
   if (!options.hasHello && !options.createAttempted) {
-    return options.entryStatus === 'ended' ? 'ended' : 'probe';
+    return 'probe';
   }
 
   return options.status === 'ended' ? 'none' : 'reconnect';
@@ -48,7 +52,7 @@ function terminalBrokerStatusAction(httpStatus, brokerStatus) {
   return 'connect';
 }
 
-export default Component.extend(ThrottledResize, {
+export default Component.extend(ThrottledResize, WorkspaceConnectionLifecycle, {
   classNames: ['workspace-terminal'],
   workspace: service('console-workspace'),
   entry: null,
@@ -140,15 +144,11 @@ export default Component.extend(ThrottledResize, {
   },
 
   connect(create) {
-    if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+    if (this.connectionInactive()) {
       return;
     }
 
     if (create) {
-      if (this.get('entry.status') === 'ended') {
-        this.set('status', 'ended');
-        return;
-      }
       this.createBrokerSession();
       return;
     }
@@ -157,17 +157,20 @@ export default Component.extend(ThrottledResize, {
   },
 
   probeBrokerSession() {
+    if (this.connectionInactive()) {
+      return;
+    }
     let workspace = this.get('workspace');
     let entry = this.get('entry');
 
     this.set('status', 'connecting');
-    workspace.brokerStatus(entry).then((response) => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+    return workspace.brokerStatus(entry).then((response) => {
+      if (this.connectionInactive(entry)) {
         return;
       }
       this.applyBrokerStatusAction(terminalBrokerStatusAction(200, response && response.status));
     }).catch((error) => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+      if (this.connectionInactive(entry)) {
         return;
       }
       this.applyBrokerStatusAction(terminalBrokerStatusAction(error && error.status, null));
@@ -175,6 +178,9 @@ export default Component.extend(ThrottledResize, {
   },
 
   applyBrokerStatusAction(action) {
+    if (this.connectionInactive()) {
+      return;
+    }
     let workspace = this.get('workspace');
     let entry = this.get('entry');
 
@@ -200,6 +206,11 @@ export default Component.extend(ThrottledResize, {
   },
 
   createBrokerSession() {
+    if (this.connectionInactive()) {
+      return;
+    }
+    let entry = this.get('entry');
+    let workspace = this.get('workspace');
     let instance = this.get('instance');
     if (!instance || !instance.hasAction('execute')) {
       this.set('status', 'error');
@@ -208,41 +219,45 @@ export default Component.extend(ThrottledResize, {
 
     this.set('createAttempted', true);
     this.set('status', 'initializing');
-    this.get('workspace').updateSession(this.get('entry'), {status: 'initializing'});
+    workspace.updateSession(entry, {status: 'initializing'});
     let options = {
       attachStdin: true,
       attachStdout: true,
       tty: true,
-      command: this.get('entry.command') || DEFAULT_COMMAND,
+      command: entry.get('command') || DEFAULT_COMMAND,
     };
 
-    instance.doAction('execute', options).then((access) => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+    return instance.doAction('execute', options).then((access) => {
+      if (this.connectionInactive(entry)) {
         return;
       }
-      return this.get('workspace').createBrokerSession(this.get('entry'), access);
+      return workspace.createBrokerSession(entry, access);
     }).then((response) => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+      if (this.connectionInactive(entry)) {
         return;
       }
       if (terminalBrokerStatusAction(200, response && response.status) === 'ended') {
         this.applyBrokerStatusAction('ended');
         return;
       }
-      this.get('workspace').updateSession(this.get('entry'), {
+      workspace.updateSession(entry, {
         brokerReady: true,
         status: 'connecting',
       });
-      this.openSocket(this.get('workspace').brokerUrl(this.get('entry')), true);
+      this.openSocket(workspace.brokerUrl(entry), true);
     }).catch(() => {
-      if (!this.isDestroyed && !this.isDestroying) {
+      if (!this.connectionInactive(entry)) {
         this.set('status', 'error');
-        this.get('workspace').updateSession(this.get('entry'), {status: 'error'});
+        workspace.updateSession(entry, {status: 'error'});
       }
     });
   },
 
   openSocket(url, creating) {
+    if (this.connectionInactive()) {
+      return;
+    }
+    let entry = this.get('entry');
     let previous = this.get('socket');
     if (previous) {
       previous.onclose = null;
@@ -254,13 +269,17 @@ export default Component.extend(ThrottledResize, {
       hasHello: false,
     });
 
-    let protocols = this.get('workspace').brokerProtocols(this.get('entry'));
+    let protocols = this.get('workspace').brokerProtocols(entry);
     let socket = new WebSocket(url, protocols);
     this.set('socket', socket);
 
-    socket.onmessage = (message) => this.handleMessage(message.data);
+    socket.onmessage = (message) => {
+      if (this.get('socket') === socket && !this.connectionInactive(entry)) {
+        this.handleMessage(message.data);
+      }
+    };
     socket.onclose = () => {
-      if (this.get('socket') !== socket) {
+      if (this.get('socket') !== socket || this.connectionInactive(entry)) {
         return;
       }
 
@@ -286,6 +305,9 @@ export default Component.extend(ThrottledResize, {
   },
 
   handleMessage(raw) {
+    if (this.connectionInactive()) {
+      return;
+    }
     let frame;
     try {
       frame = JSON.parse(raw);
@@ -402,6 +424,10 @@ export default Component.extend(ThrottledResize, {
 
   scheduleReconnect() {
     this.cancelReconnect();
+    if (this.connectionInactive()) {
+      return;
+    }
+    let entry = this.get('entry');
     let attempt = this.incrementProperty('reconnectAttempts');
     if (attempt > MAX_RECONNECT_ATTEMPTS) {
       this.set('status', 'error');
@@ -409,10 +435,18 @@ export default Component.extend(ThrottledResize, {
       return;
     }
     let delay = Math.min(10000, 500 * Math.pow(2, Math.min(attempt, 5)));
-    this._reconnectTimer = later(this, () => {
+    let timer = later(this, () => {
+      if (this._reconnectTimer !== timer) {
+        return;
+      }
+      this._reconnectTimer = null;
+      if (this.connectionInactive(entry)) {
+        return;
+      }
       this.set('createAttempted', false);
       this.connect(false);
     }, delay);
+    this._reconnectTimer = timer;
   },
 
   cancelReconnect() {

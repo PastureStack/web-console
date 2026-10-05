@@ -4,6 +4,16 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+`1.6.177` source treats an ended workspace entry as terminal across both logs
+and terminal components. Late responses and queued socket/timer callbacks are
+bound to the original entry, never an explicitly opened replacement. Existing
+API payloads, broker authentication, session generation/mutex, authorization,
+MFA and stored entry format are unchanged. Dependencies are unchanged; only
+root release-version metadata and its reviewed baseline pins change. Seventeen
+targeted component tests passed locally; formal CI, publication and deployed
+acceptance remain pending. See the
+[release note](docs/releases/web-console-1.6.177.md).
+
 Published `1.6.176` preserves native `mut` setters by composing `action` with
 `fn (mut ...)` in the same 21 existing select bindings. The classic helper's
 event `target.value` conversion is unchanged. Model identities, selected-row

@@ -3,6 +3,7 @@ import { next, later, cancel } from '@ember/runloop';
 import { equal } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
+import WorkspaceConnectionLifecycle from 'ui/mixins/workspace-connection-lifecycle';
 import Util from 'ui/utils/util';
 import { formatDateTime } from 'ui/utils/date-time';
 
@@ -53,7 +54,7 @@ function saveLogWrapPreference(value, storage = window.localStorage) {
   }
 }
 
-export default Component.extend({
+export default Component.extend(WorkspaceConnectionLifecycle, {
   classNames: ['workspace-logs'],
   workspace: service('console-workspace'),
   intl: service(),
@@ -140,14 +141,10 @@ export default Component.extend({
   },
 
   connect(create) {
-    if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+    if (this.connectionInactive()) {
       return;
     }
     if (create) {
-      if (this.get('entry.status') === 'ended') {
-        this.set('status', 'ended');
-        return;
-      }
       this.createBrokerSession();
       return;
     }
@@ -155,6 +152,11 @@ export default Component.extend({
   },
 
   createBrokerSession() {
+    if (this.connectionInactive()) {
+      return;
+    }
+    let entry = this.get('entry');
+    let workspace = this.get('workspace');
     let instance = this.get('instance');
     if (!instance || !instance.hasAction('logs')) {
       this.set('status', 'error');
@@ -163,33 +165,41 @@ export default Component.extend({
 
     this.set('createAttempted', true);
     this.set('status', 'initializing');
-    this.get('workspace').updateSession(this.get('entry'), {status: 'initializing'});
-    instance.doAction('logs', {
+    workspace.updateSession(entry, {status: 'initializing'});
+    return instance.doAction('logs', {
       follow: true,
       lines: 500,
     }).then((access) => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+      if (this.connectionInactive(entry)) {
         return;
       }
-      return this.get('workspace').createBrokerSession(this.get('entry'), access);
-    }).then(() => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+      return workspace.createBrokerSession(entry, access);
+    }).then((response) => {
+      if (this.connectionInactive(entry)) {
         return;
       }
-      this.get('workspace').updateSession(this.get('entry'), {
+      if (response && response.status === 'ended') {
+        workspace.updateSession(entry, {brokerReady: false, status: 'ended'});
+        return;
+      }
+      workspace.updateSession(entry, {
         brokerReady: true,
         status: 'connecting',
       });
-      this.openSocket(this.get('workspace').brokerUrl(this.get('entry')), true);
+      this.openSocket(workspace.brokerUrl(entry), true);
     }).catch(() => {
-      if (!this.isDestroyed && !this.isDestroying) {
+      if (!this.connectionInactive(entry)) {
         this.set('status', 'error');
-        this.get('workspace').updateSession(this.get('entry'), {status: 'error'});
+        workspace.updateSession(entry, {status: 'error'});
       }
     });
   },
 
   openSocket(url, creating) {
+    if (this.connectionInactive()) {
+      return;
+    }
+    let entry = this.get('entry');
     let previous = this.get('socket');
     if (previous) {
       previous.onclose = null;
@@ -200,13 +210,17 @@ export default Component.extend({
       status: creating ? 'initializing' : 'connecting',
       hasHello: false,
     });
-    let protocols = this.get('workspace').brokerProtocols(this.get('entry'));
+    let protocols = this.get('workspace').brokerProtocols(entry);
     let socket = new WebSocket(url, protocols);
     this.set('socket', socket);
 
-    socket.onmessage = (message) => this.handleMessage(message.data);
+    socket.onmessage = (message) => {
+      if (this.get('socket') === socket && !this.connectionInactive(entry)) {
+        this.handleMessage(message.data);
+      }
+    };
     socket.onclose = () => {
-      if (this.get('userClosed') || this.isDestroyed || this.isDestroying) {
+      if (this.get('socket') !== socket || this.connectionInactive(entry)) {
         return;
       }
       this.set('socket', null);
@@ -225,6 +239,9 @@ export default Component.extend({
   },
 
   handleMessage(raw) {
+    if (this.connectionInactive()) {
+      return;
+    }
     let frame;
     try {
       frame = JSON.parse(raw);
@@ -315,12 +332,24 @@ export default Component.extend({
 
   scheduleReconnect() {
     this.cancelReconnect();
+    if (this.connectionInactive()) {
+      return;
+    }
+    let entry = this.get('entry');
     let attempt = this.incrementProperty('reconnectAttempts');
     let delay = Math.min(10000, 500 * Math.pow(2, Math.min(attempt, 5)));
-    this._reconnectTimer = later(this, () => {
+    let timer = later(this, () => {
+      if (this._reconnectTimer !== timer) {
+        return;
+      }
+      this._reconnectTimer = null;
+      if (this.connectionInactive(entry)) {
+        return;
+      }
       this.set('createAttempted', false);
       this.connect(false);
     }, delay);
+    this._reconnectTimer = timer;
   },
 
   cancelReconnect() {
