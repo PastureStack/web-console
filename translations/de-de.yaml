@@ -3840,6 +3840,7 @@ viewEditProject:
     noMembers: 'Fügen Sie ein oder mehrere Mitglieder hinzu, die diese Umgebung nutzen können.'
   networkPolicy:
     label: Netzwerkrichtlinie
+    inactive: Diese Umgebung ist deaktiviert; die Netzwerkeinstellungen sind vorübergehend nicht verfügbar. Aktivieren Sie die Umgebung, um sie anzuzeigen oder zu bearbeiten.
     description: 'Steuern Sie, welche Container über das verwaltete Netzwerk miteinander kommunizieren dürfen.'
     unsupported: >-
       Diese Umgebung verfügt über Netzwerkrichtlinienregeln, die von UI noch nicht unterstützt werden.  Bitte verwenden

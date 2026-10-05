@@ -3789,6 +3789,7 @@ viewEditProject:
     noMembers: Adicione um ou mais membros que possam usar este ambiente.
   networkPolicy:
     label: Política de Rede
+    inactive: Este ambiente está desativado; as configurações de rede estão temporariamente indisponíveis. Ative o ambiente para visualizá-las ou editá-las.
     description: Controle quais contêineres podem se comunicar entre si pela Rede Gerenciada.
     unsupported: >-
       Este ambiente possui regras de política de rede que ainda não são suportadas pelo UI.  Use o API para gerenciar a

@@ -12,7 +12,7 @@ Candidate `1.6.178` fixes viewing and editing an inactive environment. Once the
 globally authorized project and members have loaded, the page does not request
 network or policy-manager data scoped to that inactive environment: the API
 correctly denies those requests. The existing form explains that network
-settings are unavailable until activation, in English and Traditional Chinese.
+settings are unavailable until activation, in all thirteen packaged locales.
 Metadata and membership controls still follow their original API action links;
 cached network data cannot enable a network save. Other states and authorization
 failures retain the established error handling. This candidate changes no

@@ -14,8 +14,8 @@ authorized metadata and membership information.
 The route now waits for globally authorized project and membership reads,
 then skips only those two inapplicable scoped reads when the project state is
 exactly `inactive`. It returns `null` for the unavailable data and a dedicated
-reason flag. The existing details component displays an English or Traditional
-Chinese explanation and prevents a cached network from enabling network saves.
+reason flag. The existing details component displays a translated explanation
+in all thirteen packaged locales and prevents a cached network from enabling network saves.
 Metadata, member and removal action links are unchanged. Active and transitional
 states, denied global data, expired sessions and other failures keep the
 existing authorization and error behavior.
@@ -23,7 +23,7 @@ existing authorization and error behavior.
 ## Change boundary and verification
 
 Changes are confined to the details route/template, shared details component,
-two translations and their three focused test modules. Release-version metadata
+thirteen translations and their three focused test modules. Release-version metadata
 and the matching reviewed lock baseline move together; dependencies do not
 change. No API, engine, provider, HAProxy, authentication or session contract is
 modified. The existing ended log/terminal and cross-tab session tests are

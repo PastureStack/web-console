@@ -3686,6 +3686,7 @@ viewEditProject:
     noMembers: 添加一个或者多个成员能够使用此环境的成员
   networkPolicy:
     label: 网络策略
+    inactive: 此环境已停用；网络设置暂不可用。启用环境后可查看或修改。
     description: 控制受管网络中哪些容器彼此之间能够进行通讯
     unsupported: 此环境中的网络策略设置暂不支持通过UI进行设置，请使用API管理网络策略。
     noManager: 网络策略功能仅在使用 PastureStack 编排引擎且部署了Network Policy Manager基础设施模板的环境中可用。

@@ -3803,6 +3803,7 @@ viewEditProject:
     noMembers: Egy vagy több tag hozzáadása ehhez a környezethez.
   networkPolicy:
     label: Hálózati házirend
+    inactive: Ez a környezet inaktív; a hálózati beállítások átmenetileg nem érhetők el. A megtekintésükhöz vagy módosításukhoz aktiválja a környezetet.
     description: 'Szabályozhatod, hogy mely konténerek kommunikálhatnak egymással a kezelt hálózaton keresztül.'
     unsupported: >-
       Ez a környezet hálózati házirend-szabályokkal rendelkezik, amelyeket a UI még nem támogat.  Kérjük, használja a
