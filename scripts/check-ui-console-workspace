@@ -13,11 +13,13 @@ required_files=(
   app/components/workspace-terminal/template.hbs
   app/components/workspace-logs/component.js
   app/components/workspace-logs/template.hbs
+  app/mixins/workspace-connection-lifecycle.js
   app/services/console-workspace.js
   app/utils/console-workspace.js
   app/styles/components/_console-workspace.scss
   tests/unit/components/workspace-terminal-test.js
   tests/unit/components/workspace-logs-test.js
+  tests/unit/components/workspace-ended-lifecycle-test.js
   tests/unit/services/console-workspace-test.js
   tests/unit/utils/console-workspace-test.js
 )
@@ -141,4 +143,4 @@ if [[ -n ${PASTURESTACK_PRIVATE_MARKER:-} ]] && grep -RInF -- "$PASTURESTACK_PRI
 fi
 
 printf 'UI_CONSOLE_WORKSPACE_OK version=%s persistence=%s cross_tab=%s\n' \
-  1.6.176 browser-session broker-broadcast
+  1.6.177 browser-session broker-broadcast

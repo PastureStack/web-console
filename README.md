@@ -8,6 +8,16 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+`1.6.177` source prevents ended log and terminal workspace entries from
+reconnecting after remount/reload or from late access-ticket, broker, socket
+and timer callbacks. Both components share one lifecycle boundary; asynchronous
+work remains bound to its original entry. Explicitly opening a new entry and
+reconnecting a live entry remain supported. Seventeen targeted real-component
+tests passed locally. Formal exact-source CI, numeric publication, Server
+packaging and isolated browser acceptance are pending; this is not full-matrix
+or production acceptance. See the
+[release note](docs/releases/web-console-1.6.177.md).
+
 Published `1.6.176` repairs native select bindings that passed a `mut` reference
 directly to the classic compatibility `action` helper. The helper receives the
 current value instead of a setter; wrap `mut` in native `fn` to retain the setter
