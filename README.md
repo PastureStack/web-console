@@ -33,9 +33,20 @@ boundary through 2026-10-10. The published
 includes this component and Catalog Service `0.20.12`; its official packaging,
 startup and restart checks passed. Isolated deployed UI checks also passed for
 the Traditional Chinese and English container/VM forms and INIT layout. These
-form checks do not establish VM boot, GPU runtime or every locale. Resource
-lifecycle and permission acceptance remains in progress; prior incomplete
-results are not promoted, and the full matrix remains INCOMPLETE. See the
+form checks do not establish VM boot, GPU runtime or every locale. Separate
+isolated tests verified network service editing and cleanup, and completion
+and cleanup of an existing catalog upgrade. Readonly and target-environment
+no-access container denials were verified separately. Owner start/restart,
+logs, terminal and deletion returned their expected native responses in separate
+runs; logs and terminal had actual WebSocket output and normal termination, and
+the delete confirmation closed normally. Independent read-only queries found
+the container and its six associated records terminal (removed or purged).
+This cleanup observation is not full historical data-protection or lifecycle PASS.
+Environment deactivate/reactivate/remove
+screens were observed in separate stages and test-data cleanup was independently
+confirmed; this is not complete historical data-protection acceptance.
+Earlier incomplete results are not promoted. The full matrix remains
+INCOMPLETE. See the
 [release note](docs/releases/web-console-1.6.176.md).
 
 Published `1.6.175` keeps the container/VM form's image validation message in
