@@ -20,6 +20,7 @@ export default Component.extend(NewOrEdit, Sortable, {
   originalProject: null,
   allProjects: null,
   policyManager: null,
+  networkUnavailableForInactiveProject: false,
   editing: false,
   tab: 'access',
 
@@ -150,8 +151,8 @@ export default Component.extend(NewOrEdit, Sortable, {
   }.property('project.id', 'project.actionLinks.setmembers'),
 
   canEditNetwork: function() {
-    return !!this.get('network.actionLinks.update') && !this.get('missingManager') && !this.get('hasUnsupportedPolicy');
-  }.property('network.actionLinks.update', 'missingManager', 'hasUnsupportedPolicy'),
+    return !this.get('networkUnavailableForInactiveProject') && !!this.get('network.actionLinks.update') && !this.get('missingManager') && !this.get('hasUnsupportedPolicy');
+  }.property('networkUnavailableForInactiveProject', 'network.actionLinks.update', 'missingManager', 'hasUnsupportedPolicy'),
 
   canSave: function() {
     return this.get('canEditProject') ||

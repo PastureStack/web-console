@@ -1,14 +1,17 @@
 import { A } from '@ember/array';
 import Component from '@ember/component';
+import EmberRouter from '@ember/routing/router';
 import EmberObject, { get } from '@ember/object';
-import Service from '@ember/service';
+import Service, { service } from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
 import { click, find, findAll, render, select, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
 import { module, test } from 'qunit';
 
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
+import ViewEditProject from 'ui/components/view-edit-project/component';
 import ProjectTemplate from 'ui/models/projecttemplate';
 import Router from 'ui/router';
+import ProjectDetailTemplate from 'ui/settings/projects/detail/template';
 import { destroyOwned } from '../../helpers/owned-subject';
 import resolver from '../../helpers/resolver';
 
@@ -217,6 +220,63 @@ module('Integration | Component | view edit project permissions', function(hooks
     assert.ok(findAll('.radio input').length > 0, 'network link unlocks its policy controls');
     assert.strictEqual(findAll('.footer-actions button').length, 2);
   });
+
+  for (let editing of [false, true]) {
+    test(`inactive detail ${editing ? 'edit' : 'view'} shows its state reason without scoped controls`, async function(assert) {
+      // Use an isolated route map; the application's extension registry is
+      // intentionally consumed only once by its native Router.
+      let DetailRouter = EmberRouter.extend({location: 'none'});
+      DetailRouter.map(function() {
+        this.route('settings', function() {
+          this.route('projects', {path: '/env'}, function() {
+            this.route('detail', {path: '/:project_id'});
+          });
+        });
+      });
+      this.owner.register('router:main', DetailRouter);
+      this.owner.lookup('router:main').setupRouter();
+      this.owner.register('component:action-menu', Component.extend({
+        layout: precompileTemplate('<span data-test-action-menu>{{this.model.actionLinks.remove}}</span>'),
+      }));
+      this.owner.register('component:header-state', Component.extend({
+        layout: precompileTemplate('<span data-test-header-state>{{this.model.state}}</span>'),
+      }));
+      this.owner.register('component:power-select', Component.extend({
+        layout: precompileTemplate('<span></span>'),
+      }));
+      let actionLinks = {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers', remove: '/projects/1a21'};
+      this.project.setProperties({state: 'inactive', actionLinks});
+      this.network.set('actionLinks', {update: '/networks/1n1'});
+      this.model = EmberObject.create({
+        project: this.project, originalProject: this.originalProject, all: A([this.project]),
+        network: this.network, policyManager: this.policyManager, networkUnavailableForInactiveProject: true,
+      });
+      this.editing = editing;
+      this.done = () => {};
+      this.cancel = () => {};
+      this.owner.register('service:user-store', Service.extend(this.userStore));
+      // Rendering owners do not run the application's store initializer.
+      // Supply its real service injection without replacing component logic.
+      this.owner.register('component:view-edit-project', ViewEditProject.extend({userStore: service('user-store')}));
+      // Render the actual detail template so its reason flag forwarding is tested.
+      await render(ProjectDetailTemplate);
+
+      assert.ok(find('[data-test-inactive-network-notice]').textContent.includes('viewEditProject.networkPolicy.inactive'), 'a state-specific translated explanation is visible');
+      assert.ok(find('[data-test-member-name]'), 'global membership data stays visible');
+      assert.strictEqual(findAll('.radio input').length, 0, 'cached network data cannot expose policy controls');
+      assert.notOk(find('[data-test-network-only-edit]'), 'no scoped network edit link is introduced');
+      assert.strictEqual(this.project.get('actionLinks'), actionLinks, 'existing global capabilities are untouched');
+      if ( editing ) {
+        assert.false(find('input[type="text"]').disabled, 'global metadata capability still enables its fields');
+        assert.ok(find('[data-test-member-add]'), 'global member capability remains available');
+        assert.strictEqual(findAll('table.grid select').length, 1, 'member roles remain editable');
+        assert.strictEqual(findAll('.footer-actions button').length, 2, 'global save and cancel remain available');
+      } else {
+        assert.strictEqual(find('[data-test-header-state]').textContent.trim(), 'inactive', 'the environment state remains visible');
+        assert.strictEqual(find('[data-test-action-menu]').textContent.trim(), actionLinks.remove, 'the existing action menu receives the original global remove link');
+      }
+    });
+  }
 
   test('network-only environment can reach its edit form from the detail header', async function(assert) {
     this.owner.register('router:main', Router);

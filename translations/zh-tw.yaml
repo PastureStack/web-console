@@ -4020,6 +4020,7 @@ viewEditProject:
     noMembers: 新增一個或多個成員能夠使用此環境的成員
   networkPolicy:
     label: 網路策略
+    inactive: 環境已停用；網路設定暫不可用。啟用後可檢視／修改。
     description: 控制受管網路中哪些容器彼此之間能夠進行通訊
     unsupported: 此環境中的網路策略設定暫不支援透過 UI 進行設定，請使用 API 管理網路策略。
     noManager: 網路策略功能僅適用於使用 PastureStack 容器編排服務，且已部署網路策略管理基礎架構範本的環境。

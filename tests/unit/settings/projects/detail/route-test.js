@@ -13,6 +13,7 @@ function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
   let project = EmberObject.create({
     id: '1a21',
     name: 'QA project',
+    state: 'active',
     projectMembers: null,
     followLink(name) {
       if ( failureAt === 'membersSync' ) {
@@ -30,6 +31,8 @@ function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
       return EmberObject.create({
         id: this.get('id'),
         name: this.get('name'),
+        state: this.get('state'),
+        actionLinks: this.get('actionLinks'),
         projectMembers: this.get('projectMembers'),
       });
     },
@@ -66,6 +69,83 @@ function fixture(failureAt, failure = new Error(`${failureAt} failed`)) {
   return {failure, members, policyManager, project, store, relatedCalls};
 }
 
+for (let editing of [false, true]) {
+  test(`inactive environment ${editing ? 'edit' : 'view'} preserves global data without scoped resource reads`, async function(assert) {
+    let data = fixture();
+    let actionLinks = {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers', remove: '/projects/1a21'};
+    data.project.setProperties({state: 'inactive', actionLinks});
+    let route = ProjectDetailRoute.create({userStore: data.store});
+
+    try {
+      let model = await route.model({project_id: '1a21', editing});
+      assert.deepEqual(data.relatedCalls, [], 'neither network nor policy-manager API is requested');
+      assert.strictEqual(model.get('network'), null, 'network data is unavailable, not an empty collection');
+      assert.strictEqual(model.get('policyManager'), null, 'no policy manager is invented');
+      assert.true(model.get('networkUnavailableForInactiveProject'), 'the model exposes the exact state reason');
+      assert.strictEqual(model.get('all').objectAt(0), data.project, 'the global project list is retained');
+      assert.strictEqual(model.get('project.projectMembers'), data.members, 'authorized global memberships are retained');
+      assert.strictEqual(model.get('project.actionLinks'), actionLinks, 'the API remains the source of metadata, member, and remove capabilities');
+      assert.strictEqual(model.get('originalProject'), editing ? data.project : null);
+      assert.strictEqual(model.get('project') === data.project, !editing, 'only the edit form clones the project');
+    } finally {
+      run(() => route.destroy());
+    }
+  });
+}
+
+test('inactive global project and member failures remain errors before any scoped reads', async function(assert) {
+  let intl = EmberObject.create({t(key) { return key; }});
+  for (let task of ['allProjects', 'project', 'members']) {
+    for (let status of [401, 403, 404, 503]) {
+      let failure = {status, message: 'Raw API message'};
+      let data = fixture(task, failure);
+      data.project.set('state', 'inactive');
+      let route = ProjectDetailRoute.create({userStore: data.store, intl});
+
+      try {
+        await route.model({project_id: '1a21', editing: false}).then(
+          () => assert.ok(false, `${task} ${status} must reject`),
+          (error) => {
+            assert.strictEqual(error.status, status === 403 || status === 404 ? 404 : status,
+              `${task} ${status} keeps the established error classification`);
+            if ( status === 401 ) {
+              assert.strictEqual(error, failure, 'expired-session handling is unchanged');
+            }
+          }
+        );
+        assert.deepEqual(data.relatedCalls, [], `${task} ${status} cannot start scoped reads`);
+      } finally {
+        run(() => route.destroy());
+      }
+    }
+  }
+});
+
+test('only exact inactive skips scoped reads; other states still reject related 403s', async function(assert) {
+  let intl = EmberObject.create({t(key) { return key; }});
+  for (let state of ['active', 'deactivating', 'activating', 'removed', 'upgrading', 'updating-active', 'unknown', null, undefined]) {
+    for (let task of ['networks', 'policyManagers']) {
+      let data = fixture(task, {status: 403, message: 'Forbidden'});
+      data.project.set('state', state);
+      let route = ProjectDetailRoute.create({userStore: data.store, intl});
+
+      try {
+        await route.model({project_id: '1a21', editing: false}).then(
+          () => assert.ok(false, `${state} ${task} 403 must reject`),
+          (error) => {
+            assert.strictEqual(error.status, 404, 'the existing denied-resource error is preserved');
+            assert.strictEqual(error.messageKey, 'viewEditProject.error.relatedUnavailable');
+          }
+        );
+        assert.ok(data.relatedCalls.includes(task === 'networks' ? 'network' : 'stack'), 'the applicable request is still sent');
+        assert.strictEqual(data.project.get('projectMembers'), data.members, 'global members were loaded first');
+      } finally {
+        run(() => route.destroy());
+      }
+    }
+  }
+});
+
 test('a denied project cannot start unrelated network or policy-manager reads', async function(assert) {
   let data = fixture('project', {status: 404, message: 'Environment unavailable'});
   let route = ProjectDetailRoute.create({userStore: data.store, intl: EmberObject.create({
@@ -89,6 +169,8 @@ test('loads project members through the supported link contract before cloning f
     assert.notStrictEqual(model.get('project'), data.project, 'editing uses a clone');
     assert.strictEqual(model.get('project.projectMembers'), data.members, 'the imported members reach the editable clone');
     assert.strictEqual(model.get('policyManager'), data.policyManager, 'the policy manager is loaded');
+    assert.false(model.get('networkUnavailableForInactiveProject'), 'an active environment has no inactive notice');
+    assert.deepEqual(data.relatedCalls, ['network', 'stack'], 'both active-environment reads still run');
     assert.strictEqual(data.store.get('networkOptions.filter.accountId'), '1a21', 'the network lookup stays in the selected project');
     assert.strictEqual(data.store.get('networkOptions.headers.X-Api-Project-Id'), '1a21', 'the network lookup uses its project policy');
     assert.strictEqual(data.store.get('policyManagerOptions.headers.X-Api-Project-Id'), '1a21', 'policy manager lookup is scoped to the project');

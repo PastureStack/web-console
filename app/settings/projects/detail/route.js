@@ -50,7 +50,12 @@ export default Route.extend(PromiseToCb, {
             }
           );
         })],
-        networks:          ['project',      this.toCb(() => {
+        networks:          ['importMembers', this.toCb((results) => {
+          // Inactive environments remain globally visible to their owners,
+          // but the API correctly rejects requests scoped to them.
+          if ( results.project.get('state') === 'inactive' ) {
+            return null;
+          }
           return userStore.find('network', null, {
             filter: {accountId: params.project_id},
             headers: {[C.HEADER.PROJECT_ID]: params.project_id},
@@ -58,7 +63,10 @@ export default Route.extend(PromiseToCb, {
             throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
           });
         })],
-        policyManagers:    ['project',      this.toCb(() => {
+        policyManagers:    ['importMembers', this.toCb((results) => {
+          if ( results.project.get('state') === 'inactive' ) {
+            return null;
+          }
           return userStore.find('stack', null, policyManagerOpt).then(null, (err) => {
             throw this.environmentLoadError(err, 'viewEditProject.error.relatedUnavailable');
           });
@@ -75,7 +83,7 @@ export default Route.extend(PromiseToCb, {
     }, 'Load all the things');
 
     return promise.then((hash) => {
-      let network = hash.networks.find((x) => C.PROJECT.SUPPORTS_NETWORK_POLICY.includes(x.get('name')));
+      let network = hash.networks ? hash.networks.find((x) => C.PROJECT.SUPPORTS_NETWORK_POLICY.includes(x.get('name'))) : null;
       if ( network ) {
         network = network.clone();
 
@@ -106,7 +114,8 @@ export default Route.extend(PromiseToCb, {
       let out = EmberObject.create({
         all: hash.allProjects,
         network: network,
-        policyManager: hash.policyManagers.objectAt(0),
+        policyManager: hash.policyManagers ? hash.policyManagers.objectAt(0) : null,
+        networkUnavailableForInactiveProject: hash.project.get('state') === 'inactive',
       });
 
       if ( params.editing ) {

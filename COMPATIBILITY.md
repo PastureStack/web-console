@@ -4,6 +4,18 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
+Candidate `1.6.178` handles only the exact `inactive` environment state specially,
+after global project and member authorization succeeds. Network and
+policy-manager values remain unavailable (`null`), with a state-specific
+localized explanation; they are not invented empty resource collections.
+Project metadata, membership and removal capabilities remain sourced from the
+API. A stale editable network cannot be persisted from that inactive form.
+All other states retain the existing scoped reads and error semantics. Backend
+authorization, session generation/mutex, MFA, OIDC, workspace lifecycle and
+dependencies are unchanged. Formal publication and deployed native acceptance
+are pending; historical HOLDs and the incomplete full matrix remain unchanged.
+See the [candidate release note](docs/releases/web-console-1.6.178.md).
+
 Published `1.6.177` treats an ended workspace entry as terminal across both logs
 and terminal components. Late responses and queued socket/timer callbacks are
 bound to the original entry, never an explicitly opened replacement. Existing
