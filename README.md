@@ -8,18 +8,23 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
-Candidate `1.6.178` fixes viewing and editing an inactive environment. Once the
-globally authorized project and members have loaded, the page does not request
-network or policy-manager data scoped to that inactive environment: the API
-correctly denies those requests. The existing form explains that network
-settings are unavailable until activation, in all thirteen packaged locales.
-Metadata and membership controls still follow their original API action links;
-cached network data cannot enable a network save. Other states and authorization
-failures retain the established error handling. This candidate changes no
-backend, authentication, session ownership or dependency graph. Formal
-publication and deployed native acceptance remain pending; it does not promote
-earlier HOLD results or claim completion of the full matrix. See the
-[candidate release note](docs/releases/web-console-1.6.178.md).
+Published `1.6.178` repairs viewing and editing an inactive environment by skipping
+only the network and policy-manager reads that the API correctly denies for that state.
+Global project/member capabilities and other authorization errors are unchanged;
+the form explains network unavailability in all thirteen packaged locales.
+Formal CI passed 848/848 tests, and both reproducible archives match the immutable
+public download; Server `v1.6.516` packages this exact component.
+Server publication, artifact readback and separate isolated QA deployment passed;
+first start/restart each reached HTTP 200/pong after ten bounded probe attempts,
+with runtime settings and five core-table counts unchanged. Docker health is null,
+not healthy; no company-site deployment is claimed. In one inactive environment,
+native detail/reload, write-free edit/remove cancellation and native deletion/list
+absence were observed, but the parent cleanup timeout remains HOLD. A separate
+read-only database observation confirmed the environment and four networks were
+purged, with no remaining members or dependent resources. Fresh API and complete
+foreign-data preservation verification remain incomplete. This is not full native
+lifecycle PASS; the full matrix is INCOMPLETE and earlier HOLDs remain.
+See the [release note](docs/releases/web-console-1.6.178.md).
 
 Published `1.6.177` prevents ended log and terminal workspace entries from
 reconnecting after remount/reload or from late access-ticket, broker, socket
