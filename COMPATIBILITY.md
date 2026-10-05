@@ -4,7 +4,7 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-Candidate `1.6.178` handles only the exact `inactive` environment state specially,
+Published `1.6.178` handles only the exact `inactive` environment state specially,
 after global project and member authorization succeeds. Network and
 policy-manager values remain unavailable (`null`), with a state-specific
 localized explanation; they are not invented empty resource collections.
@@ -12,9 +12,26 @@ Project metadata, membership and removal capabilities remain sourced from the
 API. A stale editable network cannot be persisted from that inactive form.
 All other states retain the existing scoped reads and error semantics. Backend
 authorization, session generation/mutex, MFA, OIDC, workspace lifecycle and
-dependencies are unchanged. Formal publication and deployed native acceptance
-are pending; historical HOLDs and the incomplete full matrix remain unchanged.
-See the [candidate release note](docs/releases/web-console-1.6.178.md).
+dependencies are unchanged. Formal CI 37273270200 passed 848/848 tests, including
+seven inactive-project and seventeen retained ended-workspace regressions.
+Both build archives and anonymous immutable download match SHA256
+`7d4476f3ae1ecd455d0de25008b62327d8c2fa02fafe2b5252ce79fb3309d981` (2,983,001 bytes).
+Numeric lightweight tag `1.6.178` binds signed source
+`60a494e943150ecd300d1aa653ee397f590b575b`; the tag itself is not signed.
+Normal PR #177 merge `f8ac3e2bf5854ab854adc1062321bcc16e29d224` has the same
+reviewed tree and a verified signature. Published Server `v1.6.516` packages this
+exact component; public artifact readback and separate isolated QA deployment
+passed. First start/restart each reached HTTP 200/pong after ten bounded probes;
+runtime settings and five core-table counts are unchanged. AppArmor, three named
+volumes and `unless-stopped` remain; Docker health is null, not healthy.
+One inactive-environment native detail/reload, edit/remove cancellation and
+DELETE/list-reload absence were observed. The parent cleanup timeout remains
+HOLD. A separate read-only database observation confirmed the environment and
+four networks were purged, with no remaining members or dependent resources.
+Fresh API and complete foreign-data preservation verification remain incomplete;
+this is not full native lifecycle PASS.
+No company-site deployment is claimed; historical HOLDs and the INCOMPLETE full
+matrix remain unchanged. See the [release note](docs/releases/web-console-1.6.178.md).
 
 Published `1.6.177` treats an ended workspace entry as terminal across both logs
 and terminal components. Late responses and queued socket/timer callbacks are
