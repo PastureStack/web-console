@@ -4,14 +4,31 @@ Web Console preserves compatible API paths, schema and resource names, action na
 
 Visible branding, product-owned assets, icon identifiers, package metadata, and operator documentation use PastureStack. Historical identifiers remain only where they are server data or protocol contracts and must not be mechanically replaced.
 
-`1.6.177` source treats an ended workspace entry as terminal across both logs
+Published `1.6.177` treats an ended workspace entry as terminal across both logs
 and terminal components. Late responses and queued socket/timer callbacks are
 bound to the original entry, never an explicitly opened replacement. Existing
 API payloads, broker authentication, session generation/mutex, authorization,
 MFA and stored entry format are unchanged. Dependencies are unchanged; only
 root release-version metadata and its reviewed baseline pins change. Seventeen
-targeted component tests passed locally; formal CI, publication and deployed
-acceptance remain pending. See the
+targeted component regressions passed within formal CI 37255121243's 841 tests.
+The numeric lightweight tag binds signed source commit
+`b9b841e65afe1d89a5b03ac767e9168bccd3c3ea`; it is not a signed tag.
+Normal PR #175 merge `5d150806be20226657e5caa8a0150d068006c772` has the same reviewed tree
+and a verified signature. Both CI archives and anonymous public readback match SHA256
+`4e34eb2b3165f078134cddcf1721239b3da7baf11dd683991b2d6aa5bae944e0` (2,982,494 bytes).
+Published Server 515 packages this component, from source
+`f0267ff3a347ea526088db1749b1d3c8dfd9bd37` and immutable manifest
+`sha256:fcc79f616927040ef2b3a5c58662fa948823220dbc57ffe275dee2ad88764d47`;
+official artifact/runtime/security readback passed. Separate isolated Server 515 / Web 177
+deployment/readback passed: initial-start and restart polling reached HTTP 200/pong
+after 10 and 11 attempts, respectively, with unchanged runtime configuration,
+environment overrides, three named volumes and five core-table counts.
+`docker-default`, `unless-stopped`, database backup
+and 514 rollback remain. No Docker Healthcheck exists; running/pong is not Docker
+healthy. Deployed native lifecycle acceptance remains pending. The full matrix
+remains INCOMPLETE and historical HOLDs are unchanged. A separate fresh Project v2
+native run remains HOLD after a successful deactivate response and a UI wait timeout;
+native removal and database cleanup are incomplete. See the
 [release note](docs/releases/web-console-1.6.177.md).
 
 Published `1.6.176` preserves native `mut` setters by composing `action` with
