@@ -19,10 +19,19 @@ archives: source `a1bbf172aad8443bfbb1859760d62669d6705189`, tree
 Thirteen packaged locales and source gates passed; static absence of affected
 build-package modules does not establish runtime not-affected or zero CVEs.
 The build audit remains 7 High / 3 Moderate; the existing reviewed
-`GHSA-vfj7-8cjw-p6xm` vendor-pending boundary ends 2026-10-10. Server514 packaging
-still awaits Catalog publication and official CI, and QA remains Server512/Web174.
-Packaged UI acceptance is pending; the original P9 Project HOLD and all other
-historical HOLDs remain immutable. The full matrix remains INCOMPLETE.
+`GHSA-vfj7-8cjw-p6xm` vendor-pending boundary ends 2026-10-10. Published Server514
+packages Web176 and Catalog Service 0.20.12 and is deployed on the isolated QA
+site. Network service edit/cleanup and completion of an existing catalog upgrade
+have separate scoped results. Container denials for readonly callers and callers
+without access to the target environment were verified separately. Owner native
+start/restart, log/terminal output and termination, and delete confirmation
+completion were observed in separate runs. Independent read-only queries found
+all seven owned records terminal (removed or purged). This cleanup observation
+does not establish full historical data-protection or lifecycle PASS.
+Environment lifecycle screens and owned-data
+cleanup have separate observations, not complete historical-protection acceptance.
+Original incomplete results and all historical HOLDs remain immutable.
+The full matrix remains INCOMPLETE; isolated QA is not production acceptance.
 See the [release note](docs/releases/web-console-1.6.176.md).
 
 Published `1.6.175` refreshes only the image form's locally owned validation
