@@ -163,6 +163,37 @@ test('member actions cannot mutate a readonly membership list', function(assert)
   destroyOwned(component);
 });
 
+test('inactive network unavailability preserves global capabilities and prevents stale network saves', async function(assert) {
+  for (let canEdit of [false, true]) {
+    let writes = {project: 0, members: 0, network: 0};
+    let actionLinks = canEdit ? {update: '/projects/1a21', setmembers: '/projects/1a21?action=setmembers', remove: '/projects/1a21'} : {};
+    let project = EmberObject.create({
+      id: '1a21', state: 'inactive', actionLinks,
+      projectMembers: A([EmberObject.create({externalIdType: 'oidc_user', externalId: 'owner-1', role: 'owner'})]),
+      validationErrors() { return A([]); },
+      save() { writes.project++; return resolve(this); },
+      doAction(action) { assert.strictEqual(action, 'setmembers'); writes.members++; return resolve(); },
+    });
+    let network = EmberObject.create({
+      actionLinks: {update: '/networks/1n1'}, policy: A([]),
+      save() { writes.network++; return resolve(this); },
+    });
+    let component = makeComponent(project, network, {networkUnavailableForInactiveProject: true});
+
+    try {
+      assert.strictEqual(component.get('canEditProject'), canEdit, 'metadata still follows the global project link');
+      assert.strictEqual(component.get('canEditMembers'), canEdit, 'members still follow the global setmembers link');
+      assert.false(component.get('canEditNetwork'), 'even a stale editable network cannot enable scoped persistence');
+      assert.strictEqual(component.get('canSave'), canEdit, 'the notice does not grant a save capability');
+      await component.get('actions').save.call(component);
+      assert.deepEqual(writes, {project: Number(canEdit), members: Number(canEdit), network: 0}, 'only the advertised global operations are saved');
+      assert.strictEqual(project.get('actionLinks'), actionLinks, 'remove and other action links are not rewritten');
+    } finally {
+      destroyOwned(component);
+    }
+  }
+});
+
 test('member validation errors use translated messages', function(assert) {
   let owner = EmberObject.create({externalIdType: 'oidc_user', externalId: 'owner-1', role: 'owner'});
   let project = EmberObject.create({

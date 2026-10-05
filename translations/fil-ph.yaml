@@ -3786,6 +3786,7 @@ viewEditProject:
     noMembers: Magdagdag ng isa o higit pang miyembro na maaaring gumamit ng environment na ito.
   networkPolicy:
     label: Patakaran sa Network
+    inactive: Naka-deactivate ang environment na ito; pansamantalang hindi available ang mga setting ng network. I-activate ang environment upang makita o i-edit ang mga ito.
     description: Kontrolin kung anong mga container ang pinapayagang makipag-ugnayan sa isa't isa sa Pamamahala ng Network.
     unsupported: >-
       Ang kapaligirang ito ay may mga panuntunan sa patakaran sa network na hindi pa sinusuportahan ng UI.  Pakigamit

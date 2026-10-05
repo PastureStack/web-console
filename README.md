@@ -8,6 +8,19 @@ PastureStack is an independent community effort to preserve, audit, and moderniz
 
 ## Project status
 
+Candidate `1.6.178` fixes viewing and editing an inactive environment. Once the
+globally authorized project and members have loaded, the page does not request
+network or policy-manager data scoped to that inactive environment: the API
+correctly denies those requests. The existing form explains that network
+settings are unavailable until activation, in all thirteen packaged locales.
+Metadata and membership controls still follow their original API action links;
+cached network data cannot enable a network save. Other states and authorization
+failures retain the established error handling. This candidate changes no
+backend, authentication, session ownership or dependency graph. Formal
+publication and deployed native acceptance remain pending; it does not promote
+earlier HOLD results or claim completion of the full matrix. See the
+[candidate release note](docs/releases/web-console-1.6.178.md).
+
 Published `1.6.177` prevents ended log and terminal workspace entries from
 reconnecting after remount/reload or from late access-ticket, broker, socket
 and timer callbacks. Both components share one lifecycle boundary; asynchronous

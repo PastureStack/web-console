@@ -4213,6 +4213,7 @@ viewEditProject:
     noMembers: Add one or more members who can use this environment.
   networkPolicy:
     label: Network Policy
+    inactive: This environment is deactivated; network settings are temporarily unavailable. Activate the environment to view or edit them.
     description: Control what containers are allowed to communicate with each other over the Managed Network.
     unsupported: This environment has network policy rules which are not yet supported by the UI.  Please use the API to manage the policy.
     noManager: Network Policies are available only for environments using the PastureStack orchestration engine with the Network Policy Manager infrastructure template deployed.

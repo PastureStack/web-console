@@ -3785,6 +3785,7 @@ viewEditProject:
     noMembers: Ajouter un ou plusieurs membres qui peuvent utiliser cet environnement.
   networkPolicy:
     label: Politique de réseau
+    inactive: Cet environnement est désactivé ; les paramètres réseau sont temporairement indisponibles. Activez l’environnement pour les consulter ou les modifier.
     description: Contrôlez quels conteneurs sont autorisés à communiquer entre eux sur le réseau géré.
     unsupported: >-
       Cet environnement possède des règles de politique réseau qui ne sont pas encore prises en charge par UI.  Veuillez
