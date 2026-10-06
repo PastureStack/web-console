@@ -855,7 +855,7 @@ function expectBrowserGlobalBundle(file, globalName, expectedVersion) {
 
 function expectMomentRuntime() {
   const moment = require("moment");
-  expectVersion("moment", "2.30.1");
+  expectVersion("moment", "2.31.0");
   const start = moment.utc("2026-05-08T00:00:00Z");
   const end = moment.utc("2026-05-08T00:01:30Z");
   if (end.diff(start, "seconds") !== 90) {
@@ -873,13 +873,13 @@ function expectMomentRuntime() {
   sandbox.self = sandbox;
   vm.runInNewContext(code, sandbox, { filename: file });
   const browserMoment = sandbox.moment || sandbox.window.moment;
-  if (!browserMoment || browserMoment.version !== "2.30.1") {
+  if (!browserMoment || browserMoment.version !== "2.31.0") {
     fail("moment browser-global smoke failed");
   }
   if (browserMoment.utc("1982-02-24T18:42:00Z").format("MMMM") !== "February") {
     fail("moment browser-global UTC format smoke failed");
   }
-  console.log("moment-runtime-smoke-ok version=2.30.1");
+  console.log("moment-runtime-smoke-ok version=2.31.0");
 }
 
 function expectQrCodeGeneratorRuntime() {
