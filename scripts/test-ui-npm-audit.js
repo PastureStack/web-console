@@ -69,6 +69,52 @@ test('exact actual seven-node npm12 closure passes and keeps raw High plus separ
   assert.equal(result.knownPending.metavulnerabilityCount, 6);
   assert.equal(result.knownPending.upstreamPatchedVersion, null);
 });
+function mixedSeverityInput() {
+  const value = input();
+  value.audit.vulnerabilities['underscore.string'] = {
+    name: 'underscore.string', severity: 'moderate', isDirect: false,
+    via: [{ source: 99, name: 'underscore.string', dependency: 'underscore.string', title: 'Separate Moderate fixture',
+      url: 'https://github.com/advisories/GHSA-aaaa-bbbb-cccc', severity: 'moderate', cwe: ['CWE-400'],
+      cvss: { score: 5, vectorString: null }, range: '*' }],
+    effects: ['broccoli'], range: '*', nodes: ['node_modules/underscore.string'], fixAvailable: false
+  };
+  value.audit.vulnerabilities.broccoli.via.push('underscore.string');
+  value.audit.metadata.vulnerabilities.moderate++;
+  value.audit.metadata.vulnerabilities.total++;
+  return value;
+}
+test('reviewed High meta retains independent Moderate branches without expanding the High exception', () => {
+  const result = evaluateAudit(mixedSeverityInput());
+  assert.equal(result.ok, true);
+  assert.equal(result.outcome, 'PASS_BUILD_VENDOR_PENDING');
+  assert.equal(result.totals.high, 7);
+  assert.equal(result.totals.moderate, 1);
+  assert.equal(result.knownPending.metavulnerabilityCount, 6);
+});
+test('mixed-severity branches still require actual lock edges and reject a newly promoted High', () => {
+  const edge = mixedSeverityInput();
+  edge.audit.vulnerabilities.sane.via.push('underscore.string');
+  fail(edge, 'METAVULNERABILITY_LOCK_EDGE_MISMATCH');
+  const promoted = mixedSeverityInput();
+  promoted.audit.vulnerabilities['underscore.string'].severity = 'high';
+  promoted.audit.metadata.vulnerabilities.moderate--;
+  promoted.audit.metadata.vulnerabilities.high++;
+  fail(promoted, 'UNREVIEWED_HIGH_NODE');
+});
+test('lower-severity paths alone cannot manufacture a reviewed High cause', () => {
+  const value = mixedSeverityInput();
+  value.audit.vulnerabilities.broccoli.via = ['underscore.string'];
+  fail(value, 'HIGH_WITHOUT_REVIEWED_CAUSE');
+});
+test('a direct Moderate on a reviewed node stays raw Moderate, while a new direct High is refused', () => {
+  const value = input();
+  const moderate = { ...value.audit.vulnerabilities.braces.via[0], source: 99,
+    url: 'https://github.com/advisories/GHSA-aaaa-bbbb-cccc', severity: 'moderate' };
+  value.audit.vulnerabilities.braces.via.push(moderate);
+  assert.equal(evaluateAudit(value).ok, true);
+  moderate.severity = 'high';
+  fail(value, 'UNREVIEWED_DIRECT_ADVISORY');
+});
 test('unknown High or extra direct advisory cannot borrow the known package name', () => {
   const value = input();
   value.audit.vulnerabilities.braces.via[0].url = 'https://github.com/advisories/GHSA-aaaa-bbbb-cccc';
