@@ -14,8 +14,7 @@ history, authorship, licenses, and dependency notices.
 packages the reviewed Moment 2.31.0 and compatible dependency updates already
 merged on `main`, plus the official shell-quote 1.11.0 security fix in both npm
 and the browser bundle. Its archive is published independently of Server assembly.
-The prior [Server v1.6.516](https://github.com/PastureStack/server/releases/tag/v1.6.516)
-packages Web Console 1.6.178.
+It is packaged in [Server v1.6.517](https://github.com/PastureStack/server/releases/tag/v1.6.517).
 
 For component identities, checksums, focused tests, and known verification limits,
 see the [current release note](docs/releases/web-console-1.6.179.md).
