@@ -10,15 +10,15 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-[Web Console 1.6.178](https://github.com/PastureStack/web-console/releases/tag/1.6.178)
-is packaged in [Server v1.6.516](https://github.com/PastureStack/server/releases/tag/v1.6.516).
-It fixes inactive-environment view/edit loading: globally authorized project and
-member data remains available, while inapplicable network/policy-manager reads
-are skipped and explained in all thirteen packaged locales. It does not bypass
-active-environment permissions or enable network writes in inactive environments.
+[Web Console 1.6.179](https://github.com/PastureStack/web-console/releases/tag/1.6.179)
+packages the reviewed Moment 2.31.0 and compatible dependency updates already
+merged on `main`, plus the official shell-quote 1.11.0 security fix in both npm
+and the browser bundle. Its archive is published independently of Server assembly.
+The prior [Server v1.6.516](https://github.com/PastureStack/server/releases/tag/v1.6.516)
+packages Web Console 1.6.178.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current release note](docs/releases/web-console-1.6.178.md).
+see the [current release note](docs/releases/web-console-1.6.179.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the Server image for deployment; the console archive alone is not a control plane.
 

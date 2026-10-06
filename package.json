@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.178",
+  "version": "1.6.179",
   "private": true,
   "description": "PastureStack browser console for the compatible control platform.",
   "repository": {
@@ -118,7 +118,7 @@
     "rtlcss": "4.3.0",
     "semver": "7.8.5",
     "serialize-javascript": "7.1.0",
-    "shell-quote": "1.10.0",
+    "shell-quote": "1.11.0",
     "socket.io-client": "4.8.3",
     "sort-package-json": "file:vendor/sort-package-json-compat",
     "source-map-url": "file:vendor/source-map-url-compat/source-map-url-0.4.0-rc16.0.tgz",

@@ -964,7 +964,7 @@ function expectBrowserifyReplacementVendorGlobals() {
   const expected = {
     "vendor/ansi-up/ansi-up-global.js": "a50281fdb1fbe71cf638f09e897d4f5b153a418f731be2db410c796982f75682",
     "vendor/semver/semver-global.js": "d3c2df6e4e516f21e66e52675f1baf85ba753842fb3f603827f8815ecbc41e9b",
-    "vendor/shell-quote/shell-quote-global.js": "cdfa04900aae1f1cf27d3c06e6658534eebf74c48edb11dec3b83f9b7dbd4fa8",
+    "vendor/shell-quote/shell-quote-global.js": "bb1719d929d5435124120975b8df02c9084aea3907688d6125d0a80cf8665b8d",
   };
   const sandbox = { window: {}, self: {}, exports: undefined, module: undefined, define: undefined };
   sandbox.global = sandbox;
@@ -988,13 +988,41 @@ function expectBrowserifyReplacementVendorGlobals() {
   if (!shellQuote.quote(["hello world"]).includes("'hello world'")) {
     fail("vendored shell-quote quote smoke failed");
   }
+  for (const implementation of [shellQuote, require("shell-quote")]) {
+    for (const terminator of ["\n", "\r", "\u2028", "\u2029"]) {
+      const hostile = "a" + terminator + "id;#";
+      for (const tokens of [
+        ["echo", "ok", { comment: "x" }, hostile],
+        implementation.parse("echo http://example.com/#fragment").concat(hostile),
+      ]) {
+        let rejected = false;
+        try {
+          implementation.quote(tokens);
+        } catch (error) {
+          rejected = error.name === "TypeError";
+        }
+        if (!rejected) {
+          fail("shell-quote comment line-terminator rejection failed");
+        }
+      }
+    }
+    for (const answer of ["", "hello world", "O'Brien!", "$HOME; echo value", "line\nvalue"]) {
+      if (JSON.stringify(implementation.parse(implementation.quote([answer]))) !== JSON.stringify([answer])) {
+        fail("shell-quote legitimate single-token roundtrip failed");
+      }
+    }
+    if (implementation.quote(["echo", { comment: "x" }, "ordinary"]) !== "echo #x ordinary") {
+      fail("shell-quote ordinary post-comment token changed");
+    }
+  }
+  console.log("shell-quote-comment-boundary-smoke-ok implementations=2 hostile_cases=16 single_token_controls=10");
   const ansiUp = new AnsiUp();
   ansiUp.escape_html = false;
   const ansiHtml = ansiUp.ansi_to_html("\u001b[31mred\u001b[0m &lt;x&gt;");
   if (!ansiHtml.includes("red") || ansiHtml.includes("&amp;lt;")) {
     fail(`vendored ansi_up smoke failed: ${ansiHtml}`);
   }
-  console.log("browserify-replacement-vendor-smoke-ok semver=5.7.2 shell-quote=1.10.0 ansi_up=6.0.6");
+  console.log("browserify-replacement-vendor-smoke-ok semver=5.7.2 shell-quote=1.11.0 ansi_up=6.0.6");
 }
 
 function expectCommonmarkBrowserGlobal(file) {
@@ -1541,7 +1569,7 @@ expectPackageJsonVersion("md5-jkmyers", "0.0.1");
 expectVersion("async", "3.2.6");
 expectVersion("prismjs", "1.30.0");
 expectVersion("lodash", "4.18.1");
-expectVersion("shell-quote", "1.10.0");
+expectVersion("shell-quote", "1.11.0");
 expectVersion("dagre-d3-es", "7.0.14");
 expectVersion("commonmark", "0.31.2");
 expectPackageJsonVersion("billboard.js", "4.0.3");
