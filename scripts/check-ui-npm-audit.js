@@ -180,18 +180,28 @@ function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) 
       visiting.add(name);
       const v = vulnerabilities[name];
       need(v.severity === 'high' && v.nodes.every(n => pinned.includes(n)), 'UNREVIEWED_HIGH_NODE');
+      let reviewedHighCause = false;
       for (const via of v.via) {
         if (typeof via === 'string') {
           need(v.nodes.every(from => {
             const spec = { ...packages[from].dependencies, ...packages[from].optionalDependencies }[via];
             return typeof spec === 'string' && vulnerabilities[via].nodes.includes(resolveDependency(packages, from, via));
           }), 'METAVULNERABILITY_LOCK_EDGE_MISMATCH');
-          knownClosure(via);
+          // npm meta packages can have separate lower-severity branches.
+          // Their shape, severity and actual lock edge are still checked,
+          // but they are neither a High exception nor evidence for one.
+          if (vulnerabilities[via].severity === 'high') {
+            knownClosure(via);
+            reviewedHighCause = true;
+          }
         } else {
+          if (LEVELS.indexOf(via.severity) < LEVELS.indexOf('high')) continue;
           need(name === 'braces' && via.name === 'braces' && via.dependency === 'braces' && via.severity === 'high' &&
             via.url === ADVISORY && via.range === '<=3.0.3', 'UNREVIEWED_DIRECT_ADVISORY');
+          reviewedHighCause = true;
         }
       }
+      need(reviewedHighCause, 'HIGH_WITHOUT_REVIEWED_CAUSE');
       visiting.delete(name);
       verified.add(name);
     }
