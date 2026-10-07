@@ -1,10 +1,12 @@
 # Compatibility Contract
 
-Candidate `1.6.180` forwards the explicit audit `timeScope=all` contract for both
+Published `1.6.180` forwards the explicit audit `timeScope=all` contract for both
 list/poll and JSON/XLSX export. It requires Server v1.6.518's matching broker
 support. Explicit dates still bound the query; unset scope retains the default
 24-hour window. Permission filtering, pagination, scan caps and record retention
 remain backend-owned. See the [release note](docs/releases/web-console-1.6.180.md).
+Component publication does not establish Server assembly or paired deployment
+acceptance.
 
 Web Console preserves compatible API paths, schema and resource names, action names, setting keys, authentication routes, catalog fields, orchestration framework identifiers, generated model properties, and server-provided links.
 

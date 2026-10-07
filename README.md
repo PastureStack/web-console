@@ -10,21 +10,16 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-The current source targets `1.6.180`, fixing all-time audit list and export
-queries with the matching Server v1.6.518 broker. See its
-[release note](docs/releases/web-console-1.6.180.md). The GitHub Release,
-not this source-version statement, determines publication availability.
-
-[Web Console 1.6.179](https://github.com/PastureStack/web-console/releases/tag/1.6.179)
-packages the reviewed Moment 2.31.0 and compatible dependency updates already
-merged on `main`, plus the official shell-quote 1.11.0 security fix in both npm
-and the browser bundle. Its archive is published independently of Server assembly.
-It is packaged in [Server v1.6.517](https://github.com/PastureStack/server/releases/tag/v1.6.517).
+[Web Console 1.6.180](https://github.com/PastureStack/web-console/releases/tag/1.6.180)
+is published, fixing all-time audit listing, polling and JSON/XLSX export
+queries. This contract requires the matching Server v1.6.518 broker.
+The console archive is published independently of Server assembly.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current release note](docs/releases/web-console-1.6.179.md).
+see the [current release note](docs/releases/web-console-1.6.180.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
-Use the Server image for deployment; the console archive alone is not a control plane.
+Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
+for deployment; the console archive alone is not a control plane.
 
 ## Features and operator guides
 
