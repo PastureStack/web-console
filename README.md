@@ -13,13 +13,13 @@ history, authorship, licenses, and dependency notices.
 [Web Console 1.6.180](https://github.com/PastureStack/web-console/releases/tag/1.6.180)
 is published, fixing all-time audit listing, polling and JSON/XLSX export
 queries. This contract requires the matching Server v1.6.518 broker.
-The console archive is published independently of Server assembly;
-paired Server v1.6.518 deployment QA remains pending.
+The console archive is published independently of Server assembly.
 
 For component identities, checksums, focused tests, and known verification limits,
 see the [current release note](docs/releases/web-console-1.6.180.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
-Use the Server image for deployment; the console archive alone is not a control plane.
+Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
+for deployment; the console archive alone is not a control plane.
 
 ## Features and operator guides
 

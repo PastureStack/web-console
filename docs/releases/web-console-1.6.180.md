@@ -32,5 +32,6 @@ The published `web-console-1.6.180.tar.gz` is 2,987,644 bytes; SHA-256:
 Dependencies, authentication/session protections, permissions, HAProxy and
 retention settings are unchanged. Component CI, isolated deployed browser
 acceptance and company production deployment are separate results.
-Paired Server v1.6.518 deployment QA remains pending; this release does not
-claim a completed deployment.
+At component publication, paired Server acceptance was pending; see the matching
+[Server release](https://github.com/PastureStack/server/releases) for current
+assembly/acceptance evidence.
