@@ -191,6 +191,10 @@ export default Route.extend({
     if (params.createdTo) {
       returnValue.filter.created_lte = params.createdTo;
     }
+    if (params.timeScope) {
+      // The broker otherwise applies its default 24-hour window.
+      returnValue.filter.timeScope = params.timeScope;
+    }
 
     ['accountId', 'authenticatedAsAccountId', 'resourceType', 'resourceId', 'clientIp', 'authType', 'interactionChannel'].forEach((key) => {
       if (params[key]) {

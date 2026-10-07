@@ -65,8 +65,28 @@ test('supports useful text operators without leaking UI-only fields', function(a
     'the presentation-only operator never reaches GDAPI');
   assert.strictEqual(route.parseFilters({interactionChannel: 'web_ui'}).filter.interactionChannel,
     'web_ui', 'interaction channel is forwarded to the permission-bound endpoint');
-  assert.notOk('timeScope' in route.parseFilters({timeScope: 'all'}).filter,
-    'the frontend all-time marker never reaches GDAPI');
+
+  destroyOwned(route);
+});
+
+test('forwards all-time intent while preserving dates, permissions and polling bounds', function(assert) {
+  let route = createOwned(AuditLogsRoute, {}, 'route');
+  let query = route.parseFilters({timeScope: 'all', accountId: '1a5'});
+
+  assert.deepEqual(query.filter, {timeScope: 'all', accountId: '1a5'},
+    'an all-time request reaches the permission-bound broker without invented dates');
+  assert.strictEqual(query.url, 'pasturestack/audit-logs');
+  assert.strictEqual(query.limit, 100);
+  assert.strictEqual(query.depaginate, false);
+  assert.deepEqual(route.parseFilters({}).filter, {}, 'the default still uses the broker 24-hour window');
+  assert.deepEqual(route.parseFilters({timeScope: null}).filter, {}, 'an unset scope is omitted');
+  assert.deepEqual(route.parseFilters({
+    timeScope: 'all', createdFrom: '2026-09-01T00:00:00.000Z', createdTo: '2026-10-01T00:00:00.000Z',
+  }).filter, {
+    timeScope: 'all', created_gte: '2026-09-01T00:00:00.000Z', created_lte: '2026-10-01T00:00:00.000Z',
+  }, 'explicit dates are never dropped when a bookmarked URL also contains all');
+  assert.strictEqual(route.parseFilters({timeScope: 'invalid'}).filter.timeScope, 'invalid',
+    'the authoritative broker can reject an invalid bookmarked scope instead of silently changing it');
 
   destroyOwned(route);
 });

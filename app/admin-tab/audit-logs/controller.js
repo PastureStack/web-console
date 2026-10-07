@@ -472,6 +472,7 @@ export default Controller.extend(Sortable, {
         clientIp                 : this.get('clientIp'),
         created_gte              : this.get('createdFrom'),
         created_lte              : this.get('createdTo'),
+        timeScope                : this.get('timeScope'),
         description              : this.get('description'),
         eventType                : this.get('eventType'),
         format,
@@ -500,12 +501,12 @@ export default Controller.extend(Sortable, {
     filters.authType = this.get('authType');
     filters.authenticatedAsAccountId = this.get('authenticatedAsAccountId');
     filters.clientIp = this.get('clientIp');
-    if (this.get('timeScope') === 'all') {
-      filters.createdFrom = null;
-      filters.createdTo = null;
-    } else if (this.get('createdFrom') || this.get('createdTo')) {
+    if (this.get('createdFrom') || this.get('createdTo')) {
       filters.createdFrom = localDateTime(this.get('createdFrom'));
       filters.createdTo = localDateTime(this.get('createdTo'));
+    } else if (this.get('timeScope') === 'all') {
+      filters.createdFrom = null;
+      filters.createdTo = null;
     }
     filters.description = this.get('description');
     filters.descriptionOperator = this.get('descriptionOperator') || 'contains';

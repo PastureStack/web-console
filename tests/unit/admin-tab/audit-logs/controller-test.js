@@ -38,6 +38,58 @@ function controllerFor(properties = {}) {
 
 module('Unit | Controller | admin tab | audit logs');
 
+test('all-time JSON and XLSX exports use the same scope and authorization filters as the list', function(assert) {
+  let controller = controllerFor({
+    timeScope: 'all', accountId: '1e1', authenticatedAsAccountId: '1a1',
+    createdFrom: null, createdTo: null, eventType: 'resource.', eventTypeOperator: 'startsWith',
+  });
+
+  ['json', 'xlsx'].forEach((format) => {
+    // download() reuses this element: capture the URL without initiating a network request.
+    let target = document.createElement('div');
+    target.id = `audit-log-export-${format}`;
+    document.body.appendChild(target);
+    try {
+      controller.actions.exportLogs.call(controller, format);
+      let query = new URL(target.src, window.location.origin);
+      assert.strictEqual(query.pathname, '/v2-beta/pasturestack/audit-logs/export');
+      assert.strictEqual(query.searchParams.get('timeScope'), 'all', `${format} preserves all-time intent`);
+      assert.strictEqual(query.searchParams.get('format'), format);
+      assert.strictEqual(query.searchParams.get('accountId'), '1e1');
+      assert.strictEqual(query.searchParams.get('authenticatedAsAccountId'), '1a1');
+      assert.strictEqual(query.searchParams.get('eventType_prefix'), 'resource.');
+      assert.notOk(query.searchParams.has('created_gte'), 'no artificial start date');
+      assert.notOk(query.searchParams.has('created_lte'), 'no artificial end date');
+
+      controller.setProperties({createdFrom: '2026-09-01T00:00:00.000Z', createdTo: '2026-10-01T00:00:00.000Z'});
+      controller.actions.exportLogs.call(controller, format);
+      query = new URL(target.src, window.location.origin);
+      assert.strictEqual(query.searchParams.get('created_gte'), controller.get('createdFrom'));
+      assert.strictEqual(query.searchParams.get('created_lte'), controller.get('createdTo'));
+      controller.setProperties({timeScope: null, createdFrom: null, createdTo: null});
+      controller.actions.exportLogs.call(controller, format);
+      query = new URL(target.src, window.location.origin);
+      assert.notOk(query.searchParams.has('timeScope'), 'the normal default is not promoted to all time');
+      controller.set('timeScope', 'all');
+    } finally {
+      target.remove();
+    }
+  });
+
+  destroyOwned(controller);
+});
+
+test('a bookmarked all-time marker does not hide explicit date bounds in the draft', function(assert) {
+  let controller = controllerFor({
+    timeScope: 'all', createdFrom: '2026-09-01T00:00:00.000Z', createdTo: '2026-10-01T00:00:00.000Z',
+  });
+  controller.syncDraftFromQuery();
+  assert.strictEqual(moment(controller.get('filters.createdFrom')).toISOString(), controller.get('createdFrom'));
+  assert.strictEqual(moment(controller.get('filters.createdTo')).toISOString(), controller.get('createdTo'));
+  assert.notEqual(controller.get('activeTimePreset'), 'all', 'the displayed range agrees with the API query');
+  destroyOwned(controller);
+});
+
 test('offers friendly environment and user names without raw ID fallbacks', function(assert) {
   let controller = controllerFor({
     model: EmberObject.create({
