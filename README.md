@@ -10,6 +10,11 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
+The current source targets `1.6.180`, fixing all-time audit list and export
+queries with the matching Server v1.6.518 broker. See its
+[release note](docs/releases/web-console-1.6.180.md). The GitHub Release,
+not this source-version statement, determines publication availability.
+
 [Web Console 1.6.179](https://github.com/PastureStack/web-console/releases/tag/1.6.179)
 packages the reviewed Moment 2.31.0 and compatible dependency updates already
 merged on `main`, plus the official shell-quote 1.11.0 security fix in both npm
