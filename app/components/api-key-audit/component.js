@@ -5,10 +5,13 @@ import { later, cancel } from '@ember/runloop';
 import { API_KEY_OPERATIONS, apiKeyError, expiryIso } from 'ui/utils/api-key-policy';
 
 const FILTERS = ['decision', 'outcome', 'httpStatus', 'operation', 'targetType', 'requestId'];
+const PHASES = ['decision', 'response', 'attempt', 'continuation', 'completion', 'handshake'];
 const REASONS = ['KeyFullAccess', 'KeyRuleAllowed', 'KeyScopedCollection', 'KeyPolicyDenied', 'KeyScopeDenied',
   'OwnerPermissionDenied', 'ApiKeyExpired', 'ApiKeyRevoked', 'ApiKeyPolicyChanged', 'PolicyChanged',
   'UnknownOperation', 'AuthenticationPending', 'AuthenticationDenied', 'authorization_not_completed', 'ApiKeyDelegationLive', 'AuditUnavailable',
-  'HandshakeDenied', 'DockerFailure', 'StreamFailed', 'AuthorizationRevoked', 'ClientDisconnected', 'StreamCancelled', 'StreamCompleted', 'DelegationRouteDenied'];
+  'HandshakeDenied', 'DockerFailure', 'StreamFailed', 'AuthorizationRevoked', 'ClientDisconnected', 'StreamCancelled', 'StreamCompleted', 'DelegationRouteDenied',
+  'ApiKeyInactive', 'UNKNOWN_EXCEPTION', 'AUTHORIZATION_DENIED', 'KeyGovernanceCompleted', 'KeyGovernanceDenied',
+  'KeyGovernanceFailed', 'ApiKeyRestrictedDelegationUnsupported'];
 
 export default Component.extend({
   userStore: service('user-store'),
@@ -117,7 +120,10 @@ export default Component.extend({
     // A preview may itself finish successfully, but it has not run the requested
     // operation. Render that meaning instead of an execution-success label.
     safe.outcomeLabelKey = safe.preview ? 'apiKeyAudit.preview' :
+      safe.outcome === 'SUCCEEDED' && safe.phase === 'response' ? 'apiKeyAudit.responseSucceeded' :
+      safe.outcome === 'SUCCEEDED' && safe.phase === 'completion' ? 'apiKeyAudit.completionSucceeded' :
       this.get('outcomes').includes(safe.outcome) ? `apiKeyAudit.outcomes.${safe.outcome}` : null;
+    safe.phaseLabelKey = PHASES.includes(safe.phase) ? `apiKeyAudit.phases.${safe.phase}` : 'apiKeyAudit.phases.unknown';
     safe.reason = REASONS.includes(record.reason) ? record.reason : '';
     safe.reasonLabelKey = safe.reason ? `apiKeyAudit.reasons.${safe.reason}` : 'apiKeyAudit.reasons.unknown';
     safe.responseCode = /^[A-Za-z][A-Za-z0-9_.:-]{0,79}$/.test(safe.responseCode) ? safe.responseCode : '';

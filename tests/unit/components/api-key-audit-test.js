@@ -107,3 +107,43 @@ test('bounded scan rejection offers a narrower query rather than a partial count
   assert.deepEqual(component.get('rows'), []);
   destroyOwned(component);
 });
+
+test('actual inactive governance and background reasons use fixed safe labels without changing outcomes', function(assert) {
+  let component = audit(() => resolve());
+  ['ApiKeyInactive', 'UNKNOWN_EXCEPTION', 'AUTHORIZATION_DENIED', 'KeyGovernanceCompleted', 'KeyGovernanceDenied',
+    'KeyGovernanceFailed', 'ApiKeyRestrictedDelegationUnsupported'].forEach((reason) => {
+    let record = component.safeRecord({reason, phase: 'attempt', outcome: 'FAILED', httpStatus: 0,
+      message: 'private exception or credential', exception: {message: 'private'}, requestBody: {password: 'private'}});
+    assert.strictEqual(record.reasonLabelKey, `apiKeyAudit.reasons.${reason}`, 'only the actual stable constant selects its translation');
+    assert.strictEqual(record.reason, reason);
+    assert.strictEqual(record.outcomeLabelKey, 'apiKeyAudit.outcomes.FAILED', 'a human reason never changes the actual failure outcome');
+    assert.notOk(record.hasHttpResponse, 'background events do not fabricate an HTTP response');
+    assert.notOk('message' in record || 'exception' in record || 'requestBody' in record, 'private backend details remain absent');
+  });
+  let accepted = component.safeRecord({reason: 'KeyGovernanceCompleted', phase: 'response', outcome: 'ACCEPTED', httpStatus: 202});
+  assert.strictEqual(accepted.outcomeLabelKey, 'apiKeyAudit.outcomes.ACCEPTED', 'processed governance is not a completed lifecycle');
+  assert.strictEqual(component.safeRecord({reason: 'UNKNOWN_EXCEPTION private data'}).reasonLabelKey,
+    'apiKeyAudit.reasons.unknown', 'a known prefix does not whitelist arbitrary exception strings');
+  destroyOwned(component);
+});
+
+test('HTTP success and background completion have separate safe phase labels', function(assert) {
+  let component = audit(() => resolve());
+  let response = component.safeRecord({requestId: 'same-request', phase: 'response', outcome: 'SUCCEEDED', httpStatus: 201});
+  let background = component.safeRecord({requestId: 'same-request', phase: 'attempt', outcome: 'FAILED', httpStatus: 0});
+  assert.strictEqual(response.phaseLabelKey, 'apiKeyAudit.phases.response');
+  assert.strictEqual(response.outcomeLabelKey, 'apiKeyAudit.responseSucceeded', 'HTTP 201 does not claim background completion');
+  assert.strictEqual(background.phaseLabelKey, 'apiKeyAudit.phases.attempt');
+  assert.strictEqual(background.outcomeLabelKey, 'apiKeyAudit.outcomes.FAILED', 'the same request can have an actual later process failure');
+  assert.strictEqual(component.safeRecord({phase: 'completion', outcome: 'SUCCEEDED', httpStatus: 0}).outcomeLabelKey,
+    'apiKeyAudit.completionSucceeded', 'only a successful completion receipt claims completed work');
+  ['decision', 'response', 'attempt', 'continuation', 'completion', 'handshake'].forEach((phase) => {
+    assert.strictEqual(component.safeRecord({phase}).phaseLabelKey, `apiKeyAudit.phases.${phase}`);
+  });
+  let unknown = component.safeRecord({phase: 'completion private-message', outcome: 'SUCCEEDED', httpStatus: 201});
+  assert.strictEqual(unknown.phaseLabelKey, 'apiKeyAudit.phases.unknown', 'only exact actual phases select human labels');
+  assert.strictEqual(unknown.outcomeLabelKey, 'apiKeyAudit.outcomes.SUCCEEDED', 'unknown phase never masquerades as completion');
+  assert.strictEqual(component.safeRecord({preview: true, phase: 'completion', outcome: 'SUCCEEDED'}).outcomeLabelKey,
+    'apiKeyAudit.preview', 'a completed permission preview still has not executed the requested operation');
+  destroyOwned(component);
+});

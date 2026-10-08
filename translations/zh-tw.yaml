@@ -2061,6 +2061,13 @@ apiKeyAudit:
     StreamCancelled: 串流在完成前已取消
     StreamCompleted: 串流已完成
     DelegationRouteDenied: 串流票券不能用於這項操作，請重新取得對應票券
+    ApiKeyInactive: 金鑰目前已停用，不能用於身分驗證或執行操作
+    UNKNOWN_EXCEPTION: 背景流程執行失敗；請使用請求 ID 查核，不顯示內部例外內容
+    AUTHORIZATION_DENIED: 背景流程的即時授權重查已拒絕，尚未完成操作
+    KeyGovernanceCompleted: 金鑰管理請求已處理；仍請依執行結果及讀回狀態確認是否完成
+    KeyGovernanceDenied: 金鑰管理請求已拒絕
+    KeyGovernanceFailed: 金鑰管理請求處理失敗
+    ApiKeyRestrictedDelegationUnsupported: 有自訂限制或期限的金鑰不能建立子金鑰或轉授權
     unknown: 沒有可安全顯示的原因；請使用請求 ID 查核
   outcomes:
     PENDING: 待執行／待結果
@@ -2068,10 +2075,21 @@ apiKeyAudit:
     DENIED: 已拒絕
     NOT_EXECUTED: 未執行
     ACCEPTED: 已受理（尚未完成）
-    SUCCEEDED: 已完成成功
+    SUCCEEDED: 結果成功（請依階段確認是否完成）
     FAILED: 執行失敗
     CANCELED: 已中斷
   noHttpResponse: 無 HTTP 回應（背景事件）
+  phase: 事件階段
+  phases:
+    decision: 授權判斷（尚未執行）
+    response: API 回應（非背景完成）
+    attempt: 背景執行嘗試
+    continuation: 背景工作仍繼續
+    completion: 背景／串流完成事件
+    handshake: 串流握手
+    unknown: 未知階段（未確認完成）
+  responseSucceeded: API 回應成功
+  completionSucceeded: 背景／串流工作已完成
   title: 金鑰稽核
   help: 授權判斷與執行結果分開顯示。ALLOW 不代表執行成功；HTTP 202／ACCEPTED 只代表已接受，尚未完成。檢視稽核不會變更金鑰。
   time: 時間範圍

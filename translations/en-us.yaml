@@ -2149,6 +2149,13 @@ apiKeyAudit:
     StreamCancelled: The stream was canceled before completion
     StreamCompleted: The stream completed
     DelegationRouteDenied: This stream ticket cannot be used for this operation. Obtain a ticket for the requested operation.
+    ApiKeyInactive: The key is inactive and cannot authenticate or execute operations
+    UNKNOWN_EXCEPTION: The background process failed. Investigate using the request ID; internal exception details are not displayed.
+    AUTHORIZATION_DENIED: A live authorization recheck denied the background process; the operation has not completed
+    KeyGovernanceCompleted: The key management request was processed. Confirm completion using its outcome and state readback.
+    KeyGovernanceDenied: The key management request was denied
+    KeyGovernanceFailed: The key management request failed
+    ApiKeyRestrictedDelegationUnsupported: A key with custom restrictions or expiration cannot create child keys or delegate authority
     unknown: No safe reason is available; investigate using the request ID
   outcomes:
     PENDING: Awaiting execution or result
@@ -2156,10 +2163,21 @@ apiKeyAudit:
     DENIED: Denied
     NOT_EXECUTED: Not executed
     ACCEPTED: Accepted (not completed)
-    SUCCEEDED: Completed successfully
+    SUCCEEDED: Successful result (confirm completion by phase)
     FAILED: Failed
     CANCELED: Interrupted
   noHttpResponse: No HTTP response (background event)
+  phase: Event phase
+  phases:
+    decision: Authorization decision (not execution)
+    response: API response (not background completion)
+    attempt: Background attempt
+    continuation: Background work continues
+    completion: Background / stream completion event
+    handshake: Stream handshake
+    unknown: Unknown phase (completion not confirmed)
+  responseSucceeded: API response succeeded
+  completionSucceeded: Background / stream work completed
   title: Key audit
   help: Authorization decisions and execution outcomes are separate. ALLOW does not mean success. HTTP 202 / ACCEPTED means accepted, not completed. Viewing audit records does not modify the key.
   time: Time scope

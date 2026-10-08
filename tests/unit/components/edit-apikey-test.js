@@ -5,6 +5,7 @@ import { precompileTemplate } from '@ember/template-compilation';
 import { find, render, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
 import { resolve, reject, defer } from 'rsvp';
 import { takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
+import Collection from 'ember-api-store/models/collection';
 import { module, test } from 'qunit';
 
 import EditApiKey from 'ui/components/edit-apikey/component';
@@ -149,6 +150,63 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       'the localized denial is visible without exposing the API response');
     assert.notOk(this.testRoot.textContent.includes('PUBLIC-NEVER-RENDER'), 'the public key is not in the failed form');
     assert.notOk(this.testRoot.textContent.includes('SECRET-NEVER-RENDER'), 'the secret key is not in the failed form');
+  });
+
+  test('real scope child survives capability wrapper updates and renders resource stack and global drafts', async function(assert) {
+    let reads = 0;
+    let stack = EmberObject.create({id: '1st4', type: 'stack', name: 'Visible stack', accountId: '1a9',
+      links: {self: '/v2-beta/projects/1a9/stacks/1st4'}, actionLinks: {}});
+    let stackSchema = EmberObject.create({id: 'stack', collectionMethods: ['GET'], resourceMethods: ['GET'],
+      resourceActions: {}, resourceLinks: []});
+    let stackRows = Collection.create({content: A([stack])});
+    this.owner.register('service:store', Service.extend({generation: 1,
+      getById(type, id) { return type === 'schema' && id === 'stack' ? stackSchema : null; },
+      findAll() { return resolve(stackRows); }, find() { return resolve(stack); }}));
+    this.owner.register('service:user-store', Service.extend({generation: 1,
+      getById() { return stackSchema; },
+      rawRequest() { reads++; return resolve({body: {data: [stackSchema]}}); }}));
+    this.owner.register('service:projects', Service.extend({current: EmberObject.create({id: '1a9'}),
+      schemaProjectId: '1a9', schemaLoadGeneration: 1}));
+    this.owner.register('service:session', Service.extend({accountId: '1a1'}));
+    this.owner.register('service:access', Service.extend({identity: EmberObject.create({id: 'viewer1'})}));
+    this.owner.register('service:endpoint', Service.extend({absolute: 'https://platform.example/'}));
+    this.owner.register('service:modal', Service.extend({modalVisible: true, modalOpts: null,
+      toggleModal() { this.set('modalVisible', false); }}));
+    this.modal = this.owner.lookup('service:modal');
+    this.modal.set('modalOpts', key({accountId: '1a1'}, this.owner.lookup('service:user-store')));
+    let clickButton = (label) => [...this.testRoot.querySelectorAll('button')].find((node) => node.textContent.trim() === label).click();
+    let change = async (node, value) => { node.value = value; node.dispatchEvent(new Event('change', {bubbles: true})); await settled(); };
+    let targetView = () => Object.values(this.owner.lookup('-view-registry:main')).find((view) =>
+      typeof view.loadContext === 'function' && typeof view.publish === 'function' && !view.isDestroyed && !view.isDestroying);
+
+    try {
+      await render(precompileTemplate('{{#if this.modal.modalVisible}}{{edit-apikey}}{{/if}}'));
+      clickButton('Custom'); await settled();
+      clickButton('Add rule'); await settled();
+      let originalChild = targetView();
+      assert.ok(originalChild, 'the real scope component runs its lifecycle');
+      assert.ok(find('select[aria-label] option[value="1st4"]'), 'real ArrayProxy results render as selectable candidates');
+      let selects = () => this.testRoot.querySelectorAll('.api-key-rule .row select:not([aria-label])');
+      await change(selects()[1], 'resource');
+      assert.ok(selects()[2], 'resource type control is rendered after a normal DOM change');
+      await change(selects()[2], 'stack');
+      await change(find('select[aria-label]'), '1st4');
+      assert.strictEqual(targetView(), originalChild, 'capability callback updates wrappers without remounting the child');
+      assert.strictEqual(reads, 1, 'one selected-scope schema read, not a remount loop');
+      assert.strictEqual(find('input[data-operation="read"]').dataset.capability, 'observed');
+      assert.ok(find('input[data-operation="update"]').disabled, 'confirmed missing PUT disables only custom allow');
+      await change(selects()[1], 'global');
+      assert.notOk(find('select[aria-label]'), 'global intentionally has no target child');
+      assert.ok([...this.testRoot.querySelectorAll('input[data-capability]')].every((node) =>
+        node.dataset.capability === 'unknown' && !node.disabled), 'global never borrows the prior project evidence');
+      await change(selects()[1], 'stack');
+      assert.ok(find('select[aria-label] option[value="1st4"]'), 'returning to stack creates one healthy scope component');
+      assert.ok([...this.testRoot.querySelectorAll('input[data-capability]')].every((node) =>
+        node.dataset.capability === 'unknown' && !node.disabled), 'unselected stack remains explicitly unknown');
+      clickButton('Cancel'); await settled();
+    } finally {
+      stackRows.destroy();
+    }
   });
 });
 

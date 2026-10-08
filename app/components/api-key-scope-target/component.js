@@ -1,5 +1,6 @@
 import Component from '@ember/component';
 import { service } from '@ember/service';
+import { scheduleOnce, cancel } from '@ember/runloop';
 import { scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import C from 'ui/utils/constants';
 const PLATFORM_TYPES = ['project', 'setting', 'userpreference', 'apikey', 'apikeyrestricted', 'account', 'auditlog'];
@@ -89,8 +90,27 @@ export default Component.extend({
   },
 
   current(generation) { return generation === this._loadGeneration && !this.isDestroyed && !this.isDestroying; },
-  publish(evidence) { if ( typeof this.get('onCapabilities') === 'function' ) { this.get('onCapabilities')(evidence); } },
-  willDestroyElement() { this._loadGeneration = (this._loadGeneration || 0) + 1; this._candidateResources = null; this._super(...arguments); },
+  publish(evidence) {
+    // didReceiveAttrs runs while the parent rules are being rendered. Never
+    // dirty that consumed computation; retain only the latest context/result.
+    this._pendingEvidence = {generation: this._loadGeneration, evidence};
+    this._publishTimer = scheduleOnce('afterRender', this, this.publishPending);
+  },
+  publishPending() {
+    this._publishTimer = null;
+    let pending = this._pendingEvidence;
+    this._pendingEvidence = null;
+    if ( pending && this.current(pending.generation) && typeof this.get('onCapabilities') === 'function' ) {
+      this.get('onCapabilities')(pending.evidence);
+    }
+  },
+  willDestroyElement() {
+    this._loadGeneration = (this._loadGeneration || 0) + 1;
+    if ( this._publishTimer ) { cancel(this._publishTimer); this._publishTimer = null; }
+    this._pendingEvidence = null;
+    this._candidateResources = null;
+    this._super(...arguments);
+  },
 
   actions: {
     select(event) { this.get('onSelect')(event); },

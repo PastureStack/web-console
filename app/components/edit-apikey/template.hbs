@@ -77,7 +77,7 @@
             <option value="deny" selected={{eq this.policyDraft.defaultEffect 'deny'}}>{{t 'apiKeyAccess.effects.deny'}}</option>
             <option value="allow" selected={{eq this.policyDraft.defaultEffect 'allow'}}>{{t 'apiKeyAccess.effects.allow'}}</option>
           </select>
-          {{#each this.rules as |rule|}}
+          {{#each this.rules key="id" as |rule|}}
             <section class="well api-key-rule" data-rule-id={{rule.id}}>
               <div class="row form-group">
                 <div class="col-sm-3">

@@ -49,12 +49,12 @@
   <p class="r-mt15" role="status">{{t 'apiKeyAudit.count' count=this.total page=this.page}}</p>
   <div class="table-responsive">
     <table class="table grid">
-      <thead><tr><th>{{t 'apiKeyAudit.created'}}</th><th>{{t 'apiKeyAudit.operation'}}</th><th>{{t 'apiKeyAudit.target'}}</th><th>{{t 'apiKeyAudit.decision'}}</th><th>{{t 'apiKeyAudit.outcome'}}</th><th>{{t 'apiKeyAudit.httpStatus'}}</th><th>{{t 'apiKeyAudit.requestId'}}</th><th></th></tr></thead>
+      <thead><tr><th>{{t 'apiKeyAudit.created'}}</th><th>{{t 'apiKeyAudit.operation'}}</th><th>{{t 'apiKeyAudit.target'}}</th><th>{{t 'apiKeyAudit.decision'}}</th><th>{{t 'apiKeyAudit.phase'}}</th><th>{{t 'apiKeyAudit.outcome'}}</th><th>{{t 'apiKeyAudit.httpStatus'}}</th><th>{{t 'apiKeyAudit.requestId'}}</th><th></th></tr></thead>
       <tbody>
         {{#each this.rows as |record|}}
-          <tr><td>{{record.created}}</td><td>{{record.operation}}</td><td>{{record.targetType}} <code>{{record.targetId}}</code></td><td>{{record.decision}}<div class="text-muted">{{t record.reasonLabelKey}}</div></td><td>{{#if record.outcomeLabelKey}}{{t record.outcomeLabelKey}}{{else}}{{record.outcome}}{{/if}}</td><td>{{#if record.hasHttpResponse}}{{record.httpStatus}}{{else}}{{t 'apiKeyAudit.noHttpResponse'}}{{/if}} {{record.responseCode}}</td><td><code>{{record.requestId}}</code> {{#if record.requestId}}{{copy-to-clipboard clipboardText=record.requestId size='small'}}{{/if}}</td><td><button type="button" class="btn btn-sm btn-default" disabled={{this.busy}} {{action 'details' record.id}}>{{t 'apiKeyAudit.details'}}</button></td></tr>
+          <tr><td>{{record.created}}</td><td>{{record.operation}}</td><td>{{record.targetType}} <code>{{record.targetId}}</code></td><td>{{record.decision}}<div class="text-muted">{{t record.reasonLabelKey}}</div></td><td>{{t record.phaseLabelKey}}</td><td>{{#if record.outcomeLabelKey}}{{t record.outcomeLabelKey}}{{else}}{{record.outcome}}{{/if}}</td><td>{{#if record.hasHttpResponse}}{{record.httpStatus}}{{else}}{{t 'apiKeyAudit.noHttpResponse'}}{{/if}} {{record.responseCode}}</td><td><code>{{record.requestId}}</code> {{#if record.requestId}}{{copy-to-clipboard clipboardText=record.requestId size='small'}}{{/if}}</td><td><button type="button" class="btn btn-sm btn-default" disabled={{this.busy}} {{action 'details' record.id}}>{{t 'apiKeyAudit.details'}}</button></td></tr>
         {{else}}
-          <tr><td colspan="8" class="text-center text-muted">{{t 'apiKeyAudit.empty'}}</td></tr>
+          <tr><td colspan="9" class="text-center text-muted">{{t 'apiKeyAudit.empty'}}</td></tr>
         {{/each}}
       </tbody>
     </table>
@@ -70,7 +70,8 @@
       <p>{{t 'apiKeyAudit.actor'}}: <code>{{this.detail.actor}}</code></p>
       <p>{{t 'apiKeyAudit.target'}}: {{this.detail.targetType}} <code>{{this.detail.targetId}}</code></p>
       <p>{{t 'apiKeyAudit.operation'}}: {{this.detail.operation}} · {{t 'apiKeyAccess.revision'}} {{this.detail.policyRevision}}</p>
-      <p>{{t 'apiKeyAudit.decision'}}: {{this.detail.decision}} · {{t 'apiKeyAudit.outcome'}}: {{#if this.detail.outcomeLabelKey}}{{t this.detail.outcomeLabelKey}}{{else}}{{this.detail.outcome}}{{/if}} · {{this.detail.phase}}</p>
+      <p>{{t 'apiKeyAudit.phase'}}: {{t this.detail.phaseLabelKey}}</p>
+      <p>{{t 'apiKeyAudit.decision'}}: {{this.detail.decision}} · {{t 'apiKeyAudit.outcome'}}: {{#if this.detail.outcomeLabelKey}}{{t this.detail.outcomeLabelKey}}{{else}}{{this.detail.outcome}}{{/if}}</p>
       <p>{{t 'apiKeyAudit.reason'}}: {{t this.detail.reasonLabelKey}} {{#if this.detail.reason}}· <code>{{this.detail.reason}}</code>{{/if}}</p>
       <p>{{t 'apiKeyAudit.httpStatus'}}: {{#if this.detail.hasHttpResponse}}{{this.detail.httpStatus}}{{else}}{{t 'apiKeyAudit.noHttpResponse'}}{{/if}} {{this.detail.responseCode}}</p>
       <button type="button" class="btn btn-default" {{action 'closeDetail'}}>{{t 'generic.closeModal'}}</button>

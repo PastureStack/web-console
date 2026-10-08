@@ -36,12 +36,40 @@ test('project plus schema generation and viewer changes clear and reload stale m
   component.loadContext(); await drain();
   let before = component._loadGeneration;
   component.set('projects.schemaLoadGeneration', 2);
-  assert.notOk(published.at(-1).contextVerified, 'old operation evidence is cleared synchronously');
+  assert.notOk(component._pendingEvidence.evidence.contextVerified, 'invalid evidence replaces the pending prior context immediately');
   await drain();
   assert.ok(component._loadGeneration > before);
   component.set('access.identity.id', 'viewer2');
-  assert.notOk(published.at(-1).complete, 'old viewer metadata cannot remain usable');
+  assert.notOk(component._pendingEvidence.evidence.complete, 'pending old viewer metadata is discarded before notification');
   await drain(); destroyOwned(component);
+});
+
+test('afterRender coalesces the newest scope and a late previous context cannot publish', async function(assert) {
+  let first = defer();
+  let {component, store, published} = target();
+  store.findAll = () => first.promise;
+  component.loadContext();
+  component.set('scope', {kind: 'global'});
+  component.didReceiveAttrs();
+  assert.strictEqual(published.length, 0, 'render lifecycle never synchronously mutates the parent');
+  await drain();
+  assert.strictEqual(published.length, 1, 'only the latest pending scope is delivered');
+  assert.strictEqual(published[0].scopeKey, 'global::');
+  assert.notOk(published[0].contextVerified, 'global remains unknown');
+  first.resolve([EmberObject.create({id: 'stale', name: 'old'})]); await drain();
+  assert.strictEqual(published.length, 1, 'stale collection completion cannot publish to the new context');
+  destroyOwned(component);
+});
+
+test('destroy cancels queued evidence and late callbacks cannot reach the parent', async function(assert) {
+  let pending = defer();
+  let {component, store, published} = target();
+  store.findAll = () => pending.promise;
+  component.loadContext();
+  component.willDestroyElement();
+  destroyOwned(component);
+  pending.resolve([]); await drain();
+  assert.deepEqual(published, [], 'no callback survives component destruction');
 });
 
 test('late collection results from a previous project cannot repopulate candidates', async function(assert) {
