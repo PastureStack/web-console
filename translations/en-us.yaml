@@ -2207,7 +2207,7 @@ apiKeyAudit:
     access: You no longer have access to this key audit. Previous records have been cleared.
     missing: The record is missing or no longer accessible. Previous records have been cleared.
     range: Enter a valid start and end time.
-    tooLarge: The query exceeds the server scan limit of 20,000 records. Narrow the time range and try again.
+    tooLarge: The query exceeds the range the server can verify. Incomplete results have not been returned. Adjust the query scope; if it still fails, contact an administrator.
     load: Could not load the key audit. Refresh to try again.
 editBalancerService:
   title: Edit Load Balancer
