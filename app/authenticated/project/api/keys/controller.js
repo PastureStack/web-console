@@ -52,7 +52,10 @@ export default Controller.extend(Sortable, {
     let sort = this.get('sorts')[this.get('sortBy')];
 
     let seen = new Set();
-    let out = [...this.get('model.account'), ...(this.get('model.accountRestricted') || [])].filter((row) => {
+    // Store.all returns a live Ember ArrayProxy, not an ES iterable. Map both
+    // collections into plain arrays without losing their live dependencies.
+    let out = this.get('model.account').map((row) => row)
+      .concat((this.get('model.accountRestricted') || []).map((row) => row)).filter((row) => {
       let id = row.get('id');
       if ( seen.has(id) || row.get('accountId') !== me ) { return false; }
       seen.add(id);
@@ -64,7 +67,8 @@ export default Controller.extend(Sortable, {
     }
 
     return out;
-  }.property('model.account.@each.{accountId,name,createdTs}', 'model.accountRestricted.@each.{accountId,name,createdTs}', 'sortBy','descending'),
+  }.property('model.account.@each.{accountId,name,createdTs}', 'model.accountRestricted.@each.{accountId,name,createdTs}',
+    `session.${C.SESSION.ACCOUNT_ID}`, 'sortBy','descending'),
 
   environmentArranged: function() {
     var project = this.get('project.id');
