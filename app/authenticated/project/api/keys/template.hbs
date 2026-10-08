@@ -31,7 +31,7 @@
     </thead>
     <tbody>
       {{#each this.accountArranged as |key|}}
-        {{apikey-row model=key}}
+        {{apikey-row model=key auditSupported=this.policySupported onAudit=(action 'auditKey')}}
       {{else}}
         <tr><td colspan="6" class="text-center text-muted">{{t 'apiPage.account.table.noData'}}</td></tr>
       {{/each}}
@@ -43,12 +43,13 @@
   <section class="header">
     <h1>{{t 'apiPage.header'}}</h1>
 
-    {{#if this.canCreateEnvironmentKey}}
+    {{#if (and this.canCreateEnvironmentKey (not this.policySupported))}}
       <button class="btn btn-sm btn-primary" {{action "newApikey" "environment"}}>{{t 'apiPage.actionButton'}}</button>
     {{/if}}
   </section>
 
   <section class="well">
+    {{#if this.policySupported}}<p>{{t 'apiKeyAccess.personalCreate'}}</p>{{/if}}
     <p>
       {{format-html-message 'apiPage.content'
         displayName=this.project.displayName
@@ -78,7 +79,7 @@
       </thead>
       <tbody>
         {{#each this.environmentArranged as |key|}}
-          {{apikey-row model=key}}
+          {{apikey-row model=key auditSupported=this.policySupported onAudit=(action 'auditKey')}}
         {{else}}
           <tr><td colspan="6" class="text-center text-muted">{{t 'apiPage.table.noData'}}</td></tr>
         {{/each}}
@@ -86,3 +87,10 @@
     </table>
   </section>
 {{/advanced-section}}
+
+{{#if this.policySupported}}
+  {{#if this.targetKey}}
+    <div class="text-right r-mb10"><button type="button" class="btn btn-default" {{action 'closeAudit'}}>{{t 'apiKeyAudit.close'}}</button></div>
+    {{api-key-audit keyId=this.targetKey}}
+  {{/if}}
+{{/if}}

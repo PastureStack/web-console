@@ -1,0 +1,79 @@
+<section class="well api-key-audit" aria-label={{t 'apiKeyAudit.title'}}>
+  <h2>{{t 'apiKeyAudit.title'}} · <code>{{this.keyId}}</code></h2>
+  <p>{{t 'apiKeyAudit.help'}}</p>
+  <form {{action 'filter' on='submit'}}>
+    <fieldset disabled={{this.busy}}>
+      <div class="row form-group">
+        <div class="col-sm-3">
+          <label for="key-audit-time">{{t 'apiKeyAudit.time'}}</label>
+          <select id="key-audit-time" class="form-control" onchange={{action 'select' 'timeScope'}}>
+            <option value="all" selected={{eq this.timeScope 'all'}}>{{t 'apiKeyAudit.allTime'}}</option>
+            <option value="range" selected={{eq this.timeScope 'range'}}>{{t 'apiKeyAudit.range'}}</option>
+          </select>
+        </div>
+        {{#if (eq this.timeScope 'range')}}
+          <div class="col-sm-3"><label for="key-audit-from">{{t 'apiKeyAudit.from'}}</label>{{input id='key-audit-from' type='datetime-local' value=this.createdFrom class='form-control'}}</div>
+          <div class="col-sm-3"><label for="key-audit-to">{{t 'apiKeyAudit.to'}}</label>{{input id='key-audit-to' type='datetime-local' value=this.createdTo class='form-control'}}</div>
+        {{/if}}
+      </div>
+      <div class="row form-group">
+        <div class="col-sm-3">
+          <label for="key-audit-decision">{{t 'apiKeyAudit.decision'}}</label>
+          <select id="key-audit-decision" class="form-control" onchange={{action 'select' 'decision'}}>
+            <option value="">{{t 'apiKeyAudit.any'}}</option><option value="ALLOW">ALLOW</option><option value="DENY">DENY</option>
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <label for="key-audit-outcome">{{t 'apiKeyAudit.outcome'}}</label>
+          <select id="key-audit-outcome" class="form-control" onchange={{action 'select' 'outcome'}}>
+            <option value="">{{t 'apiKeyAudit.any'}}</option>{{#each this.outcomes as |outcome|}}<option value={{outcome}}>{{t (concat 'apiKeyAudit.outcomes.' outcome)}}</option>{{/each}}
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <label for="key-audit-operation">{{t 'apiKeyAudit.operation'}}</label>
+          <select id="key-audit-operation" class="form-control" onchange={{action 'select' 'operation'}}>
+            <option value="">{{t 'apiKeyAudit.any'}}</option>{{#each this.operations as |operation|}}<option value={{operation}}>{{t (concat 'apiKeyAccess.operations.' operation)}}</option>{{/each}}
+          </select>
+        </div>
+        <div class="col-sm-3"><label for="key-audit-status">{{t 'apiKeyAudit.httpStatus'}}</label>{{input id='key-audit-status' type='number' value=this.httpStatus class='form-control' min='100' max='599'}}</div>
+      </div>
+      <div class="row form-group">
+        <div class="col-sm-6"><label for="key-audit-request">{{t 'apiKeyAudit.requestId'}}</label>{{input id='key-audit-request' value=this.requestId class='form-control'}}</div>
+        <div class="col-sm-6"><label for="key-audit-type">{{t 'apiKeyAudit.targetType'}}</label>{{input id='key-audit-type' value=this.targetType class='form-control'}}</div>
+      </div>
+      <button type="submit" class="btn btn-primary">{{t 'apiKeyAudit.filter'}}</button>
+    </fieldset>
+  </form>
+  {{#if this.error}}<div class="alert alert-danger r-mt15" role="alert">{{this.error}} {{#if this.errorRequestId}}<code>{{this.errorRequestId}}</code> {{copy-to-clipboard clipboardText=this.errorRequestId size='small'}}{{/if}}</div>{{/if}}
+  {{#if this.busy}}<p role="status">{{t 'generic.loading'}}</p>{{/if}}
+  <p class="r-mt15" role="status">{{t 'apiKeyAudit.count' count=this.total page=this.page}}</p>
+  <div class="table-responsive">
+    <table class="table grid">
+      <thead><tr><th>{{t 'apiKeyAudit.created'}}</th><th>{{t 'apiKeyAudit.operation'}}</th><th>{{t 'apiKeyAudit.target'}}</th><th>{{t 'apiKeyAudit.decision'}}</th><th>{{t 'apiKeyAudit.outcome'}}</th><th>{{t 'apiKeyAudit.httpStatus'}}</th><th>{{t 'apiKeyAudit.requestId'}}</th><th></th></tr></thead>
+      <tbody>
+        {{#each this.rows as |record|}}
+          <tr><td>{{record.created}}</td><td>{{record.operation}}</td><td>{{record.targetType}} <code>{{record.targetId}}</code></td><td>{{record.decision}}<div class="text-muted">{{t record.reasonLabelKey}}</div></td><td>{{#if record.outcomeLabelKey}}{{t record.outcomeLabelKey}}{{else}}{{record.outcome}}{{/if}}</td><td>{{#if record.hasHttpResponse}}{{record.httpStatus}}{{else}}{{t 'apiKeyAudit.noHttpResponse'}}{{/if}} {{record.responseCode}}</td><td><code>{{record.requestId}}</code> {{#if record.requestId}}{{copy-to-clipboard clipboardText=record.requestId size='small'}}{{/if}}</td><td><button type="button" class="btn btn-sm btn-default" disabled={{this.busy}} {{action 'details' record.id}}>{{t 'apiKeyAudit.details'}}</button></td></tr>
+        {{else}}
+          <tr><td colspan="8" class="text-center text-muted">{{t 'apiKeyAudit.empty'}}</td></tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  <div class="btn-group">
+    <button type="button" class="btn btn-default" disabled={{or this.busy (not this.hasPrevious)}} {{action 'page' -1}}>{{t 'apiKeyAudit.previous'}}</button>
+    <button type="button" class="btn btn-default" disabled={{or this.busy (not this.hasNext)}} {{action 'page' 1}}>{{t 'apiKeyAudit.next'}}</button>
+  </div>
+  {{#if this.detail}}
+    <section class="well r-mt15" aria-label={{t 'apiKeyAudit.details'}}>
+      <h3>{{t 'apiKeyAudit.details'}}</h3>
+      <p>{{t 'apiKeyAudit.requestId'}}: <code>{{this.detail.requestId}}</code> {{#if this.detail.requestId}}{{copy-to-clipboard clipboardText=this.detail.requestId size='small'}}{{/if}}</p>
+      <p>{{t 'apiKeyAudit.actor'}}: <code>{{this.detail.actor}}</code></p>
+      <p>{{t 'apiKeyAudit.target'}}: {{this.detail.targetType}} <code>{{this.detail.targetId}}</code></p>
+      <p>{{t 'apiKeyAudit.operation'}}: {{this.detail.operation}} · {{t 'apiKeyAccess.revision'}} {{this.detail.policyRevision}}</p>
+      <p>{{t 'apiKeyAudit.decision'}}: {{this.detail.decision}} · {{t 'apiKeyAudit.outcome'}}: {{#if this.detail.outcomeLabelKey}}{{t this.detail.outcomeLabelKey}}{{else}}{{this.detail.outcome}}{{/if}} · {{this.detail.phase}}</p>
+      <p>{{t 'apiKeyAudit.reason'}}: {{t this.detail.reasonLabelKey}} {{#if this.detail.reason}}· <code>{{this.detail.reason}}</code>{{/if}}</p>
+      <p>{{t 'apiKeyAudit.httpStatus'}}: {{#if this.detail.hasHttpResponse}}{{this.detail.httpStatus}}{{else}}{{t 'apiKeyAudit.noHttpResponse'}}{{/if}} {{this.detail.responseCode}}</p>
+      <button type="button" class="btn btn-default" {{action 'closeDetail'}}>{{t 'generic.closeModal'}}</button>
+    </section>
+  {{/if}}
+</section>

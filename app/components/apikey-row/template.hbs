@@ -6,6 +6,10 @@
 </td>
 <td data-title="{{t 'apiPage.table.description'}}:">
   {{#if this.model.description}}{{this.model.description}}{{else}}<span class="text-muted">{{t 'apiPage.table.noDescription'}}</span>{{/if}}
+  {{#if this.model.apiKeyPolicy}}
+    <div class="text-muted">{{t (concat 'apiKeyAccess.modes.' this.model.apiKeyPolicy.mode)}} · {{t 'apiKeyAccess.revision'}} {{this.model.apiKeyPolicyRevision}}</div>
+    {{#if this.model.apiKeyPolicy.expiresAt}}<div class="text-muted">{{t 'apiKeyAccess.expiry'}}: {{this.model.apiKeyPolicy.expiresAt}}</div>{{/if}}
+  {{/if}}
 </td>
 <td data-title="{{t 'apiPage.table.publicValue'}}:">
   {{#if this.model.publicValue}}{{this.model.publicValue}}{{else}}<span class="text-muted">{{t 'apiPage.table.noPublicValue'}}</span>{{/if}}
@@ -15,4 +19,7 @@
 </td>
 <td data-title="{{t 'generic.actions'}}:" class="actions">
   {{action-menu model=this.model}}
+  {{#if this.auditSupported}}
+    <button type="button" class="btn btn-sm btn-link" {{action 'audit'}}>{{t 'apiKeyAudit.title'}}</button>
+  {{/if}}
 </td>

@@ -10,6 +10,14 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
+The 1.6.181 source candidate adds capability-gated API Key full/closed/custom
+access, expiration, reviewed changes with platform MFA, and per-key audit
+filtering and details for the matching Server v1.6.519 contract. Every grant
+remains bounded by the owner's live permissions; operation choices are not
+claims of authority. Legacy API Key workflows remain available when the server
+does not expose the policy capability. Candidate browser acceptance and
+publication are separate steps.
+
 [Web Console 1.6.180](https://github.com/PastureStack/web-console/releases/tag/1.6.180)
 is published, fixing all-time audit listing, polling and JSON/XLSX export
 queries. This contract requires the matching Server v1.6.518 broker.

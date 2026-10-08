@@ -1964,6 +1964,139 @@ editApiKey:
   saveWarning1: 請妥善保管上方的金鑰！私密金鑰只會顯示一次。
   saveWarning2: 如果忘記私密金鑰，必須重新建立 API 金鑰。
   noteOptional: 名稱與描述皆為選填，可用來記錄 API 金鑰用途；您也可以直接按一下「建立」。
+apiKeyAccess:
+  legacy: 這是既有金鑰。保留原本的個人或環境主體，不會猜測建立者或自動改綁；完整存取不會增加原有限制。
+  personalCreate: 這裡保留既有環境金鑰。新金鑰請由上方個人金鑰入口建立，再設定所需的環境與資源範圍。
+  ceiling: 金鑰最大權限等同您的即時權限。完整存取不額外縮限；您的角色或資源權限變動時，金鑰也會受到影響。
+  access: 存取設定
+  modes:
+    full: 完整存取
+    closed: 全部關閉
+    custom: 自訂
+  effects:
+    allow: 允許（仍受本人權限限制）
+    deny: 拒絕
+  scopes:
+    global: 全域
+    project: 環境
+    stack: 堆疊
+    resource: 指定資源
+  operations:
+    read: 讀取
+    create: 建立
+    update: 更新
+    upgrade: 升級
+    delete: 刪除
+    exec: 執行
+    logs: 日誌
+    export: 敏感匯出
+  defaultEffect: 未命中規則時
+  effect: 規則效果
+  scope: 規則範圍
+  resourceId: 穩定資源 ID
+  resourceType: 資源類型
+  denyFirst: 拒絕規則優先；執行、日誌、敏感匯出各自獨立，不包含在讀取或更新中。
+  stableIdHelp: 範圍使用 API 資源 ID，不使用名稱。可從目前可見資源選取，或填入其他環境的穩定 ID；儲存時伺服器會重新驗證目標與您的權限。
+  liveTargets: 選取目前可見資源
+  targetLoadError: 無法載入目前可見資源。請確認資源類型與存取權限。
+  addRule: 新增規則
+  removeRule: 移除規則
+  expiry: 到期時間
+  expiryLocal: 自訂到期時間（本機時區）
+  expiryChoices:
+    none: 不額外設定到期時間
+    '7': 7 天
+    '30': 30 天
+    '90': 90 天
+    custom: 自訂時間
+  review: 檢視變更
+  reviewHelp: 這是本次送出的設定；伺服器已驗證規則，儲存時仍會重新檢查即時權限與版本。
+  confirm: 我已確認範圍、操作與到期時間
+  submit: 確認儲存
+  back: 返回修改
+  reload: 重新讀取最新版本
+  revision: 政策版本
+  saved: 已儲存並重新讀取確認
+  errors:
+    mode: 請選擇有效的存取模式。
+    expiry: 到期時間必須是有效的未來時間。
+    effect: 請選擇有效的規則效果。
+    ruleId: 規則 ID 必須有效且不能重複。
+    scope: 請填入範圍所需的穩定資源 ID 與資源類型。
+    operation: 每個規則至少需要一項有效操作。
+    conflict: 設定已被其他人修改。請重新讀取最新版本，再檢視並儲存。
+    save: 無法儲存設定。請確認目前權限、範圍與到期時間。
+    review: 無法驗證本次變更。請確認目前權限、範圍與版本。
+    readback: 已送出設定，但尚未完成重新讀取驗證。請重新讀取最新版本，勿重複建立金鑰。
+    reload: 無法重新讀取金鑰。請確認目前存取權限。
+apiKeyAudit:
+  reason: 判斷原因
+  reasons:
+    KeyFullAccess: 完整存取；仍受本人即時權限限制
+    KeyRuleAllowed: 符合允許規則；仍受本人即時權限限制
+    KeyScopedCollection: 只回傳範圍內且本人目前可見的資源
+    KeyPolicyDenied: 金鑰政策拒絕此操作
+    KeyScopeDenied: 目標資源不在這把金鑰的允許範圍內
+    OwnerPermissionDenied: 金鑰本人目前沒有此操作或資源的權限
+    ApiKeyExpired: 金鑰已到期
+    ApiKeyRevoked: 金鑰已停用或撤銷
+    ApiKeyPolicyChanged: 金鑰政策已變更；請重新取得授權
+    PolicyChanged: 金鑰政策已變更；請重新取得授權
+    UnknownOperation: 此自訂政策不支援這項操作，已安全拒絕
+    AuthenticationPending: 身分驗證尚未完成，尚未執行操作
+    AuthenticationDenied: 身分驗證已拒絕，尚未執行操作
+    authorization_not_completed: 授權檢查尚未完成，尚未執行操作
+    ApiKeyDelegationLive: 已依本人即時權限驗證委派
+    AuditUnavailable: 無法確認稽核紀錄；請使用請求 ID 查核
+    HandshakeDenied: 串流握手已拒絕，不能視為執行成功
+    DockerFailure: 容器執行階段操作失敗
+    StreamFailed: 串流或指令執行失敗
+    AuthorizationRevoked: 即時授權已撤銷，串流已中斷
+    ClientDisconnected: 用戶端已斷線，串流已中斷
+    StreamCancelled: 串流在完成前已取消
+    StreamCompleted: 串流已完成
+    unknown: 沒有可安全顯示的原因；請使用請求 ID 查核
+  outcomes:
+    PENDING: 待執行／待結果
+    AUTHENTICATION_DENIED: 身分驗證已拒絕（未執行）
+    DENIED: 已拒絕
+    NOT_EXECUTED: 未執行
+    ACCEPTED: 已受理（尚未完成）
+    SUCCEEDED: 已完成成功
+    FAILED: 執行失敗
+    CANCELED: 已中斷
+  noHttpResponse: 無 HTTP 回應（背景事件）
+  title: 金鑰稽核
+  help: 授權判斷與執行結果分開顯示。ALLOW 不代表執行成功；HTTP 202／ACCEPTED 只代表已接受，尚未完成。檢視稽核不會變更金鑰。
+  time: 時間範圍
+  allTime: 全部時間
+  range: 自訂範圍
+  from: 開始時間（本機時區）
+  to: 結束時間（本機時區）
+  any: 不限
+  decision: 授權判斷
+  outcome: 執行結果
+  operation: 操作
+  httpStatus: HTTP 狀態
+  requestId: 請求 ID
+  targetType: 資源類型
+  target: 目標資源
+  actor: 操作者
+  created: 時間
+  filter: 篩選／重新整理
+  count: '符合條件：{count} 筆 · 第 {page} 頁'
+  preview: 僅權限預檢，未執行操作
+  details: 明細
+  empty: 沒有符合條件的稽核紀錄
+  previous: 上一頁
+  next: 下一頁
+  close: 關閉稽核
+  errors:
+    access: 目前已無權檢視這把金鑰的稽核，舊紀錄已清除。
+    missing: 這筆紀錄不存在，或已無權檢視；舊紀錄已清除。
+    range: 請填入有效的開始與結束時間。
+    tooLarge: 查詢範圍超過伺服器的 20,000 筆掃描上限。請縮小時間範圍後再查詢。
+    load: 無法讀取金鑰稽核，請稍後重新整理。
 editBalancerService:
   title: 編輯負載平衡
   haproxy:

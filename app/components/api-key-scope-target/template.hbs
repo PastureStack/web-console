@@ -1,0 +1,7 @@
+<select class="form-control r-mt5" disabled={{or this.disabled this.loading}} onchange={{action 'select'}} aria-label={{t 'apiKeyAccess.liveTargets'}}>
+  <option value="">{{t 'apiKeyAccess.liveTargets'}}</option>
+  {{#each this.candidates as |candidate|}}
+    <option value={{candidate.id}} selected={{eq candidate.id this.scope.resourceId}}>{{candidate.name}} ({{candidate.id}})</option>
+  {{/each}}
+</select>
+{{#if this.loadError}}<p class="help-block">{{t 'apiKeyAccess.targetLoadError'}}</p>{{/if}}

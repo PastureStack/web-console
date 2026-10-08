@@ -47,6 +47,128 @@
     {{/unless}}
 
     {{top-errors errors=this.errors}}
+    {{#if this.policySupported}}
+      <div class="alert alert-info">{{t 'apiKeyAccess.ceiling'}}</div>
+      {{#if this.legacyKey}}<p class="help-block">{{t 'apiKeyAccess.legacy'}}</p>{{/if}}
+      {{#if this.policyError}}
+        <div class="alert alert-danger" role="alert">
+          {{this.policyError}}
+          {{#if this.errorRequestId}}<div><code>{{this.errorRequestId}}</code></div>{{/if}}
+        </div>
+      {{/if}}
+      {{#if this.savedReadback}}
+        <div class="alert alert-success" role="status">{{t 'apiKeyAccess.saved'}} · {{t 'apiKeyAccess.revision'}} {{this.savedReadback.apiKeyPolicyRevision}}</div>
+      {{/if}}
+      <fieldset disabled={{this.editingLocked}}>
+        <legend>{{t 'apiKeyAccess.access'}}</legend>
+        <div class="btn-group r-mb15" role="group" aria-label={{t 'apiKeyAccess.access'}}>
+          {{#each (array 'full' 'closed' 'custom') as |mode|}}
+            <button type="button" class="btn {{if (eq this.policyDraft.mode mode) 'btn-primary' 'btn-default'}}"
+                    aria-pressed={{eq this.policyDraft.mode mode}} {{action 'selectMode' mode}}>
+              {{t (concat 'apiKeyAccess.modes.' mode)}}
+            </button>
+          {{/each}}
+        </div>
+        {{#if this.isCustom}}
+          <p class="help-block">{{t 'apiKeyAccess.denyFirst'}}</p>
+          <label>{{t 'apiKeyAccess.defaultEffect'}}</label>
+          <select class="form-control r-mb15" onchange={{action 'defaultEffect'}}>
+            <option value="deny" selected={{eq this.policyDraft.defaultEffect 'deny'}}>{{t 'apiKeyAccess.effects.deny'}}</option>
+            <option value="allow" selected={{eq this.policyDraft.defaultEffect 'allow'}}>{{t 'apiKeyAccess.effects.allow'}}</option>
+          </select>
+          {{#each this.rules as |rule|}}
+            <section class="well api-key-rule" data-rule-id={{rule.id}}>
+              <div class="row form-group">
+                <div class="col-sm-3">
+                  <label>{{t 'apiKeyAccess.effect'}} · <code>{{rule.id}}</code></label>
+                  <select class="form-control" onchange={{action 'ruleField' rule.id 'effect'}}>
+                    <option value="allow" selected={{eq rule.effect 'allow'}}>{{t 'apiKeyAccess.effects.allow'}}</option>
+                    <option value="deny" selected={{eq rule.effect 'deny'}}>{{t 'apiKeyAccess.effects.deny'}}</option>
+                  </select>
+                </div>
+                <div class="col-sm-3">
+                  <label>{{t 'apiKeyAccess.scope'}}</label>
+                  <select class="form-control" onchange={{action 'ruleField' rule.id 'kind'}}>
+                    {{#each (array 'global' 'project' 'stack' 'resource') as |kind|}}
+                      <option value={{kind}} selected={{eq rule.scope.kind kind}}>{{t (concat 'apiKeyAccess.scopes.' kind)}}</option>
+                    {{/each}}
+                  </select>
+                </div>
+                {{#unless rule.global}}
+                  <div class="col-sm-3">
+                    <label>{{t 'apiKeyAccess.resourceId'}}</label>
+                    <input type="text" class="form-control" value={{rule.scope.resourceId}} oninput={{action 'ruleField' rule.id 'resourceId'}} placeholder="1s42">
+                    {{api-key-scope-target scope=rule.scope disabled=this.saving onSelect=(action 'ruleField' rule.id 'resourceId')}}
+                  </div>
+                {{/unless}}
+                {{#if rule.resource}}
+                  <div class="col-sm-3">
+                    <label>{{t 'apiKeyAccess.resourceType'}}</label>
+                    <select class="form-control" onchange={{action 'ruleField' rule.id 'resourceType'}}>
+                      <option value="">{{t 'apiKeyAccess.resourceType'}}</option>
+                      {{#each this.resourceTypes as |type|}}<option value={{type}} selected={{eq type rule.scope.resourceType}}>{{type}}</option>{{/each}}
+                    </select>
+                  </div>
+                {{/if}}
+              </div>
+              <div class="r-mb10">
+                {{#each rule.operationsView as |item|}}
+                  <label class="r-mr15"><input type="checkbox" checked={{item.checked}} onchange={{action 'ruleOperation' rule.id item.operation}}> {{t (concat 'apiKeyAccess.operations.' item.operation)}}</label>
+                {{/each}}
+              </div>
+              <button type="button" class="btn btn-sm btn-default" {{action 'removeRule' rule.id}}>{{t 'apiKeyAccess.removeRule'}}</button>
+            </section>
+          {{/each}}
+          <button type="button" class="btn btn-default r-mb15" {{action 'addRule'}}>{{t 'apiKeyAccess.addRule'}}</button>
+          <p class="help-block">{{t 'apiKeyAccess.stableIdHelp'}}</p>
+        {{/if}}
+        <div class="row form-group">
+          <div class="col-sm-6">
+            <label for="api-key-expiry-choice">{{t 'apiKeyAccess.expiry'}}</label>
+            <select id="api-key-expiry-choice" class="form-control" onchange={{action 'expiry' 'select'}}>
+              {{#each (array 'none' '7' '30' '90' 'custom') as |choice|}}
+                <option value={{choice}} selected={{eq this.expiryChoice choice}}>{{t (concat 'apiKeyAccess.expiryChoices.' choice)}}</option>
+              {{/each}}
+            </select>
+          </div>
+          {{#if (eq this.expiryChoice 'custom')}}
+            <div class="col-sm-6">
+              <label for="api-key-expiry-local">{{t 'apiKeyAccess.expiryLocal'}}</label>
+              <input id="api-key-expiry-local" type="datetime-local" class="form-control" value={{this.expiryLocal}} onchange={{action 'expiry' 'date'}}>
+            </div>
+          {{/if}}
+        </div>
+      </fieldset>
+      {{#if this.review}}
+        <section class="well" aria-label={{t 'apiKeyAccess.review'}}>
+          <h3>{{t 'apiKeyAccess.review'}}</h3>
+          <p>{{this.review.name}} · {{t (concat 'apiKeyAccess.modes.' this.review.apiKeyPolicy.mode)}}</p>
+          <p>{{this.review.description}}</p>
+          <p>{{t 'apiKeyAccess.expiry'}}: {{if this.review.apiKeyPolicy.expiresAt this.review.apiKeyPolicy.expiresAt (t 'apiKeyAccess.expiryChoices.none')}}</p>
+          <p>{{t 'apiKeyAccess.revision'}}: {{this.review.apiKeyPolicyRevision}}</p>
+          {{#if (eq this.review.apiKeyPolicy.mode 'custom')}}<p>{{t 'apiKeyAccess.defaultEffect'}}: {{t (concat 'apiKeyAccess.effects.' this.review.apiKeyPolicy.defaultEffect)}}</p>{{/if}}
+          {{#each this.review.apiKeyPolicy.rules as |rule|}}
+            <p><code>{{rule.id}}</code> · {{t (concat 'apiKeyAccess.effects.' rule.effect)}} · {{rule.scope.kind}} {{rule.scope.resourceType}} <code>{{rule.scope.resourceId}}</code> · {{join-array rule.operations}}</p>
+          {{/each}}
+          <p>{{t 'apiKeyAccess.reviewHelp'}}</p>
+          <label>{{input type='checkbox' checked=this.confirmed disabled=this.saving}} {{t 'apiKeyAccess.confirm'}}</label>
+          <div class="r-mt15">
+            <button type="button" class="btn btn-primary" disabled={{this.submitDisabled}} {{action 'submitPolicy'}}>{{t 'apiKeyAccess.submit'}}</button>
+            <button type="button" class="btn btn-link" disabled={{this.saving}} {{action 'backToDraft'}}>{{t 'apiKeyAccess.back'}}</button>
+          </div>
+        </section>
+      {{/if}}
+      {{#if this.confirmationOptions}}{{api-key-confirmation opts=this.confirmationOptions}}{{/if}}
+      <div class="footer-actions">
+        {{#if (or this.conflict this.readbackPending)}}
+          <button type="button" class="btn btn-primary" disabled={{this.saving}} {{action 'reloadPolicy'}}>{{t 'apiKeyAccess.reload'}}</button>
+        {{else}}
+          <button type="button" class="btn btn-primary" disabled={{this.reviewDisabled}} {{action 'reviewPolicy'}}>{{t 'apiKeyAccess.review'}}</button>
+        {{/if}}
+        <button type="button" class="btn btn-link" disabled={{this.saving}} {{action 'cancel'}}>{{t 'generic.cancel'}}</button>
+      </div>
+    {{else}}
     {{save-cancel editing=this.editing save="save" cancel="cancel"}}
+    {{/if}}
   {{/if}}
 </section>
