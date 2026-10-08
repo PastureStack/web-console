@@ -81,10 +81,11 @@ test('ALLOW and HTTP 202 remain distinct from a completed outcome; secrets are n
     assert.strictEqual(completion.reasonLabelKey, `apiKeyAudit.reasons.${reason}`, 'real stable reason receives safe human wording');
     assert.notOk(completion.hasHttpResponse, 'background reasons never invent HTTP success');
   });
-  let routeDenied = component.safeRecord({decision: 'ALLOW', phase: 'handshake', httpStatus: 403,
+  let routeDenied = component.safeRecord({decision: 'DENY', phase: 'handshake', httpStatus: 403,
     outcome: 'FAILED', reason: 'DelegationRouteDenied', message: 'private upstream message'});
   assert.strictEqual(routeDenied.reasonLabelKey, 'apiKeyAudit.reasons.DelegationRouteDenied', 'a ticket route denial has safe human wording');
-  assert.strictEqual(routeDenied.outcomeLabelKey, 'apiKeyAudit.outcomes.FAILED', 'an admitted ticket is not successful execution after route denial');
+  assert.strictEqual(routeDenied.decision, 'DENY', 'using a signed ticket for the wrong route is a separate denied handshake');
+  assert.strictEqual(routeDenied.outcomeLabelKey, 'apiKeyAudit.outcomes.FAILED', 'the actual denied handshake failed without changing the earlier ALLOW ticket mint');
   assert.strictEqual(routeDenied.httpStatus, '403', 'the actual route denial status remains distinct from ticket admission');
   assert.notOk('message' in routeDenied, 'private route-denial messages are never copied to the displayed record');
   let unknown = component.safeRecord({reason: 'UnknownFutureReason', message: 'password=secret', responseCode: 'upstream secret message'});
