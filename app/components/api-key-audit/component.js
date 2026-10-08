@@ -8,7 +8,7 @@ const FILTERS = ['decision', 'outcome', 'httpStatus', 'operation', 'targetType',
 const REASONS = ['KeyFullAccess', 'KeyRuleAllowed', 'KeyScopedCollection', 'KeyPolicyDenied', 'KeyScopeDenied',
   'OwnerPermissionDenied', 'ApiKeyExpired', 'ApiKeyRevoked', 'ApiKeyPolicyChanged', 'PolicyChanged',
   'UnknownOperation', 'AuthenticationPending', 'AuthenticationDenied', 'authorization_not_completed', 'ApiKeyDelegationLive', 'AuditUnavailable',
-  'HandshakeDenied', 'DockerFailure', 'StreamFailed', 'AuthorizationRevoked', 'ClientDisconnected', 'StreamCancelled', 'StreamCompleted'];
+  'HandshakeDenied', 'DockerFailure', 'StreamFailed', 'AuthorizationRevoked', 'ClientDisconnected', 'StreamCancelled', 'StreamCompleted', 'DelegationRouteDenied'];
 
 export default Component.extend({
   userStore: service('user-store'),

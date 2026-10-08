@@ -2148,6 +2148,7 @@ apiKeyAudit:
     ClientDisconnected: The client disconnected; the stream was interrupted
     StreamCancelled: The stream was canceled before completion
     StreamCompleted: The stream completed
+    DelegationRouteDenied: This stream ticket cannot be used for this operation. Obtain a ticket for the requested operation.
     unknown: No safe reason is available; investigate using the request ID
   outcomes:
     PENDING: Awaiting execution or result

@@ -2060,6 +2060,7 @@ apiKeyAudit:
     ClientDisconnected: 用戶端已斷線，串流已中斷
     StreamCancelled: 串流在完成前已取消
     StreamCompleted: 串流已完成
+    DelegationRouteDenied: 串流票券不能用於這項操作，請重新取得對應票券
     unknown: 沒有可安全顯示的原因；請使用請求 ID 查核
   outcomes:
     PENDING: 待執行／待結果
