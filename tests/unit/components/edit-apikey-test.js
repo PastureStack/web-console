@@ -170,6 +170,7 @@ function editor(store, values) {
   let component = createOwned(EditApiKey, {
     renderer: inertRenderer(), originalModel: key(values, store),
     intl: EmberObject.create({t(value) { return value; }}),
+    session: EmberObject.create({accountId: '1a1'}),
     userStore: store, endpoint: EmberObject.create({absolute: 'https://platform.example/'}),
     modalService: EmberObject.create({modalOpts: EmberObject.create(), toggleModal() {}}),
   }, 'component');
@@ -193,6 +194,40 @@ test('schema gates advanced controls and a new draft starts full', function(asse
   assert.strictEqual(component.get('policyDraft.defaultEffect'), 'allow', 'full matches the fixed server mode contract');
   component.set('originalModel.schema', {resourceFields: {}});
   assert.notOk(component.get('policySupported'), 'legacy backend uses its existing workflow');
+  destroyOwned(component);
+});
+
+test('custom allow blocks only verified unavailable operations; deny and unknown remain distinct', function(assert) {
+  let component = editor(previewStore(), {accountId: '1a1'});
+  let scope = {kind: 'resource', resourceType: 'container', resourceId: '1i42'};
+  component.set('policyDraft', {mode: 'custom', defaultEffect: 'deny', expiresAt: null,
+    rules: [{id: 'r1', effect: 'allow', scope, operations: ['read']}]});
+  component.send('scopeCapabilities', 'r1', {scopeKey: 'resource:container:1i42', contextVerified: true, complete: true,
+    schemas: [{id: 'container', collectionMethods: ['GET'], resourceMethods: ['GET'], resourceActions: {logs: {}}, resourceLinks: []}],
+    resource: {id: '1i42', type: 'container', actionLinks: {logs: '/logs'}}});
+  let cells = component.get('rules')[0].operationsView;
+  assert.ok(cells.find((cell) => cell.operation === 'exec').disabled);
+  assert.notOk(cells.find((cell) => cell.operation === 'logs').disabled);
+  assert.strictEqual(cells.find((cell) => cell.operation === 'create').status, 'unknown');
+  component.send('ruleOperation', 'r1', 'exec', {target: {checked: true}});
+  assert.deepEqual(component.get('policyDraft.rules')[0].operations, ['read'], 'programmatic events cannot grant a known unavailable cell');
+  component.send('ruleField', 'r1', 'effect', {target: {value: 'deny'}});
+  assert.notOk(component.get('rules')[0].operationsView.some((cell) => cell.disabled), 'a deny rule may restrict future operations');
+  component.send('ruleOperation', 'r1', 'exec', {target: {checked: true}});
+  assert.ok(component.get('policyDraft.rules')[0].operations.includes('exec'));
+  destroyOwned(component);
+});
+
+test('full and closed keep canonical saving; another owner never borrows editor authority', function(assert) {
+  let component = editor(previewStore(), {accountId: '1aOther'});
+  assert.notOk(component.get('ownerContextKnown'));
+  component.send('selectMode', 'custom'); component.send('addRule');
+  assert.ok(component.get('rules')[0].operationsView.every((cell) => cell.status === 'unknown' && !cell.disabled));
+  component.send('selectMode', 'full');
+  assert.strictEqual(component.get('policyDraft.defaultEffect'), 'allow');
+  component.send('selectMode', 'closed');
+  assert.strictEqual(component.get('policyDraft.defaultEffect'), 'deny');
+  assert.deepEqual(component.get('policyDraft.rules'), []);
   destroyOwned(component);
 });
 

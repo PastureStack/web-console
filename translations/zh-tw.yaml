@@ -1996,7 +1996,12 @@ apiKeyAccess:
   resourceId: 穩定資源 ID
   resourceType: 資源類型
   denyFirst: 拒絕規則優先；執行、日誌、敏感匯出各自獨立，不包含在讀取或更新中。
-  stableIdHelp: 範圍使用 API 資源 ID，不使用名稱。可從目前可見資源選取，或填入其他環境的穩定 ID；儲存時伺服器會重新驗證目標與您的權限。
+  capabilityHelp: 灰色的允許項目代表此範圍目前的 API 未提供該操作。已觀察到 API 操作不代表獲得授權；尚未確認的項目仍由後端依擁有者即時權限判定。拒絕規則仍可限制這些操作。
+  capabilities:
+    unavailable: 目前 API 未提供此操作
+    observed: API 已提供，仍限本人權限
+    unknown: 待後端權限判定
+  stableIdHelp: 範圍使用 API 資源 ID，不使用名稱。可從目前可見資源選取，或填入其他環境的穩定 ID；每次實際請求均由伺服器檢查目標與即時權限，規則檢閱不代表操作必定成功。
   liveTargets: 選取目前可見資源
   targetLoadError: 無法載入目前可見資源。請確認資源類型與存取權限。
   addRule: 新增規則

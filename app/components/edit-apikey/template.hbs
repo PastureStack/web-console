@@ -71,6 +71,7 @@
         </div>
         {{#if this.isCustom}}
           <p class="help-block">{{t 'apiKeyAccess.denyFirst'}}</p>
+          <p class="help-block">{{t 'apiKeyAccess.capabilityHelp'}}</p>
           <label>{{t 'apiKeyAccess.defaultEffect'}}</label>
           <select class="form-control r-mb15" onchange={{action 'defaultEffect'}}>
             <option value="deny" selected={{eq this.policyDraft.defaultEffect 'deny'}}>{{t 'apiKeyAccess.effects.deny'}}</option>
@@ -98,7 +99,7 @@
                   <div class="col-sm-3">
                     <label>{{t 'apiKeyAccess.resourceId'}}</label>
                     <input type="text" class="form-control" value={{rule.scope.resourceId}} oninput={{action 'ruleField' rule.id 'resourceId'}} placeholder="1s42">
-                    {{api-key-scope-target scope=rule.scope disabled=this.saving onSelect=(action 'ruleField' rule.id 'resourceId')}}
+                    {{api-key-scope-target scope=rule.scope disabled=this.saving onSelect=(action 'ruleField' rule.id 'resourceId') onCapabilities=(action 'scopeCapabilities' rule.id)}}
                   </div>
                 {{/unless}}
                 {{#if rule.resource}}
@@ -113,7 +114,11 @@
               </div>
               <div class="r-mb10">
                 {{#each rule.operationsView as |item|}}
-                  <label class="r-mr15"><input type="checkbox" checked={{item.checked}} onchange={{action 'ruleOperation' rule.id item.operation}}> {{t (concat 'apiKeyAccess.operations.' item.operation)}}</label>
+                  <label class="r-mr15" title={{t (concat 'apiKeyAccess.capabilities.' item.status)}}>
+                    <input type="checkbox" checked={{item.checked}} disabled={{item.disabled}} data-operation={{item.operation}} data-capability={{item.status}} onchange={{action 'ruleOperation' rule.id item.operation}}>
+                    {{t (concat 'apiKeyAccess.operations.' item.operation)}}
+                    <small class="text-muted">({{t (concat 'apiKeyAccess.capabilities.' item.status)}})</small>
+                  </label>
                 {{/each}}
               </div>
               <button type="button" class="btn btn-sm btn-default" {{action 'removeRule' rule.id}}>{{t 'apiKeyAccess.removeRule'}}</button>

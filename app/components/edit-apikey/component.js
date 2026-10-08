@@ -6,7 +6,9 @@ import { resolve } from 'rsvp';
 import { bindCreateOnlyDelivery, cloneCreateOnlyDelivery, takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
-import { API_KEY_OPERATIONS, API_KEY_RESOURCE_TYPES, initialPolicy, policyErrors, plain, localExpiry, expiryIso, apiKeyError, policiesEqual } from 'ui/utils/api-key-policy';
+import { API_KEY_RESOURCE_TYPES, initialPolicy, policyErrors, plain, localExpiry, expiryIso, apiKeyError, policiesEqual } from 'ui/utils/api-key-policy';
+import { ownerOperationStates, scopeKey } from 'ui/utils/api-key-owner-capabilities';
+import C from 'ui/utils/constants';
 
 export default ModalBase.extend(NewOrEdit, {
   classNames: ['lacsso', 'modal-container', 'large-modal'],
@@ -30,6 +32,12 @@ export default ModalBase.extend(NewOrEdit, {
   confirmationOptions: null,
   savedReadback: null,
   readbackPending: false,
+  capabilityEvidence: null,
+
+  ownerContextKnown: function() {
+    return !this.get('originalModel.id') || !!this.get('originalModel.accountId') &&
+      this.get('originalModel.accountId') === this.get(`session.${C.SESSION.ACCOUNT_ID}`);
+  }.property('originalModel.id', 'originalModel.accountId', `session.${C.SESSION.ACCOUNT_ID}`),
 
   editingLocked: function() {
     return this.get('saving') || !!this.get('confirmationOptions') || this.get('readbackPending');
@@ -59,11 +67,10 @@ export default ModalBase.extend(NewOrEdit, {
     return (this.get('policyDraft.rules') || []).map((rule) => Object.assign({}, rule, {
       global: rule.scope.kind === 'global',
       resource: rule.scope.kind === 'resource',
-      operationsView: API_KEY_OPERATIONS.map((operation) => ({
-        operation, checked: rule.operations.indexOf(operation) >= 0,
-      })),
+      operationsView: ownerOperationStates(rule.scope, (this.get('capabilityEvidence') || {})[rule.id], this.get('ownerContextKnown'))
+        .map((item) => Object.assign({}, item, {checked: rule.operations.includes(item.operation), disabled: rule.effect === 'allow' && item.unavailable})),
     }));
-  }.property('policyDraft.rules.[]'),
+  }.property('policyDraft.rules.[]', 'capabilityEvidence', 'ownerContextKnown'),
 
   didReceiveAttrs() {
     this._super(...arguments);
@@ -75,6 +82,7 @@ export default ModalBase.extend(NewOrEdit, {
       // legacy stores/editors independent of these new dependencies.
       this.set('endpoint', this.get('endpoint') || getOwner(this).lookup('service:endpoint'));
       this.set('userStore', this.get('userStore') || getOwner(this).lookup('service:user-store'));
+      this.set('session', this.get('session') || getOwner(this).lookup('service:session'));
       this.set('modalService.modalOpts.closeWithOutsideClick', false);
       this.set('modalService.modalOpts.escToClose', false);
     }
@@ -85,6 +93,7 @@ export default ModalBase.extend(NewOrEdit, {
     this.setProperties({
       policyDraft: policy, justCreated: false, review: null, confirmed: false,
       policyError: null, conflict: false, confirmationOptions: null, savedReadback: null,
+      capabilityEvidence: {},
       expiryChoice: policy.expiresAt ? 'custom' : 'none', expiryLocal: localExpiry(policy.expiresAt),
     });
   },
@@ -293,6 +302,12 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   actions: {
+    scopeCapabilities(id, evidence) {
+      let rule = (this.get('policyDraft.rules') || []).find((item) => item.id === id);
+      if ( rule && evidence.scopeKey === scopeKey(rule.scope) ) {
+        this.set('capabilityEvidence', Object.assign({}, this.get('capabilityEvidence'), {[id]: evidence}));
+      }
+    },
     selectMode(mode) {
       if ( this.get('saving') ) { return; }
       this.invalidateReview();
@@ -331,9 +346,11 @@ export default ModalBase.extend(NewOrEdit, {
       this.set('policyDraft.rules', rules);
     },
     ruleOperation(id, operation, event) {
-      this.invalidateReview();
       let rules = plain(this.get('policyDraft.rules'));
       let rule = rules.find((item) => item.id === id);
+      let capability = ownerOperationStates(rule.scope, (this.get('capabilityEvidence') || {})[id], this.get('ownerContextKnown')).find((item) => item.operation === operation);
+      if ( event.target.checked && rule.effect === 'allow' && capability && capability.unavailable ) { return; }
+      this.invalidateReview();
       rule.operations = event.target.checked ? [...new Set(rule.operations.concat(operation))] : rule.operations.filter((item) => item !== operation);
       this.set('policyDraft.rules', rules);
     },

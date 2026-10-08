@@ -2084,7 +2084,12 @@ apiKeyAccess:
   resourceId: Stable resource ID
   resourceType: Resource type
   denyFirst: Deny rules take precedence. Execute, logs, and sensitive export are separate operations, not included in read or update.
-  stableIdHelp: Scopes use API resource IDs, not names. Select a visible resource or enter a stable ID from another environment. The server rechecks targets and your permissions when saving.
+  capabilityHelp: Disabled allow items are unavailable in the selected scope's current API. Observed API operations are not an authorization guarantee; unconfirmed items remain subject to the backend's live owner-permission checks. Deny rules can still restrict these operations.
+  capabilities:
+    unavailable: Current API does not offer this operation
+    observed: API operation observed; owner permissions still apply
+    unknown: Pending backend permission checks
+  stableIdHelp: Scopes use API resource IDs, not names. Select a visible resource or enter a stable ID from another environment. The server checks targets and your live permissions for each actual request; policy review is not proof that an operation will succeed.
   liveTargets: Select a currently visible resource
   targetLoadError: Could not load visible resources. Check the resource type and your access.
   addRule: Add rule
