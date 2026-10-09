@@ -114,3 +114,36 @@ $text-color: null !default;
     transition: ease-in-out all .25s;
   }
 }
+
+// API-key scope names need wrapping and a real keyboard focus indicator. Keep
+// these changes local; the existing selectors elsewhere retain their styles.
+.api-key-scope-target {
+  min-width: 0;
+
+  .ember-basic-dropdown,
+  .ember-power-select-trigger {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ember-power-select-trigger {
+    height: auto;
+    min-height: 36px;
+  }
+
+  .ember-power-select-trigger:focus,
+  .ember-power-select-trigger:focus-visible,
+  .ember-power-select-search-input:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .ember-power-select-selected-item,
+  .ember-power-select-placeholder,
+  .ember-power-select-option,
+  .help-block {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+}

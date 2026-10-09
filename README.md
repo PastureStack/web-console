@@ -17,6 +17,10 @@ remains bounded by the owner's live permissions; operation choices are not
 claims of authority. Legacy Keys are not automatically narrowed during an upgrade;
 the existing workflow remains available when the server has no policy capability.
 New secrets are shown once at creation, not on later reopen/list/detail views.
+Resource scopes use searchable authorized environment, stack, and resource
+names, including their context in the review. Operators do not enter resource
+IDs; stable references remain an internal API detail. Unavailable or ambiguous
+names block submission rather than guessing a target.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).

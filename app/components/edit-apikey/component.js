@@ -8,6 +8,7 @@ import NewOrEdit from 'ui/mixins/new-or-edit';
 import ModalBase from 'lacsso/components/modal-base';
 import { API_KEY_RESOURCE_TYPES, initialPolicy, policyErrors, plain, localExpiry, expiryIso, apiKeyError, policiesEqual } from 'ui/utils/api-key-policy';
 import { ownerOperationStates, scopeKey } from 'ui/utils/api-key-owner-capabilities';
+import { selectionMatches } from 'ui/utils/api-key-scope-selection';
 import C from 'ui/utils/constants';
 
 export default ModalBase.extend(NewOrEdit, {
@@ -71,6 +72,12 @@ export default ModalBase.extend(NewOrEdit, {
         .map((item) => Object.assign({}, item, {checked: rule.operations.includes(item.operation), disabled: rule.effect === 'allow' && item.unavailable})),
     }));
   }.property('policyDraft.rules.[]', 'capabilityEvidence', 'ownerContextKnown'),
+
+  reviewRules: function() {
+    return (this.get('review.apiKeyPolicy.rules') || []).map((rule) => Object.assign({}, rule, {
+      targetLabel: (this.get('review.scopeLabels') || {})[rule.id],
+    }));
+  }.property('review'),
 
   didReceiveAttrs() {
     this._super(...arguments);
@@ -170,9 +177,21 @@ export default ModalBase.extend(NewOrEdit, {
       policy.rules = [];
       policy.defaultEffect = policy.mode === 'full' ? 'allow' : 'deny';
     }
+    let scopeLabels = {};
+    if ( policy.mode === 'custom' ) {
+      for ( let rule of policy.rules ) {
+        let evidence = (this.get('capabilityEvidence') || {})[rule.id];
+        if ( !selectionMatches(rule.scope, evidence) ) {
+          let status = ['chooseType', 'chooseProject', 'chooseStack', 'chooseResource', 'loading', 'empty', 'unavailable', 'unnamed', 'ambiguous', 'loadError'].includes(evidence?.selectionStatus) ? evidence.selectionStatus : 'unavailable';
+          this.set('policyError', this.get('intl').t(`apiKeyAccess.selector.${status}`));
+          return;
+        }
+        scopeLabels[rule.id] = rule.scope.kind === 'global' ? this.get('intl').t('apiKeyAccess.scopes.global') : evidence.selectionLabel;
+      }
+    }
     let snapshot = {
         name: this.get('model.name') || '', description: this.get('model.description') || '',
-        apiKeyPolicy: policy, apiKeyPolicyRevision: this.get('originalModel.apiKeyPolicyRevision') || 0,
+        apiKeyPolicy: policy, apiKeyPolicyRevision: this.get('originalModel.apiKeyPolicyRevision') || 0, scopeLabels,
     };
     this.setProperties({saving: true, confirmed: false, policyError: null, review: null});
     let data = {apiKeyPolicy: policy, apiKeyPolicyRevision: snapshot.apiKeyPolicyRevision};
@@ -305,6 +324,8 @@ export default ModalBase.extend(NewOrEdit, {
     scopeCapabilities(id, evidence) {
       let rule = (this.get('policyDraft.rules') || []).find((item) => item.id === id);
       if ( rule && evidence.scopeKey === scopeKey(rule.scope) ) {
+        if ( this.get('review') && (!selectionMatches(rule.scope, evidence) ||
+          (this.get('review.scopeLabels') || {})[id] !== evidence.selectionLabel) ) { this.invalidateReview(); }
         this.set('capabilityEvidence', Object.assign({}, this.get('capabilityEvidence'), {[id]: evidence}));
       }
     },

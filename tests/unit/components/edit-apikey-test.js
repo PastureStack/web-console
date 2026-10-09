@@ -2,7 +2,8 @@ import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
 import { precompileTemplate } from '@ember/template-compilation';
-import { find, render, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
+import { find, render, settled, setupContext, setupRenderingContext, teardownContext, triggerKeyEvent, waitUntil } from '@ember/test-helpers';
+import { selectChoose, selectSearch } from 'ember-power-select/test-support';
 import { resolve, reject, defer } from 'rsvp';
 import { takeCreateOnlyDelivery } from 'ember-api-store/utils/create-only-delivery';
 import Collection from 'ember-api-store/models/collection';
@@ -157,14 +158,19 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
     let stack = EmberObject.create({id: '1st4', type: 'stack', name: 'Visible stack', accountId: '1a9',
       links: {self: '/v2-beta/projects/1a9/stacks/1st4'}, actionLinks: {}});
     let stackSchema = EmberObject.create({id: 'stack', collectionMethods: ['GET'], resourceMethods: ['GET'],
-      resourceActions: {}, resourceLinks: []});
-    let stackRows = Collection.create({content: A([stack])});
+      resourceActions: {}, resourceLinks: [], links: {collection: '/stacks'}});
+    let stackRows = Collection.create({content: A([{id: '1a9', name: 'Visible environment'}])});
     this.owner.register('service:store', Service.extend({generation: 1,
       getById(type, id) { return type === 'schema' && id === 'stack' ? stackSchema : null; },
       findAll() { return resolve(stackRows); }, find() { return resolve(stack); }}));
     this.owner.register('service:user-store', Service.extend({generation: 1,
       getById() { return stackSchema; },
-      rawRequest() { reads++; return resolve({body: {data: [stackSchema]}}); }}));
+      findAll() { return resolve(stackRows); },
+      rawRequest(options) {
+        reads++;
+        return resolve({body: options.url.endsWith('/schema') ? {data: [stackSchema]} :
+          options.url === '/stacks' ? {data: [stack]} : stack});
+      }}));
     this.owner.register('service:projects', Service.extend({current: EmberObject.create({id: '1a9'}),
       schemaProjectId: '1a9', schemaLoadGeneration: 1}));
     this.owner.register('service:session', Service.extend({accountId: '1a1'}));
@@ -185,22 +191,56 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       clickButton('Add rule'); await settled();
       let originalChild = targetView();
       assert.ok(originalChild, 'the real scope component runs its lifecycle');
-      assert.ok(find('select[aria-label] option[value="1st4"]'), 'real ArrayProxy results render as selectable candidates');
+      assert.ok(find('[data-scope-selector="project"] .ember-power-select-trigger'), 'real ArrayProxy projects render a searchable selector');
+      assert.notOk(find('.api-key-rule input[type="text"]'), 'there is no raw resource ID field');
+      let projectTrigger = find('[data-scope-selector="project"] .ember-power-select-trigger');
+      assert.ok(find('.api-key-scope-target'), 'focus and wrapping styles use the scope-only namespace');
+      assert.strictEqual(projectTrigger.tabIndex, 0, 'selector is in the keyboard tab sequence');
+      assert.strictEqual(document.getElementById(projectTrigger.getAttribute('aria-labelledby')).textContent.trim(), 'Environment');
+      projectTrigger.focus(); await settled();
+      let focusStyle = getComputedStyle(projectTrigger);
+      assert.strictEqual(focusStyle.outlineStyle, 'solid');
+      assert.strictEqual(focusStyle.outlineWidth, '2px');
+      assert.notOk(/rgba\([^)]*,\s*0\)|transparent/.test(focusStyle.outlineColor), 'compiled keyboard focus is nontransparent');
+      assert.strictEqual(getComputedStyle(find('.api-key-scope-target')).minWidth, '0px');
       let selects = () => this.testRoot.querySelectorAll('.api-key-rule .row select:not([aria-label])');
       await change(selects()[1], 'resource');
       assert.ok(selects()[2], 'resource type control is rendered after a normal DOM change');
       await change(selects()[2], 'stack');
-      await change(find('select[aria-label]'), '1st4');
+      await waitUntil(() => !targetView().get('loading'));
+      assert.deepEqual(targetView().get('projectOptions').map((option) => option.label), ['Visible environment']);
+      await selectChoose('[data-scope-selector="project"]', 'Visible environment');
+      await waitUntil(() => !targetView().get('loading'));
+      await selectSearch('[data-scope-selector="resource"]', 'No such name');
+      assert.ok(document.body.textContent.includes('No matching resource names'), 'search has a localized no-result message');
+      await triggerKeyEvent(document.querySelector('.ember-power-select-search-input'), 'keydown', 'Escape');
+      await selectSearch('[data-scope-selector="resource"]', 'Visible stack');
+      await triggerKeyEvent(document.querySelector('.ember-power-select-search-input'), 'keydown', 'ArrowDown');
+      await triggerKeyEvent(document.querySelector('.ember-power-select-search-input'), 'keydown', 'Enter');
+      await waitUntil(() => !targetView().get('loading'));
       assert.strictEqual(targetView(), originalChild, 'capability callback updates wrappers without remounting the child');
-      assert.strictEqual(reads, 1, 'one selected-scope schema read, not a remount loop');
+      let selectedReads = reads;
+      await settled();
+      assert.strictEqual(reads, selectedReads, 'selected-scope evidence does not cause a remount/request loop');
+      assert.notOk(this.testRoot.textContent.includes('1st4'), 'stable resource IDs never appear as displayed names');
+      let intl = this.owner.lookup('service:intl');
+      intl.addTranslations('zh-tw', await (await fetch('/translations/zh-tw.json')).json());
+      intl.setLocale(['zh-tw']);
+      await waitUntil(() => !targetView().get('loading')); await settled();
+      assert.strictEqual(document.getElementById(find('[data-scope-selector="project"] .ember-power-select-trigger').getAttribute('aria-labelledby')).textContent.trim(), '環境');
+      assert.ok(this.testRoot.textContent.includes('目前可見資源'));
+      assert.notOk(this.testRoot.textContent.includes('apiKeyAccess.selector.'), 'both locale selectors resolve their translation keys');
+      assert.strictEqual(getComputedStyle(find('[data-scope-selector="resource"] .ember-power-select-selected-item')).whiteSpace, 'normal', 'selected paths wrap instead of clipping');
+      intl.setLocale(['en-us']);
+      await waitUntil(() => !targetView().get('loading')); await settled();
       assert.strictEqual(find('input[data-operation="read"]').dataset.capability, 'observed');
       assert.ok(find('input[data-operation="update"]').disabled, 'confirmed missing PUT disables only custom allow');
       await change(selects()[1], 'global');
-      assert.notOk(find('select[aria-label]'), 'global intentionally has no target child');
+      assert.notOk(find('[data-scope-selector]'), 'global intentionally has no target child');
       assert.ok([...this.testRoot.querySelectorAll('input[data-capability]')].every((node) =>
         node.dataset.capability === 'unknown' && !node.disabled), 'global never borrows the prior project evidence');
       await change(selects()[1], 'stack');
-      assert.ok(find('select[aria-label] option[value="1st4"]'), 'returning to stack creates one healthy scope component');
+      assert.ok(find('[data-scope-selector="project"] .ember-power-select-trigger'), 'returning to stack creates one healthy scope component');
       assert.ok([...this.testRoot.querySelectorAll('input[data-capability]')].every((node) =>
         node.dataset.capability === 'unknown' && !node.disabled), 'unselected stack remains explicitly unknown');
       clickButton('Cancel'); await settled();
@@ -307,6 +347,32 @@ test('review uses the server digest and changing draft metadata invalidates appr
   component.set('model.name', 'changed');
   assert.strictEqual(component.get('review'), null);
   assert.notOk(component.get('confirmed'));
+  destroyOwned(component);
+});
+
+test('invalid or unresolved named selection prevents preview; review keeps a human path and stable wire ID', async function(assert) {
+  let requests = [];
+  let store = previewStore({rawRequest(options) { requests.push(options); return resolve({body: {
+    purpose: 'apiKeyPolicyUpdate', requestDigest: 'a'.repeat(64), confirmationRequired: false,
+    apiKeyPolicy: options.data.apiKeyPolicy, apiKeyPolicyRevision: options.data.apiKeyPolicyRevision,
+  }}); }});
+  let component = editor(store, {accountId: '1a1'});
+  component.set('policyDraft', {mode: 'custom', defaultEffect: 'deny', expiresAt: null,
+    rules: [{id: 'r1', effect: 'allow', scope: {kind: 'stack', resourceId: '1st4'}, operations: ['read']}]});
+  await component.reviewDraft();
+  assert.strictEqual(requests.length, 0, 'unresolved names never request preview');
+  assert.strictEqual(component.get('policyError'), 'apiKeyAccess.selector.unavailable');
+  component.send('scopeCapabilities', 'r1', {scopeKey: 'stack::1st4', selectionValid: true,
+    selectionLabel: 'Production / Web', selectionStatus: 'ready', contextVerified: true, complete: true, schemas: []});
+  await component.reviewDraft();
+  assert.strictEqual(requests.length, 1);
+  assert.strictEqual(requests[0].data.apiKeyPolicy.rules[0].scope.resourceId, '1st4', 'DTO keeps the stable reference');
+  assert.strictEqual(requests[0].data.scopeLabels, undefined, 'display labels are not public DTO fields');
+  assert.strictEqual(component.get('reviewRules')[0].targetLabel, 'Production / Web');
+  component.send('scopeCapabilities', 'r1', {scopeKey: 'stack::1st4', selectionValid: false, selectionStatus: 'unavailable'});
+  assert.strictEqual(component.get('review'), null, 'losing the verified name context invalidates review');
+  await component.reviewDraft();
+  assert.strictEqual(requests.length, 1, 'invalid context cannot request a new preview');
   destroyOwned(component);
 });
 

@@ -81,7 +81,7 @@
             <section class="well api-key-rule" data-rule-id={{rule.id}}>
               <div class="row form-group">
                 <div class="col-sm-3">
-                  <label>{{t 'apiKeyAccess.effect'}} · <code>{{rule.id}}</code></label>
+                  <label>{{t 'apiKeyAccess.effect'}}</label>
                   <select class="form-control" onchange={{action 'ruleField' rule.id 'effect'}}>
                     <option value="allow" selected={{eq rule.effect 'allow'}}>{{t 'apiKeyAccess.effects.allow'}}</option>
                     <option value="deny" selected={{eq rule.effect 'deny'}}>{{t 'apiKeyAccess.effects.deny'}}</option>
@@ -96,9 +96,7 @@
                   </select>
                 </div>
                 {{#unless rule.global}}
-                  <div class="col-sm-3">
-                    <label>{{t 'apiKeyAccess.resourceId'}}</label>
-                    <input type="text" class="form-control" value={{rule.scope.resourceId}} oninput={{action 'ruleField' rule.id 'resourceId'}} placeholder="1s42">
+                  <div class="col-sm-6">
                     {{api-key-scope-target scope=rule.scope disabled=this.saving onSelect=(action 'ruleField' rule.id 'resourceId') onCapabilities=(action 'scopeCapabilities' rule.id)}}
                   </div>
                 {{/unless}}
@@ -107,7 +105,7 @@
                     <label>{{t 'apiKeyAccess.resourceType'}}</label>
                     <select class="form-control" onchange={{action 'ruleField' rule.id 'resourceType'}}>
                       <option value="">{{t 'apiKeyAccess.resourceType'}}</option>
-                      {{#each this.resourceTypes as |type|}}<option value={{type}} selected={{eq type rule.scope.resourceType}}>{{type}}</option>{{/each}}
+                      {{#each this.resourceTypes as |type|}}<option value={{type}} selected={{eq type rule.scope.resourceType}}>{{t (concat 'apiKeyAccess.selector.types.' type)}}</option>{{/each}}
                     </select>
                   </div>
                 {{/if}}
@@ -152,8 +150,8 @@
           <p>{{t 'apiKeyAccess.expiry'}}: {{if this.review.apiKeyPolicy.expiresAt this.review.apiKeyPolicy.expiresAt (t 'apiKeyAccess.expiryChoices.none')}}</p>
           <p>{{t 'apiKeyAccess.revision'}}: {{this.review.apiKeyPolicyRevision}}</p>
           {{#if (eq this.review.apiKeyPolicy.mode 'custom')}}<p>{{t 'apiKeyAccess.defaultEffect'}}: {{t (concat 'apiKeyAccess.effects.' this.review.apiKeyPolicy.defaultEffect)}}</p>{{/if}}
-          {{#each this.review.apiKeyPolicy.rules as |rule|}}
-            <p><code>{{rule.id}}</code> · {{t (concat 'apiKeyAccess.effects.' rule.effect)}} · {{rule.scope.kind}} {{rule.scope.resourceType}} <code>{{rule.scope.resourceId}}</code> · {{join-array rule.operations}}</p>
+          {{#each this.reviewRules as |rule|}}
+            <p>{{t (concat 'apiKeyAccess.effects.' rule.effect)}} · {{rule.targetLabel}} · {{join-array rule.operations}}</p>
           {{/each}}
           <p>{{t 'apiKeyAccess.reviewHelp'}}</p>
           <label>{{input type='checkbox' checked=this.confirmed disabled=this.saving}} {{t 'apiKeyAccess.confirm'}}</label>

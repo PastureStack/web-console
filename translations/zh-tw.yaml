@@ -2001,9 +2001,45 @@ apiKeyAccess:
     unavailable: 目前 API 未提供此操作
     observed: API 已提供，仍限本人權限
     unknown: 待後端權限判定
-  stableIdHelp: 範圍使用 API 資源 ID，不使用名稱。可從目前可見資源選取，或填入其他環境的穩定 ID；每次實際請求均由伺服器檢查目標與即時權限，規則檢閱不代表操作必定成功。
+  stableIdHelp: 請依名稱與所屬上下文搜尋、選取目前可存取的資源；穩定參照由系統內部保留。伺服器每次請求仍會重新檢查目標與即時權限，檢閱不會授予額外權限。
   liveTargets: 選取目前可見資源
   targetLoadError: 無法載入目前可見資源。請確認資源類型與存取權限。
+  selector:
+    project: 環境
+    stackContext: Stack 或環境資源上下文
+    chooseType: 請先選取資源類型。
+    chooseProject: 請先依名稱搜尋並選取環境。
+    chooseStack: 請先搜尋並選取 Stack，或可用的環境資源上下文。
+    chooseResource: 請依名稱搜尋並選取資源。
+    environmentResources: 沒有可用 Stack 關聯的環境資源
+    loading: 正在載入可存取的資源名稱…
+    empty: 此上下文沒有可選取的資源。
+    noMatches: 找不到符合的資源名稱，請改用其他名稱或上下文搜尋。
+    unavailable: 此資源已失效或目前無權存取，請從最新清單重新選取。
+    unnamed: 部分資源沒有可辨識的名稱，無法選取；請選擇具有效名稱的資源。
+    ambiguous: 部分資源的名稱與上下文完全相同，無法安全辨識；請先讓名稱或描述可區分，再重新選取。
+    loadError: 無法載入可存取的資源名稱，請確認權限後重試。
+    retry: 重新載入名稱
+    types:
+      stack: Stack
+      service: 服務
+      container: 容器
+      host: 主機
+      volume: 儲存卷
+      network: 網路
+      secret: 機密
+      certificate: 憑證
+      project: 環境
+      setting: 平台設定
+      userPreference: 使用者偏好
+      registry: 映像倉庫
+      storagePool: 儲存池
+      networkPolicy: 網路政策
+      projectMember: 環境成員
+      apiKey: API 金鑰
+      apiKeyRestricted: 受限 API 金鑰
+      account: 帳號
+      auditLog: 稽核紀錄
   addRule: 新增規則
   removeRule: 移除規則
   expiry: 到期時間
@@ -2027,7 +2063,7 @@ apiKeyAccess:
     expiry: 到期時間必須是有效的未來時間。
     effect: 請選擇有效的規則效果。
     ruleId: 規則 ID 必須有效且不能重複。
-    scope: 請填入範圍所需的穩定資源 ID 與資源類型。
+    scope: 請選取目前可存取且具名稱的資源與有效資源類型。
     operation: 每個規則至少需要一項有效操作。
     conflict: 設定已被其他人修改。請重新讀取最新版本，再檢視並儲存。
     save: 無法儲存設定。請確認目前權限、範圍與到期時間。

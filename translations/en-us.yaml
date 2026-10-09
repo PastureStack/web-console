@@ -2089,9 +2089,45 @@ apiKeyAccess:
     unavailable: Current API does not offer this operation
     observed: API operation observed; owner permissions still apply
     unknown: Pending backend permission checks
-  stableIdHelp: Scopes use API resource IDs, not names. Select a visible resource or enter a stable ID from another environment. The server checks targets and your live permissions for each actual request; policy review is not proof that an operation will succeed.
+  stableIdHelp: Search and select an accessible resource by its name and context. Stable references are retained internally. The server rechecks targets and live permissions for every request; review does not grant permissions.
   liveTargets: Select a currently visible resource
   targetLoadError: Could not load visible resources. Check the resource type and your access.
+  selector:
+    project: Environment
+    stackContext: Stack or environment resource context
+    chooseType: Select a resource type first.
+    chooseProject: Search and select an environment first.
+    chooseStack: Search and select a stack or the available environment context first.
+    chooseResource: Search and select a named resource.
+    environmentResources: Environment resources without an available stack relation
+    loading: Loading accessible resource names…
+    empty: No selectable resources are available in this context.
+    noMatches: No matching resource names. Try another name or context.
+    unavailable: This resource is no longer available or accessible. Select it again from the current list.
+    unnamed: Some resources have no usable name and cannot be selected. Use a resource with an identifiable name.
+    ambiguous: Some resources have identical names and context. They cannot be safely selected until their names or descriptions are distinguishable.
+    loadError: Could not load accessible resource names. Check your access and retry.
+    retry: Retry loading names
+    types:
+      stack: Stack
+      service: Service
+      container: Container
+      host: Host
+      volume: Volume
+      network: Network
+      secret: Secret
+      certificate: Certificate
+      project: Environment
+      setting: Platform setting
+      userPreference: User preference
+      registry: Registry
+      storagePool: Storage pool
+      networkPolicy: Network policy
+      projectMember: Environment member
+      apiKey: API key
+      apiKeyRestricted: Restricted API key
+      account: Account
+      auditLog: Audit record
   addRule: Add rule
   removeRule: Remove rule
   expiry: Expiration
@@ -2115,7 +2151,7 @@ apiKeyAccess:
     expiry: Expiration must be a valid future date.
     effect: Select a valid rule effect.
     ruleId: Rule IDs must be valid and unique.
-    scope: Enter the stable resource ID and resource type required by the scope.
+    scope: Select an accessible named resource and a valid resource type.
     operation: Each rule needs at least one valid operation.
     conflict: Someone else changed this key. Reload the latest revision, then review and save again.
     save: Could not save the key. Check current permissions, scopes, and expiration.

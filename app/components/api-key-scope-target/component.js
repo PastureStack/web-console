@@ -3,7 +3,8 @@ import { service } from '@ember/service';
 import { scheduleOnce, cancel } from '@ember/runloop';
 import { scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import C from 'ui/utils/constants';
-const PLATFORM_TYPES = ['project', 'setting', 'userpreference', 'apikey', 'apikeyrestricted', 'account', 'auditlog'];
+import {readField, scopeType, typeKey, isPlatformScope, hasStackParent, namedOptions,
+  projectResources, stackParent, resourcesInStack, collectionLink, collectionItems} from 'ui/utils/api-key-scope-selection';
 
 function schemaFields(schema) {
   let get = (name) => typeof schema.get === 'function' ? schema.get(name) : schema[name];
@@ -12,14 +13,32 @@ function schemaFields(schema) {
 }
 
 export default Component.extend({
+  classNames: ['api-key-scope-target'],
   store: service(),
   userStore: service('user-store'),
   projects: service(),
   session: service(),
   access: service(),
+  intl: service(),
   candidates: null,
+  projectOptions: null,
+  stackOptions: null,
+  selectedProject: null,
+  selectedStack: null,
+  selectedTarget: null,
+  selectionStatus: 'chooseResource',
+  missingNames: 0,
+  ambiguous: 0,
   loadError: false,
   loading: false,
+
+  needsProject: function() { return !!scopeType(this.get('scope')) && !isPlatformScope(scopeType(this.get('scope'))); }.property('scope.kind', 'scope.resourceType'),
+  needsStack: function() { return hasStackParent(scopeType(this.get('scope'))); }.property('scope.kind', 'scope.resourceType'),
+  stackDisabled: function() { return this.get('disabled') || this.get('loading') || !this.get('selectedProject'); }.property('disabled', 'loading', 'selectedProject'),
+  targetDisabled: function() {
+    return this.get('disabled') || this.get('loading') || !scopeType(this.get('scope')) || this.get('needsProject') && !this.get('selectedProject') ||
+      this.get('needsStack') && !this.get('selectedStack');
+  }.property('disabled', 'loading', 'scope.kind', 'scope.resourceType', 'needsProject', 'needsStack', 'selectedProject', 'selectedStack'),
 
   didReceiveAttrs() {
     this._super(...arguments);
@@ -28,65 +47,156 @@ export default Component.extend({
 
   contextChanged: function() { this.loadContext(); }
     .observes('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration',
-      'store.generation', 'userStore.generation', 'access.identity.id', `session.${C.SESSION.ACCOUNT_ID}`),
+      'store.generation', 'userStore.generation', 'access.identity.id', `session.${C.SESSION.ACCOUNT_ID}`, 'intl._locale'),
 
-  loadContext() {
+  contextKey(type, scope) {
+    return [type, this.get('projects.current.id'), this.get('projects.schemaProjectId'),
+      this.get('projects.schemaLoadGeneration'), this.get('store.generation'), this.get('userStore.generation'),
+      this.get('access.identity.id'), this.get(`session.${C.SESSION.ACCOUNT_ID}`),
+      this.get('intl._locale'), this._selectedProjectId, this._selectedStackId, scopeKey(scope)].join(':');
+  },
+
+  async readCollection(schemas, type, generation) {
+    let url = collectionLink(schemas, type), seen = new Set(), items = [];
+    if ( !url ) { throw new Error('CollectionNotAdvertised'); }
+    while ( url ) {
+      if ( seen.has(url) || seen.size >= 100 ) { throw new Error('IncompleteCollection'); }
+      seen.add(url);
+      let response = await this.get('userStore').rawRequest({url, method: 'GET'});
+      if ( !this.current(generation) ) { return []; }
+      if ( !Array.isArray(response.body?.data) ) { throw new Error('UnverifiedCollection'); }
+      items = items.concat(response.body.data);
+      url = response.body.pagination?.next;
+    }
+    return items;
+  },
+
+  selectionResult(scope, status, evidence = {}) {
+    this._evidenceContext = this.contextKey(scopeType(scope), scope);
+    this.set('selectionStatus', status);
+    this.publish(Object.assign({scopeKey: scopeKey(scope), selectionValid: false, selectionStatus: status,
+      contextVerified: false, complete: false}, evidence));
+  },
+
+  async loadContext() {
     if ( this.isDestroying || this.isDestroyed ) { return; }
     let scope = this.get('scope') || {};
-    let type = scope.kind === 'resource' ? scope.resourceType : scope.kind;
-    let context = [type, this.get('projects.current.id'), this.get('projects.schemaProjectId'),
-      this.get('projects.schemaLoadGeneration'), this.get('store.generation'), this.get('userStore.generation'),
-      this.get('access.identity.id'), this.get(`session.${C.SESSION.ACCOUNT_ID}`)].join(':');
-    let evidenceContext = `${context}:${scopeKey(scope)}`;
+    let type = scopeType(scope);
+    if ( this._scopeType !== type ) {
+      this._selectedStackId = null;
+      if ( isPlatformScope(type) ) { this._selectedProjectId = null; }
+      this._scopeType = type;
+    }
+    let evidenceContext = this.contextKey(type, scope);
     if ( evidenceContext === this._evidenceContext ) { return; }
     this._evidenceContext = evidenceContext;
     let generation = this._loadGeneration = (this._loadGeneration || 0) + 1;
-    this.publish({scopeKey: scopeKey(scope), contextVerified: false, complete: false});
+    this.publish({scopeKey: scopeKey(scope), selectionValid: false, selectionStatus: 'loading', contextVerified: false, complete: false});
+    this.setProperties({candidates: [], projectOptions: [], stackOptions: [], selectedProject: null,
+      selectedStack: null, selectedTarget: null, missingNames: 0, ambiguous: 0, loadError: false, loading: true,
+      selectionStatus: 'loading'});
     if ( !type || type === 'global' || !/^[A-Za-z][A-Za-z0-9]{0,63}$/.test(type) ) {
       this.setProperties({candidates: [], loading: false, loadError: false});
+      if ( type !== 'global' ) { this.selectionResult(scope, 'chooseType'); }
       return;
     }
-    // ember-api-store normalizes schema IDs to lowercase.
-    let store = PLATFORM_TYPES.includes(type.toLowerCase()) || !this.get('store').getById('schema', type.toLowerCase()) ? this.get('userStore') : this.get('store');
-    if ( !store.getById('schema', type.toLowerCase()) ) {
-      this.setProperties({candidates: [], loading: false, loadError: true});
-      return;
-    }
-    let candidates = context === this._candidateContext && this._candidateResources;
-    this.setProperties({candidates: candidates ? this.get('candidates') : [], loadError: false, loading: true});
-    let request = candidates ? Promise.resolve(candidates) : store.findAll(type, null, {forceReload: true, removeMissing: true});
-    request.then((items) => {
-      if ( !this.current(generation) ) { return; }
-      this._candidateContext = context;
-      this._candidateResources = items;
-      this.set('candidates', items.map((item) => ({id: item.get('id'), name: item.get('displayName') || item.get('name') || item.get('id')})));
-      if ( !scope.resourceId ) { return; }
-      return store.find(type, scope.resourceId, {forceReload: true}).then((item) => {
-        if ( !this.current(generation) || item.get('id') !== scope.resourceId ) { return; }
-        let resource = {id: item.get('id'), type: item.get('type'), accountId: item.get('accountId'),
-          actionLinks: item.get('actionLinks'), links: item.get('links')};
-        if ( store === this.get('store') && resource.accountId !== this.get('projects.current.id') ) { return; }
-        let projectId = scope.kind === 'project' ? scope.resourceId : scope.kind === 'stack' ? resource.accountId :
-          store === this.get('store') ? this.get('projects.current.id') : null;
-        // Read the selected context without rebasing the application's store.
-        let url = projectId ? `projects/${encodeURIComponent(projectId)}/schema` : 'schema';
-        return this.get('userStore').rawRequest({url, method: 'GET'}).then((response) => {
-          if ( !this.current(generation) ) { return; }
-          let body = response.body;
-          let schemas = body && body.data;
-          let complete = Array.isArray(schemas) && !(body.pagination && body.pagination.next);
-          this.publish({scopeKey: scopeKey(scope), contextVerified: true, complete, projectId,
-            resource, schemas: complete ? schemas.map(schemaFields) : []});
-        });
-      });
-    }).catch(() => {
-      if ( this.current(generation) ) {
-        this.setProperties({candidates: [], loadError: true});
-        this.publish({scopeKey: scopeKey(scope), contextVerified: false, complete: false});
+    try {
+      let projectItems = [];
+      if ( !isPlatformScope(type) || typeKey(type) === 'project' ) {
+        projectItems = await this.get('userStore').findAll('project', null, {forceReload: true, removeMissing: true});
+        if ( !this.current(generation) ) { return; }
+        let projects = namedOptions(projectItems);
+        this.set('projectOptions', projects.options);
+        if ( !projects.options.length ) {
+          this.selectionResult(scope, scope.resourceId ? 'unavailable' : projects.ambiguous ? 'ambiguous' : projects.missingNames ? 'unnamed' : 'empty');
+          return;
+        }
       }
-    }).finally(() => {
+      // A saved stable reference may recover its real parent, never a guessed
+      // first option. This read does not rebase shared projects.current/store.
+      if ( !isPlatformScope(type) && scope.resourceId && !this._selectedProjectId ) {
+        let store = this.get('store').getById('schema', type.toLowerCase()) ? this.get('store') : this.get('userStore');
+        let item = await store.find(type, scope.resourceId, {forceReload: true});
+        if ( !this.current(generation) ) { return; }
+        if ( readField(item, 'id') !== scope.resourceId ) { throw new Error('UnverifiedParent'); }
+        this._selectedProjectId = readField(item, 'accountId');
+        this._selectedStackId = readField(item, 'stackId');
+      }
+      let selectedProject = (this.get('projectOptions') || []).find((item) => item.id === this._selectedProjectId);
+      this.set('selectedProject', selectedProject || null);
+      if ( !isPlatformScope(type) && !selectedProject ) {
+        this.selectionResult(scope, scope.resourceId ? 'unavailable' : 'chooseProject'); return;
+      }
+      let projectId = !isPlatformScope(type) ? selectedProject.id : typeKey(type) === 'project' ? scope.resourceId : null;
+      let response = await this.get('userStore').rawRequest({url: projectId ? `projects/${encodeURIComponent(projectId)}/schema` : 'schema', method: 'GET'});
+      if ( !this.current(generation) ) { return; }
+      let schemas = response.body?.data;
+      if ( !Array.isArray(schemas) || response.body.pagination?.next ) { throw new Error('IncompleteSchema'); }
+      let items = typeKey(type) === 'project' ? collectionItems(projectItems) : await this.readCollection(schemas, type, generation);
+      if ( !this.current(generation) ) { return; }
+      if ( !isPlatformScope(type) ) { items = projectResources(items, projectId); }
+      let prefix = selectedProject?.label || '';
+      if ( hasStackParent(type) ) {
+        let stacks = projectResources(collectionLink(schemas, 'stack') ? await this.readCollection(schemas, 'stack', generation) : [], projectId);
+        if ( !this.current(generation) ) { return; }
+        let services = typeKey(type) === 'container' ? projectResources(collectionLink(schemas, 'service') ? await this.readCollection(schemas, 'service', generation) : [], projectId) : items;
+        if ( !this.current(generation) ) { return; }
+        let stackOptions = namedOptions(stacks, {prefix, typeLabel: this.get('intl').t('apiKeyAccess.selector.types.stack')}).options;
+        let unparented = items.filter((item) => !stackOptions.some((option) => option.id === stackParent(item, services)));
+        if ( unparented.length ) {
+          let label = `${prefix} / ${this.get('intl').t('apiKeyAccess.selector.environmentResources')}`;
+          stackOptions.push({id: '__environment_resources__', label, searchText: label});
+        }
+        if ( scope.resourceId && !stackOptions.some((option) => option.id === this._selectedStackId) ) {
+          let saved = items.find((item) => readField(item, 'id') === scope.resourceId);
+          if ( saved ) {
+            let parent = stackParent(saved, services);
+            this._selectedStackId = stackOptions.some((option) => option.id === parent) ? parent : '__environment_resources__';
+          }
+        }
+        let selectedStack = stackOptions.find((item) => item.id === this._selectedStackId);
+        this.setProperties({stackOptions, selectedStack: selectedStack || null});
+        if ( !selectedStack ) { this.selectionResult(scope, scope.resourceId ? 'unavailable' : 'chooseStack'); return; }
+        items = selectedStack.id === '__environment_resources__' ? unparented : resourcesInStack(items, selectedStack.id, services);
+        prefix = selectedStack.label;
+      }
+      let result = namedOptions(items, {prefix, typeLabel: this.get('intl').t(`apiKeyAccess.selector.types.${type}`)});
+      this.setProperties({candidates: result.options, missingNames: result.missingNames, ambiguous: result.ambiguous});
+      let selected = result.options.find((item) => item.id === scope.resourceId);
+      if ( !selected ) {
+        this.selectionResult(scope, scope.resourceId ? 'unavailable' : result.ambiguous ? 'ambiguous' :
+          result.missingNames ? 'unnamed' : result.options.length ? 'chooseResource' : 'empty'); return;
+      }
+      let self = readField(selected.resource, 'links')?.self;
+      if ( typeof self !== 'string' ) { throw new Error('SelfNotAdvertised'); }
+      let detail = (await this.get('userStore').rawRequest({url: self, method: 'GET'})).body;
+      if ( !this.current(generation) ) { return; }
+      if ( readField(detail, 'id') !== scope.resourceId || readField(detail, 'removed') ||
+        ['removed', 'purged'].includes(readField(detail, 'state')) ||
+        !isPlatformScope(type) && readField(detail, 'accountId') !== projectId ||
+        readField(detail, 'name') !== readField(selected.resource, 'name') ||
+        readField(detail, 'stackId') !== readField(selected.resource, 'stackId') ||
+        JSON.stringify(readField(detail, 'serviceIds') || []) !== JSON.stringify(readField(selected.resource, 'serviceIds') || []) ) { throw new Error('UnverifiedTarget'); }
+      this.set('selectedTarget', selected);
+      let resource = {id: readField(detail, 'id'), type: readField(detail, 'type'), accountId: readField(detail, 'accountId'),
+        actionLinks: readField(detail, 'actionLinks'), links: readField(detail, 'links')};
+      this.selectionResult(scope, 'ready', {selectionValid: true, selectionLabel: selected.label,
+        contextVerified: true, complete: true, projectId, resource, schemas: schemas.map(schemaFields)});
+    } catch (_) {
+      if ( this.current(generation) ) {
+        this.setProperties({candidates: [], selectedTarget: null, loadError: true});
+        this.selectionResult(scope, scope.resourceId ? 'unavailable' : 'loadError');
+      }
+    } finally {
       if ( this.current(generation) ) { this.set('loading', false); }
-    });
+    }
+  },
+
+  clearTarget() {
+    this._loadGeneration = (this._loadGeneration || 0) + 1;
+    this.setProperties({scope: Object.assign({}, this.get('scope'), {resourceId: ''}), candidates: [], selectedTarget: null});
+    this._evidenceContext = null;
+    this.get('onSelect')({target: {value: ''}});
   },
 
   current(generation) { return generation === this._loadGeneration && !this.isDestroyed && !this.isDestroying; },
@@ -113,6 +223,23 @@ export default Component.extend({
   },
 
   actions: {
-    select(event) { this.get('onSelect')(event); },
+    selectProject(option) {
+      if ( this.get('disabled') || this.get('loading') || !(this.get('projectOptions') || []).includes(option) ) { return; }
+      this._selectedProjectId = option.id;
+      this._selectedStackId = null;
+      this.setProperties({selectedProject: option, selectedStack: null, stackOptions: []});
+      this.clearTarget(); this.loadContext();
+    },
+    selectStack(option) {
+      if ( this.get('stackDisabled') || !(this.get('stackOptions') || []).includes(option) ) { return; }
+      this._selectedStackId = option.id;
+      this.set('selectedStack', option);
+      this.clearTarget(); this.loadContext();
+    },
+    select(option) {
+      if ( this.get('targetDisabled') || !(this.get('candidates') || []).includes(option) ) { return; }
+      this.get('onSelect')({target: {value: option.id}});
+    },
+    retry() { this._evidenceContext = null; this.loadContext(); },
   },
 });
