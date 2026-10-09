@@ -14,9 +14,13 @@ The 1.6.181 source candidate adds capability-gated API Key full/closed/custom
 access, expiration, reviewed changes with platform MFA, and per-key audit
 filtering and details for the matching Server v1.6.519 contract. Every grant
 remains bounded by the owner's live permissions; operation choices are not
-claims of authority. Legacy API Key workflows remain available when the server
-does not expose the policy capability. Candidate browser acceptance and
-publication are separate steps.
+claims of authority. Legacy Keys are not automatically narrowed during an upgrade;
+the existing workflow remains available when the server has no policy capability.
+New secrets are shown once at creation, not on later reopen/list/detail views.
+Policy, expiry and audit errors use the existing console error handling; an HTTP
+response is not a declaration of background or stream completion. See the matching
+Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).
+Candidate browser acceptance and publication are separate steps.
 
 [Web Console 1.6.180](https://github.com/PastureStack/web-console/releases/tag/1.6.180)
 is published, fixing all-time audit listing, polling and JSON/XLSX export
