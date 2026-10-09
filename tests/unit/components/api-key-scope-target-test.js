@@ -56,6 +56,50 @@ test('project plus schema generation and viewer changes clear and reload stale m
   await drain(); destroyOwned(component);
 });
 
+test('same-scope explicit policy reload revalidates names once without an attribute request loop', async function(assert) {
+  let {component, queries, published, item} = target({reloadGeneration: 1});
+  await component.loadContext(); await drain();
+  let before = queries.length;
+  item.set('name', 'Refreshed stack');
+  component.set('reloadGeneration', 2);
+  assert.notOk(component._pendingEvidence.evidence.contextVerified, 'reload invalidates the prior target immediately');
+  await drain();
+  assert.deepEqual(queries.slice(before), ['projects/1a9/schema', '/stacks', '/self'], 'same target gets fresh schema, collection and object');
+  assert.ok(published.at(-1).selectionLabel.includes('Refreshed stack'), 'fresh human name is republished');
+  assert.ok(published.at(-1).selectionValid);
+  let refreshed = queries.length;
+  component.didReceiveAttrs(); await component.loadContext(); await drain();
+  assert.strictEqual(queries.length, refreshed, 'unchanged reload generation does not start another request');
+  destroyOwned(component);
+});
+
+test('same-scope reload and owner change reject old requests without ending the latest loading', async function(assert) {
+  let firstStarted = defer(), latestStarted = defer(), oldRead = defer(), latestRead = defer(), calls = 0;
+  let {component, userStore, published, item} = target({reloadGeneration: 1});
+  let read = userStore.rawRequest.bind(userStore);
+  userStore.rawRequest = (options) => {
+    if ( options.url !== '/self' ) { return read(options); }
+    if ( ++calls === 1 ) { firstStarted.resolve(); return oldRead.promise; }
+    latestStarted.resolve(); return latestRead.promise;
+  };
+  let first = component.loadContext();
+  await firstStarted.promise;
+  let oldItem = item.getProperties('id', 'type', 'name', 'accountId', 'actionLinks', 'links');
+  component.set('reloadGeneration', 2);
+  component.set('session.accountId', '1a2');
+  item.set('name', 'Latest owner stack');
+  await latestStarted.promise;
+  oldRead.resolve({body: oldItem}); await first; await drain();
+  assert.ok(component.get('loading'), 'old finalizer cannot end the latest generation loading');
+  assert.strictEqual(component.get('selectedTarget'), null, 'old result cannot restore a selected target');
+  assert.notOk(published.some((value) => value.selectionValid), 'prior owner never publishes a valid selection');
+  latestRead.resolve({body: item}); await drain();
+  assert.notOk(component.get('loading'));
+  assert.ok(published.at(-1).selectionLabel.includes('Latest owner stack'));
+  assert.ok(published.at(-1).contextVerified);
+  destroyOwned(component);
+});
+
 test('afterRender coalesces the newest scope and a late previous context cannot publish', async function(assert) {
   let first = defer();
   let {component, userStore, published} = target();

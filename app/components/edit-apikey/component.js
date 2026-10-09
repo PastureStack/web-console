@@ -35,6 +35,7 @@ export default ModalBase.extend(NewOrEdit, {
   savedReadback: null,
   readbackPending: false,
   capabilityEvidence: null,
+  scopeReloadGeneration: 0,
   matrixNow: null,
 
   ownerContextKnown: function() {
@@ -159,6 +160,7 @@ export default ModalBase.extend(NewOrEdit, {
       policyDraft: policy, justCreated: false, review: null, confirmed: false,
       policyError: null, conflict: false, confirmationOptions: null, savedReadback: null,
       capabilityEvidence: {},
+      scopeReloadGeneration: this.get('scopeReloadGeneration') + 1,
       expiryChoice: policy.expiresAt ? 'custom' : 'none', expiryLocal: localExpiry(policy.expiresAt),
     });
   },

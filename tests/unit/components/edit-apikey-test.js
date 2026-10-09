@@ -154,7 +154,7 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
   });
 
   test('real scope child survives capability wrapper updates and renders resource stack and global drafts', async function(assert) {
-    let reads = 0;
+    let reads = 0, reloadKey;
     let stack = EmberObject.create({id: '1st4', type: 'stack', name: 'Visible stack', accountId: '1a9',
       links: {self: '/v2-beta/projects/1a9/stacks/1st4'}, actionLinks: {}});
     let stackSchema = EmberObject.create({id: 'stack', collectionMethods: ['GET'], resourceMethods: ['GET'],
@@ -166,6 +166,7 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
     this.owner.register('service:user-store', Service.extend({generation: 1,
       getById() { return stackSchema; },
       find(type, id, options) {
+        if ( type === 'apiKey' && options.forceReload === true ) { return resolve(reloadKey); }
         if ( type !== 'project' || id !== null || options.forceReload !== true ) { throw new Error('FreshProjectCollectionRequired'); }
         return resolve(stackRows);
       },
@@ -238,6 +239,27 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       assert.strictEqual(find('[data-matrix-row="resource"] [data-matrix-operation="read"]').dataset.matrixState, 'allow');
       assert.strictEqual(getComputedStyle(find('.api-key-policy-matrix-scroll')).overflowX, 'auto', 'wide matrix scrolls within the modal');
       assert.strictEqual(find('.api-key-policy-matrix-scroll').tabIndex, 0, 'matrix region is keyboard accessible');
+      let editorView = Object.values(this.owner.lookup('-view-registry:main')).find((view) =>
+        typeof view.resetPolicy === 'function' && !view.isDestroyed && !view.isDestroying);
+      reloadKey = key({accountId: '1a1', apiKeyPolicy: editorView.get('policyDraft'), apiKeyPolicyRevision: 2},
+        this.owner.lookup('service:user-store'));
+      stack.set('name', 'Refreshed stack');
+      editorView.set('conflict', true); await settled();
+      let reloadGeneration = editorView.get('scopeReloadGeneration');
+      clickButton('Reload latest revision');
+      await waitUntil(() => editorView.get('scopeReloadGeneration') > reloadGeneration && !targetView().get('loading'));
+      await settled();
+      assert.strictEqual(targetView(), originalChild, 'official reload keeps the same mounted scope child');
+      assert.ok(reads > selectedReads, 'reload verifies fresh resource evidence rather than reusing old authorization');
+      assert.ok(find('[data-matrix-row="resource"] th').textContent.includes('Refreshed stack'), 'reload restores the fresh human path');
+      assert.strictEqual(find('[data-matrix-row="resource"] [data-matrix-operation="read"]').dataset.matrixState, 'allow');
+      let reloadReads = reads;
+      await settled();
+      assert.strictEqual(reads, reloadReads, 'restored parent evidence does not start a request loop');
+      clickButton('Review changes'); await settled();
+      assert.ok(find('[data-policy-matrix="reviewed"]'), 'reloaded target can be reviewed again');
+      assert.ok(find('[data-matrix-row="resource"] th').textContent.includes('Refreshed stack'), 'review uses refreshed names');
+      editorView.invalidateReview(); await settled();
       let intl = this.owner.lookup('service:intl');
       intl.addTranslations('zh-tw', await (await fetch('/translations/zh-tw.json')).json());
       intl.setLocale(['zh-tw']);

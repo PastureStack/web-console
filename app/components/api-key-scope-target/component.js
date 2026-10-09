@@ -31,6 +31,7 @@ export default Component.extend({
   ambiguous: 0,
   loadError: false,
   loading: false,
+  reloadGeneration: 0,
 
   needsProject: function() { return !!scopeType(this.get('scope')) && !isPlatformScope(scopeType(this.get('scope'))); }.property('scope.kind', 'scope.resourceType'),
   needsStack: function() { return hasStackParent(scopeType(this.get('scope'))); }.property('scope.kind', 'scope.resourceType'),
@@ -47,13 +48,13 @@ export default Component.extend({
 
   contextChanged: function() { this.loadContext(); }
     .observes('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration',
-      'store.generation', 'userStore.generation', 'access.identity.id', `session.${C.SESSION.ACCOUNT_ID}`, 'intl._locale'),
+      'store.generation', 'userStore.generation', 'access.identity.id', `session.${C.SESSION.ACCOUNT_ID}`, 'intl._locale', 'reloadGeneration'),
 
   contextKey(type, scope) {
     return [type, this.get('projects.current.id'), this.get('projects.schemaProjectId'),
       this.get('projects.schemaLoadGeneration'), this.get('store.generation'), this.get('userStore.generation'),
       this.get('access.identity.id'), this.get(`session.${C.SESSION.ACCOUNT_ID}`),
-      this.get('intl._locale'), this._selectedProjectId, this._selectedStackId, scopeKey(scope)].join(':');
+      this.get('intl._locale'), this.get('reloadGeneration'), this._selectedProjectId, this._selectedStackId, scopeKey(scope)].join(':');
   },
 
   async readCollection(schemas, type, generation) {

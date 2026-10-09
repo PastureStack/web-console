@@ -93,7 +93,7 @@
                 </div>
                 {{#unless rule.global}}
                   <div class="col-sm-6">
-                    {{api-key-scope-target scope=rule.scope disabled=this.saving onSelect=(action 'ruleField' rule.id 'resourceId') onCapabilities=(action 'scopeCapabilities' rule.id)}}
+                    {{api-key-scope-target scope=rule.scope reloadGeneration=this.scopeReloadGeneration disabled=this.saving onSelect=(action 'ruleField' rule.id 'resourceId') onCapabilities=(action 'scopeCapabilities' rule.id)}}
                   </div>
                 {{/unless}}
                 {{#if rule.resource}}
