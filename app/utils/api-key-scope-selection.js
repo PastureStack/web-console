@@ -33,13 +33,31 @@ export function namedOptions(items, {prefix = '', typeLabel = ''} = {}) {
 export function projectResources(items, projectId) {
   return collectionItems(items).filter((item) => readField(item, 'accountId') === projectId);
 }
+export function stackParentEvidence(item, services = []) {
+  let explicit = readField(item, 'stackId') || null;
+  let ids = readField(item, 'serviceIds');
+  if ( ids != null && !Array.isArray(ids) ) { return {stackId: null, status: 'unknown'}; }
+  let native = readField(item, 'serviceId');
+  let serviceIds = [...new Set([native, ...(ids || [])].filter(Boolean))];
+  let expected = explicit, hasExpected = explicit !== null;
+  for ( let id of serviceIds ) {
+    let service = services.find((value) => readField(value, 'id') === id);
+    if ( !service || readField(service, 'removed') || ['removed', 'purged'].includes(readField(service, 'state')) ) {
+      return {stackId: null, status: 'unknown'};
+    }
+    let projectId = readField(item, 'accountId'), serviceProject = readField(service, 'accountId');
+    if ( projectId && serviceProject && projectId !== serviceProject ) { return {stackId: null, status: 'conflicting'}; }
+    let parent = readField(service, 'stackId') || null;
+    // Null is an actual no-Stack relation, not a wildcard. A direct Stack and
+    // service-derived Stack must agree; missing service evidence is unknown.
+    if ( hasExpected && expected !== parent ) { return {stackId: null, status: 'conflicting'}; }
+    expected = parent; hasExpected = true;
+  }
+  return {stackId: expected, status: 'verified'};
+}
 export function stackParent(item, services = []) {
-  let explicit = readField(item, 'stackId');
-  if ( explicit ) { return explicit; }
-  let serviceIds = readField(item, 'serviceIds');
-  if ( !Array.isArray(serviceIds) || !serviceIds.length ) { return null; }
-  let parents = serviceIds.map((id) => readField(services.find((service) => readField(service, 'id') === id), 'stackId'));
-  return parents.some((id) => !id) || new Set(parents).size !== 1 ? null : parents[0];
+  let evidence = stackParentEvidence(item, services);
+  return evidence.status === 'verified' ? evidence.stackId : null;
 }
 export function resourcesInStack(items, parentId, services = []) {
   return collectionItems(items).filter((item) => stackParent(item, services) === parentId);

@@ -171,6 +171,10 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       },
       rawRequest(options) {
         reads++;
+        if ( options.url.endsWith('/apiKeyPolicyPreview') ) {
+          return resolve({body: {purpose: 'apiKeyPolicyUpdate', requestDigest: 'a'.repeat(64), confirmationRequired: false,
+            apiKeyPolicy: options.data.apiKeyPolicy, apiKeyPolicyRevision: options.data.apiKeyPolicyRevision}});
+        }
         return resolve({body: options.url.endsWith('/schema') ? {data: [stackSchema]} :
           options.url === '/stacks' ? {data: [stack]} : stack});
       }}));
@@ -190,8 +194,12 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
 
     try {
       await render(precompileTemplate('{{#if this.modal.modalVisible}}{{edit-apikey}}{{/if}}'));
-      clickButton('Custom'); await settled();
-      clickButton('Add rule'); await settled();
+      assert.ok(find('[data-policy-matrix="draft"]'), 'the actual form shows its matrix before review');
+      assert.strictEqual(find('[data-policy-matrix] thead tr').children.length, 9, 'resource plus all eight operations');
+      assert.strictEqual(find('[data-matrix-operation="read"]').dataset.matrixState, 'allow', 'the initial full policy is not restricted');
+      clickButton('Deny by default (whitelist)'); await settled();
+      assert.strictEqual(find('[data-matrix-operation="read"]').dataset.matrixState, 'deny', 'base choice immediately updates the preview');
+      clickButton('Add exception'); await settled();
       let originalChild = targetView();
       assert.ok(originalChild, 'the real scope component runs its lifecycle');
       assert.ok(find('[data-scope-selector="project"] .ember-power-select-trigger'), 'real ArrayProxy projects render a searchable selector');
@@ -226,6 +234,10 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       await settled();
       assert.strictEqual(reads, selectedReads, 'selected-scope evidence does not cause a remount/request loop');
       assert.notOk(this.testRoot.textContent.includes('1st4'), 'stable resource IDs never appear as displayed names');
+      assert.ok(find('[data-matrix-row="resource"] th').textContent.includes('Visible stack'), 'matrix uses the selected human path');
+      assert.strictEqual(find('[data-matrix-row="resource"] [data-matrix-operation="read"]').dataset.matrixState, 'allow');
+      assert.strictEqual(getComputedStyle(find('.api-key-policy-matrix-scroll')).overflowX, 'auto', 'wide matrix scrolls within the modal');
+      assert.strictEqual(find('.api-key-policy-matrix-scroll').tabIndex, 0, 'matrix region is keyboard accessible');
       let intl = this.owner.lookup('service:intl');
       intl.addTranslations('zh-tw', await (await fetch('/translations/zh-tw.json')).json());
       intl.setLocale(['zh-tw']);
@@ -233,6 +245,9 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       assert.strictEqual(document.getElementById(find('[data-scope-selector="project"] .ember-power-select-trigger').getAttribute('aria-labelledby')).textContent.trim(), '環境');
       assert.ok(this.testRoot.textContent.includes('目前可見資源'));
       assert.notOk(this.testRoot.textContent.includes('apiKeyAccess.selector.'), 'both locale selectors resolve their translation keys');
+      assert.ok(this.testRoot.textContent.includes('存取矩陣預覽'), 'the matrix switches to Traditional Chinese');
+      assert.ok(this.testRoot.textContent.includes('金鑰規則允許'));
+      assert.notOk(this.testRoot.textContent.includes('apiKeyAccess.matrix.'), 'matrix states and reasons are translated');
       assert.strictEqual(getComputedStyle(find('[data-scope-selector="resource"] .ember-power-select-selected-item')).whiteSpace, 'normal', 'selected paths wrap instead of clipping');
       intl.setLocale(['en-us']);
       await waitUntil(() => !targetView().get('loading')); await settled();
@@ -242,7 +257,13 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       assert.notOk(find('[data-scope-selector]'), 'global intentionally has no target child');
       assert.ok([...this.testRoot.querySelectorAll('input[data-capability]')].every((node) =>
         node.dataset.capability === 'unknown' && !node.disabled), 'global never borrows the prior project evidence');
+      clickButton('Review changes'); await settled();
+      assert.ok(find('[data-policy-matrix="reviewed"]'), 'the server-reviewed snapshot has a visible matrix');
+      assert.notOk(find('[data-policy-matrix="draft"]'), 'review does not silently render mutable draft values');
+      assert.strictEqual(find('[data-matrix-operation="read"]').dataset.matrixState, 'allow', 'global allow applies to the other-resources row');
       await change(selects()[1], 'stack');
+      assert.ok(find('[data-policy-matrix="draft"]'), 'changing a target invalidates the reviewed snapshot');
+      assert.notOk(find('[data-policy-matrix="reviewed"]'));
       assert.ok(find('[data-scope-selector="project"] .ember-power-select-trigger'), 'returning to stack creates one healthy scope component');
       assert.ok([...this.testRoot.querySelectorAll('input[data-capability]')].every((node) =>
         node.dataset.capability === 'unknown' && !node.disabled), 'unselected stack remains explicitly unknown');
@@ -328,8 +349,65 @@ test('full and closed keep canonical saving; another owner never borrows editor 
   assert.strictEqual(component.get('policyDraft.defaultEffect'), 'allow');
   component.send('selectMode', 'closed');
   assert.strictEqual(component.get('policyDraft.defaultEffect'), 'deny');
-  assert.deepEqual(component.get('policyDraft.rules'), []);
+  assert.strictEqual(component.get('policyDraft.mode'), 'custom', 'a base change retains explicit exceptions');
+  assert.strictEqual(component.get('policyDraft.rules').length, 1);
+  component.send('removeRule', component.get('policyDraft.rules')[0].id);
+  assert.strictEqual(component.get('policyDraft.mode'), 'closed', 'without exceptions the original closed contract remains');
   destroyOwned(component);
+});
+
+test('both defaults directly add opposite exceptions without a hidden custom step', function(assert) {
+  let component = editor(previewStore());
+  component.send('addRule');
+  let denied = component.get('policyDraft.rules')[0];
+  assert.strictEqual(component.get('policyDraft.mode'), 'custom');
+  assert.strictEqual(component.get('policyDraft.defaultEffect'), 'allow');
+  assert.strictEqual(denied.effect, 'deny', 'a blacklist starts with a deny exception');
+  component.set('review', {requestDigest: 'a'.repeat(64)});
+  component.set('confirmed', true);
+  component.send('selectMode', 'closed');
+  assert.strictEqual(component.get('review'), null, 'a base change invalidates the old review');
+  assert.notOk(component.get('confirmed'));
+  assert.deepEqual(component.get('policyDraft.rules'), [denied], 'switching the base never erases exceptions');
+  component.send('addRule');
+  assert.strictEqual(component.get('policyDraft.defaultEffect'), 'deny');
+  assert.strictEqual(component.get('policyDraft.rules')[1].effect, 'allow', 'a whitelist starts with an allow exception');
+  assert.strictEqual(component.get('policyDraft.rules')[1].scope.kind, 'stack', 'default deny is not a global deny rule');
+  component.send('removeRule', denied.id);
+  component.send('removeRule', component.get('policyDraft.rules')[0].id);
+  assert.strictEqual(component.get('policyDraft.mode'), 'closed');
+  component.send('selectMode', 'full');
+  assert.strictEqual(component.get('policyDraft.mode'), 'full', 'no exceptions means original full access');
+  assert.deepEqual(component.get('policyDraft.rules'), []);
+  component.set('confirmationOptions', {purpose: 'apiKeyPolicyUpdate'});
+  component.send('addRule'); component.send('selectMode', 'closed');
+  assert.strictEqual(component.get('policyDraft.mode'), 'full', 'an active confirmation cannot mutate its reviewed payload');
+  destroyOwned(component);
+});
+
+test('blacklist and whitelist exceptions are reviewed, saved and read back using custom wire semantics', async function(assert) {
+  for ( let base of ['full', 'closed'] ) {
+    let sent;
+    let policy;
+    let store = previewStore({
+      save(copy, options) { sent = options.data; policy = JSON.parse(JSON.stringify(sent.apiKeyPolicy));
+        return resolve(key({type: 'apiKeyRestricted', apiKeyPolicy: policy, apiKeyPolicyRevision: 2}, store)); },
+      find() { return resolve(key({type: 'apiKeyRestricted', apiKeyPolicy: policy, apiKeyPolicyRevision: 2}, store)); },
+    });
+    let component = editor(store, {accountId: '1a1'});
+    component.send('selectMode', base); component.send('addRule');
+    let id = component.get('policyDraft.rules')[0].id;
+    component.send('ruleField', id, 'kind', {target: {value: 'global'}});
+    await component.reviewDraft(); component.set('confirmed', true);
+    await component.submitPolicy();
+    assert.strictEqual(sent.apiKeyPolicy.mode, 'custom');
+    assert.strictEqual(sent.apiKeyPolicy.defaultEffect, base === 'full' ? 'allow' : 'deny');
+    assert.strictEqual(sent.apiKeyPolicy.rules[0].effect, base === 'full' ? 'deny' : 'allow');
+    assert.ok(component.get('savedReadback'));
+    assert.strictEqual(component.get('policyDraft.rules').length, 1, 'fresh readback keeps the exception');
+    assert.notOk(component.get('readbackPending'));
+    destroyOwned(component);
+  }
 });
 
 test('legacy edit still closes after its existing save lifecycle', function(assert) {
@@ -350,6 +428,101 @@ test('review uses the server digest and changing draft metadata invalidates appr
   component.set('model.name', 'changed');
   assert.strictEqual(component.get('review'), null);
   assert.notOk(component.get('confirmed'));
+  destroyOwned(component);
+});
+
+test('matrix preview and review keep the same safe evidence; changed parent invalidates approval', async function(assert) {
+  let component = editor(previewStore(), {accountId: '1a1'});
+  component.set('policyDraft', {mode: 'custom', defaultEffect: 'deny', expiresAt: null,
+    rules: [{id: 'r1', effect: 'allow', scope: {kind: 'stack', resourceId: '1st4'}, operations: ['read']}]});
+  let evidence = {scopeKey: 'stack::1st4', selectionValid: true, selectionLabel: 'Production / Web',
+    selectionStatus: 'ready', contextVerified: true, complete: true, projectId: '1a9', stackId: '1st4',
+    resource: {id: '1st4', type: 'stack', accountId: '1a9'}, schemas: [{secret: 'NOT-IN-SNAPSHOT'}]};
+  component.send('scopeCapabilities', 'r1', evidence);
+  let draft = component.get('draftMatrix');
+  await component.reviewDraft();
+  assert.deepEqual(component.get('reviewMatrix'), draft, 'the confirmed preview is the exact policy and evidence snapshot');
+  assert.notOk(JSON.stringify(component.get('review.matrixEvidence')).includes('NOT-IN-SNAPSHOT'), 'schema or payload contents are not copied');
+  component.send('scopeCapabilities', 'r1', Object.assign({}, evidence, {projectId: '1a10'}));
+  assert.strictEqual(component.get('review'), null, 'the same label cannot hide a changed parent');
+  destroyOwned(component);
+});
+
+test('matrix wakes exactly at expiry and releases its timer on destroy without polling', async function(assert) {
+  let component = editor(previewStore());
+  let now = 1800000000000, callback, delay, cleared = [];
+  let originalNow = Date.now, originalTimeout = window.setTimeout, originalClear = window.clearTimeout;
+  try {
+    Date.now = () => now;
+    window.setTimeout = (work, value) => { callback = work; delay = value; return 9876; };
+    window.clearTimeout = (id) => cleared.push(id);
+    component.set('policyDraft.expiresAt', new Date(now + 10000).toISOString());
+    assert.strictEqual(delay, 10000, 'one deadline wake, not an interval');
+    assert.ok(component.get('draftMatrix').rows[0].cells.every((cell) => cell.state === 'allow'));
+    now += 10000; callback();
+    assert.ok(component.get('draftMatrix').rows[0].cells.every((cell) => cell.state === 'deny' && cell.basis === 'expired'));
+    assert.strictEqual(component._matrixExpiryTimer, null, 'expired preview schedules no more work');
+    component.set('policyDraft.expiresAt', new Date(now + 20000).toISOString());
+    // Multiple sets in this synchronous unit test share one Ember run loop;
+    // flush the deadline calculation before testing the destruction hook.
+    component.updateMatrixClock();
+    assert.strictEqual(component._matrixExpiryTimer, 9876, 'a future deadline is actually owned');
+    let clearsBeforeDestroy = cleared.length;
+    // This owned unit subject uses an inert renderer (no DOM lifetime). Exercise
+    // the DOM teardown hook while the clock doubles are still installed.
+    component.willDestroyElement();
+    assert.deepEqual(cleared.slice(clearsBeforeDestroy), [9876], 'destroy releases the owned future deadline');
+    assert.strictEqual(component._matrixExpiryTimer, null);
+    component.updateMatrixClock();
+    clearsBeforeDestroy = cleared.length;
+    component.willDestroy();
+    assert.deepEqual(cleared.slice(clearsBeforeDestroy), [9876], 'owner-only teardown also releases its timer');
+    assert.strictEqual(component._matrixExpiryTimer, null);
+  } finally {
+    Date.now = originalNow; window.setTimeout = originalTimeout; window.clearTimeout = originalClear;
+    if ( !component.isDestroyed && !component.isDestroying ) { destroyOwned(component); }
+  }
+});
+
+test('review expiry disables saving and a late MFA result cannot send an expired mutation', async function(assert) {
+  let writes = 0;
+  let component = editor(previewStore({save() { writes++; return resolve(); }}));
+  let now = Date.now(), originalNow = Date.now;
+  try {
+    component.set('policyDraft.expiresAt', new Date(now + 10000).toISOString());
+    await component.reviewDraft();
+    component.set('confirmed', true);
+    assert.notOk(component.get('submitDisabled'), 'a valid reviewed deadline can be saved');
+    Date.now = () => now + 10000;
+    component.updateMatrixClock();
+    assert.ok(component.get('submitDisabled'), 'the preview and save state expire together');
+    await component.submitPolicy('late-confirmation-test-only');
+    assert.strictEqual(writes, 0, 'confirmation never bypasses the deadline');
+    assert.strictEqual(component.get('policyError'), 'apiKeyAccess.errors.expiry');
+    assert.notOk(component.get('confirmed'));
+  } finally {
+    Date.now = originalNow;
+    destroyOwned(component);
+  }
+});
+
+test('a changed selector during a pending preview is not adopted into review', async function(assert) {
+  let pending = defer();
+  let sent;
+  let component = editor(previewStore({rawRequest(options) { sent = options.data; return pending.promise; }}), {accountId: '1a1'});
+  component.set('policyDraft', {mode: 'custom', defaultEffect: 'deny', expiresAt: null,
+    rules: [{id: 'r1', effect: 'allow', scope: {kind: 'stack', resourceId: '1st4'}, operations: ['read']}]});
+  let evidence = {scopeKey: 'stack::1st4', selectionValid: true, selectionLabel: 'Production / Web',
+    selectionStatus: 'ready', contextVerified: true, complete: true, projectId: '1a9',
+    resource: {id: '1st4', type: 'stack', accountId: '1a9'}};
+  component.send('scopeCapabilities', 'r1', evidence);
+  let review = component.reviewDraft();
+  component.send('scopeCapabilities', 'r1', Object.assign({}, evidence, {selectionLabel: 'Production / Renamed Web'}));
+  pending.resolve({body: {purpose: 'apiKeyPolicyUpdate', requestDigest: 'a'.repeat(64),
+    apiKeyPolicy: sent.apiKeyPolicy, apiKeyPolicyRevision: sent.apiKeyPolicyRevision}});
+  await review;
+  assert.strictEqual(component.get('review'), null, 'late selection cannot make the reviewed matrix disagree with the draft');
+  assert.strictEqual(component.get('policyError'), 'apiKeyAccess.errors.review');
   destroyOwned(component);
 });
 

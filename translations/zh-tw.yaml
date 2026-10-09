@@ -1969,6 +1969,11 @@ apiKeyAccess:
   personalCreate: 這裡保留既有環境金鑰。新金鑰請由上方個人金鑰入口建立，再設定所需的環境與資源範圍。
   ceiling: 金鑰最大權限等同您的即時權限。完整存取不額外縮限；您的角色或資源權限變動時，金鑰也會受到影響。
   access: 存取設定
+  defaults:
+    allow: 預設允許（黑名單）
+    deny: 預設拒絕（白名單）
+  blacklistHelp: 預設允許本人有權執行的操作；可新增例外，拒絕指定資源與操作。沒有例外時，與原本完整存取相同。
+  whitelistHelp: 預設拒絕所有操作；可新增例外，允許指定資源與操作。沒有例外時，所有操作都會被拒絕。
   modes:
     full: 完整存取
     closed: 全部關閉
@@ -1990,6 +1995,37 @@ apiKeyAccess:
     exec: 執行
     logs: 日誌
     export: 敏感匯出
+  matrix:
+    title: 金鑰存取矩陣
+    draft: 存取矩陣預覽
+    reviewed: 即將儲存的存取矩陣
+    help: 此預覽合併預設與例外規則。「金鑰規則允許」不代表帳號獲得額外權限；每次請求仍會檢查金鑰擁有者的即時權限。
+    caption: 各資源與操作的金鑰規則
+    target: 資源範圍
+    other: 其他資源（選定範圍之外）
+    global: 所有資源
+    unverified: 資源選取待確認
+    limits: 到期時間與帳號即時權限仍然有效。建立資源及涉及多個目標的操作，必須檢查實際目標；「部分受限」或「待確認」不代表整個範圍已獲允許。
+    states:
+      allow: 金鑰規則允許
+      deny: 金鑰規則拒絕
+      mixed: 部分受限
+      conditional: 需檢查實際目標
+      unknown: 待確認
+    basis:
+      full: 完整存取，仍限帳號權限
+      closed: 沒有允許例外
+      expired: 金鑰已到期，拒絕所有操作
+      defaultAllow: 預設允許，仍限帳號權限
+      defaultDeny: 未命中允許例外
+      ruleAllow: 命中允許例外
+      explicitDeny: 命中拒絕例外，優先阻擋
+      scopeExceptions: 子資源適用不同規則
+      unknownEvidence: 資源選取或上層關係待確認
+      unknownOverlap: 規則範圍交集待確認
+      invalidPolicy: 請修正規則後再儲存
+      createDestination: 須檢查新資源及建立位置
+      multipleTargets: 須逐一檢查操作涉及的目標
   defaultEffect: 未命中規則時
   effect: 規則效果
   scope: 規則範圍
@@ -2040,8 +2076,8 @@ apiKeyAccess:
       apiKeyRestricted: 受限 API 金鑰
       account: 帳號
       auditLog: 稽核紀錄
-  addRule: 新增規則
-  removeRule: 移除規則
+  addRule: 新增例外
+  removeRule: 移除例外
   expiry: 到期時間
   expiryLocal: 自訂到期時間（本機時區）
   expiryChoices:

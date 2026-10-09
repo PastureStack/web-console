@@ -62,21 +62,17 @@
       <fieldset disabled={{this.editingLocked}}>
         <legend>{{t 'apiKeyAccess.access'}}</legend>
         <div class="btn-group r-mb15" role="group" aria-label={{t 'apiKeyAccess.access'}}>
-          {{#each (array 'full' 'closed' 'custom') as |mode|}}
-            <button type="button" class="btn {{if (eq this.policyDraft.mode mode) 'btn-primary' 'btn-default'}}"
-                    aria-pressed={{eq this.policyDraft.mode mode}} {{action 'selectMode' mode}}>
-              {{t (concat 'apiKeyAccess.modes.' mode)}}
+          {{#each (array 'allow' 'deny') as |effect|}}
+            <button type="button" class="btn {{if (eq this.defaultEffect effect) 'btn-primary' 'btn-default'}}"
+                    data-access-default={{effect}} aria-pressed={{eq this.defaultEffect effect}}
+                    {{action 'selectMode' (if (eq effect 'allow') 'full' 'closed')}}>
+              {{t (concat 'apiKeyAccess.defaults.' effect)}}
             </button>
           {{/each}}
         </div>
-        {{#if this.isCustom}}
+        <p class="help-block">{{t (if (eq this.defaultEffect 'allow') 'apiKeyAccess.blacklistHelp' 'apiKeyAccess.whitelistHelp')}}</p>
           <p class="help-block">{{t 'apiKeyAccess.denyFirst'}}</p>
           <p class="help-block">{{t 'apiKeyAccess.capabilityHelp'}}</p>
-          <label>{{t 'apiKeyAccess.defaultEffect'}}</label>
-          <select class="form-control r-mb15" onchange={{action 'defaultEffect'}}>
-            <option value="deny" selected={{eq this.policyDraft.defaultEffect 'deny'}}>{{t 'apiKeyAccess.effects.deny'}}</option>
-            <option value="allow" selected={{eq this.policyDraft.defaultEffect 'allow'}}>{{t 'apiKeyAccess.effects.allow'}}</option>
-          </select>
           {{#each this.rules key="id" as |rule|}}
             <section class="well api-key-rule" data-rule-id={{rule.id}}>
               <div class="row form-group">
@@ -124,7 +120,6 @@
           {{/each}}
           <button type="button" class="btn btn-default r-mb15" {{action 'addRule'}}>{{t 'apiKeyAccess.addRule'}}</button>
           <p class="help-block">{{t 'apiKeyAccess.stableIdHelp'}}</p>
-        {{/if}}
         <div class="row form-group">
           <div class="col-sm-6">
             <label for="api-key-expiry-choice">{{t 'apiKeyAccess.expiry'}}</label>
@@ -142,6 +137,9 @@
           {{/if}}
         </div>
       </fieldset>
+      {{#unless this.review}}
+        {{api-key-policy-matrix matrix=this.draftMatrix expiresAt=this.policyDraft.expiresAt}}
+      {{/unless}}
       {{#if this.review}}
         <section class="well" aria-label={{t 'apiKeyAccess.review'}}>
           <h3>{{t 'apiKeyAccess.review'}}</h3>
@@ -153,6 +151,7 @@
           {{#each this.reviewRules as |rule|}}
             <p>{{t (concat 'apiKeyAccess.effects.' rule.effect)}} · {{rule.targetLabel}} · {{join-array rule.operations}}</p>
           {{/each}}
+          {{api-key-policy-matrix matrix=this.reviewMatrix reviewed=true expiresAt=this.review.apiKeyPolicy.expiresAt}}
           <p>{{t 'apiKeyAccess.reviewHelp'}}</p>
           <label>{{input type='checkbox' checked=this.confirmed disabled=this.saving}} {{t 'apiKeyAccess.confirm'}}</label>
           <div class="r-mt15">

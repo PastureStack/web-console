@@ -2057,6 +2057,11 @@ apiKeyAccess:
   personalCreate: Existing environment keys remain here. Create new keys from the personal key section above, then select the environments and resources they need.
   ceiling: The key is limited by your live permissions. Full access adds no further restriction. Changes to your role or resource access also affect this key.
   access: Access settings
+  defaults:
+    allow: Allow by default (blacklist)
+    deny: Deny by default (whitelist)
+  blacklistHelp: Allow within your permissions by default. Add deny exceptions for selected resources and operations. Without exceptions, full access is unchanged.
+  whitelistHelp: Deny by default. Add allow exceptions for selected resources and operations. Without exceptions, every operation is denied.
   modes:
     full: Full access
     closed: All closed
@@ -2078,6 +2083,37 @@ apiKeyAccess:
     exec: Execute
     logs: Logs
     export: Sensitive export
+  matrix:
+    title: Key access matrix
+    draft: Access matrix preview
+    reviewed: Access matrix to save
+    help: This preview combines the default and exceptions. Key-rule permission does not grant account permission. Each request is checked again against the key owner's current access.
+    caption: Key rules by resource and operation
+    target: Resource scope
+    other: Other resources (outside selected scopes)
+    global: All resources
+    unverified: Resource selection needs verification
+    limits: Expiry and live account permissions still apply. Creating resources and operations involving multiple targets require checks on every actual target. A partial or unverified scope is not a blanket permission.
+    states:
+      allow: Key rule allows
+      deny: Key rule denies
+      mixed: Partially limited
+      conditional: Target checks required
+      unknown: Needs verification
+    basis:
+      full: Full access; account permissions still apply
+      closed: No allow exceptions
+      expired: The key has expired; every operation is denied
+      defaultAllow: Default allows; account permissions still apply
+      defaultDeny: No matching allow exception
+      ruleAllow: Matching allow exception
+      explicitDeny: Matching deny exception takes precedence
+      scopeExceptions: Child resources have different rules
+      unknownEvidence: Resource selection or parent is unverified
+      unknownOverlap: Rule overlap is not yet verified
+      invalidPolicy: Correct the policy before saving
+      createDestination: The new resource and its destination must be checked
+      multipleTargets: Every target of the operation must be checked
   defaultEffect: Unmatched resources
   effect: Rule effect
   scope: Rule scope
@@ -2128,8 +2164,8 @@ apiKeyAccess:
       apiKeyRestricted: Restricted API key
       account: Account
       auditLog: Audit record
-  addRule: Add rule
-  removeRule: Remove rule
+  addRule: Add exception
+  removeRule: Remove exception
   expiry: Expiration
   expiryLocal: Custom expiration (local time zone)
   expiryChoices:

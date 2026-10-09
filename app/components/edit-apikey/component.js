@@ -9,6 +9,7 @@ import ModalBase from 'lacsso/components/modal-base';
 import { API_KEY_RESOURCE_TYPES, initialPolicy, policyErrors, plain, localExpiry, expiryIso, apiKeyError, policiesEqual } from 'ui/utils/api-key-policy';
 import { ownerOperationStates, scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import { selectionMatches } from 'ui/utils/api-key-scope-selection';
+import { buildPolicyMatrix } from 'ui/utils/api-key-policy-matrix';
 import C from 'ui/utils/constants';
 
 export default ModalBase.extend(NewOrEdit, {
@@ -34,6 +35,7 @@ export default ModalBase.extend(NewOrEdit, {
   savedReadback: null,
   readbackPending: false,
   capabilityEvidence: null,
+  matrixNow: null,
 
   ownerContextKnown: function() {
     return !this.get('originalModel.id') || !!this.get('originalModel.accountId') &&
@@ -56,13 +58,23 @@ export default ModalBase.extend(NewOrEdit, {
     return this.get('policyDraft.mode') === 'custom';
   }.property('policyDraft.mode'),
 
+  defaultEffect: function() {
+    let policy = this.get('policyDraft') || {};
+    return policy.mode === 'full' ? 'allow' : policy.mode === 'closed' ? 'deny' : policy.defaultEffect;
+  }.property('policyDraft.mode', 'policyDraft.defaultEffect'),
+
   reviewDisabled: function() {
     return this.get('saving') || this.get('conflict') || this.get('readbackPending') || !!this.get('confirmationOptions');
   }.property('saving', 'conflict', 'readbackPending', 'confirmationOptions'),
 
+  reviewExpired: function() {
+    let deadline = Date.parse(this.get('review.apiKeyPolicy.expiresAt'));
+    return Number.isFinite(deadline) && deadline <= (this.get('matrixNow') || Date.now());
+  }.property('review', 'matrixNow'),
+
   submitDisabled: function() {
-    return this.get('saving') || !this.get('confirmed') || !this.get('review') || !!this.get('confirmationOptions');
-  }.property('saving', 'confirmed', 'review', 'confirmationOptions'),
+    return this.get('saving') || !this.get('confirmed') || !this.get('review') || !!this.get('confirmationOptions') || this.get('reviewExpired');
+  }.property('saving', 'confirmed', 'review', 'confirmationOptions', 'reviewExpired'),
 
   rules: function() {
     return (this.get('policyDraft.rules') || []).map((rule) => Object.assign({}, rule, {
@@ -78,6 +90,52 @@ export default ModalBase.extend(NewOrEdit, {
       targetLabel: (this.get('review.scopeLabels') || {})[rule.id],
     }));
   }.property('review'),
+
+  matrixLabels() {
+    let intl = this.get('intl');
+    return {default: intl.t('apiKeyAccess.matrix.other'), global: intl.t('apiKeyAccess.matrix.global'),
+      unverified: intl.t('apiKeyAccess.matrix.unverified')};
+  },
+
+  matrixEvidence(evidence = {}) {
+    return plain({scopeKey: evidence.scopeKey, selectionValid: evidence.selectionValid,
+      selectionLabel: evidence.selectionLabel, selectionStatus: evidence.selectionStatus,
+      contextVerified: evidence.contextVerified, complete: evidence.complete,
+      projectId: evidence.projectId, stackId: evidence.stackId,
+      stackContextStatus: evidence.stackContextStatus,
+      resource: evidence.resource && {id: evidence.resource.id, type: evidence.resource.type,
+        accountId: evidence.resource.accountId, stackId: evidence.resource.stackId,
+        serviceId: evidence.resource.serviceId, serviceIds: evidence.resource.serviceIds}});
+  },
+
+  draftMatrix: function() {
+    return buildPolicyMatrix(this.get('policyDraft'), this.get('capabilityEvidence') || {}, this.matrixLabels(), this.get('matrixNow') || Date.now());
+  }.property('policyDraft', 'policyDraft.expiresAt', 'policyDraft.rules.[]', 'capabilityEvidence', 'intl._locale', 'matrixNow'),
+
+  reviewMatrix: function() {
+    return buildPolicyMatrix(this.get('review.apiKeyPolicy'), this.get('review.matrixEvidence') || {}, this.matrixLabels(), this.get('matrixNow') || Date.now());
+  }.property('review', 'intl._locale', 'matrixNow'),
+
+  matrixExpiryChanged: observer('policyDraft.expiresAt', 'review.apiKeyPolicy.expiresAt', function() {
+    this.updateMatrixClock();
+  }),
+
+  updateMatrixClock() {
+    if ( this._matrixExpiryTimer ) { clearTimeout(this._matrixExpiryTimer); this._matrixExpiryTimer = null; }
+    if ( this.isDestroying || this.isDestroyed ) { return; }
+    let now = Date.now();
+    this.set('matrixNow', now);
+    let future = [this.get('policyDraft.expiresAt'), this.get('review.apiKeyPolicy.expiresAt')]
+      .map((value) => Date.parse(value)).filter((value) => Number.isFinite(value) && value > now);
+    if ( future.length ) {
+      // Only wake at the next expiry, not on a polling interval. Long deadlines
+      // are capped to the browser's timeout range and re-evaluated on wake.
+      this._matrixExpiryTimer = setTimeout(() => {
+        this._matrixExpiryTimer = null;
+        this.updateMatrixClock();
+      }, Math.min(Math.min(...future) - now, 2147483647));
+    }
+  },
 
   didReceiveAttrs() {
     this._super(...arguments);
@@ -138,12 +196,18 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   willDestroyElement() {
+    if ( this._matrixExpiryTimer ) { clearTimeout(this._matrixExpiryTimer); this._matrixExpiryTimer = null; }
     this._createdSecret = null;
     if ( this.get('clone') ) { this.set('clone.secretValue', null); }
     if (this._focusTimer) {
       clearTimeout(this._focusTimer);
       this._focusTimer = null;
     }
+    this._super(...arguments);
+  },
+
+  willDestroy() {
+    if ( this._matrixExpiryTimer ) { clearTimeout(this._matrixExpiryTimer); this._matrixExpiryTimer = null; }
     this._super(...arguments);
   },
 
@@ -193,6 +257,10 @@ export default ModalBase.extend(NewOrEdit, {
         name: this.get('model.name') || '', description: this.get('model.description') || '',
         apiKeyPolicy: policy, apiKeyPolicyRevision: this.get('originalModel.apiKeyPolicyRevision') || 0, scopeLabels,
     };
+    snapshot.matrixEvidence = Object.fromEntries((policy.rules || []).map((rule) => {
+      let evidence = (this.get('capabilityEvidence') || {})[rule.id] || {};
+      return [rule.id, this.matrixEvidence(evidence)];
+    }));
     this.setProperties({saving: true, confirmed: false, policyError: null, review: null});
     let data = {apiKeyPolicy: policy, apiKeyPolicyRevision: snapshot.apiKeyPolicyRevision};
     if ( this.get('originalModel.id') ) { data.apiKeyId = this.get('originalModel.id'); }
@@ -203,7 +271,9 @@ export default ModalBase.extend(NewOrEdit, {
       let body = response.body;
       if ( !body || !/^[0-9a-f]{64}$/.test(body.requestDigest || '') || body.purpose !== 'apiKeyPolicyUpdate' ||
         !body.apiKeyPolicy || !policiesEqual(body.apiKeyPolicy, policy) ||
-        Number(body.apiKeyPolicyRevision) !== Number(snapshot.apiKeyPolicyRevision) ) {
+        Number(body.apiKeyPolicyRevision) !== Number(snapshot.apiKeyPolicyRevision) ||
+        (policy.rules || []).some((rule) => JSON.stringify(snapshot.matrixEvidence[rule.id]) !==
+          JSON.stringify(this.matrixEvidence((this.get('capabilityEvidence') || {})[rule.id]))) ) {
         throw {code: 'ApiKeyPreviewUnverified'};
       }
       this.set('review', Object.assign(snapshot, {requestDigest: body.requestDigest,
@@ -228,6 +298,13 @@ export default ModalBase.extend(NewOrEdit, {
 
   submitPolicy(confirmation) {
     if ( this._policySaveActive ) { return resolve(); }
+    // A confirmation can finish after the reviewed deadline. Re-check the
+    // actual clock as well as the timer-driven UI before sending a mutation.
+    let deadline = Date.parse(this.get('review.apiKeyPolicy.expiresAt'));
+    if ( Number.isFinite(deadline) && deadline <= Date.now() ) {
+      this.setProperties({policyError: this.get('intl').t('apiKeyAccess.errors.expiry'), confirmationOptions: null, confirmed: false});
+      return resolve();
+    }
     if ( !confirmation && this.get('submitDisabled') ) { return resolve(); }
     let snapshot = this.get('review');
     if ( !snapshot ) { return resolve(); }
@@ -325,38 +402,53 @@ export default ModalBase.extend(NewOrEdit, {
       let rule = (this.get('policyDraft.rules') || []).find((item) => item.id === id);
       if ( rule && evidence.scopeKey === scopeKey(rule.scope) ) {
         if ( this.get('review') && (!selectionMatches(rule.scope, evidence) ||
-          (this.get('review.scopeLabels') || {})[id] !== evidence.selectionLabel) ) { this.invalidateReview(); }
+          JSON.stringify((this.get('review.matrixEvidence') || {})[id]) !== JSON.stringify(this.matrixEvidence(evidence))) ) { this.invalidateReview(); }
         this.set('capabilityEvidence', Object.assign({}, this.get('capabilityEvidence'), {[id]: evidence}));
       }
     },
     selectMode(mode) {
-      if ( this.get('saving') ) { return; }
+      if ( this.get('editingLocked') || !['full', 'closed', 'custom'].includes(mode) ) { return; }
       this.invalidateReview();
+      let rules = this.get('policyDraft.rules') || [];
+      let defaultEffect = mode === 'full' ? 'allow' : mode === 'closed' ? 'deny' : this.get('defaultEffect');
       this.set('policyDraft', Object.assign({}, this.get('policyDraft'), {
-        mode, defaultEffect: mode === 'full' ? 'allow' : mode === 'closed' ? 'deny' :
-          this.get('policyDraft.mode') === 'custom' ? this.get('policyDraft.defaultEffect') : 'deny',
-        rules: mode === 'closed' ? [] : this.get('policyDraft.rules'),
+        // full/closed are backend presets without rules. A base plus exceptions
+        // uses custom; switching the base must never discard the exceptions.
+        mode: rules.length ? 'custom' : mode, defaultEffect, rules,
       }));
     },
     defaultEffect(event) {
-      this.invalidateReview();
-      this.set('policyDraft.defaultEffect', event.target.value);
+      if ( ['allow', 'deny'].includes(event.target.value) ) {
+        this.send('selectMode', event.target.value === 'allow' ? 'full' : 'closed');
+      }
     },
     addRule() {
+      if ( this.get('editingLocked') ) { return; }
       this.invalidateReview();
+      let defaultEffect = this.get('defaultEffect');
       this._ruleSequence = (this._ruleSequence || 0) + 1;
       let ids = (this.get('policyDraft.rules') || []).map((rule) => rule.id);
       let id = `rule-${this._ruleSequence}`;
       while ( ids.includes(id) ) { id = `rule-${++this._ruleSequence}`; }
-      this.set('policyDraft.rules', (this.get('policyDraft.rules') || []).concat({
-        id, effect: 'allow', scope: {kind: 'stack', resourceId: ''}, operations: ['read'],
+      this.set('policyDraft', Object.assign({}, this.get('policyDraft'), {
+        mode: 'custom', defaultEffect, rules: (this.get('policyDraft.rules') || []).concat({
+          id, effect: defaultEffect === 'allow' ? 'deny' : 'allow', scope: {kind: 'stack', resourceId: ''}, operations: ['read'],
+        }),
       }));
     },
     removeRule(id) {
+      if ( this.get('editingLocked') ) { return; }
       this.invalidateReview();
-      this.set('policyDraft.rules', this.get('policyDraft.rules').filter((rule) => rule.id !== id));
+      let rules = this.get('policyDraft.rules').filter((rule) => rule.id !== id);
+      this.set('policyDraft', Object.assign({}, this.get('policyDraft'), {
+        rules, mode: rules.length ? 'custom' : this.get('defaultEffect') === 'allow' ? 'full' : 'closed',
+      }));
+      let evidence = Object.assign({}, this.get('capabilityEvidence'));
+      delete evidence[id];
+      this.set('capabilityEvidence', evidence);
     },
     ruleField(id, field, event) {
+      if ( this.get('editingLocked') ) { return; }
       this.invalidateReview();
       let rules = plain(this.get('policyDraft.rules'));
       let rule = rules.find((item) => item.id === id);
@@ -367,6 +459,7 @@ export default ModalBase.extend(NewOrEdit, {
       this.set('policyDraft.rules', rules);
     },
     ruleOperation(id, operation, event) {
+      if ( this.get('editingLocked') ) { return; }
       let rules = plain(this.get('policyDraft.rules'));
       let rule = rules.find((item) => item.id === id);
       let capability = ownerOperationStates(rule.scope, (this.get('capabilityEvidence') || {})[id], this.get('ownerContextKnown')).find((item) => item.operation === operation);
@@ -376,6 +469,7 @@ export default ModalBase.extend(NewOrEdit, {
       this.set('policyDraft.rules', rules);
     },
     expiry(choice, event) {
+      if ( this.get('editingLocked') ) { return; }
       this.invalidateReview();
       let value = choice === 'select' ? event.target.value : this.get('expiryChoice');
       this.set('expiryChoice', value);

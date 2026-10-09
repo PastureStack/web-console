@@ -1,0 +1,39 @@
+.api-key-policy-matrix {
+  min-width: 0;
+  margin: 16px 0;
+
+  .api-key-policy-matrix-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .api-key-policy-matrix-scroll:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  table {
+    min-width: 760px;
+    width: 100%;
+  }
+
+  th, td {
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  tbody th {
+    min-width: 160px;
+    max-width: 260px;
+  }
+
+  td {
+    min-width: 74px;
+  }
+
+  td small {
+    display: block;
+    margin-top: 4px;
+  }
+}

@@ -4,7 +4,7 @@ import { scheduleOnce, cancel } from '@ember/runloop';
 import { scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import C from 'ui/utils/constants';
 import {readField, scopeType, typeKey, isPlatformScope, hasStackParent, namedOptions, sameReadableNameFields,
-  projectResources, stackParent, resourcesInStack, collectionLink, collectionItems} from 'ui/utils/api-key-scope-selection';
+  projectResources, stackParent, stackParentEvidence, resourcesInStack, collectionLink, collectionItems} from 'ui/utils/api-key-scope-selection';
 
 function schemaFields(schema) {
   let get = (name) => typeof schema.get === 'function' ? schema.get(name) : schema[name];
@@ -168,10 +168,12 @@ export default Component.extend({
       if ( !this.current(generation) ) { return; }
       if ( !isPlatformScope(type) ) { items = projectResources(items, projectId); }
       let prefix = selectedProject?.label || '';
+      let parentServices = [];
       if ( hasStackParent(type) ) {
         let stacks = projectResources(collectionLink(schemas, 'stack') ? await this.readCollection(schemas, 'stack', generation) : [], projectId);
         if ( !this.current(generation) ) { return; }
         let services = typeKey(type) === 'container' ? projectResources(collectionLink(schemas, 'service') ? await this.readCollection(schemas, 'service', generation) : [], projectId) : items;
+        parentServices = services;
         if ( !this.current(generation) ) { return; }
         let stackOptions = namedOptions(stacks, {prefix, typeLabel: this.get('intl').t('apiKeyAccess.selector.types.stack')}).options;
         let unparented = items.filter((item) => !stackOptions.some((option) => option.id === stackParent(item, services)));
@@ -208,12 +210,18 @@ export default Component.extend({
         !isPlatformScope(type) && readField(detail, 'accountId') !== projectId ||
         !sameReadableNameFields(detail, selected.resource) ||
         readField(detail, 'stackId') !== readField(selected.resource, 'stackId') ||
+        readField(detail, 'serviceId') !== readField(selected.resource, 'serviceId') ||
         JSON.stringify(readField(detail, 'serviceIds') || []) !== JSON.stringify(readField(selected.resource, 'serviceIds') || []) ) { throw new Error('UnverifiedTarget'); }
       this.set('selectedTarget', selected);
       let resource = {id: readField(detail, 'id'), type: readField(detail, 'type'), accountId: readField(detail, 'accountId'),
+        stackId: readField(detail, 'stackId'), serviceId: readField(detail, 'serviceId'), serviceIds: readField(detail, 'serviceIds'),
         actionLinks: readField(detail, 'actionLinks'), links: readField(detail, 'links')};
+      let parentEvidence = stackParentEvidence(detail, parentServices);
       this.selectionResult(scope, 'ready', {selectionValid: true, selectionLabel: selected.label,
-        contextVerified: true, complete: true, projectId, resource, schemas: schemas.map(schemaFields)});
+        contextVerified: true, complete: true, projectId,
+        stackId: typeKey(type) === 'stack' ? resource.id : parentEvidence.stackId,
+        stackContextStatus: parentEvidence.status,
+        resource, schemas: schemas.map(schemaFields)});
     } catch (_) {
       if ( this.current(generation) ) {
         this.setProperties({candidates: [], selectedTarget: null, loadError: true});

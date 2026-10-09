@@ -3,7 +3,7 @@ import EmberObject from '@ember/object';
 import Collection from 'ember-api-store/models/collection';
 import { module, test } from 'qunit';
 import { namedOptions, projectResources, stackParent, resourcesInStack, collectionLink, isPlatformScope,
-  hasStackParent, selectionMatches, sameReadableNameFields } from 'ui/utils/api-key-scope-selection';
+  hasStackParent, selectionMatches, sameReadableNameFields, stackParentEvidence } from 'ui/utils/api-key-scope-selection';
 
 module('Unit | Utility | API key scope selection');
 
@@ -56,6 +56,20 @@ test('advertised GET links, aliases and platform scopes preserve real API metada
   assert.ok(isPlatformScope('apiKeyRestricted'));
   assert.notOk(hasStackParent('volume'), 'non-stack resource does not get a fake stack');
   assert.ok(hasStackParent('container'));
+});
+
+test('direct and service-derived Stack evidence must agree, including null and missing parents', function(assert) {
+  let services = [{id: 'a', stackId: 'A'}, {id: 'b', stackId: 'B'}, {id: 'none', stackId: null}];
+  assert.deepEqual(stackParentEvidence({}, services), {stackId: null, status: 'verified'});
+  assert.deepEqual(stackParentEvidence({serviceIds: ['none']}, services), {stackId: null, status: 'verified'});
+  assert.deepEqual(stackParentEvidence({stackId: 'A', serviceIds: ['a']}, services), {stackId: 'A', status: 'verified'});
+  for ( let item of [{stackId: 'A', serviceIds: ['b']}, {stackId: 'A', serviceIds: ['none']},
+    {serviceIds: ['none', 'a']}, {serviceIds: ['a', 'none']}, {stackId: 'A', serviceId: 'b'}] ) {
+    assert.deepEqual(stackParentEvidence(item, services), {stackId: null, status: 'conflicting'});
+    assert.strictEqual(stackParent(item, services), null, 'a conflict never enters the direct Stack list');
+  }
+  assert.deepEqual(stackParentEvidence({stackId: 'A', serviceIds: ['missing']}, services), {stackId: null, status: 'unknown'});
+  assert.deepEqual(stackParentEvidence({serviceIds: 'not-an-array'}, services), {stackId: null, status: 'unknown'});
 });
 
 test('review requires matching fresh named-selection evidence, stable IDs stay internal', function(assert) {

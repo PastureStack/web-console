@@ -10,8 +10,8 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-The 1.6.181 source candidate adds capability-gated API Key full/closed/custom
-access, expiration, reviewed changes with platform MFA, and per-key audit
+The 1.6.181 source candidate adds capability-gated API Key access settings,
+expiration, reviewed changes with platform MFA, and per-key audit
 filtering and details for the matching Server v1.6.519 contract. Every grant
 remains bounded by the owner's live permissions; operation choices are not
 claims of authority. Legacy Keys are not automatically narrowed during an upgrade;
@@ -21,6 +21,13 @@ Resource scopes use searchable authorized environment, stack, and resource
 names, including their context in the review. Operators do not enter resource
 IDs; stable references remain an internal API detail. Unavailable or ambiguous
 names block submission rather than guessing a target.
+Choose allow-by-default with deny exceptions (blacklist), or deny-by-default
+with allow exceptions (whitelist). Both support direct exception editing;
+switching the default preserves existing exceptions. Without exceptions,
+the original full-access or closed behavior is retained. The resource-by-operation
+matrix previews the draft and reviewed policy, including deny precedence,
+partial scopes, unresolved relationships and expiry. It does not grant or
+predict permissions beyond the owner's live access.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).
