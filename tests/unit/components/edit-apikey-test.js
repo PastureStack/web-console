@@ -165,7 +165,10 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       findAll() { return resolve(stackRows); }, find() { return resolve(stack); }}));
     this.owner.register('service:user-store', Service.extend({generation: 1,
       getById() { return stackSchema; },
-      findAll() { return resolve(stackRows); },
+      find(type, id, options) {
+        if ( type !== 'project' || id !== null || options.forceReload !== true ) { throw new Error('FreshProjectCollectionRequired'); }
+        return resolve(stackRows);
+      },
       rawRequest(options) {
         reads++;
         return resolve({body: options.url.endsWith('/schema') ? {data: [stackSchema]} :

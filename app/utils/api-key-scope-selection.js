@@ -9,6 +9,10 @@ export const hasStackParent = (type) => ['service', 'container'].includes(typeKe
 export const collectionItems = (items) => typeof items?.toArray === 'function' ? items.toArray() : Array.from(items || []);
 
 function text(value) { return typeof value === 'string' ? value.trim() : ''; }
+export function sameReadableNameFields(detail, candidate) {
+  return text(readField(detail, 'name')) === text(readField(candidate, 'name')) &&
+    text(readField(detail, 'description')) === text(readField(candidate, 'description'));
+}
 export function namedOptions(items, {prefix = '', typeLabel = ''} = {}) {
   let missingNames = 0;
   let options = collectionItems(items).filter((item) => !readField(item, 'removed') && !['removed', 'purged'].includes(readField(item, 'state'))).flatMap((item) => {

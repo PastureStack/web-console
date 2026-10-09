@@ -3,7 +3,7 @@ import { service } from '@ember/service';
 import { scheduleOnce, cancel } from '@ember/runloop';
 import { scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import C from 'ui/utils/constants';
-import {readField, scopeType, typeKey, isPlatformScope, hasStackParent, namedOptions,
+import {readField, scopeType, typeKey, isPlatformScope, hasStackParent, namedOptions, sameReadableNameFields,
   projectResources, stackParent, resourcesInStack, collectionLink, collectionItems} from 'ui/utils/api-key-scope-selection';
 
 function schemaFields(schema) {
@@ -71,6 +71,42 @@ export default Component.extend({
     return items;
   },
 
+  async readSchemas(projectId, generation) {
+    let response = await this.get('userStore').rawRequest({url: projectId ? `projects/${encodeURIComponent(projectId)}/schema` : 'schema', method: 'GET'});
+    if ( !this.current(generation) ) { return null; }
+    let schemas = response.body?.data;
+    if ( !Array.isArray(schemas) || response.body.pagination?.next ) { throw new Error('IncompleteSchema'); }
+    return schemas;
+  },
+
+  async recoverParent(type, resourceId, projects, generation) {
+    // Only fresh user-visible collections can recover a saved stable reference.
+    // Never resolve it through the shared current-project store or a guessed URL.
+    let schemas = await this.readSchemas(null, generation);
+    if ( !this.current(generation) ) { return null; }
+    if ( collectionLink(schemas, type) ) {
+      let items = await this.readCollection(schemas, type, generation);
+      if ( !this.current(generation) ) { return null; }
+      let matches = items.filter((item) => readField(item, 'id') === resourceId &&
+        projects.some((project) => project.id === readField(item, 'accountId')));
+      if ( matches.length > 1 ) { throw new Error('UnverifiedParent'); }
+      if ( matches.length === 1 ) { return {projectId: readField(matches[0], 'accountId')}; }
+    }
+    // Account schemas may not advertise project-scoped types. Use each visible
+    // context's advertised alias-aware collection, matching ID AND accountId.
+    for ( let project of projects ) {
+      schemas = await this.readSchemas(project.id, generation);
+      if ( !this.current(generation) ) { return null; }
+      if ( !collectionLink(schemas, type) ) { continue; }
+      let items = projectResources(await this.readCollection(schemas, type, generation), project.id);
+      if ( !this.current(generation) ) { return null; }
+      let matches = items.filter((item) => readField(item, 'id') === resourceId);
+      if ( matches.length > 1 ) { throw new Error('UnverifiedParent'); }
+      if ( matches.length === 1 ) { return {projectId: project.id, schemas, items}; }
+    }
+    return null;
+  },
+
   selectionResult(scope, status, evidence = {}) {
     this._evidenceContext = this.contextKey(scopeType(scope), scope);
     this.set('selectionStatus', status);
@@ -103,7 +139,9 @@ export default Component.extend({
     try {
       let projectItems = [];
       if ( !isPlatformScope(type) || typeKey(type) === 'project' ) {
-        projectItems = await this.get('userStore').findAll('project', null, {forceReload: true, removeMissing: true});
+        // find() returns THIS GET's collection; findAll() returns the whole store
+        // cache and can retain removed memberships even with forceReload.
+        projectItems = await this.get('userStore').find('project', null, {forceReload: true, depaginate: true});
         if ( !this.current(generation) ) { return; }
         let projects = namedOptions(projectItems);
         this.set('projectOptions', projects.options);
@@ -112,15 +150,11 @@ export default Component.extend({
           return;
         }
       }
-      // A saved stable reference may recover its real parent, never a guessed
-      // first option. This read does not rebase shared projects.current/store.
+      let recovered;
       if ( !isPlatformScope(type) && scope.resourceId && !this._selectedProjectId ) {
-        let store = this.get('store').getById('schema', type.toLowerCase()) ? this.get('store') : this.get('userStore');
-        let item = await store.find(type, scope.resourceId, {forceReload: true});
+        recovered = await this.recoverParent(type, scope.resourceId, this.get('projectOptions'), generation);
         if ( !this.current(generation) ) { return; }
-        if ( readField(item, 'id') !== scope.resourceId ) { throw new Error('UnverifiedParent'); }
-        this._selectedProjectId = readField(item, 'accountId');
-        this._selectedStackId = readField(item, 'stackId');
+        this._selectedProjectId = recovered?.projectId;
       }
       let selectedProject = (this.get('projectOptions') || []).find((item) => item.id === this._selectedProjectId);
       this.set('selectedProject', selectedProject || null);
@@ -128,11 +162,9 @@ export default Component.extend({
         this.selectionResult(scope, scope.resourceId ? 'unavailable' : 'chooseProject'); return;
       }
       let projectId = !isPlatformScope(type) ? selectedProject.id : typeKey(type) === 'project' ? scope.resourceId : null;
-      let response = await this.get('userStore').rawRequest({url: projectId ? `projects/${encodeURIComponent(projectId)}/schema` : 'schema', method: 'GET'});
+      let schemas = recovered?.schemas || await this.readSchemas(projectId, generation);
       if ( !this.current(generation) ) { return; }
-      let schemas = response.body?.data;
-      if ( !Array.isArray(schemas) || response.body.pagination?.next ) { throw new Error('IncompleteSchema'); }
-      let items = typeKey(type) === 'project' ? collectionItems(projectItems) : await this.readCollection(schemas, type, generation);
+      let items = typeKey(type) === 'project' ? collectionItems(projectItems) : recovered?.items || await this.readCollection(schemas, type, generation);
       if ( !this.current(generation) ) { return; }
       if ( !isPlatformScope(type) ) { items = projectResources(items, projectId); }
       let prefix = selectedProject?.label || '';
@@ -174,7 +206,7 @@ export default Component.extend({
       if ( readField(detail, 'id') !== scope.resourceId || readField(detail, 'removed') ||
         ['removed', 'purged'].includes(readField(detail, 'state')) ||
         !isPlatformScope(type) && readField(detail, 'accountId') !== projectId ||
-        readField(detail, 'name') !== readField(selected.resource, 'name') ||
+        !sameReadableNameFields(detail, selected.resource) ||
         readField(detail, 'stackId') !== readField(selected.resource, 'stackId') ||
         JSON.stringify(readField(detail, 'serviceIds') || []) !== JSON.stringify(readField(selected.resource, 'serviceIds') || []) ) { throw new Error('UnverifiedTarget'); }
       this.set('selectedTarget', selected);

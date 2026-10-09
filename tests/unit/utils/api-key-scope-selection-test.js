@@ -3,9 +3,17 @@ import EmberObject from '@ember/object';
 import Collection from 'ember-api-store/models/collection';
 import { module, test } from 'qunit';
 import { namedOptions, projectResources, stackParent, resourcesInStack, collectionLink, isPlatformScope,
-  hasStackParent, selectionMatches } from 'ui/utils/api-key-scope-selection';
+  hasStackParent, selectionMatches, sameReadableNameFields } from 'ui/utils/api-key-scope-selection';
 
 module('Unit | Utility | API key scope selection');
+
+test('fresh readable description is part of the same-name identity label', function(assert) {
+  let candidate = {name: 'Web', description: 'Blue'};
+  assert.ok(sameReadableNameFields({name: ' Web ', description: ' Blue '}, candidate));
+  assert.notOk(sameReadableNameFields({name: 'Web', description: 'Green'}, candidate));
+  assert.notOk(sameReadableNameFields({name: 'Renamed', description: 'Blue'}, candidate));
+  assert.ok(sameReadableNameFields({name: 'Web', description: null}, {name: 'Web'}));
+});
 
 test('names and readable context never use displayName or stable ID fallback', function(assert) {
   let rows = Collection.create({content: A([

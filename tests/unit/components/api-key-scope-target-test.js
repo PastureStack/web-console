@@ -11,12 +11,15 @@ function target(extra = {}) {
   let queries = [], published = [];
   let item = EmberObject.create({id: '1st4', type: 'stack', name: 'test', accountId: '1a9', actionLinks: {}, links: {self: '/self'}});
   let store = EmberObject.create({generation: 1, getById(type, id) { return id === 'stack' ? EmberObject.create({id}) : null; },
-    findAll() { return resolve([item]); }, find() { return resolve(item); }});
-  let userStore = EmberObject.create({generation: 1, getById() { return EmberObject.create({}); }, find() { return resolve(item); },
-    findAll() { return resolve([{id: '1a9', name: 'Visible environment'}]); },
+    find() { throw new Error('CurrentProjectStoreMustNotRecoverParent'); }});
+  let userStore = EmberObject.create({generation: 1, getById() { return EmberObject.create({}); },
+    find(type, id, options) {
+      if ( type !== 'project' || id !== null || options.forceReload !== true ) { throw new Error('FreshProjectCollectionRequired'); }
+      return resolve([{id: '1a9', name: 'Visible environment'}]);
+    },
     rawRequest(options) {
       queries.push(options.url);
-      return resolve({body: options.url === '/self' ? item : {data: options.url.endsWith('/schema') ?
+      return resolve({body: options.url === '/self' ? item : {data: options.url === 'schema' ? [] : options.url.endsWith('/schema') ?
         [{id: 'stack', collectionMethods: ['GET'], links: {collection: '/stacks'}}] : [item]}});
     }});
   let component = createOwned(Target, Object.assign({renderer: inertRenderer(), scope: {kind: 'stack', resourceId: '1st4'}, store, userStore,
@@ -30,7 +33,7 @@ function target(extra = {}) {
 test('fresh target metadata uses its own project schema without changing the shared store', async function(assert) {
   let {component, queries, published} = target();
   component.loadContext(); await drain();
-  assert.deepEqual(queries, ['projects/1a9/schema', '/stacks', '/self']);
+  assert.deepEqual(queries, ['schema', 'projects/1a9/schema', '/stacks', '/self']);
   assert.strictEqual(published.at(-1).resource.id, '1st4');
   assert.ok(published.at(-1).contextVerified);
   assert.ok(published.at(-1).selectionValid);
@@ -56,7 +59,7 @@ test('project plus schema generation and viewer changes clear and reload stale m
 test('afterRender coalesces the newest scope and a late previous context cannot publish', async function(assert) {
   let first = defer();
   let {component, userStore, published} = target();
-  userStore.findAll = () => first.promise;
+  userStore.find = () => first.promise;
   component.loadContext();
   component.set('scope', {kind: 'global'});
   component.didReceiveAttrs();
@@ -73,7 +76,7 @@ test('afterRender coalesces the newest scope and a late previous context cannot 
 test('destroy cancels queued evidence and late callbacks cannot reach the parent', async function(assert) {
   let pending = defer();
   let {component, userStore, published} = target();
-  userStore.findAll = () => pending.promise;
+  userStore.find = () => pending.promise;
   component.loadContext();
   component.willDestroyElement();
   destroyOwned(component);
@@ -84,7 +87,7 @@ test('destroy cancels queued evidence and late callbacks cannot reach the parent
 test('late collection results from a previous project cannot repopulate candidates', async function(assert) {
   let first = defer(); let calls = 0;
   let {component, userStore} = target();
-  userStore.findAll = () => ++calls === 1 ? first.promise : resolve([]);
+  userStore.find = () => ++calls === 1 ? first.promise : resolve([]);
   component.loadContext();
   component.set('projects.current.id', '1aOther');
   await drain();
@@ -107,7 +110,7 @@ test('an unselected resource type has a human prompt and disabled selector, not 
 test('changing an environment clears stable target and stack before any late completion', async function(assert) {
   let selected = [];
   let {component, userStore} = target({onSelect(event) { selected.push(event.target.value); }});
-  userStore.findAll = () => resolve([{id: '1a9', name: 'Visible environment'}, {id: '1aOther', name: 'Other environment'}]);
+  userStore.find = () => resolve([{id: '1a9', name: 'Visible environment'}, {id: '1aOther', name: 'Other environment'}]);
   component.loadContext(); await drain();
   component.send('selectProject', component.get('projectOptions')[1]);
   assert.strictEqual(component.get('scope.resourceId'), '');
@@ -124,7 +127,7 @@ test('service uses an actual stack name path; switching stack clears the service
   let {component, item, userStore, published} = target({scope: {kind: 'resource', resourceType: 'service', resourceId: 'svc'}});
   item.setProperties({id: 'svc', name: 'Web', type: 'service', stackId: 'st'});
   let stacks = [{id: 'st', name: 'Application', accountId: '1a9'}, {id: 'stOther', name: 'Batch', accountId: '1a9'}];
-  userStore.rawRequest = (options) => resolve({body: options.url.endsWith('/schema') ? {data: [
+  userStore.rawRequest = (options) => resolve({body: options.url === 'schema' ? {data: []} : options.url.endsWith('/schema') ? {data: [
     {id: 'service', collectionMethods: ['GET'], links: {collection: '/services'}},
     {id: 'stack', collectionMethods: ['GET'], links: {collection: '/stacks'}},
   ]} : options.url === '/services' ? {data: [item]} : options.url === '/stacks' ? {data: stacks} : item});
@@ -141,7 +144,7 @@ test('service uses an actual stack name path; switching stack clears the service
 
 test('platform and project scopes select names without inventing stack parents', async function(assert) {
   let {component, userStore, published} = target({scope: {kind: 'project', resourceId: '1a9'}});
-  userStore.findAll = () => resolve([{id: '1a9', type: 'project', name: 'Visible environment', links: {self: '/project'}}]);
+  userStore.find = () => resolve([{id: '1a9', type: 'project', name: 'Visible environment', links: {self: '/project'}}]);
   userStore.rawRequest = (options) => resolve({body: options.url === '/project' ?
     {id: '1a9', type: 'project', name: 'Visible environment', links: {self: '/project'}} : {data: []}});
   component.loadContext(); await drain();
@@ -165,7 +168,7 @@ test('container without a unique visible service parent uses explicit environmen
   item.setProperties({id: 'worker', name: 'Worker', type: 'instance', serviceIds: ['svcA', 'svcB']});
   let records = {container: [item], stack: [{id: 'stA', name: 'Web', accountId: '1a9'}, {id: 'stB', name: 'Batch', accountId: '1a9'}],
     service: [{id: 'svcA', name: 'Web service', stackId: 'stA', accountId: '1a9'}, {id: 'svcB', name: 'Batch service', stackId: 'stB', accountId: '1a9'}]};
-  userStore.rawRequest = (options) => resolve({body: options.url.endsWith('/schema') ? {data: Object.keys(records).map((id) =>
+  userStore.rawRequest = (options) => resolve({body: options.url === 'schema' ? {data: []} : options.url.endsWith('/schema') ? {data: Object.keys(records).map((id) =>
     ({id: id === 'container' ? 'instance' : id, collectionMethods: ['GET'], links: {collection: `/${id}`}}))} :
     options.url === '/self' ? item : {data: records[options.url.slice(1)]}});
   component.loadContext(); await drain();
@@ -182,7 +185,7 @@ test('non-stack environment resource follows complete advertised pages and keeps
   item.setProperties({id: 'vol', name: 'Data disk', type: 'volume'});
   userStore.rawRequest = (options) => {
     queries.push(options.url);
-    return resolve({body: options.url.endsWith('/schema') ? {data: [{id: 'volume', collectionMethods: ['GET'], links: {collection: '/volumes'}}]} :
+    return resolve({body: options.url === 'schema' ? {data: []} : options.url.endsWith('/schema') ? {data: [{id: 'volume', collectionMethods: ['GET'], links: {collection: '/volumes'}}]} :
       options.url === '/volumes' ? {data: [{id: 'other', name: 'Other private disk', accountId: 'another'}], pagination: {next: '/volumes-next'}} :
       options.url === '/volumes-next' ? {data: [item]} : item});
   };
@@ -199,7 +202,7 @@ test('a legal named service with no advertised parent collection offers explicit
   item.setProperties({id: 'svc', name: 'Web', type: 'service', stackId: 'unavailable-parent'});
   userStore.rawRequest = (options) => {
     queries.push(options.url);
-    return resolve({body: options.url.endsWith('/schema') ? {data: [{id: 'service', collectionMethods: ['GET'], links: {collection: '/services'}}]} :
+    return resolve({body: options.url === 'schema' ? {data: []} : options.url.endsWith('/schema') ? {data: [{id: 'service', collectionMethods: ['GET'], links: {collection: '/services'}}]} :
       options.url === '/services' ? {data: [item]} : item});
   };
   component.loadContext(); await drain();
@@ -216,7 +219,7 @@ test('unavailable selected names clear evidence; forged options never select', a
   component.loadContext(); await drain();
   component.send('select', {id: 'forged', label: 'Guessed'});
   assert.deepEqual(events, []);
-  userStore.findAll = () => resolve([]);
+  userStore.find = () => resolve([]);
   component.set('access.identity.id', 'viewer-lost'); await drain();
   assert.strictEqual(component.get('selectedTarget'), null);
   assert.deepEqual(component.get('candidates'), []);
@@ -225,14 +228,138 @@ test('unavailable selected names clear evidence; forged options never select', a
   destroyOwned(component);
 });
 
-test('mixed-case schema IDs are normalized and unavailable loads stay unknown', async function(assert) {
-  let seen = [];
-  let {component, store, published} = target({scope: {kind: 'resource', resourceType: 'networkPolicy', resourceId: '1np1'}});
-  store.getById = (type, id) => { seen.push(id); return null; };
-  component.get('userStore').getById = (type, id) => { seen.push(id); return null; };
+test('mixed-case advertised schema without GET remains unavailable without a guessed URL', async function(assert) {
+  let {component, userStore, queries, published} = target({scope: {kind: 'resource', resourceType: 'networkPolicy', resourceId: '1np1'}});
+  userStore.rawRequest = (options) => {
+    queries.push(options.url);
+    return resolve({body: {data: [{id: 'networkPolicy', collectionMethods: ['POST'], links: {collection: '/never-GET'}}]}});
+  };
   component.loadContext(); await drain();
-  assert.ok(seen.every((id) => id === 'networkpolicy'));
-  assert.ok(component.get('loadError'));
+  assert.notOk(queries.includes('/never-GET'));
+  assert.strictEqual(published.at(-1).selectionStatus, 'unavailable');
   assert.notOk(published.at(-1).contextVerified);
+  destroyOwned(component);
+});
+
+test('fresh project GET result never exposes old all-store members after viewer change', async function(assert) {
+  let calls = 0;
+  let {component, userStore, published} = target({scope: {kind: 'resource', resourceType: 'stack', resourceId: ''}});
+  userStore.findAll = userStore.all = () => { throw new Error('WholeStoreCacheForbidden'); };
+  userStore.find = (type, id, options) => {
+    assert.strictEqual(type, 'project'); assert.strictEqual(id, null);
+    assert.deepEqual(options, {forceReload: true, depaginate: true});
+    return resolve(++calls === 1 ? [{id: '1a9', name: 'Fresh environment'}] : []);
+  };
+  component.loadContext(); await drain();
+  assert.deepEqual(component.get('projectOptions').map((option) => option.label), ['Fresh environment']);
+  component.set('access.identity.id', 'after-withdrawal'); await drain();
+  assert.strictEqual(calls, 2);
+  assert.deepEqual(component.get('projectOptions'), []);
+  assert.notOk(published.at(-1).selectionValid);
+  destroyOwned(component);
+});
+
+test('saved non-current Stack Service and instance-alias Container recover advertised visible parents only', async function(assert) {
+  for ( let type of ['stack', 'service', 'container'] ) {
+    let id = type === 'stack' ? '1stOther' : type === 'service' ? '1sOther' : '1iOther';
+    let record = {id, type: type === 'container' ? 'instance' : type, name: 'Readable target', description: 'Blue',
+      accountId: '1aOther', links: {self: '/advertised-self'}};
+    if ( type === 'service' ) { record.stackId = '1stParent'; }
+    if ( type === 'container' ) { record.serviceIds = ['1sParent']; }
+    let stack = {id: '1stParent', name: 'Application', accountId: '1aOther'};
+    let service = {id: '1sParent', name: 'Web service', accountId: '1aOther', stackId: stack.id};
+    let schema = {id: record.type, collectionMethods: ['GET'], links: {collection: '/advertised-targets'}};
+    let {component, userStore, store, queries, published} = target({scope: {kind: 'resource', resourceType: type, resourceId: id}});
+    store.set('baseUrl', '/v2-beta/projects/1a9');
+    userStore.find = () => resolve([{id: '1a9', name: 'Current environment'}, {id: '1aOther', name: 'Other environment'}]);
+    userStore.rawRequest = (options) => {
+      queries.push(options.url);
+      let body;
+      if ( options.url === 'schema' ) { body = {data: type === 'stack' ? [] : [schema]}; }
+      else if ( options.url === 'projects/1a9/schema' ) { body = {data: []}; }
+      else if ( options.url === 'projects/1aOther/schema' ) { body = {data: [schema,
+        ...(type === 'stack' ? [] : [{id: 'stack', collectionMethods: ['GET'], links: {collection: '/advertised-parents'}}]),
+        ...(type === 'container' ? [{id: 'service', collectionMethods: ['GET'], links: {collection: '/advertised-services'}}] : [])]}; }
+      else if ( options.url === '/advertised-targets' ) { body = {data: [record]}; }
+      else if ( options.url === '/advertised-parents' ) { body = {data: [stack]}; }
+      else if ( options.url === '/advertised-services' ) { body = {data: [service]}; }
+      else if ( options.url === '/advertised-self' ) { body = record; }
+      else { throw new Error('UnadvertisedRead'); }
+      return resolve({body});
+    };
+    component.loadContext(); await drain();
+    assert.ok(published.at(-1).selectionValid, type);
+    assert.strictEqual(component.get('selectedProject.id'), '1aOther', type);
+    assert.strictEqual(component.get('scope.resourceId'), id, 'stable DTO is retained');
+    assert.ok(component.get('selectedTarget.label').includes('Other environment'));
+    assert.notOk(component.get('selectedTarget.label').includes(id));
+    if ( type !== 'stack' ) { assert.strictEqual(component.get('selectedStack.id'), stack.id); }
+    assert.strictEqual(component.get('projects.current.id'), '1a9');
+    assert.strictEqual(store.get('baseUrl'), '/v2-beta/projects/1a9');
+    assert.notOk(queries.some((url) => url.includes('/schemas/container')), 'container resolves advertised instance alias');
+    destroyOwned(component);
+  }
+});
+
+test('fresh detail description change invalidates the old same-name label', async function(assert) {
+  let {component, item, userStore, published} = target();
+  item.set('description', 'Blue');
+  let raw = userStore.rawRequest;
+  userStore.rawRequest = (options) => options.url === '/self' ? resolve({body: {
+    id: '1st4', type: 'stack', name: 'test', description: 'Green', accountId: '1a9', links: {self: '/self'},
+  }}) : raw(options);
+  component.loadContext(); await drain();
+  assert.strictEqual(component.get('selectedTarget'), null);
+  assert.strictEqual(component.get('scope.resourceId'), '1st4');
+  assert.strictEqual(published.at(-1).selectionStatus, 'unavailable');
+  assert.notOk(published.at(-1).selectionValid);
+  assert.notOk(published.at(-1).complete);
+  destroyOwned(component);
+});
+
+test('foreign saved reference is not restored from account collection or guessed current store', async function(assert) {
+  let {component, userStore, published} = target();
+  userStore.rawRequest = () => resolve({body: {data: [{id: 'stack', collectionMethods: ['GET'], links: {collection: '/foreign'}}]}});
+  let raw = userStore.rawRequest;
+  userStore.rawRequest = (options) => options.url === '/foreign' ? resolve({body: {data: [
+    {id: '1st4', name: 'Private environment target', accountId: 'foreign'},
+  ]}}) : raw(options);
+  component.loadContext(); await drain();
+  assert.strictEqual(component.get('selectedProject'), null);
+  assert.deepEqual(component.get('candidates'), []);
+  assert.strictEqual(published.at(-1).selectionStatus, 'unavailable');
+  assert.strictEqual(component.get('scope.resourceId'), '1st4');
+  destroyOwned(component);
+});
+
+test('recovered collection reference still requires the advertised self account to match', async function(assert) {
+  let {component, userStore, published} = target();
+  let raw = userStore.rawRequest;
+  userStore.rawRequest = (options) => options.url === '/self' ? resolve({body: {
+    id: '1st4', type: 'stack', name: 'test', accountId: 'foreign', links: {self: '/self'},
+  }}) : raw(options);
+  component.loadContext(); await drain();
+  assert.strictEqual(component.get('selectedTarget'), null);
+  assert.strictEqual(component.get('scope.resourceId'), '1st4');
+  assert.strictEqual(published.at(-1).selectionStatus, 'unavailable');
+  assert.notOk(published.at(-1).contextVerified);
+  destroyOwned(component);
+});
+
+test('late account parent recovery cannot restore a withdrawn environment', async function(assert) {
+  let pending = defer();
+  let {component, item, userStore, published} = target();
+  let raw = userStore.rawRequest;
+  userStore.rawRequest = (options) => options.url === 'schema' ? resolve({body: {data: [
+    {id: 'stack', collectionMethods: ['GET'], links: {collection: '/delayed-account-targets'}},
+  ]}}) : options.url === '/delayed-account-targets' ? pending.promise : raw(options);
+  component.loadContext(); await drain();
+  userStore.find = () => resolve([]);
+  component.set('access.identity.id', 'withdrawn'); await drain();
+  pending.resolve({body: {data: [item]}}); await drain();
+  assert.strictEqual(component.get('selectedProject'), null);
+  assert.strictEqual(component.get('selectedTarget'), null);
+  assert.deepEqual(component.get('candidates'), []);
+  assert.notOk(published.at(-1).selectionValid);
   destroyOwned(component);
 });
