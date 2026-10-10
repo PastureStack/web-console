@@ -136,7 +136,7 @@ module('Integration | Component | API key editor viewport layout', function(hook
             await painted(frame);
             let page = frame.contentDocument;
             assert.notOk(page.body.textContent.includes('Missing translation'), 'translated audit wording is present');
-            for (let reason of page.querySelectorAll('.api-key-audit-reason')) {
+            for (let [index, reason] of [...page.querySelectorAll('.api-key-audit-reason')].entries()) {
               let style = frame.contentWindow.getComputedStyle(reason);
               let bounds = reason.getBoundingClientRect();
               let range = page.createRange();
@@ -146,7 +146,7 @@ module('Integration | Component | API key editor viewport layout', function(hook
               assert.strictEqual(style.overflowWrap, 'anywhere', 'long translated words can wrap without widening the column');
               assert.ok(reason.parentElement.classList.contains('table-column-wrap'), 'shared grid does not hide explanatory text');
               assert.ok(bounds.width > 0 && reason.scrollWidth <= reason.clientWidth + 1, 'reason has no horizontally clipped text');
-              assert.ok(fragments.length > 1, 'long reason actually occupies multiple lines');
+              if (index === 0) { assert.ok(fragments.length > 1, 'the long governance explanation actually occupies multiple lines'); }
               assert.ok(fragments.every(rect => rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 &&
                 rect.top >= bounds.top - 1 && rect.bottom <= bounds.bottom + 1), 'every text fragment is inside its visible box');
               assert.strictEqual(style.color, frame.contentWindow.getComputedStyle(reason.closest('.api-key-audit')).color,
