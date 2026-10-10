@@ -48,3 +48,8 @@ revision 5's newer subscribe state and nested-resource adoption intact, validate
 the same store, generation, API base, generated ID, concrete type and owner, and
 does not require a canonical resource to retain secrets after create. Existing
 save hooks, non-opted-in consumers, errors, and request counts are unchanged.
+
+Compatibility revision 7 replaces the removed String.prototype.dasherize call
+in validation display labels with the equivalent Ember string module function.
+Capitalization, whitespace, field labels, validation messages and save behavior
+are unchanged; no unrelated runtime code or dependency is added.

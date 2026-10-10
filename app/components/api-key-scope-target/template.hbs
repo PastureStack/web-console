@@ -1,0 +1,35 @@
+{{#if this.needsProject}}
+  <div class="r-mb10" data-scope-selector="project">
+    <label id="{{this.elementId}}-project-label">{{t 'apiKeyAccess.selector.project'}}</label>
+    <PowerSelect @options={{this.projectOptions}} @selected={{this.selectedProject}} @onChange={{action 'selectProject'}}
+      @searchField="searchText" @searchEnabled={{true}} @renderInPlace={{true}} @disabled={{or this.disabled this.loading}}
+      @ariaLabelledBy="{{this.elementId}}-project-label" @placeholder={{t 'apiKeyAccess.selector.chooseProject'}}
+      @noMatchesMessage={{t 'apiKeyAccess.selector.noMatches'}} as |option|>
+      <span style="white-space: normal; overflow-wrap: anywhere;">{{option.label}}</span>
+    </PowerSelect>
+  </div>
+{{/if}}
+{{#if this.needsStack}}
+  <div class="r-mb10" data-scope-selector="stack">
+    <label id="{{this.elementId}}-stack-label">{{t 'apiKeyAccess.selector.stackContext'}}</label>
+    <PowerSelect @options={{this.stackOptions}} @selected={{this.selectedStack}} @onChange={{action 'selectStack'}}
+      @searchField="searchText" @searchEnabled={{true}} @renderInPlace={{true}} @disabled={{this.stackDisabled}}
+      @ariaLabelledBy="{{this.elementId}}-stack-label" @placeholder={{t 'apiKeyAccess.selector.chooseStack'}}
+      @noMatchesMessage={{t 'apiKeyAccess.selector.noMatches'}} as |option|>
+      <span style="white-space: normal; overflow-wrap: anywhere;">{{option.label}}</span>
+    </PowerSelect>
+  </div>
+{{/if}}
+<div data-scope-selector="resource">
+  <label id="{{this.elementId}}-resource-label">{{t 'apiKeyAccess.liveTargets'}}</label>
+  <PowerSelect @options={{this.candidates}} @selected={{this.selectedTarget}} @onChange={{action 'select'}}
+    @searchField="searchText" @searchEnabled={{true}} @renderInPlace={{true}} @disabled={{this.targetDisabled}}
+    @ariaLabelledBy="{{this.elementId}}-resource-label" @placeholder={{t 'apiKeyAccess.selector.chooseResource'}}
+    @noMatchesMessage={{t 'apiKeyAccess.selector.noMatches'}} as |option|>
+    <span style="white-space: normal; overflow-wrap: anywhere;">{{option.label}}</span>
+  </PowerSelect>
+</div>
+{{#unless (eq this.selectionStatus 'ready')}}
+  <p class="help-block" role="status">{{t (concat 'apiKeyAccess.selector.' this.selectionStatus)}}</p>
+{{/unless}}
+{{#if this.loadError}}<button type="button" class="btn btn-link" disabled={{or this.disabled this.loading}} {{action 'retry'}}>{{t 'apiKeyAccess.selector.retry'}}</button>{{/if}}

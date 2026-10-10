@@ -43,12 +43,13 @@
   <section class="header">
     <h1>{{t 'apiPage.header'}}</h1>
 
-    {{#if this.canCreateEnvironmentKey}}
+    {{#if (and this.canCreateEnvironmentKey (not this.policySupported))}}
       <button class="btn btn-sm btn-primary" {{action "newApikey" "environment"}}>{{t 'apiPage.actionButton'}}</button>
     {{/if}}
   </section>
 
   <section class="well">
+    {{#if this.policySupported}}<p>{{t 'apiKeyAccess.personalCreate'}}</p>{{/if}}
     <p>
       {{format-html-message 'apiPage.content'
         displayName=this.project.displayName
@@ -86,3 +87,10 @@
     </table>
   </section>
 {{/advanced-section}}
+
+{{#if this.policySupported}}
+  {{#if this.targetKey}}
+    {{api-key-audit keyId=this.targetKey}}
+    <section class="api-key-audit-close text-right"><button type="button" class="btn btn-default" {{action 'closeAudit'}}>{{t 'apiKeyAudit.close'}}</button></section>
+  {{/if}}
+{{/if}}

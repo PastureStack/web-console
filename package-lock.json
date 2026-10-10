@@ -1,12 +1,12 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.180",
+  "version": "1.6.181",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@pasturestack/web-console",
-      "version": "1.6.180",
+      "version": "1.6.181",
       "license": "Apache-2.0",
       "dependencies": {
         "sass": "1.103.1"
@@ -33,7 +33,7 @@
         "core-js": "file:vendor/core-js-compat/core-js-2.6.13-rc16.0.tgz",
         "d3": "7.9.0",
         "dagre-d3-es": "7.0.14",
-        "ember-api-store": "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.6.tgz",
+        "ember-api-store": "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.7.tgz",
         "ember-auto-import": "2.13.1",
         "ember-basic-dropdown": "9.0.0",
         "ember-cli": "7.2.0",
@@ -9063,8 +9063,8 @@
     },
     "node_modules/ember-api-store": {
       "version": "2.8.5",
-      "resolved": "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.6.tgz",
-      "integrity": "sha512-ojkclvGZq8iObzwSkOBtZxkt9IwZ0GJvmi8CMYFocBwol6YQh9Q4D6g4t6/o/3mNDYmDkULPgdXBVt81xm5BqA==",
+      "resolved": "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.7.tgz",
+      "integrity": "sha512-8Zy5XaAMRDoUBGSU0Ga04T/5ETJpkX+c7MuIVQ+3d6wH/l/2cxcJGzp6nen8JjBeqh6qM3Vui8/Au+x8BfXXlw==",
       "dev": true,
       "license": "Apache-2.0",
       "dependencies": {

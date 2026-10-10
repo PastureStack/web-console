@@ -1,8 +1,10 @@
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import moment from 'moment';
+import { defer, reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import AuditLogsController from 'ui/admin-tab/audit-logs/controller';
+import installBootstrapRuntime from 'ui/utils/bootstrap-runtime';
 import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
 
 function auditLogFor(records = [], actors = []) {
@@ -32,26 +34,261 @@ function controllerFor(properties = {}) {
       projects: A(),
       resourceTypes: A(),
     }),
+    access: EmberObject.create({captureGeneration() { return 'initial-auth'; }}),
+    userStore: EmberObject.create({headers: {}}),
     send() {},
   }, properties), 'controller');
 }
 
-module('Unit | Controller | admin tab | audit logs');
+module('Unit | Controller | admin tab | audit logs', {
+  beforeEach() {
+    this.previousBootstrap = window.bootstrap;
+    // Owned unit fixtures do not boot app.js. Install the same maintained
+    // runtime used by production, rather than mocking Dropdown behavior.
+    installBootstrapRuntime();
+  },
+  afterEach() {
+    window.bootstrap = this.previousBootstrap;
+  },
+});
 
-test('all-time JSON and XLSX exports use the same scope and authorization filters as the list', function(assert) {
+test('native export dropdown closes before its toggle is disabled across consecutive formats', async function(assert) {
+  let host = document.createElement('div');
+  host.className = 'dropdown';
+  let button = document.createElement('button');
+  button.type = 'button';
+  button.setAttribute('data-bs-toggle', 'dropdown');
+  button.setAttribute('data-testid', 'audit-log-export');
+  let menu = document.createElement('ul');
+  menu.className = 'dropdown-menu';
+  host.append(button, menu);
+  document.body.appendChild(host);
+  let dropdown = window.bootstrap.Dropdown.getOrCreateInstance(button);
+  let deferred;
+  let requests = 0;
+  let downloads = 0;
+  let controller = controllerFor({
+    fetchAuditExport() { requests++; return deferred.promise; },
+    saveAuditExport() { downloads++; },
+  });
+  let renderDisabled = () => { button.disabled = controller.get('isExporting'); };
+  controller.addObserver('isExporting', renderDisabled);
+  try {
+    for (let format of ['json', 'csv', 'xlsx']) {
+      dropdown.show();
+      assert.strictEqual(button.getAttribute('aria-expanded'), 'true', `${format} starts with the real menu open`);
+      deferred = defer();
+      let pending = controller.actions.exportLogs.call(controller, format);
+      assert.ok(button.disabled, 'the export lock is rendered immediately');
+      assert.strictEqual(button.getAttribute('aria-expanded'), 'false', 'the menu closes before Bootstrap sees a disabled toggle');
+      assert.notOk(menu.classList.contains('show'));
+      assert.strictEqual(controller.actions.exportLogs.call(controller, format), undefined, 'a duplicate cannot start another export');
+      deferred.resolve(new Blob(['safe test export']));
+      await pending;
+      assert.notOk(button.disabled);
+    }
+    assert.strictEqual(requests, 3);
+    assert.strictEqual(downloads, 3);
+  } finally {
+    controller.removeObserver('isExporting', renderDisabled);
+    destroyOwned(controller);
+    dropdown.dispose();
+    host.remove();
+  }
+});
+
+test('query recovery narrows time only after an explicit action and preserves all other filters', function(assert) {
+  let sent = [];
+  let controller = controllerFor({
+    timeScope: 'all',
+    send(action, options) { sent.push({action, options}); },
+  });
+  try {
+    controller.syncDraftFromQuery();
+    controller.setProperties({
+      'filters.accountId': '1e1',
+      'filters.authenticatedAsAccountId': '1a1',
+      'filters.eventType': 'update',
+      'filters.interactionChannel': 'public_api',
+      'model.queryError': {messageKey: 'auditLogsPage.queryErrors.tooLarge', canNarrow: true},
+    });
+    assert.strictEqual(controller.get('filters.createdFrom'), null, 'a failure never silently changes all-time intent');
+    controller.actions.queryRecentMinutes.call(controller);
+    assert.strictEqual(moment(controller.get('createdTo')).diff(moment(controller.get('createdFrom')), 'minutes'), 15);
+    assert.strictEqual(controller.get('timeScope'), null);
+    assert.strictEqual(controller.get('accountId'), '1e1');
+    assert.strictEqual(controller.get('authenticatedAsAccountId'), '1a1');
+    assert.strictEqual(controller.get('eventType'), 'update');
+    assert.strictEqual(controller.get('interactionChannel'), 'public_api');
+    assert.deepEqual(sent, [{action: 'filterLogs', options: {refreshIfUnchanged: false}}]);
+  } finally {
+    destroyOwned(controller);
+  }
+});
+
+test('a rejected, pending or duplicate query cannot start a misleading export', async function(assert) {
+  let requests = 0;
+  let downloads = 0;
+  let hides = 0;
+  let controller = controllerFor({
+    closeAuditExportDropdown() { hides++; },
+    fetchAuditExport() { requests++; return resolve(new Blob(['safe export'])); },
+    saveAuditExport() { downloads++; },
+  });
+  try {
+    controller.set('model.queryError', {messageKey: 'auditLogsPage.queryErrors.tooLarge'});
+    await controller.actions.exportLogs.call(controller, 'json');
+    controller.setProperties({'model.queryError': null, isFiltering: true});
+    await controller.actions.exportLogs.call(controller, 'json');
+    controller.setProperties({isFiltering: false, isExporting: true});
+    await controller.actions.exportLogs.call(controller, 'json');
+    controller.set('isExporting', false);
+    await controller.actions.exportLogs.call(controller, 'html');
+    assert.strictEqual(requests, 0, 'all guards stop the real transport entry point');
+    assert.strictEqual(downloads, 0, 'no blocked request delivers a file');
+    assert.strictEqual(hides, 0, 'blocked exports do not change dropdown state');
+    assert.notOk(controller.get('isExporting'));
+  } finally {
+    destroyOwned(controller);
+  }
+});
+
+test('export menu closure never creates an instance or changes another dropdown', function(assert) {
+  let host = document.createElement('div');
+  host.innerHTML = '<div class="dropdown"><button data-bs-toggle="dropdown" data-testid="audit-log-export"></button><ul class="dropdown-menu"></ul></div>' +
+    '<div class="dropdown"><button data-bs-toggle="dropdown"></button><ul class="dropdown-menu"></ul></div>';
+  document.body.appendChild(host);
+  let buttons = host.querySelectorAll('button');
+  let other = window.bootstrap.Dropdown.getOrCreateInstance(buttons[1]);
+  let controller = controllerFor();
+  try {
+    other.show();
+    controller.closeAuditExportDropdown();
+    assert.strictEqual(window.bootstrap.Dropdown.getInstance(buttons[0]), null, 'no instance is created for the export toggle');
+    assert.strictEqual(buttons[1].getAttribute('aria-expanded'), 'true', 'other dropdown ownership is unchanged');
+  } finally {
+    other.dispose();
+    destroyOwned(controller);
+    host.remove();
+  }
+});
+
+test('missing names never misrepresent a retained actor or environment filter as all', function(assert) {
+  let controller = controllerFor();
+  try {
+    controller.setProperties({'filters.accountId': '1e1', 'filters.authenticatedAsAccountId': '1a1',
+      'model.auditLog': null, 'model.queryError': {messageKey: 'auditLogsPage.queryErrors.tooLarge'}});
+    assert.strictEqual(controller.get('userSelectionSummary'), 'auditLogsPage.queryErrors.selectedUserUnavailable');
+    assert.strictEqual(controller.get('environmentSelectionSummary'), 'auditLogsPage.queryErrors.selectedEnvironmentUnavailable');
+    assert.strictEqual(controller.get('filters.authenticatedAsAccountId'), '1a1');
+    assert.strictEqual(controller.get('filters.accountId'), '1e1');
+  } finally { destroyOwned(controller); }
+});
+
+test('checked export errors are visible without delivering an error body as a file', async function(assert) {
+  let controller = controllerFor({saveAuditExport() { assert.notOk(true, 'failed exports must not deliver files'); }});
+  try {
+    let model = controller.get('model');
+    let rows = model.get('auditLog');
+    for (let [status, code, message] of [[422, 'export_too_large', 'exportTooLarge'],
+      [403, 'denied', 'exportForbidden'], [502, 'upstream_failed', 'exportUnavailable']]) {
+      controller.fetchAuditExport = () => reject({status, body: {code}});
+      await controller.actions.exportLogs.call(controller, 'json');
+      assert.strictEqual(controller.get('exportError.messageKey'), `auditLogsPage.queryErrors.${message}`);
+      assert.notOk(controller.get('isExporting'), 'a failed export releases its own lock');
+      assert.notOk(controller.get('model.queryError'), 'an export failure is not a fake list-query failure');
+      assert.strictEqual(controller.get('model'), model, 'an export failure does not replace the successful model');
+      assert.strictEqual(controller.get('model.auditLog'), rows, 'successful list rows are retained');
+    }
+    controller.fetchAuditExport = () => reject(new TypeError('synthetic network failure'));
+    await controller.actions.exportLogs.call(controller, 'json');
+    assert.strictEqual(controller.get('exportError.messageKey'), 'auditLogsPage.queryErrors.exportUnavailable');
+    assert.strictEqual(controller.get('model.auditLog'), rows, 'network failure also retains successful rows');
+    assert.notOk(controller.get('model.queryError'));
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('exports have one owner, are awaitable and cannot leak a file to a newer session', async function(assert) {
+  let deferred = defer();
+  let requests = 0;
+  let downloads = 0;
+  let auth = 'initial-auth';
+  let controller = controllerFor({
+    access: EmberObject.create({captureGeneration() { return auth; }}),
+    fetchAuditExport() { requests++; return deferred.promise; },
+    saveAuditExport() { downloads++; },
+  });
+  try {
+    let pending = controller.actions.exportLogs.call(controller, 'json');
+    assert.ok(pending && typeof pending.then === 'function', 'the complete export is awaitable');
+    assert.strictEqual(controller.actions.exportLogs.call(controller, 'json'), undefined, 'duplicate click does not start another request');
+    auth = 'new-auth';
+    deferred.resolve(new Blob(['old-session export']));
+    await pending;
+    assert.strictEqual(requests, 1);
+    assert.strictEqual(downloads, 0, 'old authorization result cannot deliver to a new session');
+    assert.strictEqual(controller.get('exportError'), null);
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('export 401 delegates passive recovery with captured generation and never server logout', async function(assert) {
+  let actions = [];
+  let controller = controllerFor({
+    fetchAuditExport() { return reject({status: 401}); },
+    send(...args) { actions.push(args); },
+  });
+  try {
+    await controller.actions.exportLogs.call(controller, 'csv');
+    assert.deepEqual(actions, [['sessionInvalid', null, true, null, 'initial-auth', 401]]);
+    assert.strictEqual(controller.get('exportError'), null);
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('file delivery exceptions use the same diagnostic cleanup as network failures', async function(assert) {
+  let controller = controllerFor({
+    fetchAuditExport() { return resolve(new Blob(['safe export'])); },
+    saveAuditExport() { throw new Error('delivery failed'); },
+  });
+  try {
+    await controller.actions.exportLogs.call(controller, 'json');
+    assert.strictEqual(controller.get('exportError.messageKey'), 'auditLogsPage.queryErrors.exportUnavailable');
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('export parser checks HTTP and file type before returning binary data', async function(assert) {
+  let controller = controllerFor();
+  try {
+    for (let type of ['application/json', 'text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) {
+      let blob = new Blob(['safe fixture'], {type});
+      let response = {status: 200, headers: new Headers({'Content-Type': type + '; charset=utf-8'}), blob() { return resolve(blob); }};
+      assert.strictEqual(await controller.readAuditExportResponse(response, type), blob);
+    }
+    await assert.rejects(controller.readAuditExportResponse({status: 422,
+      headers: new Headers({'Content-Type': 'application/json'}), json() { return resolve({code: 'export_too_large'}); }}, 'text/csv'),
+    (error) => error.status === 422 && error.body.code === 'export_too_large');
+    await assert.rejects(controller.readAuditExportResponse({status: 200,
+      headers: new Headers({'Content-Type': 'text/html'})}, 'text/csv'), (error) => error.status === 502, 'unexpected HTML is never downloaded');
+  } finally { destroyOwned(controller); }
+});
+
+test('all-time JSON and XLSX exports use the same scope and authorization filters as the list', async function(assert) {
+  let captured;
+  let downloads = 0;
   let controller = controllerFor({
     timeScope: 'all', accountId: '1e1', authenticatedAsAccountId: '1a1',
     createdFrom: null, createdTo: null, eventType: 'resource.', eventTypeOperator: 'startsWith',
+    fetchAuditExport(url) { captured = url; return resolve(new Blob(['safe export'])); },
+    saveAuditExport() { downloads++; },
   });
 
-  ['json', 'xlsx'].forEach((format) => {
-    // download() reuses this element: capture the URL without initiating a network request.
-    let target = document.createElement('div');
-    target.id = `audit-log-export-${format}`;
-    document.body.appendChild(target);
+  for (let format of ['json', 'xlsx']) {
     try {
-      controller.actions.exportLogs.call(controller, format);
-      let query = new URL(target.src, window.location.origin);
+      await controller.actions.exportLogs.call(controller, format);
+      let query = new URL(captured, window.location.origin);
       assert.strictEqual(query.pathname, '/v2-beta/pasturestack/audit-logs/export');
       assert.strictEqual(query.searchParams.get('timeScope'), 'all', `${format} preserves all-time intent`);
       assert.strictEqual(query.searchParams.get('format'), format);
@@ -62,19 +299,20 @@ test('all-time JSON and XLSX exports use the same scope and authorization filter
       assert.notOk(query.searchParams.has('created_lte'), 'no artificial end date');
 
       controller.setProperties({createdFrom: '2026-09-01T00:00:00.000Z', createdTo: '2026-10-01T00:00:00.000Z'});
-      controller.actions.exportLogs.call(controller, format);
-      query = new URL(target.src, window.location.origin);
+      await controller.actions.exportLogs.call(controller, format);
+      query = new URL(captured, window.location.origin);
       assert.strictEqual(query.searchParams.get('created_gte'), controller.get('createdFrom'));
       assert.strictEqual(query.searchParams.get('created_lte'), controller.get('createdTo'));
       controller.setProperties({timeScope: null, createdFrom: null, createdTo: null});
-      controller.actions.exportLogs.call(controller, format);
-      query = new URL(target.src, window.location.origin);
+      await controller.actions.exportLogs.call(controller, format);
+      query = new URL(captured, window.location.origin);
       assert.notOk(query.searchParams.has('timeScope'), 'the normal default is not promoted to all time');
       controller.set('timeScope', 'all');
     } finally {
-      target.remove();
+      assert.notOk(controller.get('isExporting'), 'completion releases the export lock');
     }
-  });
+  }
+  assert.strictEqual(downloads, 6, 'each checked success delivers exactly one file');
 
   destroyOwned(controller);
 });

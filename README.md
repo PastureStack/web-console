@@ -10,6 +10,60 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
+The 1.6.181 source candidate adds capability-gated API Key access settings,
+expiration, reviewed changes with platform MFA, and per-key audit
+filtering and details for the matching Server v1.6.519 contract. Every grant
+remains bounded by the owner's live permissions; operation choices are not
+claims of authority. Legacy Keys are not automatically narrowed during an upgrade;
+the existing workflow remains available when the server has no policy capability.
+New secrets are shown once at creation, not on later reopen/list/detail views.
+Resource scopes use searchable authorized environment, stack, and resource
+names, including their context in the review. Operators do not enter resource
+IDs; stable references remain an internal API detail. Unavailable or ambiguous
+names block submission rather than guessing a target.
+Environment choices use the same fresh, role-aware project query as navigation:
+administrators can select readable environments without direct membership;
+ordinary users still see only the environments returned for their account.
+Choosing an environment, stack, or resource closes its menu before loading
+dependent choices or verifying the selected resource.
+Choose allow-by-default with deny exceptions (blacklist), or deny-by-default
+with allow exceptions (whitelist). Both support direct exception editing;
+switching the default preserves existing exceptions. Without exceptions,
+the original full-access or closed behavior is retained. The resource-by-operation
+matrix previews the draft and reviewed policy, including deny precedence,
+partial scopes, unresolved relationships and expiry. It does not grant or
+predict permissions beyond the owner's live access.
+Reloading a newer policy revision revalidates selected names and capabilities;
+pending evidence from an older reload or owner is not reused in the matrix.
+The key editor stays within narrow viewports while the matrix scrolls internally
+with its operation headings and resource rows intact;
+the existing desktop modal sizing is retained.
+Per-key audit opens from the row's existing action menu, without adding an extra
+button outside the actions column; audit results still follow live viewer access.
+The close control is below the audit block, after its filters, results and details.
+Audit reasons wrap within resizable columns so explanatory text stays readable.
+Review and audit operations use translated labels. Loading or denied audit requests
+are not displayed as an empty result; unknown outcomes do not imply success.
+API Key status, help and error wording uses readable theme text in light and dark
+layouts; state colors remain decorative accents rather than the only indication.
+Keyboard-highlighted scope names and unselected hints use the same readable theme
+foreground.
+Initial form autofocus does not replace a control already chosen by keyboard
+navigation or by a child selector. The API Key modal owns its initial focus;
+its shared name form does not schedule a second focus operation.
+Narrow rule forms use their available width; multi-line scope names stay inside
+a viewport-bounded dropdown scroll region.
+Oversized audit queries keep their filters visible and offer an explicit narrower
+time range. Failed queries stop automatic polling; exports check the response
+before downloading and show translated errors. Export menus close before the
+pending-download lock so consecutive JSON, CSV and Excel exports remain usable.
+Pagination and export responses
+from an older query or authenticated session cannot replace current results.
+Policy, expiry and audit errors use the existing console error handling; an HTTP
+response is not a declaration of background or stream completion. See the matching
+Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).
+Candidate browser acceptance and publication are separate steps.
+
 [Web Console 1.6.180](https://github.com/PastureStack/web-console/releases/tag/1.6.180)
 is published, fixing all-time audit listing, polling and JSON/XLSX export
 queries. This contract requires the matching Server v1.6.518 broker.

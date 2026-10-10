@@ -647,6 +647,7 @@ $k8sHeader: theme.$k8sHeader;
 @include meta.load-css("app/styles/components/resource-actions", $with: ("text-color": $text-color));
 @include meta.load-css("app/styles/components/login", $with: ("primary": $primary));
 @include meta.load-css("app/styles/components/mfa");
+@include meta.load-css("app/styles/components/api-key-policy-matrix", $with: ("text-color": $text-color, "well-bg": $well-bg, "table-border-color": $table-border-color));
 @include meta.load-css("app/styles/components/progress-bar", $with: ("lightestGray": $lightestGray));
 @include meta.load-css("app/styles/components/pod", $with: ("accent-one": $accent-one, "border-radius-base": $border-radius-base, "brand-primary-dark": $brand-primary-dark, "btn-default-bg": $btn-default-bg, "btn-default-color": $btn-default-color, "lightGray": $lightGray, "link-color": $link-color, "link-hover-color": $link-hover-color, "normal-weight": $normal-weight, "table-bg": $table-bg, "table-bg-accent": $table-bg-accent, "table-border-color": $table-border-color, "text-color": $text-color));
 @include meta.load-css("app/styles/components/github-avatar", $with: ("lightGray": $lightGray));

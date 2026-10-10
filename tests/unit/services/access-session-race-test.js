@@ -4,6 +4,7 @@ import { Promise, reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import AccessService from 'ui/services/access';
 import AuthSessionService from 'ui/services/auth-session';
+import AuditLogsRoute from 'ui/admin-tab/audit-logs/route';
 import C from 'ui/utils/constants';
 
 function generation(index) {
@@ -88,6 +89,58 @@ module('Unit | Service | access session race', function(hooks) {
 
   hooks.afterEach(function() {
     window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+  });
+
+  test('a late audit pagination 401 recovers its captured session without deleting a newer login', async function(assert) {
+    let browser = {cookie: 'audit-old-cookie'};
+    let lockManager = serialLockManager();
+    let authA = AuthSessionService.create({lockManager});
+    let authB = AuthSessionService.create({lockManager});
+    let oldRecord = authA.commit(generation(901), '1a1', browser.cookie);
+    authB.adopt(oldRecord, browser.cookie);
+    let response = deferred();
+    let deletes = 0;
+    let clears = 0;
+    let recovery;
+    let access = createAccess(browser, authA, (options) => {
+      if (options.method === 'DELETE') {
+        deletes++;
+      }
+      return resolve({body: {data: [{accountId: '1a2', user: 'new-account'}]}});
+    });
+    let clear = access._clearOwnedLocalState.bind(access);
+    access._clearOwnedLocalState = (...args) => { clears++; return clear(...args); };
+    let model = EmberObject.create({
+      auditLog: EmberObject.create({followPagination() { return response.promise; }}),
+      queryError: null,
+    });
+    let route = AuditLogsRoute.create({
+      access,
+      controller: EmberObject.create({model}),
+      send(name, resource, timedOut, returnTo, capturedGeneration, status) {
+        assert.strictEqual(name, 'sessionInvalid', 'the ordinary passive auth boundary is used');
+        assert.strictEqual(capturedGeneration, oldRecord.generation, 'the request owns its starting generation');
+        recovery = access.handlePassiveFailure(capturedGeneration, status);
+      },
+    });
+    try {
+      let pending = route.actions.next.call(route);
+      browser.cookie = 'audit-new-cookie';
+      let newRecord = authB.commit(generation(902), '1a2', browser.cookie);
+      response.reject({status: 401});
+      await pending;
+      let result = await recovery;
+      assert.strictEqual(result.status, 'adopted', 'the old tab adopts the newer valid login');
+      assert.strictEqual(authA.capture(), newRecord.generation);
+      assert.strictEqual(browser.cookie, 'audit-new-cookie', 'the new cookie survives');
+      assert.strictEqual(authA.readShared().generation, newRecord.generation);
+      assert.strictEqual(deletes, 0, 'no passive DELETE is sent');
+      assert.strictEqual(clears, 0, 'no new local or shared state is cleared');
+      assert.notOk(route.controller.get('isFiltering'), 'the failed request releases its spinner');
+      assert.strictEqual(route.get('timer'), null, 'the failed query is not retried automatically');
+    } finally {
+      run(() => { route.destroy(); access.destroy(); authA.destroy(); authB.destroy(); });
+    }
   });
 
   test('a 200 login-options object is rejected instead of creating a session', async function(assert) {

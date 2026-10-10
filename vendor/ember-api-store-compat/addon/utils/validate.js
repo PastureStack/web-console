@@ -1,5 +1,6 @@
 import { get } from '@ember/object';
 import { isArray } from '@ember/array';
+import { dasherize } from '@ember/string';
 
 export function ucFirst(str) {
   str = str||'';
@@ -7,7 +8,7 @@ export function ucFirst(str) {
 }
 
 export function camelToTitle(str) {
-  return (str||'').dasherize().split('-').map((str) => { return ucFirst(str); }).join(' ');
+  return dasherize(str||'').split('-').map((str) => { return ucFirst(str); }).join(' ');
 }
 
 export function displayKeyFor(type, key, intl) {

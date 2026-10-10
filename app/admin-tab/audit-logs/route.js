@@ -1,12 +1,15 @@
 import { cancel, later } from '@ember/runloop';
 import EmberObject from '@ember/object';
 import Route from '@ember/routing/route';
+import { service } from '@ember/service';
 import { hash } from 'rsvp';
+import auditQueryError, { isAuthenticationFailure } from 'ui/utils/audit-query-error';
 
 const INTERVALCOUNT = 15000;
 const TEXT_OPERATORS = ['exact', 'contains', 'startsWith', 'notEqual', 'notContains'];
 
 export default Route.extend({
+  access: service(),
   queryParams: {
     sortBy: {
       refreshModel: true
@@ -79,16 +82,31 @@ export default Route.extend({
     next() {
       this.cancelLogUpdate();
       this.set('userHasPaged', true);
+      let model = this.controller.get('model');
+      let generation = this.get('pollGeneration');
+      let authGeneration = this.get('access').captureGeneration();
 
-      this.controller.model.auditLog.followPagination('next').then((response) => {
-        this.controller.set('model.auditLog', response);
-      });
+      if (!model.get('auditLog') || model.get('queryError')) {
+        return;
+      }
+      this.controller.set('isFiltering', true);
+      return model.get('auditLog').followPagination('next').then((response) => {
+        if (this.isCurrentQuery(generation, model) && this.get('access').captureGeneration() === authGeneration) {
+          this.controller.setProperties({'model.auditLog': response, isFiltering: false});
+        }
+      }, (error) => this.applyQueryFailure(error, generation, model, authGeneration));
     },
 
     first() {
+      this.cancelLogUpdate();
       this.set('userHasPaged', false);
-      this.refresh();
-      this.scheduleLogUpdate();
+      return this.refresh();
+    },
+
+    retryAuditQuery() {
+      this.cancelLogUpdate();
+      this.set('userHasPaged', false);
+      return this.refresh();
     },
 
     loading() {
@@ -118,7 +136,7 @@ export default Route.extend({
     let resourceTypes = userStore.all('schema').filterBy('links.collection').map((schema) => schema.get('_id')).sort();
 
     return hash({
-      auditLog: userStore.find('auditLog', null, this.parseFilters(params)),
+      query: this.loadAuditQuery(params),
       projects: userStore.find('project', null, {
         url: 'projects',
         filter: {all: 'true'},
@@ -127,7 +145,8 @@ export default Route.extend({
       }),
     }).then((result) => {
       return EmberObject.create({
-        auditLog: result.auditLog,
+        auditLog: result.query.auditLog,
+        queryError: result.query.queryError,
         projects: result.projects,
         resourceTypes,
       });
@@ -140,21 +159,66 @@ export default Route.extend({
     this.scheduleLogUpdate();
   },
 
+  loadAuditQuery(params) {
+    return this.get('userStore').find('auditLog', null, this.parseFilters(params)).then(
+      (auditLog) => ({auditLog, queryError: null}),
+      (error) => {
+        // Preserve passive authentication recovery. A rejected query is not
+        // an empty successful collection, and must not hide the filter form.
+        if (isAuthenticationFailure(error)) {
+          throw error;
+        }
+        return {auditLog: null, queryError: auditQueryError(error)};
+      }
+    );
+  },
+
+  isCurrentQuery(generation, model) {
+    return !this.isDestroying && !this.isDestroyed && this.controller &&
+      generation === this.get('pollGeneration') && this.controller.get('model') === model;
+  },
+
+  applyQueryFailure(error, generation, model, authGeneration) {
+    if (!this.isCurrentQuery(generation, model) || this.get('access').captureGeneration() !== authGeneration) {
+      return;
+    }
+    this.cancelLogUpdate();
+    this.controller.set('isFiltering', false);
+    if (isAuthenticationFailure(error)) {
+      this.send('sessionInvalid', null, true, null, authGeneration, 401);
+      return;
+    }
+    // Never leave stale rows or a misleading zero-count summary visible as
+    // the result of a failed query. Keep the query parameters for correction.
+    this.controller.setProperties({
+      'model.auditLog': null,
+      'model.queryError': auditQueryError(error),
+    });
+  },
+
   scheduleLogUpdate() {
     cancel(this.get('timer'));
+    this.set('timer', null);
+    let model = this.controller && this.controller.get('model');
+
+    if (!model || model.get('queryError') || !model.get('auditLog') || this.get('userHasPaged')) {
+      return;
+    }
 
     let generation = this.incrementProperty('pollGeneration');
+    let authGeneration = this.get('access').captureGeneration();
     let timer = later(() => {
       var params = this.paramsFor('admin-tab.audit-logs');
 
       this.get('userStore').find('auditLog', null, this.parseFilters(params)).then((response) => {
         // Ignore a response from a poll that was cancelled by a new query,
         // sorting operation, pagination action, or route transition.
-        if (generation === this.get('pollGeneration') && this.get('timer') === timer && !this.get('userHasPaged')) {
+        if (this.isCurrentQuery(generation, model) && this.get('access').captureGeneration() === authGeneration &&
+            this.get('timer') === timer && !this.get('userHasPaged')) {
           this.controller.set('model.auditLog', response);
           this.scheduleLogUpdate();
         }
-      }, (/* error */) => {});
+      }, (error) => this.applyQueryFailure(error, generation, model, authGeneration));
     }, INTERVALCOUNT);
 
     this.set('timer', timer);
