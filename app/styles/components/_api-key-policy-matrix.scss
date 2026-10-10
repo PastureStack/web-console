@@ -55,6 +55,7 @@ $table-border-color: #ddd !default;
     caption {
       display: table-caption;
       width: auto;
+      color: inherit;
     }
 
     thead {

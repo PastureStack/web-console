@@ -144,6 +144,8 @@ module('Integration | Component | API key editor viewport layout', function(hook
             }
             assert.ok(table.querySelector('caption').getBoundingClientRect().width >= table.getBoundingClientRect().width - 2,
               `${context}: caption does not collapse into a vertical character column`);
+            assert.strictEqual(frame.contentWindow.getComputedStyle(table.querySelector('caption')).color,
+              frame.contentWindow.getComputedStyle(table).color, `${context}: caption uses readable theme text`);
             for (let selector of ['thead tr', 'tbody tr']) {
               let cells = [...table.querySelector(selector).children];
               assert.strictEqual(cells.length, 9, `${context}: target and eight operation columns remain present`);
