@@ -1,4 +1,5 @@
 import { alias } from '@ember/object/computed';
+import { observer } from '@ember/object';
 import { service } from '@ember/service';
 import Controller, { inject as controller } from '@ember/controller';
 import C from 'ui/utils/constants';
@@ -6,6 +7,8 @@ import Util from 'ui/utils/util';
 import Sortable from 'ui/mixins/sortable';
 
 export default Controller.extend(Sortable, {
+  queryParams: ['targetKey'],
+  targetKey: null,
   access: service(),
   'tab-session': service(),
 
@@ -26,6 +29,16 @@ export default Controller.extend(Sortable, {
   endpointService: service('endpoint'),
   modalService: service('modal'),
 
+  policySupported: function() {
+    let store = this.get('userStore');
+    let schema = typeof store.getById === 'function' && store.getById('schema', 'apikey');
+    return !!(schema && schema.get('resourceFields.apiKeyPolicy'));
+  }.property('model.account.[]'),
+
+  auditViewerChanged: observer('access.identity.id', 'project.id', function() {
+    this.set('targetKey', null);
+  }),
+
   canCreateAccountKey: function() {
     return Boolean(this.get('userStore').canCreate('apikey'));
   }.property('model.account'),
@@ -38,8 +51,15 @@ export default Controller.extend(Sortable, {
     var me = this.get(`session.${C.SESSION.ACCOUNT_ID}`);
     let sort = this.get('sorts')[this.get('sortBy')];
 
-    let out = this.get('model.account').filter((row) => {
-      return row.get('accountId') === me;
+    let seen = new Set();
+    // Store.all returns a live Ember ArrayProxy, not an ES iterable. Map both
+    // collections into plain arrays without losing their live dependencies.
+    let out = this.get('model.account').map((row) => row)
+      .concat((this.get('model.accountRestricted') || []).map((row) => row)).filter((row) => {
+      let id = row.get('id');
+      if ( seen.has(id) || row.get('accountId') !== me ) { return false; }
+      seen.add(id);
+      return true;
     }).sortBy(...sort);
 
     if ( this.get('descending') ) {
@@ -47,7 +67,8 @@ export default Controller.extend(Sortable, {
     }
 
     return out;
-  }.property('model.account.@each.{accountId,name,createdTs}','sortBy','descending'),
+  }.property('model.account.@each.{accountId,name,createdTs}', 'model.accountRestricted.@each.{accountId,name,createdTs}',
+    `session.${C.SESSION.ACCOUNT_ID}`, 'sortBy','descending'),
 
   environmentArranged: function() {
     var project = this.get('project.id');
@@ -67,7 +88,7 @@ export default Controller.extend(Sortable, {
   actions: {
     newApikey: function(kind) {
       var cred;
-      if ( kind === 'account' )
+      if ( kind === 'account' || (kind === 'environment' && this.get('policySupported')) )
       {
         if ( !this.get('canCreateAccountKey') ) {
           return;
@@ -90,6 +111,7 @@ export default Controller.extend(Sortable, {
 
       this.get('modalService').toggleModal('edit-apikey', cred);
     },
+    closeAudit() { this.set('targetKey', null); },
   },
 
   endpoint: function() {

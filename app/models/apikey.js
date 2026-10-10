@@ -9,6 +9,7 @@ var ApiKey = Resource.extend(PolledResource,{
   publicValue: null,
   secretValue: null,
   modalService: service('modal'),
+  userStore: service('user-store'),
 
   actions: {
     deactivate: function() {
@@ -22,7 +23,20 @@ var ApiKey = Resource.extend(PolledResource,{
     edit: function() {
       this.get('modalService').toggleModal('edit-apikey', this);
     },
+
+    audit: function() {
+      if ( !this.get('auditSupported') ) { return; }
+      return this.get('router').transitionTo('authenticated.project.api.keys', {
+        queryParams: {targetKey: this.get('id')},
+      });
+    },
   },
+
+  auditSupported: function() {
+    let store = this.get('userStore');
+    let schema = store && typeof store.getById === 'function' && store.getById('schema', 'apikey');
+    return !!(this.get('id') && this.get('links.self') && schema && schema.get('resourceFields.apiKeyPolicy'));
+  }.property('id', 'links.self', 'userStore.generation'),
 
   isForAccount: function() {
     return this.get('accountId') === this.get(`session.${C.SESSION.ACCOUNT_ID}`);
@@ -44,8 +58,9 @@ var ApiKey = Resource.extend(PolledResource,{
       { label: 'action.restore',       icon: '',                 action: 'restore',      enabled: !!a.restore },
       { divider: true },
       { label: 'action.edit',          icon: 'icon icon-edit',   action: 'edit',         enabled: !!a.update },
+      { label: 'apiKeyAudit.title',    icon: 'icon icon-history', action: 'audit',       enabled: this.get('auditSupported') },
     ];
-  }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}'),
+  }.property('actionLinks.{update,activate,deactivate,restore,remove,purge}', 'auditSupported'),
 });
 
 ApiKey.reopenClass({

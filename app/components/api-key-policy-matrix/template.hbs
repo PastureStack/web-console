@@ -1,0 +1,32 @@
+<h3>{{t (if this.reviewed 'apiKeyAccess.matrix.reviewed' 'apiKeyAccess.matrix.draft')}}</h3>
+<p class="help-block">{{t 'apiKeyAccess.matrix.help'}}</p>
+<p>{{t 'apiKeyAccess.expiry'}}: {{if this.expiresAt this.expiresAt (t 'apiKeyAccess.expiryChoices.none')}}</p>
+<div class="api-key-policy-matrix-scroll" tabindex="0" role="region" aria-label={{t 'apiKeyAccess.matrix.title'}}>
+  <table class="table table-striped" data-policy-matrix={{if this.reviewed 'reviewed' 'draft'}}>
+    <caption>{{t 'apiKeyAccess.matrix.caption'}}</caption>
+    <thead>
+      <tr>
+        <th scope="col">{{t 'apiKeyAccess.matrix.target'}}</th>
+        {{#each this.matrix.operations as |operation|}}
+          <th scope="col">{{t (concat 'apiKeyAccess.operations.' operation)}}</th>
+        {{/each}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#each this.matrix.rows key="key" as |row|}}
+        <tr data-matrix-row={{row.kind}}>
+          <th scope="row">{{row.label}}</th>
+          {{#each row.cells as |cell|}}
+            <td data-matrix-operation={{cell.operation}} data-matrix-state={{cell.state}} data-matrix-basis={{cell.basis}}>
+              <span class="{{if (eq cell.state 'deny') 'text-danger' (if (eq cell.state 'allow') 'text-success' 'text-muted')}}">
+                {{t (concat 'apiKeyAccess.matrix.states.' cell.state)}}
+              </span>
+              <small>{{t (concat 'apiKeyAccess.matrix.basis.' cell.basis)}}</small>
+            </td>
+          {{/each}}
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+<p class="help-block">{{t 'apiKeyAccess.matrix.limits'}}</p>

@@ -2052,6 +2052,243 @@ editApiKey:
   noteOptional: Name and/or description are optional to help you remember what it's used for.  You can just create a key by clicking Create.
   #' fixes syntax highlighting so i dont go crazy
 
+apiKeyAccess:
+  legacy: This is an existing key. Its original account or environment principal is retained; no creator is guessed or reassigned. Full access adds no new restriction.
+  personalCreate: Existing environment keys remain here. Create new keys from the personal key section above, then select the environments and resources they need.
+  ceiling: The key is limited by your live permissions. Full access adds no further restriction. Changes to your role or resource access also affect this key.
+  access: Access settings
+  defaults:
+    allow: Allow by default (blacklist)
+    deny: Deny by default (whitelist)
+  blacklistHelp: Allow within your permissions by default. Add deny exceptions for selected resources and operations. Without exceptions, full access is unchanged.
+  whitelistHelp: Deny by default. Add allow exceptions for selected resources and operations. Without exceptions, every operation is denied.
+  modes:
+    full: Full access
+    closed: All closed
+    custom: Custom
+  effects:
+    allow: Allow (within your permissions)
+    allowShort: Allow
+    deny: Deny
+  scopes:
+    global: Global
+    project: Environment
+    stack: Stack
+    resource: Resource
+  operations:
+    read: Read
+    create: Create
+    update: Update
+    upgrade: Upgrade
+    delete: Delete
+    exec: Execute
+    logs: Logs
+    export: Sensitive export
+  matrix:
+    title: Key access matrix
+    draft: Access matrix preview
+    reviewed: Access matrix to save
+    help: This preview combines the default and exceptions. Key-rule permission does not grant account permission. Each request is checked again against the key owner's current access.
+    caption: Key rules by resource and operation
+    target: Resource scope
+    other: Other resources (outside selected scopes)
+    global: All resources
+    unverified: Resource selection needs verification
+    limits: Expiry and live account permissions still apply. Creating resources and operations involving multiple targets require checks on every actual target. A partial or unverified scope is not a blanket permission.
+    states:
+      allow: Key rule allows
+      deny: Key rule denies
+      mixed: Partially limited
+      conditional: Target checks required
+      unknown: Needs verification
+    basis:
+      full: Full access; account permissions still apply
+      closed: No allow exceptions
+      expired: The key has expired; every operation is denied
+      defaultAllow: Default allows; account permissions still apply
+      defaultDeny: No matching allow exception
+      ruleAllow: Matching allow exception
+      explicitDeny: Matching deny exception takes precedence
+      scopeExceptions: Child resources have different rules
+      unknownEvidence: Resource selection or parent is unverified
+      unknownOverlap: Rule overlap is not yet verified
+      invalidPolicy: Correct the policy before saving
+      createDestination: The new resource and its destination must be checked
+      multipleTargets: Every target of the operation must be checked
+  defaultEffect: Unmatched resources
+  effect: Rule effect
+  scope: Rule scope
+  resourceId: Stable resource ID
+  resourceType: Resource type
+  denyFirst: Deny rules take precedence. Execute, logs, and sensitive export are separate operations, not included in read or update.
+  capabilityHelp: Disabled allow items are unavailable in the selected scope's current API. Observed API operations are not an authorization guarantee; unconfirmed items remain subject to the backend's live owner-permission checks. Deny rules can still restrict these operations.
+  capabilities:
+    unavailable: Current API does not offer this operation
+    observed: API operation observed; owner permissions still apply
+    unknown: Pending backend permission checks
+  stableIdHelp: Search and select an accessible resource by its name and context. Stable references are retained internally. The server rechecks targets and live permissions for every request; review does not grant permissions.
+  liveTargets: Select a currently visible resource
+  targetLoadError: Could not load visible resources. Check the resource type and your access.
+  selector:
+    project: Environment
+    stackContext: Stack or environment resource context
+    chooseType: Select a resource type first.
+    chooseProject: Search and select an environment first.
+    chooseStack: Search and select a stack or the available environment context first.
+    chooseResource: Search and select a named resource.
+    environmentResources: Environment resources without an available stack relation
+    loading: Loading accessible resource names…
+    empty: No selectable resources are available in this context.
+    noMatches: No matching resource names. Try another name or context.
+    unavailable: This resource is no longer available or accessible. Select it again from the current list.
+    unnamed: Some resources have no usable name and cannot be selected. Use a resource with an identifiable name.
+    ambiguous: Some resources have identical names and context. They cannot be safely selected until their names or descriptions are distinguishable.
+    loadError: Could not load accessible resource names. Check your access and retry.
+    retry: Retry loading names
+    types:
+      stack: Stack
+      service: Service
+      container: Container
+      host: Host
+      volume: Volume
+      network: Network
+      secret: Secret
+      certificate: Certificate
+      project: Environment
+      setting: Platform setting
+      userPreference: User preference
+      registry: Registry
+      storagePool: Storage pool
+      networkPolicy: Network policy
+      projectMember: Environment member
+      apiKey: API key
+      apiKeyRestricted: Restricted API key
+      account: Account
+      auditLog: Audit record
+  addRule: Add exception
+  removeRule: Remove exception
+  expiry: Expiration
+  expiryLocal: Custom expiration (local time zone)
+  expiryChoices:
+    none: No additional expiration
+    '7': 7 days
+    '30': 30 days
+    '90': 90 days
+    custom: Custom time
+  review: Review changes
+  reviewHelp: This is the submitted configuration. The server has validated the rules and rechecks live permissions and revision when saving.
+  confirm: I have checked the scopes, operations, and expiration
+  submit: Confirm save
+  back: Back to editing
+  reload: Reload latest revision
+  revision: Policy revision
+  saved: Saved and verified by reading the key again
+  errors:
+    mode: Select a valid access mode.
+    expiry: Expiration must be a valid future date.
+    effect: Select a valid rule effect.
+    ruleId: Rule IDs must be valid and unique.
+    scope: Select an accessible named resource and a valid resource type.
+    operation: Each rule needs at least one valid operation.
+    conflict: Someone else changed this key. Reload the latest revision, then review and save again.
+    save: Could not save the key. Check current permissions, scopes, and expiration.
+    review: Could not validate these changes. Check current permissions, scopes, and revision.
+    readback: The configuration was submitted but has not been verified by a fresh read. Reload the key; do not create it again.
+    reload: Could not reload the key. Check current access.
+apiKeyAudit:
+  unknownOperation: Unrecognized operation; investigate using the request ID
+  unknownTarget: Unrecognized resource type
+  decisions:
+    ALLOW: Allowed
+    DENY: Denied
+    unknown: No confirmed authorization decision
+  reason: Decision reason
+  reasons:
+    KeyFullAccess: Full access, within the owner's live permissions
+    KeyRuleAllowed: Allowed by a rule, within the owner's live permissions
+    KeyScopedCollection: Only in-scope resources currently visible to the owner are returned
+    KeyPolicyDenied: The key policy denies this operation
+    KeyScopeDenied: The target is outside this key's allowed scope
+    OwnerPermissionDenied: The owner currently lacks permission for this operation or resource
+    ApiKeyExpired: The key has expired
+    ApiKeyRevoked: The key has been deactivated or revoked
+    ApiKeyPolicyChanged: The key policy changed; obtain fresh authorization
+    PolicyChanged: The key policy changed; obtain fresh authorization
+    UnknownOperation: This custom policy does not support the operation; safely denied
+    AuthenticationPending: Authentication is pending; the operation has not run
+    AuthenticationDenied: Authentication was denied; the operation has not run
+    authorization_not_completed: Authorization is pending; the operation has not run
+    ApiKeyDelegationLive: Delegation checked against the owner's live permissions
+    AuditUnavailable: Audit could not be confirmed; investigate using the request ID
+    HandshakeDenied: The stream handshake was denied; no successful execution is confirmed
+    DockerFailure: The container runtime operation failed
+    StreamFailed: The stream or command failed
+    AuthorizationRevoked: Live authorization was revoked; the stream was interrupted
+    ClientDisconnected: The client disconnected; the stream was interrupted
+    StreamCancelled: The stream was canceled before completion
+    StreamCompleted: The stream completed
+    DelegationRouteDenied: This stream ticket cannot be used for this operation. Obtain a ticket for the requested operation.
+    ApiKeyInactive: The key is inactive and cannot authenticate or execute operations
+    UNKNOWN_EXCEPTION: The background process failed. Investigate using the request ID; internal exception details are not displayed.
+    AUTHORIZATION_DENIED: A live authorization recheck denied the background process; the operation has not completed
+    KeyGovernanceCompleted: The key management request was processed. Confirm completion using its outcome and state readback.
+    KeyGovernanceDenied: The key management request was denied
+    KeyGovernanceFailed: The key management request failed
+    ApiKeyRestrictedDelegationUnsupported: A key with custom restrictions or expiration cannot create child keys or delegate authority
+    unknown: No safe reason is available; investigate using the request ID
+  outcomes:
+    unknown: No confirmed execution result
+    PENDING: Awaiting execution or result
+    AUTHENTICATION_DENIED: Authentication denied (not executed)
+    DENIED: Denied
+    NOT_EXECUTED: Not executed
+    ACCEPTED: Accepted (not completed)
+    SUCCEEDED: Successful result (confirm completion by phase)
+    FAILED: Failed
+    CANCELED: Interrupted
+  noHttpResponse: No HTTP response (background event)
+  phase: Event phase
+  phases:
+    decision: Authorization decision (not execution)
+    response: API response (not background completion)
+    attempt: Background attempt
+    continuation: Background work continues
+    completion: Background / stream completion event
+    handshake: Stream handshake
+    unknown: Unknown phase (completion not confirmed)
+  responseSucceeded: API response succeeded
+  completionSucceeded: Background / stream work completed
+  title: Key audit
+  help: Authorization decisions and execution outcomes are separate. ALLOW does not mean success. HTTP 202 / ACCEPTED means accepted, not completed. Viewing audit records does not modify the key.
+  time: Time scope
+  allTime: All time
+  range: Custom range
+  from: Start (local time zone)
+  to: End (local time zone)
+  any: Any
+  decision: Authorization
+  outcome: Execution outcome
+  operation: Operation
+  httpStatus: HTTP status
+  requestId: Request ID
+  targetType: Resource type
+  target: Target resource
+  actor: Actor
+  created: Time
+  filter: Filter / refresh
+  count: '{count} matching records · Page {page}'
+  preview: Permission check only; operation not executed
+  details: Details
+  empty: No matching audit records
+  previous: Previous page
+  next: Next page
+  close: Close audit
+  errors:
+    access: You no longer have access to this key audit. Previous records have been cleared.
+    missing: The record is missing or no longer accessible. Previous records have been cleared.
+    range: Enter a valid start and end time.
+    tooLarge: The query exceeds the range the server can verify. Incomplete results have not been returned. Adjust the query scope; if it still fails, contact an administrator.
+    load: Could not load the key audit. Refresh to try again.
 editBalancerService:
   title: Edit Load Balancer
   haproxy:

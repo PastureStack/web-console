@@ -1,0 +1,137 @@
+$text-color: #334851 !default;
+$well-bg: #fff !default;
+$table-border-color: #ddd !default;
+
+// Keep the existing theme palette as a state accent, not low-contrast text.
+// These overrides apply only to the API Key editor and its audit panel.
+.api-key-editor-modal, .api-key-audit {
+  .help-block, .text-muted {
+    color: $text-color;
+  }
+
+  .alert {
+    color: $text-color;
+    background-color: $well-bg;
+    border: 1px solid $table-border-color;
+    border-inline-start-width: 4px;
+  }
+
+  .alert-info { border-inline-start-color: #78c9cf; }
+  .alert-success { border-inline-start-color: #27ae60; }
+  .alert-danger { border-inline-start-color: #f15354; }
+  .alert-warning { border-inline-start-color: #f1c40f; }
+}
+
+.lacsso.modal-overlay > .lacsso.modal-container.large-modal.api-key-editor-modal {
+  // The absolute modal overlay can shrink-to-fit the matrix's min-content
+  // width. Bind this editor to the viewport, not that expanded parent; keep
+  // the existing desktop max-width and the matrix's own horizontal scroll.
+  // Match the prefixed vendor modal rule's specificity without changing it.
+  width: calc(100vw - 40px);
+}
+
+.api-key-audit .api-key-audit-reason {
+  // The resizable grid truncates one-line cells. Reasons are explanatory
+  // sentences: wrap inside the existing column, including long translated
+  // words, rather than relying on a desktop-only overflow tooltip.
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.api-key-policy-matrix {
+  min-width: 0;
+  margin: 16px 0;
+
+  .api-key-policy-matrix-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .api-key-policy-matrix-scroll:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  table.table {
+    // This is a two-dimensional permission matrix, not a mobile record list.
+    // Keep table semantics inside the local scroll region; the shared small-
+    // screen layout otherwise stacks cells and hides their operation headings.
+    display: table;
+    min-width: 760px;
+    width: 100%;
+
+    caption {
+      display: table-caption;
+      width: auto;
+      color: inherit;
+    }
+
+    thead {
+      display: table-header-group;
+      height: auto;
+    }
+
+    tbody {
+      display: table-row-group;
+    }
+
+    tr, thead tr {
+      display: table-row;
+      visibility: visible;
+      border: 0;
+      margin: 0;
+    }
+
+    th, td {
+      display: table-cell;
+      width: auto !important;
+      padding-left: 8px;
+    }
+
+    td::before {
+      display: none;
+      content: none;
+    }
+  }
+
+  th, td {
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  tbody th {
+    min-width: 160px;
+    max-width: 260px;
+  }
+
+  td {
+    min-width: 74px;
+  }
+
+  td small {
+    display: block;
+    margin-top: 4px;
+  }
+
+  // Status wording must remain readable in both themes. Keep a decorative
+  // state-color accent without using the low-contrast global state text color.
+  td > span {
+    display: inline-block;
+    color: inherit;
+    font-weight: 600;
+  }
+
+  td > span.text-success, td > span.text-danger {
+    border-inline-start: 3px solid;
+    padding-inline-start: 4px;
+  }
+
+  td > span.text-success {
+    border-inline-start-color: #27ae60;
+  }
+
+  td > span.text-danger {
+    border-inline-start-color: #f15354;
+  }
+}
