@@ -111,7 +111,6 @@ export default Controller.extend(Sortable, {
 
       this.get('modalService').toggleModal('edit-apikey', cred);
     },
-    auditKey(key) { this.set('targetKey', key.get('id')); },
     closeAudit() { this.set('targetKey', null); },
   },
 

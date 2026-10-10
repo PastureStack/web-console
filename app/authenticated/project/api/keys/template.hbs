@@ -31,7 +31,7 @@
     </thead>
     <tbody>
       {{#each this.accountArranged as |key|}}
-        {{apikey-row model=key auditSupported=this.policySupported onAudit=(action 'auditKey')}}
+        {{apikey-row model=key}}
       {{else}}
         <tr><td colspan="6" class="text-center text-muted">{{t 'apiPage.account.table.noData'}}</td></tr>
       {{/each}}
@@ -79,7 +79,7 @@
       </thead>
       <tbody>
         {{#each this.environmentArranged as |key|}}
-          {{apikey-row model=key auditSupported=this.policySupported onAudit=(action 'auditKey')}}
+          {{apikey-row model=key}}
         {{else}}
           <tr><td colspan="6" class="text-center text-muted">{{t 'apiPage.table.noData'}}</td></tr>
         {{/each}}
