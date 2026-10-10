@@ -35,7 +35,7 @@
               @selected={{this.selectedEnvironment}}
               @onChange={{action "selectEnvironment"}}
               @searchField="searchText"
-              @placeholder={{t 'auditLogsPage.filterBuilder.environmentPlaceholder'}}
+              @placeholder={{this.environmentSelectionSummary}}
               @allowClear={{true}}
               as |environment|
             >
@@ -56,7 +56,7 @@
               @selected={{this.selectedUser}}
               @onChange={{action "selectUser"}}
               @searchField="searchText"
-              @placeholder={{t 'auditLogsPage.filterBuilder.userPlaceholder'}}
+              @placeholder={{this.userSelectionSummary}}
               @allowClear={{true}}
               as |user|
             >
@@ -206,7 +206,7 @@
             {{/if}}
           </div>
           <div class="dropdown">
-            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" disabled={{or this.model.queryError this.isFiltering this.isExporting}} data-testid="audit-log-export">
               <i class="icon icon-download" aria-hidden="true"></i>
               {{t 'auditLogsPage.filterBuilder.export.title'}}
               <i class="icon icon-chevron-down" aria-hidden="true"></i>
@@ -228,6 +228,24 @@
       </fieldset>
     </form>
 
+    {{#if this.isExporting}}
+      <p role="status" aria-live="polite">{{t 'auditLogsPage.queryErrors.exporting'}}</p>
+    {{/if}}
+    {{#if this.exportError}}
+      <div class="alert alert-danger audit-log-filter-error" role="alert" data-testid="audit-log-export-error">{{t this.exportError.messageKey}}</div>
+    {{/if}}
+
+    {{#if this.model.queryError}}
+      <div class="alert alert-danger audit-log-filter-error" role="alert" data-testid="audit-log-query-error">
+        <p>{{t this.model.queryError.messageKey}}</p>
+        <div class="audit-log-query-recovery-actions">
+          {{#if this.model.queryError.canNarrow}}
+            <button type="button" class="btn btn-sm btn-primary" disabled={{this.isFiltering}} data-testid="audit-log-query-recent" {{action "queryRecentMinutes"}}>{{t 'auditLogsPage.queryErrors.recent15Minutes'}}</button>
+          {{/if}}
+          <button type="button" class="btn btn-sm btn-default" disabled={{this.isFiltering}} data-testid="audit-log-query-retry" {{action "retryAuditQuery"}}>{{t 'auditLogsPage.queryErrors.retry'}}</button>
+        </div>
+      </div>
+    {{else}}
     <div class="audit-log-results-status {{if this.isFiltering "is-loading"}}" role="status" aria-live="polite">
       {{#if this.isFiltering}}
         {{t 'auditLogsPage.filterBuilder.results.updating'}}
@@ -235,6 +253,7 @@
         {{t 'auditLogsPage.filterBuilder.results.summary' count=this.resultCount range=this.appliedRangeSummary}}
       {{/if}}
     </div>
+    {{/if}}
 
     {{#if this.isTimePickerOpen}}
       <div class="audit-log-time-dialog-backdrop" role="presentation">
@@ -346,6 +365,7 @@
         </section>
       </div>
     {{/if}}
+    {{#unless this.model.queryError}}
     <table class="grid fixed table table-hover r-mb15 audit-log-results-table">
       <thead>
         {{sortable-th sortable=this action="changeSort" name="created" label="auditLogsPage.table.time" width="115" class="r-pl10"}}
@@ -390,6 +410,7 @@
           <button class="btn btn-sm btn-default" {{action 'next'}}>{{t 'auditLogsPage.next'}}</button>
         {{/if}}
       </div>
+    {{/unless}}
   </div>
 </section>
 {{outlet}}

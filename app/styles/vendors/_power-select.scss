@@ -114,3 +114,52 @@ $text-color: null !default;
     transition: ease-in-out all .25s;
   }
 }
+
+// API-key scope names need wrapping and a real keyboard focus indicator. Keep
+// these changes local; the existing selectors elsewhere retain their styles.
+.api-key-scope-target {
+  min-width: 0;
+
+  .ember-power-select-placeholder {
+    color: $text-color !important;
+  }
+
+  .ember-power-select-option[aria-current="true"] {
+    background-color: $table-bg-hover !important;
+    color: $text-color !important;
+  }
+
+  .ember-power-select-options[role="listbox"] {
+    // Scope names include their context and can wrap to several lines. The
+    // vendor's seven-single-line cap can cut one option in half. Keep a local,
+    // viewport-bounded scroll region rather than clipping the readable name.
+    max-height: min(360px, calc(100vh - 140px));
+  }
+
+  .ember-basic-dropdown,
+  .ember-power-select-trigger {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .ember-power-select-trigger {
+    height: auto;
+    min-height: 36px;
+  }
+
+  .ember-power-select-trigger:focus,
+  .ember-power-select-trigger:focus-visible,
+  .ember-power-select-search-input:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .ember-power-select-selected-item,
+  .ember-power-select-placeholder,
+  .ember-power-select-option,
+  .help-block {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    min-width: 0;
+  }
+}

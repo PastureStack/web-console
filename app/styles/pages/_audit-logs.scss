@@ -322,6 +322,22 @@ button.audit-log-primary-control:focus,
   margin: 14px 0 0;
 }
 
+.audit-log-query-recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+// Use the danger palette as an accent, not low-contrast error wording.
+// This is scoped to audit query/export/filter errors, not global alerts.
+.audit-log-filter-error.alert-danger {
+  color: $text-color;
+  background-color: $well-bg;
+  border: 1px solid $table-border-color;
+  border-inline-start: 4px solid #f15354;
+  overflow-wrap: anywhere;
+}
+
 .audit-log-filter-footer {
   margin-top: 16px;
   padding-top: 14px;
@@ -870,6 +886,14 @@ button.audit-log-primary-control:focus,
 
   .audit-log-filter-secondary-actions .dropdown,
   .audit-log-filter-secondary-actions .btn {
-    flex: 1;
+    flex: none;
+    width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .audit-log-filter-secondary-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

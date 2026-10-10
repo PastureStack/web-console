@@ -1,4 +1,4 @@
-import { once, next } from '@ember/runloop';
+import { once, next, cancel } from '@ember/runloop';
 import Component from '@ember/component';
 
 export default Component.extend({
@@ -23,6 +23,7 @@ export default Component.extend({
   descriptionRequired    : false,
   descriptionDisabled    : false,
   descriptionShown       : true,
+  autoFocus              : true,
 
   init() {
     this._super(...arguments);
@@ -67,7 +68,12 @@ export default Component.extend({
   }.observes('_description'),
 
   didInsertElement() {
-    next(() => {
+    if ( !this.get('autoFocus') ) {
+      return;
+    }
+
+    this._autoFocusTimer = next(() => {
+      this._autoFocusTimer = null;
       if ( this.isDestroyed || this.isDestroying ) {
         return;
       }
@@ -77,5 +83,15 @@ export default Component.extend({
         firstEditableField.focus();
       }
     });
+  },
+
+  willDestroyElement() {
+    if ( this._autoFocusTimer ) { cancel(this._autoFocusTimer); this._autoFocusTimer = null; }
+    this._super(...arguments);
+  },
+
+  willDestroy() {
+    if ( this._autoFocusTimer ) { cancel(this._autoFocusTimer); this._autoFocusTimer = null; }
+    this._super(...arguments);
   },
 });
