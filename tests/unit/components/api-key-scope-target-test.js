@@ -2,6 +2,7 @@ import EmberObject from '@ember/object';
 import { defer, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import Target from 'ui/components/api-key-scope-target/component';
+import ProjectsService from 'ui/services/projects';
 import inertRenderer from '../../helpers/inert-renderer';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
@@ -14,7 +15,7 @@ function target(extra = {}) {
     find() { throw new Error('CurrentProjectStoreMustNotRecoverParent'); }});
   let userStore = EmberObject.create({generation: 1, getById() { return EmberObject.create({}); },
     find(type, id, options) {
-      if ( type !== 'project' || id !== null || options.forceReload !== true ) { throw new Error('FreshProjectCollectionRequired'); }
+      if ( type !== 'project' || id !== null || options.url !== 'projects' || options.forceReload !== true || options.depaginate !== true ) { throw new Error('FreshProjectCollectionRequired'); }
       return resolve([{id: '1a9', name: 'Visible environment'}]);
     },
     rawRequest(options) {
@@ -22,12 +23,18 @@ function target(extra = {}) {
       return resolve({body: options.url === '/self' ? item : {data: options.url === 'schema' ? [] : options.url.endsWith('/schema') ?
         [{id: 'stack', collectionMethods: ['GET'], links: {collection: '/stacks'}}] : [item]}});
     }});
+  let access = extra.access || EmberObject.create({enabled: true, admin: false, identity: EmberObject.create({id: 'viewer1'})});
+  let projects = EmberObject.create({current: EmberObject.create({id: '1a9'}), schemaProjectId: '1a9', schemaLoadGeneration: 1,
+    access, userStore,
+    getAll(options) {
+      if ( JSON.stringify(options) !== JSON.stringify({depaginate: true}) ) { throw new Error('ExactProjectServiceOptionsRequired'); }
+      return ProjectsService.prototype.getAll.call(this, options);
+    }});
   let component = createOwned(Target, Object.assign({renderer: inertRenderer(), scope: {kind: 'stack', resourceId: '1st4'}, store, userStore,
-    projects: EmberObject.create({current: EmberObject.create({id: '1a9'}), schemaProjectId: '1a9', schemaLoadGeneration: 1}),
-    session: EmberObject.create({accountId: '1a1'}), access: EmberObject.create({identity: EmberObject.create({id: 'viewer1'})}),
+    projects, session: EmberObject.create({accountId: '1a1'}), access,
     intl: EmberObject.create({t(value) { return value; }}),
     onCapabilities(value) { published.push(value); }, onSelect() {}}, extra), 'component');
-  return {component, queries, published, store, userStore, item};
+  return {component, queries, published, store, userStore, item, access, projects};
 }
 
 test('fresh target metadata uses its own project schema without changing the shared store', async function(assert) {
@@ -291,7 +298,7 @@ test('fresh project GET result never exposes old all-store members after viewer 
   userStore.findAll = userStore.all = () => { throw new Error('WholeStoreCacheForbidden'); };
   userStore.find = (type, id, options) => {
     assert.strictEqual(type, 'project'); assert.strictEqual(id, null);
-    assert.deepEqual(options, {forceReload: true, depaginate: true});
+    assert.deepEqual(options, {url: 'projects', forceReload: true, depaginate: true});
     return resolve(++calls === 1 ? [{id: '1a9', name: 'Fresh environment'}] : []);
   };
   component.loadContext(); await drain();
@@ -405,5 +412,79 @@ test('late account parent recovery cannot restore a withdrawn environment', asyn
   assert.strictEqual(component.get('selectedTarget'), null);
   assert.deepEqual(component.get('candidates'), []);
   assert.notOk(published.at(-1).selectionValid);
+  destroyOwned(component);
+});
+
+test('same-identity authority withdrawal reloads fresh member projects and rejects stale all=true results', async function(assert) {
+  for ( let change of [{enabled: true, admin: true, field: 'admin', value: false},
+    {enabled: false, admin: false, field: 'enabled', value: true}] ) {
+    let pending = defer(), reads = [], calls = 0;
+    let access = EmberObject.create({enabled: change.enabled, admin: change.admin, identity: EmberObject.create({id: 'same-viewer'})});
+    let {component, userStore, projects, store, published} = target({access, scope: {kind: 'resource', resourceType: 'stack', resourceId: ''}});
+    store.set('baseUrl', '/v2-beta/projects/1a9');
+    userStore.find = (type, id, options) => {
+      reads.push({type, id, options});
+      return ++calls === 1 ? pending.promise : resolve([{id: '1aMember', name: 'Fresh member environment'}]);
+    };
+    let first = component.loadContext(), firstGeneration = component._loadGeneration;
+    access.set(change.field, change.value);
+    await drain();
+    assert.ok(component._loadGeneration > firstGeneration, `${change.field}: access flags invalidate the same viewer's context`);
+    assert.deepEqual(reads, [
+      {type: 'project', id: null, options: {url: 'projects', forceReload: true, depaginate: true, filter: {all: 'true'}}},
+      {type: 'project', id: null, options: {url: 'projects', forceReload: true, depaginate: true}},
+    ], 'the actual ProjectsService determines all=true from live access, never selector input');
+    pending.resolve([{id: '1aAdminOnly', name: 'Stale administrator environment'}]);
+    await first; await drain();
+    assert.deepEqual(component.get('projectOptions').map((option) => option.id), ['1aMember']);
+    assert.strictEqual(component.get('selectedProject'), null);
+    assert.deepEqual(component.get('candidates'), []);
+    assert.notOk(published.some((value) => value.selectionValid), 'stale broad visibility never becomes current capability evidence');
+    assert.strictEqual(projects.get('current.id'), '1a9', 'selector authority refresh does not change the active environment');
+    assert.strictEqual(store.get('baseUrl'), '/v2-beta/projects/1a9');
+    destroyOwned(component);
+  }
+});
+
+test('forged disabled and loading resource selections neither close a dropdown nor notify the owner', async function(assert) {
+  let calls = [];
+  let {component} = target({onSelect() { calls.push('onSelect'); }});
+  await component.loadContext(); await drain();
+  let option = component.get('candidates')[0], select = {actions: {close() { calls.push('close'); }}};
+  component.send('select', Object.assign({}, option), select);
+  assert.deepEqual(calls, [], 'a forged same-ID option is still rejected by candidate object membership');
+  component.set('disabled', true);
+  component.send('select', option, select);
+  assert.deepEqual(calls, [], 'disabled selection cannot close another dropdown or notify its owner');
+  component.setProperties({disabled: false, loading: true});
+  component.send('select', option, select);
+  assert.deepEqual(calls, [], 'loading selection preserves the original targetDisabled guard');
+  destroyOwned(component);
+});
+
+test('accepted resource selection closes its public PowerSelect before the owner can start loading', async function(assert) {
+  let calls = [], component;
+  ({component} = target({onSelect(event) {
+    calls.push('onSelect');
+    assert.strictEqual(event.target.value, '1st4');
+    component.set('loading', true);
+  }}));
+  await component.loadContext(); await drain();
+  component.send('select', component.get('candidates')[0], {actions: {close() {
+    assert.notOk(component.get('loading'), 'close runs before the synchronous owner callback can disable its trigger');
+    calls.push('close');
+  }}});
+  assert.deepEqual(calls, ['close', 'onSelect'], 'the normal public callback is preserved after closing only this select');
+  assert.ok(component.get('loading'));
+  destroyOwned(component);
+});
+
+test('resource close hook errors propagate without invoking the owner callback', async function(assert) {
+  let calls = [], failure = new Error('ScopeDropdownCloseHookFailure');
+  let {component} = target({onSelect() { calls.push('onSelect'); }});
+  await component.loadContext(); await drain();
+  assert.throws(() => component.send('select', component.get('candidates')[0], {actions: {close() { throw failure; }}}),
+    (error) => error === failure, 'the original hook error is not swallowed or converted to a successful selection');
+  assert.deepEqual(calls, []);
   destroyOwned(component);
 });

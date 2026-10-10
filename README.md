@@ -21,6 +21,11 @@ Resource scopes use searchable authorized environment, stack, and resource
 names, including their context in the review. Operators do not enter resource
 IDs; stable references remain an internal API detail. Unavailable or ambiguous
 names block submission rather than guessing a target.
+Environment choices use the same fresh, role-aware project query as navigation:
+administrators can select readable environments without direct membership;
+ordinary users still see only the environments returned for their account.
+Choosing an environment, stack, or resource closes its menu before loading
+dependent choices or verifying the selected resource.
 Choose allow-by-default with deny exceptions (blacklist), or deny-by-default
 with allow exceptions (whitelist). Both support direct exception editing;
 switching the default preserves existing exceptions. Without exceptions,

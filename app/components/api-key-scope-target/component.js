@@ -48,12 +48,13 @@ export default Component.extend({
 
   contextChanged: function() { this.loadContext(); }
     .observes('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration',
-      'store.generation', 'userStore.generation', 'access.identity.id', `session.${C.SESSION.ACCOUNT_ID}`, 'intl._locale', 'reloadGeneration'),
+      'store.generation', 'userStore.generation', 'access.identity.id', 'access.enabled', 'access.admin',
+      `session.${C.SESSION.ACCOUNT_ID}`, 'intl._locale', 'reloadGeneration'),
 
   contextKey(type, scope) {
     return [type, this.get('projects.current.id'), this.get('projects.schemaProjectId'),
       this.get('projects.schemaLoadGeneration'), this.get('store.generation'), this.get('userStore.generation'),
-      this.get('access.identity.id'), this.get(`session.${C.SESSION.ACCOUNT_ID}`),
+      this.get('access.identity.id'), this.get('access.enabled'), this.get('access.admin'), this.get(`session.${C.SESSION.ACCOUNT_ID}`),
       this.get('intl._locale'), this.get('reloadGeneration'), this._selectedProjectId, this._selectedStackId, scopeKey(scope)].join(':');
   },
 
@@ -140,9 +141,9 @@ export default Component.extend({
     try {
       let projectItems = [];
       if ( !isPlatformScope(type) || typeKey(type) === 'project' ) {
-        // find() returns THIS GET's collection; findAll() returns the whole store
-        // cache and can retain removed memberships even with forceReload.
-        projectItems = await this.get('userStore').find('project', null, {forceReload: true, depaginate: true});
+        // getAll() preserves the service's live all=true authority semantics.
+        // Its fresh result, not the whole-store cache, is the visible collection.
+        projectItems = await this.get('projects').getAll({depaginate: true});
         if ( !this.current(generation) ) { return; }
         let projects = namedOptions(projectItems);
         this.set('projectOptions', projects.options);
@@ -264,21 +265,26 @@ export default Component.extend({
   },
 
   actions: {
-    selectProject(option) {
+    selectProject(option, select) {
       if ( this.get('disabled') || this.get('loading') || !(this.get('projectOptions') || []).includes(option) ) { return; }
+      // Close this PowerSelect before loading disables it. A disabled dropdown
+      // rejects close(), leaving its internal open state to reappear afterward.
+      if ( typeof select?.actions?.close === 'function' ) { select.actions.close(); }
       this._selectedProjectId = option.id;
       this._selectedStackId = null;
       this.setProperties({selectedProject: option, selectedStack: null, stackOptions: []});
       this.clearTarget(); this.loadContext();
     },
-    selectStack(option) {
+    selectStack(option, select) {
       if ( this.get('stackDisabled') || !(this.get('stackOptions') || []).includes(option) ) { return; }
+      if ( typeof select?.actions?.close === 'function' ) { select.actions.close(); }
       this._selectedStackId = option.id;
       this.set('selectedStack', option);
       this.clearTarget(); this.loadContext();
     },
-    select(option) {
+    select(option, select) {
       if ( this.get('targetDisabled') || !(this.get('candidates') || []).includes(option) ) { return; }
+      if ( typeof select?.actions?.close === 'function' ) { select.actions.close(); }
       this.get('onSelect')({target: {value: option.id}});
     },
     retry() { this._evidenceContext = null; this.loadContext(); },

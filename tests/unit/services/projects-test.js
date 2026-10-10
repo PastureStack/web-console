@@ -49,6 +49,33 @@ test('authenticated non-administrator requests only member environments', async 
   run(() => service.destroy());
 });
 
+test('fresh selector requests depagination without changing authority or active environment', async function(assert) {
+  for ( let access of [
+    {enabled: true, admin: true},
+    {enabled: true, admin: false},
+    {enabled: false, admin: false},
+  ] ) {
+    let requests = [], current = EmberObject.create({id: 'current'});
+    let fresh = A([EmberObject.create({id: 'visible-other'})]);
+    let service = ProjectsService.create({
+      access: EmberObject.create(access), current,
+      all: A([current]), schemaProjectId: current.id, schemaLoadGeneration: 7,
+      store: EmberObject.create({baseUrl: '/v2-beta/projects/current'}),
+      userStore: {find(type, id, options) { requests.push({type, id, options}); return Promise.resolve(fresh); }},
+    });
+    assert.strictEqual(await service.getAll({depaginate: true, filter: {all: 'true'}, admin: true}), fresh);
+    let expected = {url: 'projects', forceReload: true, depaginate: true};
+    if ( !access.enabled || access.admin ) { expected.filter = {all: 'true'}; }
+    assert.deepEqual(requests, [{type: 'project', id: null, options: expected}], 'only actual access state controls all=true');
+    assert.strictEqual(service.get('current'), current, 'a selector does not switch environments');
+    assert.deepEqual(service.get('all').mapBy('id'), ['current'], 'the global cached list is not mutated');
+    assert.strictEqual(service.get('schemaProjectId'), 'current');
+    assert.strictEqual(service.get('schemaLoadGeneration'), 7);
+    assert.strictEqual(service.get('store.baseUrl'), '/v2-beta/projects/current');
+    run(() => service.destroy());
+  }
+});
+
 test('create capability follows the current project and its loaded schema', function(assert) {
   let project = EmberObject.create({id: '1a-owner'});
   let allowed = true;

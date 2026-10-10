@@ -10,6 +10,7 @@ import Collection from 'ember-api-store/models/collection';
 import { module, test } from 'qunit';
 
 import EditApiKey from 'ui/components/edit-apikey/component';
+import ProjectsService from 'ui/services/projects';
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
 import { initialize as initializeIntl } from 'ui/instance-initializers/intl';
 import inertRenderer from '../../helpers/inert-renderer';
@@ -291,7 +292,10 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
       getById() { return stackSchema; },
       find(type, id, options) {
         if ( type === 'apiKey' && options.forceReload === true ) { return resolve(reloadKey); }
-        if ( type !== 'project' || id !== null || options.forceReload !== true ) { throw new Error('FreshProjectCollectionRequired'); }
+        if ( type !== 'project' || id !== null || options.url !== 'projects' ||
+          options.forceReload !== true || options.depaginate !== true || options.filter ) {
+          throw new Error('FreshProjectCollectionRequired');
+        }
         return resolve(stackRows);
       },
       rawRequest(options) {
@@ -303,10 +307,11 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
         return resolve({body: options.url.endsWith('/schema') ? {data: [stackSchema]} :
           options.url === '/stacks' ? {data: [stack]} : stack});
       }}));
-    this.owner.register('service:projects', Service.extend({current: EmberObject.create({id: '1a9'}),
+    this.owner.register('service:projects', ProjectsService.extend({current: EmberObject.create({id: '1a9'}),
       schemaProjectId: '1a9', schemaLoadGeneration: 1}));
     this.owner.register('service:session', Service.extend({accountId: '1a1'}));
-    this.owner.register('service:access', Service.extend({identity: EmberObject.create({id: 'viewer1'})}));
+    this.owner.register('service:access', Service.extend({enabled: true, admin: false,
+      identity: EmberObject.create({id: 'viewer1'})}));
     this.owner.register('service:endpoint', Service.extend({absolute: 'https://platform.example/'}));
     this.owner.register('service:modal', Service.extend({modalVisible: true, modalOpts: null,
       toggleModal() { this.set('modalVisible', false); }}));

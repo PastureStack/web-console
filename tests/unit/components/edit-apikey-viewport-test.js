@@ -12,6 +12,7 @@ import { initialize as initializeIntl } from 'ui/instance-initializers/intl';
 import resolver from '../../helpers/resolver';
 import ApiKeyAudit from 'ui/components/api-key-audit/component';
 import auditTemplate from 'ui/components/api-key-audit/template';
+import ProjectsService from 'ui/services/projects';
 
 function testKey(store, resourceId = 'viewport-stack') {
   return EmberObject.create({
@@ -97,7 +98,10 @@ module('Integration | Component | API key editor viewport layout', function(hook
       getById() { return EmberObject.create(schema); }}));
     this.owner.register('service:user-store', Service.extend({generation: 1,
       find(type, id, options) {
-        if (type !== 'project' || id !== null || options.forceReload !== true) { throw new Error('UnexpectedViewportRead'); }
+        if (type !== 'project' || id !== null || options.url !== 'projects' ||
+          options.forceReload !== true || options.depaginate !== true || options.filter) {
+          throw new Error('UnexpectedViewportRead');
+        }
         return Promise.resolve(projectRows);
       },
       rawRequest(options) {
@@ -109,10 +113,11 @@ module('Integration | Component | API key editor viewport layout', function(hook
         else { throw new Error('UnexpectedViewportRead'); }
         return Promise.resolve({body});
       }}));
-    this.owner.register('service:projects', Service.extend({current: EmberObject.create({id: 'viewport-project'}),
+    this.owner.register('service:projects', ProjectsService.extend({current: EmberObject.create({id: 'viewport-project'}),
       schemaProjectId: 'viewport-project', schemaLoadGeneration: 1}));
     this.owner.register('service:session', Service.extend({accountId: 'viewport-owner'}));
-    this.owner.register('service:access', Service.extend({identity: EmberObject.create({id: 'viewport-identity'})}));
+    this.owner.register('service:access', Service.extend({enabled: true, admin: false,
+      identity: EmberObject.create({id: 'viewport-identity'})}));
     this.owner.register('service:endpoint', Service.extend({absolute: 'https://unit.invalid/'}));
     this.owner.register('service:modal', Service.extend({modalVisible: true, modalType: 'edit-apikey', modalOpts: null,
       toggleModal() { this.set('modalVisible', false); }}));

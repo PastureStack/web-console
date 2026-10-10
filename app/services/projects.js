@@ -35,11 +35,17 @@ export default Service.extend({
     });
   }.property('all.@each.state'),
 
-  getAll: function() {
+  getAll: function(options = {}) {
     var opt = {
       url: 'projects',  // This is called in authenticated/route before schemas are loaded
       forceReload: true,
     };
+
+    // Selectors need the complete fresh result without changing the selected
+    // environment. Never accept a caller-supplied filter or authority flag.
+    if ( options.depaginate === true ) {
+      opt.depaginate = true;
+    }
 
     // Site administrators may manage projects without being project members.
     // The API only includes those projects when the caller requests all=true.
