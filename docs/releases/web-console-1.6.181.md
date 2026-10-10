@@ -38,10 +38,15 @@ for all 123 packaged production files. The focused Chrome receipt records
 92 passing tests with zero failure, skip or todo. Separate native QA executed
 five UI cases and zh-TW per-key audit checks at 390/1440 px for menu behavior,
 exact-Key scope, count and layout, on matching runtime JS bytes.
+An additional native follow-up passed six Key lifecycle stages and English UI19
+selector-name and keyboard checks at 390/1440 px on the same runtime JS bytes.
+Its receipt SHA-256 is
+`e0ee28db8a93c14f400a3676f7ab6fa3918a219dd5989acbe961cec1eb941402`;
+test fixtures were removed normally while their audit evidence was retained.
 
-This is not a whole platform matrix. The native gate did not rerun actual viewer
-permission withdrawal, resource-action execution parity or English UI19
-keyboard/narrow-screen cases; `wholeMatrixPass=false`.
+This is not a whole platform matrix. Actual viewer permission withdrawal and
+resource-action execution parity were not rerun by these native gates;
+`wholeMatrixPass=false`.
 The matching Server `v1.6.519` image is still an unpublished assembly candidate
 pending release-artifact acceptance. Component publication is not formal Server
 deployment acceptance; use the
