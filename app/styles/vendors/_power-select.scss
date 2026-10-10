@@ -120,6 +120,15 @@ $text-color: null !default;
 .api-key-scope-target {
   min-width: 0;
 
+  .ember-power-select-placeholder {
+    color: $text-color !important;
+  }
+
+  .ember-power-select-option[aria-current="true"] {
+    background-color: $table-bg-hover !important;
+    color: $text-color !important;
+  }
+
   .ember-basic-dropdown,
   .ember-power-select-trigger {
     width: 100%;

@@ -3,7 +3,8 @@ import EmberObject from '@ember/object';
 import Service from '@ember/service';
 import { setComponentTemplate } from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
-import { find, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
+import { click, find, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
+import { selectSearch } from 'ember-power-select/test-support';
 import Collection from 'ember-api-store/models/collection';
 import { module, test } from 'qunit';
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
@@ -12,14 +13,14 @@ import resolver from '../../helpers/resolver';
 import ApiKeyAudit from 'ui/components/api-key-audit/component';
 import auditTemplate from 'ui/components/api-key-audit/template';
 
-function testKey(store) {
+function testKey(store, resourceId = 'viewport-stack') {
   return EmberObject.create({
     id: 'viewport-key', type: 'apiKey', accountId: 'viewport-owner',
     name: 'Viewport regression key', description: '', apiKeyPolicyRevision: 1,
     apiKeyPolicy: {mode: 'custom', defaultEffect: 'deny', expiresAt: null,
-      rules: [{id: 'viewport-rule', effect: 'allow', scope: {kind: 'stack', resourceId: 'viewport-stack'}, operations: ['read']}]},
+      rules: [{id: 'viewport-rule', effect: 'allow', scope: {kind: 'stack', resourceId}, operations: ['read']}]},
     schema: {resourceFields: {apiKeyPolicy: {}}}, store,
-    clone() { return testKey(store); },
+    clone() { return testKey(store, resourceId); },
   });
 }
 
@@ -43,6 +44,31 @@ function painted(frame) {
   return new Promise((resolve) => frame.contentWindow.requestAnimationFrame(() => frame.contentWindow.requestAnimationFrame(resolve)));
 }
 
+function textContrast(frame, node) {
+  let rgba = (value) => {
+    let channels = value.match(/[\d.]+/g).map(Number);
+    return [...channels.slice(0, 3), channels.length === 4 ? channels[3] : 1];
+  };
+  let ancestors = [];
+  for (let parent = node; parent; parent = parent.parentElement) { ancestors.unshift(parent); }
+  let background = [255, 255, 255];
+  let opacity = 1;
+  for (let ancestor of ancestors) {
+    let style = frame.contentWindow.getComputedStyle(ancestor);
+    let color = rgba(style.backgroundColor);
+    background = background.map((channel, index) => color[index] * color[3] + channel * (1 - color[3]));
+    opacity *= Number(style.opacity);
+  }
+  let foreground = rgba(frame.contentWindow.getComputedStyle(node).color);
+  let alpha = foreground[3] * opacity;
+  foreground = background.map((channel, index) => foreground[index] * alpha + channel * (1 - alpha));
+  let luminance = (color) => color.map((channel) => channel / 255)
+    .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
+    .reduce((sum, channel, index) => sum + channel * [0.2126, 0.7152, 0.0722][index], 0);
+  let colors = [luminance(background), luminance(foreground)].sort((a, b) => a - b);
+  return (colors[1] + 0.05) / (colors[0] + 0.05);
+}
+
 module('Integration | Component | API key editor viewport layout', function(hooks) {
   hooks.beforeEach(async function() {
     this.testRoot = document.createElement('div');
@@ -64,7 +90,8 @@ module('Integration | Component | API key editor viewport layout', function(hook
     let schema = {id: 'stack', collectionMethods: ['GET'], resourceMethods: ['GET'],
       resourceActions: {}, resourceLinks: [], links: {collection: '/viewport-unit/stacks'}};
     this.projectRows = Collection.create({content: A([{id: 'viewport-project',
-      name: 'Visible environment with a readable human context'}])});
+      name: 'Visible environment with a readable human context'},
+    {id: 'viewport-other-project', name: 'Another visible environment with a readable human context'}])});
     let projectRows = this.projectRows;
     this.owner.register('service:store', Service.extend({generation: 1,
       getById() { return EmberObject.create(schema); }}));
@@ -100,6 +127,61 @@ module('Integration | Component | API key editor viewport layout', function(hook
 
   for (let locale of ['en-us', 'zh-tw']) {
     for (let theme of ['light', 'dark']) {
+      test(`API key empty scope hint contrast: ${locale} ${theme}`, async function(assert) {
+        this.intl.setLocale([locale]);
+        this.owner.lookup('service:modal').set('modalOpts', testKey(this.owner.lookup('service:user-store'), ''));
+        await render(precompileTemplate('{{modal-root}}'));
+        await waitUntil(() => find('[data-scope-selector="project"] .ember-power-select-placeholder') &&
+          find('[data-scope-selector="project"] .ember-power-select-trigger').getAttribute('aria-disabled') !== 'true');
+        let snapshot = find('.modal-overlay').outerHTML;
+        for (let width of [390, 1440]) {
+          let frame = await viewportFrame(snapshot, theme, locale, width);
+          try {
+            await painted(frame);
+            let hint = frame.contentDocument.querySelector('[data-scope-selector="project"] .ember-power-select-placeholder');
+            let ratio = textContrast(frame, hint);
+            assert.ok(ratio >= 4.5, `${locale}/${theme}/${width}: unselected actionable hint contrast ${ratio.toFixed(2)} is at least 4.5:1`);
+            assert.ok(hint.scrollWidth <= hint.clientWidth + 1, 'translated hint is not horizontally clipped');
+            assert.strictEqual(this.writes, 0, 'hint regression performs no API write');
+          } finally { frame.remove(); }
+        }
+      });
+
+      test(`API key scope option contrast: ${locale} ${theme}`, async function(assert) {
+        this.intl.setLocale([locale]);
+        await render(precompileTemplate('{{modal-root}}'));
+        await waitUntil(() => find('.api-key-scope-target .ember-power-select-selected-item') &&
+          this.testRoot.textContent.includes('Searchable stack with a readable human name'));
+        await click('[data-scope-selector="project"] .ember-power-select-trigger');
+        // Searching highlights an unselected candidate through the real
+        // aria-current state. A selected option alone uses different CSS.
+        await selectSearch('[data-scope-selector="project"]', 'Another visible environment');
+        await settled();
+        let current = find('[data-scope-selector="project"] .ember-power-select-option[aria-current="true"]');
+        assert.ok(current && current.getAttribute('aria-selected') !== 'true', 'real keyboard candidate is highlighted, not already selected');
+        let open = find('.modal-overlay').outerHTML;
+        await selectSearch('[data-scope-selector="project"]', 'No matching environment name');
+        await settled();
+        let empty = find('.modal-overlay').outerHTML;
+        for (let [phase, snapshot] of [['option', open], ['no-matches', empty]]) {
+          for (let width of [390, 1440]) {
+            let frame = await viewportFrame(snapshot, theme, locale, width);
+            try {
+              await painted(frame);
+              let options = [...frame.contentDocument.querySelectorAll('[data-scope-selector="project"] .ember-power-select-option')];
+              assert.ok(options.length > 0, `${phase}: actual dropdown text is rendered`);
+              for (let option of options) {
+                let ratio = textContrast(frame, option);
+                assert.ok(ratio >= 4.5,
+                  `${locale}/${theme}/${width}/${phase}: option contrast ${ratio.toFixed(2)} is at least 4.5:1`);
+                assert.ok(option.scrollWidth <= option.clientWidth + 1, 'translated option has no horizontal text clipping');
+              }
+              assert.strictEqual(this.writes, 0, 'visual regression performs no API write');
+            } finally { frame.remove(); }
+          }
+        }
+      });
+
       test(`API key audit reason viewport layout: ${locale} ${theme}`, async function(assert) {
         this.intl.setLocale([locale]);
         let context = this;
