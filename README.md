@@ -38,6 +38,8 @@ button outside the actions column; audit results still follow live viewer access
 The close control is below the audit block, after its filters, results and details.
 Review and audit operations use translated labels. Loading or denied audit requests
 are not displayed as an empty result; unknown outcomes do not imply success.
+API Key status, help and error wording uses readable theme text in light and dark
+layouts; state colors remain decorative accents rather than the only indication.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).

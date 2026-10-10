@@ -1980,6 +1980,7 @@ apiKeyAccess:
     custom: 自訂
   effects:
     allow: 允許（仍受本人權限限制）
+    allowShort: 允許
     deny: 拒絕
   scopes:
     global: 全域
@@ -2108,6 +2109,7 @@ apiKeyAccess:
     reload: 無法重新讀取金鑰。請確認目前存取權限。
 apiKeyAudit:
   unknownOperation: 無法辨識的操作；請使用請求 ID 查核
+  unknownTarget: 無法辨識的資源類型
   decisions:
     ALLOW: 已允許
     DENY: 已拒絕

@@ -2068,6 +2068,7 @@ apiKeyAccess:
     custom: Custom
   effects:
     allow: Allow (within your permissions)
+    allowShort: Allow
     deny: Deny
   scopes:
     global: Global
@@ -2196,6 +2197,7 @@ apiKeyAccess:
     reload: Could not reload the key. Check current access.
 apiKeyAudit:
   unknownOperation: Unrecognized operation; investigate using the request ID
+  unknownTarget: Unrecognized resource type
   decisions:
     ALLOW: Allowed
     DENY: Denied

@@ -156,6 +156,16 @@ module('Integration | Component | API key editor viewport layout', function(hook
                 if (index) { assert.ok(rect.left >= cells[index - 1].getBoundingClientRect().right - 2, `${context}: operation columns do not overlap`); }
               });
             }
+            for (let span of table.querySelectorAll('td > span')) {
+              let style = frame.contentWindow.getComputedStyle(span);
+              assert.strictEqual(style.color, frame.contentWindow.getComputedStyle(span.parentElement).color,
+                `${context}: state wording uses readable theme text, not decorative state colors`);
+              assert.ok(Number(style.fontWeight) >= 600, `${context}: state wording remains visually distinct without color alone`);
+            }
+            for (let node of modal.querySelectorAll('.help-block, .alert')) {
+              assert.strictEqual(frame.contentWindow.getComputedStyle(node).color, frame.contentWindow.getComputedStyle(modal).color,
+                `${context}: help and alert wording uses readable theme text`);
+            }
             if (width === 390) {
               assert.ok(scroll.scrollWidth > scroll.clientWidth, `${context}: wide matrix scrolls internally`);
               scroll.scrollLeft = scroll.scrollWidth - scroll.clientWidth;

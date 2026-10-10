@@ -108,6 +108,10 @@ test('operation, decision and unknown result display keys are safe while wire va
     assert.strictEqual(record.operationLabelKey, `apiKeyAccess.operations.${operation}`);
     assert.strictEqual(record.decisionLabelKey, 'apiKeyAudit.decisions.DENY');
   });
+  let target = component.safeRecord({targetType: 'service', targetId: '1s1'});
+  assert.strictEqual(target.targetType, 'service', 'resource protocol value is unchanged');
+  assert.strictEqual(target.targetLabelKey, 'apiKeyAccess.selector.types.service');
+  assert.strictEqual(component.safeRecord({targetType: 'future-type private message'}).targetLabelKey, 'apiKeyAudit.unknownTarget');
   let unknown = component.safeRecord({operation: 'future-operation private message', decision: 'not-a-decision', outcome: 'unknown-result'});
   assert.strictEqual(unknown.operationLabelKey, 'apiKeyAudit.unknownOperation');
   assert.strictEqual(unknown.decisionLabelKey, 'apiKeyAudit.decisions.unknown');
