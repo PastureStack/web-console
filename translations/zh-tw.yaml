@@ -2107,6 +2107,11 @@ apiKeyAccess:
     readback: 已送出設定，但尚未完成重新讀取驗證。請重新讀取最新版本，勿重複建立金鑰。
     reload: 無法重新讀取金鑰。請確認目前存取權限。
 apiKeyAudit:
+  unknownOperation: 無法辨識的操作；請使用請求 ID 查核
+  decisions:
+    ALLOW: 已允許
+    DENY: 已拒絕
+    unknown: 尚無可確認的授權判斷
   reason: 判斷原因
   reasons:
     KeyFullAccess: 完整存取；仍受本人即時權限限制
@@ -2142,6 +2147,7 @@ apiKeyAudit:
     ApiKeyRestrictedDelegationUnsupported: 有自訂限制或期限的金鑰不能建立子金鑰或轉授權
     unknown: 沒有可安全顯示的原因；請使用請求 ID 查核
   outcomes:
+    unknown: 尚無可確認的執行結果
     PENDING: 待執行／待結果
     AUTHENTICATION_DENIED: 身分驗證已拒絕（未執行）
     DENIED: 已拒絕

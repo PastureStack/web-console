@@ -149,7 +149,7 @@
           <p>{{t 'apiKeyAccess.revision'}}: {{this.review.apiKeyPolicyRevision}}</p>
           {{#if (eq this.review.apiKeyPolicy.mode 'custom')}}<p>{{t 'apiKeyAccess.defaultEffect'}}: {{t (concat 'apiKeyAccess.effects.' this.review.apiKeyPolicy.defaultEffect)}}</p>{{/if}}
           {{#each this.reviewRules as |rule|}}
-            <p>{{t (concat 'apiKeyAccess.effects.' rule.effect)}} · {{rule.targetLabel}} · {{join-array rule.operations}}</p>
+            <p>{{t (concat 'apiKeyAccess.effects.' rule.effect)}} · {{rule.targetLabel}} · {{join-array rule.operationLabels}}</p>
           {{/each}}
           {{api-key-policy-matrix matrix=this.reviewMatrix reviewed=true expiresAt=this.review.apiKeyPolicy.expiresAt}}
           <p>{{t 'apiKeyAccess.reviewHelp'}}</p>

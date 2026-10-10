@@ -36,6 +36,8 @@ the existing desktop modal sizing is retained.
 Per-key audit opens from the row's existing action menu, without adding an extra
 button outside the actions column; audit results still follow live viewer access.
 The close control is below the audit block, after its filters, results and details.
+Review and audit operations use translated labels. Loading or denied audit requests
+are not displayed as an empty result; unknown outcomes do not imply success.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).

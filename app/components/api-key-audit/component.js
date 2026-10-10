@@ -117,12 +117,16 @@ export default Component.extend({
       safe[field] = typeof value === 'string' || typeof value === 'number' ? String(value).slice(0, 256) : '';
     });
     safe.preview = record.preview === true;
+    safe.operationLabelKey = API_KEY_OPERATIONS.includes(safe.operation) ?
+      `apiKeyAccess.operations.${safe.operation}` : 'apiKeyAudit.unknownOperation';
+    safe.decisionLabelKey = ['ALLOW', 'DENY'].includes(safe.decision) ?
+      `apiKeyAudit.decisions.${safe.decision}` : 'apiKeyAudit.decisions.unknown';
     // A preview may itself finish successfully, but it has not run the requested
     // operation. Render that meaning instead of an execution-success label.
     safe.outcomeLabelKey = safe.preview ? 'apiKeyAudit.preview' :
       safe.outcome === 'SUCCEEDED' && safe.phase === 'response' ? 'apiKeyAudit.responseSucceeded' :
       safe.outcome === 'SUCCEEDED' && safe.phase === 'completion' ? 'apiKeyAudit.completionSucceeded' :
-      this.get('outcomes').includes(safe.outcome) ? `apiKeyAudit.outcomes.${safe.outcome}` : null;
+      this.get('outcomes').includes(safe.outcome) ? `apiKeyAudit.outcomes.${safe.outcome}` : 'apiKeyAudit.outcomes.unknown';
     safe.phaseLabelKey = PHASES.includes(safe.phase) ? `apiKeyAudit.phases.${safe.phase}` : 'apiKeyAudit.phases.unknown';
     safe.reason = REASONS.includes(record.reason) ? record.reason : '';
     safe.reasonLabelKey = safe.reason ? `apiKeyAudit.reasons.${safe.reason}` : 'apiKeyAudit.reasons.unknown';

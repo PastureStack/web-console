@@ -567,6 +567,7 @@ test('invalid or unresolved named selection prevents preview; review keeps a hum
   assert.strictEqual(requests[0].data.apiKeyPolicy.rules[0].scope.resourceId, '1st4', 'DTO keeps the stable reference');
   assert.strictEqual(requests[0].data.scopeLabels, undefined, 'display labels are not public DTO fields');
   assert.strictEqual(component.get('reviewRules')[0].targetLabel, 'Production / Web');
+  assert.deepEqual(component.get('reviewRules')[0].operationLabels, ['apiKeyAccess.operations.read'], 'review uses the same translated operation labels as the matrix');
   component.send('scopeCapabilities', 'r1', {scopeKey: 'stack::1st4', selectionValid: false, selectionStatus: 'unavailable'});
   assert.strictEqual(component.get('review'), null, 'losing the verified name context invalidates review');
   await component.reviewDraft();

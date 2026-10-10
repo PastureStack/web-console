@@ -2195,6 +2195,11 @@ apiKeyAccess:
     readback: The configuration was submitted but has not been verified by a fresh read. Reload the key; do not create it again.
     reload: Could not reload the key. Check current access.
 apiKeyAudit:
+  unknownOperation: Unrecognized operation; investigate using the request ID
+  decisions:
+    ALLOW: Allowed
+    DENY: Denied
+    unknown: No confirmed authorization decision
   reason: Decision reason
   reasons:
     KeyFullAccess: Full access, within the owner's live permissions
@@ -2230,6 +2235,7 @@ apiKeyAudit:
     ApiKeyRestrictedDelegationUnsupported: A key with custom restrictions or expiration cannot create child keys or delegate authority
     unknown: No safe reason is available; investigate using the request ID
   outcomes:
+    unknown: No confirmed execution result
     PENDING: Awaiting execution or result
     AUTHENTICATION_DENIED: Authentication denied (not executed)
     DENIED: Denied

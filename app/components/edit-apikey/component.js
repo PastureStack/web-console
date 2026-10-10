@@ -89,8 +89,9 @@ export default ModalBase.extend(NewOrEdit, {
   reviewRules: function() {
     return (this.get('review.apiKeyPolicy.rules') || []).map((rule) => Object.assign({}, rule, {
       targetLabel: (this.get('review.scopeLabels') || {})[rule.id],
+      operationLabels: rule.operations.map((operation) => String(this.get('intl').t(`apiKeyAccess.operations.${operation}`))),
     }));
-  }.property('review'),
+  }.property('review', 'intl._locale'),
 
   matrixLabels() {
     let intl = this.get('intl');

@@ -61,6 +61,7 @@ test('ALLOW and HTTP 202 remain distinct from a completed outcome; secrets are n
   let record = component.safeRecord({id: 'event', keyId: '1a1', decision: 'ALLOW', outcome: 'ACCEPTED', httpStatus: 202,
     requestId: 'request', secretValue: 'secret', requestBody: {password: 'secret'}, authorization: 'Basic secret'});
   assert.strictEqual(record.decision, 'ALLOW');
+  assert.strictEqual(record.decisionLabelKey, 'apiKeyAudit.decisions.ALLOW');
   assert.strictEqual(record.outcome, 'ACCEPTED');
   assert.strictEqual(record.httpStatus, '202');
   assert.ok(record.hasHttpResponse);
@@ -96,6 +97,21 @@ test('ALLOW and HTTP 202 remain distinct from a completed outcome; secrets are n
   assert.notOk('secretValue' in record);
   assert.notOk('requestBody' in record);
   assert.notOk('authorization' in record);
+  destroyOwned(component);
+});
+
+test('operation, decision and unknown result display keys are safe while wire values remain unchanged', function(assert) {
+  let component = audit(() => resolve());
+  ['read', 'create', 'update', 'upgrade', 'delete', 'exec', 'logs', 'export'].forEach((operation) => {
+    let record = component.safeRecord({operation, decision: 'DENY', outcome: 'DENIED'});
+    assert.strictEqual(record.operation, operation, 'retains actual protocol value');
+    assert.strictEqual(record.operationLabelKey, `apiKeyAccess.operations.${operation}`);
+    assert.strictEqual(record.decisionLabelKey, 'apiKeyAudit.decisions.DENY');
+  });
+  let unknown = component.safeRecord({operation: 'future-operation private message', decision: 'not-a-decision', outcome: 'unknown-result'});
+  assert.strictEqual(unknown.operationLabelKey, 'apiKeyAudit.unknownOperation');
+  assert.strictEqual(unknown.decisionLabelKey, 'apiKeyAudit.decisions.unknown');
+  assert.strictEqual(unknown.outcomeLabelKey, 'apiKeyAudit.outcomes.unknown');
   destroyOwned(component);
 });
 
