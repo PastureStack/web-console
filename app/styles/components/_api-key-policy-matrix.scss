@@ -30,6 +30,14 @@ $table-border-color: #ddd !default;
   width: calc(100vw - 40px);
 }
 
+.api-key-audit .api-key-audit-reason {
+  // The resizable grid truncates one-line cells. Reasons are explanatory
+  // sentences: wrap inside the existing column, including long translated
+  // words, rather than relying on a desktop-only overflow tooltip.
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
 .api-key-policy-matrix {
   min-width: 0;
   margin: 16px 0;

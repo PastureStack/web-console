@@ -1,6 +1,7 @@
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
+import { setComponentTemplate } from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
 import { find, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
 import Collection from 'ember-api-store/models/collection';
@@ -8,6 +9,8 @@ import { module, test } from 'qunit';
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
 import { initialize as initializeIntl } from 'ui/instance-initializers/intl';
 import resolver from '../../helpers/resolver';
+import ApiKeyAudit from 'ui/components/api-key-audit/component';
+import auditTemplate from 'ui/components/api-key-audit/template';
 
 function testKey(store) {
   return EmberObject.create({
@@ -97,6 +100,64 @@ module('Integration | Component | API key editor viewport layout', function(hook
 
   for (let locale of ['en-us', 'zh-tw']) {
     for (let theme of ['light', 'dark']) {
+      test(`API key audit reason viewport layout: ${locale} ${theme}`, async function(assert) {
+        this.intl.setLocale([locale]);
+        let context = this;
+        let capturedAudit = ApiKeyAudit.extend({
+          didInsertElement() { this._super(...arguments); context.audit = this; },
+        });
+        setComponentTemplate(auditTemplate, capturedAudit);
+        this.owner.register('component:api-key-audit', capturedAudit);
+        // A null key performs no request and installs no polling timer. The
+        // displayed records still use the product's actual safeRecord/template.
+        await render(precompileTemplate('{{api-key-audit}}'));
+        this.audit.set('rows', ['KeyGovernanceCompleted', 'OwnerPermissionDenied'].map((reason, index) =>
+          this.audit.safeRecord({id: `viewport-event-${index}`, created: '2026-10-10T10:00:00Z',
+            operation: 'read', decision: index ? 'DENY' : 'ALLOW', phase: 'response',
+            outcome: index ? 'DENIED' : 'SUCCEEDED', httpStatus: index ? 403 : 200,
+            targetType: 'apiKey', requestId: `viewport-request-${index}`, reason})));
+        await settled();
+        let snapshot = find('.api-key-audit').cloneNode(true);
+        let table = snapshot.querySelector('table');
+        // Reproduce the real manager's fixed-column contract, not just an
+        // uninitialized table. Native acceptance separately runs the manager.
+        table.setAttribute('data-resizable-columns', 'true');
+        table.style.cssText = 'table-layout:fixed;width:1066px;min-width:1066px;max-width:none';
+        let columns = document.createElement('colgroup');
+        for (let width of [160, 90, 120, 96, 100, 100, 120, 180, 100]) {
+          let column = document.createElement('col');
+          column.style.width = `${width}px`;
+          columns.appendChild(column);
+        }
+        table.prepend(columns);
+        for (let width of [390, 1440]) {
+          let frame = await viewportFrame(`<main class="container-fluid">${snapshot.outerHTML}</main>`, theme, locale, width);
+          try {
+            await painted(frame);
+            let page = frame.contentDocument;
+            assert.notOk(page.body.textContent.includes('Missing translation'), 'translated audit wording is present');
+            for (let reason of page.querySelectorAll('.api-key-audit-reason')) {
+              let style = frame.contentWindow.getComputedStyle(reason);
+              let bounds = reason.getBoundingClientRect();
+              let range = page.createRange();
+              range.selectNodeContents(reason);
+              let fragments = [...range.getClientRects()];
+              assert.strictEqual(style.whiteSpace, 'normal', `${locale}/${theme}/${width}: reason wraps despite managed-cell nowrap`);
+              assert.strictEqual(style.overflowWrap, 'anywhere', 'long translated words can wrap without widening the column');
+              assert.ok(reason.parentElement.classList.contains('table-column-wrap'), 'shared grid does not hide explanatory text');
+              assert.ok(bounds.width > 0 && reason.scrollWidth <= reason.clientWidth + 1, 'reason has no horizontally clipped text');
+              assert.ok(fragments.length > 1, 'long reason actually occupies multiple lines');
+              assert.ok(fragments.every(rect => rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 &&
+                rect.top >= bounds.top - 1 && rect.bottom <= bounds.bottom + 1), 'every text fragment is inside its visible box');
+              assert.strictEqual(style.color, frame.contentWindow.getComputedStyle(reason.closest('.api-key-audit')).color,
+                'explanation uses the readable theme foreground');
+            }
+            assert.ok(page.documentElement.scrollWidth <= width + 1, 'table overflow stays in its local scroll region');
+            assert.strictEqual(this.writes, 0, 'text layout regression makes no API write');
+          } finally { frame.remove(); }
+        }
+      });
+
       test(`${locale} ${theme}: actual modal and footer layout fit 390px and desktop`, async function(assert) {
         this.intl.setLocale([locale]);
         await render(precompileTemplate('{{modal-root}}'));
