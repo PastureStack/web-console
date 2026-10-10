@@ -10,7 +10,8 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-The 1.6.181 source candidate adds capability-gated API Key access settings,
+[Web Console 1.6.181](https://github.com/PastureStack/web-console/releases/tag/1.6.181)
+is published, adding capability-gated API Key access settings,
 expiration, reviewed changes with platform MFA, and per-key audit
 filtering and details for the matching Server v1.6.519 contract. Every grant
 remains bounded by the owner's live permissions; operation choices are not
@@ -62,15 +63,14 @@ from an older query or authenticated session cannot replace current results.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).
-Candidate browser acceptance and publication are separate steps.
+Component publication and complete Server acceptance are separate results.
 
-[Web Console 1.6.180](https://github.com/PastureStack/web-console/releases/tag/1.6.180)
-is published, fixing all-time audit listing, polling and JSON/XLSX export
-queries. This contract requires the matching Server v1.6.518 broker.
-The console archive is published independently of Server assembly.
+The console archive is published independently of Server assembly. The matching
+Server v1.6.519 image remains an unpublished candidate pending release-artifact
+acceptance; this component release is not a published control-plane deployment.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current release note](docs/releases/web-console-1.6.180.md).
+see the [current release note](docs/releases/web-console-1.6.181.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.
