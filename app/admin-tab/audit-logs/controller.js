@@ -531,7 +531,7 @@ export default Controller.extend(Sortable, {
         if (isAuthenticationFailure(error)) {
           this.send('sessionInvalid', null, true, null, authGeneration, 401);
         } else {
-          this.set('exportError', auditQueryError(error));
+          this.set('exportError', auditQueryError(error, 'export'));
         }
       }).finally(() => {
         if (this._exportOperation === operation && !this.isDestroyed && !this.isDestroying) {

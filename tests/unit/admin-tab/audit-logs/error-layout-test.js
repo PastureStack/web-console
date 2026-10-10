@@ -5,6 +5,7 @@ import { run } from '@ember/runloop';
 import { precompileTemplate } from '@ember/template-compilation';
 import { click, render, settled, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
 import { module, test } from 'qunit';
+import { reject } from 'rsvp';
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
 import { initialize as initializeIntl } from 'ui/instance-initializers/intl';
 import AuditLogsController from 'ui/admin-tab/audit-logs/controller';
@@ -168,7 +169,7 @@ module('admin tab | audit logs error layout', function(hooks) {
 
   for (let locale of ['en-us', 'zh-tw']) {
     for (let theme of ['light', 'dark']) {
-      test(`${locale}/${theme}: four real error states fit 390px and 1440px and retain recovery`, async function(assert) {
+      test(`${locale}/${theme}: query and export error states fit 390px and 1440px and retain recovery`, async function(assert) {
         this.intl.setLocale([locale]);
         assert.strictEqual(this.subject.get('target'), this.routeBoundary, 'actual controller recovery is isolated from application routing');
         let phases = [
@@ -178,6 +179,10 @@ module('admin tab | audit logs error layout', function(hooks) {
             exportError: auditQueryError({status: 422, body: {code: 'export_too_large'}})},
           {name: 'export-only-successful-query', query: null,
             exportError: auditQueryError({status: 422, body: {code: 'export_too_large'}})},
+          {name: 'export-only-forbidden', query: null, exportFailure: {status: 403}, expectedExportKey: 'exportForbidden'},
+          {name: 'export-only-unavailable', query: null, exportFailure: {status: 502}, expectedExportKey: 'exportUnavailable'},
+          {name: 'export-only-network-failure', query: null,
+            exportFailure: new TypeError('synthetic network failure'), expectedExportKey: 'exportUnavailable'},
         ];
         for (let phase of phases) {
           this.subject.setProperties({model: EmberObject.create({queryError: phase.query,
@@ -187,6 +192,27 @@ module('admin tab | audit logs error layout', function(hooks) {
           isFiltering: false, isExporting: false});
           this.subject.syncDraftFromQuery();
           this.subject.set('exportError', phase.exportError || null);
+          if (phase.exportFailure) {
+            let originalFetch = this.subject.fetchAuditExport;
+            let originalSave = this.subject.saveAuditExport;
+            let successfulModel = this.subject.get('model');
+            let successfulAuditRows = successfulModel.get('auditLog');
+            let deliveredFiles = 0;
+            this.subject.fetchAuditExport = () => reject(phase.exportFailure);
+            this.subject.saveAuditExport = () => { deliveredFiles++; };
+            try {
+              await this.subject.actions.exportLogs.call(this.subject, 'json');
+            } finally {
+              this.subject.fetchAuditExport = originalFetch;
+              this.subject.saveAuditExport = originalSave;
+            }
+            assert.strictEqual(this.subject.get('exportError.messageKey'), `auditLogsPage.queryErrors.${phase.expectedExportKey}`, 'actual controller uses export-only presentation');
+            assert.strictEqual(deliveredFiles, 0, 'a failed export never delivers a file');
+            assert.strictEqual(this.subject.get('model'), successfulModel, 'export failure retains the successful model');
+            assert.strictEqual(this.subject.get('model.auditLog'), successfulAuditRows, 'export failure retains exact successful rows');
+            assert.strictEqual(this.subject.get('model.queryError'), null, 'export failure cannot create a list-query failure');
+            assert.notOk(this.subject.get('isExporting'), 'the export lock is released before rendering');
+          }
           await renderAuditController(this);
           let root = this.element;
           let label = `${locale}/${theme}/${phase.name}`;
@@ -207,9 +233,16 @@ module('admin tab | audit logs error layout', function(hooks) {
             assert.strictEqual(root.querySelector('.audit-log-results-status').textContent.trim(),
               this.intl.t('auditLogsPage.filterBuilder.results.summary', {count: 1, range: this.subject.get('appliedRangeSummary')}), 'successful summary retains the actual nonzero count');
           }
-          if (phase.exportError) {
+          if (phase.exportError || phase.exportFailure) {
+            let messageKey = this.subject.get('exportError.messageKey');
             assert.strictEqual(root.querySelector('[data-testid="audit-log-export-error"]').textContent.trim(),
-              this.intl.t(phase.exportError.messageKey), 'export error is safely translated, not a backend error file');
+              this.intl.t(messageKey), 'export error is safely translated, not a backend error file');
+            if (phase.exportFailure) {
+              let text = root.querySelector('[data-testid="audit-log-export-error"]').textContent;
+              assert.ok(text.includes(locale === 'en-us' ? 'export did not complete' : '匯出未完成'), 'rendered text identifies export as the failed operation');
+              assert.notOk(text.includes(locale === 'en-us' ? 'query did not complete' : '查詢未完成'), 'rendered text never contradicts the retained successful query');
+              assert.notOk(root.querySelector('[data-testid="audit-log-query-error"]'), 'no query error alert is rendered');
+            }
           }
           for (let width of [390, 1440]) {
             let frame = await viewportFrame(root.innerHTML, theme, locale, width);

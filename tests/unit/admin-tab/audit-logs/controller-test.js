@@ -109,14 +109,24 @@ test('missing names never misrepresent a retained actor or environment filter as
 test('checked export errors are visible without delivering an error body as a file', async function(assert) {
   let controller = controllerFor({saveAuditExport() { assert.notOk(true, 'failed exports must not deliver files'); }});
   try {
+    let model = controller.get('model');
+    let rows = model.get('auditLog');
     for (let [status, code, message] of [[422, 'export_too_large', 'exportTooLarge'],
-      [403, 'denied', 'forbidden'], [502, 'upstream_failed', 'unavailable']]) {
+      [403, 'denied', 'exportForbidden'], [502, 'upstream_failed', 'exportUnavailable']]) {
       controller.fetchAuditExport = () => reject({status, body: {code}});
       await controller.actions.exportLogs.call(controller, 'json');
       assert.strictEqual(controller.get('exportError.messageKey'), `auditLogsPage.queryErrors.${message}`);
       assert.notOk(controller.get('isExporting'), 'a failed export releases its own lock');
       assert.notOk(controller.get('model.queryError'), 'an export failure is not a fake list-query failure');
+      assert.strictEqual(controller.get('model'), model, 'an export failure does not replace the successful model');
+      assert.strictEqual(controller.get('model.auditLog'), rows, 'successful list rows are retained');
     }
+    controller.fetchAuditExport = () => reject(new TypeError('synthetic network failure'));
+    await controller.actions.exportLogs.call(controller, 'json');
+    assert.strictEqual(controller.get('exportError.messageKey'), 'auditLogsPage.queryErrors.exportUnavailable');
+    assert.strictEqual(controller.get('model.auditLog'), rows, 'network failure also retains successful rows');
+    assert.notOk(controller.get('model.queryError'));
+    assert.notOk(controller.get('isExporting'));
   } finally { destroyOwned(controller); }
 });
 
@@ -165,7 +175,7 @@ test('file delivery exceptions use the same diagnostic cleanup as network failur
   });
   try {
     await controller.actions.exportLogs.call(controller, 'json');
-    assert.strictEqual(controller.get('exportError.messageKey'), 'auditLogsPage.queryErrors.unavailable');
+    assert.strictEqual(controller.get('exportError.messageKey'), 'auditLogsPage.queryErrors.exportUnavailable');
     assert.notOk(controller.get('isExporting'));
   } finally { destroyOwned(controller); }
 });

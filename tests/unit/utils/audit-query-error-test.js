@@ -41,6 +41,30 @@ test('403 takes precedence over narrowing copy and unknown codes are withheld', 
     {messageKey: key('forbidden'), canNarrow: false, status: 403, code: null});
 });
 
+test('export context changes only forbidden and unavailable presentation, never authentication or range semantics', function(assert) {
+  for (let [error, name, status] of [
+    [{status: 403, body: {code: 'result_set_too_large'}}, 'exportForbidden', 403],
+    [{status: 502, body: {code: 'upstream_failed'}}, 'exportUnavailable', 502],
+    [new TypeError('synthetic network failure'), 'exportUnavailable', null],
+  ]) {
+    let result = auditQueryError(error, 'export');
+    assert.strictEqual(result.messageKey, key(name));
+    assert.strictEqual(result.status, status);
+    assert.false(result.canNarrow, 'permission and unavailable errors never offer narrowing');
+    assert.deepEqual(Object.keys(result).sort(), ['canNarrow', 'code', 'messageKey', 'status']);
+  }
+  for (let status of [403, 502]) {
+    assert.deepEqual(auditQueryError({status}), auditQueryError({status}, 'query'), 'default query copy is unchanged');
+    assert.deepEqual(auditQueryError({status}, 'unknown'), auditQueryError({status}), 'an unknown context cannot change the query contract');
+  }
+  assert.strictEqual(auditQueryError({status: 401}, 'export'), null, 'export 401 stays at the session recovery boundary');
+  for (let code of ['result_set_too_large', 'export_too_large', 'invalid_time_scope', 'incomplete_time_range',
+    'invalid_time_range', 'time_range_too_large', 'InvalidAuditRange']) {
+    let error = {status: 422, body: {code}};
+    assert.deepEqual(auditQueryError(error, 'export'), auditQueryError(error), `${code}: existing range/limit semantics are unchanged`);
+  }
+});
+
 test('401 is never converted to a query or empty-result presentation', function(assert) {
   for (let error of [
     {status: 401, body: {code: 'result_set_too_large'}},
@@ -100,7 +124,7 @@ test('cyclic and deeply nested failures are bounded and do not mutate their inpu
 });
 
 test('English and Traditional Chinese query failure/action keys are symmetric and human readable', async function(assert) {
-  let names = ['tooLarge', 'exportTooLarge', 'invalidRange', 'forbidden', 'unavailable', 'recent15Minutes', 'retry',
+  let names = ['tooLarge', 'exportTooLarge', 'invalidRange', 'forbidden', 'unavailable', 'exportForbidden', 'exportUnavailable', 'recent15Minutes', 'retry',
     'selectedUserUnavailable', 'selectedEnvironmentUnavailable', 'exporting'];
   let selectedAndExportCopy = {
     'en-us': ['A user is selected; its name is temporarily unavailable.',
@@ -120,5 +144,9 @@ test('English and Traditional Chinese query failure/action keys are symmetric an
     });
     assert.ok(messages[key('tooLarge')].includes(locale === 'en-us' ? 'not complete' : '未完成'), 'failure is not presented as zero records');
     assert.ok(messages[key('unavailable')].includes(locale === 'en-us' ? 'no records' : '沒有記錄'), 'unavailable copy explains that records are not known to be absent');
+    for (let name of ['exportForbidden', 'exportUnavailable']) {
+      assert.ok(messages[key(name)].includes(locale === 'en-us' ? 'export did not complete' : '匯出未完成'), 'standalone export failures identify the failed operation');
+      assert.notOk(messages[key(name)].includes(locale === 'en-us' ? 'query did not complete' : '查詢未完成'), 'successful query results are not described as failed');
+    }
   }
 });

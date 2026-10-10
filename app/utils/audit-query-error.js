@@ -57,7 +57,7 @@ export function isAuthenticationFailure(error) {
   return safeStatus(errorNodes(error)) === 401;
 }
 
-export function auditQueryError(error) {
+export function auditQueryError(error, context = 'query') {
   let nodes = errorNodes(error);
   let status = safeStatus(nodes);
   // The caller must rethrow the original 401 to the application's session flow.
@@ -73,6 +73,9 @@ export function auditQueryError(error) {
     }
   }
   let key = status === 403 ? 'forbidden' : code ? QUERY_ERROR_KEYS[code] : 'unavailable';
+  if ( context === 'export' && ['forbidden', 'unavailable'].includes(key) ) {
+    key = key === 'forbidden' ? 'exportForbidden' : 'exportUnavailable';
+  }
   return {
     messageKey: `auditLogsPage.queryErrors.${key}`,
     canNarrow: ['tooLarge', 'exportTooLarge', 'invalidRange'].includes(key),
