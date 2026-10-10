@@ -91,6 +91,6 @@
 {{#if this.policySupported}}
   {{#if this.targetKey}}
     {{api-key-audit keyId=this.targetKey}}
-    <div class="api-key-audit-close text-right r-mt10"><button type="button" class="btn btn-default" {{action 'closeAudit'}}>{{t 'apiKeyAudit.close'}}</button></div>
+    <section class="api-key-audit-close text-right"><button type="button" class="btn btn-default" {{action 'closeAudit'}}>{{t 'apiKeyAudit.close'}}</button></section>
   {{/if}}
 {{/if}}
