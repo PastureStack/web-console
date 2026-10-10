@@ -13,7 +13,7 @@ import { buildPolicyMatrix } from 'ui/utils/api-key-policy-matrix';
 import C from 'ui/utils/constants';
 
 export default ModalBase.extend(NewOrEdit, {
-  classNames: ['lacsso', 'modal-container', 'large-modal'],
+  classNames: ['lacsso', 'modal-container', 'large-modal', 'api-key-editor-modal'],
   originalModel: alias('modalService.modalOpts'),
   model: null,
   clone: null,

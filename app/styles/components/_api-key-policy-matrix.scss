@@ -1,3 +1,11 @@
+.lacsso.modal-overlay > .lacsso.modal-container.large-modal.api-key-editor-modal {
+  // The absolute modal overlay can shrink-to-fit the matrix's min-content
+  // width. Bind this editor to the viewport, not that expanded parent; keep
+  // the existing desktop max-width and the matrix's own horizontal scroll.
+  // Match the prefixed vendor modal rule's specificity without changing it.
+  width: calc(100vw - 40px);
+}
+
 .api-key-policy-matrix {
   min-width: 0;
   margin: 16px 0;

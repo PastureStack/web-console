@@ -30,6 +30,8 @@ partial scopes, unresolved relationships and expiry. It does not grant or
 predict permissions beyond the owner's live access.
 Reloading a newer policy revision revalidates selected names and capabilities;
 pending evidence from an older reload or owner is not reused in the matrix.
+The key editor stays within narrow viewports while the matrix scrolls internally;
+the existing desktop modal sizing is retained.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).
