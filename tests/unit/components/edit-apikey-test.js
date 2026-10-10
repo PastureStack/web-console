@@ -115,6 +115,74 @@ test('cancel clears delayed focus; a stale callback has no input and cannot writ
   destroyOwned(component);
 });
 
+test('keyboard and pointer interaction cancel autofocus even without a focus change', function(assert) {
+  let scheduled, focused = 0;
+  let originalSetTimeout = window.setTimeout;
+  let initial = document.createElement('button');
+  document.body.appendChild(initial);
+  let component = createOwned(EditApiKey, {
+    renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
+    modalService: EmberObject.create({modalOpts: null}),
+    $() { return [{focus() { focused++; }}]; },
+  }, 'component');
+
+  try {
+    window.setTimeout = (callback) => { scheduled = callback; return 12345; };
+    for (let type of ['keydown', 'pointerdown']) {
+      initial.focus();
+      component.didInsertElement();
+      initial.dispatchEvent(new Event(type, {bubbles: true}));
+      assert.strictEqual(document.activeElement, initial, `${type} need not change the active element`);
+      scheduled();
+      assert.strictEqual(focused, 0, `${type} permanently relinquishes autofocus ownership`);
+      assert.strictEqual(component._releaseInitialFocus, null, `${type} callback releases all observers`);
+    }
+  } finally {
+    window.setTimeout = originalSetTimeout;
+    initial.remove();
+    destroyOwned(component);
+  }
+});
+
+test('destroy releases the pending focus timer and all three interaction observers', function(assert) {
+  let originalSetTimeout = window.setTimeout, originalClearTimeout = window.clearTimeout;
+  let originalAdd = document.addEventListener, originalRemove = document.removeEventListener;
+  let added = [], removed = [], cleared = [];
+  let component = createOwned(EditApiKey, {
+    renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
+    modalService: EmberObject.create({modalOpts: null}),
+  }, 'component');
+
+  try {
+    window.setTimeout = () => 12345;
+    window.clearTimeout = (timer) => { cleared.push(timer); };
+    document.addEventListener = function(type, listener, capture) {
+      added.push({type, listener, capture});
+      return originalAdd.call(this, type, listener, capture);
+    };
+    document.removeEventListener = function(type, listener, capture) {
+      removed.push({type, listener, capture});
+      return originalRemove.call(this, type, listener, capture);
+    };
+    component.didInsertElement();
+    component.willDestroy();
+    assert.deepEqual(added.map(({type}) => type), ['focusin', 'keydown', 'pointerdown']);
+    assert.deepEqual(removed, added, 'destroy removes exactly the owned capture listeners');
+    assert.deepEqual(cleared, [12345], 'destroy cancels only its pending autofocus timer');
+    assert.strictEqual(component._focusTimer, null);
+    assert.strictEqual(component._releaseInitialFocus, null);
+  } finally {
+    window.setTimeout = originalSetTimeout;
+    window.clearTimeout = originalClearTimeout;
+    document.addEventListener = originalAdd;
+    document.removeEventListener = originalRemove;
+    if (component._releaseInitialFocus) { component._releaseInitialFocus(); }
+    destroyOwned(component);
+  }
+});
+
 module('Integration | Component | edit apikey rapid cancel', function(hooks) {
   hooks.beforeEach(async function() {
     this.testRoot = document.createElement('div');
@@ -159,6 +227,10 @@ module('Integration | Component | edit apikey rapid cancel', function(hooks) {
     try {
       await render(precompileTemplate('{{#if this.modal.modalVisible}}{{edit-apikey}}{{/if}}'));
       assert.ok(find('input[type="text"]'), 'the new key form has a real focus target');
+      let nameForm = Object.values(this.owner.lookup('-view-registry:main')).find((view) =>
+        typeof view.modelChanged === 'function' && typeof view.nameChanged === 'function' && !view.isDestroyed);
+      assert.strictEqual(nameForm.get('autoFocus'), false, 'the real API key template opts out of child autofocus');
+      assert.notOk(nameForm._autoFocusTimer, 'the real child did not schedule a competing next callback');
       find('.footer-actions .btn-link').click();
       await settled();
       assert.notOk(find('input[type="text"]'), 'Cancel removes the input before the delayed callback');

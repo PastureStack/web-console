@@ -511,6 +511,9 @@ export default Controller.extend(Sortable, {
       let model = this.get('model');
       let authGeneration = this.get('access').captureGeneration();
       let operation = this._exportOperation = {};
+      // Bootstrap skips disabled dropdown toggles during document auto-close.
+      // Close this menu before rendering the export lock, not after download.
+      this.closeAuditExportDropdown();
       this.setProperties({isExporting: true, exportError: null});
       let current = () => !this.isDestroyed && !this.isDestroying &&
         this._exportOperation === operation && this.get('model') === model &&
@@ -540,6 +543,14 @@ export default Controller.extend(Sortable, {
         }
       });
     },
+  },
+
+  closeAuditExportDropdown() {
+    let button = document.querySelector('[data-testid="audit-log-export"]');
+    if (button && window.bootstrap && window.bootstrap.Dropdown) {
+      let dropdown = window.bootstrap.Dropdown.getInstance(button);
+      if (dropdown) { dropdown.hide(); }
+    }
   },
 
   fetchAuditExport(url, format) {

@@ -4,6 +4,7 @@ import moment from 'moment';
 import { defer, reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import AuditLogsController from 'ui/admin-tab/audit-logs/controller';
+import installBootstrapRuntime from 'ui/utils/bootstrap-runtime';
 import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
 
 function auditLogFor(records = [], actors = []) {
@@ -39,7 +40,62 @@ function controllerFor(properties = {}) {
   }, properties), 'controller');
 }
 
-module('Unit | Controller | admin tab | audit logs');
+module('Unit | Controller | admin tab | audit logs', {
+  beforeEach() {
+    this.previousBootstrap = window.bootstrap;
+    // Owned unit fixtures do not boot app.js. Install the same maintained
+    // runtime used by production, rather than mocking Dropdown behavior.
+    installBootstrapRuntime();
+  },
+  afterEach() {
+    window.bootstrap = this.previousBootstrap;
+  },
+});
+
+test('native export dropdown closes before its toggle is disabled across consecutive formats', async function(assert) {
+  let host = document.createElement('div');
+  host.className = 'dropdown';
+  let button = document.createElement('button');
+  button.type = 'button';
+  button.setAttribute('data-bs-toggle', 'dropdown');
+  button.setAttribute('data-testid', 'audit-log-export');
+  let menu = document.createElement('ul');
+  menu.className = 'dropdown-menu';
+  host.append(button, menu);
+  document.body.appendChild(host);
+  let dropdown = window.bootstrap.Dropdown.getOrCreateInstance(button);
+  let deferred;
+  let requests = 0;
+  let downloads = 0;
+  let controller = controllerFor({
+    fetchAuditExport() { requests++; return deferred.promise; },
+    saveAuditExport() { downloads++; },
+  });
+  let renderDisabled = () => { button.disabled = controller.get('isExporting'); };
+  controller.addObserver('isExporting', renderDisabled);
+  try {
+    for (let format of ['json', 'csv', 'xlsx']) {
+      dropdown.show();
+      assert.strictEqual(button.getAttribute('aria-expanded'), 'true', `${format} starts with the real menu open`);
+      deferred = defer();
+      let pending = controller.actions.exportLogs.call(controller, format);
+      assert.ok(button.disabled, 'the export lock is rendered immediately');
+      assert.strictEqual(button.getAttribute('aria-expanded'), 'false', 'the menu closes before Bootstrap sees a disabled toggle');
+      assert.notOk(menu.classList.contains('show'));
+      assert.strictEqual(controller.actions.exportLogs.call(controller, format), undefined, 'a duplicate cannot start another export');
+      deferred.resolve(new Blob(['safe test export']));
+      await pending;
+      assert.notOk(button.disabled);
+    }
+    assert.strictEqual(requests, 3);
+    assert.strictEqual(downloads, 3);
+  } finally {
+    controller.removeObserver('isExporting', renderDisabled);
+    destroyOwned(controller);
+    dropdown.dispose();
+    host.remove();
+  }
+});
 
 test('query recovery narrows time only after an explicit action and preserves all other filters', function(assert) {
   let sent = [];
@@ -73,7 +129,9 @@ test('query recovery narrows time only after an explicit action and preserves al
 test('a rejected, pending or duplicate query cannot start a misleading export', async function(assert) {
   let requests = 0;
   let downloads = 0;
+  let hides = 0;
   let controller = controllerFor({
+    closeAuditExportDropdown() { hides++; },
     fetchAuditExport() { requests++; return resolve(new Blob(['safe export'])); },
     saveAuditExport() { downloads++; },
   });
@@ -88,9 +146,30 @@ test('a rejected, pending or duplicate query cannot start a misleading export', 
     await controller.actions.exportLogs.call(controller, 'html');
     assert.strictEqual(requests, 0, 'all guards stop the real transport entry point');
     assert.strictEqual(downloads, 0, 'no blocked request delivers a file');
+    assert.strictEqual(hides, 0, 'blocked exports do not change dropdown state');
     assert.notOk(controller.get('isExporting'));
   } finally {
     destroyOwned(controller);
+  }
+});
+
+test('export menu closure never creates an instance or changes another dropdown', function(assert) {
+  let host = document.createElement('div');
+  host.innerHTML = '<div class="dropdown"><button data-bs-toggle="dropdown" data-testid="audit-log-export"></button><ul class="dropdown-menu"></ul></div>' +
+    '<div class="dropdown"><button data-bs-toggle="dropdown"></button><ul class="dropdown-menu"></ul></div>';
+  document.body.appendChild(host);
+  let buttons = host.querySelectorAll('button');
+  let other = window.bootstrap.Dropdown.getOrCreateInstance(buttons[1]);
+  let controller = controllerFor();
+  try {
+    other.show();
+    controller.closeAuditExportDropdown();
+    assert.strictEqual(window.bootstrap.Dropdown.getInstance(buttons[0]), null, 'no instance is created for the export toggle');
+    assert.strictEqual(buttons[1].getAttribute('aria-expanded'), 'true', 'other dropdown ownership is unchanged');
+  } finally {
+    other.dispose();
+    destroyOwned(controller);
+    host.remove();
   }
 });
 

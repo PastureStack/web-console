@@ -44,12 +44,15 @@ layouts; state colors remain decorative accents rather than the only indication.
 Keyboard-highlighted scope names and unselected hints use the same readable theme
 foreground.
 Initial form autofocus does not replace a control already chosen by keyboard
-navigation or by a child selector.
+navigation or by a child selector. The API Key modal owns its initial focus;
+its shared name form does not schedule a second focus operation.
 Narrow rule forms use their available width; multi-line scope names stay inside
 a viewport-bounded dropdown scroll region.
 Oversized audit queries keep their filters visible and offer an explicit narrower
 time range. Failed queries stop automatic polling; exports check the response
-before downloading and show translated errors. Pagination and export responses
+before downloading and show translated errors. Export menus close before the
+pending-download lock so consecutive JSON, CSV and Excel exports remain usable.
+Pagination and export responses
 from an older query or authenticated session cannot replace current results.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching

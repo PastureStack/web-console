@@ -189,11 +189,16 @@ export default ModalBase.extend(NewOrEdit, {
     const initialActiveElement = document.activeElement;
     let focusMoved = false;
     const observeFocus = (event) => { focusMoved = focusMoved || event.target !== initialActiveElement; };
+    const observeInteraction = () => { focusMoved = true; };
     this._releaseInitialFocus = () => {
       document.removeEventListener('focusin', observeFocus, true);
+      document.removeEventListener('keydown', observeInteraction, true);
+      document.removeEventListener('pointerdown', observeInteraction, true);
       this._releaseInitialFocus = null;
     };
     document.addEventListener('focusin', observeFocus, true);
+    document.addEventListener('keydown', observeInteraction, true);
+    document.addEventListener('pointerdown', observeInteraction, true);
     this._focusTimer = setTimeout(() => {
       this._focusTimer = null;
       if ( this._releaseInitialFocus ) { this._releaseInitialFocus(); }
@@ -223,6 +228,7 @@ export default ModalBase.extend(NewOrEdit, {
 
   willDestroy() {
     if ( this._releaseInitialFocus ) { this._releaseInitialFocus(); }
+    if ( this._focusTimer ) { clearTimeout(this._focusTimer); this._focusTimer = null; }
     if ( this._matrixExpiryTimer ) { clearTimeout(this._matrixExpiryTimer); this._matrixExpiryTimer = null; }
     this._super(...arguments);
   },
