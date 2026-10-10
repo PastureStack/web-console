@@ -90,7 +90,7 @@
 
 {{#if this.policySupported}}
   {{#if this.targetKey}}
-    <div class="text-right r-mb10"><button type="button" class="btn btn-default" {{action 'closeAudit'}}>{{t 'apiKeyAudit.close'}}</button></div>
     {{api-key-audit keyId=this.targetKey}}
+    <div class="api-key-audit-close text-right r-mt10"><button type="button" class="btn btn-default" {{action 'closeAudit'}}>{{t 'apiKeyAudit.close'}}</button></div>
   {{/if}}
 {{/if}}
