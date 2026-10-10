@@ -184,9 +184,20 @@ export default ModalBase.extend(NewOrEdit, {
 
   didInsertElement() {
     this._super(...arguments);
+    // Autofocus is only an initial suggestion. A delayed callback must not
+    // take focus back after keyboard navigation or a child's own autofocus.
+    const initialActiveElement = document.activeElement;
+    let focusMoved = false;
+    const observeFocus = (event) => { focusMoved = focusMoved || event.target !== initialActiveElement; };
+    this._releaseInitialFocus = () => {
+      document.removeEventListener('focusin', observeFocus, true);
+      this._releaseInitialFocus = null;
+    };
+    document.addEventListener('focusin', observeFocus, true);
     this._focusTimer = setTimeout(() => {
       this._focusTimer = null;
-      if (this.isDestroying || this.isDestroyed) {
+      if ( this._releaseInitialFocus ) { this._releaseInitialFocus(); }
+      if (this.isDestroying || this.isDestroyed || focusMoved || document.activeElement !== initialActiveElement) {
         return;
       }
 
@@ -199,6 +210,7 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   willDestroyElement() {
+    if ( this._releaseInitialFocus ) { this._releaseInitialFocus(); }
     if ( this._matrixExpiryTimer ) { clearTimeout(this._matrixExpiryTimer); this._matrixExpiryTimer = null; }
     this._createdSecret = null;
     if ( this.get('clone') ) { this.set('clone.secretValue', null); }
@@ -210,6 +222,7 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   willDestroy() {
+    if ( this._releaseInitialFocus ) { this._releaseInitialFocus(); }
     if ( this._matrixExpiryTimer ) { clearTimeout(this._matrixExpiryTimer); this._matrixExpiryTimer = null; }
     this._super(...arguments);
   },

@@ -43,6 +43,8 @@ API Key status, help and error wording uses readable theme text in light and dar
 layouts; state colors remain decorative accents rather than the only indication.
 Keyboard-highlighted scope names and unselected hints use the same readable theme
 foreground.
+Initial form autofocus does not replace a control already chosen by keyboard
+navigation or by a child selector.
 Narrow rule forms use their available width; multi-line scope names stay inside
 a viewport-bounded dropdown scroll region.
 Oversized audit queries keep their filters visible and offer an explicit narrower

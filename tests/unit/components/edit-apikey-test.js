@@ -18,6 +18,58 @@ import resolver from '../../helpers/resolver';
 
 module('Unit | Component | edit apikey');
 
+test('delayed autofocus does not steal focus after keyboard navigation or child autofocus', function(assert) {
+  let scheduled;
+  let focused = 0;
+  let originalSetTimeout = window.setTimeout;
+  let previous = document.createElement('button');
+  let next = document.createElement('button');
+  let search = document.createElement('input');
+  document.body.append(previous, next, search);
+  let component = createOwned(EditApiKey, {
+    renderer: inertRenderer(),
+    intl: EmberObject.create({t(key) { return key; }}),
+    modalService: EmberObject.create({modalOpts: null}),
+    $() { return [{focus() { focused++; }}]; },
+  }, 'component');
+
+  try {
+    window.setTimeout = (callback) => { scheduled = callback; return 12345; };
+    previous.focus();
+    component.didInsertElement();
+    next.focus();
+    scheduled();
+    assert.strictEqual(document.activeElement, next, 'keyboard navigation retains its chosen control');
+    assert.strictEqual(focused, 0, 'the delayed callback does not steal keyboard focus');
+
+    previous.focus();
+    component.didInsertElement();
+    search.focus();
+    scheduled();
+    assert.strictEqual(document.activeElement, search, 'a child search retains its autofocus');
+    assert.strictEqual(focused, 0, 'the delayed callback does not steal child focus');
+
+    previous.focus();
+    component.didInsertElement();
+    next.focus();
+    previous.focus();
+    scheduled();
+    assert.strictEqual(document.activeElement, previous, 'returning to the original control is still a user choice');
+    assert.strictEqual(focused, 0, 'a round-trip does not restore autofocus ownership');
+
+    previous.focus();
+    component.didInsertElement();
+    scheduled();
+    assert.strictEqual(focused, 1, 'initial autofocus still works when focus has not changed');
+    assert.strictEqual(component._focusTimer, null, 'the callback releases its timer ownership');
+    assert.strictEqual(component._releaseInitialFocus, null, 'the callback releases its temporary focus observer');
+  } finally {
+    window.setTimeout = originalSetTimeout;
+    previous.remove(); next.remove(); search.remove();
+    destroyOwned(component);
+  }
+});
+
 test('cancel clears delayed focus; a stale callback has no input and cannot write', function(assert) {
   let closed = 0;
   let writes = 0;
