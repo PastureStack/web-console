@@ -1,6 +1,7 @@
 import { A } from '@ember/array';
 import EmberObject from '@ember/object';
 import moment from 'moment';
+import { defer, reject, resolve } from 'rsvp';
 import { module, test } from 'qunit';
 import AuditLogsController from 'ui/admin-tab/audit-logs/controller';
 import { createOwned, destroyOwned } from '../../../helpers/owned-subject';
@@ -32,26 +33,173 @@ function controllerFor(properties = {}) {
       projects: A(),
       resourceTypes: A(),
     }),
+    access: EmberObject.create({captureGeneration() { return 'initial-auth'; }}),
+    userStore: EmberObject.create({headers: {}}),
     send() {},
   }, properties), 'controller');
 }
 
 module('Unit | Controller | admin tab | audit logs');
 
-test('all-time JSON and XLSX exports use the same scope and authorization filters as the list', function(assert) {
+test('query recovery narrows time only after an explicit action and preserves all other filters', function(assert) {
+  let sent = [];
+  let controller = controllerFor({
+    timeScope: 'all',
+    send(action, options) { sent.push({action, options}); },
+  });
+  try {
+    controller.syncDraftFromQuery();
+    controller.setProperties({
+      'filters.accountId': '1e1',
+      'filters.authenticatedAsAccountId': '1a1',
+      'filters.eventType': 'update',
+      'filters.interactionChannel': 'public_api',
+      'model.queryError': {messageKey: 'auditLogsPage.queryErrors.tooLarge', canNarrow: true},
+    });
+    assert.strictEqual(controller.get('filters.createdFrom'), null, 'a failure never silently changes all-time intent');
+    controller.actions.queryRecentMinutes.call(controller);
+    assert.strictEqual(moment(controller.get('createdTo')).diff(moment(controller.get('createdFrom')), 'minutes'), 15);
+    assert.strictEqual(controller.get('timeScope'), null);
+    assert.strictEqual(controller.get('accountId'), '1e1');
+    assert.strictEqual(controller.get('authenticatedAsAccountId'), '1a1');
+    assert.strictEqual(controller.get('eventType'), 'update');
+    assert.strictEqual(controller.get('interactionChannel'), 'public_api');
+    assert.deepEqual(sent, [{action: 'filterLogs', options: {refreshIfUnchanged: false}}]);
+  } finally {
+    destroyOwned(controller);
+  }
+});
+
+test('a rejected, pending or duplicate query cannot start a misleading export', async function(assert) {
+  let requests = 0;
+  let downloads = 0;
+  let controller = controllerFor({
+    fetchAuditExport() { requests++; return resolve(new Blob(['safe export'])); },
+    saveAuditExport() { downloads++; },
+  });
+  try {
+    controller.set('model.queryError', {messageKey: 'auditLogsPage.queryErrors.tooLarge'});
+    await controller.actions.exportLogs.call(controller, 'json');
+    controller.setProperties({'model.queryError': null, isFiltering: true});
+    await controller.actions.exportLogs.call(controller, 'json');
+    controller.setProperties({isFiltering: false, isExporting: true});
+    await controller.actions.exportLogs.call(controller, 'json');
+    controller.set('isExporting', false);
+    await controller.actions.exportLogs.call(controller, 'html');
+    assert.strictEqual(requests, 0, 'all guards stop the real transport entry point');
+    assert.strictEqual(downloads, 0, 'no blocked request delivers a file');
+    assert.notOk(controller.get('isExporting'));
+  } finally {
+    destroyOwned(controller);
+  }
+});
+
+test('missing names never misrepresent a retained actor or environment filter as all', function(assert) {
+  let controller = controllerFor();
+  try {
+    controller.setProperties({'filters.accountId': '1e1', 'filters.authenticatedAsAccountId': '1a1',
+      'model.auditLog': null, 'model.queryError': {messageKey: 'auditLogsPage.queryErrors.tooLarge'}});
+    assert.strictEqual(controller.get('userSelectionSummary'), 'auditLogsPage.queryErrors.selectedUserUnavailable');
+    assert.strictEqual(controller.get('environmentSelectionSummary'), 'auditLogsPage.queryErrors.selectedEnvironmentUnavailable');
+    assert.strictEqual(controller.get('filters.authenticatedAsAccountId'), '1a1');
+    assert.strictEqual(controller.get('filters.accountId'), '1e1');
+  } finally { destroyOwned(controller); }
+});
+
+test('checked export errors are visible without delivering an error body as a file', async function(assert) {
+  let controller = controllerFor({saveAuditExport() { assert.notOk(true, 'failed exports must not deliver files'); }});
+  try {
+    for (let [status, code, message] of [[422, 'export_too_large', 'exportTooLarge'],
+      [403, 'denied', 'forbidden'], [502, 'upstream_failed', 'unavailable']]) {
+      controller.fetchAuditExport = () => reject({status, body: {code}});
+      await controller.actions.exportLogs.call(controller, 'json');
+      assert.strictEqual(controller.get('exportError.messageKey'), `auditLogsPage.queryErrors.${message}`);
+      assert.notOk(controller.get('isExporting'), 'a failed export releases its own lock');
+      assert.notOk(controller.get('model.queryError'), 'an export failure is not a fake list-query failure');
+    }
+  } finally { destroyOwned(controller); }
+});
+
+test('exports have one owner, are awaitable and cannot leak a file to a newer session', async function(assert) {
+  let deferred = defer();
+  let requests = 0;
+  let downloads = 0;
+  let auth = 'initial-auth';
+  let controller = controllerFor({
+    access: EmberObject.create({captureGeneration() { return auth; }}),
+    fetchAuditExport() { requests++; return deferred.promise; },
+    saveAuditExport() { downloads++; },
+  });
+  try {
+    let pending = controller.actions.exportLogs.call(controller, 'json');
+    assert.ok(pending && typeof pending.then === 'function', 'the complete export is awaitable');
+    assert.strictEqual(controller.actions.exportLogs.call(controller, 'json'), undefined, 'duplicate click does not start another request');
+    auth = 'new-auth';
+    deferred.resolve(new Blob(['old-session export']));
+    await pending;
+    assert.strictEqual(requests, 1);
+    assert.strictEqual(downloads, 0, 'old authorization result cannot deliver to a new session');
+    assert.strictEqual(controller.get('exportError'), null);
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('export 401 delegates passive recovery with captured generation and never server logout', async function(assert) {
+  let actions = [];
+  let controller = controllerFor({
+    fetchAuditExport() { return reject({status: 401}); },
+    send(...args) { actions.push(args); },
+  });
+  try {
+    await controller.actions.exportLogs.call(controller, 'csv');
+    assert.deepEqual(actions, [['sessionInvalid', null, true, null, 'initial-auth', 401]]);
+    assert.strictEqual(controller.get('exportError'), null);
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('file delivery exceptions use the same diagnostic cleanup as network failures', async function(assert) {
+  let controller = controllerFor({
+    fetchAuditExport() { return resolve(new Blob(['safe export'])); },
+    saveAuditExport() { throw new Error('delivery failed'); },
+  });
+  try {
+    await controller.actions.exportLogs.call(controller, 'json');
+    assert.strictEqual(controller.get('exportError.messageKey'), 'auditLogsPage.queryErrors.unavailable');
+    assert.notOk(controller.get('isExporting'));
+  } finally { destroyOwned(controller); }
+});
+
+test('export parser checks HTTP and file type before returning binary data', async function(assert) {
+  let controller = controllerFor();
+  try {
+    for (let type of ['application/json', 'text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']) {
+      let blob = new Blob(['safe fixture'], {type});
+      let response = {status: 200, headers: new Headers({'Content-Type': type + '; charset=utf-8'}), blob() { return resolve(blob); }};
+      assert.strictEqual(await controller.readAuditExportResponse(response, type), blob);
+    }
+    await assert.rejects(controller.readAuditExportResponse({status: 422,
+      headers: new Headers({'Content-Type': 'application/json'}), json() { return resolve({code: 'export_too_large'}); }}, 'text/csv'),
+    (error) => error.status === 422 && error.body.code === 'export_too_large');
+    await assert.rejects(controller.readAuditExportResponse({status: 200,
+      headers: new Headers({'Content-Type': 'text/html'})}, 'text/csv'), (error) => error.status === 502, 'unexpected HTML is never downloaded');
+  } finally { destroyOwned(controller); }
+});
+
+test('all-time JSON and XLSX exports use the same scope and authorization filters as the list', async function(assert) {
+  let captured;
+  let downloads = 0;
   let controller = controllerFor({
     timeScope: 'all', accountId: '1e1', authenticatedAsAccountId: '1a1',
     createdFrom: null, createdTo: null, eventType: 'resource.', eventTypeOperator: 'startsWith',
+    fetchAuditExport(url) { captured = url; return resolve(new Blob(['safe export'])); },
+    saveAuditExport() { downloads++; },
   });
 
-  ['json', 'xlsx'].forEach((format) => {
-    // download() reuses this element: capture the URL without initiating a network request.
-    let target = document.createElement('div');
-    target.id = `audit-log-export-${format}`;
-    document.body.appendChild(target);
+  for (let format of ['json', 'xlsx']) {
     try {
-      controller.actions.exportLogs.call(controller, format);
-      let query = new URL(target.src, window.location.origin);
+      await controller.actions.exportLogs.call(controller, format);
+      let query = new URL(captured, window.location.origin);
       assert.strictEqual(query.pathname, '/v2-beta/pasturestack/audit-logs/export');
       assert.strictEqual(query.searchParams.get('timeScope'), 'all', `${format} preserves all-time intent`);
       assert.strictEqual(query.searchParams.get('format'), format);
@@ -62,19 +210,20 @@ test('all-time JSON and XLSX exports use the same scope and authorization filter
       assert.notOk(query.searchParams.has('created_lte'), 'no artificial end date');
 
       controller.setProperties({createdFrom: '2026-09-01T00:00:00.000Z', createdTo: '2026-10-01T00:00:00.000Z'});
-      controller.actions.exportLogs.call(controller, format);
-      query = new URL(target.src, window.location.origin);
+      await controller.actions.exportLogs.call(controller, format);
+      query = new URL(captured, window.location.origin);
       assert.strictEqual(query.searchParams.get('created_gte'), controller.get('createdFrom'));
       assert.strictEqual(query.searchParams.get('created_lte'), controller.get('createdTo'));
       controller.setProperties({timeScope: null, createdFrom: null, createdTo: null});
-      controller.actions.exportLogs.call(controller, format);
-      query = new URL(target.src, window.location.origin);
+      await controller.actions.exportLogs.call(controller, format);
+      query = new URL(captured, window.location.origin);
       assert.notOk(query.searchParams.has('timeScope'), 'the normal default is not promoted to all time');
       controller.set('timeScope', 'all');
     } finally {
-      target.remove();
+      assert.notOk(controller.get('isExporting'), 'completion releases the export lock');
     }
-  });
+  }
+  assert.strictEqual(downloads, 6, 'each checked success delivers exactly one file');
 
   destroyOwned(controller);
 });

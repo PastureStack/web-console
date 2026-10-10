@@ -38,6 +38,24 @@ $table-border-color: #ddd !default;
   overflow-wrap: anywhere;
 }
 
+@media (max-width: 694px) {
+  .api-key-editor-modal .api-key-rule {
+    // A rule already sits inside the padded modal and fieldset. Do not add
+    // desktop column gutters a third time around mobile name selectors.
+    padding: 12px;
+
+    > .row {
+      margin-inline: 0;
+
+      > [class*="col-"] {
+        width: 100%;
+        padding-inline: 0;
+        margin-block-end: 12px;
+      }
+    }
+  }
+}
+
 .api-key-policy-matrix {
   min-width: 0;
   margin: 16px 0;

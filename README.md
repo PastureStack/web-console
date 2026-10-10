@@ -43,6 +43,12 @@ API Key status, help and error wording uses readable theme text in light and dar
 layouts; state colors remain decorative accents rather than the only indication.
 Keyboard-highlighted scope names and unselected hints use the same readable theme
 foreground.
+Narrow rule forms use their available width; multi-line scope names stay inside
+a viewport-bounded dropdown scroll region.
+Oversized audit queries keep their filters visible and offer an explicit narrower
+time range. Failed queries stop automatic polling; exports check the response
+before downloading and show translated errors. Pagination and export responses
+from an older query or authenticated session cannot replace current results.
 Policy, expiry and audit errors use the existing console error handling; an HTTP
 response is not a declaration of background or stream completion. See the matching
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).

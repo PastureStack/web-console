@@ -170,6 +170,9 @@ module('Integration | Component | API key editor viewport layout', function(hook
               await painted(frame);
               let options = [...frame.contentDocument.querySelectorAll('[data-scope-selector="project"] .ember-power-select-option')];
               assert.ok(options.length > 0, `${phase}: actual dropdown text is rendered`);
+              let listbox = frame.contentDocument.querySelector('[data-scope-selector="project"] [role="listbox"]');
+              assert.strictEqual(frame.contentWindow.getComputedStyle(listbox).maxHeight, '360px',
+                'scope options use a bounded multi-line region rather than the seven-single-line vendor cap');
               for (let option of options) {
                 let ratio = textContrast(frame, option);
                 assert.ok(ratio >= 4.5,
@@ -275,6 +278,16 @@ module('Integration | Component | API key editor viewport layout', function(hook
             }
             assert.ok(page.documentElement.scrollWidth <= width + 1,
               `${context}: matrix does not widen the document (${page.documentElement.scrollWidth}px)`);
+            if (width === 390) {
+              let rule = modal.querySelector('.api-key-rule');
+              let column = rule.querySelector('.api-key-scope-target').parentElement;
+              let selector = column.querySelector('.ember-power-select-trigger').getBoundingClientRect();
+              let row = column.parentElement.getBoundingClientRect();
+              assert.strictEqual(frame.contentWindow.getComputedStyle(column).paddingLeft, '0px',
+                `${context}: mobile selectors do not retain desktop nested column gutters`);
+              assert.ok(Math.abs(selector.width - row.width) <= 2,
+                `${context}: searchable scope names use the available rule width`);
+            }
             assert.strictEqual(frame.contentWindow.getComputedStyle(scroll).overflowX, 'auto', `${context}: matrix keeps its own horizontal scroll`);
             assert.ok(table.getBoundingClientRect().width >= 759, `${context}: all eight matrix columns keep their minimum readable width`);
             for (let [selector, display] of [['table', 'table'], ['caption', 'table-caption'],

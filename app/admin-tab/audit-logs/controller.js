@@ -4,9 +4,12 @@ import { service } from '@ember/service';
 import { alias } from '@ember/object/computed';
 import Controller, { inject as controller } from '@ember/controller';
 import moment from 'moment';
+import fetch from 'fetch';
+import { resolve } from 'rsvp';
 import Sortable from 'ui/mixins/sortable';
 import C from 'ui/utils/constants';
-import { addQueryParams, download } from 'ui/utils/util';
+import { addQueryParams } from 'ui/utils/util';
+import auditQueryError, { isAuthenticationFailure } from 'ui/utils/audit-query-error';
 
 const OPTIONAL_FILTER_KEYS = ['eventType', 'description', 'resource', 'clientIp', 'authType'];
 const TIME_HOUR_OPTIONS = Array.from({ length: 12 }, (unused, index) => ({
@@ -129,6 +132,8 @@ export default Controller.extend(Sortable, {
   sortableContent : alias('model.auditLog'),
   modalService    : service('modal'),
   intl            : service(),
+  userStore       : service('user-store'),
+  access          : service(),
 
   sortBy                   : 'created',
   sortOrder                : 'desc',
@@ -155,6 +160,8 @@ export default Controller.extend(Sortable, {
   isTimePickerOpen         : false,
   openDateCalendar         : null,
   isFiltering              : false,
+  isExporting              : false,
+  exportError              : null,
   activeTimePreset         : 'day',
   hourOptions              : TIME_HOUR_OPTIONS,
   minuteOptions            : TIME_MINUTE_OPTIONS,
@@ -343,6 +350,13 @@ export default Controller.extend(Sortable, {
       });
     },
 
+    queryRecentMinutes() {
+      // An explicit recovery action, never an automatic fallback that changes
+      // the user's requested range or removes authorization/other filters.
+      this.actions.setTimePreset.call(this, 15, 'minutes');
+      this.actions.search.call(this);
+    },
+
     setTimePart(field, part, value) {
       this.updateTimePart(field, part, value);
     },
@@ -465,6 +479,10 @@ export default Controller.extend(Sortable, {
     },
 
     exportLogs(format) {
+      if (this.get('model.queryError') || this.get('isFiltering') || this.get('isExporting') ||
+          !['xlsx', 'csv', 'json'].includes(format)) {
+        return;
+      }
       let params = {
         accountId                : this.get('accountId'),
         authType                 : this.get('authType'),
@@ -490,8 +508,80 @@ export default Controller.extend(Sortable, {
           delete params[key];
         }
       });
-      download(addQueryParams('/v2-beta/pasturestack/audit-logs/export', params), `audit-log-export-${format}`);
+      let model = this.get('model');
+      let authGeneration = this.get('access').captureGeneration();
+      let operation = this._exportOperation = {};
+      this.setProperties({isExporting: true, exportError: null});
+      let current = () => !this.isDestroyed && !this.isDestroying &&
+        this._exportOperation === operation && this.get('model') === model &&
+        this.get('access').captureGeneration() === authGeneration;
+
+      // Do not hide HTTP errors in an iframe. A file is delivered only after
+      // success is checked, and only to the session that initiated the export.
+      return resolve().then(() => this.fetchAuditExport(
+        addQueryParams('/v2-beta/pasturestack/audit-logs/export', params), format
+      )).then((blob) => {
+        if (current()) {
+          this.saveAuditExport(blob, format);
+        }
+      }).then(undefined, (error) => {
+        if (!current()) {
+          return;
+        }
+        if (isAuthenticationFailure(error)) {
+          this.send('sessionInvalid', null, true, null, authGeneration, 401);
+        } else {
+          this.set('exportError', auditQueryError(error));
+        }
+      }).finally(() => {
+        if (this._exportOperation === operation && !this.isDestroyed && !this.isDestroying) {
+          this._exportOperation = null;
+          this.set('isExporting', false);
+        }
+      });
     },
+  },
+
+  fetchAuditExport(url, format) {
+    let expectedType = {xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      csv: 'text/csv', json: 'application/json'}[format];
+    let headers = Object.assign({}, this.get('userStore.headers'), {Accept: expectedType,
+      'Accept-Language': (this.get('intl._locale') || ['en-us'])[0]});
+    let abort = new AbortController();
+    let timeout = setTimeout(() => abort.abort(), 30000);
+    return fetch(url, {method: 'GET', credentials: 'same-origin', redirect: 'error', headers, signal: abort.signal})
+      .then((response) => this.readAuditExportResponse(response, expectedType))
+      .finally(() => clearTimeout(timeout));
+  },
+
+  async readAuditExportResponse(response, expectedType) {
+    let contentType = String(response.headers.get('Content-Type') || '').split(';')[0].trim().toLowerCase();
+    if (response.status !== 200) {
+      let body = null;
+      if (contentType === 'application/json') {
+        try { body = await response.json(); } catch (error) { /* safe status still identifies the failure */ }
+      }
+      throw {status: response.status, body};
+    }
+    if (contentType !== expectedType) {
+      throw {status: 502};
+    }
+    return response.blob();
+  },
+
+  saveAuditExport(blob, format) {
+    let url = URL.createObjectURL(blob);
+    let link = document.createElement('a');
+    link.href = url;
+    link.download = `audit-logs-${moment().format('YYYYMMDD-HHmmss')}.${format}`;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    try {
+      link.click();
+    } finally {
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 0);
+    }
   },
 
   syncDraftFromQuery() {
@@ -539,6 +629,7 @@ export default Controller.extend(Sortable, {
       optionalFilters: optional,
       filterError: null,
       isFiltering: false,
+      exportError: null,
     });
   },
 
@@ -767,12 +858,14 @@ export default Controller.extend(Sortable, {
   }.property(),
 
   environmentSelectionSummary: function() {
-    return this.get('selectedEnvironment.label') || this.get('intl').t('auditLogsPage.filterBuilder.allAccessibleEnvironments');
-  }.property('selectedEnvironment.label', 'intl._locale'),
+    return this.get('selectedEnvironment.label') || this.get('intl').t(this.get('filters.accountId') ?
+      'auditLogsPage.queryErrors.selectedEnvironmentUnavailable' : 'auditLogsPage.filterBuilder.allAccessibleEnvironments');
+  }.property('selectedEnvironment.label', 'filters.accountId', 'intl._locale'),
 
   userSelectionSummary: function() {
-    return this.get('selectedUser.label') || this.get('intl').t('auditLogsPage.filterBuilder.allUsers');
-  }.property('selectedUser.label', 'intl._locale'),
+    return this.get('selectedUser.label') || this.get('intl').t(this.get('filters.authenticatedAsAccountId') ?
+      'auditLogsPage.queryErrors.selectedUserUnavailable' : 'auditLogsPage.filterBuilder.allUsers');
+  }.property('selectedUser.label', 'filters.authenticatedAsAccountId', 'intl._locale'),
 
   interactionChannelSelectionSummary: function() {
     return this.get('selectedInteractionChannel.label') || this.get('intl').t('auditLogsPage.filterBuilder.allChannels');

@@ -143,6 +143,17 @@ apiPage:
 
 auditLogsPage:
   header: Audit Logs
+  queryErrors:
+    tooLarge: 'The audit log query did not complete because too many records matched. Shorten the time range or select an environment, then try again.'
+    exportTooLarge: 'The audit log export did not complete because too many records matched. Shorten the time range or select an environment, then export again.'
+    invalidRange: 'The audit log query did not complete. Select a valid time range with a start before the end, or shorten the range, then try again.'
+    forbidden: 'The audit log query did not complete because you do not have permission to view these records. Ask an administrator to check your access.'
+    unavailable: 'The audit log query did not complete. The data is currently unavailable; try again later. This does not mean there are no records.'
+    recent15Minutes: Show the last 15 minutes
+    retry: Retry query
+    selectedUserUnavailable: 'A user is selected; its name is temporarily unavailable.'
+    selectedEnvironmentUnavailable: 'An environment is selected; its name is temporarily unavailable.'
+    exporting: Preparing export…
   form:
     eventType:
       placeholder: Event Type

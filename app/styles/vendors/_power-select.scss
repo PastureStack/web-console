@@ -129,6 +129,13 @@ $text-color: null !default;
     color: $text-color !important;
   }
 
+  .ember-power-select-options[role="listbox"] {
+    // Scope names include their context and can wrap to several lines. The
+    // vendor's seven-single-line cap can cut one option in half. Keep a local,
+    // viewport-bounded scroll region rather than clipping the readable name.
+    max-height: min(360px, calc(100vh - 140px));
+  }
+
   .ember-basic-dropdown,
   .ember-power-select-trigger {
     width: 100%;
