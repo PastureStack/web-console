@@ -134,10 +134,36 @@ module('Integration | Component | API key editor viewport layout', function(hook
               `${context}: matrix does not widen the document (${page.documentElement.scrollWidth}px)`);
             assert.strictEqual(frame.contentWindow.getComputedStyle(scroll).overflowX, 'auto', `${context}: matrix keeps its own horizontal scroll`);
             assert.ok(table.getBoundingClientRect().width >= 759, `${context}: all eight matrix columns keep their minimum readable width`);
+            for (let [selector, display] of [['table', 'table'], ['caption', 'table-caption'],
+              ['thead', 'table-header-group'], ['thead tr', 'table-row'], ['tbody', 'table-row-group'], ['tbody tr', 'table-row']]) {
+              let node = selector === 'table' ? table : table.querySelector(selector);
+              let style = frame.contentWindow.getComputedStyle(node);
+              assert.strictEqual(style.display, display, `${context}: ${selector} retains matrix semantics`);
+              assert.notStrictEqual(style.visibility, 'hidden', `${context}: ${selector} is not hidden by record-list styling`);
+              assert.ok(node.getBoundingClientRect().height > 0, `${context}: ${selector} has visible content`);
+            }
+            assert.ok(table.querySelector('caption').getBoundingClientRect().width >= table.getBoundingClientRect().width - 2,
+              `${context}: caption does not collapse into a vertical character column`);
+            for (let selector of ['thead tr', 'tbody tr']) {
+              let cells = [...table.querySelector(selector).children];
+              assert.strictEqual(cells.length, 9, `${context}: target and eight operation columns remain present`);
+              let firstTop = cells[0].getBoundingClientRect().top;
+              cells.forEach((cell, index) => {
+                let rect = cell.getBoundingClientRect();
+                assert.strictEqual(frame.contentWindow.getComputedStyle(cell).display, 'table-cell', `${context}: cell is not a stacked record`);
+                assert.ok(rect.width >= 70 && rect.height > 0, `${context}: cell is readable`);
+                assert.ok(Math.abs(rect.top - firstTop) <= 2, `${context}: cells share one horizontal row`);
+                if (index) { assert.ok(rect.left >= cells[index - 1].getBoundingClientRect().right - 2, `${context}: operation columns do not overlap`); }
+              });
+            }
             if (width === 390) {
               assert.ok(scroll.scrollWidth > scroll.clientWidth, `${context}: wide matrix scrolls internally`);
-              scroll.scrollLeft = 40;
+              scroll.scrollLeft = scroll.scrollWidth - scroll.clientWidth;
               assert.ok(scroll.scrollLeft > 0, `${context}: matrix horizontal scrolling is usable`);
+              let lastHeading = table.querySelector('thead th:last-child').getBoundingClientRect();
+              let region = scroll.getBoundingClientRect();
+              assert.ok(lastHeading.right <= region.right + 2 && lastHeading.left < region.right,
+                `${context}: scrolling exposes the last operation, not empty stacked cells`);
             } else {
               assert.ok(Math.abs(bounds.width - 990) <= 1, `${context}: existing desktop maximum width is retained`);
             }
