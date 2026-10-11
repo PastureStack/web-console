@@ -13,7 +13,7 @@ history, authorship, licenses, and dependency notices.
 [Web Console 1.6.181](https://github.com/PastureStack/web-console/releases/tag/1.6.181)
 is published, adding capability-gated API Key access settings,
 expiration, reviewed changes with platform MFA, and per-key audit
-filtering and details for the matching Server v1.6.519 contract. Every grant
+filtering and details for Server v1.6.520 with Engine 0.183.336. Every grant
 remains bounded by the owner's live permissions; operation choices are not
 claims of authority. Legacy Keys are not automatically narrowed during an upgrade;
 the existing workflow remains available when the server has no policy capability.
@@ -66,8 +66,9 @@ Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/a
 Component publication and complete Server acceptance are separate results.
 
 The console archive is published independently of Server assembly. The matching
-Server v1.6.519 image remains an unpublished candidate pending release-artifact
-acceptance; this component release is not a published control-plane deployment.
+[Server v1.6.520](https://github.com/PastureStack/server/releases/tag/v1.6.520)
+release includes Web Console 1.6.181 and Engine 0.183.336. This release pairing
+does not imply complete platform-matrix acceptance.
 
 For component identities, checksums, focused tests, and known verification limits,
 see the [current release note](docs/releases/web-console-1.6.181.md).
