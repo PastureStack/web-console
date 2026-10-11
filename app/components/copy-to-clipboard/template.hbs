@@ -2,7 +2,7 @@
   {{#tooltip-element type="tooltip-basic" model=(t this.model.tooltipText) tooltipTemplate='tooltip-static' class="copy-button-container" textChangedEvent=this.textChangedEvent baseClass="copy-clipboard" isCopyTo=true  tooltipFor="copyToClipboard"}}
     <button
       type="button"
-      {{action "copy"}}
+      onclick={{action "copy"}}
       class={{this.buttonClasses}}>
       <i class="icon icon-copy"></i>{{#if this.buttonText}} {{t this.buttonText}}{{/if}}
     </button>
