@@ -10,10 +10,12 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-[Web Console 1.6.181](https://github.com/PastureStack/web-console/releases/tag/1.6.181)
-is published, adding capability-gated API Key access settings,
+[Web Console 1.6.182](https://github.com/PastureStack/web-console/releases/tag/1.6.182)
+is published with a shared clipboard fix that passes the native click event for
+copy buttons, including clicks on their nested icons. It retains capability-gated
+API Key access settings,
 expiration, reviewed changes with platform MFA, and per-key audit
-filtering and details for Server v1.6.521 with Engine 0.183.337. Every grant
+filtering and details. Every grant
 remains bounded by the owner's live permissions; operation choices are not
 claims of authority. Legacy Keys are not automatically narrowed during an upgrade;
 the existing workflow remains available when the server has no policy capability.
@@ -65,13 +67,17 @@ response is not a declaration of background or stream completion. See the matchi
 Server's [API Key guide](https://github.com/PastureStack/server/blob/main/docs/api-keys.md).
 Component publication and complete Server acceptance are separate results.
 
-The console archive is published independently of Server assembly. The matching
+The console archive is published independently of Server assembly. The published
 [Server v1.6.521](https://github.com/PastureStack/server/releases/tag/v1.6.521)
 release includes Web Console 1.6.181 and Engine 0.183.337. This release pairing
-does not imply complete platform-matrix acceptance.
+has not changed with the independent publication of Web Console 1.6.182;
+the new console archive has not been deployed to QA. Neither publication nor
+this release pairing implies complete platform-matrix acceptance.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current release note](docs/releases/web-console-1.6.181.md).
+see the [current release note](docs/releases/web-console-1.6.182.md).
+The clipboard patch passed two focused tests and production build/package checks;
+it does not complete AUD-07/AUD-10 permission-withdrawal acceptance or the whole matrix.
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.
