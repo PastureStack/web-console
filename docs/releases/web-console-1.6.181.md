@@ -47,8 +47,8 @@ test fixtures were removed normally while their audit evidence was retained.
 This is not a whole platform matrix. Actual viewer permission withdrawal and
 resource-action execution parity were not rerun by these native gates;
 `wholeMatrixPass=false`.
-The matching Server `v1.6.519` image is still an unpublished assembly candidate
-pending release-artifact acceptance. Component publication is not formal Server
-deployment acceptance; use the
+The published [Server v1.6.520](https://github.com/PastureStack/server/releases/tag/v1.6.520)
+release includes Web Console 1.6.181 and Engine 0.183.336. Component publication
+and complete platform-matrix acceptance remain separate results; use the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for the currently published platform.
