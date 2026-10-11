@@ -1,5 +1,18 @@
 # Compatibility Contract
 
+## Current release: Web Console 1.6.182
+
+Published `1.6.182` passes the native click event to the shared clipboard action,
+including nested-icon clicks. Audit row copy and details remain separate actions;
+the change does not alter API authorization. See the
+[release note](docs/releases/web-console-1.6.182.md) for the producer, archive
+checksum and two focused template tests.
+
+This is an independently published component. Published Server `v1.6.521` still
+packages Web Console `1.6.181` and Engine `0.183.337`. Component publication is
+not Server integration, deployment or complete permission-matrix acceptance.
+The versioned notes below retain their historical scope.
+
 Published `1.6.180` forwards the explicit audit `timeScope=all` contract for both
 list/poll and JSON/XLSX export. It requires Server v1.6.518's matching broker
 support. Explicit dates still bound the query; unset scope retains the default
