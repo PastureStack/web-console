@@ -61,7 +61,7 @@ export default Component.extend(HoverDropdown, {
   services             : null,
 
   canAddHost: computed('projects.current.id', 'projects.schemaProjectId', function() {
-    return this.get('projects').canCreateResource('host');
+    return this.get('projects').canAddHost();
   }),
 
   // Component options

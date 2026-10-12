@@ -29,6 +29,15 @@ export default Service.extend({
       typeof type === 'string' && this.get('store').canCreate(type.toLowerCase()));
   },
 
+  canAddHost() {
+    // Hosts are created by registration or provisioning, not by POST /hosts.
+    return this.canCreateResource('registrationToken') || this.canCreateResource('machine');
+  },
+
+  canAddHostDriver(driver) {
+    return this.canCreateResource(driver === 'custom' ? 'registrationToken' : 'machine');
+  },
+
   active: function() {
     return this.get('all').filter((project) => {
       return ACTIVEISH.includes(project.get('state'));

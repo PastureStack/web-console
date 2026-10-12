@@ -13,7 +13,9 @@ export default Controller.extend({
   driver      : null,
   hostId      : null,
 
-  allowOther  : true,
+  allowOther: function() {
+    return this.get('projects').canCreateResource('machine');
+  }.property('projects.current.id', 'projects.schemaProjectId'),
 
   actions: {
     // Closure actions call these handlers directly; returning true does not
@@ -27,6 +29,9 @@ export default Controller.extend({
     },
 
     switchDriver(name) {
+      if ( !this.get('projects').canAddHostDriver(name) ) {
+        return;
+      }
       if (this.get('hostId')) {
         this.set('hostId', null);
         this.set('model.clonedModel', null);
@@ -36,8 +41,9 @@ export default Controller.extend({
   },
 
   allowCustom: function() {
-    return this.get(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`) !== false;
-  }.property(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`),
+    return this.get('projects').canAddHostDriver('custom') &&
+      this.get(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`) !== false;
+  }.property(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`, 'projects.current.id', 'projects.schemaProjectId'),
 
   driverObj: function() {
     return this.get('model.availableDrivers').filterBy('name', this.get('driver'))[0];

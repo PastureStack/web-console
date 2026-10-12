@@ -4,13 +4,13 @@ import Host from 'ui/models/host';
 
 module('Unit | Model | host');
 
-test('clone is offered only while the current project can create hosts', function(assert) {
+test('clone is offered only while the current project can use its host driver', function(assert) {
   let project = EmberObject.create({id: '1a-owner'});
   let projects = EmberObject.create({
     current: project,
     schemaProjectId: '1a-owner',
-    canCreateResource(type) {
-      assert.strictEqual(type, 'host');
+    canAddHostDriver(driver) {
+      assert.strictEqual(driver, 'custom');
       return this.get('schemaProjectId') === project.get('id') && canCreate;
     },
   });

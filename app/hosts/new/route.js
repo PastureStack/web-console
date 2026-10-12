@@ -93,17 +93,12 @@ export default Route.extend({
     let parent = this._super(...arguments);
 
     return resolve(parent).then(() => {
-      if ( !this.get('projects').canCreateResource('host') ) {
-        const titleKey = 'hostsPage.new.header.text';
-        const messageKey = 'hostsPage.permissionDenied';
-        return reject({
-          status: 403,
-          code: 'Forbidden',
-          title: this.get('intl').t(titleKey),
-          titleKey,
-          message: this.get('intl').t(messageKey),
-          messageKey,
-        });
+      if ( !this.get('projects').canAddHost() ) {
+        return this.permissionDenied();
+      }
+      if ( !this.get('projects').canCreateResource('machine') ) {
+        this.set('machineDrivers', []);
+        return resolve();
       }
 
       let us = this.get('userStore');
@@ -129,11 +124,17 @@ export default Route.extend({
   },
 
   model(params) {
+    const projects = this.get('projects');
+    const generation = projects.get('schemaLoadGeneration');
+    const projectId = projects.get('current.id');
+    if ( !projects.canAddHost() || (params.driver && !projects.canAddHostDriver(params.driver)) ) {
+      return this.permissionDenied();
+    }
     this.set('backTo', params.backTo);
 
     let promises = {
       reloadHost: this.get('userStore').find('schema','host', {forceReload: true}),
-      loadCustomUi: this.loadCustomUi(),
+      loadCustomUi: projects.canCreateResource('machine') ? this.loadCustomUi() : resolve(),
       schemas: this.get('userStore').find('schema'),
       typeDocumentations: this.get('userStore').findAll('typedocumentation') 
     };
@@ -153,16 +154,25 @@ export default Route.extend({
     }
 
     return hash(promises).then((hash) => {
-      hash.availableDrivers = this.get('machineDrivers');
+      if ( projects.get('current.id') !== projectId || projects.get('schemaLoadGeneration') !== generation ||
+           !projects.canAddHost() || (params.driver && !projects.canAddHostDriver(params.driver)) ) {
+        return this.permissionDenied();
+      }
+      hash.availableDrivers = projects.canCreateResource('machine') ? this.get('machineDrivers') : [];
       if ( this.get('projects.current.isWindows') ) {
         hash.availableDrivers = [];
       }
 
       let defaultDriver = this.get('defaultDriver');
+      const allowCustom = projects.canAddHostDriver('custom') &&
+        this.get(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`) !== false;
+      if ( defaultDriver === 'custom' && !allowCustom ) {
+        defaultDriver = hash.availableDrivers.map(x => x.get('name')).sort()[0];
+      }
       let targetDriver = params.driver || this.get('lastDriver') || defaultDriver;
 
       // If custom is disabled, pick the first one as default
-      if ( this.get(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`) === false && targetDriver === 'custom') {
+      if ( !allowCustom && targetDriver === 'custom') {
         targetDriver = hash.availableDrivers.map(x => x.get('name')).sort()[0];
       }
 
@@ -170,6 +180,10 @@ export default Route.extend({
       if ( ['custom','other'].indexOf(targetDriver) === -1 && hash.availableDrivers.filterBy('name', targetDriver).length === 0 )
       {
         targetDriver = defaultDriver;
+      }
+
+      if ( !targetDriver || !projects.canAddHostDriver(targetDriver) ) {
+        return this.permissionDenied();
       }
 
 
@@ -182,6 +196,14 @@ export default Route.extend({
         return EmberObject.create(hash);
       }
     });
+  },
+
+  permissionDenied() {
+    const titleKey = 'hostsPage.new.header.text';
+    const messageKey = 'hostsPage.permissionDenied';
+    return reject({status: 403, code: 'Forbidden',
+      title: this.get('intl').t(titleKey), titleKey,
+      message: this.get('intl').t(messageKey), messageKey});
   },
 
   // Loads the custom UI CSS/JS for drivers that have a uiUrl,
