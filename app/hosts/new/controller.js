@@ -14,7 +14,7 @@ export default Controller.extend({
   hostId      : null,
 
   allowOther: function() {
-    return this.get('projects').canCreateResource('machine');
+    return this.get('projects').canCreateResource('host');
   }.property('projects.current.id', 'projects.schemaProjectId'),
 
   actions: {

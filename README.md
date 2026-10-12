@@ -11,10 +11,11 @@ history, authorship, licenses, and dependency notices.
 ## Current release
 
 Web Console `1.6.183` is the current source candidate, not a published archive or
-Server image. It restores add-host Close and Back route dispatch and derives
-host onboarding from native RegistrationToken/Machine creation capabilities,
-not host collection POST. Custom registration requires RegistrationToken POST;
-machine-only access cannot select it or open its direct URL. See the
+Server image. It restores add-host Close and Back route dispatch, preserves their
+external return target across driver redirects and settings refreshes, and derives
+host onboarding from the native capability of the actual submission path:
+RegistrationToken POST for Custom, Host POST for built-in/Other forms. Machine
+API POST alone grants neither form; Host POST alone cannot open Custom. See the
 [candidate release note](docs/releases/web-console-1.6.183.md).
 
 [Web Console 1.6.182](https://github.com/PastureStack/web-console/releases/tag/1.6.182)

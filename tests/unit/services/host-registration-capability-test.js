@@ -1,5 +1,6 @@
 import EmberObject from '@ember/object';
 import { A } from '@ember/array';
+import { setOwner } from '@ember/application';
 import ApiStore from 'ember-api-store/services/store';
 import ProjectsService from 'ui/services/projects';
 import HostsNewRoute from 'ui/hosts/new/route';
@@ -9,11 +10,11 @@ import { module, test } from 'qunit';
 
 module('Unit | Service | native host onboarding capability');
 
-function fixture(registration, machine) {
+function fixture(registration, hostPost, machinePost = false) {
   const schemas = [
-    {id: 'host', type: 'schema', collectionMethods: ['GET'], resourceMethods: ['GET', 'PUT', 'DELETE'], links: {collection: '/v2-beta/projects/1a5/hosts'}},
+    {id: 'host', type: 'schema', collectionMethods: hostPost ? ['GET', 'POST'] : ['GET'], resourceMethods: ['GET', 'PUT', 'DELETE'], links: {collection: '/v2-beta/projects/1a5/hosts'}},
     {id: 'registrationToken', type: 'schema', collectionMethods: registration ? ['GET', 'POST'] : ['GET'], links: {collection: '/v2-beta/projects/1a5/registrationtokens'}},
-    {id: 'machine', type: 'schema', collectionMethods: machine ? ['GET', 'POST'] : ['GET'], links: {collection: '/v2-beta/projects/1a5/machines'}},
+    {id: 'machine', type: 'schema', collectionMethods: machinePost ? ['GET', 'POST'] : ['GET'], links: {collection: '/v2-beta/projects/1a5/machines'}},
   ];
   const store = {
     getById(type, id) { return type === 'schema' ? schemas.find(schema => schema.id.toLowerCase() === id) : null; },
@@ -31,11 +32,12 @@ function routeFor(projects, options = {}) {
     userStore: {find() { return Promise.resolve([]); }, findAll() { return Promise.resolve([]); }},
     loadCustomUi() { return Promise.resolve(); }, ...options});
   route._super = () => Promise.resolve();
+  setOwner(route, {lookup(key) { return key === 'route:application' ? EmberObject.create({previousRoute: 'hosts.index', previousParams: ['1a5']}) : undefined; }});
   return {route, transitions, settings};
 }
 
 test('native owner host GET-only does not block registration POST', function(assert) {
-  const projects = fixture(true, false);
+  const projects = fixture(true, false, true);
   assert.false(projects.canCreateResource('host'), 'host resource update/delete is not collection POST');
   assert.true(projects.canAddHost());
   assert.true(projects.canAddHostDriver('custom'));
@@ -43,12 +45,17 @@ test('native owner host GET-only does not block registration POST', function(ass
   projects.destroy();
 });
 
-test('readonly native schemas grant no onboarding, even for admin identity', function(assert) {
-  const projects = fixture(false, false);
-  assert.false(projects.canAddHost());
-  assert.false(projects.canAddHostDriver('custom'));
-  assert.false(projects.canAddHostDriver('amazonec2'));
-  projects.destroy();
+test('readonly and SDK Machine-only schemas grant no onboarding, even for admin identity', function(assert) {
+  for (const machinePost of [false, true]) {
+    const projects = fixture(false, false, machinePost);
+    assert.false(projects.canAddHost());
+    assert.false(projects.canAddHostDriver('custom'));
+    assert.false(projects.canAddHostDriver('amazonec2'));
+    const controller = HostsNewController.create({projects, settings: EmberObject.create({})});
+    assert.false(controller.get('allowCustom'));
+    assert.false(controller.get('allowOther'));
+    controller.destroy(); projects.destroy();
+  }
 });
 
 test('stale, loading or absent project schemas grant no onboarding', function(assert) {
@@ -59,7 +66,7 @@ test('stale, loading or absent project schemas grant no onboarding', function(as
   projects.destroy();
 });
 
-test('machine-only capability hides custom and rejects its direct URL before model loads', async function(assert) {
+test('Host POST-only capability hides custom and rejects its direct URL before model loads', async function(assert) {
   const projects = fixture(false, true), {route, settings} = routeFor(projects);
   const controller = HostsNewController.create({projects, settings, driver: 'amazonec2'});
   assert.true(projects.canAddHost());
@@ -73,16 +80,19 @@ test('machine-only capability hides custom and rejects its direct URL before mod
   controller.destroy(); route.destroy(); projects.destroy();
 });
 
-test('readonly route rejects without requesting machine-driver inventory', async function(assert) {
-  const projects = fixture(false, false); let requests = 0;
+test('SDK Machine POST alone rejects the host UI without requesting driver inventory', async function(assert) {
+  const projects = fixture(false, false, true); let requests = 0;
   const {route} = routeFor(projects, {userStore: {find() { requests++; return Promise.resolve([]); }}});
   let failure; try {await route.beforeModel();} catch (error) {failure = error;}
   assert.strictEqual(failure.status, 403); assert.strictEqual(requests, 0);
+  try {await route.model({driver: 'amazonec2'});} catch (error) {failure = error;}
+  assert.strictEqual(failure.status, 403, 'a direct Host form URL is denied too');
+  assert.strictEqual(requests, 0);
   route.destroy(); projects.destroy();
 });
 
 test('registration-only route stays custom without loading machine UI', async function(assert) {
-  const projects = fixture(true, false); let loads = 0;
+  const projects = fixture(true, false, true); let loads = 0;
   const {route} = routeFor(projects, {loadCustomUi() { loads++; return Promise.resolve(); }});
   await route.beforeModel();
   assert.strictEqual(route.get('machineDrivers').length, 0);
@@ -92,7 +102,7 @@ test('registration-only route stays custom without loading machine UI', async fu
   route.destroy(); projects.destroy();
 });
 
-test('machine-only default and stale last-custom select an available machine driver', async function(assert) {
+test('Host POST-only default and stale last-custom select an available host driver', async function(assert) {
   const projects = fixture(false, true);
   const {route, transitions} = routeFor(projects, {lastDriver: 'custom', machineDrivers: A([EmberObject.create({name: 'zebra'}), EmberObject.create({name: 'amazonec2'})])});
   await route.model({});

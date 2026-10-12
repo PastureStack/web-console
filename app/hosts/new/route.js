@@ -9,9 +9,14 @@ import {
 import { service } from '@ember/service';
 import Route from '@ember/routing/route';
 import { getOwner } from '@ember/application';
+import { routeInfoArguments } from 'ui/initializers/extend-ember-route';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 const retiredMachineDrivers = ['packet'];
+
+function isHostAddRoute(name) {
+  return typeof name === 'string' && (name === 'hosts.new' || name.indexOf('hosts.new.') === 0);
+}
 
 export function isSelectableMachineDriver(driver) {
   return retiredMachineDrivers.indexOf(driver.get('name')) === -1;
@@ -65,6 +70,10 @@ export default Route.extend({
         let appRoute = getOwner(this).lookup('route:application');
         let opts     = this.get('previousOpts');
 
+        if ( !opts || !opts.name || isHostAddRoute(opts.name) || opts.name.match(/\.?loading$/) ) {
+          return this.get('router').transitionTo('hosts');
+        }
+
         appRoute.set('previousRoute', opts.name);
         appRoute.set('previousParams', opts.params);
 
@@ -73,9 +82,17 @@ export default Route.extend({
     }
   },
 
-  activate() {
+  rememberReturnRoute() {
+    let current = this.get('router.currentRoute');
+    // Driver query redirects and API-host refreshes must not become "Back".
+    if ( current && isHostAddRoute(current.name) ) {
+      return;
+    }
     let appRoute = getOwner(this).lookup('route:application');
-    this.set('previousOpts', {name: appRoute.get('previousRoute'), params: appRoute.get('previousParams')});
+    this.set('previousOpts', {
+      name: current ? current.name : appRoute.get('previousRoute'),
+      params: current ? routeInfoArguments(current) : appRoute.get('previousParams'),
+    });
   },
 
   resetController(controller, isExisting /*, transition*/) {
@@ -90,13 +107,14 @@ export default Route.extend({
 
   // Loads all the machine drivers and selects the active ones with a corresponding schema into machineDrivers
   beforeModel(/*transition*/) {
+    this.rememberReturnRoute();
     let parent = this._super(...arguments);
 
     return resolve(parent).then(() => {
       if ( !this.get('projects').canAddHost() ) {
         return this.permissionDenied();
       }
-      if ( !this.get('projects').canCreateResource('machine') ) {
+      if ( !this.get('projects').canCreateResource('host') ) {
         this.set('machineDrivers', []);
         return resolve();
       }
@@ -134,7 +152,7 @@ export default Route.extend({
 
     let promises = {
       reloadHost: this.get('userStore').find('schema','host', {forceReload: true}),
-      loadCustomUi: projects.canCreateResource('machine') ? this.loadCustomUi() : resolve(),
+      loadCustomUi: projects.canCreateResource('host') ? this.loadCustomUi() : resolve(),
       schemas: this.get('userStore').find('schema'),
       typeDocumentations: this.get('userStore').findAll('typedocumentation') 
     };
@@ -158,7 +176,7 @@ export default Route.extend({
            !projects.canAddHost() || (params.driver && !projects.canAddHostDriver(params.driver)) ) {
         return this.permissionDenied();
       }
-      hash.availableDrivers = projects.canCreateResource('machine') ? this.get('machineDrivers') : [];
+      hash.availableDrivers = projects.canCreateResource('host') ? this.get('machineDrivers') : [];
       if ( this.get('projects.current.isWindows') ) {
         hash.availableDrivers = [];
       }

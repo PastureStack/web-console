@@ -30,12 +30,12 @@ export default Service.extend({
   },
 
   canAddHost() {
-    // Hosts are created by registration or provisioning, not by POST /hosts.
-    return this.canCreateResource('registrationToken') || this.canCreateResource('machine');
+    // Custom registers hosts; built-in/Other forms save a Host resource.
+    return this.canCreateResource('registrationToken') || this.canCreateResource('host');
   },
 
   canAddHostDriver(driver) {
-    return this.canCreateResource(driver === 'custom' ? 'registrationToken' : 'machine');
+    return this.canCreateResource(driver === 'custom' ? 'registrationToken' : 'host');
   },
 
   active: function() {
