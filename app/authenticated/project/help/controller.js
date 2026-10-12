@@ -8,7 +8,7 @@ export default Controller.extend({
   projects: service(),
 
   canAddHost: computed('projects.current.id', 'projects.schemaProjectId', function() {
-    return this.get('projects').canCreateResource('host');
+    return this.get('projects').canAddHost();
   }),
 
   canAddFromCatalog: computed('projects.current.id', 'projects.schemaProjectId', function() {

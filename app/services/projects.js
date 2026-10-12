@@ -29,6 +29,15 @@ export default Service.extend({
       typeof type === 'string' && this.get('store').canCreate(type.toLowerCase()));
   },
 
+  canAddHost() {
+    // Custom registers hosts; built-in/Other forms save a Host resource.
+    return this.canCreateResource('registrationToken') || this.canCreateResource('host');
+  },
+
+  canAddHostDriver(driver) {
+    return this.canCreateResource(driver === 'custom' ? 'registrationToken' : 'host');
+  },
+
   active: function() {
     return this.get('all').filter((project) => {
       return ACTIVEISH.includes(project.get('state'));

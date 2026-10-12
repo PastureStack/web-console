@@ -81,7 +81,7 @@ var Host = Resource.extend({
       out.push({ label: 'action.machineConfig', icon: 'icon icon-download', action: 'machineConfig', enabled: true});
     }
 
-    let canAddHost = this.get('projects').canCreateResource('host');
+    let canAddHost = this.get('projects').canAddHostDriver(this.get('driver'));
     out.push({ label: 'action.clone', icon: 'icon icon-copy', action: 'clone', enabled: Boolean(this.get('driver') && canAddHost) });
     out.push({ label: 'action.edit', icon: 'icon icon-edit', action: 'edit', enabled: !!a.update });
 

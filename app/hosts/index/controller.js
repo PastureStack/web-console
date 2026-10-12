@@ -11,7 +11,7 @@ export default Controller.extend({
   queryParams : ['mode'],
 
   canAddHost: computed('projects.current.id', 'projects.schemaProjectId', function() {
-    return this.get('projects').canCreateResource('host');
+    return this.get('projects').canAddHost();
   }),
 
   actions: {

@@ -13,20 +13,25 @@ export default Controller.extend({
   driver      : null,
   hostId      : null,
 
-  allowOther  : true,
+  allowOther: function() {
+    return this.get('projects').canCreateResource('host');
+  }.property('projects.current.id', 'projects.schemaProjectId'),
 
   actions: {
-    // Bubble these closure actions to the route.  This preserves the machine
-    // driver component contract without the unmaintained route-action addon.
+    // Closure actions call these handlers directly; returning true does not
+    // bubble them. Explicitly dispatch to the active route's action target.
     cancel() {
-      return true;
+      this.get('target').send('cancel');
     },
 
     goBack() {
-      return true;
+      this.get('target').send('goBack');
     },
 
     switchDriver(name) {
+      if ( !this.get('projects').canAddHostDriver(name) ) {
+        return;
+      }
       if (this.get('hostId')) {
         this.set('hostId', null);
         this.set('model.clonedModel', null);
@@ -36,8 +41,9 @@ export default Controller.extend({
   },
 
   allowCustom: function() {
-    return this.get(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`) !== false;
-  }.property(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`),
+    return this.get('projects').canAddHostDriver('custom') &&
+      this.get(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`) !== false;
+  }.property(`settings.${C.SETTING.SHOW_CUSTOM_HOST}`, 'projects.current.id', 'projects.schemaProjectId'),
 
   driverObj: function() {
     return this.get('model.availableDrivers').filterBy('name', this.get('driver'))[0];
