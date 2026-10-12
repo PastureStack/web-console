@@ -1,16 +1,25 @@
 # Compatibility Contract
 
-## Current release: Web Console 1.6.182
+## Current release: Web Console 1.6.183
 
-Published `1.6.182` passes the native click event to the shared clipboard action,
-including nested-icon clicks. Audit row copy and details remain separate actions;
-the change does not alter API authorization. See the
-[release note](docs/releases/web-console-1.6.182.md) for the producer, archive
-checksum and two focused template tests.
+Published `1.6.183` retains the shared native-click clipboard fix from `1.6.182`
+and restores add-host Close/Back dispatch and the external return target across
+driver redirects and API-host settings refresh. Audit row copy and details remain
+separate actions. Onboarding follows the actual submission path: RegistrationToken
+POST for Custom, Host POST for built-in/Other forms; Machine API POST alone grants
+neither form. Backend authorization remains authoritative. See the
+[release note](docs/releases/web-console-1.6.183.md) for archive identity, checksums
+and focused validation.
 
-This is an independently published component. Published Server `v1.6.521` still
-packages Web Console `1.6.181` and Engine `0.183.337`. Component publication is
-not Server integration, deployment or complete permission-matrix acceptance.
+The published component producer is
+`e056a0111d20816742eff17a65dfabb5d003dae2`; documentation-only main commits do not
+replace this released component identity.
+
+Published Server `v1.6.524` packages this same Web Console `1.6.183` component with
+Engine `0.183.342`. Server assembly and isolated QA deployment were verified
+separately. Component publication and focused UI checks do not establish complete
+permission-matrix or active-agent lifecycle acceptance.
+This documentation update changes neither Web code nor the published archive.
 The versioned notes below retain their historical scope.
 
 Published `1.6.180` forwards the explicit audit `timeScope=all` contract for both
