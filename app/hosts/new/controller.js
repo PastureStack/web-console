@@ -16,14 +16,14 @@ export default Controller.extend({
   allowOther  : true,
 
   actions: {
-    // Bubble these closure actions to the route.  This preserves the machine
-    // driver component contract without the unmaintained route-action addon.
+    // Closure actions call these handlers directly; returning true does not
+    // bubble them. Explicitly dispatch to the active route's action target.
     cancel() {
-      return true;
+      this.get('target').send('cancel');
     },
 
     goBack() {
-      return true;
+      this.get('target').send('goBack');
     },
 
     switchDriver(name) {

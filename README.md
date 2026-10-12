@@ -10,6 +10,11 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
+Web Console `1.6.183` is the current source candidate, not a published archive or
+Server image. This minimal candidate restores add-host Close and Back actions by
+explicitly dispatching their closures to the route. See the
+[candidate release note](docs/releases/web-console-1.6.183.md).
+
 [Web Console 1.6.182](https://github.com/PastureStack/web-console/releases/tag/1.6.182)
 is published with a shared clipboard fix that passes the native click event for
 copy buttons, including clicks on their nested icons. It retains capability-gated
