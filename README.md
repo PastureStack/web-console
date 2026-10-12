@@ -10,27 +10,26 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-Web Console `1.6.183` is the current source candidate, not a published archive or
-Server image. It restores add-host Close and Back route dispatch, preserves their
+[Web Console 1.6.183](https://github.com/PastureStack/web-console/releases/tag/1.6.183)
+is published. It restores add-host Close and Back route dispatch, preserves their
 external return target across driver redirects and settings refreshes, and derives
 host onboarding from the native capability of the actual submission path:
 RegistrationToken POST for Custom, Host POST for built-in/Other forms. Machine
 API POST alone grants neither form; Host POST alone cannot open Custom. See the
-[candidate release note](docs/releases/web-console-1.6.183.md).
+[release note](docs/releases/web-console-1.6.183.md) for source/archive identities
+and checksums.
 
-[Web Console 1.6.182](https://github.com/PastureStack/web-console/releases/tag/1.6.182)
-is published with a shared clipboard fix that passes the native click event for
-copy buttons, including clicks on their nested icons. Component archive publication
-and complete Server/platform acceptance are separate results.
+The shared native-click clipboard fix from 1.6.182 is retained. Eleven new unit
+cases and native browser control checks passed, including the first API-host setting
+save, real command-copy icon clicks, and Close returning to Hosts.
 
-The console archive is published independently of Server assembly. The published
-[Server v1.6.521](https://github.com/PastureStack/server/releases/tag/v1.6.521)
-release includes Web Console 1.6.181 and Engine 0.183.337. This release pairing
-has not changed with independent component publication. Neither publication nor
-this release pairing implies complete platform-matrix acceptance.
+The console archive is published independently of Server assembly. See the
+[Server current-release guide](https://github.com/PastureStack/server#current-release)
+for its published component pairing and deployment workflow. Component publication
+and focused UI results do not imply complete Server or active-agent acceptance.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current release note](docs/releases/web-console-1.6.182.md).
+see the [current release note](docs/releases/web-console-1.6.183.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.
