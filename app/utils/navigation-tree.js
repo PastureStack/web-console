@@ -322,6 +322,21 @@ const navTree = [
 
   // API
   {
+    id: 'account-api',
+    localizedLabel: 'nav.api.tab',
+    icon: 'icon icon-terminal',
+    route: 'authenticated.account-keys',
+    condition: function() { return !this.get('hasProject'); },
+    submenu: [
+      {
+        id: 'account-api-keys',
+        localizedLabel: 'nav.api.keys',
+        icon: 'icon icon-key',
+        route: 'authenticated.account-keys',
+      },
+    ],
+  },
+  {
     id: 'api',
     localizedLabel: 'nav.api.tab',
     icon: 'icon icon-terminal',

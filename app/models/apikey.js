@@ -26,7 +26,9 @@ var ApiKey = Resource.extend(PolledResource,{
 
     audit: function() {
       if ( !this.get('auditSupported') ) { return; }
-      return this.get('router').transitionTo('authenticated.project.api.keys', {
+      let route = this.get('router.currentRouteName') === 'authenticated.account-keys' ?
+        'authenticated.account-keys' : 'authenticated.project.api.keys';
+      return this.get('router').transitionTo(route, {
         queryParams: {targetKey: this.get('id')},
       });
     },
