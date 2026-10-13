@@ -2,6 +2,7 @@ import EmberObject from '@ember/object';
 import { resolve, reject, defer } from 'rsvp';
 import { module, test } from 'qunit';
 import ApiKeyAudit from 'ui/components/api-key-audit/component';
+import { API_KEY_RESOURCE_TYPES } from 'ui/utils/api-key-policy';
 import inertRenderer from '../../helpers/inert-renderer';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
@@ -166,4 +167,79 @@ test('HTTP success and background completion have separate safe phase labels', f
   assert.strictEqual(component.safeRecord({preview: true, phase: 'completion', outcome: 'SUCCEEDED'}).outcomeLabelKey,
     'apiKeyAudit.preview', 'a completed permission preview still has not executed the requested operation');
   destroyOwned(component);
+});
+
+test('subscription read completion has an audit-only target label without a target ID', function(assert) {
+  let component = audit(() => resolve());
+  [
+    ['ClientDisconnected', 'CANCELED'],
+    ['StreamCancelled', 'CANCELED'],
+    ['StreamFailed', 'FAILED'],
+    ['StreamCompleted', 'SUCCEEDED'],
+  ].forEach(([reason, outcome]) => {
+    let record = component.safeRecord({targetType: 'subscribe', targetId: '', operation: 'read',
+      phase: 'completion', decision: 'ALLOW', outcome, reason, httpStatus: 0, requestId: 'subscription-request',
+      message: 'private backend text', exception: {message: 'private'}, authorization: 'Basic private',
+      requestBody: {password: 'private'}});
+    assert.strictEqual(record.targetType, 'subscribe', 'the native target type is retained');
+    assert.strictEqual(record.targetId, '', 'subscription completion does not fabricate a resource ID');
+    assert.strictEqual(record.targetLabelKey, 'apiKeyAudit.resources.subscribe', 'subscription is an audit label, not a picker type');
+    assert.strictEqual(record.operation, 'read');
+    assert.strictEqual(record.operationLabelKey, 'apiKeyAccess.operations.read');
+    assert.strictEqual(record.phaseLabelKey, 'apiKeyAudit.phases.completion');
+    assert.strictEqual(record.decisionLabelKey, 'apiKeyAudit.decisions.ALLOW');
+    assert.strictEqual(record.reason, reason);
+    assert.strictEqual(record.reasonLabelKey, `apiKeyAudit.reasons.${reason}`);
+    assert.strictEqual(record.outcome, outcome, 'an audit label never changes the actual terminal outcome');
+    assert.strictEqual(record.outcomeLabelKey, outcome === 'SUCCEEDED' ?
+      'apiKeyAudit.completionSucceeded' : `apiKeyAudit.outcomes.${outcome}`);
+    assert.strictEqual(record.requestId, 'subscription-request');
+    assert.notOk(record.hasHttpResponse, 'completion does not claim HTTP success');
+    assert.notOk('message' in record || 'exception' in record || 'authorization' in record || 'requestBody' in record,
+      'private backend text and credentials are not copied into the displayed record');
+  });
+  assert.notOk(API_KEY_RESOURCE_TYPES.includes('subscribe'), 'audit display adds no resource-picker or grant capability');
+  destroyOwned(component);
+});
+
+test('subscription labels and terminal reasons require exact known values and never raw-text fallback', function(assert) {
+  let component = audit(() => resolve());
+  let record = component.safeRecord({targetType: 'subscribe private-message', targetId: '', operation: 'read',
+    phase: 'completion', reason: 'ClientDisconnected private-message', outcome: 'CANCELED',
+    responseCode: 'private backend text', message: 'private backend text', exception: {message: 'private'},
+    authorization: 'Basic private', requestBody: {password: 'private'}});
+  assert.strictEqual(record.targetLabelKey, 'apiKeyAudit.unknownTarget', 'a known prefix cannot select the subscription label');
+  assert.strictEqual(record.reasonLabelKey, 'apiKeyAudit.reasons.unknown');
+  assert.strictEqual(record.reason, '', 'unknown reasons do not render untrusted backend text');
+  assert.strictEqual(record.responseCode, '', 'arbitrary backend text is not a stable response code');
+  assert.strictEqual(record.outcomeLabelKey, 'apiKeyAudit.outcomes.CANCELED', 'fallback labels preserve the actual outcome');
+  assert.notOk('message' in record || 'exception' in record || 'authorization' in record || 'requestBody' in record);
+  assert.strictEqual(component.safeRecord({targetType: 'service', targetId: '1s1'}).targetLabelKey,
+    'apiKeyAccess.selector.types.service', 'existing resource labels are unchanged');
+  destroyOwned(component);
+});
+
+test('the subscription audit label is present as actual translated text in every production locale', async function(assert) {
+  let expected = {
+    'de-de': 'Ereignisabonnement',
+    'en-us': 'Event subscription',
+    'fa-ir': 'اشتراک رویداد',
+    'fil-ph': 'Subskripsiyon sa mga kaganapan',
+    'fr-fr': 'Abonnement aux événements',
+    'hu-hu': 'Eseményfeliratkozás',
+    'ja-jp': 'イベント購読',
+    'ko-kr': '이벤트 구독',
+    'pt-br': 'Assinatura de eventos',
+    'ru-ru': 'Подписка на события',
+    'uk-ua': 'Підписка на події',
+    'zh-hans': '事件订阅',
+    'zh-tw': '事件訂閱',
+  };
+  for ( let locale of Object.keys(expected) ) {
+    let response = await fetch(`/translations/${locale}.json`);
+    assert.ok(response.ok, `${locale} uses its real compiled translation asset`);
+    let messages = await response.json();
+    assert.strictEqual(messages['apiKeyAudit.resources.subscribe'], expected[locale],
+      `${locale} has human wording rather than a missing key or raw target type`);
+  }
 });

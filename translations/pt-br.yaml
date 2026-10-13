@@ -4118,3 +4118,7 @@ formResources:
     cpu: "Informe um limite válido de CPU (cota mínima de 1000 µs)."
     ulimits: "Nomes devem ser únicos, valores inteiros >= -1 e limite flexível <= limite rígido."
     map: "As chaves e valores das opções avançadas não podem ficar vazios."
+
+apiKeyAudit:
+  resources:
+    subscribe: "Assinatura de eventos"

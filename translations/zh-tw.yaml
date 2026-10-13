@@ -2123,6 +2123,8 @@ apiKeyAccess:
 apiKeyAudit:
   unknownOperation: 無法辨識的操作；請使用請求 ID 查核
   unknownTarget: 無法辨識的資源類型
+  resources:
+    subscribe: "事件訂閱"
   decisions:
     ALLOW: 已允許
     DENY: 已拒絕

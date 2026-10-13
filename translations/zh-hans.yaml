@@ -4007,3 +4007,7 @@ formResources:
     cpu: "请输入有效 CPU 上限（配额至少为 1000 µs）。"
     ulimits: "限制名称不可重复，数值须为大于等于 -1 的整数，且软限制不可超过硬限制。"
     map: "高级选项的键与值不可留空。"
+
+apiKeyAudit:
+  resources:
+    subscribe: "事件订阅"

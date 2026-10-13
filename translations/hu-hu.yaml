@@ -4130,3 +4130,7 @@ formResources:
     cpu: "Érvényes CPU-korlátot adjon meg (a kvóta legalább 1000 µs)."
     ulimits: "A nevek legyenek egyediek, az értékek >= -1 egészek, a puha korlát <= kemény korlát."
     map: "A speciális beállítások kulcsai és értékei nem lehetnek üresek."
+
+apiKeyAudit:
+  resources:
+    subscribe: "Eseményfeliratkozás"

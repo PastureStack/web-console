@@ -8,7 +8,7 @@ const FILTERS = ['decision', 'outcome', 'httpStatus', 'operation', 'targetType',
 const PHASES = ['decision', 'response', 'attempt', 'continuation', 'completion', 'handshake'];
 const TARGET_TYPES = ['stack', 'service', 'container', 'host', 'volume', 'network', 'secret', 'certificate',
   'project', 'setting', 'userPreference', 'registry', 'storagePool', 'networkPolicy', 'projectMember',
-  'apiKey', 'apiKeyRestricted', 'account', 'auditLog'];
+  'apiKey', 'apiKeyRestricted', 'account', 'auditLog', 'subscribe'];
 const REASONS = ['KeyFullAccess', 'KeyRuleAllowed', 'KeyScopedCollection', 'KeyPolicyDenied', 'KeyScopeDenied',
   'OwnerPermissionDenied', 'ApiKeyExpired', 'ApiKeyRevoked', 'ApiKeyPolicyChanged', 'PolicyChanged',
   'UnknownOperation', 'AuthenticationPending', 'AuthenticationDenied', 'authorization_not_completed', 'ApiKeyDelegationLive', 'AuditUnavailable',
@@ -121,7 +121,8 @@ export default Component.extend({
     });
     safe.preview = record.preview === true;
     safe.targetLabelKey = TARGET_TYPES.includes(safe.targetType) ?
-      `apiKeyAccess.selector.types.${safe.targetType}` : 'apiKeyAudit.unknownTarget';
+      safe.targetType === 'subscribe' ? 'apiKeyAudit.resources.subscribe' :
+        `apiKeyAccess.selector.types.${safe.targetType}` : 'apiKeyAudit.unknownTarget';
     safe.operationLabelKey = API_KEY_OPERATIONS.includes(safe.operation) ?
       `apiKeyAccess.operations.${safe.operation}` : 'apiKeyAudit.unknownOperation';
     safe.decisionLabelKey = ['ALLOW', 'DENY'].includes(safe.decision) ?
