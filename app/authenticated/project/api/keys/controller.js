@@ -7,6 +7,7 @@ import Util from 'ui/utils/util';
 import Sortable from 'ui/mixins/sortable';
 
 export default Controller.extend(Sortable, {
+  accountOnly: false,
   queryParams: ['targetKey'],
   targetKey: null,
   access: service(),
@@ -35,8 +36,14 @@ export default Controller.extend(Sortable, {
     return !!(schema && schema.get('resourceFields.apiKeyPolicy'));
   }.property('model.account.[]'),
 
-  auditViewerChanged: observer('access.identity.id', 'project.id', function() {
+  auditViewerChanged: observer('access.identity.id', function() {
     this.set('targetKey', null);
+  }),
+
+  auditEnvironmentChanged: observer('project.id', function() {
+    if ( !this.get('accountOnly') ) {
+      this.set('targetKey', null);
+    }
   }),
 
   canCreateAccountKey: function() {
@@ -44,8 +51,9 @@ export default Controller.extend(Sortable, {
   }.property('model.account'),
 
   canCreateEnvironmentKey: function() {
+    if ( this.get('accountOnly') ) { return false; }
     return this.get('projects').canCreateResource('apikey');
-  }.property('projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
+  }.property('accountOnly', 'projects.current.id', 'projects.schemaProjectId', 'projects.schemaLoadGeneration'),
 
   accountArranged: function() {
     var me = this.get(`session.${C.SESSION.ACCOUNT_ID}`);
@@ -71,6 +79,7 @@ export default Controller.extend(Sortable, {
     `session.${C.SESSION.ACCOUNT_ID}`, 'sortBy','descending'),
 
   environmentArranged: function() {
+    if ( this.get('accountOnly') ) { return []; }
     var project = this.get('project.id');
     let sort = this.get('sorts')[this.get('sortBy')];
 
@@ -83,10 +92,11 @@ export default Controller.extend(Sortable, {
     }
 
     return out;
-  }.property('model.environment.@each.{accountId,name,createdTs}','sortBy','descending'),
+  }.property('accountOnly', 'model.environment.@each.{accountId,name,createdTs}','sortBy','descending'),
 
   actions: {
     newApikey: function(kind) {
+      if ( this.get('accountOnly') && kind !== 'account' ) { return; }
       var cred;
       if ( kind === 'account' || (kind === 'environment' && this.get('policySupported')) )
       {

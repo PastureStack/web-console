@@ -10,11 +10,11 @@ history, authorship, licenses, and dependency notices.
 
 ## Current build
 
-[Web Console 1.6.184](docs/releases/web-console-1.6.184.md) labels event
-subscriptions in API Key audit in all thirteen supported locales. Completion
-records retain their real outcome and can have no target ID; unrecognized
-reasons use the existing safe fallback, not raw backend messages.
-This display change does not add resource-picker or permission-grant capabilities.
+[Web Console 1.6.185](docs/releases/web-console-1.6.185.md) adds an independent
+`/account/keys` page for personal API Keys, including users with no accessible
+environment. It reuses the existing editor and audit view, lists only the
+current owner's Keys, and does not grant environment access. Existing environment
+Key pages and Hooks retain their original navigation and behavior.
 
 Host onboarding still follows the native capability of the actual submission:
 RegistrationToken POST for Custom, Host POST for built-in/Other forms. Machine
@@ -27,7 +27,7 @@ for its published component pairing and deployment workflow. Component publicati
 and focused UI results do not imply complete Server or active-agent acceptance.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current source note](docs/releases/web-console-1.6.184.md).
+see the [current source note](docs/releases/web-console-1.6.185.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.

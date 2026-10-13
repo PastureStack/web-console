@@ -18,6 +18,20 @@ function key(Model, supported, transitions) {
 }
 
 for (let [type, Model] of [['account', ApiKey], ['restricted', RestrictedApiKey]]) {
+  test(`Account Keys keeps the ${type} Key audit on the independent account route`, function(assert) {
+    let transitions = [];
+    let model = key(Model, true, transitions);
+    model.set('router.currentRouteName', 'authenticated.account-keys');
+    try {
+      model.send('audit');
+      assert.deepEqual(transitions, [['authenticated.account-keys', {queryParams: {targetKey: 'selected-key'}}]]);
+      assert.false(model.get('availableActions').findBy('action', 'edit').enabled);
+      assert.false(model.get('availableActions').findBy('action', 'promptDelete').enabled);
+    } finally {
+      model.destroy();
+    }
+  });
+
   test(`${type} Key exposes one read-only audit menu item without granting mutation actions`, function(assert) {
     let transitions = [];
     let model = key(Model, true, transitions);
