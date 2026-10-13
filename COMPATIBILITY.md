@@ -15,8 +15,8 @@ The published component producer is
 `e056a0111d20816742eff17a65dfabb5d003dae2`; documentation-only main commits do not
 replace this released component identity.
 
-Published Server `v1.6.524` packages this same Web Console `1.6.183` component with
-Engine `0.183.342`. Server assembly and isolated QA deployment were verified
+Published Server `v1.6.526` packages this same Web Console `1.6.183` component with
+Engine `0.183.344`. Server assembly and isolated QA deployment were verified
 separately. Component publication and focused UI checks do not establish complete
 permission-matrix or active-agent lifecycle acceptance.
 This documentation update changes neither Web code nor the published archive.
