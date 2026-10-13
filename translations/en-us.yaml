@@ -2211,6 +2211,8 @@ apiKeyAccess:
 apiKeyAudit:
   unknownOperation: Unrecognized operation; investigate using the request ID
   unknownTarget: Unrecognized resource type
+  resources:
+    subscribe: "Event subscription"
   decisions:
     ALLOW: Allowed
     DENY: Denied

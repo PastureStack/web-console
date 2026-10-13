@@ -8,20 +8,18 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current release
+## Current build
 
-[Web Console 1.6.183](https://github.com/PastureStack/web-console/releases/tag/1.6.183)
-is published. It restores add-host Close and Back route dispatch, preserves their
-external return target across driver redirects and settings refreshes, and derives
-host onboarding from the native capability of the actual submission path:
+[Web Console 1.6.184](docs/releases/web-console-1.6.184.md) labels event
+subscriptions in API Key audit in all thirteen supported locales. Completion
+records retain their real outcome and can have no target ID; unrecognized
+reasons use the existing safe fallback, not raw backend messages.
+This display change does not add resource-picker or permission-grant capabilities.
+
+Host onboarding still follows the native capability of the actual submission:
 RegistrationToken POST for Custom, Host POST for built-in/Other forms. Machine
-API POST alone grants neither form; Host POST alone cannot open Custom. See the
-[release note](docs/releases/web-console-1.6.183.md) for source/archive identities
-and checksums.
-
-The shared native-click clipboard fix from 1.6.182 is retained. Eleven new unit
-cases and native browser control checks passed, including the first API-host setting
-save, real command-copy icon clicks, and Close returning to Hosts.
+API POST alone grants neither form. Native clipboard and Close/Back behavior
+from the previous release is retained.
 
 The console archive is published independently of Server assembly. See the
 [Server current-release guide](https://github.com/PastureStack/server#current-release)
@@ -29,7 +27,7 @@ for its published component pairing and deployment workflow. Component publicati
 and focused UI results do not imply complete Server or active-agent acceptance.
 
 For component identities, checksums, focused tests, and known verification limits,
-see the [current release note](docs/releases/web-console-1.6.183.md).
+see the [current source note](docs/releases/web-console-1.6.184.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.

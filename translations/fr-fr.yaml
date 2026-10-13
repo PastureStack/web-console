@@ -4112,3 +4112,7 @@ formResources:
     cpu: "Saisissez une limite CPU valide (quota d’au moins 1000 µs)."
     ulimits: "Les noms doivent être uniques, les valeurs entières >= -1 et la limite souple <= la limite stricte."
     map: "Les clés et valeurs des options avancées ne doivent pas être vides."
+
+apiKeyAudit:
+  resources:
+    subscribe: "Abonnement aux événements"

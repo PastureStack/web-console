@@ -4167,3 +4167,7 @@ formResources:
     cpu: "Gültiges CPU-Limit eingeben (Kontingent mindestens 1000 µs)."
     ulimits: "Limitnamen müssen eindeutig sein, Werte ganzzahlig und >= -1, weiches Limit <= hartes Limit."
     map: "Schlüssel und Werte der erweiterten Optionen dürfen nicht leer sein."
+
+apiKeyAudit:
+  resources:
+    subscribe: "Ereignisabonnement"

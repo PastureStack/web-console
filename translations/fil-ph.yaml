@@ -4113,3 +4113,7 @@ formResources:
     cpu: "Maglagay ng wastong CPU limit (hindi bababa sa 1000 µs ang quota)."
     ulimits: "Dapat natatangi ang pangalan, integer na >= -1 ang halaga, at soft limit <= hard limit."
     map: "Hindi maaaring walang laman ang mga key at value ng advanced na opsyon."
+
+apiKeyAudit:
+  resources:
+    subscribe: "Subskripsiyon sa mga kaganapan"

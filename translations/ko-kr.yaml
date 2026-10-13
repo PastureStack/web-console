@@ -3964,3 +3964,7 @@ formResources:
     cpu: "유효한 CPU 제한을 입력하세요 (할당량 최소 1000 µs)."
     ulimits: "이름은 고유해야 하며 값은 -1 이상의 정수이고 소프트 제한은 하드 제한 이하여야 합니다."
     map: "고급 옵션의 키와 값은 비워 둘 수 없습니다."
+
+apiKeyAudit:
+  resources:
+    subscribe: "이벤트 구독"
