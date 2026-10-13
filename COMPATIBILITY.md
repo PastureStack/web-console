@@ -1,6 +1,25 @@
 # Compatibility Contract
 
-## Current release: Web Console 1.6.183
+## Current release: Web Console 1.6.184
+
+Published [1.6.184](docs/releases/web-console-1.6.184.md) labels event subscriptions
+in API Key audit, including completion records without a target ID. Actual
+terminal outcomes and the existing safe unknown-reason fallback are preserved;
+no resource-picker, grant, authentication or stylesheet behavior is added.
+Three focused Chrome unit tests passed, including actual compiled labels in all
+thirteen production locales. Native Server acceptance remains separate.
+
+The immutable component producer is `c41fcf05b42f648d6a7e3859285b95c07b4dd40d`.
+The anonymously read-back `web-console-1.6.184.tar.gz` is 3,016,500 bytes, SHA-256
+`a374e6eed0ad8daec785cc3ba833e6219d46ffd23ead77d2fd720aed5d5d52f9`.
+Documentation-only commits do not replace this published component identity.
+
+Published Server `v1.6.529` packages this component with Engine `0.183.347`.
+Official assembly, immutable readback and thirty-six focused native subscription
+cases passed; isolated deployment is separately verified. Neither component publication
+nor focused UI tests establish complete permission-matrix or active-agent coverage.
+
+## Web Console 1.6.183 published
 
 Published `1.6.183` retains the shared native-click clipboard fix from `1.6.182`
 and restores add-host Close/Back dispatch and the external return target across
