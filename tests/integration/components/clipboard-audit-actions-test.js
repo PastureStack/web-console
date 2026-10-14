@@ -7,7 +7,9 @@ import { defer } from 'rsvp';
 import { module, test } from 'qunit';
 import ApiKeyAudit from 'ui/components/api-key-audit/component';
 import auditTemplate from 'ui/components/api-key-audit/template';
+import TooltipService from 'ui/services/tooltip';
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
+import { initialize as initializeLegacyContextPartials } from 'ui/initializers/legacy-context-partials';
 import { initialize as initializeIntl } from 'ui/instance-initializers/intl';
 import resolver from '../../helpers/resolver';
 
@@ -30,6 +32,19 @@ function resetFeedback(copy) {
     cancel(copy.get('feedbackTimer'));
     copy.setProperties({status: null, feedbackTimer: null});
   });
+}
+
+function useRealTooltip(context) {
+  initializeLegacyContextPartials(context.owner);
+  context.owner.unregister('service:tooltip');
+  context.owner.register('service:tooltip', TooltipService);
+  context.owner.register('service:-routing', Service.extend({currentRouteName: 'integration.clipboard'}));
+  context.tooltipService = context.owner.lookup('service:tooltip');
+  context.set('liveTooltip', context.tooltipService);
+}
+
+function nativeMouse(element, type) {
+  element.dispatchEvent(new MouseEvent(type, {bubbles: false}));
 }
 
 module('Integration | Component | clipboard event and audit actions', function(hooks) {
@@ -60,6 +75,7 @@ module('Integration | Component | clipboard event and audit actions', function(h
 
   hooks.afterEach(async function() {
     if (this.audit) { cancel(this.audit._timer); }
+    if (this.liveTooltip) { cancel(this.liveTooltip.get('mouseLeaveTimer')); }
     await teardownContext(this);
     for (let [target, field, descriptor] of [[navigator, 'clipboard', this.clipboardDescriptor],
       [window, 'isSecureContext', this.secureDescriptor]]) {
@@ -104,6 +120,131 @@ module('Integration | Component | clipboard event and audit actions', function(h
     assert.strictEqual(copy.get('status'), null, 'the success timer resets status');
     assert.strictEqual(String(tooltip.get('model')), this.english['copyToClipboard.tooltip'],
       'the success timer restores a valid default tooltip');
+  });
+
+  test('native tooltip hover renders real static initial, copied and failed text and handles pointer departure', async function(assert) {
+    useRealTooltip(this);
+    const chinese = await (await fetch('/translations/zh-tw.json')).json();
+    this.intl.addTranslations('zh-tw', chinese);
+    this.intl.setLocale(['zh-tw']);
+    await render(precompileTemplate('{{copy-to-clipboard clipboardText="native-hover-copy"}}{{#if this.liveTooltip.tooltipOpts}}{{tooltip-basic class="container-tooltip"}}{{/if}}'));
+    const button = find('.copy-button-container button');
+    const copy = copyComponent(this.owner, 'native-hover-copy');
+    const trigger = copyTooltip(this.owner, button).element;
+    assert.notOk(find('.container-tooltip'), 'the shared floating tooltip starts closed');
+
+    nativeMouse(trigger, 'mouseenter');
+    await waitUntil(() => find('.container-tooltip'));
+    assert.strictEqual(find('.container-tooltip').textContent.trim(), chinese['copyToClipboard.tooltip'],
+      'native hover renders the actual tooltip-basic and tooltip-content-static initial message');
+    assert.strictEqual(getComputedStyle(find('.container-tooltip')).visibility, 'visible', 'the real floating tooltip is visible');
+
+    button.querySelector('.icon').click();
+    await waitUntil(() => find('.container-tooltip').textContent.trim() === chinese['copyToClipboard.copied']);
+    assert.deepEqual(this.copied, ['native-hover-copy'], 'the same native control preserves the clipboard payload');
+    resetFeedback(copy);
+    await settled();
+    assert.strictEqual(find('.container-tooltip').textContent.trim(), chinese['copyToClipboard.tooltip'], 'the real static content resets after success');
+
+    Object.defineProperty(navigator, 'clipboard', {configurable: true, value: {writeText() {
+      return Promise.reject(new Error('Fixture clipboard denied'));
+    }}});
+    button.click();
+    await waitUntil(() => find('.container-tooltip').textContent.trim() === chinese['copyToClipboard.failed']);
+    assert.strictEqual(copy.get('status'), 'error', 'failed native copy reports an error through the real tooltip');
+    assert.notOk(find('.container-tooltip').textContent.includes('Missing translation'), 'the actual static body has no missing translation');
+
+    nativeMouse(trigger, 'mouseleave');
+    assert.ok(this.tooltipService.get('mouseLeaveTimer'), 'leaving the trigger starts the real hide timer');
+    nativeMouse(find('.container-tooltip'), 'mouseenter');
+    resetFeedback(copy);
+    await settled();
+    assert.ok(find('.container-tooltip'), 'entering the floating tooltip cancels trigger-departure hiding');
+    nativeMouse(find('.container-tooltip'), 'mouseleave');
+    await waitUntil(() => !find('.container-tooltip'));
+    assert.strictEqual(this.tooltipService.get('tooltipOpts'), null, 'leaving the actual floating content closes the tooltip');
+  });
+
+  test('native tooltip destroy removes trigger and floating listeners and detached nodes cannot reopen feedback', async function(assert) {
+    useRealTooltip(this);
+    this.set('showCopy', true);
+    const addDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'addEventListener');
+    const removeDescriptor = Object.getOwnPropertyDescriptor(Element.prototype, 'removeEventListener');
+    const originalAdd = Element.prototype.addEventListener;
+    const originalRemove = Element.prototype.removeEventListener;
+    const added = [], removed = [];
+    Object.defineProperty(Element.prototype, 'addEventListener', {configurable: true, value: function(type, listener, ...options) {
+      if (type === 'mouseenter' || type === 'mouseleave') { added.push({element: this, type, listener}); }
+      return originalAdd.call(this, type, listener, ...options);
+    }});
+    Object.defineProperty(Element.prototype, 'removeEventListener', {configurable: true, value: function(type, listener, ...options) {
+      if (type === 'mouseenter' || type === 'mouseleave') { removed.push({element: this, type, listener}); }
+      return originalRemove.call(this, type, listener, ...options);
+    }});
+    try {
+      await render(precompileTemplate('{{#if this.showCopy}}{{copy-to-clipboard clipboardText="native-destroy-copy" tooltipText="複製這段內容"}}{{/if}}{{#if this.liveTooltip.tooltipOpts}}{{tooltip-basic class="container-tooltip"}}{{/if}}'));
+      const button = find('.copy-button-container button');
+      const trigger = copyTooltip(this.owner, button).element;
+      nativeMouse(trigger, 'mouseenter');
+      await waitUntil(() => find('.container-tooltip'));
+      const floating = find('.container-tooltip');
+      assert.strictEqual(floating.textContent.trim(), '複製這段內容', 'the actual static component renders a caller-provided literal');
+      const calls = [];
+      for (const name of ['cancelTimer', 'startTimer']) {
+        const original = this.tooltipService[name];
+        this.tooltipService[name] = function(...args) { calls.push(name); return original.apply(this, args); };
+      }
+      run(() => this.set('showCopy', false));
+      await settled();
+      assert.notOk(find('.container-tooltip'), 'destroying the active trigger removes its floating tooltip');
+      for (const element of [trigger, floating]) {
+        for (const type of ['mouseenter', 'mouseleave']) {
+          const listeners = added.filter(item => item.element === element && item.type === type);
+          assert.strictEqual(listeners.length, 1, `${type} is registered once on the actual ${element === trigger ? 'trigger' : 'floating tooltip'}`);
+          assert.ok(listeners.every(item => removed.some(other => other.element === element && other.type === type && other.listener === item.listener)),
+            `${type} removes the same native listener on destroy`);
+        }
+      }
+      calls.length = 0;
+      for (const element of [trigger, floating]) {
+        nativeMouse(element, 'mouseenter');
+        nativeMouse(element, 'mouseleave');
+      }
+      await settled();
+      assert.deepEqual(calls, [], 'detached trigger and floating nodes no longer reach the tooltip service');
+      assert.strictEqual(this.tooltipService.get('tooltipOpts'), null, 'detached hover cannot recreate tooltip feedback');
+    } finally {
+      if (addDescriptor) { Object.defineProperty(Element.prototype, 'addEventListener', addDescriptor); } else { delete Element.prototype.addEventListener; }
+      if (removeDescriptor) { Object.defineProperty(Element.prototype, 'removeEventListener', removeDescriptor); } else { delete Element.prototype.removeEventListener; }
+    }
+  });
+
+  test('native tooltip action-menu hover preserves its override and keeps open actions visible', async function(assert) {
+    useRealTooltip(this);
+    this.owner.register('service:resource-actions', Service.extend({open: false}));
+    const resourceActions = this.owner.lookup('service:resource-actions');
+    await render(precompileTemplate('{{#tooltip-element type="tooltip-action-menu" model="Action menu hover fixture" tooltipTemplate="tooltip-static" tooltipFor="fixture-action-menu"}}<button type="button">Menu</button>{{/tooltip-element}}{{#if this.liveTooltip.tooltipOpts}}{{tooltip-action-menu tooltipTemplate="tooltip-static" class="container-tooltip"}}{{/if}}'));
+    const trigger = Object.values(this.owner.lookup('-view-registry:main')).find(view => view.get('tooltipFor') === 'fixture-action-menu').element;
+    nativeMouse(trigger, 'mouseenter');
+    await waitUntil(() => find('.container-tooltip'));
+    const floating = find('.container-tooltip');
+    const menu = Object.values(this.owner.lookup('-view-registry:main')).find(view => view.element === floating);
+    assert.strictEqual(floating.textContent.trim(), 'Action menu hover fixture', 'the real action-menu subclass renders through its shared static content');
+
+    nativeMouse(floating, 'mouseenter');
+    assert.true(menu.get('inTooltip'), 'native enter reaches the action-menu override through virtual dispatch');
+    run(() => resourceActions.set('open', true));
+    await settled();
+    assert.true(menu.get('actionsOpen'), 'the real action-menu alias observes the open action state');
+    nativeMouse(floating, 'mouseleave');
+    await settled();
+    assert.false(menu.get('inTooltip'), 'native leave reaches the action-menu override');
+    assert.strictEqual(find('.container-tooltip'), floating, 'open actions remain visible instead of running the mixin default hide timer');
+    assert.ok(this.tooltipService.get('tooltipOpts'), 'open actions retain their tooltip ownership');
+
+    run(() => resourceActions.set('open', false));
+    await waitUntil(() => !find('.container-tooltip'));
+    assert.strictEqual(this.tooltipService.get('tooltipOpts'), null, 'closing actions after pointer departure releases the tooltip normally');
   });
 
   test('all 13 shipped YAML locales provide initial, copied, failed and reset tooltip messages', async function(assert) {

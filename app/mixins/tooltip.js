@@ -1,5 +1,5 @@
 import $ from 'jquery';
-import { scheduleOnce } from '@ember/runloop';
+import { scheduleOnce, join } from '@ember/runloop';
 import { observer } from '@ember/object';
 import { service } from '@ember/service';
 import Mixin from '@ember/object/mixin';
@@ -12,6 +12,22 @@ export default Mixin.create(ThrottledResize, {
   currentRoute   : null,
 
   tooltipService: service('tooltip'),
+
+  didInsertElement() {
+    this._super(...arguments);
+    // Resolve the existing virtual methods at event time so action-menu
+    // overrides retain their open/inTooltip ownership behavior.
+    this._tooltipContentEnter = () => join(this, this.mouseEnter);
+    this._tooltipContentLeave = () => join(this, this.mouseLeave);
+    this.element.addEventListener('mouseenter', this._tooltipContentEnter);
+    this.element.addEventListener('mouseleave', this._tooltipContentLeave);
+  },
+
+  willDestroyElement() {
+    this.element.removeEventListener('mouseenter', this._tooltipContentEnter);
+    this.element.removeEventListener('mouseleave', this._tooltipContentLeave);
+    this._super(...arguments);
+  },
 
   mouseEnter: function() {
     this.get('tooltipService').cancelTimer();
