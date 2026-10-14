@@ -1603,6 +1603,7 @@ containerShell:
 copyToClipboard:
   tooltip: 复制到剪贴板
   copied: 已复制
+  failed: 无法复制。请选中文本并手动复制。
 dangerZone:
   header: 高级设置
   subtext: '注意：通常情况下用户无需修改此类设置。不正确的设置可能会导致 {appName} 部署损坏。被修改的设置会用粗体显示。'

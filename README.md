@@ -10,10 +10,12 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-[Web Console 1.6.186](docs/releases/web-console-1.6.186.md) restores native
-machine driver names in shared cards. Drivers that share the generic icon remain
-individually identifiable; catalog names retain localization and display formatting.
-This published release is packaged in Server `v1.6.531` with Engine `v0.183.348`.
+[Web Console 1.6.187](docs/releases/web-console-1.6.187.md) corrects shared
+clipboard feedback from initial rendering through copy success or failure.
+All 13 supported locales have native clipboard messages; bounded hints fit the
+viewport, and host registration commands remain left-to-right in RTL locales.
+The previously published Server `v1.6.531` packages Web Console `1.6.186`;
+the new component's Server pairing and browser acceptance are recorded separately.
 
 The independent `/account/keys` page provides personal API Keys for users with no accessible
 environment. It reuses the existing editor and audit view, lists only the
@@ -30,7 +32,7 @@ For platform installation, see the
 and its published component pairing. Narrow affected-path acceptance completed.
 
 For published artifact identities, focused verification, and acceptance boundaries,
-see the [release note](docs/releases/web-console-1.6.186.md).
+see the [release note](docs/releases/web-console-1.6.187.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.

@@ -32,6 +32,11 @@ $redDark: null !default;
 
   &.copy-clipboard {
     text-align: center;
+    box-sizing: border-box;
+    width: max-content;
+    max-width: min(320px, calc(100vw - 16px));
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
   .tooltip-dot {
     width: 245px;

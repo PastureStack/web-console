@@ -1660,6 +1660,7 @@ containerShell:
 copyToClipboard:
   tooltip: Copier dans le Presse-papiers
   copied: Copié !
+  failed: Impossible de copier. Sélectionnez le texte et copiez-le manuellement.
 dangerZone:
   header: Paramètres Avancés
   subtext: "Procéder avec prudence\_; les utilisateurs classiques ne devraient pas modifier ces paramètres.  Des valeurs incorrectes peuvent briser votre installation {appName}.  Les paramètres qui ont été modifiés sont indiqués en gras."

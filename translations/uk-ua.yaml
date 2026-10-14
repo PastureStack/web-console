@@ -1680,6 +1680,7 @@ containerShell:
 copyToClipboard:
   tooltip: Копіювати до буфера обміну
   copied: Скопійовано!
+  failed: Не вдалося скопіювати. Виділіть текст і скопіюйте його вручну.
 dangerZone:
   header: Додаткові налаштування
   subtext: >-

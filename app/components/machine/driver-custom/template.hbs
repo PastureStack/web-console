@@ -11,7 +11,7 @@
             <i>2</i>
             {{format-html-message 'machine.driverCustom.windowsSteps.step2'}}
             <div class="copy-pre">
-              <pre id="network-command">{{t 'machine.driverCustom.windowsSteps.step2Copy'}}</pre>
+              <pre id="network-command" dir="ltr">{{t 'machine.driverCustom.windowsSteps.step2Copy'}}</pre>
               {{copy-to-clipboard clipboardText=(t 'machine.driverCustom.windowsSteps.step2Copy')}}
             </div>
             <div class="r-mt10">
@@ -50,7 +50,7 @@
             <i>7</i>
             {{t 'machine.driverCustom.windowsSteps.step7' appName=this.settings.appName}}
             <div class="copy-pre">
-              <pre id="registration-command">{{this.registrationCommandWindows}}</pre>
+              <pre id="registration-command" dir="ltr">{{this.registrationCommandWindows}}</pre>
               {{copy-to-clipboard clipboardText=this.registrationCommandWindows}}
             </div>
           </li>
@@ -101,7 +101,7 @@
           {{t 'machine.driverCustom.step5Copy'}} {{this.settings.appName}}:
           {{#if this.registrationCommand}}
             <div class="copy-pre">
-              <pre id="registration-command">{{this.registrationCommand}}</pre>
+              <pre id="registration-command" dir="ltr">{{this.registrationCommand}}</pre>
               {{copy-to-clipboard clipboardText=this.registrationCommand}}
             </div>
           {{else}}

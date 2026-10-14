@@ -1618,6 +1618,7 @@ containerShell:
 copyToClipboard:
   tooltip: در کلیپ بورد کپی کنید
   copied: کپی شده!
+  failed: کپی انجام نشد. متن را انتخاب کنید و به‌صورت دستی کپی کنید.
 dangerZone:
   header: تنظیمات پیشرفته
   subtext: >-

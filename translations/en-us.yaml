@@ -2003,6 +2003,7 @@ containerShell:
 copyToClipboard:
   tooltip: Copy to Clipboard
   copied: Copied!
+  failed: Could not copy. Select the text and copy it manually.
 
 dangerZone:
   header: Advanced Settings

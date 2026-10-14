@@ -1644,6 +1644,7 @@ containerShell:
 copyToClipboard:
   tooltip: Copiar para Área de Transferência
   copied: Copiado!
+  failed: Não foi possível copiar. Selecione o texto e copie-o manualmente.
 dangerZone:
   header: Configurações avançadas
   subtext: >-

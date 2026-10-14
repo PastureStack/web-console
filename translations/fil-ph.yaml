@@ -1649,6 +1649,7 @@ containerShell:
 copyToClipboard:
   tooltip: Kopyahin sa Clipboard
   copied: Kinopya!
+  failed: Hindi makopya. Piliin ang teksto at manu-manong kopyahin ito.
 dangerZone:
   header: Mga Advanced na Setting
   subtext: >-
