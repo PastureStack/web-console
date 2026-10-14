@@ -1,4 +1,4 @@
-import { later, cancel } from '@ember/runloop';
+import { later, cancel, join } from '@ember/runloop';
 import $ from 'jquery';
 import { observer } from '@ember/object';
 import { service } from '@ember/service';
@@ -18,6 +18,16 @@ export default Component.extend({
   tooltipFor       : null,
 
   showTimer        : null,
+
+  didInsertElement() {
+    this._super(...arguments);
+    // Ember 5 no longer delegates these non-bubbling DOM events. Own the
+    // listeners locally instead of changing the application's event map.
+    this._tooltipEnter = (event) => join(this, this.mouseEnter, event);
+    this._tooltipLeave = () => join(this, this.mouseLeave);
+    this.element.addEventListener('mouseenter', this._tooltipEnter);
+    this.element.addEventListener('mouseleave', this._tooltipLeave);
+  },
 
   textChanged: observer('textChangedEvent', function() {
     this.show(this.get('textChangedEvent'));
@@ -93,6 +103,8 @@ export default Component.extend({
   }),
 
   willDestroyElement() {
+    this.element.removeEventListener('mouseenter', this._tooltipEnter);
+    this.element.removeEventListener('mouseleave', this._tooltipLeave);
     cancel(this.get('showTimer'));
     const opts = this.get('tooltipService.tooltipOpts');
     if (this.get('isCopyTo') && opts && opts.originalNode && this.element &&

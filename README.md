@@ -8,14 +8,15 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current release
+## Current component candidate and published Server
 
-[Web Console 1.6.187](docs/releases/web-console-1.6.187.md) corrects shared
-clipboard feedback from initial rendering through copy success or failure.
-All 13 supported locales have native clipboard messages; bounded hints fit the
-viewport, and host registration commands remain left-to-right in RTL locales.
-The previously published Server `v1.6.531` packages Web Console `1.6.186`;
-the new component's Server pairing and browser acceptance are recorded separately.
+[Web Console 1.6.188](docs/releases/web-console-1.6.188.md) is a new candidate
+that repairs native hover listener lifecycle after
+actual-browser findings in `1.6.187`. It retains native clipboard messages in
+all 13 supported locales and left-to-right host commands in RTL interfaces.
+Published Server `v1.6.532` packages Web Console `1.6.187` with Engine
+`v0.183.348` and is deployed to QA 8080. The candidate's immutable publication,
+new Server pairing and 52 actual-browser locale/width/theme cases remain pending.
 
 The independent `/account/keys` page provides personal API Keys for users with no accessible
 environment. It reuses the existing editor and audit view, lists only the
@@ -29,10 +30,12 @@ preserve the existing host-onboarding workflow.
 
 For platform installation, see the
 [Server current-release guide](https://github.com/PastureStack/server#current-release)
-and its published component pairing. Narrow affected-path acceptance completed.
+and its published component pairing. Candidate verification and acceptance
+boundaries are recorded separately.
 
-For published artifact identities, focused verification, and acceptance boundaries,
-see the [release note](docs/releases/web-console-1.6.187.md).
+For candidate scope and verification status, see the
+[1.6.188 release note](docs/releases/web-console-1.6.188.md). Published component
+identities remain in the [1.6.187 release note](docs/releases/web-console-1.6.187.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.

@@ -7,7 +7,9 @@ import { click, find, render, settled, setupContext, setupRenderingContext, tear
 import { module, test } from 'qunit';
 import HostsNewController from 'ui/hosts/new/controller';
 import HostsNewRoute from 'ui/hosts/new/route';
+import TooltipService from 'ui/services/tooltip';
 import { initialize as initializePodLayouts } from 'ui/initializers/pod-component-layouts';
+import { initialize as initializeLegacyContextPartials } from 'ui/initializers/legacy-context-partials';
 import { initialize as initializeIntl } from 'ui/instance-initializers/intl';
 import resolver from '../../helpers/resolver';
 
@@ -60,6 +62,7 @@ module('Integration | Component | host registration copy and close', function(ho
   });
 
   hooks.afterEach(async function() {
+    if (this.liveTooltip) { cancel(this.liveTooltip.get('mouseLeaveTimer')); }
     await teardownContext(this);
     run(() => { this.controller.destroy(); this.route.destroy(); this.project.destroy(); this.token.destroy(); });
     for (const [target, field, descriptor] of [[navigator, 'clipboard', this.clipboardDescriptor],
@@ -92,6 +95,37 @@ module('Integration | Component | host registration copy and close', function(ho
     await click(find('[data-driver-back]'));
     assert.deepEqual(this.routeActions, ['goBack']);
     assert.deepEqual(this.transitions, [['authenticated.project.waiting']]);
+  });
+
+  test('native tooltip registration hover and copy render the actual localized static content', async function(assert) {
+    initializeLegacyContextPartials(this.owner);
+    this.owner.unregister('service:tooltip');
+    this.owner.register('service:tooltip', TooltipService);
+    this.owner.register('service:-routing', Service.extend({currentRouteName: 'integration.host-registration'}));
+    this.set('liveTooltip', this.owner.lookup('service:tooltip'));
+    const chinese = await (await fetch('/translations/zh-tw.json')).json();
+    this.intl.addTranslations('zh-tw', chinese);
+    this.intl.setLocale(['zh-tw']);
+    await render(precompileTemplate('{{machine/driver-custom clonedModel=this.token cancel=(action "cancel" target=this.controller)}}{{#if this.liveTooltip.tooltipOpts}}{{tooltip-basic class="container-tooltip"}}{{/if}}'));
+    const command = find('#registration-command');
+    const button = command.parentElement.querySelector('.copy-button-container button');
+    const views = Object.values(this.owner.lookup('-view-registry:main'));
+    const copy = views.find(view => view.get('clipboardText') === command.textContent);
+    const trigger = views.find(view => view.get('tooltipFor') === 'copyToClipboard' && view.element.contains(button)).element;
+    trigger.dispatchEvent(new MouseEvent('mouseenter', {bubbles: false}));
+    await waitUntil(() => find('.container-tooltip'));
+    assert.strictEqual(find('.container-tooltip').textContent.trim(), chinese['copyToClipboard.tooltip'],
+      'the real host registration hover displays the actual localized static body');
+    button.querySelector('.icon').click();
+    await waitUntil(() => find('.container-tooltip').textContent.trim() === chinese['copyToClipboard.copied']);
+    assert.deepEqual(this.copied, [command.textContent], 'native registration copy preserves the displayed command');
+    run(() => {
+      cancel(copy.get('feedbackTimer'));
+      copy.setProperties({status: null, feedbackTimer: null});
+    });
+    trigger.dispatchEvent(new MouseEvent('mouseleave', {bubbles: false}));
+    await waitUntil(() => !find('.container-tooltip'));
+    assert.strictEqual(this.liveTooltip.get('tooltipOpts'), null, 'leaving the real registration trigger closes its tooltip');
   });
 
   test('HTTP clipboard fallback copies the displayed registration command and removes its textarea', async function(assert) {
