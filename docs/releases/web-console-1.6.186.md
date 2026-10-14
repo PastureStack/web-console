@@ -19,7 +19,7 @@ The independent personal API Key page and existing host onboarding remain availa
   the application's Intl compatibility initializer, and a 320px container.
 - `package.json` and `package-lock.json`: root versions are `1.6.186`; dependencies
   are unchanged.
-- `README.md` and this source note: describe the driver display and verification.
+- `README.md` and this release note: describe the driver display and verification.
 
 ## Focused verification
 
@@ -38,8 +38,26 @@ their distinct native IDs, renaming, compiled page translations, and visible
 names fitting within cards in a 320px container. The catalog cases verify locale
 changes, branding formatting, and retained empty-name semantics.
 
-These tests ran against the uncommitted source based on
-`ad5a68dd30a6e136745123e26c97c4925c2ed263`. Version metadata and documentation
-were prepared afterward; the tested component and regression source are unchanged.
-Production packaging, publication, Server pairing, and actual driver initialization
-and restart identity checks remain separate pending gates. Server E2E08 is PLANNED.
+## Published artifact and Server pairing
+
+The immutable published source is `236973cb28dd7600a697902e3e3445b1a210a87a`.
+The `web-console-1.6.186.tar.gz` archive has SHA-256
+`95b319150d75b927b5474400129eee43eeec181a86c5b6d5065d44815df3da76`.
+Official component publication and immutable readback are complete. Published
+Server `v1.6.531` packages this archive with Engine `v0.183.348`; documentation
+commits do not replace the published producer or archive.
+
+## Native acceptance
+
+Chrome 154.0.8037.98 loaded the published Server 531/Web 186 product through its
+real UI and API. Eleven distinct driver IDs and names matched v1 and v2-beta;
+zh-tw/en-us at 1440px and 390px displayed every native name. Four cards shared
+generic icons while retaining distinct records. A Server restart preserved the
+exact ID/name set. Page errors were zero, and all five screenshots were visually
+reviewed; no driver was deleted or merged.
+
+The paired Server passed repair of an existing unbound Default during upgrade
+from 530, fresh first-host readiness, Server/Docker restart, guest reboot and
+native workload recreation. Its deployment and subsequent restart also passed.
+Narrow affected-path acceptance completed with the existing host defaults and
+unchanged role logic; broader role/backend matrices are outside this verification.

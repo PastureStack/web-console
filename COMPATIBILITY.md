@@ -1,6 +1,34 @@
 # Compatibility Contract
 
-## Current release: Web Console 1.6.184
+## Current release: Web Console 1.6.186
+
+Published [1.6.186](docs/releases/web-console-1.6.186.md) displays native machine
+driver names in shared cards while preserving catalog localization, formatting,
+and intentional empty names. Driver records, IDs, initialization and action
+targets retain their existing contracts. The personal API Key page and host
+onboarding remain available.
+
+The immutable producer is `236973cb28dd7600a697902e3e3445b1a210a87a`.
+The published `web-console-1.6.186.tar.gz` has SHA-256
+`95b319150d75b927b5474400129eee43eeec181a86c5b6d5065d44815df3da76`.
+Official component publication and immutable readback are complete; documentation
+commits do not replace this artifact identity. Published Server `v1.6.531`
+packages this component with Engine `v0.183.348`.
+
+Four focused Chrome rendered cases passed with native models, compiled English
+and Traditional Chinese translations, and a 320px card container. Native Chrome
+154.0.8037.98 acceptance used the published Server 531/Web 186 product: eleven
+distinct driver IDs and names matched both API roots, and all names remained
+visible in zh-tw/en-us at 1440px and 390px. Four generic icons represented
+distinct records; a Server restart preserved the exact IDs and names. Page errors
+were zero, and all five screenshots were visually reviewed.
+
+The paired Server also passed existing-Default repair, fresh first-host readiness,
+resilience, deployment and restart qualification. Narrow affected-path acceptance
+completed with the existing host defaults and unchanged role logic; broader
+role/backend matrices are outside this verification.
+
+## Web Console 1.6.184 published
 
 Published [1.6.184](docs/releases/web-console-1.6.184.md) labels event subscriptions
 in API Key audit, including completion records without a target ID. Actual

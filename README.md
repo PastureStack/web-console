@@ -8,14 +8,12 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current source
+## Current release
 
 [Web Console 1.6.186](docs/releases/web-console-1.6.186.md) restores native
 machine driver names in shared cards. Drivers that share the generic icon remain
 individually identifiable; catalog names retain localization and display formatting.
-Four focused Chrome rendering tests passed in English and Traditional Chinese,
-including a 320px card container. Production packaging, publication, and native
-Server acceptance remain pending.
+This published release is packaged in Server `v1.6.531` with Engine `v0.183.348`.
 
 The independent `/account/keys` page provides personal API Keys for users with no accessible
 environment. It reuses the existing editor and audit view, lists only the
@@ -24,16 +22,15 @@ Key pages and Hooks retain their original navigation and behavior.
 
 Host onboarding still follows the native capability of the actual submission:
 RegistrationToken POST for Custom, Host POST for built-in/Other forms. Machine
-API POST alone grants neither form. Native clipboard and Close/Back behavior
-from the previous release is retained.
+API POST alone grants neither form. Native clipboard and Close/Back controls
+preserve the existing host-onboarding workflow.
 
-The console archive is published independently of Server assembly. See the
+For platform installation, see the
 [Server current-release guide](https://github.com/PastureStack/server#current-release)
-for its published component pairing and deployment workflow. Component publication
-and focused UI results do not imply complete Server or active-agent acceptance.
+and its published component pairing. Narrow affected-path acceptance completed.
 
-For this source change, focused verification, and acceptance boundaries,
-see the [current source note](docs/releases/web-console-1.6.186.md).
+For published artifact identities, focused verification, and acceptance boundaries,
+see the [release note](docs/releases/web-console-1.6.186.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.
