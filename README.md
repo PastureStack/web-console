@@ -8,10 +8,16 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current build
+## Current source
 
-[Web Console 1.6.185](docs/releases/web-console-1.6.185.md) adds an independent
-`/account/keys` page for personal API Keys, including users with no accessible
+[Web Console 1.6.186](docs/releases/web-console-1.6.186.md) restores native
+machine driver names in shared cards. Drivers that share the generic icon remain
+individually identifiable; catalog names retain localization and display formatting.
+Four focused Chrome rendering tests passed in English and Traditional Chinese,
+including a 320px card container. Production packaging, publication, and native
+Server acceptance remain pending.
+
+The independent `/account/keys` page provides personal API Keys for users with no accessible
 environment. It reuses the existing editor and audit view, lists only the
 current owner's Keys, and does not grant environment access. Existing environment
 Key pages and Hooks retain their original navigation and behavior.
@@ -26,8 +32,8 @@ The console archive is published independently of Server assembly. See the
 for its published component pairing and deployment workflow. Component publication
 and focused UI results do not imply complete Server or active-agent acceptance.
 
-For component identities, checksums, focused tests, and known verification limits,
-see the [current source note](docs/releases/web-console-1.6.185.md).
+For this source change, focused verification, and acceptance boundaries,
+see the [current source note](docs/releases/web-console-1.6.186.md).
 Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment; the console archive alone is not a control plane.
@@ -58,6 +64,9 @@ for deployment; the console archive alone is not a control plane.
 Catalog translations use optional `io.pasturestack.catalog.name.<locale>` and
 `io.pasturestack.catalog.description.<locale>` labels. Unknown locales and
 third-party catalogs fall back to canonical metadata.
+
+Machine driver cards display each driver's API name, including drivers that
+share the generic icon. Catalog driver cards retain localized catalog names.
 
 ## Build and test
 
