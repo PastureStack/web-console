@@ -82,7 +82,23 @@ export default Component.extend({
   modelObserver: observer('model', 'textChangedEvent', function() {
     let opts = this.get('tooltipService.tooltipOpts');
     if ((opts) && this.get('tooltipFor') === opts.tooltipFor ) {
+      // Many copy controls share the same tooltip name. Only its actual
+      // trigger may update the active hint when locale or feedback changes.
+      if (this.get('isCopyTo') && (!opts.originalNode || !this.element ||
+        !this.element.contains(opts.originalNode[0]))) {
+        return;
+      }
       this.set('tooltipService.tooltipOpts.model', this.get('model'));
     }
-  })
+  }),
+
+  willDestroyElement() {
+    cancel(this.get('showTimer'));
+    const opts = this.get('tooltipService.tooltipOpts');
+    if (this.get('isCopyTo') && opts && opts.originalNode && this.element &&
+      this.element.contains(opts.originalNode[0])) {
+      this.set('tooltipService.tooltipOpts', null);
+    }
+    this._super(...arguments);
+  },
 });

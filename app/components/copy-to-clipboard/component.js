@@ -1,5 +1,6 @@
 import { computed } from '@ember/object';
-import { later } from '@ember/runloop';
+import { later, cancel } from '@ember/runloop';
+import { service } from '@ember/service';
 import $ from 'jquery';
 import Component from '@ember/component';
 import { isSafari } from 'ui/utils/platform';
@@ -11,7 +12,8 @@ export default Component.extend({
   tagName          : 'div',
   classNames       : ['copy-button-container', 'inline-block'],
 
-  model            : null,
+  intl             : service(),
+  feedbackTimer    : null,
 
   /*Component Params*/
   buttonText       : null,
@@ -22,8 +24,33 @@ export default Component.extend({
   clipboardText    : null,
   textChangedEvent : null,
 
-  mouseEnter() {
-    this.set('model', new Object({tooltipText: DEFAULT_TEXT}));
+  tooltipLabel: computed('status', 'tooltipText', 'intl._locale', function() {
+    const status = this.get('status');
+    if (status) {
+      return this.get('intl').t(status === 'success' ? 'copyToClipboard.copied' : 'copyToClipboard.failed');
+    }
+    // Callers may supply an already translated literal. An empty literal uses
+    // the default, including before hover and for keyboard activation.
+    return this.get('tooltipText') || this.get('intl').t(DEFAULT_TEXT);
+  }),
+
+  willDestroyElement() {
+    cancel(this.get('feedbackTimer'));
+    this._super(...arguments);
+  },
+
+  showFeedback(status, trigger) {
+    if (this.isDestroyed || this.isDestroying) {
+      return;
+    }
+    cancel(this.get('feedbackTimer'));
+    this.set('status', status);
+    this.set('textChangedEvent', trigger);
+    this.set('feedbackTimer', later(this, function() {
+      if (!this.isDestroyed && !this.isDestroying) {
+        this.setProperties({status: null, feedbackTimer: null});
+      }
+    }, status === 'success' ? DELAY : 5000));
   },
 
   isSupported: function() {
@@ -39,44 +66,43 @@ export default Component.extend({
       let trigger = $(evt.currentTarget);
       let copyPromise;
 
-      if (navigator.clipboard && window.isSecureContext) {
-        copyPromise = navigator.clipboard.writeText(text);
-      } else {
-        let textarea = document.createElement('textarea');
-        textarea.value = text;
-        textarea.setAttribute('readonly', '');
-        textarea.style.position = 'fixed';
-        textarea.style.opacity = '0';
-        document.body.appendChild(textarea);
-        textarea.select();
-        let copied = document.execCommand('copy');
-        document.body.removeChild(textarea);
-        copyPromise = copied ? Promise.resolve() : Promise.reject(new Error('copy command failed'));
+      try {
+        // Keep the write in the user gesture, including the HTTP fallback.
+        if (navigator.clipboard && window.isSecureContext) {
+          copyPromise = navigator.clipboard.writeText(text);
+        } else {
+          let textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          try {
+            textarea.select();
+            let copied = document.execCommand('copy');
+            copyPromise = copied ? Promise.resolve() : Promise.reject(new Error('copy command failed'));
+          } finally {
+            textarea.remove();
+          }
+        }
+      } catch (error) {
+        copyPromise = Promise.reject(error);
       }
 
-      copyPromise.then(() => {
-        this.set('textChangedEvent', trigger);
-        this.send('alertSuccess');
-      });
-    },
-
-    alertSuccess: function() {
-      this.set('status', 'success');
-      let orig = this.get('model.tooltipText');
-      this.set('model', new Object({tooltipText: 'copyToClipboard.copied'}));
-
-      later(() =>{
-        this.set('status', null);
-        this.set('model', new Object({tooltipText: orig}));
-      }, DELAY);
+      return Promise.resolve(copyPromise).then(
+        () => this.showFeedback('success', trigger),
+        () => this.showFeedback('error', trigger)
+      );
     },
   },
 
-  buttonClasses: computed('status', function() {
+  buttonClasses: computed('status', 'size', function() {
     let status = this.get('status');
     let out = '';
 
-    if (status) {
+    if (status === 'error') {
+      out = 'btn btn-danger';
+    } else if (status) {
       out = `btn btn-success`;
     } else {
       out = `btn btn-primary`;

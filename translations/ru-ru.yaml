@@ -1674,8 +1674,9 @@ containerShell:
     disconnected: Отключен
     closed: Закрыт
 copyToClipboard:
-  tooltip: Скопировать ссылку
+  tooltip: Копировать в буфер обмена
   copied: Скопировано!
+  failed: Не удалось скопировать. Выделите текст и скопируйте его вручную.
 dangerZone:
   header: Расширенные настройки
   subtext: >-

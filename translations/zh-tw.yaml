@@ -1922,6 +1922,7 @@ containerShell:
 copyToClipboard:
   tooltip: 複製到剪貼簿
   copied: 已複製
+  failed: 無法複製。請選取文字後手動複製。
 dangerZone:
   header: 高階設定
   subtext: '注意：通常情況下使用者無需修改此類設定。不正確的設定可能會導致 {appName} 部署損壞。被修改的設定會用粗體顯示。'

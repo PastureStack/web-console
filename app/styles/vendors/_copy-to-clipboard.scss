@@ -13,6 +13,7 @@ $primary: null !default;
   font-size        : 11px;
   margin           : 10px 1px 0 0;
   white-space      : pre-wrap;
+  overflow-wrap    : anywhere;
   padding-right    : 60px;
   background-color : $pre-bg;
   color            : $brand-info;

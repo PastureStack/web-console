@@ -1666,6 +1666,7 @@ containerShell:
 copyToClipboard:
   tooltip: Másolás a vágólapra
   copied: Másolva!
+  failed: Nem sikerült másolni. Jelölje ki a szöveget, és másolja ki kézzel.
 dangerZone:
   header: Speciális beállítások
   subtext: >-

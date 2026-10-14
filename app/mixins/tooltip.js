@@ -38,18 +38,36 @@ export default Mixin.create(ThrottledResize, {
         this.constructTooltip();
       }
     });
-  }.observes('tooltipService.tooltipOpts').on('init'),
+  }.observes('tooltipService.tooltipOpts', 'tooltipService.tooltipOpts.model').on('init'),
 
   constructTooltip: function() {
     let tts           = this.get('tooltipService');
     let node          = $(this.element);
     let eventPosition = tts.get('tooltipOpts.eventPosition');
+    if (tts.get('tooltipOpts.isCopyTo')) {
+      const trigger = tts.get('tooltipOpts.originalNode');
+      if (!trigger || !trigger[0] || !trigger[0].isConnected) {
+        return;
+      }
+      // A copy hint is text, not a trigger-width menu. Measure after applying
+      // its own width and use viewport coordinates for this fixed element.
+      node.addClass('copy-clipboard').css({width: 'max-content', maxWidth: `${Math.max(1, Math.min(320, window.innerWidth - 16))}px`});
+      const rect = trigger[0].getBoundingClientRect();
+      const width = node.outerWidth(), height = node.outerHeight();
+      const above = rect.top - height - 7;
+      const placement = above >= 8 ? 'top' : 'bottom';
+      const top = placement === 'top' ? above : rect.bottom + 7;
+      node.removeClass('top bottom left right').addClass(placement).css({
+        left: Math.max(8, Math.min(rect.left + (rect.width - width) / 2, window.innerWidth - width - 8)),
+        top: Math.max(8, Math.min(top, window.innerHeight - height - 8)),
+        visibility: 'visible',
+      });
+      return;
+    }
+    // tooltip-basic can be reused for non-copy content without unmounting.
+    node.removeClass('copy-clipboard top bottom left right').css({width: '', maxWidth: ''});
     let position      = this.positionTooltip(node, eventPosition);
     let css           = {visibility: 'visible'};
-
-    if ( tts.get('tooltipOpts.isCopyTo') ) {
-      css.width = position.width + 1;
-    }
 
     node.offset(position).addClass(`${position.placement} ${tts.tooltipOpts.baseClass}`).css(css);
   },

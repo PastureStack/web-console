@@ -1680,6 +1680,7 @@ containerShell:
 copyToClipboard:
   tooltip: In Zwischenablage kopieren
   copied: Kopiert!
+  failed: Kopieren nicht möglich. Wählen Sie den Text aus und kopieren Sie ihn manuell.
 dangerZone:
   header: Erweiterte Einstellungen
   subtext: >-

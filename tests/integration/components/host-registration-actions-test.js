@@ -1,9 +1,9 @@
 import EmberObject from '@ember/object';
 import Service from '@ember/service';
 import Component, { setComponentTemplate } from '@ember/component';
-import { run } from '@ember/runloop';
+import { run, cancel } from '@ember/runloop';
 import { precompileTemplate } from '@ember/template-compilation';
-import { click, find, render, setupContext, setupRenderingContext, teardownContext } from '@ember/test-helpers';
+import { click, find, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
 import { module, test } from 'qunit';
 import HostsNewController from 'ui/hosts/new/controller';
 import HostsNewRoute from 'ui/hosts/new/route';
@@ -19,9 +19,10 @@ module('Integration | Component | host registration copy and close', function(ho
     await setupContext(this, {resolver});
     initializePodLayouts();
     initializeIntl(this.owner);
-    const intl = this.owner.lookup('service:intl');
-    intl.addTranslations('en-us', await (await fetch('/translations/en-us.json')).json());
-    intl.setLocale(['en-us']);
+    this.intl = this.owner.lookup('service:intl');
+    this.english = await (await fetch('/translations/en-us.json')).json();
+    this.intl.addTranslations('en-us', this.english);
+    this.intl.setLocale(['en-us']);
     this.project = EmberObject.create({isWindows: false});
     this.owner.register('service:projects', Service.extend({current: this.project}));
     this.owner.register('service:settings', Service.extend({appName: 'Fixture', docsBase: 'https://docs.invalid'}));
@@ -74,6 +75,8 @@ module('Integration | Component | host registration copy and close', function(ho
       await render(precompileTemplate('{{machine/driver-custom clonedModel=this.token cancel=(action "cancel" target=this.controller) goBack=(action "goBack" target=this.controller)}}'));
       const command = find('#registration-command');
       const button = command.parentElement.querySelector('.copy-button-container button');
+      assert.strictEqual(button.title, this.english['copyToClipboard.tooltip'], 'registration initially has a translated tooltip without hover');
+      assert.strictEqual(button.getAttribute('aria-label'), this.english['copyToClipboard.tooltip'], 'keyboard activation has a translated accessible name');
       await click(button);
       await click(button.querySelector('.icon'));
       assert.deepEqual(this.copied, [command.textContent, command.textContent],
@@ -107,6 +110,47 @@ module('Integration | Component | host registration copy and close', function(ho
       await click(command.parentElement.querySelector('.copy-button-container button .icon'));
       assert.deepEqual(this.copied, [command.textContent], 'HTTP fallback preserves the complete command');
       assert.strictEqual(document.querySelectorAll('textarea').length, count, 'the temporary clipboard element is removed');
+    } finally {
+      if (descriptor) { Object.defineProperty(document, 'execCommand', descriptor); } else { delete document.execCommand; }
+    }
+  });
+
+  test('HTTP clipboard fallback removes its textarea and reports localized failure when execCommand fails or throws', async function(assert) {
+    Object.defineProperty(navigator, 'clipboard', {configurable: true, value: undefined});
+    Object.defineProperty(window, 'isSecureContext', {configurable: true, value: false});
+    const messages = await (await fetch('/translations/zh-tw.json')).json();
+    this.intl.addTranslations('zh-tw', messages);
+    this.intl.setLocale(['zh-tw']);
+    const descriptor = Object.getOwnPropertyDescriptor(document, 'execCommand');
+    try {
+      await render(precompileTemplate('{{machine/driver-custom clonedModel=this.token cancel=(action "cancel" target=this.controller)}}'));
+      const command = find('#registration-command');
+      const button = command.parentElement.querySelector('.copy-button-container button');
+      const copy = Object.values(this.owner.lookup('-view-registry:main')).find(view => view.get('clipboardText') === command.textContent);
+      const count = document.querySelectorAll('textarea').length;
+      assert.strictEqual(button.title, messages['copyToClipboard.tooltip'], 'HTTP registration initially has its localized tooltip');
+      for (const throws of [false, true]) {
+        Object.defineProperty(document, 'execCommand', {configurable: true, value: name => {
+          assert.strictEqual(name, 'copy');
+          assert.strictEqual(document.activeElement.value, command.textContent, 'fallback preserves the displayed command before failing');
+          if (throws) { throw new Error('Fixture execCommand failed'); }
+          return false;
+        }});
+        button.querySelector('.icon').click();
+        await waitUntil(() => copy.get('status') === 'error');
+        await waitUntil(() => button.title === messages['copyToClipboard.failed']);
+        assert.strictEqual(document.querySelectorAll('textarea').length, count,
+          `${throws ? 'throw' : 'false result'} removes the temporary clipboard element`);
+        assert.strictEqual(button.getAttribute('aria-label'), messages['copyToClipboard.failed'], 'failed copy provides localized accessible feedback');
+        assert.strictEqual(copy.get('textChangedEvent')[0], button, 'failure feedback is anchored to currentTarget');
+        assert.true(button.classList.contains('btn-danger'), 'failed copy uses the error button state');
+        assert.false(button.classList.contains('btn-success'), 'failed copy never shows the successful state');
+        run(() => {
+          cancel(copy.get('feedbackTimer'));
+          copy.setProperties({status: null, feedbackTimer: null});
+        });
+        await settled();
+      }
     } finally {
       if (descriptor) { Object.defineProperty(document, 'execCommand', descriptor); } else { delete document.execCommand; }
     }
