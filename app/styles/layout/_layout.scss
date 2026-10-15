@@ -192,6 +192,7 @@ UL.list-circles {
   &>LI {
     background-image  : url('images/info-bubble.svg');
     background-repeat : no-repeat;
+    background-position: left top;
     min-height        : 45px;
     padding-top       : 5px;
     position          : relative;
