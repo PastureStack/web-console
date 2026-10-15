@@ -26,6 +26,13 @@ a complete role/lifecycle matrix or packaged Server acceptance.
 
 Server `v1.6.537` is planned to package this component with Engine `v0.183.350`.
 Its publication, packaged acceptance and deployment remain separate gates.
-Exact producer and archive identities will be recorded from the immutable
-release build. Prior component identities remain in
+Immutable Web producer: `9ff823c2233e2041c2f00bb56a91d147a7feaa1d`.
+`web-console-1.6.190.tar.gz` is 3,032,851 bytes, SHA-256
+`b06612812113fb4b54cf0f2b4754af077406306fd72407e04b17f2ad9f4dc927`.
+The production build passed with Node `24.20.0` and npm `12.0.2`; the packaged
+artifact contains all thirteen locales, 23 archive keys per locale and four
+theme/direction stylesheets. Version identity, archive layout, licenses and
+absence of source maps, the development locale and local user paths were checked.
+Later documentation commits do not replace this producer or artifact.
+Prior component identities remain in
 [the compatibility contract](../../COMPATIBILITY.md).
