@@ -24,8 +24,9 @@ for the version bump. A fresh production build and the existing static package
 contract verify the versioned artifact. These component results do not establish
 a complete role/lifecycle matrix or packaged Server acceptance.
 
-Server `v1.6.537` is planned to package this component with Engine `v0.183.350`.
-Its publication, packaged acceptance and deployment remain separate gates.
+The Server `v1.6.537` assembly pairs this component with Engine `v0.183.350`.
+Server publication and health evidence are maintained separately in
+[its release notes](https://github.com/PastureStack/server/blob/main/docs/releases/server-1.6.537.md).
 Immutable Web producer: `9ff823c2233e2041c2f00bb56a91d147a7feaa1d`.
 `web-console-1.6.190.tar.gz` is 3,032,851 bytes, SHA-256
 `b06612812113fb4b54cf0f2b4754af077406306fd72407e04b17f2ad9f4dc927`.
