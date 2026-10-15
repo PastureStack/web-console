@@ -1,9 +1,6 @@
-# Web Console 1.6.188 candidate
+# Web Console 1.6.188
 
-This is a new immutable component candidate following actual-browser findings
-in published Web Console `1.6.187`. Published Server `v1.6.532` still packages
-`1.6.187` with Engine `v0.183.348` and is deployed to QA 8080. The candidate
-does not replace that published artifact or establish a verified Server pairing.
+Published immutable component, producer `8e12216fd6f8d843ed043b4c0afcec995d33caeb`, packaged by Server `v1.6.533` with Engine `v0.183.348`. Archive SHA-256 `3467dfb37d7723b9293bc64145603d09ba24799ad726feb89177c9fa38b4ed92`, 3025072 bytes. Official publication and anonymous readback passed; later documentation commits do not replace this identity.
 
 ## Scope
 
@@ -19,12 +16,6 @@ existing contracts.
 
 ## Verification and publication
 
-Focused verification targets native DOM hover and leave, feedback reset,
-clipboard failure and destroyed-component cleanup. Results and immutable
-producer/archive identities will be recorded after those gates complete.
+Four actual-DOM cases passed for native hover/leave, real static tooltip content, feedback success/failure, listener cleanup after destruction, action-menu overrides and host registration copy. The earlier thirteen clipboard/host cases and one corrected-caption rerun retain their original evidence; they were not replayed. The unchanged 32-key resource contract across 13 locales is carried from the same translation sources, not presented as a new resource run.
 
-The 13 locales × desktop/narrow width × light/dark theme matrix contains
-52 actual-browser cases and remains pending. Component checks, immutable
-publication, paired Server publication and deployed-browser acceptance are
-separate evidence. Existing broader acceptance and deferred KVM cases retain
-their original status.
+自動化52組複製檢查與普通HTTP複製曾通過；後續視覺複核發現既有RTL步驟圓圈背景錯位，因此不宣稱188／533整頁無缺陷。189／534另以不可變新版本修正，未覆寫本歷史成品。 See the [1.6.189 release note](web-console-1.6.189.md).

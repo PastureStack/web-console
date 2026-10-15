@@ -8,35 +8,22 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current component candidate and published Server
+## Current release
 
-[Web Console 1.6.189](docs/releases/web-console-1.6.189.md) is a new candidate
-that aligns Custom Add Host step circles with their numbers in RTL interfaces.
-Published Server `v1.6.533` packages Web Console `1.6.188` with Engine
-`v0.183.348` and is deployed to QA 8080. The candidate's immutable publication,
-new Server pairing and deployed-browser acceptance remain pending.
+[Web Console 1.6.189](docs/releases/web-console-1.6.189.md) retains the native clipboard
+hover repair from 188 and corrects RTL step-circle background alignment. Published
+Server `v1.6.534` packages this component with Engine `v0.183.348`.
+Official artifacts and QA startup/restart passed. The final 52 browser cases use
+44 unaffected 188 results plus 8 new 189 fa-ir/en-us views; ordinary-HTTP fallback
+was newly verified on 189. Broader acceptance remains incomplete.
 
-The independent `/account/keys` page provides personal API Keys for users with no accessible
-environment. It reuses the existing editor and audit view, lists only the
-current owner's Keys, and does not grant environment access. Existing environment
-Key pages and Hooks retain their original navigation and behavior.
+Personal API Keys remain available without an accessible environment. Host
+registration commands, permissions and native Close/Back navigation retain
+their existing contracts. See the [release note](docs/releases/web-console-1.6.189.md)
+for immutable identities and the limits of this verification.
 
-Host onboarding still follows the native capability of the actual submission:
-RegistrationToken POST for Custom, Host POST for built-in/Other forms. Machine
-API POST alone grants neither form. Native clipboard and Close/Back controls
-preserve the existing host-onboarding workflow.
-
-For platform installation, see the
-[Server current-release guide](https://github.com/PastureStack/server#current-release)
-and its published component pairing. Candidate verification and acceptance
-boundaries are recorded separately.
-
-For candidate scope and verification status, see the
-[1.6.189 release note](docs/releases/web-console-1.6.189.md). The preceding hover
-repair is recorded in the [1.6.188 release note](docs/releases/web-console-1.6.188.md).
-Historical changes are in [release notes](docs/releases), not this quick-start guide.
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
-for deployment; the console archive alone is not a control plane.
+for deployment. Historical changes remain in [release notes](docs/releases).
 
 ## Features and operator guides
 
