@@ -18,6 +18,23 @@ export default Controller.extend(Sortable, {
   showAddtlInfo: false,
   selectedService: null,
 
+  showArchived: computed('projects.current.id', 'prefs.userStore.generation',
+    `prefs.${C.PREFS.SHOW_ARCHIVED_STACKS}`, {
+      get() {
+        let values = this.get(`prefs.${C.PREFS.SHOW_ARCHIVED_STACKS}`) || {};
+        return values[this.get('projects.current.id')] === true;
+      },
+      set(_key, value) {
+        let projectId = this.get('projects.current.id');
+        let enabled = value === true;
+        if ( projectId ) {
+          let values = this.get(`prefs.${C.PREFS.SHOW_ARCHIVED_STACKS}`) || {};
+          this.get('prefs').set(C.PREFS.SHOW_ARCHIVED_STACKS, {...values, [projectId]: enabled});
+        }
+        return enabled;
+      },
+    }),
+
   canCreateStack: computed('projects.current.id', 'projects.schemaProjectId', function() {
     return this.get('projects').canCreateResource('stack');
   }),
@@ -41,12 +58,20 @@ export default Controller.extend(Sortable, {
       this.get('prefs').set(C.PREFS.SORT_STACKS_BY, name);
       this.send('setSort', name);
     },
+
+    toggleArchived() {
+      this.toggleProperty('showArchived');
+    },
+
+    showArchivedResources() {
+      this.set('showArchived', true);
+    },
   },
 
-  filteredStacks: function() {
+  scopedStacks: function() {
     var which = this.get('which');
     var needTags = tagsToArray(this.get('tags'));
-    var out = this.get('model.stacks');
+    var out = this.get('model.stacks') || [];
 
     if ( which === C.EXTERNAL_ID.KIND_NOT_ORCHESTRATION )
     {
@@ -68,7 +93,15 @@ export default Controller.extend(Sortable, {
     return out;
 
   // state isn't really a dependency here, but sortable won't recompute when it changes otherwise
-  }.property('model.stacks.[]','model.stacks.@each.{state,grouping}','which','tags'),
+  }.property('model.stacks.[]','model.stacks.@each.{state,grouping,group}','which','tags'),
+
+  filteredStacks: computed('scopedStacks.[]', 'scopedStacks.@each.archived', 'showArchived', function() {
+    return this.get('scopedStacks').filter((stack) => this.get('showArchived') || stack.get('archived') !== true);
+  }),
+
+  hiddenStackCount: computed('scopedStacks.length', 'filteredStacks.length', function() {
+    return this.get('scopedStacks.length') - this.get('filteredStacks.length');
+  }),
 
   sortableContent: alias('filteredStacks'),
   sortBy: 'name',

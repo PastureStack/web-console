@@ -1,4 +1,30 @@
 languageName: Magyar (Magyarország)
+
+archive:
+  filterLabel: "Archívum"
+  include: "Archivált stackek és szolgáltatások megjelenítése"
+  badge: "Archiválva"
+  action: "Archiválás"
+  restore: "Archiválás visszavonása"
+  show: "Archivált erőforrások megjelenítése"
+  stackCount: "Összesen {total} stack · {hidden} archivált stack rejtve"
+  hiddenCount: "{count} elrejtve"
+  emptyStacks: "{count} archivált stack el van rejtve."
+  emptyServices: "{count} archivált szolgáltatás el van rejtve."
+  confirmTitle: "Archiválja ezt az erőforrást?"
+  restoreTitle: "Visszavonja az erőforrás archiválását?"
+  explanation: "Az archiválás csak elrejti a leállított erőforrást az alapértelmezett listából. Megőrzi a beállításait, és semmit nem állít le vagy töröl."
+  restoreExplanation: "A visszavonás ismét megjeleníti az erőforrást. Nem indítja el, és nem módosítja a külön archivált szolgáltatásokat."
+  dataWarning: "A csatolt könyvtárak és adatkötetek megmaradnak. Készítsen saját biztonsági másolatot a forrásadatokról. A gazdagép váltása vagy a csatolás forrásának törlése adatvesztést okozhat."
+  requiresStopped: "Archiválás előtt teljesen állítson le minden szolgáltatást és konténert. Induló, leálló, frissülő vagy bizonytalan állapot nem archiválható."
+  system: "A rendszer- és infrastruktúra-erőforrások nem archiválhatók."
+  readOnly: "Ez az erőforrás jelenleg nem módosítható ebben a környezetben."
+  alreadyChanged: "Az erőforrás máshol megváltozott. Zárja be az ablakot, és ellenőrizze az aktuális állapotot."
+  restoreBeforeStart: "Indítás vagy szolgáltatás hozzáadása előtt vonja vissza az erőforrás és a szülő stack archiválását."
+  createUnsupported: "Hozza létre az erőforrást a szokásos módon, teljesen állítsa le, majd archiválja."
+  mixedUpdate: "Az archiválást más módosításoktól külön küldje el. Frissítse az oldalt, és próbálja újra."
+  concurrentChange: "A szülő stack megváltozott a kérés közben. Frissítse az oldalt, és próbálja újra."
+
 languageContribute: Segíts lefordítani a PastureStackt
 uiText:
   process: Folyamat

@@ -1,4 +1,30 @@
 languageName: 简体中文（中国大陆）
+
+archive:
+  filterLabel: "归档"
+  include: "同时显示已归档的 Stack 和服务"
+  badge: "已归档"
+  action: "归档"
+  restore: "取消归档"
+  show: "显示已归档资源"
+  stackCount: "共 {total} 个 Stack · 已隐藏 {hidden} 个已归档 Stack"
+  hiddenCount: "已隐藏 {count} 个"
+  emptyStacks: "已隐藏 {count} 个已归档 Stack。"
+  emptyServices: "已隐藏 {count} 个已归档服务。"
+  confirmTitle: "归档此资源？"
+  restoreTitle: "取消归档此资源？"
+  explanation: "归档仅将已停止的资源从默认列表中隐藏，保留原有配置，不会停止或删除任何内容。"
+  restoreExplanation: "取消归档后将重新显示此资源，不会启动资源，也不会更改各服务单独的归档状态。"
+  dataWarning: "挂载目录和数据卷仍会保留，请自行备份源数据。更换主机或删除挂载源可能导致数据丢失。"
+  requiresStopped: "请先完全停止所有服务及其容器。正在启动、停止、升级或尚未确认停止的资源无法归档。"
+  system: "系统和基础设施资源无法归档。"
+  readOnly: "目前无法在此环境中更新该资源。"
+  alreadyChanged: "资源已在其他位置更改，请关闭此窗口并确认最新状态。"
+  restoreBeforeStart: "启动资源或添加服务前，请先取消资源及其所属 Stack 的归档。"
+  createUnsupported: "请先正常创建资源，完全停止后再归档。"
+  mixedUpdate: "归档必须与其他修改分开发送，请刷新后重试。"
+  concurrentChange: "所属 Stack 在请求期间已更改，请刷新后重试。"
+
 languageContribute: 帮助翻译 PastureStack
 uiText:
   process: 进程

@@ -1,4 +1,30 @@
 languageName: 繁體中文（台灣）
+
+archive:
+  filterLabel: "封存"
+  include: "一併顯示已封存的 Stack 與服務"
+  badge: "已封存"
+  action: "封存"
+  restore: "取消封存"
+  show: "顯示已封存資源"
+  stackCount: "共 {total} 個 Stack · 已隱藏 {hidden} 個已封存 Stack"
+  hiddenCount: "已隱藏 {count} 個"
+  emptyStacks: "已隱藏 {count} 個已封存 Stack。"
+  emptyServices: "已隱藏 {count} 個已封存服務。"
+  confirmTitle: "封存此資源？"
+  restoreTitle: "取消封存此資源？"
+  explanation: "封存只會將已停止的資源從預設清單隱藏，保留原有設定，不會停止或刪除任何內容。"
+  restoreExplanation: "取消封存後會再次顯示此資源，不會啟動資源，也不會變更個別服務的封存狀態。"
+  dataWarning: "掛載目錄與資料卷仍會保留，請自行備份來源資料。換至其他主機或刪除掛載來源可能造成資料遺失。"
+  requiresStopped: "請先完全停止所有服務與其容器。啟動中、停止中、升級中或尚未確認停止的資源無法封存。"
+  system: "系統與基礎設施資源無法封存。"
+  readOnly: "目前無法在此環境更新這個資源。"
+  alreadyChanged: "資源已在其他地方變更，請關閉視窗並確認最新狀態。"
+  restoreBeforeStart: "啟動資源或新增服務前，請先取消資源及其所屬 Stack 的封存。"
+  createUnsupported: "請先正常建立資源，完全停止後再封存。"
+  mixedUpdate: "封存必須與其他修改分開送出，請重新整理後再試。"
+  concurrentChange: "所屬 Stack 在請求期間已變更，請重新整理後再試。"
+
 languageContribute: 協助翻譯 PastureStack
 uiText:
   process: 處理程序

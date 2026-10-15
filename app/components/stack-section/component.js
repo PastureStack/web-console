@@ -13,6 +13,7 @@ export default Component.extend({
   model             : null,
   single            : false,
   showAddService    : true,
+  showArchived      : false,
 
   createOptions: computed('projects.current.id', 'projects.current.isWindows', 'projects.current.virtualMachine', 'projects.schemaProjectId', 'projects.schemaLoadGeneration', function() {
     let projects = this.get('projects');
@@ -37,7 +38,14 @@ export default Component.extend({
   collapsed         : true,
   classNames        : ['stack-section'],
 
-  sortedServices    : sort('model.services','sortBy'),
+  visibleServices: computed('model.services.[]', 'model.services.@each.archived', 'showArchived', 'single', function() {
+    return (this.get('model.services') || []).filter((service) =>
+      this.get('single') || this.get('showArchived') || service.get('archived') !== true);
+  }),
+  hiddenServiceCount: computed('model.services.length', 'visibleServices.length', function() {
+    return (this.get('model.services.length') || 0) - this.get('visibleServices.length');
+  }),
+  sortedServices    : sort('visibleServices','sortBy'),
   sortBy: ['name','id'],
 
   actions: {

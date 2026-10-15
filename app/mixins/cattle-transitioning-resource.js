@@ -120,6 +120,7 @@ const stateColorUnknown = 5;
 const newResourceExcludedFields = [
   'id', 'actionLinks', 'links', 'uuid', 'created', 'createdTS', 'removed',
   'state', 'transitioning', 'transitioningMessage', 'transitioningProgress',
+  'archived',
 ];
 
 function withoutExistingResourceFields(copy) {

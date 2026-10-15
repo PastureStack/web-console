@@ -5,6 +5,7 @@ import { parseExternalId } from 'ui/utils/parse-externalid';
 import C from 'ui/utils/constants';
 import { download } from 'ui/utils/util';
 import { denormalizeIdArray } from 'ui/utils/api-store-references';
+import ArchiveResource from 'ui/mixins/archive-resource';
 
 export function activeIcon(stack)
 {
@@ -37,7 +38,7 @@ export function tagChoices(all) {
   return choices;
 }
 
-var Stack = Resource.extend({
+var Stack = Resource.extend(ArchiveResource, {
   type: 'stack',
   k8s: service(),
   modalService: service('modal'),
@@ -45,8 +46,21 @@ var Stack = Resource.extend({
 
   services: denormalizeIdArray('serviceIds'),
 
+  archiveStopped: computed('state', 'transitioning', 'services.@each.archiveStopped', function() {
+    return ['active', 'inactive'].includes(this.get('state')) &&
+      !['yes', 'error'].includes(this.get('transitioning')) &&
+      (this.get('services') || []).every((service) => service.get('archiveStopped'));
+  }),
+
+  archiveStartBlocked: computed('isArchived', 'services.@each.isArchived', function() {
+    return this.get('isArchived') || (this.get('services') || []).some((service) => service.get('isArchived'));
+  }),
+
   actions: {
     activateServices: function() {
+      if ( this.get('archiveStartBlocked') ) {
+        return;
+      }
       return this.doAction('activateservices');
     },
 
@@ -141,6 +155,7 @@ var Stack = Resource.extend({
       { label: 'action.viewConfig',     icon: 'icon icon-files',          action: 'viewCode',         enabled: !!a.exportconfig },
       { label: 'action.exportConfig',   icon: 'icon icon-download',       action: 'exportConfig',     enabled: !!a.exportconfig },
       { divider: true },
+      this.get('archiveMenuAction'),
       { label: 'action.remove',         icon: 'icon icon-trash',          action: 'promptDelete',     enabled: !!a.remove,                altAction: 'delete'},
       { label: 'action.viewInApi',      icon: 'icon icon-external-link',  action: 'goToApi',          enabled: true },
       { divider: true },
@@ -148,7 +163,7 @@ var Stack = Resource.extend({
     ];
 
     return out;
-  }.property('actionLinks.{remove,purge,exportconfig,finishupgrade,cancelupgrade,rollback,cancelrollback,update}','canActivate','canDeactivate','externalIdInfo.kind'),
+  }.property('actionLinks.{remove,purge,exportconfig,finishupgrade,cancelupgrade,rollback,cancelrollback,update}','canActivate','canDeactivate','externalIdInfo.kind','archiveMenuAction'),
 
   canViewConfig: function() {
     return !!this.get('actionLinks.exportconfig');
@@ -174,7 +189,7 @@ var Stack = Resource.extend({
   }.property('state', 'healthState'),
 
   canActivate: function() {
-    if ( !this.hasAction('activateservices') )
+    if ( !this.hasAction('activateservices') || this.get('archiveStartBlocked') )
     {
       return false;
     }
@@ -186,7 +201,7 @@ var Stack = Resource.extend({
     }
 
     return this.get('services').filterBy('actionLinks.activate').get('length') > 0;
-  }.property('services.@each.state','actionLinks.activateservices'),
+  }.property('services.@each.state','actionLinks.activateservices','archiveStartBlocked'),
 
   canDeactivate: function() {
     if ( !this.hasAction('deactivateservices') )
@@ -242,7 +257,7 @@ var Stack = Resource.extend({
 
     let have = this.get('tags');
     for ( let i = 0 ; i < want.length ; i++ ) {
-      if ( !have.contains(want[i]) ) {
+      if ( !have.includes(want[i]) ) {
         return false;
       }
     }

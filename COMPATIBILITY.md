@@ -1,6 +1,16 @@
 # Compatibility Contract
 
-## Current release: Web Console 1.6.189
+## Current release: Web Console 1.6.190
+
+Web Console `1.6.190` adds opt-in archive visibility, archive/restore confirmation
+and archived-state display using the server's existing schema capabilities.
+The server remains authoritative for permissions, stopped-workload eligibility
+and lifecycle/association guards. Server `v1.6.537` is planned to package this
+component with Engine `v0.183.350`; packaged Server acceptance and deployment
+remain separate gates. Exact component identities are recorded in the
+[190 release note](docs/releases/web-console-1.6.190.md).
+
+## Web Console 1.6.189 published
 
 Immutable Web producer: `f30f5e81dd9ee25878c3aff681eed5bb61883453`. `web-console-1.6.189.tar.gz` is 3,024,592 bytes, SHA-256 `1c90e273b7db8ebf9d851a0ae1ec49dc59067b5ee1099ea3886919c1a79ccdfc`. Official publication and anonymous readback passed; later documentation commits do not replace this producer.
 

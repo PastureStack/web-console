@@ -13,6 +13,7 @@
     <div class="header-left name {{if this.model.description 'with-description'}}">
       <h4 class="divider clip stack-link">
         <LinkTo @route="stack" @model={{this.model.id}}>{{this.model.name}}</LinkTo>
+        {{#if this.model.isArchived}}<span class="archive-badge" data-testid="archive-stack-badge">{{t 'archive.badge'}}</span>{{/if}}
       </h4>
       {{#if this.model.description}}
         <div class="text-muted clip">{{this.model.description}}</div>
@@ -43,14 +44,15 @@
       <label>{{t 'stackSection.container' numContainers=this.instanceCount}}</label>
     </div>
 
-    <div class="header-right right-divider count">
+    <div class="header-right right-divider count {{if this.hiddenServiceCount 'has-hidden'}}">
       <p>{{this.model.services.length}}</p>
-      <label>{{t 'stackSection.service' numServices=this.instanceCount}}</label>
+      <label>{{t 'stackSection.service' numServices=this.model.services.length}}</label>
+      {{#if this.hiddenServiceCount}}<small class="archive-hidden-count" data-testid="archive-hidden-service-count">{{t 'archive.hiddenCount' count=this.hiddenServiceCount}}</small>{{/if}}
     </div>
 
     <div class="header-right right-divider stack-template">
       {{upgrade-btn model=this.model}}
-      {{#if (and this.showAddService this.createOptions.any)}}
+      {{#if (and this.showAddService this.createOptions.any (not this.model.isArchived))}}
         <div class="btn-group">
           {{#if this.createOptions.service}}
             <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-default btn-sm" data-testid="stack-add-service">{{t 'stackSection.add.service'}}</LinkTo>
@@ -111,6 +113,7 @@
               </td>
               <td data-title="{{t 'stackSection.table.dataTitle.serviceName'}}:" class="force-wrap">
                 <LinkTo @route="service" @models={{array service.stackId service.id}}>{{service.displayName}}</LinkTo>
+                {{#if service.isArchived}}<span class="archive-badge" data-testid="archive-service-badge">{{t 'archive.badge'}}</span>{{/if}}
                 {{#if service.hasSidekicks}}
                   {{t 'stackSection.sidekick' numSidekicks=service.secondaryLaunchConfigs.length}}
                 {{/if}}
@@ -151,7 +154,14 @@
       </table>
     {{else}}
       <div class="stack-section">
-        <div class="text-muted text-center r-p10">{{t 'stackSection.none'}}</div>
+        <div class="text-muted text-center r-p10">
+          {{#if this.hiddenServiceCount}}
+            <p>{{t 'archive.emptyServices' count=this.hiddenServiceCount}}</p>
+            <button type="button" class="btn btn-default btn-sm" {{action this.showArchivedResources}}>{{t 'archive.show'}}</button>
+          {{else}}
+            {{t 'stackSection.none'}}
+          {{/if}}
+        </div>
       </div>
     {{/if}}
   </div>

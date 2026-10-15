@@ -4,6 +4,8 @@
     {{select-dot model=obj}}
   </PowerSelect>
   <strong class="r-mr5 r-ml5">{{t 'uiText.relationIn'}} <LinkTo @route="stack" @model={{this.model.stack.id}}>{{this.model.stack.displayName}}</LinkTo></strong>
+  {{#if this.service.isArchived}}<span class="archive-badge" data-testid="archive-detail-badge">{{t 'archive.badge'}}</span>{{/if}}
+  {{#if this.service.archiveStartBlocked}}<span class="archive-detail-hint text-muted">{{t 'archive.restoreBeforeStart'}}</span>{{/if}}
 
   <div class="pull-right">
     {{action-menu model=this.service classNames="r-ml5 pull-right" size="sm"}}

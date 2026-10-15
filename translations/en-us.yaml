@@ -1,4 +1,30 @@
 languageName: "English (United States)"
+
+archive:
+  filterLabel: "Archive"
+  include: "Include archived stacks and services"
+  badge: "Archived"
+  action: "Archive"
+  restore: "Restore"
+  show: "Show archived"
+  stackCount: "{total} stacks total · {hidden} archived stacks hidden"
+  hiddenCount: "{count} hidden"
+  emptyStacks: "{count} archived stacks are hidden."
+  emptyServices: "{count} archived services are hidden."
+  confirmTitle: "Archive this resource?"
+  restoreTitle: "Restore this resource?"
+  explanation: "Archiving only hides this stopped resource from the default list. It keeps its settings and does not stop or delete anything."
+  restoreExplanation: "Restoring shows this resource again. It does not start it or change independently archived services."
+  dataWarning: "Mounted directories and data volumes are retained. Back up their source data yourself. Moving to another host or deleting a mount source can cause data loss."
+  requiresStopped: "Completely stop all services and their containers before archiving. Starting, stopping, upgrading, or uncertain states cannot be archived."
+  system: "System and infrastructure resources cannot be archived."
+  readOnly: "This resource cannot currently be updated in this environment."
+  alreadyChanged: "This resource changed elsewhere. Close this dialog and review its current state."
+  restoreBeforeStart: "Restore the archived resource and its parent stack before starting it or adding services."
+  createUnsupported: "Create the resource normally, stop it completely, then archive it."
+  mixedUpdate: "Archive separately from other changes. Refresh and try again."
+  concurrentChange: "The parent stack changed during this request. Refresh and try again."
+
 languageContribute: "Help Translate PastureStack"
 
 uiText:

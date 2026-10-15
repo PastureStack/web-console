@@ -4,6 +4,10 @@
   <PowerSelect @options={{this.all}} @selected={{this.model}} @onChange={{action "changeStack"}} @searchField="displayName" as |obj|>
       {{select-dot model=obj}}
   </PowerSelect>
+  {{#if this.model.isArchived}}
+    <span class="archive-badge" data-testid="archive-detail-badge">{{t 'archive.badge'}}</span>
+    <span class="archive-detail-hint text-muted">{{t 'archive.restoreBeforeStart'}}</span>
+  {{/if}}
 
 
   <div class="pull-right">
@@ -20,7 +24,7 @@
       </div>
     {{/if}}
 
-    {{#if this.createOptions.any}}
+    {{#if (and this.createOptions.any (not this.model.isArchived))}}
     <div class="btn-group r-ml10">
       {{#if this.createOptions.service}}
         <LinkTo @route="service.new" @query={{hash stackId=this.model.id}} class="btn btn-primary btn-sm" data-testid="stack-add-service">{{t 'stackHeader.add.service'}}</LinkTo>

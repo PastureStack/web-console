@@ -4,6 +4,18 @@ import Errors from 'ui/utils/errors';
 
 module('Unit | Utility | errors');
 
+test('archive rejections are translated while authorization failures keep neutral copy', function(assert) {
+  let intl = {t(key) { return key; }};
+  for (let [code, key, status] of [
+    ['ArchiveRequiresStopped', 'requiresStopped', 422], ['ArchiveSystemResource', 'system', 422],
+    ['ArchiveCreateUnsupported', 'createUnsupported', 422], ['ArchiveMixedUpdate', 'mixedUpdate', 422],
+    ['ResourceArchived', 'restoreBeforeStart', 409], ['ArchiveConcurrentChange', 'concurrentChange', 409],
+  ]) {
+    assert.strictEqual(Errors.stringify({xhr: {status, responseJSON: {code, message: 'raw backend message'}}}, intl), `archive.${key}`, code);
+    assert.strictEqual(Errors.stringify({status: 403, code}, intl), 'resourceSaveError.unavailable', `${code} cannot reveal denied details`);
+  }
+});
+
 test('extracts useful messages from API and XHR error envelopes', function(assert) {
   assert.strictEqual(
     Errors.stringify({body: '{"message":"OIDC discovery failed"}'}),
