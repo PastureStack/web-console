@@ -1,0 +1,21 @@
+<h3 id="archive-modal-title">{{t (if this.targetArchived 'archive.confirmTitle' 'archive.restoreTitle')}}</h3>
+<div class="archive-modal-name" title={{this.originalModel.displayName}}>{{this.originalModel.displayName}}</div>
+
+{{#if this.targetArchived}}
+  <p>{{t 'archive.explanation'}}</p>
+  <div class="alert alert-warning" data-testid="archive-data-warning">{{t 'archive.dataWarning'}}</div>
+{{else}}
+  <p>{{t 'archive.restoreExplanation'}}</p>
+{{/if}}
+
+{{#if this.blockReason}}
+  <div class="alert alert-info" role="status" data-testid="archive-block-reason">{{t this.blockReason}}</div>
+{{/if}}
+{{top-errors errors=this.errors}}
+
+<div class="footer-actions">
+  <button type="button" class="btn btn-primary" disabled={{this.submitDisabled}} {{action "confirm"}} data-testid="archive-confirm">
+    {{#if this.saving}}<i class="icon icon-spinner icon-spin" aria-hidden="true"></i> {{t 'saveCancel.saving'}}{{else}}{{t (if this.targetArchived 'archive.action' 'archive.restore')}}{{/if}}
+  </button>
+  <button type="button" class="btn btn-link" disabled={{this.saving}} {{action "cancel"}} data-testid="archive-cancel">{{t 'generic.cancel'}}</button>
+</div>

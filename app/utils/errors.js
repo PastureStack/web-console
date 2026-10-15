@@ -160,10 +160,28 @@ function actionMessageKey(err) {
     'resourceSaveError.certificateInUse' : null;
 }
 
+function archiveMessageKey(err) {
+  if ( ![409, 422].includes(nestedStatus(err, [], 0)) ) {
+    return null;
+  }
+  return {
+    ArchiveRequiresStopped: 'archive.requiresStopped',
+    ArchiveSystemResource: 'archive.system',
+    ArchiveCreateUnsupported: 'archive.createUnsupported',
+    ArchiveMixedUpdate: 'archive.mixedUpdate',
+    ResourceArchived: 'archive.restoreBeforeStart',
+    ArchiveConcurrentChange: 'archive.concurrentChange',
+  }[nestedStringField(err, 'code', [], 0)] || null;
+}
+
 export default {
   stringify(err, intl) {
     if ( intl && typeof intl.t === 'function' ) {
       let status = nestedStatus(err, [], 0);
+      let archiveKey = archiveMessageKey(err);
+      if ( archiveKey ) {
+        return intl.t(archiveKey);
+      }
 
       if ( status === 403 || status === 404 || status === 405 ) {
         // A denied resource and a missing resource must have the same visible

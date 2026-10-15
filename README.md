@@ -10,17 +10,18 @@ history, authorship, licenses, and dependency notices.
 
 ## Current release
 
-[Web Console 1.6.189](docs/releases/web-console-1.6.189.md) retains the native clipboard
-hover repair from 188 and corrects RTL step-circle background alignment. Published
-Server `v1.6.534` packages this component with Engine `v0.183.348`.
-Official artifacts and QA startup/restart passed. The final 52 browser cases use
-44 unaffected 188 results plus 8 new 189 fa-ir/en-us views; ordinary-HTTP fallback
-was newly verified on 189. Broader acceptance remains incomplete.
+[Web Console 1.6.190](docs/releases/web-console-1.6.190.md) adds the
+per-environment Archive switch, archive/restore confirmation and
+archived-state display, with text in all thirteen production locales.
+Server `v1.6.537` is planned to package it with Engine `v0.183.350`.
+Component artifact identities are recorded in the release note; packaged Server
+acceptance and deployment remain separate gates.
 
 Personal API Keys remain available without an accessible environment. Host
 registration commands, permissions and native Close/Back navigation retain
-their existing contracts. See the [release note](docs/releases/web-console-1.6.189.md)
-for immutable identities and the limits of this verification.
+their existing contracts. See the [release note](docs/releases/web-console-1.6.190.md)
+for component scope and the remaining verification boundaries. Published baseline
+identities remain in [COMPATIBILITY.md](COMPATIBILITY.md).
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).
@@ -54,6 +55,21 @@ third-party catalogs fall back to canonical metadata.
 
 Machine driver cards display each driver's API name, including drivers that
 share the generic icon. Catalog driver cards retain localized catalog names.
+
+### Workload archiving
+
+The **Archive** switch before stack sorting includes archived stacks and services;
+it is off by default and remembers each user's choice separately for each
+environment. Hidden counts do not replace actual resource totals. Direct detail
+links remain available, with an archived badge and Restore in the existing menu.
+
+Archiving requires a compatible server, the resource's existing update capability,
+and completely stopped services and containers. System and infrastructure
+resources cannot be archived. Archive only changes the persisted `archived` flag:
+it does not stop, delete, or recreate anything. Mounted directories and volumes
+remain; back up their source data yourself before moving hosts or deleting mount
+sources. Restore the resource and its parent stack before starting it or adding
+services. Restoring a stack preserves independently archived child services.
 
 ## Build and test
 

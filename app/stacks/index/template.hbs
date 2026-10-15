@@ -1,4 +1,4 @@
-<section class="header clearfix">
+<section class="header clearfix stacks-header">
   <h1>
     {{t this.pageHeader name=this.which tags=this.tags}}
   </h1>
@@ -14,21 +14,38 @@
     {{/if}}
   {{/if}}
 
-  <div class="pull-right">
-    <label class="text-muted r-pr5" style="font-size: 13px;">{{t 'stacksPage.sort.label'}}: </label>
-    <div class="btn-group r-pr0" role="group" aria-label="{{t 'stacksPage.sort.label'}}">
-      <button {{action 'sortResults' 'state'}} type="button" class="btn btn-sm btn-default {{if (eq this.sortBy "state") 'active'}}">{{t 'stacksPage.sort.state'}}</button>
-      <button {{action 'sortResults' 'name'}}  type="button" class="btn btn-sm btn-default {{if (eq this.sortBy "name") 'active'}}">{{t 'stacksPage.sort.name'}}</button>
+  <div class="pull-right stacks-toolbar">
+    <div class="archive-filter">
+      <span class="text-muted">{{t 'archive.filterLabel'}}:</span>
+      <button type="button" role="switch" aria-checked={{if this.showArchived "true" "false"}} aria-label={{t 'archive.include'}} class="archive-switch {{if this.showArchived 'is-on'}}" {{action "toggleArchived"}} data-testid="archive-filter">
+        <span class="archive-switch-state" aria-hidden="true">{{if this.showArchived 'ON' 'OFF'}}</span>
+        <span class="archive-switch-thumb" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="stacks-sort">
+      <label class="text-muted r-pr5">{{t 'stacksPage.sort.label'}}: </label>
+      <div class="btn-group r-pr0" role="group" aria-label="{{t 'stacksPage.sort.label'}}">
+        <button {{action 'sortResults' 'state'}} type="button" class="btn btn-sm btn-default {{if (eq this.sortBy "state") 'active'}}">{{t 'stacksPage.sort.state'}}</button>
+        <button {{action 'sortResults' 'name'}}  type="button" class="btn btn-sm btn-default {{if (eq this.sortBy "name") 'active'}}">{{t 'stacksPage.sort.name'}}</button>
+      </div>
     </div>
   </div>
 </section>
 
 <section class="stacks-wrap r-pl0 r-pr0">
+  {{#if this.scopedStacks.length}}
+    <p class="archive-list-summary text-muted r-ml20 r-mr20" role="status" data-testid="archive-stack-count">{{t 'archive.stackCount' total=this.scopedStacks.length hidden=this.hiddenStackCount}}</p>
+  {{/if}}
   <div>
     {{#each this.arranged as |stack|}}
-      {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(not stack.system)}}
+      {{stack-section model=stack showAddtlInfo='showAddtlInfo' showAddService=(not stack.system) showArchived=this.showArchived showArchivedResources=(action "showArchivedResources")}}
     {{else}}
-      {{#if (and this.model.stacks.length this.tags)}}
+      {{#if this.hiddenStackCount}}
+        <div class="archive-empty r-m20 text-center text-muted" data-testid="archive-empty">
+          <p>{{t 'archive.emptyStacks' count=this.hiddenStackCount}}</p>
+          <button type="button" class="btn btn-default btn-sm" {{action "showArchivedResources"}}>{{t 'archive.show'}}</button>
+        </div>
+      {{else if (and this.model.stacks.length this.tags)}}
         <div class="r-m20 text-center text-muted">{{t 'stacksPage.noMatch'}}</div>
       {{else if (eq this.which "infra")}}
         <div class="r-m20 text-center text-muted">{{t 'stacksPage.noInfra'}}</div>

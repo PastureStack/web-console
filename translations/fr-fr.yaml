@@ -1,4 +1,30 @@
 languageName: Français (France)
+
+archive:
+  filterLabel: "Archives"
+  include: "Inclure les stacks et services archivés"
+  badge: "Archivé"
+  action: "Archiver"
+  restore: "Désarchiver"
+  show: "Afficher les ressources archivées"
+  stackCount: "{total} stacks au total · {hidden} stacks archivés masqués"
+  hiddenCount: "{count} masqués"
+  emptyStacks: "{count} stacks archivés sont masqués."
+  emptyServices: "{count} services archivés sont masqués."
+  confirmTitle: "Archiver cette ressource ?"
+  restoreTitle: "Désarchiver cette ressource ?"
+  explanation: "L’archivage masque uniquement la ressource arrêtée dans la liste par défaut. Il conserve ses paramètres et n’arrête ni ne supprime rien."
+  restoreExplanation: "Le désarchivage affiche à nouveau la ressource. Il ne la démarre pas et ne modifie pas les services archivés séparément."
+  dataWarning: "Les répertoires montés et les volumes de données sont conservés. Sauvegardez vous-même les données sources. Un changement d’hôte ou la suppression d’une source de montage peut entraîner une perte de données."
+  requiresStopped: "Arrêtez complètement tous les services et leurs conteneurs avant l’archivage. Les états de démarrage, d’arrêt, de mise à niveau ou incertains ne permettent pas l’archivage."
+  system: "Les ressources système et d’infrastructure ne peuvent pas être archivées."
+  readOnly: "Cette ressource ne peut pas être modifiée dans cet environnement actuellement."
+  alreadyChanged: "Cette ressource a été modifiée ailleurs. Fermez cette fenêtre et vérifiez son état actuel."
+  restoreBeforeStart: "Désarchivez la ressource et sa stack parente avant de la démarrer ou d’ajouter des services."
+  createUnsupported: "Créez la ressource normalement, arrêtez-la complètement, puis archivez-la."
+  mixedUpdate: "Effectuez l’archivage séparément des autres modifications. Actualisez et réessayez."
+  concurrentChange: "La stack parente a changé pendant la requête. Actualisez et réessayez."
+
 languageContribute: Aider à traduire PastureStack
 uiText:
   process: Processus

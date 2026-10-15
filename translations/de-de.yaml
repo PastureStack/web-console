@@ -1,4 +1,30 @@
 languageName: Deutsch (Deutschland)
+
+archive:
+  filterLabel: "Archiv"
+  include: "Archivierte Stacks und Dienste einblenden"
+  badge: "Archiviert"
+  action: "Archivieren"
+  restore: "Wiederherstellen"
+  show: "Archivierte Ressourcen anzeigen"
+  stackCount: "{total} Stacks insgesamt · {hidden} archivierte Stacks ausgeblendet"
+  hiddenCount: "{count} ausgeblendet"
+  emptyStacks: "{count} archivierte Stacks sind ausgeblendet."
+  emptyServices: "{count} archivierte Dienste sind ausgeblendet."
+  confirmTitle: "Diese Ressource archivieren?"
+  restoreTitle: "Diese Ressource wiederherstellen?"
+  explanation: "Archivieren blendet die gestoppte Ressource nur aus der Standardliste aus. Einstellungen bleiben erhalten; nichts wird gestoppt oder gelöscht."
+  restoreExplanation: "Wiederherstellen zeigt die Ressource erneut an. Es startet sie nicht und ändert keine separat archivierten Dienste."
+  dataWarning: "Eingebundene Verzeichnisse und Datenvolumes bleiben erhalten. Sichern Sie die Quelldaten selbst. Ein Hostwechsel oder das Löschen einer Einbindungsquelle kann Datenverlust verursachen."
+  requiresStopped: "Stoppen Sie vor dem Archivieren alle Dienste und Container vollständig. Startende, stoppende, aktualisierende oder unklare Zustände erlauben keine Archivierung."
+  system: "System- und Infrastrukturressourcen können nicht archiviert werden."
+  readOnly: "Diese Ressource kann derzeit in dieser Umgebung nicht aktualisiert werden."
+  alreadyChanged: "Diese Ressource wurde andernorts geändert. Schließen Sie den Dialog und prüfen Sie den aktuellen Zustand."
+  restoreBeforeStart: "Stellen Sie die archivierte Ressource und ihren übergeordneten Stack wieder her, bevor Sie sie starten oder Dienste hinzufügen."
+  createUnsupported: "Erstellen Sie die Ressource normal, stoppen Sie sie vollständig und archivieren Sie sie dann."
+  mixedUpdate: "Archivieren Sie getrennt von anderen Änderungen. Laden Sie die Seite neu und versuchen Sie es erneut."
+  concurrentChange: "Der übergeordnete Stack wurde während der Anfrage geändert. Laden Sie die Seite neu und versuchen Sie es erneut."
+
 languageContribute: Helfen Sie bei der Übersetzung von PastureStack
 uiText:
   process: Prozess

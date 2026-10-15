@@ -1,4 +1,30 @@
 languageName: Português (Brasil)
+
+archive:
+  filterLabel: "Arquivo"
+  include: "Incluir stacks e serviços arquivados"
+  badge: "Arquivado"
+  action: "Arquivar"
+  restore: "Desarquivar"
+  show: "Mostrar recursos arquivados"
+  stackCount: "{total} stacks no total · {hidden} stacks arquivados ocultos"
+  hiddenCount: "{count} ocultos"
+  emptyStacks: "{count} stacks arquivados estão ocultos."
+  emptyServices: "{count} serviços arquivados estão ocultos."
+  confirmTitle: "Arquivar este recurso?"
+  restoreTitle: "Desarquivar este recurso?"
+  explanation: "Arquivar apenas oculta o recurso parado da lista padrão. As configurações são mantidas e nada é parado ou excluído."
+  restoreExplanation: "Desarquivar mostra o recurso novamente. Não o inicia nem altera os serviços arquivados separadamente."
+  dataWarning: "Os diretórios montados e os volumes de dados são mantidos. Faça seu próprio backup dos dados de origem. Mudar de host ou excluir uma origem de montagem pode causar perda de dados."
+  requiresStopped: "Pare completamente todos os serviços e contêineres antes de arquivar. Estados de inicialização, parada, atualização ou incertos não podem ser arquivados."
+  system: "Recursos de sistema e infraestrutura não podem ser arquivados."
+  readOnly: "Este recurso não pode ser atualizado neste ambiente no momento."
+  alreadyChanged: "Este recurso foi alterado em outro lugar. Feche a janela e confira o estado atual."
+  restoreBeforeStart: "Desarquive o recurso e a stack pai antes de iniciá-lo ou adicionar serviços."
+  createUnsupported: "Crie o recurso normalmente, pare-o completamente e depois arquive."
+  mixedUpdate: "Envie o arquivamento separadamente de outras alterações. Atualize a página e tente novamente."
+  concurrentChange: "A stack pai mudou durante a solicitação. Atualize a página e tente novamente."
+
 languageContribute: Ajude a traduzir o PastureStack
 uiText:
   process: Processo

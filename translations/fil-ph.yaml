@@ -1,4 +1,30 @@
 languageName: Filipino (Pilipinas)
+
+archive:
+  filterLabel: "Archive"
+  include: "Isama ang mga naka-archive na stack at serbisyo"
+  badge: "Naka-archive"
+  action: "I-archive"
+  restore: "Alisin sa archive"
+  show: "Ipakita ang naka-archive"
+  stackCount: "{total} stack sa kabuuan · {hidden} naka-archive na stack ang nakatago"
+  hiddenCount: "{count} nakatago"
+  emptyStacks: "{count} naka-archive na stack ang nakatago."
+  emptyServices: "{count} naka-archive na serbisyo ang nakatago."
+  confirmTitle: "I-archive ang resource na ito?"
+  restoreTitle: "Alisin sa archive ang resource na ito?"
+  explanation: "Itinatago lamang ng pag-archive ang nakahintong resource sa karaniwang listahan. Pinapanatili nito ang mga setting at walang ihihinto o tatanggalin."
+  restoreExplanation: "Ipinapakitang muli ang resource kapag inalis sa archive. Hindi ito sinisimulan at hindi binabago ang hiwalay na pag-archive ng mga serbisyo."
+  dataWarning: "Mananatili ang mga naka-mount na directory at data volume. Ikaw ang dapat mag-backup ng pinagmulang data. Maaaring mawala ang data kapag lumipat ng host o nagtanggal ng mount source."
+  requiresStopped: "Ganap na ihinto ang lahat ng serbisyo at container bago mag-archive. Hindi puwede habang nagsisimula, humihinto, nag-a-upgrade o hindi tiyak ang estado."
+  system: "Hindi maaaring i-archive ang mga resource ng system at infrastructure."
+  readOnly: "Hindi maa-update ang resource na ito sa kasalukuyang environment sa ngayon."
+  alreadyChanged: "Binago ang resource sa ibang lugar. Isara ang dialog at suriin ang kasalukuyang estado."
+  restoreBeforeStart: "Alisin muna sa archive ang resource at parent stack bago magsimula o magdagdag ng serbisyo."
+  createUnsupported: "Gawin muna ang resource nang normal, ganap na ihinto, saka i-archive."
+  mixedUpdate: "Isumite ang pag-archive nang hiwalay sa ibang pagbabago. I-refresh at subukang muli."
+  concurrentChange: "Nagbago ang parent stack habang ipinapadala ang request. I-refresh at subukang muli."
+
 languageContribute: Tumulong na isalin ang PastureStack
 uiText:
   process: Proseso

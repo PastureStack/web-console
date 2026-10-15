@@ -18,6 +18,7 @@ test('new-resource copies omit top-level server identity and lifecycle fields', 
     transitioning: 'no',
     transitioningMessage: 'old operation',
     transitioningProgress: 75,
+    archived: true,
     type: 'projectTemplate',
     name: 'Editable copy',
     description: 'Keep user settings',
@@ -31,6 +32,7 @@ test('new-resource copies omit top-level server identity and lifecycle fields', 
   let excluded = [
     'id', 'actionLinks', 'links', 'uuid', 'created', 'createdTS', 'removed',
     'state', 'transitioning', 'transitioningMessage', 'transitioningProgress',
+    'archived',
   ];
 
   ['cloneForNew', 'serializeForNew'].forEach((method) => {
@@ -47,5 +49,7 @@ test('new-resource copies omit top-level server identity and lifecycle fields', 
 
   assert.strictEqual(source.id, '1pt1', 'the source identity remains intact');
   assert.strictEqual(source.state, 'active', 'the source lifecycle remains intact');
+  assert.true(source.archived, 'copying does not restore the original resource');
+  assert.true(subject.clone().archived, 'ordinary edit/upgrade clones retain archive state');
   subject.destroy();
 });

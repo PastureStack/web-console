@@ -7,8 +7,10 @@ import Resource from 'ember-api-store/models/resource';
 import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { denormalizeId, denormalizeIdArray } from 'ui/utils/api-store-references';
+import ArchiveResource from 'ui/mixins/archive-resource';
+import { serviceStopped } from 'ui/utils/archive';
 
-var Service = Resource.extend({
+var Service = Resource.extend(ArchiveResource, {
   type: 'service',
   intl: service(),
   growl: service(),
@@ -19,6 +21,14 @@ var Service = Resource.extend({
   instanceCount: alias('instances.length'),
   projectId: alias(`tab-session.${C.TABSESSION.PROJECT}`),
   stack: denormalizeId('stackId'),
+
+  archiveStopped: computed('state', 'transitioning', 'instances.@each.{state,transitioning}', function() {
+    return serviceStopped(this);
+  }),
+
+  archiveStartBlocked: computed('isArchived', 'stack.isArchived', function() {
+    return this.get('isArchived') || this.get('stack.isArchived');
+  }),
 
   actions: {
     edit() {
@@ -38,6 +48,9 @@ var Service = Resource.extend({
     },
 
     activate() {
+      if ( this.get('archiveStartBlocked') ) {
+        return;
+      }
       return this.doAction('activate');
     },
 
@@ -46,6 +59,9 @@ var Service = Resource.extend({
     },
 
     restart() {
+      if ( this.get('archiveStartBlocked') ) {
+        return;
+      }
       return this.doAction('restart', {rollingRestartStrategy: {}});
     },
 
@@ -198,25 +214,26 @@ var Service = Resource.extend({
     var isDriver = ['networkdriverservice','storagedriverservice'].includes(this.get('type').toLowerCase());
 
     var choices = [
-      { label: 'action.start',          icon: 'icon icon-play',             action: 'activate',       enabled: !!a.activate},
+      { label: 'action.start',          icon: 'icon icon-play',             action: 'activate',       enabled: !!a.activate && !this.get('archiveStartBlocked')},
       { label: 'action.finishUpgrade',  icon: 'icon icon-success',          action: 'finishUpgrade',  enabled: !!a.finishupgrade },
       { label: (isBalancer ? 'action.upgradeOrEdit' : 'action.upgrade'),        icon: 'icon icon-arrow-circle-up',  action: 'upgrade',        enabled: canUpgrade },
       { label: 'action.rollback',       icon: 'icon icon-history',          action: 'rollback',       enabled: !!a.rollback },
       { label: 'action.cancelUpgrade',  icon: 'icon icon-life-ring',        action: 'cancelUpgrade',  enabled: !!a.cancelupgrade },
       { label: 'action.cancelRollback', icon: 'icon icon-life-ring',        action: 'cancelRollback', enabled: !!a.cancelrollback },
       { divider: true },
-      { label: 'action.restart',        icon: 'icon icon-refresh'    ,      action: 'restart',        enabled: !!a.restart && canHaveContainers },
+      { label: 'action.restart',        icon: 'icon icon-refresh'    ,      action: 'restart',        enabled: !!a.restart && canHaveContainers && !this.get('archiveStartBlocked') },
       { label: 'action.stop',           icon: 'icon icon-stop',             action: 'promptStop',     enabled: !!a.deactivate, altAction: 'deactivate'},
       { label: 'action.remove',         icon: 'icon icon-trash',            action: 'promptDelete',   enabled: !!a.remove, altAction: 'delete'},
       { label: 'action.purge',          icon: '',                           action: 'purge',          enabled: !!a.purge},
       { divider: true },
+      this.get('archiveMenuAction'),
       { label: 'action.viewInApi',      icon: 'icon icon-external-link',    action: 'goToApi',        enabled: true },
       { label: 'action.clone',          icon: 'icon icon-copy',             action: 'clone',          enabled: !isK8s && !isSwarm && !isDriver },
       { label: 'action.edit',           icon: 'icon icon-edit',             action: 'edit',           enabled: !!a.update && !isK8s && !isSwarm && !isBalancer},
     ];
 
     return choices;
-  }.property('actionLinks.{activate,deactivate,restart,update,remove,purge,finishupgrade,cancelupgrade,rollback,cancelrollback}','type','isK8s','isSwarm','canHaveContainers','canUpgrade','isBalancer'),
+  }.property('actionLinks.{activate,deactivate,restart,update,remove,purge,finishupgrade,cancelupgrade,rollback,cancelrollback}','type','isK8s','isSwarm','canHaveContainers','canUpgrade','isBalancer','archiveMenuAction','archiveStartBlocked'),
 
 
   serviceLinks: null, // Used for clone
