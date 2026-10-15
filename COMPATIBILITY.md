@@ -5,9 +5,11 @@
 Web Console `1.6.190` adds opt-in archive visibility, archive/restore confirmation
 and archived-state display using the server's existing schema capabilities.
 The server remains authoritative for permissions, stopped-workload eligibility
-and lifecycle/association guards. Server `v1.6.537` is planned to package this
-component with Engine `v0.183.350`; packaged Server acceptance and deployment
-remain separate gates. Exact component identities are recorded in the
+and lifecycle/association guards. The Server `v1.6.537` assembly pairs this
+component with Engine `v0.183.350`. Server publication and health evidence are
+maintained separately in
+[its release notes](https://github.com/PastureStack/server/blob/main/docs/releases/server-1.6.537.md).
+Exact component identities are recorded in the
 [190 release note](docs/releases/web-console-1.6.190.md).
 
 The immutable producer is `9ff823c2233e2041c2f00bb56a91d147a7feaa1d`.

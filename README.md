@@ -13,9 +13,10 @@ history, authorship, licenses, and dependency notices.
 [Web Console 1.6.190](docs/releases/web-console-1.6.190.md) adds the
 per-environment Archive switch, archive/restore confirmation and
 archived-state display, with text in all thirteen production locales.
-Server `v1.6.537` is planned to package it with Engine `v0.183.350`.
-Component artifact identities are recorded in the release note; packaged Server
-acceptance and deployment remain separate gates.
+The Server `v1.6.537` assembly pairs this component with Engine `v0.183.350`.
+Server publication and health evidence are maintained separately in
+[its release notes](https://github.com/PastureStack/server/blob/main/docs/releases/server-1.6.537.md).
+Component artifact identities are recorded in this component's release note.
 
 Personal API Keys remain available without an accessible environment. Host
 registration commands, permissions and native Close/Back navigation retain
