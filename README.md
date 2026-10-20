@@ -8,21 +8,13 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current component
+## Current source
 
-Published [Web Console 1.6.191](docs/releases/web-console-1.6.191.md) updates the
-Node build dependencies Handlebars and fast-uri to their official security patch releases.
-It preserves the existing archive, API Key, authentication, host registration,
-role and navigation contracts. Build dependency findings are tracked separately
-from the modules actually packaged for browsers; an unresolved build-only
-finding is not described as a runtime fix.
-
-Publication identities and verification scope are recorded in the
-[release note](docs/releases/web-console-1.6.191.md) and
-[compatibility contract](COMPATIBILITY.md). The immutable
-[1.6.191 release](https://github.com/PastureStack/web-console/releases/tag/1.6.191)
-contains the original tested CI artifact. Component publication does not
-establish Server deployment or complete the historical acceptance matrix.
+Web Console 1.6.192 corrects Host disk-capacity display. Empty or invalid disk
+reports leave capacity unavailable; valid legacy mount data is used when the
+newer filesystem report has no valid capacity. Reported zero values retain their
+existing format, disk details use the same source, and local-storage allocation
+stays separate from total disk capacity. This source candidate awaits publication.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).

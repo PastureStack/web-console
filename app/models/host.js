@@ -8,6 +8,26 @@ import C from 'ui/utils/constants';
 import { denormalizeIdArray } from 'ui/utils/api-store-references';
 import { satisfies, compare } from 'ui/utils/parse-version';
 
+function diskEntries(diskInfo) {
+  function validEntries(collection, field) {
+    if ( !collection || typeof collection !== 'object' ) {
+      return [];
+    }
+
+    return Object.keys(collection).reduce((entries, label) => {
+      var disk = collection[label];
+      var capacity = disk && disk[field];
+      if ( typeof capacity === 'number' && Number.isFinite(capacity) && capacity >= 0 ) {
+        entries.push({label, capacity});
+      }
+      return entries;
+    }, []);
+  }
+
+  var fileSystems = validEntries(diskInfo && diskInfo.fileSystems, 'capacity');
+  return fileSystems.length ? fileSystems : validEntries(diskInfo && diskInfo.mountPoints, 'total');
+}
+
 var Host = Resource.extend({
   type: 'host',
   modalService: service('modal'),
@@ -185,43 +205,18 @@ var Host = Resource.extend({
   }),
 
   diskBlurb: function() {
-    var totalMb = 0;
-
-    // New hotness
-    if ( this.get('info.diskInfo.fileSystems') )
-    {
-      var fses = this.get('info.diskInfo.fileSystems')||[];
-      Object.keys(fses).forEach((fs) => {
-        totalMb += fses[fs].capacity;
-      });
-
-      return formatMib(totalMb);
+    var disks = diskEntries(this.get('info.diskInfo'));
+    if ( disks.length ) {
+      return formatMib(disks.reduce((total, disk) => total + disk.capacity, 0));
     }
-    else if ( this.get('info.diskInfo.mountPoints') )
-    {
-      // Old & busted
-      var mounts = this.get('info.diskInfo.mountPoints')||[];
-      Object.keys(mounts).forEach((mountPoint) => {
-        totalMb += mounts[mountPoint].total;
-      });
-
-      return formatMib(totalMb);
-    }
-  }.property('info.diskInfo.mountPoints.@each.total','info.diskInfo.fileSystems.@each.capacity'),
+  }.property('info.diskInfo.mountPoints','info.diskInfo.mountPoints.@each.total','info.diskInfo.fileSystems','info.diskInfo.fileSystems.@each.capacity'),
 
   diskDetail: function() {
-    // New hotness
-    if ( this.get('info.diskInfo.fileSystems') )
-    {
-      var out = [];
-      var fses = this.get('info.diskInfo.fileSystems')||[];
-      Object.keys(fses).forEach((fs) => {
-        out.pushObject(EmberObject.create({label: fs, value: formatMib(fses[fs].capacity)}));
-      });
-
-      return out;
+    var disks = diskEntries(this.get('info.diskInfo'));
+    if ( disks.length ) {
+      return disks.map((disk) => EmberObject.create({label: disk.label, value: formatMib(disk.capacity)}));
     }
-  }.property('info.diskInfo.fileSystems.@each.capacity'),
+  }.property('info.diskInfo.mountPoints','info.diskInfo.mountPoints.@each.total','info.diskInfo.fileSystems','info.diskInfo.fileSystems.@each.capacity'),
 
   // If you use this you must ensure that services and containers are already in the store
   //  or they will not be pulled in correctly.
