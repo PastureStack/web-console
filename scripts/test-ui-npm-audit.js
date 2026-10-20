@@ -5,12 +5,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
-const { evaluateAudit, validateReviewedImports, readReviewedSources, npmInvocation, runAudit } = require('./check-ui-npm-audit');
+const { evaluateAudit, validateReviewedImports, readReviewedSources, npmInvocation, runAudit: actualRunAudit } = require('./check-ui-npm-audit');
 const root = path.resolve(__dirname, '..');
 const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
 const pending = JSON.parse(fs.readFileSync(path.join(root, 'docs/security/npm-vendor-pending.json'), 'utf8'));
 const clone = value => JSON.parse(JSON.stringify(value));
-const now = new Date('2026-10-04T00:00:00Z');
+const now = new Date('2026-10-21T00:00:00Z');
+const runAudit = (repoRoot, runner, platform = process.platform) => actualRunAudit(repoRoot, runner, platform, now);
 const dependencyCounts = { prod: 8, dev: 1454, optional: 18, peer: 1, peerOptional: 0, total: 1477 };
 const knownVia = {
   braces: [{ source: 1240992, name: 'braces', dependency: 'braces',
@@ -189,9 +190,18 @@ test('missing closure node or inconsistent effects cannot manufacture a complete
   fail(effects, 'AUDIT_METAVULNERABILITY_EFFECTS_MISMATCH');
 });
 test('review expiration boundary is UTC and future/invalid dates reject', () => {
-  for (const at of ['2026-10-10T00:00:00Z', '2026-10-11T00:00:00Z', '2026-10-02T00:00:00Z', 'invalid']) {
+  for (const at of ['2026-10-27T00:00:00Z', '2026-10-28T00:00:00Z', '2026-10-19T00:00:00Z', 'invalid']) {
     const value = input(); value.now = new Date(at); fail(value, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
   }
+});
+
+test('review passes the last millisecond before expiry and runner refuses expiry before npm', () => {
+  const before = input(); before.now = new Date('2026-10-26T23:59:59.999Z');
+  assert.equal(evaluateAudit(before).ok, true);
+  let calls = 0;
+  const result = actualRunAudit(root, () => { calls++; }, 'linux', new Date('2026-10-27T00:00:00Z'));
+  assert.equal(calls, 0);
+  assert.equal(result.failureCode, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
 });
 test('npm error, malformed report, unknown shape, missing metadata and bad totals reject safely', () => {
   const error = input(); error.audit.error = { summary: 'secret-stderr-marker' }; fail(error, 'NPM_AUDIT_SHAPE_OR_ERROR');

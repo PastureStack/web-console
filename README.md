@@ -8,21 +8,20 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current release
+## Current component
 
-[Web Console 1.6.190](docs/releases/web-console-1.6.190.md) adds the
-per-environment Archive switch, archive/restore confirmation and
-archived-state display, with text in all thirteen production locales.
-The Server `v1.6.537` assembly pairs this component with Engine `v0.183.350`.
-Server publication and health evidence are maintained separately in
-[its release notes](https://github.com/PastureStack/server/blob/main/docs/releases/server-1.6.537.md).
-Component artifact identities are recorded in this component's release note.
+[Web Console 1.6.191](docs/releases/web-console-1.6.191.md) updates the Node build
+dependencies Handlebars and fast-uri to their official security patch releases.
+It preserves the existing archive, API Key, authentication, host registration,
+role and navigation contracts. Build dependency findings are tracked separately
+from the modules actually packaged for browsers; an unresolved build-only
+finding is not described as a runtime fix.
 
-Personal API Keys remain available without an accessible environment. Host
-registration commands, permissions and native Close/Back navigation retain
-their existing contracts. See the [release note](docs/releases/web-console-1.6.190.md)
-for component scope and the remaining verification boundaries. Published baseline
-identities remain in [COMPATIBILITY.md](COMPATIBILITY.md).
+Publication identities and verification scope are recorded in the
+[release note](docs/releases/web-console-1.6.191.md) and
+[compatibility contract](COMPATIBILITY.md). The last published baseline remains
+1.6.190 until the 1.6.191 artifact is published; source changes alone do not
+establish Server deployment or acceptance.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).

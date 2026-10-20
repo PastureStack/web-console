@@ -10,6 +10,7 @@ var dartSass = require('sass');
 var TranslationJsonTree = require('./lib/translation-json-tree');
 var RtlCssTree = require('./lib/rtl-css-tree');
 var NormalizeTemplateModuleNameWebpackPlugin = require('./lib/normalize-template-module-name-webpack-plugin');
+var SecurityModuleInventoryWebpackPlugin = require('./lib/security-module-inventory-webpack-plugin');
 
 
 module.exports = function(defaults) {
@@ -58,7 +59,10 @@ module.exports = function(defaults) {
         // workspace in module metadata. Inject the normalizer after Ember Auto
         // Import assembles its strict Babel rules so clean production builds are
         // byte-for-byte reproducible and do not disclose a builder path.
-        plugins: [new NormalizeTemplateModuleNameWebpackPlugin()],
+        plugins: [new NormalizeTemplateModuleNameWebpackPlugin()].concat(
+          process.env.PASTURESTACK_MODULE_INVENTORY ?
+            [new SecurityModuleInventoryWebpackPlugin(process.env.PASTURESTACK_MODULE_INVENTORY)] : []
+        ),
         optimization: {
           moduleIds: 'natural',
           chunkIds: 'deterministic'

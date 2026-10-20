@@ -31,7 +31,7 @@ function validatePending(lock, pending, now) {
     pending.severity === 'high' && pending.upstreamPatchedVersion === null &&
     pending.scope === 'controlled-dev-build-inputs-only' && pending.publicationBlockedIfShippedNodes === true &&
     strings(pending.shippedNodes) && pending.shippedNodes.length === 0, 'PENDING_POLICY_INVALID');
-  need(pending.reviewUntil === '2026-10-10' && typeof pending.reviewedAt === 'string' &&
+  need(pending.reviewUntil === '2026-10-27' && typeof pending.reviewedAt === 'string' &&
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(pending.reviewedAt) &&
     Number.isFinite(Date.parse(pending.reviewedAt)) && Number.isFinite(now.getTime()) &&
     now.getTime() >= Date.parse(pending.reviewedAt) && now.getTime() < Date.parse(pending.reviewUntil + 'T00:00:00Z'),
@@ -246,12 +246,12 @@ function runNpm(invocation, options, runner, platform) {
   }
 }
 
-function runAudit(repoRoot, runner = spawnSync, platform = process.platform) {
+function runAudit(repoRoot, runner = spawnSync, platform = process.platform, now = new Date()) {
   let lock, pending;
   try {
     lock = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package-lock.json'), 'utf8'));
     pending = JSON.parse(fs.readFileSync(path.join(repoRoot, 'docs/security/npm-vendor-pending.json'), 'utf8'));
-    validatePending(lock, pending, new Date());
+    validatePending(lock, pending, now);
     validateReviewedImports(readReviewedSources(repoRoot), pending);
   } catch (error) {
     return { ok: false, outcome: 'FAIL_CLOSED', totals: null,
@@ -274,7 +274,7 @@ function runAudit(repoRoot, runner = spawnSync, platform = process.platform) {
   let audit;
   try { audit = JSON.parse(result.stdout); }
   catch (_) { return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_JSON_INVALID' }; }
-  return evaluateAudit({ audit, lock, pending, npmExitCode: result.status });
+  return evaluateAudit({ audit, lock, pending, now, npmExitCode: result.status });
 }
 
 module.exports = { evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, npmInvocation, runAudit };
