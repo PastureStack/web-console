@@ -8,13 +8,15 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Current source
+## Current component
 
 Web Console 1.6.192 corrects Host disk-capacity display. Empty or invalid disk
 reports leave capacity unavailable; valid legacy mount data is used when the
 newer filesystem report has no valid capacity. Reported zero values retain their
 existing format, disk details use the same source, and local-storage allocation
-stays separate from total disk capacity. This source candidate awaits publication.
+stays separate from total disk capacity. The published
+[1.6.192 release](docs/releases/web-console-1.6.192.md) contains the original
+validated CI archive; Server assembly and deployment have separate evidence.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).
