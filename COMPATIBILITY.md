@@ -1,17 +1,31 @@
 # Compatibility Contract
 
-## Current source: Web Console 1.6.191
+## Web Console 1.6.191 published
 
 Handlebars `4.7.10` and fast-uri `3.1.8` use official security fixes. Both the
 release lock and active Node 24 test baseline resolve the same dependency graph.
 The supported build remains Node `24.20.0` / npm `12.0.2`; Ember/Glimmer,
-authentication and API contracts are unchanged. Candidate tests, publication
-identity and the unresolved build-input findings are maintained in the
+authentication and API contracts are unchanged. Focused release tests,
+publication identity and the unresolved build-input findings are maintained in the
 [191 release note](docs/releases/web-console-1.6.191.md).
 
-The published baseline below remains valid until candidate publication is verified.
+The immutable [1.6.191 release](https://github.com/PastureStack/web-console/releases/tag/1.6.191)
+binds producer `1452148e0ca2c0dc798dc08a653eb90196d4f88b`. Protected PR #213
+merged as `2405dfe5310f50e149550ee2f8f8fa55fff85c66`, with the same tested tree
+`c2b98b05f8da5cf4a8acaa2e630150ec92acd2ad`; later documentation commits do not
+replace this producer. The original `web-console-1.6.191.tar.gz` is 3,037,180 bytes,
+SHA-256 `f9b28c25ae27057ae39e55fb29400b8ac459e07632a441eea011591f305950ab`.
 
-## Web Console 1.6.190 published baseline
+[CI 39356413277](https://github.com/PastureStack/web-console/actions/runs/39356413277)
+passed 36 focused Node tests, four native Chrome template tests, actual browser
+module inventories and two byte-identical production archives. The raw build
+audit retains 29 Moderate, 7 High and 0 Critical findings; the exact seven-node
+build-only braces closure has no official fix and is reviewed until
+2026-10-27 00:00 UTC. Expiry and reachability checks remain fail-closed.
+This is scoped component evidence; Server packaging, deployment and the full
+historical acceptance matrix retain their separate status.
+
+## Web Console 1.6.190 historical published baseline
 
 Web Console `1.6.190` adds opt-in archive visibility, archive/restore confirmation
 and archived-state display using the server's existing schema capabilities.
