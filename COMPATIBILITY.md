@@ -1,6 +1,16 @@
 # Compatibility Contract
 
-## Web Console 1.6.191 published
+## Web Console 1.6.192 published
+
+Host disk summaries and details select the same valid filesystem or legacy mount
+data. Missing or invalid capacity remains unknown; a reported zero remains zero.
+The separate available-local-storage field is not used as total disk capacity.
+No API, RBAC, session, OIDC, MFA or dependency graph changed. Eight focused native
+Chrome Host model tests, required CodeQL and reproducible production packaging
+passed. See the [192 release note](docs/releases/web-console-1.6.192.md) for exact
+producer and artifact identities. This is not whole-matrix acceptance.
+
+## Web Console 1.6.191 historical published baseline
 
 Handlebars `4.7.10` and fast-uri `3.1.8` use official security fixes. Both the
 release lock and active Node 24 test baseline resolve the same dependency graph.
