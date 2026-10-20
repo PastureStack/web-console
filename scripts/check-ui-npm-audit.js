@@ -246,12 +246,12 @@ function runNpm(invocation, options, runner, platform) {
   }
 }
 
-function runAudit(repoRoot, runner = spawnSync, platform = process.platform, now = new Date()) {
+function runAudit(repoRoot, runner = spawnSync, platform = process.platform, clock = () => new Date()) {
   let lock, pending;
   try {
     lock = JSON.parse(fs.readFileSync(path.join(repoRoot, 'package-lock.json'), 'utf8'));
     pending = JSON.parse(fs.readFileSync(path.join(repoRoot, 'docs/security/npm-vendor-pending.json'), 'utf8'));
-    validatePending(lock, pending, now);
+    validatePending(lock, pending, clock());
     validateReviewedImports(readReviewedSources(repoRoot), pending);
   } catch (error) {
     return { ok: false, outcome: 'FAIL_CLOSED', totals: null,
@@ -274,7 +274,7 @@ function runAudit(repoRoot, runner = spawnSync, platform = process.platform, now
   let audit;
   try { audit = JSON.parse(result.stdout); }
   catch (_) { return { ok: false, outcome: 'FAIL_CLOSED', totals: null, failureCode: 'NPM_JSON_INVALID' }; }
-  return evaluateAudit({ audit, lock, pending, now, npmExitCode: result.status });
+  return evaluateAudit({ audit, lock, pending, now: clock(), npmExitCode: result.status });
 }
 
 module.exports = { evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, npmInvocation, runAudit };

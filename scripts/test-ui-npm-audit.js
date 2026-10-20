@@ -11,7 +11,7 @@ const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'u
 const pending = JSON.parse(fs.readFileSync(path.join(root, 'docs/security/npm-vendor-pending.json'), 'utf8'));
 const clone = value => JSON.parse(JSON.stringify(value));
 const now = new Date('2026-10-21T00:00:00Z');
-const runAudit = (repoRoot, runner, platform = process.platform) => actualRunAudit(repoRoot, runner, platform, now);
+const runAudit = (repoRoot, runner, platform = process.platform) => actualRunAudit(repoRoot, runner, platform, () => now);
 const dependencyCounts = { prod: 8, dev: 1454, optional: 18, peer: 1, peerOptional: 0, total: 1477 };
 const knownVia = {
   braces: [{ source: 1240992, name: 'braces', dependency: 'braces',
@@ -199,8 +199,20 @@ test('review passes the last millisecond before expiry and runner refuses expiry
   const before = input(); before.now = new Date('2026-10-26T23:59:59.999Z');
   assert.equal(evaluateAudit(before).ok, true);
   let calls = 0;
-  const result = actualRunAudit(root, () => { calls++; }, 'linux', new Date('2026-10-27T00:00:00Z'));
+  const result = actualRunAudit(root, () => { calls++; }, 'linux', () => new Date('2026-10-27T00:00:00Z'));
   assert.equal(calls, 0);
+  assert.equal(result.failureCode, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
+});
+
+test('an audit crossing the review deadline fails after the npm response', () => {
+  let current = new Date('2026-10-26T23:59:59.999Z');
+  let calls = 0;
+  const result = actualRunAudit(root, () => {
+    if (++calls === 1) return { status: 0, stdout: '12.0.2\n' };
+    current = new Date('2026-10-27T00:00:01Z');
+    return { status: 1, stdout: JSON.stringify(report()) };
+  }, 'linux', () => current);
+  assert.equal(calls, 2);
   assert.equal(result.failureCode, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
 });
 test('npm error, malformed report, unknown shape, missing metadata and bad totals reject safely', () => {
