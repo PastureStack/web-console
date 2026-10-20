@@ -1,6 +1,17 @@
 # Compatibility Contract
 
-## Current release: Web Console 1.6.190
+## Current source: Web Console 1.6.191
+
+Handlebars `4.7.10` and fast-uri `3.1.8` use official security fixes. Both the
+release lock and active Node 24 test baseline resolve the same dependency graph.
+The supported build remains Node `24.20.0` / npm `12.0.2`; Ember/Glimmer,
+authentication and API contracts are unchanged. Candidate tests, publication
+identity and the unresolved build-input findings are maintained in the
+[191 release note](docs/releases/web-console-1.6.191.md).
+
+The published baseline below remains valid until candidate publication is verified.
+
+## Web Console 1.6.190 published baseline
 
 Web Console `1.6.190` adds opt-in archive visibility, archive/restore confirmation
 and archived-state display using the server's existing schema capabilities.
