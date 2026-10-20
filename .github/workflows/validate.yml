@@ -95,11 +95,10 @@ jobs:
             output=$1
             rm -rf dist
             export CONCAT_STATS=1
-            export CONCAT_STATS_PATH="$work_root/concat-stats"
-            export PASTURESTACK_MODULE_INVENTORY="$work_root/webpack-modules.json"
+            export CONCAT_STATS_PATH="$PWD/build/security-browser/concat-stats"
+            export PASTURESTACK_MODULE_INVENTORY=1
             ./node_modules/.bin/ember build --environment production
-            node scripts/check-ui-build-module-boundary.js \
-              "$PASTURESTACK_MODULE_INVENTORY" "$CONCAT_STATS_PATH"
+            node scripts/check-ui-build-module-boundary.js
             bash scripts/package-static-candidate \
               "$package_version" \
               dist \
@@ -127,8 +126,8 @@ jobs:
             "$artifact_sha"
           release_asset="$RUNNER_TEMP/web-console-${package_version}.tar.gz"
           cp "$work_root/web-console-a.tar.gz" "$release_asset"
-          cp "$work_root/webpack-modules.json" "$RUNNER_TEMP/browser-webpack-modules.json"
-          tar -czf "$RUNNER_TEMP/browser-concat-stats.tar.gz" -C "$work_root/concat-stats" .
+          cp build/security-browser/webpack-modules.json "$RUNNER_TEMP/browser-webpack-modules.json"
+          tar -czf "$RUNNER_TEMP/browser-concat-stats.tar.gz" -C build/security-browser/concat-stats .
           release_dir=$(dirname "$release_asset")
           release_name=$(basename "$release_asset")
           (

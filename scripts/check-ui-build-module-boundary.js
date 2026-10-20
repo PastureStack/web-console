@@ -28,8 +28,8 @@ function assertNoPendingModules(webpackModules, concatenated, pending) {
 
 module.exports = { assertNoPendingModules };
 if (require.main === module) {
-const [inventoryFile, concatDirectory] = process.argv.slice(2);
-assert.ok(inventoryFile && concatDirectory, 'webpack inventory and concat stats are required');
+const inventoryFile = path.join(root, 'build/security-browser/webpack-modules.json');
+const concatDirectory = path.join(root, 'build/security-browser/concat-stats');
 const inventory = JSON.parse(fs.readFileSync(inventoryFile, 'utf8'));
 const pending = require('../docs/security/npm-vendor-pending.json');
 assert.equal(inventory.schemaVersion, 1);

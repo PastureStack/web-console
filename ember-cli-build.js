@@ -60,8 +60,8 @@ module.exports = function(defaults) {
         // Import assembles its strict Babel rules so clean production builds are
         // byte-for-byte reproducible and do not disclose a builder path.
         plugins: [new NormalizeTemplateModuleNameWebpackPlugin()].concat(
-          process.env.PASTURESTACK_MODULE_INVENTORY ?
-            [new SecurityModuleInventoryWebpackPlugin(process.env.PASTURESTACK_MODULE_INVENTORY)] : []
+          process.env.PASTURESTACK_MODULE_INVENTORY === '1' ?
+            [new SecurityModuleInventoryWebpackPlugin()] : []
         ),
         optimization: {
           moduleIds: 'natural',
