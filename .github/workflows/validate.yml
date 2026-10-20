@@ -2,6 +2,12 @@ name: Validate Web Console
 
 on:
   workflow_dispatch:
+    inputs:
+      validation_scope:
+        description: Validation scope (required CodeQL checks are separate)
+        type: choice
+        options: [full, dependency-security]
+        default: full
 
 permissions:
   contents: read
@@ -66,7 +72,15 @@ jobs:
           test "$(node --version)" = v24.20.0
           test "$(npm --version)" = 12.0.2
           npm ci --ignore-scripts --no-audit --no-fund
-          bash scripts/ci
+          if [[ '${{ inputs.validation_scope }}' = dependency-security ]]; then
+            bash scripts/check-ui-critical-high-dependencies
+            node --test scripts/check-ui-handlebars-security.js scripts/test-ui-npm-audit.js scripts/test-ui-build-module-boundary.js
+            node scripts/check-ui-npm-audit.js
+            CHROME_BIN=$(command -v google-chrome) ./node_modules/.bin/ember test \
+              --ssl=false --host 127.0.0.1 --config-file testem.js --filter 'legacy context partial'
+          else
+            bash scripts/ci
+          fi
 
           package_version=$(node -p 'require("./package.json").version')
           source_date_epoch=$(git show -s --format=%ct "$GITHUB_SHA")
@@ -80,7 +94,11 @@ jobs:
           build_candidate() {
             output=$1
             rm -rf dist
+            export CONCAT_STATS=1
+            export CONCAT_STATS_PATH="$PWD/build/security-browser/concat-stats"
+            export PASTURESTACK_MODULE_INVENTORY=1
             ./node_modules/.bin/ember build --environment production
+            node scripts/check-ui-build-module-boundary.js
             bash scripts/package-static-candidate \
               "$package_version" \
               dist \
@@ -108,6 +126,8 @@ jobs:
             "$artifact_sha"
           release_asset="$RUNNER_TEMP/web-console-${package_version}.tar.gz"
           cp "$work_root/web-console-a.tar.gz" "$release_asset"
+          cp build/security-browser/webpack-modules.json "$RUNNER_TEMP/browser-webpack-modules.json"
+          tar -czf "$RUNNER_TEMP/browser-concat-stats.tar.gz" -C build/security-browser/concat-stats .
           release_dir=$(dirname "$release_asset")
           release_name=$(basename "$release_asset")
           (
@@ -125,6 +145,8 @@ jobs:
           path: |
             ${{ steps.build.outputs.release_asset }}
             ${{ steps.build.outputs.release_asset }}.sha256
+            ${{ runner.temp }}/browser-webpack-modules.json
+            ${{ runner.temp }}/browser-concat-stats.tar.gz
           if-no-files-found: error
           retention-days: 30
           compression-level: 0

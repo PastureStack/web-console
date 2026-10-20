@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.190",
+  "version": "1.6.191",
   "private": true,
   "description": "PastureStack browser console for the compatible control platform.",
   "repository": {
@@ -34,7 +34,7 @@
     },
     "ember-cli-htmlbars": "7.0.1",
     "engine.io": "6.6.10",
-    "fast-uri": "3.1.7",
+    "fast-uri": "3.1.8",
     "@xmldom/xmldom": "0.9.12",
     "js-yaml": "4.3.2",
     "morgan": "1.12.1",
