@@ -5,6 +5,29 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
+const BOOTSTRAP = /^vendor\/ember-cli\/(?:app-prefix|app-suffix|app-config|app-boot|vendor-prefix|vendor-suffix)\.js$/;
+
+function assertNoPendingModules(webpackModules, concatenated, pending) {
+  const frameworkBootstrapInputs = concatenated.filter(resource => BOOTSTRAP.test(resource.replace(/\\/g, '/')));
+  for (const node of pending.nodes) {
+    const name = node.path.slice('node_modules/'.length);
+    const matcher = new RegExp('(?:^|/)' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:/|$)');
+    for (const resource of webpackModules) {
+      assert.equal(matcher.test(resource.replace(/\\/g, '/')), false, 'pending build dependency reached browser: ' + name);
+    }
+    for (const resource of concatenated) {
+      const normalized = resource.replace(/\\/g, '/');
+      // These six exact framework bootstrap wrappers are copied by Ember's
+      // default packager, not the CLI/watcher/micromatch execution path.
+      if (BOOTSTRAP.test(normalized)) continue;
+      assert.equal(matcher.test(normalized), false, 'pending build dependency reached browser: ' + name);
+    }
+  }
+  return frameworkBootstrapInputs.length;
+}
+
+module.exports = { assertNoPendingModules };
+if (require.main === module) {
 const [inventoryFile, concatDirectory] = process.argv.slice(2);
 assert.ok(inventoryFile && concatDirectory, 'webpack inventory and concat stats are required');
 const inventory = JSON.parse(fs.readFileSync(inventoryFile, 'utf8'));
@@ -25,13 +48,8 @@ for (const file of files) {
   concatenated.push(...Object.keys(stats.sizes));
 }
 assert.ok(vendorSeen && appSeen, 'both final application and vendor concat inventories are required');
-for (const node of pending.nodes) {
-  const name = node.path.slice('node_modules/'.length);
-  const matcher = new RegExp('(?:^|/)' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?:/|$)');
-  for (const resource of [...inventory.modules, ...concatenated]) {
-    assert.equal(matcher.test(resource.replace(/\\/g, '/')), false, 'pending build dependency reached browser: ' + name);
-  }
-}
+const frameworkBootstrapInputs = assertNoPendingModules(inventory.modules, concatenated, pending);
 console.log(JSON.stringify({ outcome: 'PASS_BROWSER_MODULE_BOUNDARY', lockSha256: inventory.lockSha256,
-  webpackModules: inventory.modules.length, concatInputs: concatenated.length, pendingNodesShipped: 0,
+  webpackModules: inventory.modules.length, concatInputs: concatenated.length, frameworkBootstrapInputs, pendingNodesShipped: 0,
   runtimeNotAffectedClaim: false }));
+}

@@ -74,7 +74,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           if [[ '${{ inputs.validation_scope }}' = dependency-security ]]; then
             bash scripts/check-ui-critical-high-dependencies
-            node --test scripts/check-ui-handlebars-security.js scripts/test-ui-npm-audit.js
+            node --test scripts/check-ui-handlebars-security.js scripts/test-ui-npm-audit.js scripts/test-ui-build-module-boundary.js
             node scripts/check-ui-npm-audit.js
             CHROME_BIN=$(command -v google-chrome) ./node_modules/.bin/ember test \
               --ssl=false --host 127.0.0.1 --config-file testem.js --filter 'legacy context partial'
