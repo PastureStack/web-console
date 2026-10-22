@@ -52,7 +52,11 @@ test('retired Packet provider is excluded from new host choices', function(asser
 test('a direct add-host URL denies read-only access before loading registration data', function(assert) {
   assert.expect(9);
   let route = createOwned(HostsNewRoute, {
+    router: {currentRoute: {name: 'hosts.new'}},
     projects: {
+      canAddHost() {
+        return this.canCreateResource('host');
+      },
       canCreateResource(type) {
         assert.strictEqual(type, 'host', 'checks the current project host schema');
         return false;
@@ -88,7 +92,11 @@ test('a direct add-host URL denies read-only access before loading registration 
 test('an authorized add-host route still loads available machine drivers', function(assert) {
   assert.expect(3);
   let route = createOwned(HostsNewRoute, {
+    router: {currentRoute: {name: 'hosts.new'}},
     projects: {
+      canAddHost() {
+        return true;
+      },
       canCreateResource(type) {
         assert.strictEqual(type, 'host');
         return true;

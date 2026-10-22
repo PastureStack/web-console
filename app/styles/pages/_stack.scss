@@ -1,4 +1,5 @@
 @use "sass:math";
+@use "sass:color";
 
 $accent-three: null !default;
 $accent-two: null !default;
@@ -645,7 +646,7 @@ $light-yellow: #FFBE18;
   padding: 12px 14px;
   border: 1px solid rgba($brand-warning, .7);
   color: $text-color;
-  background: mix($brand-warning, $well-bg, 16%);
+    background: color.mix($brand-warning, $well-bg, 16%);
 }
 .archive-empty p { overflow-wrap: anywhere; }
 

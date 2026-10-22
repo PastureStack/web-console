@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.192",
+  "version": "1.6.193",
   "private": true,
   "description": "PastureStack browser console for the compatible control platform.",
   "repository": {
@@ -35,9 +35,11 @@
     "ember-cli-htmlbars": "7.0.1",
     "engine.io": "6.6.10",
     "fast-uri": "3.1.8",
+    "follow-redirects": "1.16.1",
     "@xmldom/xmldom": "0.9.12",
     "js-yaml": "4.3.2",
     "morgan": "1.12.1",
+    "markdown-it": "14.3.3",
     "nanoid": "3.3.18",
     "qs": "6.16.0",
     "raw-body": "2.5.3",
@@ -76,7 +78,7 @@
     "core-js": "file:vendor/core-js-compat/core-js-2.6.13-rc16.0.tgz",
     "d3": "7.9.0",
     "dagre-d3-es": "7.0.14",
-    "ember-api-store": "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.7.tgz",
+    "ember-api-store": "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.8.tgz",
     "ember-auto-import": "2.13.1",
     "ember-basic-dropdown": "9.0.0",
     "ember-cli": "7.2.0",

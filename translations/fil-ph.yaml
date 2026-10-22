@@ -1,7 +1,7 @@
 languageName: Filipino (Pilipinas)
 
 archive:
-  filterLabel: "Archive"
+  filterLabel: "Arkibo"
   include: "Isama ang mga naka-archive na stack at serbisyo"
   badge: "Naka-archive"
   action: "I-archive"

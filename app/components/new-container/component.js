@@ -549,19 +549,19 @@ export default Component.extend(NewOrEdit, SelectTab, {
       });
 
       let service = this.get('service');
-      return this._super.apply(this,arguments).then(() => {
-        return service.waitForAction('upgrade').then(() => {
-          return service.doAction('upgrade', {
-            inServiceStrategy: {
-              batchSize: this.get('upgradeOptions.batchSize'),
-              intervalMillis: this.get('upgradeOptions.intervalMillis'),
-              startFirst: this.get('upgradeOptions.startFirst'),
-              launchConfig: primary,
-              secondaryLaunchConfigs: slc
-            },
-          });
+      // Upgrade only the selected launch configs. Saving the complete service
+      // clone first can resend stale publicEndpoints instance references.
+      return resolve().then(() => service.waitForAction('upgrade')).then(() => {
+        return service.doAction('upgrade', {
+          inServiceStrategy: {
+            batchSize: this.get('upgradeOptions.batchSize'),
+            intervalMillis: this.get('upgradeOptions.intervalMillis'),
+            startFirst: this.get('upgradeOptions.startFirst'),
+            launchConfig: primary,
+            secondaryLaunchConfigs: slc
+          },
         });
-      });
+      }).then(() => service);
     }
     else
     {

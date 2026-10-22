@@ -53,3 +53,11 @@ Compatibility revision 7 replaces the removed String.prototype.dasherize call
 in validation display labels with the equivalent Ember string module function.
 Capitalization, whitespace, field labels, validation messages and save behavior
 are unchanged; no unrelated runtime code or dependency is added.
+
+Compatibility revision 8 repackages the same runtime source with the repository's
+canonical LF bytes. Revision 7's archive used CRLF while the Git source used LF,
+which violated the existing exact source/archive check on Linux. Every package
+member except this provenance note and the compatibility revision metadata is
+byte-identical to its authoritative Git source. Runtime behavior, dependency
+versions and the upstream package version remain unchanged. Earlier archives
+are retained without modification.
