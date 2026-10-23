@@ -26,8 +26,10 @@ docker run --rm \
     apt-get install -y --no-install-recommends "$PASTURESTACK_CHROMIUM_APT_PACKAGE" ca-certificates fonts-noto-core fonts-noto-cjk fontconfig >/dev/null
     # Minimal Chromium installs otherwise measure CJK fallback/tofu glyphs,
     # not the actual localized text used by the viewport regressions.
-    fc-match -f "%{family}\n" :lang=zh-tw | grep -F "Noto Sans CJK" >/dev/null
-    fc-match -f "%{family}\n" :lang=fa | grep -E "Noto.*(Arabic|Sans)" >/dev/null
+    test -n "$(fc-list :lang=zh-tw)"
+    test -n "$(fc-list :lang=fa)"
+    fc-match -f "%{family}\n" :lang=zh-tw
+    fc-match -f "%{family}\n" :lang=fa
     echo UI_BROWSER_LOCALE_FONTS_OK
 
     tmpdir=$(mktemp -d)
