@@ -155,6 +155,19 @@ apiPage:
       noData: まだあなたのアカウント API キーはありません
 auditLogsPage:
   header: 監査ログ
+  queryErrors:
+    tooLarge: 一致するレコードが多すぎるため、監査ログの検索を完了できませんでした。期間を短くするか環境を選択してから、再試行してください。
+    exportTooLarge: 一致するレコードが多すぎるため、監査ログのエクスポートを完了できませんでした。期間を短くするか環境を選択してから、再度エクスポートしてください。
+    invalidRange: 監査ログの検索を完了できませんでした。開始時刻が終了時刻より前になる有効な期間を選択するか、期間を短くしてから再試行してください。
+    forbidden: これらのレコードを表示する権限がないため、監査ログの検索を完了できませんでした。アクセス権の確認を管理者に依頼してください。
+    unavailable: 監査ログの検索を完了できませんでした。現在データを利用できません。後でもう一度お試しください。これはレコードが存在しないことを意味しません。
+    exportForbidden: これらのレコードをエクスポートする権限がないため、監査ログのエクスポートを完了できませんでした。アクセス権の確認を管理者に依頼してください。
+    exportUnavailable: 監査ログのエクスポートを完了できませんでした。ファイルを準備またはダウンロードできませんでした。後でもう一度お試しください。現在の検索結果は変更されていません。
+    recent15Minutes: 直近15分を表示
+    retry: 検索を再試行
+    selectedUserUnavailable: ユーザーが選択されていますが、現在その名前を取得できません。
+    selectedEnvironmentUnavailable: 環境が選択されていますが、現在その名前を取得できません。
+    exporting: エクスポートを準備中…
   form:
     eventType:
       placeholder: イベントタイプ
@@ -4340,6 +4353,242 @@ formResources:
     ulimits: "名前は一意、値は -1 以上の整数とし、ソフトリミットをハードリミット以下にしてください。"
     map: "詳細設定のキーと値を空にしないでください。"
 
+apiKeyAccess:
+  legacy: これは既存のキーです。元のアカウントまたは環境のプリンシパルを維持し、作成者を推測したり割り当て直したりしません。フルアクセスによる新たな制限はありません。
+  personalCreate: 既存の環境キーはここに残ります。新しいキーは上の個人キーセクションで作成し、必要な環境とリソースを選択してください。
+  ceiling: このキーの権限は、あなたの現在の権限を上限とします。フルアクセスによる追加の制限はありません。ロールやリソースへのアクセス権が変わると、このキーにも反映されます。
+  access: アクセス設定
+  defaults:
+    allow: デフォルトで許可（ブラックリスト）
+    deny: デフォルトで拒否（ホワイトリスト）
+  blacklistHelp: あなたの権限の範囲内でデフォルトで許可します。選択したリソースと操作を拒否する例外を追加してください。例外がなければ、フルアクセスの動作は変わりません。
+  whitelistHelp: デフォルトで拒否します。選択したリソースと操作を許可する例外を追加してください。例外がなければ、すべての操作が拒否されます。
+  modes:
+    full: フルアクセス
+    closed: すべて拒否
+    custom: カスタム
+  effects:
+    allow: 許可（あなたの権限の範囲内）
+    allowShort: 許可
+    deny: 拒否
+  scopes:
+    global: グローバル
+    project: 環境
+    stack: スタック
+    resource: リソース
+  operations:
+    read: 読み取り
+    create: 作成
+    update: 更新
+    upgrade: アップグレード
+    delete: 削除
+    exec: 実行
+    logs: ログ
+    export: 機密情報のエクスポート
+  matrix:
+    title: キーのアクセス権マトリックス
+    draft: アクセス権マトリックスのプレビュー
+    reviewed: 保存するアクセス権マトリックス
+    help: このプレビューはデフォルト設定と例外を組み合わせたものです。キールールによる許可は、アカウントへの権限付与を意味しません。リクエストごとにキー所有者の現在のアクセス権が再確認されます。
+    caption: リソースと操作ごとのキールール
+    target: リソースの範囲
+    other: その他のリソース（選択範囲外）
+    global: すべてのリソース
+    unverified: リソースの選択を検証する必要があります
+    limits: 有効期限とアカウントの現在の権限も適用されます。リソースの作成や複数の対象に関わる操作では、実際の対象をすべて確認する必要があります。一部のみの範囲や未検証の範囲は、包括的な許可を意味しません。
+    states:
+      allow: キールールで許可
+      deny: キールールで拒否
+      mixed: 一部制限あり
+      conditional: 対象の確認が必要
+      unknown: 検証が必要
+    basis:
+      full: フルアクセス（アカウントの権限も適用）
+      closed: 許可する例外なし
+      expired: キーは期限切れのため、すべての操作を拒否
+      defaultAllow: デフォルトで許可（アカウントの権限も適用）
+      defaultDeny: 一致する許可の例外なし
+      ruleAllow: 許可する例外に一致
+      explicitDeny: 一致する拒否の例外を優先
+      scopeExceptions: 子リソースには異なるルールを適用
+      unknownEvidence: リソースの選択または親が未検証
+      unknownOverlap: ルールの重複範囲は未検証
+      invalidPolicy: 保存する前にポリシーを修正してください
+      createDestination: 新しいリソースと作成先の確認が必要
+      multipleTargets: 操作の対象をすべて確認する必要があります
+  defaultEffect: ルールに一致しないリソース
+  effect: ルールの効果
+  scope: ルールの範囲
+  resourceId: 安定したリソース ID
+  resourceType: リソースの種類
+  denyFirst: 拒否ルールを優先します。実行、ログ、機密情報のエクスポートは独立した操作であり、読み取りや更新には含まれません。
+  capabilityHelp: 無効な許可項目は、選択した範囲の現在の API では利用できません。API 操作が確認できても、認可が保証されるわけではありません。未確認の項目には、バックエンドによる所有者の現在の権限の確認が必要です。拒否ルールでこれらの操作を制限することはできます。
+  capabilities:
+    unavailable: 現在の API ではこの操作を提供していません
+    observed: API 操作を確認済み（所有者の権限も適用）
+    unknown: バックエンドでの権限確認待ち
+  stableIdHelp: 名前とコンテキストを使って、アクセス可能なリソースを検索して選択してください。安定した参照は内部で保持されます。サーバーはリクエストごとに対象と現在の権限を再確認します。内容を確認しても権限は付与されません。
+  liveTargets: 現在表示可能なリソースを選択
+  targetLoadError: 表示可能なリソースを読み込めませんでした。リソースの種類とアクセス権を確認してください。
+  selector:
+    project: 環境
+    stackContext: スタックまたは環境リソースのコンテキスト
+    chooseType: 先にリソースの種類を選択してください。
+    chooseProject: 先に環境を検索して選択してください。
+    chooseStack: 先にスタックまたは利用可能な環境のコンテキストを検索して選択してください。
+    chooseResource: 名前付きのリソースを検索して選択してください。
+    environmentResources: 利用可能なスタックとの関連付けがない環境リソース
+    loading: アクセス可能なリソース名を読み込み中…
+    empty: このコンテキストには選択可能なリソースがありません。
+    noMatches: 一致するリソース名がありません。別の名前またはコンテキストをお試しください。
+    unavailable: このリソースは利用できなくなったか、アクセスできません。現在の一覧から選択し直してください。
+    unnamed: 一部のリソースには使用可能な名前がないため選択できません。識別できる名前を持つリソースを使用してください。
+    ambiguous: 一部のリソースは名前とコンテキストが同一です。名前または説明で区別できるようになるまで、安全に選択できません。
+    loadError: アクセス可能なリソース名を読み込めませんでした。アクセス権を確認して再試行してください。
+    retry: 名前の読み込みを再試行
+    types:
+      stack: スタック
+      service: サービス
+      container: コンテナ
+      host: ホスト
+      volume: ボリューム
+      network: ネットワーク
+      secret: シークレット
+      certificate: 証明書
+      project: 環境
+      setting: プラットフォーム設定
+      userPreference: ユーザー設定
+      registry: レジストリ
+      storagePool: ストレージプール
+      networkPolicy: ネットワークポリシー
+      projectMember: 環境メンバー
+      apiKey: API キー
+      apiKeyRestricted: 制限付き API キー
+      account: アカウント
+      auditLog: 監査レコード
+  addRule: 例外を追加
+  removeRule: 例外を削除
+  expiry: 有効期限
+  expiryLocal: カスタム有効期限（ローカルタイムゾーン）
+  expiryChoices:
+    none: 有効期限を追加設定しない
+    '7': 7日
+    '30': 30日
+    '90': 90日
+    custom: カスタム日時
+  review: 変更内容を確認
+  reviewHelp: これは送信された設定です。サーバーはルールを検証済みで、保存時に現在の権限とリビジョンを再確認します。
+  confirm: 範囲、操作、有効期限を確認しました
+  submit: 確認して保存
+  back: 編集に戻る
+  reload: 最新のリビジョンを再読み込み
+  revision: ポリシーのリビジョン
+  saved: 保存し、キーを再読み込みして検証しました
+  errors:
+    mode: 有効なアクセスモードを選択してください。
+    expiry: 有効期限には将来の有効な日時を指定してください。
+    effect: 有効なルールの効果を選択してください。
+    ruleId: ルール ID は有効かつ一意である必要があります。
+    scope: アクセス可能な名前付きリソースと有効なリソースの種類を選択してください。
+    operation: 各ルールには少なくとも1つの有効な操作が必要です。
+    conflict: 別のユーザーがこのキーを変更しました。最新のリビジョンを再読み込みし、内容を確認してから保存し直してください。
+    save: キーを保存できませんでした。現在の権限、範囲、有効期限を確認してください。
+    review: 変更内容を検証できませんでした。現在の権限、範囲、リビジョンを確認してください。
+    readback: 設定は送信されましたが、再読み込みによる検証が済んでいません。キーを再読み込みしてください。作成し直さないでください。
+    reload: キーを再読み込みできませんでした。現在のアクセス権を確認してください。
 apiKeyAudit:
+  unknownOperation: 認識できない操作です。リクエスト ID を使って調査してください
+  unknownTarget: 認識できないリソースの種類
   resources:
     subscribe: "イベント購読"
+  decisions:
+    ALLOW: 許可済み
+    DENY: 拒否済み
+    unknown: 認可の判断は未確認
+  reason: 判断理由
+  reasons:
+    KeyFullAccess: フルアクセス（所有者の現在の権限の範囲内）
+    KeyRuleAllowed: ルールによる許可（所有者の現在の権限の範囲内）
+    KeyScopedCollection: 対象範囲内で、所有者が現在表示可能なリソースのみを返します
+    KeyPolicyDenied: キーポリシーがこの操作を拒否しています
+    KeyScopeDenied: 対象はこのキーで許可された範囲外です
+    OwnerPermissionDenied: 所有者は現在、この操作またはリソースへの権限を持っていません
+    ApiKeyExpired: キーの有効期限が切れています
+    ApiKeyRevoked: キーは無効化または取り消されています
+    ApiKeyPolicyChanged: キーポリシーが変更されました。新たに認可を取得してください
+    PolicyChanged: キーポリシーが変更されました。新たに認可を取得してください
+    UnknownOperation: このカスタムポリシーでは操作をサポートしていないため、安全のため拒否しました
+    AuthenticationPending: 認証待ちです。操作は実行されていません
+    AuthenticationDenied: 認証が拒否されました。操作は実行されていません
+    authorization_not_completed: 認可待ちです。操作は実行されていません
+    ApiKeyDelegationLive: 所有者の現在の権限に基づいて委任を確認しました
+    AuditUnavailable: 監査を確認できませんでした。リクエスト ID を使って調査してください
+    HandshakeDenied: ストリームのハンドシェイクが拒否されました。正常な実行は確認されていません
+    DockerFailure: コンテナランタイムの操作が失敗しました
+    StreamFailed: ストリームまたはコマンドが失敗しました
+    AuthorizationRevoked: 現在の認可が取り消され、ストリームが中断されました
+    ClientDisconnected: クライアントが切断し、ストリームが中断されました
+    StreamCancelled: 完了前にストリームがキャンセルされました
+    StreamCompleted: ストリームが完了しました
+    DelegationRouteDenied: このストリームチケットはこの操作に使用できません。要求する操作用のチケットを取得してください。
+    ApiKeyInactive: キーは無効であり、認証や操作の実行に使用できません
+    UNKNOWN_EXCEPTION: バックグラウンド処理が失敗しました。リクエスト ID を使って調査してください。内部例外の詳細は表示されません。
+    AUTHORIZATION_DENIED: 現在の認可の再確認でバックグラウンド処理が拒否されました。操作は完了していません
+    KeyGovernanceCompleted: キー管理リクエストを処理しました。結果と状態の再読み込みで完了を確認してください。
+    KeyGovernanceDenied: キー管理リクエストが拒否されました
+    KeyGovernanceFailed: キー管理リクエストが失敗しました
+    ApiKeyRestrictedDelegationUnsupported: カスタム制限または有効期限があるキーは、子キーの作成や権限の委任ができません
+    unknown: 安全に表示できる理由がありません。リクエスト ID を使って調査してください
+  outcomes:
+    unknown: 実行結果は未確認
+    PENDING: 実行または結果待ち
+    AUTHENTICATION_DENIED: 認証拒否（未実行）
+    DENIED: 拒否済み
+    NOT_EXECUTED: 未実行
+    ACCEPTED: 受理済み（未完了）
+    SUCCEEDED: 成功結果（フェーズごとに完了を確認）
+    FAILED: 失敗
+    CANCELED: 中断済み
+  noHttpResponse: HTTP レスポンスなし（バックグラウンドイベント）
+  phase: イベントのフェーズ
+  phases:
+    decision: 認可の判断（実行ではありません）
+    response: API レスポンス（バックグラウンド処理の完了ではありません）
+    attempt: バックグラウンドでの実行試行
+    continuation: バックグラウンド処理を継続中
+    completion: バックグラウンド／ストリームの完了イベント
+    handshake: ストリームのハンドシェイク
+    unknown: 不明なフェーズ（完了は未確認）
+  responseSucceeded: API レスポンス成功
+  completionSucceeded: バックグラウンド／ストリーム処理完了
+  title: キー監査
+  help: 認可の判断と実行結果は別です。ALLOW は成功を意味しません。HTTP 202 / ACCEPTED は受理を意味し、完了ではありません。監査レコードを表示してもキーは変更されません。
+  time: 対象期間
+  allTime: 全期間
+  range: カスタム期間
+  from: 開始（ローカルタイムゾーン）
+  to: 終了（ローカルタイムゾーン）
+  any: すべて
+  decision: 認可
+  outcome: 実行結果
+  operation: 操作
+  httpStatus: HTTP ステータス
+  requestId: リクエスト ID
+  targetType: リソースの種類
+  target: 対象リソース
+  actor: 操作者
+  created: 時刻
+  filter: 絞り込み／更新
+  count: '一致するレコード {count} 件 · {page} ページ'
+  preview: 権限の確認のみ（操作は未実行）
+  details: 詳細
+  empty: 一致する監査レコードはありません
+  previous: 前のページ
+  next: 次のページ
+  close: 監査を閉じる
+  errors:
+    access: このキーの監査へのアクセス権がなくなりました。以前表示していたレコードは画面からクリアされました。
+    missing: レコードが存在しないか、アクセスできなくなりました。以前表示していたレコードは画面からクリアされました。
+    range: 有効な開始時刻と終了時刻を入力してください。
+    tooLarge: 検索がサーバーで検証できる範囲を超えています。不完全な結果は返されていません。検索範囲を調整してください。それでも失敗する場合は管理者にお問い合わせください。
+    load: キーの監査を読み込めませんでした。更新して再試行してください。

@@ -53,6 +53,11 @@ matrix stylesheet with its explicit theme inputs, and the verified template
 action and select counts. The Stack warning color uses the equivalent
 namespaced Sass function. These corrections retain strict source checks.
 
-The full source-gate preflight also identified 229 existing untranslated keys in
-each of 11 locales. These remain release blockers; focused feature or dependency
-results do not waive them. Full i18n and release acceptance have not passed.
+The release completes 229 missing API Key policy, access-matrix and audit-query
+messages in each of 11 locales (2,519 translations). Existing translations are
+preserved. The translations distinguish live account permissions from key-rule
+permissions, allow/deny exceptions, additional expiration, allowed versus
+completed requests, and clearing previously displayed audit records versus
+deleting stored data. Placeholder, HTML and ICU structure remain intact. No
+English fallback exceptions were added. Full CI and packaged UI acceptance
+remain required before publication.

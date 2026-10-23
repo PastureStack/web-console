@@ -18,6 +18,11 @@ completion handling retain the existing save lifecycle. See the
 [1.6.193 release note](docs/releases/web-console-1.6.193.md) for validation and
 publication status; Server assembly and deployment have separate evidence.
 
+API Key policy, matrix preview and key-audit messages are translated in all
+13 supported locales. The preview explains live account permission limits,
+allow/deny exceptions, expiration and per-target checks; an allowed request
+does not imply that the operation completed successfully.
+
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).
 

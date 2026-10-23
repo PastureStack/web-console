@@ -151,6 +151,19 @@ apiPage:
       noData: Nincsenek még Fiók API kulcsaid.
 auditLogsPage:
   header: Auditnaplók
+  queryErrors:
+    tooLarge: 'Az auditnapló lekérdezése nem fejeződött be, mert túl sok rekord felelt meg a feltételeknek. Szűkítse az időtartományt vagy válasszon környezetet, majd próbálja újra.'
+    exportTooLarge: 'Az auditnapló exportálása nem fejeződött be, mert túl sok rekord felelt meg a feltételeknek. Szűkítse az időtartományt vagy válasszon környezetet, majd exportáljon újra.'
+    invalidRange: 'Az auditnapló lekérdezése nem fejeződött be. Válasszon érvényes időtartományt, amelynek kezdete megelőzi a végét, vagy szűkítse a tartományt, majd próbálja újra.'
+    forbidden: 'Az auditnapló lekérdezése nem fejeződött be, mert nincs jogosultsága e rekordok megtekintéséhez. Kérjen meg egy rendszergazdát, hogy ellenőrizze a hozzáférését.'
+    unavailable: 'Az auditnapló lekérdezése nem fejeződött be. Az adatok jelenleg nem érhetők el; próbálja újra később. Ez nem jelenti azt, hogy nincsenek rekordok.'
+    exportForbidden: 'Az auditnapló exportálása nem fejeződött be, mert nincs jogosultsága e rekordok exportálásához. Kérjen meg egy rendszergazdát, hogy ellenőrizze a hozzáférését.'
+    exportUnavailable: 'Az auditnapló exportálása nem fejeződött be. A fájlt nem sikerült előkészíteni vagy letölteni. Próbálja újra később; a jelenlegi lekérdezési eredmények változatlanok.'
+    recent15Minutes: Az elmúlt 15 perc megjelenítése
+    retry: Lekérdezés újrapróbálása
+    selectedUserUnavailable: 'Egy felhasználó ki van választva; a neve átmenetileg nem érhető el.'
+    selectedEnvironmentUnavailable: 'Egy környezet ki van választva; a neve átmenetileg nem érhető el.'
+    exporting: Exportálás előkészítése…
   form:
     eventType:
       placeholder: Esemény típusa
@@ -4158,6 +4171,242 @@ formResources:
     ulimits: "A nevek legyenek egyediek, az értékek >= -1 egészek, a puha korlát <= kemény korlát."
     map: "A speciális beállítások kulcsai és értékei nem lehetnek üresek."
 
+apiKeyAccess:
+  legacy: Ez egy meglévő kulcs. Eredeti fiók- vagy környezetazonossága megmarad; a létrehozót nem következtetjük ki és nem rendeljük át. A teljes hozzáférés nem vezet be új korlátozást.
+  personalCreate: A meglévő környezetkulcsok itt maradnak. Hozzon létre új kulcsokat a fenti személyes kulcsok szakaszban, majd válassza ki a szükséges környezeteket és erőforrásokat.
+  ceiling: A kulcsot az Ön aktuális jogosultságai korlátozzák. A teljes hozzáférés nem jelent további korlátozást. A szerepkörének vagy erőforrás-hozzáférésének változásai erre a kulcsra is hatással vannak.
+  access: Hozzáférési beállítások
+  defaults:
+    allow: Alapértelmezett engedélyezés (tiltólista)
+    deny: Alapértelmezett tiltás (engedélyezési lista)
+  blacklistHelp: Alapértelmezés szerint engedélyez az Ön jogosultságain belül. Adjon hozzá tiltó kivételeket a kiválasztott erőforrásokhoz és műveletekhez. Kivételek nélkül a teljes hozzáférés változatlan.
+  whitelistHelp: Alapértelmezés szerint tilt. Adjon hozzá engedélyező kivételeket a kiválasztott erőforrásokhoz és műveletekhez. Kivételek nélkül minden művelet tiltott.
+  modes:
+    full: Teljes hozzáférés
+    closed: Minden tiltva
+    custom: Egyéni
+  effects:
+    allow: Engedélyezés (az Ön jogosultságain belül)
+    allowShort: Engedélyezés
+    deny: Tiltás
+  scopes:
+    global: Globális
+    project: Környezet
+    stack: Verem
+    resource: Erőforrás
+  operations:
+    read: Olvasás
+    create: Létrehozás
+    update: Módosítás
+    upgrade: Frissítés
+    delete: Törlés
+    exec: Végrehajtás
+    logs: Naplók
+    export: Érzékeny adatok exportálása
+  matrix:
+    title: Kulcshozzáférési mátrix
+    draft: Hozzáférési mátrix előnézete
+    reviewed: Mentendő hozzáférési mátrix
+    help: Ez az előnézet az alapértelmezést és a kivételeket egyesíti. A kulcsszabály engedélye nem ad fiókjogosultságot. Minden kérést ismét ellenőrzünk a kulcs tulajdonosának aktuális hozzáférése alapján.
+    caption: Kulcsszabályok erőforrás és művelet szerint
+    target: Erőforrás-hatókör
+    other: Egyéb erőforrások (a kiválasztott hatókörökön kívül)
+    global: Minden erőforrás
+    unverified: Az erőforrás-választást ellenőrizni kell
+    limits: A lejárat és az aktuális fiókjogosultságok továbbra is érvényesek. Erőforrások létrehozásakor és több célpontot érintő műveleteknél minden tényleges célpontot ellenőrizni kell. A részleges vagy ellenőrizetlen hatókör nem jelent általános engedélyt.
+    states:
+      allow: A kulcsszabály engedélyezi
+      deny: A kulcsszabály tiltja
+      mixed: Részben korlátozott
+      conditional: Célpontellenőrzés szükséges
+      unknown: Ellenőrzés szükséges
+    basis:
+      full: Teljes hozzáférés; a fiókjogosultságok továbbra is érvényesek
+      closed: Nincsenek engedélyező kivételek
+      expired: A kulcs lejárt; minden művelet tiltott
+      defaultAllow: Az alapértelmezés engedélyez; a fiókjogosultságok továbbra is érvényesek
+      defaultDeny: Nincs megfelelő engedélyező kivétel
+      ruleAllow: Megfelelő engedélyező kivétel
+      explicitDeny: A megfelelő tiltó kivétel elsőbbséget élvez
+      scopeExceptions: Az alárendelt erőforrásokra eltérő szabályok vonatkoznak
+      unknownEvidence: Az erőforrás-választás vagy a szülő nincs ellenőrizve
+      unknownOverlap: A szabályok átfedése még nincs ellenőrizve
+      invalidPolicy: Mentés előtt javítsa a házirendet
+      createDestination: Az új erőforrást és a célhelyét is ellenőrizni kell
+      multipleTargets: A művelet minden célpontját ellenőrizni kell
+  defaultEffect: Egyetlen szabálynak sem megfelelő erőforrások
+  effect: Szabály hatása
+  scope: Szabály hatóköre
+  resourceId: Állandó erőforrás-azonosító
+  resourceType: Erőforrás típusa
+  denyFirst: A tiltó szabályok elsőbbséget élveznek. A végrehajtás, a naplók és az érzékeny adatok exportálása külön műveletek, nem részei az olvasásnak vagy a módosításnak.
+  capabilityHelp: A letiltott engedélyező elemek nem érhetők el a kiválasztott hatókör jelenlegi API-jában. A megfigyelt API-műveletek nem garantálják az engedélyezést; a meg nem erősített elemekre továbbra is a háttérrendszer aktuális tulajdonosi jogosultságellenőrzései vonatkoznak. A tiltó szabályok ezeket a műveleteket is korlátozhatják.
+  capabilities:
+    unavailable: A jelenlegi API nem kínálja ezt a műveletet
+    observed: Megfigyelt API-művelet; a tulajdonos jogosultságai továbbra is érvényesek
+    unknown: A háttérrendszer jogosultságellenőrzésére vár
+  stableIdHelp: Keressen és válasszon egy elérhető erőforrást a neve és a környezete alapján. Az állandó hivatkozásokat belsőleg megőrizzük. A kiszolgáló minden kérésnél újra ellenőrzi a célpontokat és az aktuális jogosultságokat; az áttekintés nem ad jogosultságot.
+  liveTargets: Válasszon egy jelenleg látható erőforrást
+  targetLoadError: Nem sikerült betölteni a látható erőforrásokat. Ellenőrizze az erőforrás típusát és a hozzáférését.
+  selector:
+    project: Környezet
+    stackContext: Verem vagy környezeti erőforrások kontextusa
+    chooseType: Először válasszon erőforrástípust.
+    chooseProject: Először keressen és válasszon egy környezetet.
+    chooseStack: Először keressen és válasszon egy vermet vagy az elérhető környezeti kontextust.
+    chooseResource: Keressen és válasszon egy névvel ellátott erőforrást.
+    environmentResources: Környezeti erőforrások elérhető veremkapcsolat nélkül
+    loading: Elérhető erőforrásnevek betöltése…
+    empty: Ebben a kontextusban nincsenek kiválasztható erőforrások.
+    noMatches: Nincs megfelelő erőforrásnév. Próbáljon másik nevet vagy kontextust.
+    unavailable: Ez az erőforrás már nem érhető el, vagy nincs hozzá hozzáférése. Válassza ki újra az aktuális listából.
+    unnamed: Egyes erőforrásoknak nincs használható neve, ezért nem választhatók ki. Használjon azonosítható nevű erőforrást.
+    ambiguous: Egyes erőforrások neve és kontextusa megegyezik. Addig nem választhatók ki biztonságosan, amíg a nevük vagy leírásuk nem különböztethető meg.
+    loadError: Nem sikerült betölteni az elérhető erőforrásneveket. Ellenőrizze a hozzáférését, majd próbálja újra.
+    retry: Nevek betöltésének újrapróbálása
+    types:
+      stack: Verem
+      service: Szolgáltatás
+      container: Konténer
+      host: Gazdagép
+      volume: Kötet
+      network: Hálózat
+      secret: Titok
+      certificate: Tanúsítvány
+      project: Környezet
+      setting: Platformbeállítás
+      userPreference: Felhasználói beállítás
+      registry: Képtár
+      storagePool: Tárolókészlet
+      networkPolicy: Hálózati házirend
+      projectMember: Környezettag
+      apiKey: API-kulcs
+      apiKeyRestricted: Korlátozott API-kulcs
+      account: Fiók
+      auditLog: Auditrekord
+  addRule: Kivétel hozzáadása
+  removeRule: Kivétel eltávolítása
+  expiry: Lejárat
+  expiryLocal: Egyéni lejárat (helyi időzóna)
+  expiryChoices:
+    none: Nincs további lejárati idő
+    '7': 7 nap
+    '30': 30 nap
+    '90': 90 nap
+    custom: Egyéni időpont
+  review: Változtatások áttekintése
+  reviewHelp: Ez a beküldött konfiguráció. A kiszolgáló ellenőrizte a szabályokat, és mentéskor újra ellenőrzi az aktuális jogosultságokat és a verziót.
+  confirm: Ellenőriztem a hatóköröket, a műveleteket és a lejáratot
+  submit: Mentés megerősítése
+  back: Vissza a szerkesztéshez
+  reload: Legújabb verzió újratöltése
+  revision: Házirend verziója
+  saved: Mentve és a kulcs újbóli beolvasásával ellenőrizve
+  errors:
+    mode: Válasszon érvényes hozzáférési módot.
+    expiry: A lejáratnak érvényes jövőbeli dátumnak kell lennie.
+    effect: Válasszon érvényes szabályhatást.
+    ruleId: A szabályazonosítóknak érvényesnek és egyedinek kell lenniük.
+    scope: Válasszon egy elérhető, névvel ellátott erőforrást és érvényes erőforrástípust.
+    operation: Minden szabályhoz legalább egy érvényes művelet szükséges.
+    conflict: Valaki más módosította ezt a kulcsot. Töltse újra a legújabb verziót, majd tekintse át és mentse újra.
+    save: Nem sikerült menteni a kulcsot. Ellenőrizze az aktuális jogosultságokat, hatóköröket és lejáratot.
+    review: Nem sikerült ellenőrizni ezeket a változtatásokat. Ellenőrizze az aktuális jogosultságokat, hatóköröket és verziót.
+    readback: A konfigurációt elküldtük, de friss beolvasással még nem ellenőriztük. Töltse újra a kulcsot; ne hozza létre újra.
+    reload: Nem sikerült újratölteni a kulcsot. Ellenőrizze az aktuális hozzáférését.
 apiKeyAudit:
+  unknownOperation: Ismeretlen művelet; vizsgálja ki a kérésazonosító alapján
+  unknownTarget: Ismeretlen erőforrástípus
   resources:
     subscribe: "Eseményfeliratkozás"
+  decisions:
+    ALLOW: Engedélyezve
+    DENY: Megtagadva
+    unknown: Nincs megerősített engedélyezési döntés
+  reason: A döntés oka
+  reasons:
+    KeyFullAccess: Teljes hozzáférés, a tulajdonos aktuális jogosultságain belül
+    KeyRuleAllowed: Szabály által engedélyezve, a tulajdonos aktuális jogosultságain belül
+    KeyScopedCollection: Csak a hatókörbe tartozó, a tulajdonos számára jelenleg látható erőforrásokat adja vissza
+    KeyPolicyDenied: A kulcs házirendje tiltja ezt a műveletet
+    KeyScopeDenied: A célpont a kulcs engedélyezett hatókörén kívül van
+    OwnerPermissionDenied: A tulajdonosnak jelenleg nincs jogosultsága ehhez a művelethez vagy erőforráshoz
+    ApiKeyExpired: A kulcs lejárt
+    ApiKeyRevoked: A kulcsot deaktiválták vagy visszavonták
+    ApiKeyPolicyChanged: A kulcs házirendje megváltozott; kérjen új engedélyezést
+    PolicyChanged: A kulcs házirendje megváltozott; kérjen új engedélyezést
+    UnknownOperation: Ez az egyéni házirend nem támogatja a műveletet; biztonságosan megtagadva
+    AuthenticationPending: A hitelesítés folyamatban van; a művelet még nem futott le
+    AuthenticationDenied: A hitelesítést megtagadták; a művelet nem futott le
+    authorization_not_completed: Az engedélyezés folyamatban van; a művelet még nem futott le
+    ApiKeyDelegationLive: A delegálást a tulajdonos aktuális jogosultságai alapján ellenőriztük
+    AuditUnavailable: Az auditot nem sikerült megerősíteni; vizsgálja ki a kérésazonosító alapján
+    HandshakeDenied: Az adatfolyam kézfogását megtagadták; sikeres végrehajtás nincs megerősítve
+    DockerFailure: A konténer-futtatókörnyezet művelete sikertelen
+    StreamFailed: Az adatfolyam vagy a parancs sikertelen
+    AuthorizationRevoked: Az aktuális engedélyezést visszavonták; az adatfolyam megszakadt
+    ClientDisconnected: Az ügyfél bontotta a kapcsolatot; az adatfolyam megszakadt
+    StreamCancelled: Az adatfolyamot befejezés előtt megszakították
+    StreamCompleted: Az adatfolyam befejeződött
+    DelegationRouteDenied: Ez az adatfolyamjegy nem használható ehhez a művelethez. Szerezzen jegyet a kért művelethez.
+    ApiKeyInactive: A kulcs inaktív, ezért nem használható hitelesítésre vagy műveletek végrehajtására
+    UNKNOWN_EXCEPTION: A háttérfolyamat sikertelen. Vizsgálja ki a kérésazonosító alapján; a belső kivétel részletei nem jelennek meg.
+    AUTHORIZATION_DENIED: Az aktuális engedélyezés ismételt ellenőrzése megtagadta a háttérfolyamatot; a művelet nem fejeződött be
+    KeyGovernanceCompleted: A kulcskezelési kérelmet feldolgoztuk. Erősítse meg a befejezést az eredmény és az állapot újbóli beolvasása alapján.
+    KeyGovernanceDenied: A kulcskezelési kérelmet megtagadták
+    KeyGovernanceFailed: A kulcskezelési kérelem sikertelen
+    ApiKeyRestrictedDelegationUnsupported: Egyéni korlátozással vagy lejárattal rendelkező kulcs nem hozhat létre alkulcsokat és nem delegálhat jogosultságot
+    unknown: Nem áll rendelkezésre biztonságosan közölhető ok; vizsgálja ki a kérésazonosító alapján
+  outcomes:
+    unknown: Nincs megerősített végrehajtási eredmény
+    PENDING: Végrehajtásra vagy eredményre vár
+    AUTHENTICATION_DENIED: Hitelesítés megtagadva (nem lett végrehajtva)
+    DENIED: Megtagadva
+    NOT_EXECUTED: Nem lett végrehajtva
+    ACCEPTED: Elfogadva (nem fejeződött be)
+    SUCCEEDED: Sikeres eredmény (a befejezést a fázis alapján erősítse meg)
+    FAILED: Sikertelen
+    CANCELED: Megszakítva
+  noHttpResponse: Nincs HTTP-válasz (háttéresemény)
+  phase: Esemény fázisa
+  phases:
+    decision: Engedélyezési döntés (nem végrehajtás)
+    response: API-válasz (nem a háttérfolyamat befejezése)
+    attempt: Háttérbeli kísérlet
+    continuation: A háttérmunka folytatódik
+    completion: Háttérfolyamat / adatfolyam befejezési eseménye
+    handshake: Adatfolyam-kézfogás
+    unknown: Ismeretlen fázis (a befejezés nincs megerősítve)
+  responseSucceeded: Az API-válasz sikeres
+  completionSucceeded: A háttérfolyamat / adatfolyam munkája befejeződött
+  title: Kulcsaudit
+  help: Az engedélyezési döntések és a végrehajtás eredményei különállók. Az ALLOW nem jelent sikert. A HTTP 202 / ACCEPTED elfogadást jelent, nem befejezést. Az auditrekordok megtekintése nem módosítja a kulcsot.
+  time: Időtartomány
+  allTime: Teljes időszak
+  range: Egyéni tartomány
+  from: Kezdet (helyi időzóna)
+  to: Vég (helyi időzóna)
+  any: Bármely
+  decision: Engedélyezés
+  outcome: Végrehajtás eredménye
+  operation: Művelet
+  httpStatus: HTTP-állapot
+  requestId: Kérésazonosító
+  targetType: Erőforrás típusa
+  target: Célerőforrás
+  actor: Végrehajtó
+  created: Időpont
+  filter: Szűrés / frissítés
+  count: '{count} megfelelő rekord · {page}. oldal'
+  preview: Csak jogosultságellenőrzés; a művelet nem lett végrehajtva
+  details: Részletek
+  empty: Nincs megfelelő auditrekord
+  previous: Előző oldal
+  next: Következő oldal
+  close: Audit bezárása
+  errors:
+    access: Már nincs hozzáférése ennek a kulcsnak az auditjához. A korábbi rekordokat töröltük a nézetből.
+    missing: A rekord hiányzik vagy már nem érhető el. A korábbi rekordokat töröltük a nézetből.
+    range: Adjon meg érvényes kezdő és záró időpontot.
+    tooLarge: A lekérdezés túllépi a kiszolgáló által ellenőrizhető tartományt. Hiányos eredményeket nem adtunk vissza. Módosítsa a lekérdezés hatókörét; ha továbbra is sikertelen, forduljon rendszergazdához.
+    load: Nem sikerült betölteni a kulcsauditot. Frissítsen az újrapróbáláshoz.
