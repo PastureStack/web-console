@@ -1,5 +1,14 @@
 # Compatibility Contract
 
+## Web Console 1.6.194 candidate
+
+The candidate uses the official Node.js 24.22.1 security release, retaining
+npm 12.0.2 and the existing browser dependency graph. Python 3.14.9, pip 26.2.2,
+and certifi 2026.10.19 are CI-only verification tools. The static archive layout,
+API contracts, and all 13 locales retain the 1.6.193 compatibility contract.
+Candidate build and validation results are separate from publication and
+Server integration.
+
 ## Web Console 1.6.193 published
 
 Service upgrades wait for and invoke the upgrade action without a preceding
@@ -29,7 +38,7 @@ producer and artifact identities. This is not whole-matrix acceptance.
 
 Handlebars `4.7.10` and fast-uri `3.1.8` use official security fixes. Both the
 release lock and active Node 24 test baseline resolve the same dependency graph.
-The supported build remains Node `24.20.0` / npm `12.0.2`; Ember/Glimmer,
+The supported build remains Node `24.22.1` / npm `12.0.2`; Ember/Glimmer,
 authentication and API contracts are unchanged. Focused release tests,
 publication identity and the unresolved build-input findings are maintained in the
 [191 release note](docs/releases/web-console-1.6.191.md).

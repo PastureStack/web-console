@@ -29,10 +29,22 @@ jobs:
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --short)"
 
+      - name: Install pinned Python verifier
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14.9'
+          check-latest: false
+
+      - name: Verify Python packaging and CA tools
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --require-hashes --only-binary=:all: -r scripts/ci-python-requirements.lock
+          python -c "import sys, pip, certifi, pip._vendor.certifi as bundled; assert sys.version_info[:3] == (3,14,9); assert pip.__version__ == '26.2.2'; assert certifi.__version__ == '2026.10.19'; assert bundled.__version__ == '2026.10.19'; print(sys.version, pip.__version__, certifi.__version__, bundled.__version__)"
+
       - name: Install pinned Node.js
         env:
-          NODE_VERSION: 24.20.0
-          NODE_ARCHIVE_SHA256: 2f2c0da162318f0de47665410c7c8c2ed3d36c8f3105de4bbc61176c70a7cbf2
+          NODE_VERSION: 24.22.1
+          NODE_ARCHIVE_SHA256: 6c172a9ab6718f7b801fb5a7bd486af2ee5e32758086a04b84fcce2aa77095e6
           NPM_VERSION: 12.0.2
         run: |
           set -euo pipefail
@@ -66,10 +78,10 @@ jobs:
       - name: Test and build twice
         id: build
         env:
-          PASTURESTACK_NODE24_IMAGE: node:24.20.0-bookworm@sha256:be23f54a88d34e8824c741b19b91064094f92c1c97b194144bfc8b50d67258e2
+          PASTURESTACK_NODE24_IMAGE: node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a
         run: |
           set -euo pipefail
-          test "$(node --version)" = v24.20.0
+          test "$(node --version)" = v24.22.1
           test "$(npm --version)" = 12.0.2
           npm ci --ignore-scripts --no-audit --no-fund
           validation_scope='${{ inputs.validation_scope }}'
