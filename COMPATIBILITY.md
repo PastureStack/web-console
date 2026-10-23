@@ -1,14 +1,19 @@
 # Compatibility Contract
 
-## Web Console 1.6.193 candidate
+## Web Console 1.6.193 published
 
 Service upgrades wait for and invoke the upgrade action without a preceding
 generic save of the service clone. The shared validation, completion lifecycle,
 selected launch configurations and non-upgrade persistence remain in place.
 Validation and publication status are tracked in the
 [193 release note](docs/releases/web-console-1.6.193.md).
-The candidate pins official `follow-redirects` `1.16.1` and `markdown-it`
+This release pins official `follow-redirects` `1.16.1` and `markdown-it`
 `14.3.3` patches, with focused redirect and Markdown compatibility checks.
+Full original CI passed all 1,104 browser tests with zero skips and produced
+two byte-identical archives. All 2,519 missing translations in 11 locales are
+complete, with existing values and ICU contracts preserved. Published producer
+`fa7fd399e3aef2a67282e8fbbe9f3fc83002710d` and artifact checksums remain immutable;
+later documentation commits do not replace them.
 
 ## Web Console 1.6.192 published
 
