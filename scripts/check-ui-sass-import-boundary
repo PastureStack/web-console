@@ -38,6 +38,7 @@ load_css_expected = [
     "app/styles/components/resource-actions",
     "app/styles/components/login",
     "app/styles/components/mfa",
+    "app/styles/components/api-key-policy-matrix",
     "app/styles/components/progress-bar",
     "app/styles/components/pod",
     "app/styles/components/github-avatar",
@@ -108,6 +109,7 @@ configured_load_css_expected = {
     "app/styles/components/growl": ['"brand-danger": $brand-danger', '"navbar-height": $navbar-height'],
     "app/styles/components/resource-actions": ['"text-color": $text-color'],
     "app/styles/components/login": ['"primary": $primary'],
+    "app/styles/components/api-key-policy-matrix": ['"text-color": $text-color', '"well-bg": $well-bg', '"table-border-color": $table-border-color'],
     "app/styles/components/progress-bar": ['"lightestGray": $lightestGray'],
     "app/styles/components/pod": ['"accent-one": $accent-one', '"border-radius-base": $border-radius-base', '"brand-primary-dark": $brand-primary-dark', '"btn-default-bg": $btn-default-bg', '"btn-default-color": $btn-default-color', '"lightGray": $lightGray', '"link-color": $link-color', '"link-hover-color": $link-hover-color', '"normal-weight": $normal-weight', '"table-bg": $table-bg', '"table-bg-accent": $table-bg-accent', '"table-border-color": $table-border-color', '"text-color": $text-color'],
     "app/styles/components/slider": ['"blueTwo": $blueTwo', '"lightGray": $lightGray', '"lightGrayDark": $lightGrayDark', '"midGray": $midGray', '"midGrayDark": $midGrayDark'],
@@ -290,7 +292,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=56 use_per_entrypoint=7")
+print("UI_SASS_IMPORT_BOUNDARY_OK entrypoints=2 remaining_imports_per_entrypoint=0 load_css_per_entrypoint=57 use_per_entrypoint=7")
 print("remaining_import_classes=" + (",".join(f"{name}:{count}" for name, count in sorted(class_counts.items())) or "none"))
 print("remaining_import_boundaries=" + (",".join(f"{name}:{count}" for name, count in sorted(boundary_counts.items())) or "none"))
 print("No Sass @import remains in the app-light/app-dark entrypoint boundary; obsolete vendored Bootstrap Sass is absent.")

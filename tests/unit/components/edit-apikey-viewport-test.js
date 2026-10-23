@@ -41,7 +41,8 @@ function viewportFrame(html, theme, locale, width) {
   });
 }
 
-function painted(frame) {
+async function painted(frame) {
+  await frame.contentDocument.fonts.ready;
   return new Promise((resolve) => frame.contentWindow.requestAnimationFrame(() => frame.contentWindow.requestAnimationFrame(resolve)));
 }
 

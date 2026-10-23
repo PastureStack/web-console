@@ -20,6 +20,10 @@ vendor/shell-quote/shell-quote-global.js text eol=lf
 vendor/ember-fetch-compat/** text eol=lf
 vendor/ember-fetch-compat/*.tgz -text
 
+# Match the canonical source bytes packed into the API-store compatibility archive.
+vendor/ember-api-store-compat/** text eol=lf
+vendor/ember-api-store-compat/*.tgz -text
+
 # Vendored theme sources and their MIT provenance must archive identically on
 # Windows and Linux so the public artifact license hashes remain reproducible.
 vendor/ember-power-select/** text eol=lf

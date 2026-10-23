@@ -13,7 +13,7 @@ package = json.loads(package_path.read_text(encoding="utf-8"))
 lock = json.loads(lock_path.read_text(encoding="utf-8"))
 packages = lock.get("packages", {})
 compat_spec = "file:vendor/ember-fetch-compat/ember-fetch-5.1.3-pasturestack.6.tgz"
-api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.7.tgz"
+api_store_compat_spec = "file:vendor/ember-api-store-compat/ember-api-store-2.8.5-pasturestack.8.tgz"
 
 
 def fail(message):
@@ -110,24 +110,36 @@ with tarfile.open(archive_path, "r:gz") as archive:
         fail("ember-fetch compatibility source and install archive differ")
 
 api_store_compat_dir = repo / "vendor/ember-api-store-compat"
-api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.7.tgz"
+api_store_archive = api_store_compat_dir / "ember-api-store-2.8.5-pasturestack.8.tgz"
 api_store_package_path = api_store_compat_dir / "package.json"
 api_store_license_path = api_store_compat_dir / "LICENSE"
 api_store_upstream_path = api_store_compat_dir / "UPSTREAM.md"
 for required in [api_store_archive, api_store_package_path, api_store_license_path, api_store_upstream_path]:
     if not required.is_file():
         fail(f"reviewed ember-api-store compatibility file missing: {required.relative_to(repo)}")
-if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "8f43259729c4aeeed29d2c804206cde7771ebb04111a34309a68c45288ee8dc9":
+if hashlib.sha256(api_store_archive.read_bytes()).hexdigest() != "9b0bcce23e459a1cdb4fef2c16cfff9bee701a2fcf98799d6cdc292b4dc1c9a3":
     fail("reviewed ember-api-store compatibility archive hash changed")
 if hashlib.sha256(api_store_license_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest() != "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594":
     fail("ember-api-store upstream Apache-2.0 license changed")
 api_store_package = json.loads(api_store_package_path.read_text(encoding="utf-8"))
 if api_store_package.get("dependencies") != expected_api_store_deps:
     fail("ember-api-store compatibility source metadata changed")
-if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 7:
+if api_store_package.get("pasturestackCompatibility", {}).get("revision") != 8:
     fail("ember-api-store compatibility revision marker is missing")
+expected_package_files = {"package.json"}
+for entry in api_store_package["files"]:
+    source = api_store_compat_dir / entry
+    if source.is_dir():
+        expected_package_files.update(path.relative_to(api_store_compat_dir).as_posix() for path in source.rglob("*") if path.is_file())
+    else:
+        expected_package_files.add(entry)
 with tarfile.open(api_store_archive, "r:gz") as archive:
-    for relative in ["package.json", "LICENSE", "UPSTREAM.md", "addon/services/store.js", "addon/mixins/type.js", "addon/utils/create-only-delivery.js", "addon/utils/validate.js"]:
+    members = archive.getmembers()
+    if len(members) != len(expected_package_files) or any(not member.isfile() for member in members):
+        fail("ember-api-store compatibility archive has unexpected member types or count")
+    if {member.name for member in members} != {f"package/{entry}" for entry in expected_package_files}:
+        fail("ember-api-store compatibility archive file inventory differs from source")
+    for relative in sorted(expected_package_files):
         archived = archive.extractfile(f"package/{relative}")
         source = api_store_compat_dir / relative
         if archived is None or archived.read() != source.read_bytes():
@@ -417,10 +429,11 @@ for marker in [
         fail(f"transient service collection regression marker missing: {marker}")
 
 # The two ordinary-container VM quick-pick actions were removed in Web174.
-# Published main has 561 bindings; the reviewed API Key editor/audit adds 31.
-if template_action_count != 592:
+# Web 180 has 561 bindings; API Key editor/audit adds 32 and Archive adds 6.
+if template_action_count != 599:
     fail(f"unexpected template action count: {template_action_count}")
-if power_select_count != 15:
+# The API Key target picker adds project, stack and resource selectors.
+if power_select_count != 18:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")
 
 action_compat_paths = [
@@ -460,7 +473,7 @@ for marker in [
 deprecated = [path for path, item in packages.items() if item.get("deprecated")]
 print(
     "ui-ember-api-store-fetch-upgrade-ok "
-    f"version=2.8.5 api_store_compat_revision=7 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
+    f"version=2.8.5 api_store_compat_revision=8 ember-fetch=5.1.3 fetch_compat_revision=6 initializer_compat_revision=2 reference_compat_revision=2 "
     f"ember6_template_compat_revision=1 terminal_reconnect_revision=2 "
     f"deprecated_count={len(deprecated)} package_count={len(packages)}"
 )

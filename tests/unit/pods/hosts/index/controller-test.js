@@ -10,6 +10,9 @@ test('add-host visibility follows the selected project capability', function(ass
   let projects = EmberObject.create({
     current: project,
     schemaProjectId: null,
+    canAddHost() {
+      return this.canCreateResource('host');
+    },
     canCreateResource(type) {
       assert.strictEqual(type, 'host');
       return this.get('schemaProjectId') === project.get('id') && canCreate;

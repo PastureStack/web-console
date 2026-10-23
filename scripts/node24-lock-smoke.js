@@ -701,7 +701,7 @@ function expectEmberApiStoreFetchUpgrade() {
   if (JSON.stringify(apiStoreInfo.dependencies) !== JSON.stringify(expectedApiStoreDependencies)) {
     fail(`ember-api-store reviewed dependency boundary changed: ${JSON.stringify(apiStoreInfo.dependencies)}`);
   }
-  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 6) {
+  if (!apiStoreInfo.pasturestackCompatibility || apiStoreInfo.pasturestackCompatibility.revision !== 8) {
     fail("ember-api-store compatibility revision is missing");
   }
   if (!emberFetchInfo.pasturestackCompatibility || emberFetchInfo.pasturestackCompatibility.revision !== 6) {

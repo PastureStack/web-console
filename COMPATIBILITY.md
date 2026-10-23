@@ -1,5 +1,15 @@
 # Compatibility Contract
 
+## Web Console 1.6.193 candidate
+
+Service upgrades wait for and invoke the upgrade action without a preceding
+generic save of the service clone. The shared validation, completion lifecycle,
+selected launch configurations and non-upgrade persistence remain in place.
+Validation and publication status are tracked in the
+[193 release note](docs/releases/web-console-1.6.193.md).
+The candidate pins official `follow-redirects` `1.16.1` and `markdown-it`
+`14.3.3` patches, with focused redirect and Markdown compatibility checks.
+
 ## Web Console 1.6.192 published
 
 Host disk summaries and details select the same valid filesystem or legacy mount

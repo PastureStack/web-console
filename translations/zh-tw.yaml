@@ -7,7 +7,7 @@ archive:
   action: "封存"
   restore: "取消封存"
   show: "顯示已封存資源"
-  stackCount: "共 {total} 個 Stack · 已隱藏 {hidden} 個已封存 Stack"
+  stackCount: "共 {total} 個 Stack，已隱藏 {hidden} 個已封存 Stack"
   hiddenCount: "已隱藏 {count} 個"
   emptyStacks: "已隱藏 {count} 個已封存 Stack。"
   emptyServices: "已隱藏 {count} 個已封存服務。"
@@ -159,11 +159,11 @@ auditLogsPage:
     tooLarge: '稽核日誌查詢未完成，符合條件的記錄太多。請縮短時間範圍或選擇一個環境後，再試一次。'
     exportTooLarge: '稽核日誌匯出未完成，符合條件的記錄太多。請縮短時間範圍或選擇一個環境後，再次匯出。'
     invalidRange: '稽核日誌查詢未完成。請選擇有效的時間範圍，確認開始時間早於結束時間，或縮短範圍後再試一次。'
-    forbidden: '稽核日誌查詢未完成，您沒有查看這些記錄的權限。請聯絡管理員確認您的存取權限。'
+    forbidden: '稽核日誌查詢未完成，您沒有檢視這些記錄的權限。請聯絡管理員確認您的存取權限。'
     unavailable: '稽核日誌查詢未完成，目前無法載入資料。請稍後重試；這不表示沒有記錄。'
     exportForbidden: '稽核日誌匯出未完成，您沒有匯出這些記錄的權限。請聯絡管理員確認您的存取權限。'
     exportUnavailable: '稽核日誌匯出未完成，目前無法產生或下載檔案。請稍後再試；目前的查詢結果仍保留。'
-    recent15Minutes: 查看最近 15 分鐘
+    recent15Minutes: 檢視最近 15 分鐘
     retry: 重試查詢
     selectedUserUnavailable: '已指定使用者，目前無法載入名稱。'
     selectedEnvironmentUnavailable: '已指定環境，目前無法載入名稱。'
@@ -2230,7 +2230,7 @@ apiKeyAudit:
   actor: 操作者
   created: 時間
   filter: 篩選／重新整理
-  count: '符合條件：{count} 筆 · 第 {page} 頁'
+  count: '符合條件：{count} 筆，第 {page} 頁'
   preview: 僅權限預檢，未執行操作
   details: 明細
   empty: 沒有符合條件的稽核紀錄

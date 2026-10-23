@@ -10,13 +10,18 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console 1.6.192 corrects Host disk-capacity display. Empty or invalid disk
-reports leave capacity unavailable; valid legacy mount data is used when the
-newer filesystem report has no valid capacity. Reported zero values retain their
-existing format, disk details use the same source, and local-storage allocation
-stays separate from total disk capacity. The published
-[1.6.192 release](docs/releases/web-console-1.6.192.md) contains the original
-validated CI archive; Server assembly and deployment have separate evidence.
+Web Console 1.6.193 is a service-upgrade correction candidate. Upgrades submit
+the selected launch configurations through the upgrade action without first
+saving the complete service clone, which can contain stale endpoint instance
+references. Validation, the selected upgrade strategy, service links and
+completion handling retain the existing save lifecycle. See the
+[1.6.193 release note](docs/releases/web-console-1.6.193.md) for validation and
+publication status; Server assembly and deployment have separate evidence.
+
+API Key policy, matrix preview and key-audit messages are translated in all
+13 supported locales. The preview explains live account permission limits,
+allow/deny exceptions, expiration and per-target checks; an allowed request
+does not imply that the operation completed successfully.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).

@@ -147,6 +147,19 @@ apiPage:
       noData: 您还没有创建任何账号API Keys。
 auditLogsPage:
   header: 审计日志
+  queryErrors:
+    tooLarge: 匹配的记录过多，审计日志查询未完成。请缩短时间范围或选择环境，然后重试。
+    exportTooLarge: 匹配的记录过多，审计日志导出未完成。请缩短时间范围或选择环境，然后重新导出。
+    invalidRange: 审计日志查询未完成。请选择开始时间早于结束时间的有效时间范围，或缩短时间范围后重试。
+    forbidden: 您没有查看这些记录的权限，审计日志查询未完成。请联系管理员检查您的访问权限。
+    unavailable: 审计日志查询未完成。目前无法获取数据，请稍后重试。这并不表示没有记录。
+    exportForbidden: 您没有导出这些记录的权限，审计日志导出未完成。请联系管理员检查您的访问权限。
+    exportUnavailable: 审计日志导出未完成。无法准备或下载文件，请稍后重试。您当前的查询结果未发生变化。
+    recent15Minutes: 显示最近 15 分钟
+    retry: 重新查询
+    selectedUserUnavailable: 已选择用户，但暂时无法获取其名称。
+    selectedEnvironmentUnavailable: 已选择环境，但暂时无法获取其名称。
+    exporting: 正在准备导出…
   form:
     eventType:
       placeholder: 事件类型
@@ -4035,6 +4048,242 @@ formResources:
     ulimits: "限制名称不可重复，数值须为大于等于 -1 的整数，且软限制不可超过硬限制。"
     map: "高级选项的键与值不可留空。"
 
+apiKeyAccess:
+  legacy: 这是现有密钥。保留其原有的账号或环境主体，不会推测创建者或重新分配主体。完整访问不会增加新的限制。
+  personalCreate: 现有环境密钥仍保留在此处。请从上方的个人密钥区域创建新密钥，再选择所需的环境和资源。
+  ceiling: 密钥的权限以您当前的权限为上限。完整访问不会施加额外限制。您的角色或资源访问权限发生变化时，也会影响此密钥。
+  access: 访问设置
+  defaults:
+    allow: 默认允许（黑名单）
+    deny: 默认拒绝（白名单）
+  blacklistHelp: 默认允许您权限范围内的操作。可以添加例外，拒绝所选资源和操作。没有例外时，完整访问的行为不变。
+  whitelistHelp: 默认拒绝所有操作。可以添加例外，允许所选资源和操作。没有例外时，所有操作都会被拒绝。
+  modes:
+    full: 完整访问
+    closed: 全部拒绝
+    custom: 自定义
+  effects:
+    allow: 允许（在您的权限范围内）
+    allowShort: 允许
+    deny: 拒绝
+  scopes:
+    global: 全局
+    project: 环境
+    stack: 堆栈
+    resource: 资源
+  operations:
+    read: 读取
+    create: 创建
+    update: 更新
+    upgrade: 升级
+    delete: 删除
+    exec: 执行
+    logs: 日志
+    export: 敏感信息导出
+  matrix:
+    title: 密钥访问矩阵
+    draft: 访问矩阵预览
+    reviewed: 即将保存的访问矩阵
+    help: 此预览合并了默认设置和例外规则。密钥规则允许某项操作，并不代表账号获得了该权限。每次请求都会重新检查密钥所有者当前的访问权限。
+    caption: 各资源和操作的密钥规则
+    target: 资源范围
+    other: 其他资源（所选范围之外）
+    global: 所有资源
+    unverified: 资源选择需要验证
+    limits: 有效期和账号当前的权限仍然适用。创建资源以及涉及多个目标的操作，必须检查每个实际目标。部分范围或尚未验证的范围不代表已获得全面授权。
+    states:
+      allow: 密钥规则允许
+      deny: 密钥规则拒绝
+      mixed: 部分受限
+      conditional: 需要检查目标
+      unknown: 需要验证
+    basis:
+      full: 完整访问，仍受账号权限限制
+      closed: 没有允许例外
+      expired: 密钥已过期，拒绝所有操作
+      defaultAllow: 默认允许，仍受账号权限限制
+      defaultDeny: 没有匹配的允许例外
+      ruleAllow: 匹配允许例外
+      explicitDeny: 匹配的拒绝例外优先
+      scopeExceptions: 子资源适用不同规则
+      unknownEvidence: 资源选择或父级尚未验证
+      unknownOverlap: 规则重叠范围尚未验证
+      invalidPolicy: 请先修正策略再保存
+      createDestination: 必须检查新资源及其创建位置
+      multipleTargets: 必须检查操作涉及的每个目标
+  defaultEffect: 未匹配规则的资源
+  effect: 规则效果
+  scope: 规则范围
+  resourceId: 稳定资源 ID
+  resourceType: 资源类型
+  denyFirst: 拒绝规则优先。执行、日志和敏感信息导出是独立操作，不包含在读取或更新中。
+  capabilityHelp: 已禁用的允许项表示所选范围当前的 API 不提供该操作。观察到 API 操作并不保证获得授权；尚未确认的项目仍须由后端检查所有者当前的权限。拒绝规则仍可限制这些操作。
+  capabilities:
+    unavailable: 当前 API 不提供此操作
+    observed: 已观察到 API 操作，仍受所有者权限限制
+    unknown: 等待后端权限检查
+  stableIdHelp: 请根据名称和所属上下文搜索并选择可访问的资源。系统会在内部保留稳定引用。服务器会针对每次请求重新检查目标和当前权限；审阅操作不会授予权限。
+  liveTargets: 选择当前可见的资源
+  targetLoadError: 无法加载可见资源。请检查资源类型和您的访问权限。
+  selector:
+    project: 环境
+    stackContext: 堆栈或环境资源上下文
+    chooseType: 请先选择资源类型。
+    chooseProject: 请先搜索并选择环境。
+    chooseStack: 请先搜索并选择堆栈，或可用的环境上下文。
+    chooseResource: 请搜索并选择具有名称的资源。
+    environmentResources: 没有可用堆栈关联的环境资源
+    loading: 正在加载可访问的资源名称…
+    empty: 此上下文中没有可选择的资源。
+    noMatches: 没有匹配的资源名称。请尝试其他名称或上下文。
+    unavailable: 此资源已不可用或无法访问。请从当前列表中重新选择。
+    unnamed: 部分资源没有可用名称，因此无法选择。请使用具有可识别名称的资源。
+    ambiguous: 部分资源的名称和上下文完全相同。在名称或描述可以区分之前，无法安全选择这些资源。
+    loadError: 无法加载可访问的资源名称。请检查访问权限后重试。
+    retry: 重新加载名称
+    types:
+      stack: 堆栈
+      service: 服务
+      container: 容器
+      host: 主机
+      volume: 存储卷
+      network: 网络
+      secret: 密文
+      certificate: 证书
+      project: 环境
+      setting: 平台设置
+      userPreference: 用户偏好设置
+      registry: 镜像仓库
+      storagePool: 存储池
+      networkPolicy: 网络策略
+      projectMember: 环境成员
+      apiKey: API 密钥
+      apiKeyRestricted: 受限 API 密钥
+      account: 账号
+      auditLog: 审计记录
+  addRule: 添加例外
+  removeRule: 移除例外
+  expiry: 到期时间
+  expiryLocal: 自定义到期时间（本地时区）
+  expiryChoices:
+    none: 不额外设置到期时间
+    '7': 7 天
+    '30': 30 天
+    '90': 90 天
+    custom: 自定义时间
+  review: 审阅更改
+  reviewHelp: 这是已提交的配置。服务器已验证规则，并会在保存时重新检查当前权限和修订版本。
+  confirm: 我已检查范围、操作和到期时间
+  submit: 确认保存
+  back: 返回编辑
+  reload: 重新加载最新修订版本
+  revision: 策略修订版本
+  saved: 已保存，并已通过重新读取密钥完成验证
+  errors:
+    mode: 请选择有效的访问模式。
+    expiry: 到期时间必须是有效的未来日期。
+    effect: 请选择有效的规则效果。
+    ruleId: 规则 ID 必须有效且唯一。
+    scope: 请选择可访问的具名资源和有效的资源类型。
+    operation: 每条规则至少需要一个有效操作。
+    conflict: 其他人已更改此密钥。请重新加载最新修订版本，然后再次审阅并保存。
+    save: 无法保存密钥。请检查当前权限、范围和到期时间。
+    review: 无法验证这些更改。请检查当前权限、范围和修订版本。
+    readback: 配置已提交，但尚未通过重新读取完成验证。请重新加载密钥，不要再次创建。
+    reload: 无法重新加载密钥。请检查当前访问权限。
 apiKeyAudit:
+  unknownOperation: 无法识别的操作，请使用请求 ID 进行调查
+  unknownTarget: 无法识别的资源类型
   resources:
     subscribe: "事件订阅"
+  decisions:
+    ALLOW: 已允许
+    DENY: 已拒绝
+    unknown: 尚无已确认的授权判定
+  reason: 判定原因
+  reasons:
+    KeyFullAccess: 完整访问，仍在所有者当前的权限范围内
+    KeyRuleAllowed: 规则允许，仍在所有者当前的权限范围内
+    KeyScopedCollection: 仅返回范围内且所有者当前可见的资源
+    KeyPolicyDenied: 密钥策略拒绝此操作
+    KeyScopeDenied: 目标不在此密钥的允许范围内
+    OwnerPermissionDenied: 所有者当前没有此操作或资源的权限
+    ApiKeyExpired: 密钥已过期
+    ApiKeyRevoked: 密钥已停用或撤销
+    ApiKeyPolicyChanged: 密钥策略已更改，请重新获取授权
+    PolicyChanged: 密钥策略已更改，请重新获取授权
+    UnknownOperation: 此自定义策略不支持该操作，已安全拒绝
+    AuthenticationPending: 正在等待身份验证，操作尚未执行
+    AuthenticationDenied: 身份验证被拒绝，操作尚未执行
+    authorization_not_completed: 正在等待授权，操作尚未执行
+    ApiKeyDelegationLive: 已根据所有者当前的权限检查委派
+    AuditUnavailable: 无法确认审计情况，请使用请求 ID 进行调查
+    HandshakeDenied: 流握手被拒绝，尚未确认执行成功
+    DockerFailure: 容器运行时操作失败
+    StreamFailed: 流或命令执行失败
+    AuthorizationRevoked: 当前授权已撤销，流已中断
+    ClientDisconnected: 客户端已断开连接，流已中断
+    StreamCancelled: 流在完成前被取消
+    StreamCompleted: 流已完成
+    DelegationRouteDenied: 此流票据不能用于该操作。请获取所请求操作对应的票据。
+    ApiKeyInactive: 密钥处于停用状态，无法进行身份验证或执行操作
+    UNKNOWN_EXCEPTION: 后台进程失败。请使用请求 ID 进行调查；内部异常详情不会显示。
+    AUTHORIZATION_DENIED: 当前授权复查拒绝了后台进程，操作尚未完成
+    KeyGovernanceCompleted: 密钥管理请求已处理。请根据执行结果并重新读取状态来确认是否完成。
+    KeyGovernanceDenied: 密钥管理请求被拒绝
+    KeyGovernanceFailed: 密钥管理请求失败
+    ApiKeyRestrictedDelegationUnsupported: 具有自定义限制或到期时间的密钥不能创建子密钥或委派权限
+    unknown: 没有可安全显示的原因，请使用请求 ID 进行调查
+  outcomes:
+    unknown: 尚无已确认的执行结果
+    PENDING: 等待执行或结果
+    AUTHENTICATION_DENIED: 身份验证被拒绝（未执行）
+    DENIED: 已拒绝
+    NOT_EXECUTED: 未执行
+    ACCEPTED: 已接受（尚未完成）
+    SUCCEEDED: 结果成功（请按阶段确认是否完成）
+    FAILED: 失败
+    CANCELED: 已中断
+  noHttpResponse: 无 HTTP 响应（后台事件）
+  phase: 事件阶段
+  phases:
+    decision: 授权判定（并非执行）
+    response: API 响应（并非后台任务完成）
+    attempt: 后台执行尝试
+    continuation: 后台任务继续运行
+    completion: 后台 / 流完成事件
+    handshake: 流握手
+    unknown: 未知阶段（尚未确认完成）
+  responseSucceeded: API 响应成功
+  completionSucceeded: 后台 / 流任务已完成
+  title: 密钥审计
+  help: 授权判定和执行结果相互独立。ALLOW 不代表成功。HTTP 202 / ACCEPTED 表示已接受，而非已完成。查看审计记录不会修改密钥。
+  time: 时间范围
+  allTime: 全部时间
+  range: 自定义范围
+  from: 开始时间（本地时区）
+  to: 结束时间（本地时区）
+  any: 不限
+  decision: 授权
+  outcome: 执行结果
+  operation: 操作
+  httpStatus: HTTP 状态
+  requestId: 请求 ID
+  targetType: 资源类型
+  target: 目标资源
+  actor: 操作者
+  created: 时间
+  filter: 筛选 / 刷新
+  count: '匹配 {count} 条记录 · 第 {page} 页'
+  preview: 仅检查权限，未执行操作
+  details: 详情
+  empty: 没有匹配的审计记录
+  previous: 上一页
+  next: 下一页
+  close: 关闭审计
+  errors:
+    access: 您已无权访问此密钥的审计记录。先前显示的记录已从界面清除。
+    missing: 记录不存在或已无法访问。先前显示的记录已从界面清除。
+    range: 请输入有效的开始和结束时间。
+    tooLarge: 查询超出了服务器可验证的范围，未返回不完整的结果。请调整查询范围；如果仍然失败，请联系管理员。
+    load: 无法加载密钥审计。请刷新后重试。

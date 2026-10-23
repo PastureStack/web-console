@@ -824,8 +824,24 @@ const catalogDisplayNameSource = fs.readFileSync(
   path.join(repoRoot, 'app', 'utils', 'catalog-display-name.js'),
   'utf8'
 );
-if (!catalogBoxSource.includes('{{this.model.catalogDisplayName}}') ||
+const catalogBoxComponentSource = fs.readFileSync(
+  path.join(repoRoot, 'app', 'components', 'catalog-box', 'component.js'),
+  'utf8'
+);
+if (!catalogBoxSource.includes('{{this.displayName}}') ||
     catalogBoxSource.includes('{{this.model.localizedName}}')) {
+  failures.push('catalog_card_repeats_brand_prefix');
+}
+for (const marker of [
+  "displayName: computed('model.{catalogDisplayName,name}'",
+  "let catalogName = this.get('model.catalogDisplayName');",
+  "return catalogName === undefined ? this.get('model.name') : catalogName;",
+]) {
+  if (!catalogBoxComponentSource.includes(marker)) {
+    failures.push('catalog_card_normalized_name_fallback_changed');
+  }
+}
+if (catalogBoxComponentSource.includes("this.get('model.localizedName')")) {
   failures.push('catalog_card_repeats_brand_prefix');
 }
 if (!catalogDisplayNameSource.includes('PastureStack') ||
