@@ -1,13 +1,14 @@
 # Compatibility Contract
 
-## Web Console 1.6.194 candidate
+## Web Console 1.6.194 published
 
-The candidate uses the official Node.js 24.22.1 security release, retaining
+The release uses the official Node.js 24.22.1 security release, retaining
 npm 12.0.2 and the existing browser dependency graph. Python 3.14.9, pip 26.2.2,
 and certifi 2026.10.19 are CI-only verification tools. The static archive layout,
 API contracts, and all 13 locales retain the 1.6.193 compatibility contract.
-Candidate build and validation results are separate from publication and
-Server integration.
+The original CI archive is published with a verified SHA-256; see the
+[release note](docs/releases/web-console-1.6.194.md). Server integration and
+unrelated resource/role acceptance remain separate evidence.
 
 ## Web Console 1.6.193 published
 
