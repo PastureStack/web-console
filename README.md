@@ -14,8 +14,11 @@ Web Console [1.6.194](https://github.com/PastureStack/web-console/releases/tag/1
 uses Node.js `24.22.1` and
 npm `12.0.2`. The Node security update changes the static build toolchain;
 browser dependencies and application behavior retain their existing contract.
-CI verification uses Python `3.14.9`, pip `26.2.2`, and certifi
-`2026.10.19`, including pip's bundled trust store.
+CI verification uses Python `3.14.9`, the internal pip
+`26.2.2+pasturestack.1` rebuild with patched urllib3 `2.8.0`, and certifi
+`2026.10.19`. The frozen upstream-vendoring helper verifies all input and wheel
+hashes and runs streaming/TLS regressions in an isolated CI environment.
+This CI-only correction does not replace the existing release artifact.
 
 The release retains the service-upgrade correction from 1.6.193. Upgrades submit
 the selected launch configurations through the upgrade action without first
