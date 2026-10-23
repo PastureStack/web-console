@@ -1,12 +1,12 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.193",
+  "version": "1.6.194",
   "lockfileVersion": 3,
   "requires": true,
   "packages": {
     "": {
       "name": "@pasturestack/web-console",
-      "version": "1.6.193",
+      "version": "1.6.194",
       "license": "Apache-2.0",
       "dependencies": {
         "sass": "1.103.1"
@@ -84,7 +84,7 @@
         "yamljs": "0.3.0"
       },
       "engines": {
-        "node": "24.20.0"
+        "node": "24.22.1"
       }
     },
     "node_modules/@babel/code-frame": {

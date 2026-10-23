@@ -307,7 +307,7 @@ if not browser_gate.is_file():
 else:
     gate_text = browser_gate.read_text(encoding="utf-8")
     for phrase in [
-        "node:24.20.0-bookworm@sha256:be23f54a88d34e8824c741b19b91064094f92c1c97b194144bfc8b50d67258e2",
+        "node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a",
         "PASTURESTACK_UI_TESTEM_LAUNCHER",
         "npm ci --ignore-scripts --no-audit --no-fund",
         "./node_modules/.bin/ember test",

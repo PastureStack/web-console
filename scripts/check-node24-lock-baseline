@@ -5,7 +5,7 @@ repo_root=$(cd "$(dirname "$0")/.." && pwd)
 cd "$repo_root"
 
 lock_path="package-lock.json"
-node_image=${PASTURESTACK_NODE24_IMAGE:-node:24.20.0-bookworm@sha256:be23f54a88d34e8824c741b19b91064094f92c1c97b194144bfc8b50d67258e2}
+node_image=${PASTURESTACK_NODE24_IMAGE:-node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a}
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "NODE24_LOCK_BASELINE_DOCKER_MISSING image=$node_image"
@@ -63,7 +63,7 @@ docker run --rm \
     cp -a vendor/sort-package-json-compat "$tmpdir/vendor/sort-package-json-compat"
     cp -a vendor/source-map-url-compat "$tmpdir/vendor/source-map-url-compat"
     cd "$tmpdir"
-    test "$(node --version)" = v24.20.0
+    test "$(node --version)" = v24.22.1
     npm install --global --ignore-scripts --no-audit --no-fund npm@12.0.2 >/dev/null
     test "$(npm --version)" = 12.0.2
     npm ci --ignore-scripts --no-audit --no-fund
