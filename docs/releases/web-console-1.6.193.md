@@ -1,6 +1,9 @@
 # Web Console 1.6.193
 
-Service-upgrade correction candidate; not published.
+Published from producer `fa7fd399e3aef2a67282e8fbbe9f3fc83002710d`.
+The original 3,093,870-byte `web-console-1.6.193.tar.gz` has SHA256
+`07dd68dddecec1d95c6932d4dd31084401ee67d517fb820ecbbe6afaa052a888`.
+An anonymous release download matches the original CI artifact.
 
 The service upgrade form submits only the `upgrade` action after that action
 becomes available. It no longer performs a generic save of the service clone,
@@ -26,14 +29,16 @@ Run this scope with:
 npm test -- --filter "Unit | Component | new container hardware payload"
 ```
 
-Full CI, publication and Server runtime acceptance remain separate pending
-checks; these focused results do not imply their completion.
+The [full original CI](https://github.com/PastureStack/web-console/actions/runs/39890788296)
+passed all 1,104 browser tests, zero failures and zero skips, and all original
+source, localization and dependency gates. Two production archives were
+byte-identical. Required CodeQL passed before PR #218 merged; the merge tree
+matches the tested producer. Server runtime acceptance is a separate result.
 
-A complete native Chrome run executed 1,104 tests: 1,101 passed and three Host
-tests failed because their fixtures lacked the current capability method or
-route context. Those three passed in focused runs after fixture-only repairs;
-the 1,101 unaffected results are carried forward. This is not a single all-green
-full-suite run, and the product permission and navigation paths were not changed.
+Host test fixtures now provide the existing capability/router context. Browser
+layout tests install CJK and Arabic-script fonts and wait for font readiness;
+the original wrapping and clipping assertions remain unchanged. These repairs
+do not alter product permission, navigation or layout behavior.
 
 The supported toolchain remains Node `24.20.0` / npm `12.0.2`. Two transitive
 dependencies use official patch releases: `follow-redirects` `1.16.1` fixes
@@ -59,5 +64,5 @@ preserved. The translations distinguish live account permissions from key-rule
 permissions, allow/deny exceptions, additional expiration, allowed versus
 completed requests, and clearing previously displayed audit records versus
 deleting stored data. Placeholder, HTML and ICU structure remain intact. No
-English fallback exceptions were added. Full CI and packaged UI acceptance
-remain required before publication.
+English fallback exceptions were added. Packaged Server acceptance remains
+separate from this completed component publication.

@@ -10,13 +10,14 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console 1.6.193 is a service-upgrade correction candidate. Upgrades submit
+Web Console [1.6.193](https://github.com/PastureStack/web-console/releases/tag/1.6.193)
+corrects service upgrades. Upgrades submit
 the selected launch configurations through the upgrade action without first
 saving the complete service clone, which can contain stale endpoint instance
 references. Validation, the selected upgrade strategy, service links and
 completion handling retain the existing save lifecycle. See the
 [1.6.193 release note](docs/releases/web-console-1.6.193.md) for validation and
-publication status; Server assembly and deployment have separate evidence.
+artifact identity; Server assembly and deployment have separate evidence.
 
 API Key policy, matrix preview and key-audit messages are translated in all
 13 supported locales. The preview explains live account permission limits,
