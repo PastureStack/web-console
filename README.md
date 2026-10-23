@@ -10,19 +10,19 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Current source prepares Web Console `1.6.194` with Node.js `24.22.1` and
+Web Console [1.6.194](https://github.com/PastureStack/web-console/releases/tag/1.6.194)
+uses Node.js `24.22.1` and
 npm `12.0.2`. The Node security update changes the static build toolchain;
 browser dependencies and application behavior retain their existing contract.
 CI verification uses Python `3.14.9`, pip `26.2.2`, and certifi
 `2026.10.19`, including pip's bundled trust store.
 
-Web Console [1.6.193](https://github.com/PastureStack/web-console/releases/tag/1.6.193)
-is the latest published component and corrects service upgrades. Upgrades submit
+The release retains the service-upgrade correction from 1.6.193. Upgrades submit
 the selected launch configurations through the upgrade action without first
 saving the complete service clone, which can contain stale endpoint instance
 references. Validation, the selected upgrade strategy, service links and
 completion handling retain the existing save lifecycle. See the
-[1.6.193 release note](docs/releases/web-console-1.6.193.md) for validation and
+[1.6.194 release note](docs/releases/web-console-1.6.194.md) for validation and
 artifact identity; Server assembly and deployment have separate evidence.
 
 API Key policy, matrix preview and key-audit messages are translated in all
