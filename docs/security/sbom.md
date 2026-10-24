@@ -28,6 +28,10 @@ chunks are not classified as browser runtime. Concat outputs use the same
 retained-file selection. Asset-map entries and exact paths take precedence;
 without an asset map, only a unique same-directory/stem name with a standard
 32-hex fingerprint is accepted.
+Webpack's original byte hashes remain as `webpackAssetSHA256`; after Ember's
+production post-processing, the fixed-path finalizer records the final dist
+hashes and its stage in the inventory. Only that evidence sidecar changes.
+The generator still requires those final bytes to match the original archive.
 
 The producer passes `--verifier-root tools/sbom-verifier` and manifest/lock
 SHA-256 values captured before installation. The generator checks these pins,
