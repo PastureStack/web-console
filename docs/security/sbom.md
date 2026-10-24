@@ -8,6 +8,14 @@ The release publishes separate CycloneDX documents:
 - `artifact-manifest.json`: evidence tying both documents to the exact archive,
   lockfile and source commit.
 
+[Web Console 1.6.195](../releases/web-console-1.6.195.md) is published as an
+immutable release from producer `f905bc12daae18d98a6ac65942625562fff2a424`.
+Its [successful production run](https://github.com/PastureStack/web-console/actions/runs/40086505425)
+produced two identical archives and SBOM sets, validated both BOMs against the
+official CycloneDX 1.6 schema, and completed archive-provenance and runtime-SBOM
+attestations. Anonymous release downloads matched the retained artifact hashes.
+Exact SHA-256 values and the 69 focused-check breakdown are in the release note.
+
 These are sidecars; no source maps, private paths or CI-host package lists are
 inserted into the static site. A dependency marked `dev` can still be bundled
 into a browser, so its runtime classification comes from build evidence, not
@@ -42,6 +50,13 @@ metadata and artifact manifest record both verifier source hashes. These tools
 are excluded from the runtime BOM. If the optional verifier input is omitted
 outside the release producer, build coverage explicitly states that exclusion.
 
+The published runtime composition is `incomplete`. Frozen AWS and noVNC bundles
+still lack complete embedded-module version/license metadata; Bootswatch and
+Lato upstream identity or font-license evidence is also incomplete. Generated
+module attribution, shared addon app-tree ownership and fixed Sass inputs retain
+their stated limitations. Publication and passing checks do not close these
+coverage gaps or constitute a whole-feature/role acceptance result.
+
 ## Ruby / Onigmo
 
 The [Ruby advisory of 2026-10-23](https://www.ruby-lang.org/en/news/2026/10/23/regexp-fixes-for-gitlab-cves/)
@@ -64,6 +79,11 @@ both inventories must establish that Ruby is absent. This is verified isolation,
 not a claim that the host's preinstalled SDKs were patched. Runner-image
 residuals and official fixed versions remain tracked separately from browser
 findings until the hosted image's vendor publishes verifiable replacements.
+The 1.6.195 host inventory records toolcache Ruby 3.3.12, 3.4.11 and 4.0.7,
+plus Homebrew Ruby 4.0.7, below those official fixed releases. System Ruby 3.2.3
+(`3.2.3-1ubuntu0.24.04.8`) and toolcache Ruby 3.2.11 require separate vendor or
+backport evidence. They were not imported into the producer container; neither
+the release nor its SBOM claims those host installations were patched.
 
 The release-only schema verifier has its own frozen npm lock and uses patched
 Ajv 8.20.0. It is not part of the application's dependency graph or browser
