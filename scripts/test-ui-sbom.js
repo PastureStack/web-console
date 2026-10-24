@@ -377,7 +377,9 @@ test('public HTTPS provenance is not mistaken for an absolute Windows drive path
   metadata.rc16Maintenance.source = 'https://github.com/PastureStack/web-console';
   write(f.root, 'vendor/demo/package.json', metadata);
   const output = generate(f.options);
-  assert.ok(JSON.stringify(output).includes('https://github.com/PastureStack/web-console'));
+  const component = output['build.cdx.json'].components.find(item => item.name === 'demo');
+  const patch = component.properties.find(item => item.name === 'pasturestack:local-patch');
+  assert.equal(JSON.parse(patch.value).source, metadata.rc16Maintenance.source);
 });
 
 // Optional official-schema validation can be enabled without downloading
