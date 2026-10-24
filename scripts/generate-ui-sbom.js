@@ -478,7 +478,7 @@ function generate(options) {
   const result = { 'runtime.cdx.json': runtimeBom, 'build.cdx.json': buildBom, 'artifact-manifest.json': artifactManifest };
   for (const document of Object.values(result)) {
     const encoded = JSON.stringify(document);
-    assert.ok(!/[A-Za-z]:[\\/]|\/home\/|\/Users\/|\/runner\/|https?:\/\/[^\s"/@]+:[^\s"/@]+@/.test(encoded), 'private builder path or userinfo in SBOM');
+    assert.ok(!/(?:^|["\s(])[A-Za-z]:[\\/]|\/home\/|\/Users\/|\/runner\/|https?:\/\/[^\s"/@]+:[^\s"/@]+@/.test(encoded), 'private builder path or userinfo in SBOM');
   }
   return result;
 }
