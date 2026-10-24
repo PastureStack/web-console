@@ -382,6 +382,15 @@ test('public HTTPS provenance is not mistaken for an absolute Windows drive path
   assert.equal(JSON.parse(patch.value).source, metadata.rc16Maintenance.source);
 });
 
+test('attestable UUIDv5 serial numbers are deterministic and phase-specific', f => {
+  const first = generate(f.options), second = generate(f.options);
+  for (const name of ['runtime.cdx.json', 'build.cdx.json']) {
+    assert.match(first[name].serialNumber, /^urn:uuid:[a-f0-9]{8}-[a-f0-9]{4}-5[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+    assert.equal(first[name].serialNumber, second[name].serialNumber);
+  }
+  assert.notEqual(first['runtime.cdx.json'].serialNumber, first['build.cdx.json'].serialNumber);
+});
+
 // Optional official-schema validation can be enabled without downloading
 // anything in normal tests: node scripts/test-ui-sbom.js --schema <bom-1.6.schema.json>.
 const schemaIndex = process.argv.indexOf('--schema');

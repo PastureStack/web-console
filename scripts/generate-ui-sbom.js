@@ -16,6 +16,17 @@ const sort = values => [...values].sort();
 const property = (name, value) => ({ name: 'pasturestack:' + name, value: String(value) });
 const hashes = value => [{ alg: 'SHA-256', content: sha256(value) }];
 
+// RFC 4122 UUIDv5 using the standard URL namespace. Stable artifact identities
+// give repeatable documents and the serialNumber required by SBOM attestations.
+function serialNumber(name) {
+  const namespace = Buffer.from('6ba7b8119dad11d180b400c04fd430c8', 'hex');
+  const value = crypto.createHash('sha1').update(namespace).update(name).digest().subarray(0, 16);
+  value[6] = (value[6] & 0x0f) | 0x50;
+  value[8] = (value[8] & 0x3f) | 0x80;
+  const hex = value.toString('hex');
+  return 'urn:uuid:' + [hex.slice(0, 8), hex.slice(8, 12), hex.slice(12, 16), hex.slice(16, 20), hex.slice(20)].join('-');
+}
+
 function relative(value) {
   assert.equal(typeof value, 'string', 'inventory path must be a string');
   value = slash(value);
@@ -438,6 +449,7 @@ function generate(options) {
   }), ...[...selectedVendors].map(item => structuredClone(item.component))];
   for (const c of runtimeComponents) c.properties.push(property('observed-sources', JSON.stringify(sort(evidence.get(c['bom-ref']) || []))));
   const base = (phase, components, dependencies) => ({ bomFormat: 'CycloneDX', specVersion: '1.6', version: 1,
+    serialNumber: serialNumber(`https://github.com/PastureStack/web-console/commit/${commit}#${phase}:${artifact.sha256}:${lockHash}`),
     metadata: { timestamp, component: structuredClone(component), properties: [...commonProperties, property('phase', phase)] },
     components: components.sort((a, b) => a['bom-ref'].localeCompare(b['bom-ref'], 'en')),
     dependencies: dependencies.sort((a, b) => a.ref.localeCompare(b.ref, 'en')) });
