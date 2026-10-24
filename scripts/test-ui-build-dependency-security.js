@@ -1,7 +1,6 @@
 'use strict';
 
-// Executable regressions for the reviewed build-only dependency updates. The
-// optional root is for a small local test fixture; CI uses the real install.
+// Executable regressions for the real, locked build-only dependency install.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -11,7 +10,7 @@ const { spawnSync } = require('node:child_process');
 const vm = require('node:vm');
 const zlib = require('node:zlib');
 
-const root = path.resolve(process.env.PASTURESTACK_TEST_DEPENDENCY_ROOT || path.join(__dirname, '..'));
+const root = path.resolve(__dirname, '..');
 const readJson = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 let dependencyCache;
 
@@ -253,12 +252,18 @@ function checkSerialize() {
   assert.equal(roundtrip.add(2, 3), 5);
 }
 
-const scenarios = { 'legacy-body': legacyBody, 'valid-json': validJsonEncodings,
-  'deflate-trailing': deflateTrailing, 'gzip-trailing': gzipTrailing };
+const scenarioNames = ['legacy-body', 'valid-json', 'deflate-trailing', 'gzip-trailing'];
 if (process.argv[2] === '--dependency-security-child') {
   const name = process.argv[3];
-  assert.ok(Object.hasOwn(scenarios, name), 'unknown dependency security scenario');
-  scenarios[name]().then(() => console.log('DEPENDENCY_SECURITY_CHILD_OK ' + name)).catch(error => {
+  let operation;
+  switch (name) {
+  case 'legacy-body': operation = legacyBody(); break;
+  case 'valid-json': operation = validJsonEncodings(); break;
+  case 'deflate-trailing': operation = deflateTrailing(); break;
+  case 'gzip-trailing': operation = gzipTrailing(); break;
+  default: throw new Error('Unknown dependency security scenario');
+  }
+  operation.then(() => console.log('DEPENDENCY_SECURITY_CHILD_OK ' + name)).catch(error => {
     console.error(error.stack); process.exitCode = 1;
   });
 } else {
@@ -269,7 +274,7 @@ if (process.argv[2] === '--dependency-security-child') {
   });
   test('fast-uri rejects both encoded schemes while preserving URI/ref/equality and host normalization', checkFastUri);
   test('serialize-javascript neutralizes the official bare script suffix PoC and preserves roundtrips', checkSerialize);
-  for (const name of Object.keys(scenarios)) {
+  for (const name of scenarioNames) {
     test('isolated actual HTTP/stream regression: ' + name, { timeout: 15000 }, () => {
       const child = spawnSync(process.execPath, [__filename, '--dependency-security-child', name], {
         env: process.env, encoding: 'utf8', timeout: 10000, maxBuffer: 64 * 1024, killSignal: 'SIGKILL',
