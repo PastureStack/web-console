@@ -7,6 +7,7 @@
 
 # dependencies
 /node_modules
+/tools/sbom-verifier/node_modules
 /bower_components
 
 # misc

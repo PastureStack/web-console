@@ -128,13 +128,16 @@ function expectBodyRawBodyOverride() {
   if (rawBodyInfo.version !== "2.5.3") {
     fail(`body raw-body version ${rawBodyInfo.version} != 2.5.3`);
   }
-  if (rawBodyPath.includes(`${path.sep}body${path.sep}node_modules${path.sep}`)) {
-    fail(`body still resolves nested raw-body path ${rawBodyPath}`);
+  const parserDir = path.dirname(require.resolve("body-parser/package.json"));
+  const parserRawPath = require.resolve("raw-body", { paths: [parserDir] });
+  const parserRawInfo = JSON.parse(fs.readFileSync(path.join(path.dirname(parserRawPath), "package.json"), "utf8"));
+  if (parserRawInfo.version !== "3.0.2") {
+    fail(`body-parser raw-body version ${parserRawInfo.version} != 3.0.2`);
   }
   if (typeof require("body") !== "function") {
     fail("body export changed");
   }
-  console.log("body-raw-body-override-smoke-ok version=2.5.3");
+  console.log("body-raw-body-override-smoke-ok legacy=2.5.3 modern=3.0.2");
 }
 
 function expectSaneWatcherOverride() {
@@ -1554,10 +1557,9 @@ expectPackageJsonVersion("lacsso", "0.0.60-rc16.1");
 expectPackageJsonVersion("ember-cli-pagination", "2.2.4-rc16.0");
 expectPackageJsonVersion("ember-rl-dropdown", "0.8.1-rc16.0");
 expectVersion("ansi_up", "6.0.6");
-expectVersion("serialize-javascript", "7.1.0");
+expectVersion("serialize-javascript", "7.1.3");
 expectMissing("clean-css");
 expectMissing("clean-css-promise");
-expectVersion("raw-body", "2.5.3");
 expectPackageJsonVersion("uuid", "14.0.2");
 expectVersion("testem", "3.20.0");
 expectVersion("socket.io", "4.8.3");

@@ -67,7 +67,7 @@ test('legitimate strings, parsed AST, block params, partials and precompiled run
 
 test('CVE-2026-86472 uses the official fast-uri host normalization patch', () => {
   const uri = require('fast-uri');
-  assert.equal(require('fast-uri/package.json').version, '3.1.8');
+  assert.equal(require('fast-uri/package.json').version, '3.1.9');
   for (const host of ['//%41.com', '//A.com', '//a.com']) assert.equal(uri.parse(host).host, 'a.com');
   assert.equal(uri.equal('//%41.com', '//a.com'), true);
   assert.equal(uri.parse('https://example.com/api?limit=10').host, 'example.com');

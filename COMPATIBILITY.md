@@ -1,5 +1,18 @@
 # Compatibility Contract
 
+## Web Console 1.6.195
+
+Adds archive-bound browser and build CycloneDX SBOMs, isolated production and
+separate host/container Ruby inventories. Official body-parser 2.4.0, fast-uri
+3.1.9 and serialize-javascript 7.1.3 patches update build/serve inputs; the old
+live-reload raw-body pin is parent-scoped, not forced onto modern body-parser.
+Node.js 24.22.1, npm 12.0.2, application code,
+13 locales, API, permission and authentication contracts remain unchanged.
+Source module inventories and the released archive are checked together; a full
+lockfile is build evidence, not proof that every package reaches the browser.
+Existing acceptance results unaffected by these packaging-only changes retain
+their original scope. Publication and Server integration have separate evidence.
+
 ## Web Console 1.6.194 published
 
 The release uses the official Node.js 24.22.1 security release, retaining

@@ -1,0 +1,9 @@
+{
+  "name": "@pasturestack/sbom-schema-verifier",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Isolated release-only CycloneDX schema validation tools",
+  "dependencies": {
+    "ajv": "8.20.0"
+  }
+}

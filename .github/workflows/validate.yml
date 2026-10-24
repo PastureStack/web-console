@@ -6,11 +6,14 @@ on:
       validation_scope:
         description: Validation scope (required CodeQL checks are separate)
         type: choice
-        options: [full, dependency-security, host-disk]
+        options: [full, dependency-security, host-disk, sbom]
         default: full
 
 permissions:
   contents: read
+  id-token: write
+  attestations: write
+  artifact-metadata: write
 
 jobs:
   validate:
@@ -40,7 +43,13 @@ jobs:
           set -euo pipefail
           bash scripts/setup-ci-python-tools
 
-      - name: Install pinned Node.js
+      - name: Capture actual host OS and Ruby build-environment evidence
+        run: |
+          set -euo pipefail
+          python scripts/capture-ui-builder-inventory.py "$RUNNER_TEMP/builder-host-inventory.json"
+
+      - name: Install pinned Node.js for host-side tests
+        if: ${{ inputs.validation_scope != 'sbom' }}
         env:
           NODE_VERSION: 24.22.1
           NODE_ARCHIVE_SHA256: 6c172a9ab6718f7b801fb5a7bd486af2ee5e32758086a04b84fcce2aa77095e6
@@ -74,85 +83,65 @@ jobs:
           test "$("$RUNNER_TEMP/node/bin/npm" --version)" = "$NPM_VERSION"
           echo "$RUNNER_TEMP/node/bin" >>"$GITHUB_PATH"
 
-      - name: Test and build twice
+      - name: Test and build twice in the isolated release producer
         id: build
         env:
           PASTURESTACK_NODE24_IMAGE: node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a
+          VALIDATION_SCOPE: ${{ inputs.validation_scope }}
         run: |
           set -euo pipefail
-          test "$(node --version)" = v24.22.1
-          test "$(npm --version)" = 12.0.2
-          npm ci --ignore-scripts --no-audit --no-fund
-          validation_scope='${{ inputs.validation_scope }}'
-          if [[ "$validation_scope" = dependency-security || "$validation_scope" = host-disk ]]; then
-            bash scripts/check-ui-critical-high-dependencies
-            node --test scripts/check-ui-handlebars-security.js scripts/test-ui-npm-audit.js scripts/test-ui-build-module-boundary.js
-            node scripts/check-ui-npm-audit.js
-            test_filter='legacy context partial'
-            if [[ "$validation_scope" = host-disk ]]; then
-              test_filter='Unit | Model | host'
+          python -B scripts/test-ui-builder-boundary.py
+          if [[ "$VALIDATION_SCOPE" != sbom ]]; then
+            test "$(node --version)" = v24.22.1
+            test "$(npm --version)" = 12.0.2
+            npm ci --ignore-scripts --no-audit --no-fund
+            if [[ "$VALIDATION_SCOPE" = dependency-security || "$VALIDATION_SCOPE" = host-disk ]]; then
+              bash scripts/check-ui-critical-high-dependencies
+              node --test scripts/check-ui-handlebars-security.js scripts/test-ui-npm-audit.js scripts/test-ui-build-module-boundary.js
+              node scripts/check-ui-npm-audit.js
+              test_filter='legacy context partial'
+              if [[ "$VALIDATION_SCOPE" = host-disk ]]; then
+                test_filter='Unit | Model | host'
+              fi
+              CHROME_BIN=$(command -v google-chrome) ./node_modules/.bin/ember test \
+                --ssl=false --host 127.0.0.1 --config-file testem.js --filter "$test_filter"
+            else
+              bash scripts/ci
             fi
-            CHROME_BIN=$(command -v google-chrome) ./node_modules/.bin/ember test \
-              --ssl=false --host 127.0.0.1 --config-file testem.js --filter "$test_filter"
-          else
-            bash scripts/ci
           fi
 
-          package_version=$(node -p 'require("./package.json").version')
-          source_date_epoch=$(git show -s --format=%ct "$GITHUB_SHA")
-          export SOURCE_DATE_EPOCH="$source_date_epoch"
-          work_root=$(mktemp -d)
-          cleanup() {
-            rm -rf "$work_root"
-          }
-          trap cleanup EXIT
-
-          build_candidate() {
-            output=$1
-            rm -rf dist
-            export CONCAT_STATS=1
-            export CONCAT_STATS_PATH="$PWD/build/security-browser/concat-stats"
-            export PASTURESTACK_MODULE_INVENTORY=1
-            ./node_modules/.bin/ember build --environment production
-            node scripts/check-ui-build-module-boundary.js
-            bash scripts/package-static-candidate \
-              "$package_version" \
-              dist \
-              "$output"
-          }
-
-          build_candidate "$work_root/web-console-a.tar.gz"
-          build_candidate "$work_root/web-console-b.tar.gz"
-          cmp "$work_root/web-console-a.tar.gz" "$work_root/web-console-b.tar.gz"
-          artifact_sha=$(sha256sum "$work_root/web-console-a.tar.gz" | awk '{print $1}')
-          test "$(tar -tzf "$work_root/web-console-a.tar.gz" |
-            cut -d/ -f1 | sort -u)" = "$package_version"
-          test "$(tar -xOzf "$work_root/web-console-a.tar.gz" \
-            "${package_version}/VERSION.txt")" = "$package_version"
-          test "$(tar -tzf "$work_root/web-console-a.tar.gz" |
-            grep -Ec "^${package_version}/translations/zh-tw\\.json$")" -eq 1
-          if tar -tzf "$work_root/web-console-a.tar.gz" | grep -Eq '\.map$'; then
-            echo WEB_CONSOLE_SOURCE_MAP_PRESENT >&2
-            exit 1
-          fi
-          printf 'WEB_CONSOLE_VALIDATION_OK source=%s package=%s artifact=%s sha256=%s\n' \
-            "$GITHUB_SHA" \
-            "$package_version" \
-            "$package_version" \
-            "$artifact_sha"
+          package_version=$(python -c 'import json; print(json.load(open("package.json"))["version"])')
+          export SOURCE_DATE_EPOCH=$(git show -s --format=%ct "$GITHUB_SHA")
+          producer_output=$(mktemp -d "$RUNNER_TEMP/web-console-producer.XXXXXX")
+          [[ "$producer_output" = "$RUNNER_TEMP"/web-console-producer.* ]]
+          trap 'rm -rf "$producer_output"' EXIT
+          bash scripts/build-ui-release-candidate "$producer_output"
+          for asset in \
+            "web-console-${package_version}.tar.gz" \
+            "web-console-${package_version}.tar.gz.sha256" \
+            "web-console-${package_version}-runtime.cdx.json" \
+            "web-console-${package_version}-build.cdx.json" \
+            "web-console-${package_version}-artifact-manifest.json" \
+            "web-console-${package_version}-sbom.sha256" \
+            browser-webpack-modules.json browser-concat-stats.tar.gz \
+            builder-container-inventory-before.json builder-container-inventory-after.json; do
+            test -s "$producer_output/$asset"
+            cp "$producer_output/$asset" "$RUNNER_TEMP/$asset"
+          done
           release_asset="$RUNNER_TEMP/web-console-${package_version}.tar.gz"
-          cp "$work_root/web-console-a.tar.gz" "$release_asset"
-          cp build/security-browser/webpack-modules.json "$RUNNER_TEMP/browser-webpack-modules.json"
-          tar -czf "$RUNNER_TEMP/browser-concat-stats.tar.gz" -C build/security-browser/concat-stats .
-          release_dir=$(dirname "$release_asset")
-          release_name=$(basename "$release_asset")
-          (
-            cd "$release_dir"
-            sha256sum "$release_name" >"${release_name}.sha256"
-          )
-          test "$(awk '{print $2}' "${release_asset}.sha256")" = "$release_name"
           printf 'package_version=%s\nrelease_asset=%s\n' \
             "$package_version" "$release_asset" >>"$GITHUB_OUTPUT"
+
+      - name: Attest original static archive provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.build.outputs.release_asset }}
+
+      - name: Attest browser runtime SBOM against original static archive
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.build.outputs.release_asset }}
+          sbom-path: ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-runtime.cdx.json
 
       - name: Retain reviewed candidate for release
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -161,6 +150,13 @@ jobs:
           path: |
             ${{ steps.build.outputs.release_asset }}
             ${{ steps.build.outputs.release_asset }}.sha256
+            ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-runtime.cdx.json
+            ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-build.cdx.json
+            ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-artifact-manifest.json
+            ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-sbom.sha256
+            ${{ runner.temp }}/builder-host-inventory.json
+            ${{ runner.temp }}/builder-container-inventory-before.json
+            ${{ runner.temp }}/builder-container-inventory-after.json
             ${{ runner.temp }}/browser-webpack-modules.json
             ${{ runner.temp }}/browser-concat-stats.tar.gz
           if-no-files-found: error
