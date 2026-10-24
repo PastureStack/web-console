@@ -1,5 +1,15 @@
 # Compatibility Contract
 
+## Web Console 1.6.195
+
+Adds archive-bound browser and build CycloneDX SBOMs, isolated production and
+separate host/container Ruby inventories. Node.js 24.22.1, npm 12.0.2, all locked application dependencies, application code,
+13 locales, API, permission and authentication contracts remain unchanged.
+Source module inventories and the released archive are checked together; a full
+lockfile is build evidence, not proof that every package reaches the browser.
+Existing acceptance results unaffected by these packaging-only changes retain
+their original scope. Publication and Server integration have separate evidence.
+
 ## Web Console 1.6.194 published
 
 The release uses the official Node.js 24.22.1 security release, retaining

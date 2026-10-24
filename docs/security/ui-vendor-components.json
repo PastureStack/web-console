@@ -1,0 +1,228 @@
+{
+  "schemaVersion": 1,
+  "description": "Reviewed browser source ownership; hashes use LF-normalized text and raw binary. Snapshot identifiers are not asserted upstream releases.",
+  "guards": {
+    "ember-cli-build.js": "5d2565643ddac860af4385d26c53e44036da7dc1ae08ea4d4f83903f9a6a69b1",
+    "app/styles/app-light.scss": "5135dcf2d7257ba4ae59676243fbd46dc50f0e71e048f9ad83f9f3879d1eeb67",
+    "app/styles/app-dark.scss": "2a7df97325751ab28c9ba439b46a67407b24107e9f588eb7d6d478f319bd42d0"
+  },
+  "generatedInputs": {
+    "vendor/ember-cli/app-boot.js": "ember-cli",
+    "vendor/ember-cli/app-config.js": "ember-cli",
+    "vendor/ember-cli/app-prefix.js": "ember-cli",
+    "vendor/ember-cli/app-suffix.js": "ember-cli",
+    "vendor/ember-cli/vendor-prefix.js": "ember-cli",
+    "vendor/ember-cli/vendor-suffix.js": "ember-cli",
+    "vendor/ember-fetch.js": "ember-fetch",
+    "vendor/loader/loader.js": "loader.js",
+    "vendor/ember/ember-global-compat.js": "first-party",
+    "vendor/moment-default-locale.js": "first-party",
+    "vendor/lacsso/lacsso.css": "lacsso"
+  },
+  "styleNpm": [
+    "ember-basic-dropdown",
+    "ember-power-select"
+  ],
+  "components": [
+    {
+      "id": "jquery",
+      "name": "jquery",
+      "version": "3.7.1",
+      "purl": "pkg:npm/jquery@3.7.1",
+      "license": "MIT",
+      "inputs": [
+        "vendor/jquery/jquery.js"
+      ],
+      "files": {
+        "vendor/jquery/jquery.js": "78a85aca2f0b110c29e0d2b137e09f0a1fb7a8e554b499f740d6744dc8962cfe",
+        "vendor/jquery/UPSTREAM.md": "9c46cd8a0ae50acb0d827b98832a04b8018759de5f3eb51c88b63e7c276a3c06",
+        "vendor/jquery/LICENSE.txt": "d4db9ebe6f29f5168eac45ad713f055623ac5d0dcd5ba92da23d650ae012020d"
+      },
+      "provenance": "vendor/jquery/UPSTREAM.md: npm jquery@3.7.1 dist/jquery.js."
+    },
+    {
+      "id": "ansi-up",
+      "name": "ansi_up",
+      "version": "6.0.6",
+      "purl": "pkg:npm/ansi_up@6.0.6",
+      "license": "MIT",
+      "modified": true,
+      "inputs": [
+        "vendor/ansi-up/ansi-up-global.js"
+      ],
+      "files": {
+        "vendor/ansi-up/ansi-up-global.js": "a50281fdb1fbe71cf638f09e897d4f5b153a418f731be2db410c796982f75682",
+        "vendor/ansi-up/UPSTREAM.md": "2239a6596a86b8e1625cdfc8b536e72ecaaca098ab5d4da97c4e8ae81fd2f592",
+        "vendor/ansi-up/LICENSE": "605a7882fd6b556965dd1026fc55e3a5afa52b73b35d4e12fe9b4cf25b32d21f"
+      },
+      "provenance": "vendor/ansi-up/UPSTREAM.md: npm source wrapped with first-party browser globals."
+    },
+    {
+      "id": "semver",
+      "name": "semver",
+      "version": "5.7.2",
+      "purl": "pkg:npm/semver@5.7.2",
+      "license": "ISC",
+      "modified": true,
+      "inputs": [
+        "vendor/semver/semver-global.js"
+      ],
+      "files": {
+        "vendor/semver/semver-global.js": "d3c2df6e4e516f21e66e52675f1baf85ba753842fb3f603827f8815ecbc41e9b",
+        "vendor/semver/UPSTREAM.md": "ccb1ec65245dd0a1a38903c03a705b60f286ed857d21939d02943023acaa3a8d",
+        "vendor/semver/LICENSE": "4ec3d4c66cd87f5c8d8ad911b10f99bf27cb00cdfcff82621956e379186b016b"
+      },
+      "provenance": "vendor/semver/UPSTREAM.md: frozen Browserify standalone bundle."
+    },
+    {
+      "id": "shell-quote",
+      "name": "shell-quote",
+      "version": "1.11.0",
+      "purl": "pkg:npm/shell-quote@1.11.0",
+      "license": "MIT",
+      "modified": true,
+      "inputs": [
+        "vendor/shell-quote/shell-quote-global.js"
+      ],
+      "files": {
+        "vendor/shell-quote/shell-quote-global.js": "bb1719d929d5435124120975b8df02c9084aea3907688d6125d0a80cf8665b8d",
+        "vendor/shell-quote/UPSTREAM.md": "3d9be3b68a5a6789fc869253b5e95756accdecfb0cd023942f02d8a9c5a373f5",
+        "vendor/shell-quote/LICENSE": "8bb16db1b047019e4395965f2cf3611b06c34bf86dc2d0210b3c3f91b53c21fe"
+      },
+      "provenance": "vendor/shell-quote/UPSTREAM.md: integrity-verified module bodies with standalone wrapper."
+    },
+    {
+      "id": "position-calculator",
+      "name": "jQuery.PositionCalculator",
+      "version": "1.1.2",
+      "license": "MIT",
+      "inputs": [
+        "vendor/position-calculator.js"
+      ],
+      "files": {
+        "vendor/position-calculator.js": "d0118c108e00675c9dad7ced519b3ad299164e6d37997aa81440457aa5de5d67"
+      },
+      "provenance": "vendor/position-calculator.js header identifies version 1.1.2, MIT and github.com/tlindig/position-calculator; named AMD integration is retained.",
+      "modified": true
+    },
+    {
+      "id": "aws-sdk-ec2",
+      "name": "AWS SDK for JavaScript EC2 browser bundle",
+      "version": "2.1.27",
+      "purl": "pkg:npm/aws-sdk@2.1.27",
+      "inputs": [
+        "vendor/aws-sdk-ec2.js"
+      ],
+      "files": {
+        "vendor/aws-sdk-ec2.js": "a75c638861c437cd8ef7f57995cb07a8ccea6c115005b7b0056f309946841ba1"
+      },
+      "provenance": "vendor/aws-sdk-ec2.js header and AWS.VERSION identify 2.1.27; license reference is https://sdk.amazonaws.com/js/BUNDLE_LICENSE.txt.",
+      "coverage": "Frozen AWS browser bundle has embedded modules whose individual versions and license composition are not established."
+    },
+    {
+      "id": "novnc",
+      "name": "noVNC frozen browser bundle",
+      "inputs": [
+        "vendor/novnc.js"
+      ],
+      "files": {
+        "vendor/novnc.js": "536fcf482b2c30d9368d4cb5aaf0b049200fc7a5c51817d34d53e47dbe0b8ca4"
+      },
+      "provenance": "vendor/novnc.js contains original noVNC core and incorporated-project notices. Exact upstream release is not recorded; snapshot version is the reviewed source-set SHA-256.",
+      "coverage": "Frozen noVNC exact upstream version and embedded-module license composition are not established."
+    },
+    {
+      "id": "lato",
+      "name": "Lato Latin webfont snapshot",
+      "type": "data",
+      "copied": [
+        "vendor/lato/lato-v11-latin-300.woff",
+        "vendor/lato/lato-v11-latin-300.woff2",
+        "vendor/lato/lato-v11-latin-700.woff",
+        "vendor/lato/lato-v11-latin-700.woff2",
+        "vendor/lato/lato-v11-latin-regular.woff",
+        "vendor/lato/lato-v11-latin-regular.woff2"
+      ],
+      "files": {
+        "vendor/lato/LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "vendor/lato/lato-v11-latin-300.woff": "49213f87be326978bd48a826ee78c2776116dacaf475cd2b9fbb804f77807495",
+        "vendor/lato/lato-v11-latin-300.woff2": "49cdbdefa15fa3f220eaf225d2e769adbb8ae81800204b39959c79239f4f4fb3",
+        "vendor/lato/lato-v11-latin-700.woff": "be2d2f18ba47452f1f31d75dc3abaa2c1e57c366825bebfcac55a554424faa5b",
+        "vendor/lato/lato-v11-latin-700.woff2": "63413259cbaefb160e5ade88d65669a85beb447007edb1eb6f58daeba865822e",
+        "vendor/lato/lato-v11-latin-regular.woff": "b82e3c01c34620fb5a610244cc773ad46b4b7197be81116ba22ee869a600f6d4",
+        "vendor/lato/lato-v11-latin-regular.woff2": "47a3e3b64cffe3ff820ebe554ac4df940da5ed469eaddbbc13bdd3b0b1eb4479"
+      },
+      "provenance": "ember-cli-build.js copies these six lato-v11-latin font files. The directory LICENSE.txt is Apache-2.0; it does not establish the upstream font license or exact release.",
+      "coverage": "Lato upstream release and font-specific license are not established by the repository notice; no upstream version, PURL or license is inferred."
+    },
+    {
+      "id": "icons",
+      "name": "PastureStack icons with Lucide outlines",
+      "version": "1.25.0-pasturestack-snapshot",
+      "license": "Apache-2.0 AND ISC AND MIT",
+      "modified": true,
+      "inputs": [
+        "vendor/icons/style.css"
+      ],
+      "copied": [
+        "vendor/icons/fonts/pasturestack-icons.svg",
+        "vendor/icons/fonts/pasturestack-icons.ttf",
+        "vendor/icons/fonts/pasturestack-icons.woff",
+        "vendor/icons/fonts/pasturestack-icons.woff2"
+      ],
+      "files": {
+        "vendor/icons/source-manifest.json": "6c9c6cd417daae9fc1a766ed4393790b437f80153eb28d91c01a49c29ba1b1ec",
+        "vendor/icons/PROVENANCE.md": "6bc8f7d655862a1389e0696b4a9033ab19c7108c025859d71b323894769cc8b1",
+        "vendor/icons/UPSTREAM_ATTRIBUTION.md": "ee204ad93d22e4e48d2094f8d1d8dff51061c8ef087a112b1322f0dc7e95cd0d",
+        "vendor/icons/LICENSE": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+        "vendor/icons/LICENSES/LUCIDE.txt": "b495047bd93a9b06913511076f504daba17d5bbeb3e0650f3bb53a4220329c57",
+        "vendor/icons/style.css": "ab5156daf85c3de24267f421cb671df10aa6e297082aa21f91cc313d49735c3c",
+        "vendor/icons/style.scss": "c1a65e0d954efdeaea788a5f77fe8995ed5c52d07a35b97e13c45352f2617046",
+        "vendor/icons/variables.scss": "c87a8a1198350ec0dcd34ee6c6be3ffa394008f5cb947948ab76fdddfc9fb06c",
+        "vendor/icons/fonts/pasturestack-icons.svg": "1bf9f65e3cb1450d033a3566d0768f3a278ee82a5e813d836b9bfcb46c865228",
+        "vendor/icons/fonts/pasturestack-icons.ttf": "a67905a6178ff4df95d6091cf04565eeca8fa835e403a5c8c832280f2826331d",
+        "vendor/icons/fonts/pasturestack-icons.woff": "1c468e619c554f599090de7d67400c155fbef44168f0b4e555cf96fb52e99eac",
+        "vendor/icons/fonts/pasturestack-icons.woff2": "57f5d0d00623351ec5a839a37a0324b19048bddeb31c01d52ba3d7c023acc360"
+      },
+      "provenance": "vendor/icons/PROVENANCE.md and source-manifest.json: lucide-static@1.25.0 outlines, Apache-2.0 first-party project mark, retained compatibility API; local generated font is not an unmodified npm distribution."
+    },
+    {
+      "id": "bootstrap3-layout",
+      "name": "Bootstrap 3 presentation compatibility snapshots",
+      "version": "3.4.1-pasturestack-snapshot",
+      "license": "MIT",
+      "modified": true,
+      "style": [
+        "app/styles/vendors/_bootstrap3-layout-light.scss",
+        "app/styles/vendors/_bootstrap3-layout-dark.scss"
+      ],
+      "files": {
+        "app/styles/vendors/_bootstrap3-layout-light.scss": "44954011eda0601c61ac8742227be654d6a679c52805ccbaebd94678c2b675b8",
+        "app/styles/vendors/_bootstrap3-layout-dark.scss": "1264fdf5c2237451cad8151538183c208a8ce5190746b82552dfeab395da23ca",
+        "vendor/runtime-licenses/bootstrap3-layout-compat/UPSTREAM.md": "484c0843d7c224cd6beabb5e0dc60bb507dff58c7aff94723522c5b028957689",
+        "vendor/runtime-licenses/bootstrap3-layout-compat/LICENSE.md": "eaf003ef9d4321de625381657eaa69e0093fa6ab00c0201e3fd4847dd9878461"
+      },
+      "provenance": "vendor/runtime-licenses/bootstrap3-layout-compat/UPSTREAM.md records Bootstrap 3.4.1 presentation rules and source authority archive SHA-256; no Bootstrap 3 JavaScript."
+    },
+    {
+      "id": "bootswatch-cosmo",
+      "name": "Bootswatch Cosmo presentation snapshot",
+      "license": "MIT",
+      "modified": true,
+      "style": [
+        "vendor/bootswatch-cosmo/_bootswatch.scss",
+        "vendor/bootswatch-cosmo/_variables.scss"
+      ],
+      "files": {
+        "vendor/bootswatch-cosmo/LICENSE": "af0520cd61f5231a8e158cbbeb79c837f8d65d0b288c14fae8d648f9e6204ce1",
+        "vendor/bootswatch-cosmo/README.md": "eafe929e312db698c9c7466b316e25f40ed124472bf497e4796b68d136591bda",
+        "vendor/bootswatch-cosmo/_bootswatch.scss": "463b3e8c5e13cecc9c6ea7dd93133831916e1b59a5f4b93d1502dfd805d587d6",
+        "vendor/bootswatch-cosmo/_bootswatch.scss.diff": "7427f7f220d54b81e3c1aa2587d00744b8c2305ba68c2ee0931e297c56946785",
+        "vendor/bootswatch-cosmo/_variables.scss": "6f03839260520dcbe187c5f054e27b5d39429c245c29a7aa8734e4cfeb8146ae",
+        "vendor/bootswatch-cosmo/_variables.scss.diff": "5922c67eff999982c0dbd39d01b3c5735d7c67f8f22107a8ecd7452adab8ae11"
+      },
+      "provenance": "Retained vendor/bootswatch-cosmo Sass and MIT notice identify Thomas Park; exact upstream version is not recorded, so the source-set snapshot identifies this local Sass adaptation.",
+      "coverage": "Bootswatch Cosmo exact upstream version is not recorded."
+    }
+  ]
+}

@@ -10,22 +10,28 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console [1.6.194](https://github.com/PastureStack/web-console/releases/tag/1.6.194)
+Web Console [1.6.195](https://github.com/PastureStack/web-console/releases/tag/1.6.195)
 uses Node.js `24.22.1` and
-npm `12.0.2`. The Node security update changes the static build toolchain;
-browser dependencies and application behavior retain their existing contract.
+npm `12.0.2` in a digest-pinned, Ruby-free artifact-production container.
+CI verifies the container's packages and Ruby binaries before and after the
+build; browser dependencies and application behavior retain their contract.
 CI verification uses Python `3.14.9`, the internal pip
 `26.2.2+pasturestack.1` rebuild with patched urllib3 `2.8.0`, and certifi
 `2026.10.19`. The frozen upstream-vendoring helper verifies all input and wheel
 hashes and runs streaming/TLS regressions in an isolated CI environment.
-This CI-only correction does not replace the existing release artifact.
+Browser runtime and build dependencies have separate CycloneDX SBOMs. Each release
+binds the original static archive, file hashes, lockfile, source commit and actual
+production module inventory; build-only packages are not reported as shipped
+browser dependencies. The archive itself does not include the build inventory.
+See [SBOM coverage and build-environment boundaries](docs/security/sbom.md) for
+inherited vendor snapshots and hosted-runner Ruby tracking.
 
 The release retains the service-upgrade correction from 1.6.193. Upgrades submit
 the selected launch configurations through the upgrade action without first
 saving the complete service clone, which can contain stale endpoint instance
 references. Validation, the selected upgrade strategy, service links and
 completion handling retain the existing save lifecycle. See the
-[1.6.194 release note](docs/releases/web-console-1.6.194.md) for validation and
+[1.6.195 release note](docs/releases/web-console-1.6.195.md) for validation and
 artifact identity; Server assembly and deployment have separate evidence.
 
 API Key policy, matrix preview and key-audit messages are translated in all
@@ -98,6 +104,23 @@ Packaging uses the current Git commit timestamp, or an explicit
 `SOURCE_DATE_EPOCH`, and emits a deterministic archive plus portable SHA-256
 checksum. The archive root and `VERSION.txt` must match the numeric package
 version. This creates a candidate; publication is a separate reviewed step.
+
+For release SBOM generation, enable `PASTURESTACK_MODULE_INVENTORY=1`, `CONCAT_STATS=1`
+and set `CONCAT_STATS_PATH` to `build/security-browser/concat-stats` before the
+production build. Then run:
+
+```sh
+node scripts/generate-ui-sbom.js \
+  --dist dist --archive "build/ui/${package_version}.tar.gz" \
+  --webpack-inventory build/security-browser/webpack-modules.json \
+  --concat-stats build/security-browser/concat-stats \
+  --output-dir build/security-sbom
+```
+
+Release assets include the runtime and build SBOMs, artifact manifest and portable
+SHA-256 checksums. CI compares two independent builds and both SBOM sets. Missing
+or inconsistent source inventories fail packaging; unknown upstream metadata is
+reported explicitly rather than guessed. See [SBOM boundaries](docs/security/sbom.md).
 
 Component tests, artifact verification, and real-host/browser acceptance are
 separate evidence. Do not infer full resource/role/hardware coverage from a
