@@ -25,6 +25,10 @@ production module inventory; build-only packages are not reported as shipped
 browser dependencies. The archive itself does not include the build inventory.
 See [SBOM coverage and build-environment boundaries](docs/security/sbom.md) for
 inherited vendor snapshots and hosted-runner Ruby tracking.
+Build/serve dependencies use the official body-parser `2.4.0`, fast-uri `3.1.9`
+and serialize-javascript `7.1.3` security patches. The legacy live-reload body
+reader retains its own compatible raw-body pin without overriding modern
+body-parser's supported dependency.
 
 The release retains the service-upgrade correction from 1.6.193. Upgrades submit
 the selected launch configurations through the upgrade action without first

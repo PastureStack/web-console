@@ -91,10 +91,14 @@ if overrides.get("tmp") != "0.2.7":
 if overrides.get("nanoid") != "3.3.18":
     fail(f"nanoid override drifted: {overrides.get('nanoid')}")
 for selector, version in {
+    "body-parser": "2.4.0",
     "brace-expansion@^1.0.0": "1.1.21",
     "brace-expansion@^2.0.0": "2.1.7",
     "brace-expansion@^5.0.0": "5.0.12",
     "engine.io": "6.6.10",
+    "fast-uri": "3.1.9",
+    "qs": "6.16.1",
+    "serialize-javascript": "7.1.3",
 }.items():
     if overrides.get(selector) != version:
         fail(f"security patch override drifted: {selector}={overrides.get(selector)}; expected={version}")
@@ -112,9 +116,11 @@ forbidden_names = {
     "rollup-plugin-babel",
 }
 minimums = {
+    "body-parser": (2, 4, 0),
     "braces": (3, 0, 3),
     "handlebars": (4, 7, 10),
     "engine.io": (6, 6, 10),
+    "fast-uri": (3, 1, 9),
     "json5": (1, 0, 2),
     "js-yaml": (4, 3, 2),
     "lodash": (4, 18, 0),
@@ -122,7 +128,8 @@ minimums = {
     "morgan": (1, 12, 0),
     "nanoid": (3, 3, 18),
     "postcss": (8, 5, 23),
-    "qs": (6, 16, 0),
+    "qs": (6, 16, 1),
+    "serialize-javascript": (7, 1, 3),
     "rollup": (2, 80, 0),
     "tmp": (0, 2, 6),
 }

@@ -21,8 +21,10 @@ def fail(code, **fields):
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 overrides = package.get("overrides", {}) or {}
-if overrides.get("raw-body") != "2.5.3":
-    fail("RAW_BODY_OVERRIDE_UNEXPECTED", actual=overrides.get("raw-body"), expected="2.5.3")
+if "raw-body" in overrides or overrides.get("body@5.1.0") != {"raw-body": "2.5.3"}:
+    fail("RAW_BODY_OVERRIDE_UNEXPECTED", expected="body@5.1.0 only: raw-body 2.5.3")
+if overrides.get("body-parser") != "2.4.0":
+    fail("BODY_PARSER_SECURITY_PIN_MISSING", expected="2.4.0")
 
 lock_path = Path("docs/baselines/npm-package-lock.sass-replacement.node24-ignore-scripts.json")
 if not lock_path.is_file():
@@ -30,12 +32,15 @@ if not lock_path.is_file():
 else:
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     packages = lock.get("packages", {}) or {}
-    raw_body = packages.get("node_modules/raw-body", {})
-    nested_raw_body = packages.get("node_modules/body/node_modules/raw-body")
-    if raw_body.get("version") != "2.5.3":
-        fail("RAW_BODY_LOCK_VERSION_UNEXPECTED", actual=raw_body.get("version"), expected="2.5.3")
-    if nested_raw_body is not None:
-        fail("BODY_NESTED_RAW_BODY_REMAINS", version=nested_raw_body.get("version"))
+    def raw_body_for(parent):
+        nested = f"node_modules/{parent}/node_modules/raw-body"
+        return packages.get(nested, packages.get("node_modules/raw-body", {}))
+    legacy_raw = raw_body_for("body")
+    parser_raw = raw_body_for("body-parser")
+    if legacy_raw.get("version") != "2.5.3":
+        fail("RAW_BODY_LOCK_VERSION_UNEXPECTED", actual=legacy_raw.get("version"), expected="2.5.3")
+    if parser_raw.get("version") != "3.0.2":
+        fail("BODY_PARSER_RAW_BODY_LOCK_VERSION_UNEXPECTED", actual=parser_raw.get("version"), expected="3.0.2")
     for path, info in packages.items():
         if path.endswith("/raw-body") and info.get("deprecated"):
             fail("DEPRECATED_RAW_BODY_REMAINS", package=path, version=info.get("version"))
@@ -46,6 +51,6 @@ if failures:
     sys.exit(1)
 
 print(f"UI_RAW_BODY_OVERRIDE_OK raw-body=2.5.3 lockfile={lock_path} package_count={package_count}")
-print("The no-publish live-reload body path resolves to maintained raw-body 2.5.3 and no longer carries body/node_modules/raw-body 1.1.7.")
+print("Legacy live-reload body uses raw-body 2.5.3; modern body-parser uses its supported raw-body 3.0.2. No global cross-major override.")
 print("failure_count=0")
 PY
