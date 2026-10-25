@@ -28,7 +28,7 @@ def shell_function(name, *args):
 
 class BuilderBoundaryTests(unittest.TestCase):
     def test_shell_syntax_and_toolchain_baseline(self):
-        for name in ["build-ui-release-candidate", "check-ui-node24-engine-baseline"]:
+        for name in ["build-ui-release-candidate", "check-ui-node24-engine-baseline", "setup-ui-builder-brotli"]:
             subprocess.run(["bash", "-n", str(ROOT / "scripts" / name)], check=True)
         workflow = WORKFLOW.read_text(encoding="utf-8")
         blocks = re.findall(r"^        run: \|\n((?:          .*\n|\n)+)", workflow, re.M)

@@ -55,6 +55,7 @@ build_inside_container() {
   copy_release_source "$source_dir" "$work_root/source"
   cd "$work_root/source"
   package_version=$(node -p 'require("./package.json").version')
+  bash scripts/setup-ui-builder-brotli "$output_dir/builder-brotli-security.json"
   capture_builder_inventory "$output_dir/builder-container-inventory-before.json"
 
   npm install --global --ignore-scripts --no-audit --no-fund npm@12.0.2 >/dev/null
