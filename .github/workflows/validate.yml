@@ -124,6 +124,7 @@ jobs:
             "web-console-${package_version}-artifact-manifest.json" \
             "web-console-${package_version}-sbom.sha256" \
             browser-webpack-modules.json browser-concat-stats.tar.gz \
+            builder-brotli-security.json \
             builder-container-inventory-before.json builder-container-inventory-after.json; do
             test -s "$producer_output/$asset"
             cp "$producer_output/$asset" "$RUNNER_TEMP/$asset"
@@ -155,6 +156,7 @@ jobs:
             ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-artifact-manifest.json
             ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-sbom.sha256
             ${{ runner.temp }}/builder-host-inventory.json
+            ${{ runner.temp }}/builder-brotli-security.json
             ${{ runner.temp }}/builder-container-inventory-before.json
             ${{ runner.temp }}/builder-container-inventory-after.json
             ${{ runner.temp }}/browser-webpack-modules.json

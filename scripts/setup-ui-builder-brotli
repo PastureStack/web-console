@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+# Patch only the isolated builder's Debian Brotli libraries (CVE-2026-111497).
+set -euo pipefail
+[[ $# -eq 1 ]]
+output=$1
+version='1.0.9-2+deb12u1'
+source /etc/os-release
+[[ "$ID" = debian && "$VERSION_CODENAME" = bookworm ]]
+[[ "$(dpkg --print-architecture)" = amd64 ]]
+[[ "$(dpkg-query -W -f='${db:Status-Status}' libbrotli1)" = installed ]]
+work=$(mktemp -d /tmp/pasturestack-ui-brotli.XXXXXX)
+trap 'rm -rf "$work"' EXIT
+dpkg-query -W -f='${Status}\t${binary:Package}\t${Version}\n' >"$work/before.tsv"
+packages=(libbrotli1)
+if [[ "$(dpkg-query -W -f='${db:Status-Status}' libbrotli-dev 2>/dev/null || true)" = installed ]]; then
+  packages+=(libbrotli-dev)
+fi
+archives=()
+for package in "${packages[@]}"; do
+  case "$package" in
+    libbrotli1) digest=e27b3d655fa6fadd7a56f706687e94573c0af68b7d6df394a32a381a3a6c6d8b ;;
+    libbrotli-dev) digest=8a206241fcf5760a9eb28a5a433ff773415bab8c33c9b9af4cc087edd88f3c53 ;;
+  esac
+  archive="$work/${package}.deb"
+  curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
+    --retry 5 --retry-all-errors --output "$archive" \
+    "https://security.debian.org/debian-security/pool/updates/main/b/brotli/${package}_${version}_amd64.deb"
+  printf '%s  %s\n' "$digest" "$archive" | sha256sum --check
+  [[ "$(dpkg-deb -f "$archive" Package)" = "$package" ]]
+  [[ "$(dpkg-deb -f "$archive" Version)" = "$version" ]]
+  [[ "$(dpkg-deb -f "$archive" Architecture)" = amd64 ]]
+  archives+=("$archive")
+done
+dpkg --install "${archives[@]}"
+python3 - "$work/before.tsv" "$version" "$output" <<'PY'
+import ctypes
+import json
+import os
+from pathlib import Path
+import subprocess
+import sys
+
+before_file, expected, output = sys.argv[1:]
+def installed(text):
+    return {name: version for status, name, version in
+            (line.split("\t") for line in text.splitlines())
+            if status.split()[-1] == "installed"}
+before = installed(Path(before_file).read_text())
+after = installed(subprocess.check_output(
+    ["dpkg-query", "-W", "-f=${Status}\t${binary:Package}\t${Version}\n"], text=True))
+assert before.keys() == after.keys(), "Builder package membership changed"
+allowed = {name for name in before if name.split(":")[0] in {"libbrotli1", "libbrotli-dev"}}
+changed = {name for name in before if before[name] != after[name]}
+assert changed <= allowed, "Unrelated builder package changed"
+assert all(after[name] == expected for name in allowed), "Brotli companion version mismatch"
+
+# Exercise public SONAMEs and ordinary valid data; no malformed input or PoC.
+encoder = ctypes.CDLL("libbrotlienc.so.1")
+decoder = ctypes.CDLL("libbrotlidec.so.1")
+size = ctypes.c_size_t
+encoder.BrotliEncoderMaxCompressedSize.argtypes = [size]
+encoder.BrotliEncoderMaxCompressedSize.restype = size
+encoder.BrotliEncoderCompress.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                        size, ctypes.c_void_p, ctypes.POINTER(size), ctypes.c_void_p]
+encoder.BrotliEncoderCompress.restype = ctypes.c_int
+decoder.BrotliDecoderDecompress.argtypes = [size, ctypes.c_void_p, ctypes.POINTER(size), ctypes.c_void_p]
+decoder.BrotliDecoderDecompress.restype = ctypes.c_int
+for content in (b"", b"PastureStack ordinary Brotli builder control\n" * 32, bytes(range(256))):
+    encoded_size = size(encoder.BrotliEncoderMaxCompressedSize(len(content)))
+    encoded = ctypes.create_string_buffer(max(1, encoded_size.value))
+    assert encoder.BrotliEncoderCompress(5, 22, 0, len(content), content,
+                                        ctypes.byref(encoded_size), encoded) == 1
+    decoded_size = size(max(1, len(content)))
+    decoded = ctypes.create_string_buffer(decoded_size.value)
+    assert decoder.BrotliDecoderDecompress(encoded_size.value, encoded,
+                                          ctypes.byref(decoded_size), decoded) == 1
+    assert decoded.raw[:decoded_size.value] == content
+proof = {
+    "schemaVersion": 1, "sourceCommit": os.environ.get("GITHUB_SHA"),
+    "scope": "isolated Debian bookworm release builder; not shipped browser runtime",
+    "cve": "CVE-2026-111497", "officialPackageVersion": expected,
+    "officialStatus": "https://security-tracker.debian.org/tracker/CVE-2026-111497",
+    "packagesBefore": {name: before[name] for name in sorted(allowed)},
+    "packagesAfter": {name: after[name] for name in sorted(allowed)},
+    "changedPackages": sorted(changed), "unrelatedPackageChanges": 0,
+    "ordinaryRoundTrips": 3, "publicSonameControls": "PASS", "securityTriggerExecuted": False,
+}
+Path(output).write_text(json.dumps(proof, sort_keys=True, indent=2) + "\n", encoding="utf-8")
+print("UI_BUILDER_BROTLI_OK " + json.dumps(proof, sort_keys=True))
+PY
