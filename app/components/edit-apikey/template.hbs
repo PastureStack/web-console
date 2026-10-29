@@ -62,6 +62,14 @@
       {{/if}}
       <fieldset disabled={{this.editingLocked}}>
         <legend>{{t 'apiKeyAccess.access'}}</legend>
+        <div class="form-group">
+          <label for="{{this.elementId}}-key-purpose">{{t 'webmcp.collaboration.keyPurpose'}}</label>
+          <select id="{{this.elementId}}-key-purpose" class="form-control" onchange={{action 'keyPurpose'}} data-testid="api-key-purpose">
+            <option value="general" selected={{not (eq this.policyDraft.purpose 'ai-bridge')}}>{{t 'webmcp.collaboration.keyPurposeGeneral'}}</option>
+            <option value="ai-bridge" selected={{eq this.policyDraft.purpose 'ai-bridge'}}>{{t 'webmcp.collaboration.keyPurposeAiBridge'}}</option>
+          </select>
+          {{#if (eq this.policyDraft.purpose 'ai-bridge')}}<p class="help-block">{{t 'webmcp.collaboration.keyPurposeHelp'}}</p>{{/if}}
+        </div>
         <div class="btn-group r-mb15" role="group" aria-label={{t 'apiKeyAccess.access'}}>
           {{#each (array 'allow' 'deny') as |effect|}}
             <button type="button" class="btn {{if (eq this.defaultEffect effect) 'btn-primary' 'btn-default'}}"
@@ -146,6 +154,7 @@
           <h3>{{t 'apiKeyAccess.review'}}</h3>
           <p>{{this.review.name}} · {{t (concat 'apiKeyAccess.modes.' this.review.apiKeyPolicy.mode)}}</p>
           <p>{{this.review.description}}</p>
+          <p>{{t 'webmcp.collaboration.keyPurpose'}}: {{t (if (eq this.review.apiKeyPolicy.purpose 'ai-bridge') 'webmcp.collaboration.keyPurposeAiBridge' 'webmcp.collaboration.keyPurposeGeneral')}}</p>
           <p>{{t 'apiKeyAccess.expiry'}}: {{if this.review.apiKeyPolicy.expiresAt this.review.apiKeyPolicy.expiresAt (t 'apiKeyAccess.expiryChoices.none')}}</p>
           <p>{{t 'apiKeyAccess.revision'}}: {{this.review.apiKeyPolicyRevision}}</p>
           {{#if (eq this.review.apiKeyPolicy.mode 'custom')}}<p>{{t 'apiKeyAccess.defaultEffect'}}: {{t (concat 'apiKeyAccess.effects.' this.review.apiKeyPolicy.defaultEffect)}}</p>{{/if}}

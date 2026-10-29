@@ -2141,6 +2141,7 @@ apiKeyAccess:
       mixed: Partially limited
       conditional: Target checks required
       unknown: Needs verification
+      unsupported: "Not provided"
     basis:
       full: Full access; account permissions still apply
       closed: No allow exceptions
@@ -2155,6 +2156,8 @@ apiKeyAccess:
       invalidPolicy: Correct the policy before saving
       createDestination: The new resource and its destination must be checked
       multipleTargets: Every target of the operation must be checked
+      aiBridge: "Only supported AI tools; current access and confirmation still apply."
+      aiBridgeUnsupported: "This dedicated purpose does not provide this operation."
   defaultEffect: Unmatched resources
   effect: Rule effect
   scope: Rule scope
@@ -4858,3 +4861,26 @@ webmcp:
   failed: "The plan could not be approved. Review the error and try again."
   expires: "Expires"
   dismiss: "Dismiss preview"
+  collaboration:
+    "title": "AI collaboration"
+    "mode": "Tools in this browser"
+    "off": "Paused"
+    "readOnly": "Read only"
+    "enabled": "Read and change"
+    "cookieNotice": "These browser tools use your current sign-in. They do not isolate the AI from your account. Use a dedicated API key with the separate MCP bridge for restricted access."
+    "confirmationSource": "Review and approve these plans here with your signed-in account. Approval authorizes this exact change; it does not start the upgrade."
+    "pendingPlans": "Plans awaiting your approval"
+    "noPendingPlans": "No plans need approval."
+    "loadFailed": "Plans could not be loaded. Check your sign-in and permissions, then retry."
+    "statusDisabled": "Paused"
+    "statusRegistering": "Connecting"
+    "statusEnabled": "Enabled"
+    "statusUnsupported": "Native WebMCP is unavailable in this browser. You can still review plans."
+    "statusUnavailable": "Unavailable"
+    "refresh": "Refresh plans"
+    "loadRequired": "Refresh to load plans for your current account and environment."
+    "keyPurpose": "Key purpose"
+    "keyPurposeGeneral": "General API access"
+    "keyPurposeAiBridge": "Dedicated AI bridge"
+    "keyPurposeHelp": "This key only supports the provided AI read, description-update and upgrade tools. Scope rules still apply. It cannot approve plans, execute shell commands or change security settings."
+    "invalidPurpose": "Choose a supported key purpose."

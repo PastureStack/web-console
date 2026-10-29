@@ -4402,6 +4402,7 @@ apiKeyAccess:
       mixed: 一部制限あり
       conditional: 対象の確認が必要
       unknown: 検証が必要
+      unsupported: "提供なし"
     basis:
       full: フルアクセス（アカウントの権限も適用）
       closed: 許可する例外なし
@@ -4416,6 +4417,8 @@ apiKeyAccess:
       invalidPolicy: 保存する前にポリシーを修正してください
       createDestination: 新しいリソースと作成先の確認が必要
       multipleTargets: 操作の対象をすべて確認する必要があります
+      aiBridge: "対応する AI ツールのみ。現在の権限と承認条件が適用されます。"
+      aiBridgeUnsupported: "この専用用途ではこの操作を提供しません。"
   defaultEffect: ルールに一致しないリソース
   effect: ルールの効果
   scope: ルールの範囲
@@ -4606,3 +4609,26 @@ webmcp:
   failed: "プランを承認できませんでした。エラーを確認して、もう一度お試しください。"
   expires: "有効期限"
   dismiss: "プレビューを閉じる"
+  collaboration:
+    "title": "AI 連携"
+    "mode": "このブラウザーのツール"
+    "off": "一時停止"
+    "readOnly": "読み取り専用"
+    "enabled": "読み取りと変更"
+    "cookieNotice": "このブラウザーのツールは現在のログイン権限を使用します。AI とアカウントは分離されません。アクセスを制限するには専用 API キーと独立した MCP bridge を使用してください。"
+    "confirmationSource": "現在のアカウントで計画を確認して承認してください。承認はこの変更だけを許可し、アップグレードはまだ開始しません。"
+    "pendingPlans": "承認待ちの計画"
+    "noPendingPlans": "承認待ちの計画はありません。"
+    "loadFailed": "計画を読み込めません。ログイン状態と権限を確認して再試行してください。"
+    "statusDisabled": "一時停止中"
+    "statusRegistering": "接続中"
+    "statusEnabled": "有効"
+    "statusUnsupported": "このブラウザーはネイティブ WebMCP に対応していませんが、計画の確認と承認は可能です。"
+    "statusUnavailable": "利用不可"
+    "refresh": "計画を更新"
+    "loadRequired": "現在のアカウントと環境の計画を再読み込みしてください。"
+    "keyPurpose": "キーの用途"
+    "keyPurposeGeneral": "通常の API アクセス"
+    "keyPurposeAiBridge": "AI bridge 専用"
+    "keyPurposeHelp": "このキーは対応する AI の読み取り、説明変更、アップグレードのみを許可します。範囲の規則は引き続き適用されます。計画の承認、シェルの実行、安全設定の変更はできません。"
+    "invalidPurpose": "対応するキーの用途を選択してください。"

@@ -13,6 +13,49 @@ const resource = (resourceType = 'service', resourceId = 'service-a') => ({kind:
 const rule = (id, effect, scope, operations = ['read']) => ({id, effect, scope, operations});
 const custom = (defaultEffect, rules = []) => ({mode: 'custom', defaultEffect, rules});
 
+test('dedicated bridge purpose distinguishes tool availability from the stored policy', function(assert) {
+  const general = buildPolicyMatrix({mode: 'full', defaultEffect: 'allow', rules: []}, {}, labels);
+  assert.ok(general.rows[0].cells.every(cell => cell.state === 'allow'));
+  const bridge = buildPolicyMatrix({mode: 'full', defaultEffect: 'allow', purpose: 'ai-bridge', rules: []}, {}, labels);
+  for (const cell of bridge.rows[0].cells) {
+    assert.strictEqual(cell.policyState, 'allow', 'full policy remains the same ceiling');
+    assert.strictEqual(cell.state, ['read', 'update', 'upgrade'].includes(cell.operation) ? 'conditional' : 'unsupported');
+  }
+  const closed = buildPolicyMatrix({mode: 'closed', defaultEffect: 'deny', purpose: 'ai-bridge', rules: []}, {}, labels);
+  assert.ok(closed.rows[0].cells.every(cell => cell.state === 'deny'));
+});
+
+test('dedicated bridge exact resource cells match the provided resource and operation pairs', function(assert) {
+  for (const resourceType of ['project', 'stack', 'service', 'host', 'container', 'volume']) {
+    const scope = resource(resourceType, `${resourceType}-a`);
+    const policy = Object.assign(custom('deny', [rule('target', 'allow', scope, API_KEY_OPERATIONS)]), {purpose: 'ai-bridge'});
+    const evidence = proof(scope, {stackId: ['project', 'host'].includes(resourceType) ? null : 'stack-a'});
+    const value = buildPolicyMatrix(policy, {target: evidence}, labels);
+    for (const operation of API_KEY_OPERATIONS) {
+      const provided = operation === 'read' ? ['project', 'stack', 'service'].includes(resourceType) :
+        ['update', 'upgrade'].includes(operation) && resourceType === 'service';
+      const actual = cell(value, key(scope), operation);
+      assert.strictEqual(actual.policyState, 'allow', `${resourceType}/${operation} retains the stored policy ceiling`);
+      assert.strictEqual(actual.state, provided ? 'conditional' : 'unsupported', `${resourceType}/${operation}`);
+      assert.strictEqual(actual.basis, provided ? 'aiBridge' : 'aiBridgeUnsupported', `${resourceType}/${operation} explains the bridge boundary`);
+    }
+  }
+});
+
+test('dedicated bridge broad scopes show conditional supported subsets rather than universal access', function(assert) {
+  for (const scope of [global(), project(), stack()]) {
+    const policy = Object.assign(custom('deny', [rule('broad', 'allow', scope, API_KEY_OPERATIONS)]), {purpose: 'ai-bridge'});
+    const value = buildPolicyMatrix(policy, {broad: proof(scope)}, labels);
+    for (const operation of ['read', 'update', 'upgrade']) {
+      const actual = cell(value, key(scope), operation);
+      assert.strictEqual(actual.state, 'conditional', `${scope.kind}/${operation} includes only supported bridge targets`);
+      assert.strictEqual(actual.basis, 'aiBridge');
+      assert.strictEqual(actual.policyState, 'allow');
+    }
+    assert.strictEqual(cell(value, key(scope), 'exec').state, 'unsupported');
+  }
+});
+
 function proof(scope, {label = 'Production / App', projectId = 'project-a', stackId = 'stack-a', type, ...changes} = {}) {
   let resourceType = scope.kind === 'resource' ? scope.resourceType : scope.kind;
   return {scopeKey: scopeKey(scope), selectionValid: true, contextVerified: true, complete: true, selectionLabel: label,

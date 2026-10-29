@@ -94,6 +94,7 @@
       </ul>
 
       <ul class="nav navbar-nav navbar-right">
+        {{#if this.app.webmcpAvailable}}<li>{{page-header-ai-control}}</li>{{/if}}
         <li class="dropdown">{{page-header-user}}</li>
       </ul>
     </div>

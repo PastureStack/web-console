@@ -4097,6 +4097,7 @@ apiKeyAccess:
       mixed: 部分受限
       conditional: 需要检查目标
       unknown: 需要验证
+      unsupported: "未提供"
     basis:
       full: 完整访问，仍受账号权限限制
       closed: 没有允许例外
@@ -4111,6 +4112,8 @@ apiKeyAccess:
       invalidPolicy: 请先修正策略再保存
       createDestination: 必须检查新资源及其创建位置
       multipleTargets: 必须检查操作涉及的每个目标
+      aiBridge: "仅限已支持的 AI 工具，仍须满足当前权限与确认条件。"
+      aiBridgeUnsupported: "此专用用途不提供这项操作。"
   defaultEffect: 未匹配规则的资源
   effect: 规则效果
   scope: 规则范围
@@ -4301,3 +4304,26 @@ webmcp:
   failed: "无法批准此计划。请检查错误后重试。"
   expires: "到期时间"
   dismiss: "关闭预览"
+  collaboration:
+    "title": "AI 协作"
+    "mode": "此浏览器的工具模式"
+    "off": "暂停"
+    "readOnly": "仅查询"
+    "enabled": "查询与修改"
+    "cookieNotice": "此浏览器工具沿用您当前的登录权限，不代表 AI 与账号已经隔离。如需限制 AI 访问，请使用专用 API 密钥和独立 MCP bridge。"
+    "confirmationSource": "请使用当前登录账号在此查看并批准计划。批准只授权这项修改，不会立即开始升级。"
+    "pendingPlans": "等待您批准的计划"
+    "noPendingPlans": "当前没有待批准的计划。"
+    "loadFailed": "无法加载计划。请检查登录状态和权限后重试。"
+    "statusDisabled": "已暂停"
+    "statusRegistering": "正在连接"
+    "statusEnabled": "已启用"
+    "statusUnsupported": "此浏览器不支持原生 WebMCP，但仍可查看并批准计划。"
+    "statusUnavailable": "当前不可用"
+    "refresh": "刷新计划"
+    "loadRequired": "请刷新以加载当前账号和环境的计划。"
+    "keyPurpose": "密钥用途"
+    "keyPurposeGeneral": "常规 API 访问"
+    "keyPurposeAiBridge": "AI bridge 专用"
+    "keyPurposeHelp": "此密钥只提供已支持的 AI 查询、描述修改和升级工具，仍受范围规则限制。不能批准计划、执行 Shell 或修改安全设置。"
+    "invalidPurpose": "请选择支持的密钥用途。"

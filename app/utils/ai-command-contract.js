@@ -11,6 +11,9 @@ export const COMMANDS = Object.freeze([
     inputSchema: schema({query: string('Service name words.'), stackRef: string('Optional stackRef from find_stacks.'), cursor: string('Reuse the previous nextCursor unchanged.')}, ['query'])},
   {name: 'get_service', description: 'Read the image, state and safe configuration summary of a service. Reuse its serviceRef unchanged.',
     inputSchema: schema({serviceRef: string('serviceRef from find_services.')}, ['serviceRef'])},
+  {name: 'update_service_description', write: true, description: 'Update only the service description using the saved read snapshot. An empty string clears it. If the description changed, read a new reference before deciding; never retry an unknown write automatically.',
+    inputSchema: schema({serviceRef: string('serviceRef from find_services; use get_service first if its description has not been loaded.'),
+      description: {type: 'string', minLength: 0, maxLength: 1024, description: 'Full new description, at most 1024 UTF-16 code units. Empty string clears it; preserve whitespace and Unicode.'}}, ['serviceRef', 'description'])},
   {name: 'preview_service_upgrade', write: true, description: 'Preview only: preserve other settings and create an image upgrade plan. A human must approve it in the console before apply.',
     inputSchema: schema({serviceRef: string('serviceRef from find_services.'), image: string('The exact complete image requested by the user. Do not guess a version.', 512)}, ['serviceRef', 'image'])},
   {name: 'apply_service_upgrade', write: true, description: 'Apply an existing server-approved plan. Reuse planRef only. Never treat accepted, running or unknown as success; do not resubmit an unknown operation.',
@@ -75,7 +78,7 @@ export function validateInput(name, input) {
     }
   }
   for ( const key of definition.required ) {
-    if ( !Object.prototype.hasOwnProperty.call(input, key) || !input[key].trim() ) { throw new CommandError('INVALID_INPUT', key); }
+    if ( !Object.prototype.hasOwnProperty.call(input, key) || definition.properties[key].minLength > 0 && !input[key].trim() ) { throw new CommandError('INVALID_INPUT', key); }
   }
   return command;
 }

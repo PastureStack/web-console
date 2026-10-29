@@ -82,9 +82,9 @@ export default ModalBase.extend(NewOrEdit, {
       global: rule.scope.kind === 'global',
       resource: rule.scope.kind === 'resource',
       operationsView: ownerOperationStates(rule.scope, (this.get('capabilityEvidence') || {})[rule.id], this.get('ownerContextKnown'))
-        .map((item) => Object.assign({}, item, {checked: rule.operations.includes(item.operation), disabled: rule.effect === 'allow' && item.unavailable})),
+        .map((item) => Object.assign({}, item, {checked: rule.operations.includes(item.operation), disabled: rule.effect === 'allow' && (item.unavailable || this.get('policyDraft.purpose') === 'ai-bridge' && !['read', 'update', 'upgrade'].includes(item.operation))})),
     }));
-  }.property('policyDraft.rules.[]', 'capabilityEvidence', 'ownerContextKnown'),
+  }.property('policyDraft.rules.[]', 'policyDraft.purpose', 'capabilityEvidence', 'ownerContextKnown'),
 
   reviewRules: function() {
     return (this.get('review.apiKeyPolicy.rules') || []).map((rule) => Object.assign({}, rule, {
@@ -256,7 +256,7 @@ export default ModalBase.extend(NewOrEdit, {
     let policy = plain(this.get('policyDraft'));
     let errors = policyErrors(policy);
     if ( errors.length ) {
-      this.set('policyError', this.get('intl').t(`apiKeyAccess.errors.${errors[0]}`));
+      this.set('policyError', this.get('intl').t(errors[0] === 'purpose' ? 'webmcp.collaboration.invalidPurpose' : `apiKeyAccess.errors.${errors[0]}`));
       return;
     }
     if ( policy.mode !== 'custom' ) {
@@ -420,6 +420,15 @@ export default ModalBase.extend(NewOrEdit, {
   },
 
   actions: {
+    keyPurpose(event) {
+      if ( this.get('editingLocked') ) { return; }
+      const purpose = event.target.value;
+      if ( !['general', 'ai-bridge'].includes(purpose) ) { return; }
+      this.invalidateReview();
+      const policy = Object.assign({}, this.get('policyDraft'));
+      if ( purpose === 'general' ) { delete policy.purpose; } else { policy.purpose = purpose; }
+      this.set('policyDraft', policy);
+    },
     scopeCapabilities(id, evidence) {
       let rule = (this.get('policyDraft.rules') || []).find((item) => item.id === id);
       if ( rule && evidence.scopeKey === scopeKey(rule.scope) ) {

@@ -1,0 +1,29 @@
+<h3 id="ai-collaboration-title">{{t "webmcp.collaboration.title"}}</h3>
+<dl class="horizontal-form">
+  <dt>{{t "nav.user.yourAccount"}}</dt><dd>{{identity-block identity=this.access.identity avatar=false link=false}}</dd>
+  <dt>{{t "nav.environment.label"}}</dt><dd class="force-wrap" data-testid="ai-collaboration-environment">{{this.projects.current.displayName}}</dd>
+  <dt>{{t "generic.state"}}</dt><dd role="status" data-testid="ai-collaboration-status">{{t this.statusKey}}</dd>
+</dl>
+<p id="ai-collaboration-boundary">{{t "webmcp.collaboration.cookieNotice"}}</p>
+<fieldset disabled={{this.changing}} aria-describedby="ai-collaboration-boundary">
+  <legend>{{t "webmcp.collaboration.mode"}}</legend>
+  <label class="radio-inline"><input type="radio" name="ai-collaboration-mode" checked={{eq this.registry.mode "off"}} onchange={{action "mode" "off"}} data-testid="ai-collaboration-off"> {{t "webmcp.collaboration.off"}}</label>
+  <label class="radio-inline"><input type="radio" name="ai-collaboration-mode" checked={{eq this.registry.mode "read-only"}} onchange={{action "mode" "read-only"}} data-testid="ai-collaboration-read-only"> {{t "webmcp.collaboration.readOnly"}}</label>
+  {{#if this.canEnable}}<label class="radio-inline"><input type="radio" name="ai-collaboration-mode" checked={{eq this.registry.mode "enabled"}} onchange={{action "mode" "enabled"}} data-testid="ai-collaboration-enabled"> {{t "webmcp.collaboration.enabled"}}</label>{{/if}}
+</fieldset>
+<hr>
+<h4>{{t "webmcp.collaboration.pendingPlans"}}</h4>
+<p id="ai-collaboration-confirmation-source">{{t "webmcp.collaboration.confirmationSource"}}</p>
+<button type="button" class="btn btn-sm btn-default" disabled={{this.loading}} {{action "refresh"}} data-testid="ai-collaboration-refresh">{{t "webmcp.collaboration.refresh"}}</button>
+{{#if this.loading}}<p role="status">{{t "generic.loading"}}</p>
+{{else if this.loadError}}<p class="alert alert-warning" role="alert">{{t "webmcp.collaboration.loadFailed"}}</p>
+{{else if this.hasLoaded}}
+  <ul class="list-unstyled mt-15" data-testid="ai-collaboration-plans">
+    {{#each this.plans as |plan|}}<li class="mb-15">
+      <strong class="force-wrap">{{plan.displayPath}}</strong>
+      <div class="force-wrap">{{plan.currentImage}} → {{plan.requestedImage}}</div>
+      <button type="button" class="btn btn-sm btn-primary" {{action "review" plan}} data-testid="ai-collaboration-review-plan">{{t "webmcp.review"}}</button>
+    </li>{{else}}<li>{{t "webmcp.collaboration.noPendingPlans"}}</li>{{/each}}
+  </ul>
+{{else}}<p>{{t "webmcp.collaboration.loadRequired"}}</p>{{/if}}
+<div class="footer-actions"><button type="button" class="btn btn-primary" {{action "cancel"}} data-testid="ai-collaboration-close">{{t "generic.closeModal"}}</button></div>

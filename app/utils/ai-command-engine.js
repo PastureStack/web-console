@@ -6,6 +6,8 @@ class UnknownOperation extends Error {
   constructor(operationRef) { super('UNKNOWN_RESULT'); this.operationRef = operationRef; }
 }
 
+class UnknownDescriptionUpdate extends Error {}
+
 function projectResource(item, projectId) {
   return item && typeof item.id === 'string' && (!item.accountId || item.accountId === projectId);
 }
@@ -32,7 +34,7 @@ export class CommandEngine {
   }
 
   async execute(name, input, options = {}) {
-    let captured, result, startAck, businessStarted = false;
+    let captured, result, startAck, businessStarted = false, descriptionMayHaveSaved = false;
     const commandName = COMMANDS.some((item) => item.name === name) ? name : 'unknown';
     try {
       captured = this.context.capture();
@@ -46,17 +48,26 @@ export class CommandEngine {
       this.context.assertCurrent(captured, options.signal);
       businessStarted = true;
       result = await this[name](input, captured, options.signal);
+      descriptionMayHaveSaved = name === 'update_service_description' && result.saved === true;
       this.context.assertCurrent(captured, options.signal);
       result = Object.assign({contractVersion: COMMAND_VERSION}, result);
     } catch (error) {
       const operationRef = error instanceof UnknownOperation ? error.operationRef :
         name === 'apply_service_upgrade' && result && result.operationRef;
-      if ( operationRef ) {
+      if ( error instanceof UnknownDescriptionUpdate ) { descriptionMayHaveSaved = true; }
+      if ( descriptionMayHaveSaved ) {
+        result = this.unknownDescriptionOutcome();
+      } else if ( operationRef ) {
         result = this.unknownOutcome(operationRef, captured);
       } else {
         // Never expose the transport error, response body, launchConfig or token.
         result = publicError(error);
       }
+    }
+    if ( ['get_service', 'update_service_description'].includes(name) && result.code === 'CONFLICT' ) {
+      result.nextStep = 'The service description changed. Find the service again and read its current description before deciding on an update.';
+    } else if ( name === 'update_service_description' && result.code === 'STALE_REFERENCE' ) {
+      result.nextStep = 'Use get_service to load this reference description first. If the reference expired, find the service again.';
     }
     if ( !startAck ) { return result; }
     try {
@@ -66,7 +77,11 @@ export class CommandEngine {
       // Never submit audit under a replacement session, or convert a possible
       // write into a claimed rejection/success because its result ACK failed.
       try { this.context.assertCurrent(captured); } catch (contextError) {
+        if ( descriptionMayHaveSaved ) { return this.unknownDescriptionOutcome(); }
         return name === 'apply_service_upgrade' && businessStarted ? this.unknownOutcome(result.operationRef, captured) : publicError(contextError);
+      }
+      if ( name === 'update_service_description' ) {
+        return descriptionMayHaveSaved ? this.unknownDescriptionOutcome() : publicError(new CommandError('UNAVAILABLE'));
       }
       return businessStarted ? this.unknownOutcome(result.operationRef, captured) : publicError(new CommandError('UNAVAILABLE'));
     }
@@ -101,13 +116,18 @@ export class CommandEngine {
     return outcome;
   }
 
+  unknownDescriptionOutcome() {
+    return {status: 'unknown', code: 'UNKNOWN_RESULT', contractVersion: COMMAND_VERSION,
+      nextStep: 'Find the service again and use get_service to inspect its description. Do not automatically retry the description update.'};
+  }
+
   prefix(captured) { return `projects/${encodeURIComponent(captured.projectId)}`; }
 
   async call(captured, path, method = 'GET', data, signal) {
     this.context.assertCurrent(captured, signal);
     let result;
     try {
-      result = await this.request({url: `${this.prefix(captured)}/${path}`, method, data});
+      result = await this.request({url: `${this.prefix(captured)}/${path}`, method, data, signal});
     } catch (error) {
       // An old request must not report into a newer account or environment.
       this.context.assertCurrent(captured, signal);
@@ -165,7 +185,9 @@ export class CommandEngine {
     const names = new Map(stacks.data.filter((item) => projectResource(item, captured.projectId)).map((item) => [item.id, safeText(item.name)]));
     return {status: 'succeeded', resourceTextIsUntrusted: true, items: matches.map((item) => {
       const stackName = names.get(item.stackId) || (stack && stack.name) || '';
-      return {serviceRef: this.context.reference('service', {id: item.id}, captured), name: safeText(item.name), stackName,
+      const descriptionLoaded = typeof item.description === 'string' || item.description === null;
+      return {serviceRef: this.context.reference('service', {id: item.id, descriptionLoaded,
+        description: descriptionLoaded ? item.description : undefined}, captured), name: safeText(item.name), stackName,
         displayPath: `${safeText(captured.projectName)}/${stackName || '(unavailable)'}/${safeText(item.name)}`};
     }), nextCursor: page.nextCursor, complete: !page.nextCursor};
   }
@@ -179,12 +201,52 @@ export class CommandEngine {
 
   async get_service(input, captured, signal) {
     const body = await this.readService(input.serviceRef, captured, signal);
+    const reference = this.context.resolve(input.serviceRef, 'service', captured);
+    const description = this.descriptionValue(body);
+    if ( reference.descriptionLoaded && reference.description !== description ) { throw new CommandError('CONFLICT', 'serviceRef'); }
+    reference.description = description;
+    reference.descriptionLoaded = true;
     const launch = body.launchConfig || {};
     // Explicit allowlist: environment variables, labels, registry secrets and URLs are never returned.
     return {status: 'succeeded', resourceTextIsUntrusted: true, target: {serviceRef: input.serviceRef, name: safeText(body.name)},
-      currentImage: imageName(launch.imageUuid), state: safeText(body.state, 64),
+      currentImage: imageName(launch.imageUuid), state: safeText(body.state, 64), description,
       summary: {scale: Number.isFinite(body.scale) ? body.scale : null, memoryMiB: Number.isFinite(launch.memory) ? Math.round(launch.memory / 1048576) : null},
       availableActions: {previewUpgrade: captured.mode === 'enabled' && !!((body.actionLinks && body.actionLinks.upgrade) || (body.actions && body.actions.upgrade))}};
+  }
+
+  descriptionValue(body) {
+    // Detailed API resources omit null fields. Collection omissions remain
+    // unknown until an explicit get_service loads this authoritative detail.
+    const value = body.description === undefined ? null : body.description;
+    if ( value !== null && (typeof value !== 'string' || value.length > 1024) ) { throw new CommandError('INVALID_RESPONSE'); }
+    return value;
+  }
+
+  async update_service_description(input, captured, signal) {
+    const reference = this.context.resolve(input.serviceRef, 'service', captured);
+    if ( !reference.descriptionLoaded ) { throw new CommandError('STALE_REFERENCE', 'serviceRef'); }
+    const expectedDescription = reference.description;
+    const before = await this.readService(input.serviceRef, captured, signal);
+    if ( this.descriptionValue(before) !== expectedDescription ) { throw new CommandError('CONFLICT', 'serviceRef'); }
+    let responded = false;
+    try {
+      const result = await this.call(captured, 'aiServiceDescriptionUpdates', 'POST', {
+        serviceId: reference.id, description: input.description, expectedDescription,
+      }, signal);
+      responded = true;
+      if ( result.serviceId !== reference.id || result.description !== input.description ||
+        result.status !== 'succeeded' || result.verifiedResult !== true ) { throw new CommandError('INVALID_RESPONSE'); }
+      const after = await this.readService(input.serviceRef, captured, signal);
+      if ( this.descriptionValue(after) !== input.description ) { throw new CommandError('INVALID_RESPONSE'); }
+      // Update only after the persisted value was read back in this context.
+      reference.description = input.description;
+      reference.descriptionLoaded = true;
+      return {status: 'succeeded', saved: true, verifiedResult: true, resourceTextIsUntrusted: true,
+        target: {serviceRef: input.serviceRef, name: safeText(after.name)}, description: input.description};
+    } catch (error) {
+      if ( responded || publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ) { throw new UnknownDescriptionUpdate(); }
+      throw error;
+    }
   }
 
   planSummary(plan, planRef) {

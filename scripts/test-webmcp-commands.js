@@ -10,7 +10,7 @@ const modules = new Map();
 function moduleUrl(name) {
   if ( modules.has(name) ) { return modules.get(name); }
   const source = fs.readFileSync(path.join(root, `${name}.js`), 'utf8').replace(/from '(\.\/[^']+)'/g,
-    (_, relative) => `from '${moduleUrl(relative.slice(2))}'`);
+    (_, relative) => `from '${moduleUrl(relative.slice(2).replace(/\.js$/, ''))}'`);
   const url = `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
   modules.set(name, url);
   return url;
@@ -40,6 +40,7 @@ async function main() {
       projectName: 'Selected environment', schemaProjectId: 'project-one', schemaGeneration: 1, route: '/stacks'};
     let sequence = 0, plan, operationStatus = 'accepted', verifiedResult = false, ensureCalls = 0;
     const requests = [], plans = [], audits = [];
+    const descriptions = new Map([['svc-a', 'Original description'], ['svc-b', null]]);
     const context = new CommandContext(() => snapshot, () => String(++sequence).padStart(48, '0'));
     context.setMode('enabled');
     const engine = new CommandEngine({context, onPlan: (value) => plans.push(value),
@@ -53,13 +54,21 @@ async function main() {
           return {body: {data: [{id: 'stack-a', accountId: 'project-one', name: 'Alpha'}, {id: 'stack-b', name: 'Beta'}]}};
         }
         if ( request.method === 'GET' && resource.startsWith('services?') ) {
-          return {body: {data: [{id: 'svc-a', name: 'web', accountId: 'project-one', stackId: 'stack-a'},
-            {id: 'svc-b', name: 'web', stackId: 'stack-b'}, {id: 'other-project', name: 'web', accountId: 'project-two'}]}};
+          return {body: {data: [{id: 'svc-a', name: 'web', accountId: 'project-one', stackId: 'stack-a', description: descriptions.get('svc-a')},
+            {id: 'svc-b', name: 'web', stackId: 'stack-b', description: descriptions.get('svc-b')}, {id: 'other-project', name: 'web', accountId: 'project-two'}]}};
         }
         if ( resource === 'services/svc-a' || resource === 'services/svc-b' ) {
-          return {body: {id: resource.split('/')[1], accountId: 'project-one', name: 'web', state: 'active', scale: 2,
+          return {body: {id: resource.split('/')[1], accountId: 'project-one', name: 'web', state: 'active', scale: 2, description: descriptions.get(resource.split('/')[1]),
             actions: {upgrade: '/private-action-url'}, launchConfig: {imageUuid: 'docker:example/web:1', memory: 1048576,
               environment: {SECRET: 'SECRET_SENTINEL'}, labels: {token: 'SECRET_SENTINEL'}}}};
+        }
+        if ( resource === 'aiServiceDescriptionUpdates' ) {
+          if ( descriptions.get(request.data.serviceId) !== request.data.expectedDescription ) {
+            throw {status: 409, body: {code: 'DescriptionConflict'}};
+          }
+          descriptions.set(request.data.serviceId, request.data.description);
+          return {body: {id: 'aidescription-fixture', serviceId: request.data.serviceId,
+            description: request.data.description, status: 'succeeded', verifiedResult: true}};
         }
         if ( resource === 'aiServiceUpgradePlans' ) {
           plan = {id: 'server-plan', serviceName: 'web', currentImage: 'docker:example/web:1',
@@ -78,13 +87,14 @@ async function main() {
       },
     });
     return {snapshot, context, engine, requests, plans, audits, setStatus(value, verified) { operationStatus = value; verifiedResult = verified; },
+      setDescription(value, id = 'svc-a') { descriptions.set(id, value); },
       ensureCalls: () => ensureCalls};
   }
   async function serviceRef(f) { return (await f.engine.execute('find_services', {query: 'web'})).items[0].serviceRef; }
   async function preview(f) { return f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2'}); }
 
-  await test('six bounded schemas reject extra fields before business requests and audit the rejection', async () => {
-    assert.equal(COMMANDS.length, 6);
+  await test('seven bounded schemas reject extra fields before business requests and audit the rejection', async () => {
+    assert.equal(COMMANDS.length, 7);
     for ( const command of COMMANDS ) {
       assert.ok(command.inputSchema.required.length <= 2);
       assert.equal(command.inputSchema.additionalProperties, false);
@@ -159,6 +169,143 @@ async function main() {
     assert.equal(detail.currentImage, 'example/web:1'); assert.equal(detail.summary.memoryMiB, 1);
     assert.equal(JSON.stringify(detail).includes('SECRET_SENTINEL'), false);
     assert.equal(JSON.stringify(detail).includes('private-action'), false);
+  });
+
+  await test('description schema permits empty and UTF-16 bounded strings only', async () => {
+    const command = COMMANDS.find((item) => item.name === 'update_service_description');
+    assert.equal(COMMANDS.length, 7);
+    assert.deepEqual(command.inputSchema.required, ['serviceRef', 'description']);
+    assert.equal(command.inputSchema.additionalProperties, false);
+    assert.equal(command.inputSchema.properties.description.minLength, 0);
+    const f = fixture(), ref = await serviceRef(f);
+    for ( const description of [undefined, null, false, 42, [], {}, 'x'.repeat(1025), '🙂'.repeat(513)] ) {
+      const input = {serviceRef: ref, description};
+      if ( description === undefined ) { delete input.description; }
+      assert.equal((await f.engine.execute('update_service_description', input)).code, 'INVALID_INPUT');
+    }
+    assert.equal((await f.engine.execute('update_service_description', {serviceRef: ref, description: 'x', expectedDescription: 'guess'})).code, 'INVALID_INPUT');
+    assert.equal(f.requests.filter((request) => request.method === 'POST').length, 0);
+    for ( const description of ['', 'x'.repeat(1024), '🙂'.repeat(512)] ) {
+      const result = await f.engine.execute('update_service_description', {serviceRef: ref, description});
+      assert.equal(result.status, 'succeeded'); assert.equal(result.description, description);
+    }
+  });
+
+  await test('description update uses only the CAS fields and verifies exact Unicode before success', async () => {
+    const f = fixture(), ref = await serviceRef(f), description = '  繁體中文🙂\nSECRET_DESCRIPTION_SENTINEL  ';
+    const result = await f.engine.execute('update_service_description', {serviceRef: ref, description});
+    assert.equal(result.status, 'succeeded'); assert.equal(result.saved, true); assert.equal(result.verifiedResult, true);
+    assert.equal(result.description, description); assert.equal(result.resourceTextIsUntrusted, true);
+    const write = f.requests.find((request) => request.method === 'POST');
+    assert.deepEqual(write.data, {serviceId: 'svc-a', description, expectedDescription: 'Original description'});
+    assert.equal(write.url, 'projects/project-one/aiServiceDescriptionUpdates');
+    assert.equal(f.requests.at(-1).url, 'projects/project-one/services/svc-a');
+    assert.equal(f.requests.at(-1).method, 'GET');
+    assert.equal(JSON.stringify(f.audits).includes('SECRET_DESCRIPTION_SENTINEL'), false);
+    assert.equal((await f.engine.execute('get_service', {serviceRef: ref})).description, description);
+    const cleared = await f.engine.execute('update_service_description', {serviceRef: ref, description: ''});
+    assert.equal(cleared.status, 'succeeded');
+    assert.equal(f.requests.filter((request) => request.method === 'POST').at(-1).data.expectedDescription, description);
+  });
+
+  await test('description snapshots distinguish null, empty and unloaded collection values', async () => {
+    const f = fixture(); f.setDescription(null);
+    const ref = await serviceRef(f);
+    assert.equal((await f.engine.execute('get_service', {serviceRef: ref})).description, null);
+    assert.equal((await f.engine.execute('update_service_description', {serviceRef: ref, description: ''})).status, 'succeeded');
+    assert.equal(f.requests.filter((request) => request.method === 'POST').at(-1).data.expectedDescription, null);
+    assert.equal((await f.engine.execute('update_service_description', {serviceRef: ref, description: 'next'})).status, 'succeeded');
+    assert.equal(f.requests.filter((request) => request.method === 'POST').at(-1).data.expectedDescription, '');
+    const missing = fixture(), request = missing.engine.request;
+    missing.engine.request = async (options) => {
+      const response = await request(options);
+      if ( options.url.includes('/services?') ) { response.body.data.forEach((item) => delete item.description); }
+      return response;
+    };
+    const unknownRef = await serviceRef(missing);
+    assert.equal((await missing.engine.execute('update_service_description', {serviceRef: unknownRef, description: 'new'})).code, 'STALE_REFERENCE');
+    assert.equal(missing.requests.filter((item) => item.method === 'POST').length, 0);
+    assert.equal((await missing.engine.execute('get_service', {serviceRef: unknownRef})).description, 'Original description');
+    assert.equal((await missing.engine.execute('update_service_description', {serviceRef: unknownRef, description: 'new'})).status, 'succeeded');
+  });
+
+  await test('description changed since discovery is rejected without silently refreshing the snapshot', async () => {
+    const f = fixture(), ref = await serviceRef(f);
+    f.setDescription('Human changed it');
+    assert.equal((await f.engine.execute('get_service', {serviceRef: ref})).code, 'CONFLICT');
+    assert.equal((await f.engine.execute('update_service_description', {serviceRef: ref, description: 'overwrite'})).code, 'CONFLICT');
+    assert.equal(f.requests.filter((request) => request.method === 'POST').length, 0);
+    const freshRef = await serviceRef(f);
+    assert.equal((await f.engine.execute('update_service_description', {serviceRef: freshRef, description: 'reviewed update'})).status, 'succeeded');
+    assert.equal(f.requests.find((request) => request.method === 'POST').data.expectedDescription, 'Human changed it');
+  });
+
+  await test('description atomic conflicts and forbidden responses are definitive and never retried', async () => {
+    for ( const status of [409, 403] ) {
+      const f = fixture(), ref = await serviceRef(f), request = f.engine.request;
+      f.engine.request = async (options) => {
+        if ( options.method === 'POST' ) {
+          f.requests.push(options);
+          throw {status, body: {code: status === 409 ? 'DescriptionConflict' : 'PermissionDenied', message: 'SECRET_SENTINEL'}};
+        }
+        return request(options);
+      };
+      const result = await f.engine.execute('update_service_description', {serviceRef: ref, description: 'changed'});
+      assert.equal(result.status, 'rejected'); assert.equal(result.code, status === 409 ? 'CONFLICT' : 'FORBIDDEN');
+      assert.equal(f.requests.filter((options) => options.method === 'POST').length, 1);
+      assert.equal(JSON.stringify(result).includes('SECRET_SENTINEL'), false);
+    }
+  });
+
+  await test('description context changes block pre-submit work and mark submitted writes unknown', async () => {
+    for ( const phase of ['read', 'write'] ) {
+      const f = fixture(), ref = await serviceRef(f), entered = deferred(), barrier = deferred(), request = f.engine.request;
+      f.engine.request = async (options) => {
+        const response = await request(options);
+        if ( phase === 'read' && options.url.endsWith('/services/svc-a') || phase === 'write' && options.method === 'POST' ) {
+          entered.resolve(); await barrier.promise;
+        }
+        return response;
+      };
+      const pending = f.engine.execute('update_service_description', {serviceRef: ref, description: 'changed'});
+      await entered.promise; f.snapshot.generation = 'replacement-session'; barrier.resolve();
+      const result = await pending;
+      assert.equal(result.code, phase === 'read' ? 'CONTEXT_CHANGED' : 'UNKNOWN_RESULT');
+      assert.equal(f.requests.filter((options) => options.method === 'POST').length, phase === 'read' ? 0 : 1);
+      assert.equal(result.description, undefined);
+    }
+  });
+
+  await test('description lost response or mismatched readback is unknown and does not replay the write', async () => {
+    for ( const outcome of ['lost', 'readback'] ) {
+      const f = fixture(), ref = await serviceRef(f), request = f.engine.request;
+      f.engine.request = async (options) => {
+        const response = await request(options);
+        if ( options.method === 'POST' ) {
+          if ( outcome === 'lost' ) { throw new TypeError('Connection lost after save'); }
+          f.setDescription('Another write won after save');
+        }
+        return response;
+      };
+      const result = await f.engine.execute('update_service_description', {serviceRef: ref, description: 'changed'});
+      assert.equal(result.status, 'unknown'); assert.equal(result.code, 'UNKNOWN_RESULT');
+      assert.equal(f.requests.filter((options) => options.method === 'POST').length, 1);
+      assert.equal((await f.engine.execute('get_service', {serviceRef: ref})).code, 'CONFLICT', 'unverified writes do not advance the old snapshot');
+    }
+  });
+
+  await test('description audit admission failure blocks writes and result failure suppresses success', async () => {
+    for ( const phase of ['start', 'result'] ) {
+      const f = fixture(), ref = await serviceRef(f), audit = f.engine.audit;
+      f.engine.audit = async (event, captured) => {
+        if ( event.command === 'update_service_description' && event.phase === phase ) { throw new Error('Audit unavailable'); }
+        return audit(event, captured);
+      };
+      const result = await f.engine.execute('update_service_description', {serviceRef: ref, description: 'SECRET_DESCRIPTION_SENTINEL'});
+      assert.equal(result.code, phase === 'start' ? 'UNAVAILABLE' : 'UNKNOWN_RESULT');
+      assert.equal(f.requests.filter((options) => options.method === 'POST').length, phase === 'start' ? 0 : 1);
+      assert.equal(JSON.stringify(f.audits).includes('SECRET_DESCRIPTION_SENTINEL'), false);
+    }
   });
 
   await test('pagination cursor is opaque, bound to query, and rejects off-scope next URLs', async () => {
@@ -458,7 +605,7 @@ async function main() {
     for ( let i = 0; i < 100; i++ ) {
       const registration = registerCommandTools({context: f.context, engine: f.engine, modelContext});
       await registration.ready;
-      assert.equal(active, 6); registration.dispose(); registration.dispose(); assert.equal(active, 0);
+      assert.equal(active, COMMANDS.length); registration.dispose(); registration.dispose(); assert.equal(active, 0);
     }
     let calls = 0;
     const failed = registerCommandTools({context: f.context, engine: f.engine,
@@ -521,10 +668,10 @@ async function main() {
         await registry.setMode('off');
         assert.equal(registry.status, 'disabled'); assert.equal(active, 0);
         await registry.setMode('enabled');
-        assert.equal(registry.status, 'enabled'); assert.equal(active, 6);
+        assert.equal(registry.status, 'enabled'); assert.equal(active, COMMANDS.length);
         if ( outcome === 'resolve' ) { barrier.resolve(); } else { barrier.reject(new Error('late rejection')); }
         await first;
-        assert.equal(registry.status, 'enabled'); assert.equal(active, 6);
+        assert.equal(registry.status, 'enabled'); assert.equal(active, COMMANDS.length);
         await registry.setMode('off'); assert.equal(active, 0);
       }
       const f = fixture();

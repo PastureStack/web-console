@@ -5,6 +5,18 @@ set -euo pipefail
 # and a dedicated artifact directory cross the boundary; host SDKs do not.
 builder_image='node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a'
 
+configure_webmcp_profile() {
+  case "${WEBMCP_MODE:-off}" in
+    off|read-only|enabled) ;;
+    *) echo 'INVALID_WEBMCP_MODE' >&2; return 2 ;;
+  esac
+  export WEBMCP_MODE=${WEBMCP_MODE:-off}
+}
+
+write_webmcp_profile() {
+  printf '{"ceiling":"%s","initialMode":"off"}\n' "$WEBMCP_MODE" >"$1"
+}
+
 copy_release_source() {
   local source_dir=$1 destination=$2
   mkdir -p "$destination"
@@ -81,6 +93,7 @@ build_inside_container() {
       | sha256sum --check
   )
   node --test scripts/test-ui-sbom.js scripts/test-ui-build-module-boundary.js scripts/test-ui-webpack-inventory.js scripts/test-ui-finalize-webpack-inventory.js scripts/test-ui-build-dependency-security.js
+  node scripts/test-ai-collaboration-ui.js --filter=initialization
   python3 -B scripts/test-ui-builder-inventory.py
   python3 -B scripts/test-ui-builder-boundary.py
   if [[ "$VALIDATION_SCOPE" = sbom ]]; then
@@ -95,12 +108,14 @@ build_inside_container() {
     export CONCAT_STATS_PATH="$PWD/build/security-browser/concat-stats"
     export PASTURESTACK_MODULE_INVENTORY=1
     ./node_modules/.bin/ember build --environment production
+    write_webmcp_profile dist/webmcp-build.json
     node scripts/finalize-ui-webpack-inventory.js
     node scripts/check-ui-build-module-boundary.js
     bash scripts/package-static-candidate "$package_version" dist "$output"
     # The packager removes test chunks/maps/pseudo-locales and adds VERSION.txt.
     # Verify the original archive's canonical tree, not the pre-package dist.
     canonical_dist=$(packaged_release_tree "$output" "$output.tree" "$package_version")
+    cmp dist/webmcp-build.json "$canonical_dist/webmcp-build.json"
     node scripts/generate-ui-sbom.js \
       --dist "$canonical_dist" --archive "$output" \
       --webpack-inventory build/security-browser/webpack-modules.json \
@@ -130,6 +145,8 @@ build_inside_container() {
 
   local release_asset="$output_dir/web-console-${package_version}.tar.gz"
   cp "$work_root/web-console-a.tar.gz" "$release_asset"
+  cp "$work_root/web-console-a.tar.gz.tree/$package_version/webmcp-build.json" \
+    "$output_dir/web-console-${package_version}-webmcp.json"
   for document in runtime.cdx.json build.cdx.json artifact-manifest.json; do
     cp "$work_root/web-console-a.tar.gz.sbom/$document" "$output_dir/web-console-${package_version}-$document"
   done
@@ -142,14 +159,16 @@ build_inside_container() {
     sha256sum "$release_name" >"${release_name}.sha256"
     sha256sum "web-console-${package_version}-runtime.cdx.json" \
       "web-console-${package_version}-build.cdx.json" \
-      "web-console-${package_version}-artifact-manifest.json" >"web-console-${package_version}-sbom.sha256"
+      "web-console-${package_version}-artifact-manifest.json" \
+      "web-console-${package_version}-webmcp.json" >"web-console-${package_version}-sbom.sha256"
   )
   test "$(awk '{print $2}' "${release_asset}.sha256")" = "$release_name"
-  printf 'WEB_CONSOLE_VALIDATION_OK source=%s package=%s artifact=%s sha256=%s\n' \
-    "$GITHUB_SHA" "$package_version" "$package_version" "$(sha256sum "$release_asset" | awk '{print $1}')"
+  printf 'WEB_CONSOLE_VALIDATION_OK source=%s package=%s artifact=%s sha256=%s webmcp_ceiling=%s initial_mode=off\n' \
+    "$GITHUB_SHA" "$package_version" "$package_version" "$(sha256sum "$release_asset" | awk '{print $1}')" "$WEBMCP_MODE"
 }
 
 main() {
+  configure_webmcp_profile
   [[ "${GITHUB_SHA:-}" =~ ^[a-fA-F0-9]{40}$ ]]
   [[ "${SOURCE_DATE_EPOCH:-}" =~ ^[0-9]+$ ]]
   case "${VALIDATION_SCOPE:-full}" in full|dependency-security|host-disk|sbom) ;; *) exit 2 ;; esac
@@ -172,6 +191,7 @@ main() {
     --env "GITHUB_SHA=$GITHUB_SHA" \
     --env "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" \
     --env "VALIDATION_SCOPE=$VALIDATION_SCOPE" \
+    --env "WEBMCP_MODE=$WEBMCP_MODE" \
     "$node_image" \
     bash /source/scripts/build-ui-release-candidate --inside-container /source /output
 }

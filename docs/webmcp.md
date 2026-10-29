@@ -1,47 +1,112 @@
-# Experimental WebMCP service upgrade
+# Experimental AI collaboration
 
-This optional integration is off by default. Build with `WEBMCP_MODE=read-only`
-to expose service discovery, or `WEBMCP_MODE=enabled` for the preview and apply
-flow. It requires a secure browser context and native `document.modelContext`.
-Unsupported browsers continue to use the ordinary console.
+AI collaboration is optional and disabled by default. Seven typed tools operate
+in a selected environment; this is not an HTTP, shell or JavaScript proxy.
+Ordinary console actions and general-purpose Keys retain their existing behavior.
 
-The compatible Engine must separately enable `api.ai.service.upgrade.enabled`.
-Do not enable the write tools against an Engine without the server-owned upgrade
-plan resource. This is cookie-session collaboration with the signed-in user's
-normal permissions, not an isolated or reduced-authority AI credential.
+## Tools and workflow
 
-## Flow
+| Tool | Purpose |
+| --- | --- |
+| `find_stacks` | Find visible stacks by name and return opaque references. |
+| `find_services` | Find services, keeping same-name candidates separate. |
+| `get_service` | Read a bounded non-secret summary and current description. |
+| `update_service_description` | Change only the description if unchanged since it was read; empty string clears it. |
+| `preview_service_upgrade` | Prepare a short-lived, actor-bound plan without upgrading. |
+| `apply_service_upgrade` | Submit an approved, unchanged plan at most once. |
+| `get_operation` | Read that operation until its result is verified. |
 
-1. `find_stacks` / `find_services` return names, display paths and opaque refs.
-   Duplicate names remain separate candidates. The user selects the intended
-   target; no IDs need to be typed.
-2. `get_service` returns a limited configuration summary without secrets.
-3. `preview_service_upgrade` accepts `serviceRef` and the requested `image`.
-   It creates a short-lived, actor-bound plan without upgrading the service.
-4. The user reviews the current image, new image and target in the console's
-   confirmation dialog. Only the dialog requests approval. There is no tool for
-   approving its own plan and no `confirmed` input.
-5. `apply_service_upgrade` accepts only `planRef`. The Engine checks approval,
-   current permissions and the target snapshot, and accepts the plan at most
-   once. The Engine preserves the other launch settings and completes the
-   normal upgrade lifecycle.
-6. `get_operation` reads the same operation. `accepted`, `running` and `unknown`
-   do not mean success. A verified terminal result is required.
+Choose targets by returned names and display paths. Duplicate names never
+authorize selecting the first candidate. References are held in memory; a
+changed session, environment or relevant context invalidates them. Search again
+instead of guessing IDs. Names and descriptions are untrusted data, not commands.
 
-Refs are kept in memory and become invalid when the session, route, selected
-environment or relevant schema changes. A stale ref is a request to search
-again, not permission to guess another resource. Disabling the integration
-unregisters its tools without logging out the user or pretending to undo an
-already accepted operation.
+An upgrade requires approval by the Key owner in the console's AI collaboration
+panel. There is no approval tool or `confirmed=true` input. The backend checks
+live permissions, policy, approval and target snapshot, then uses the normal
+upgrade lifecycle, retaining other launch settings. `accepted`, `running` and
+`unknown` are not success. Read the same operation rather than submitting again.
+
+Description writes go through the existing service manager with an expected
+description. A conflicting edit requires a fresh read and decision. An uncertain
+transport or audit acknowledgement after a possible write is not retried.
+
+## Browser and human controls
+
+Build with `WEBMCP_MODE=read-only` or `WEBMCP_MODE=enabled` to include the
+collaboration controls and set their capability ceiling. Every new page starts
+with tools off. The user must explicitly choose read-only or enabled in the
+header's AI collaboration panel; a read-only build cannot enable write tools.
+The choice is not saved across page loads. An off build omits this integration.
+The release producer forwards the selected ceiling into its isolated build and
+records it with `initialMode: off` in `webmcp-build.json` and the matching release
+sidecar. Both the producer and workflow default to an off ceiling.
+
+The compatible Engine must separately enable `api.ai.service.upgrade.enabled`
+for upgrade plans. Its default remains false.
+
+Native tools require a secure context and `document.modelContext`. Unsupported
+browsers keep the ordinary console and, in an enabled build, human plan review;
+they do not receive a pretend native implementation. Browser tools use the
+signed-in user's normal cookie permissions, not a separately limited AI grant.
+
+Turning tools off unregisters them. It does not log the user out, silently enable
+tools for a review, cancel an accepted operation, or remove authorized review of
+a pending plan.
+
+## Dedicated Key bridge
+
+The [stdio MCP bridge](../bridge/README.md) uses the same command implementation
+without browser cookies. Enable `api.ai.bridge.enabled` on the compatible
+Engine, then create an **AI collaboration bridge** Key in the existing editor.
+Choose expiry and policy there. The owner's current role remains the ceiling.
+
+This Key purpose additionally limits requests to implemented project/stack/
+service reads, description updates, plans and tool-audit routes. It cannot
+approve a plan, manage Keys, log in, execute commands or call arbitrary APIs.
+The bridge refuses general-purpose Keys. Purpose and revision come from the
+server's authenticated Key context, not a client assertion. A policy change
+invalidates the running bridge before another mutation; review the policy and
+restart it. Expiry and revocation continue to apply.
+
+A default-deny policy also needs a **read rule for the selected environment
+resource itself** so the bridge can resolve its name. Use an exact environment
+resource rule, not a whole-environment scope if other stacks must stay hidden.
+Add separate Stack/service rules for the intended workload. The exact environment
+rule does not grant read access to its stacks or services.
+
+The owner opens that environment, refreshes pending plans, reviews target and
+image, and approves the plan in the console. The AI can then apply that same
+plan, including when the owner's browser lacks native WebMCP support. This
+requires a console built with a read-only or enabled ceiling; its browser tools
+can remain off throughout human review. `api.ai.bridge.enabled` remains false
+until the operator explicitly enables the bridge on the Engine.
+
+## Audit and scope
+
+Start/result events use the existing server audit sink. Business mutations also
+use existing authorization and resource audit paths. Client-reported tool
+success is not proof of a completed mutation. Credentials, descriptions and full
+launch configurations are not included in tool-audit payloads.
+
+Resource deletion, arbitrary execution, policy editing, authentication/MFA
+automation, host/container/volume management and third-party pages are not
+offered as tools. They remain normal console/API features.
 
 ## Development checks
 
-Run `node scripts/test-webmcp-commands.js` for deterministic production-core and
-registration-lifecycle tests. Browser acceptance must additionally exercise the
-real Engine, console confirmation dialog, duplicate targets, expired plans,
-rejected parameters and actual upgrade result. Model evaluations must record
-tool selection and arguments separately from backend rejection and verified
-task completion.
+Run `node scripts/test-webmcp-commands.js`,
+`node scripts/test-ai-collaboration-ui.js`, and `npm test` in `bridge/`, using
+the [supported toolchain](../COMPATIBILITY.md).
 
-This first slice does not expose arbitrary HTTP, JavaScript, shell commands,
-resource deletion, policy editing, or the proposed description-edit tool.
+Real acceptance also requires the Engine and browser: description conflicts,
+duplicate targets, human approval, Key revision/revocation, role/resource
+boundaries, audit records and verified upgrade results. Record model tool
+selection, arguments and business outcomes separately. Mock transport tests
+alone are not end-to-end acceptance.
+
+When assembling a release from both source checkouts, run
+`node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine`.
+It checks that every tool can pass the Engine's audit enum and that all three
+role overlays expose the command inputs. A component unit test alone cannot
+prove those wire contracts agree.

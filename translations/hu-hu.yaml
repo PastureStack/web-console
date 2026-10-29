@@ -4220,6 +4220,7 @@ apiKeyAccess:
       mixed: Részben korlátozott
       conditional: Célpontellenőrzés szükséges
       unknown: Ellenőrzés szükséges
+      unsupported: "Nem támogatott"
     basis:
       full: Teljes hozzáférés; a fiókjogosultságok továbbra is érvényesek
       closed: Nincsenek engedélyező kivételek
@@ -4234,6 +4235,8 @@ apiKeyAccess:
       invalidPolicy: Mentés előtt javítsa a házirendet
       createDestination: Az új erőforrást és a célhelyét is ellenőrizni kell
       multipleTargets: A művelet minden célpontját ellenőrizni kell
+      aiBridge: "Csak támogatott MI-eszközök; az aktuális jogok és jóváhagyás továbbra is szükséges."
+      aiBridgeUnsupported: "Ez a külön kulcscél nem biztosítja ezt a műveletet."
   defaultEffect: Egyetlen szabálynak sem megfelelő erőforrások
   effect: Szabály hatása
   scope: Szabály hatóköre
@@ -4424,3 +4427,26 @@ webmcp:
   failed: "A tervet nem sikerült jóváhagyni. Ellenőrizze a hibát, és próbálja újra."
   expires: "Lejárat"
   dismiss: "Előnézet bezárása"
+  collaboration:
+    "title": "MI-együttműködés"
+    "mode": "Eszközök ebben a böngészőben"
+    "off": "Szüneteltetve"
+    "readOnly": "Csak olvasás"
+    "enabled": "Olvasás és módosítás"
+    "cookieNotice": "Ezek az eszközök a jelenlegi bejelentkezést használják, nem különítik el az MI-t a fióktól. Korlátozott hozzáféréshez külön API-kulcsot és önálló MCP-hidat használjon."
+    "confirmationSource": "A bejelentkezett fiókkal ellenőrizze és hagyja jóvá a terveket. A jóváhagyás csak ezt a módosítást engedélyezi, a frissítést még nem indítja el."
+    "pendingPlans": "Jóváhagyásra váró tervek"
+    "noPendingPlans": "Nincs jóváhagyásra váró terv."
+    "loadFailed": "A tervek nem tölthetők be. Ellenőrizze a bejelentkezést és a jogosultságokat, majd próbálja újra."
+    "statusDisabled": "Szüneteltetve"
+    "statusRegistering": "Csatlakozás"
+    "statusEnabled": "Engedélyezve"
+    "statusUnsupported": "A böngésző nem támogatja a natív WebMCP-t, de a tervek ellenőrizhetők."
+    "statusUnavailable": "Nem érhető el"
+    "refresh": "Tervek frissítése"
+    "loadRequired": "Töltse be újra az aktuális fiók és környezet terveit."
+    "keyPurpose": "A kulcs célja"
+    "keyPurposeGeneral": "Általános API-hozzáférés"
+    "keyPurposeAiBridge": "Külön MI-híd"
+    "keyPurposeHelp": "A kulcs csak a támogatott MI-eszközök olvasását, leírásmódosítását és frissítését engedi. A hatóköri szabályok érvényesek maradnak. Tervek jóváhagyása, parancssor és biztonsági beállítások módosítása nem érhető el."
+    "invalidPurpose": "Válasszon támogatott kulcscélt."

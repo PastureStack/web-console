@@ -1,12 +1,12 @@
 import config from 'ui/config/environment';
-import { nativeWebMCP } from 'ui/services/webmcp-registry';
 
 export function initialize(instance) {
-  // Default-off does not instantiate services, attach listeners or request
-  // data. QA/release owners must explicitly opt in at build time.
-  if ( (config.APP.webmcpMode === 'enabled' || config.APP.webmcpMode === 'read-only') && nativeWebMCP() ) {
+  // The build mode is a capability ceiling. Every new page starts disabled;
+  // only an explicit choice in the collaboration panel enables native tools.
+  // An off build does not instantiate services or attach listeners.
+  if ( config.APP.webmcpMode === 'enabled' || config.APP.webmcpMode === 'read-only' ) {
     instance.lookup('application:main').set('webmcpAvailable', true);
-    instance.lookup('service:webmcp-registry').setMode(config.APP.webmcpMode);
+    instance.lookup('service:webmcp-registry').setMode('off');
   }
 }
 
