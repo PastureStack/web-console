@@ -31,7 +31,11 @@ function validatePending(lock, pending, now) {
     pending.severity === 'high' && pending.upstreamPatchedVersion === null &&
     pending.scope === 'controlled-dev-build-inputs-only' && pending.publicationBlockedIfShippedNodes === true &&
     strings(pending.shippedNodes) && pending.shippedNodes.length === 0, 'PENDING_POLICY_INVALID');
-  need(pending.reviewUntil === '2026-10-27' && typeof pending.reviewedAt === 'string' &&
+  need(pending.advisoryStatus === 'withdrawn' && pending.advisoryWithdrawnAt === '2026-10-23T12:53:02Z' &&
+    pending.upstreamLatestVersion === '3.0.3' && strings(pending.officialStatusSources) && sameSet(pending.officialStatusSources, [ADVISORY,
+      'https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm', 'https://registry.npmjs.org/braces/latest']),
+  'PENDING_OFFICIAL_STATUS_INVALID');
+  need(pending.reviewUntil === '2026-11-05' && typeof pending.reviewedAt === 'string' &&
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(pending.reviewedAt) &&
     Number.isFinite(Date.parse(pending.reviewedAt)) && Number.isFinite(now.getTime()) &&
     now.getTime() >= Date.parse(pending.reviewedAt) && now.getTime() < Date.parse(pending.reviewUntil + 'T00:00:00Z'),

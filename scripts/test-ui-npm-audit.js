@@ -10,7 +10,7 @@ const root = path.resolve(__dirname, '..');
 const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
 const pending = JSON.parse(fs.readFileSync(path.join(root, 'docs/security/npm-vendor-pending.json'), 'utf8'));
 const clone = value => JSON.parse(JSON.stringify(value));
-const now = new Date('2026-10-21T00:00:00Z');
+const now = new Date('2026-10-30T00:00:00Z');
 const runAudit = (repoRoot, runner, platform = process.platform) => actualRunAudit(repoRoot, runner, platform, () => now);
 const dependencyCounts = { prod: 8, dev: 1454, optional: 18, peer: 1, peerOptional: 0, total: 1477 };
 const knownVia = {
@@ -190,26 +190,36 @@ test('missing closure node or inconsistent effects cannot manufacture a complete
   fail(effects, 'AUDIT_METAVULNERABILITY_EFFECTS_MISMATCH');
 });
 test('review expiration boundary is UTC and future/invalid dates reject', () => {
-  for (const at of ['2026-10-27T00:00:00Z', '2026-10-28T00:00:00Z', '2026-10-19T00:00:00Z', 'invalid']) {
+  for (const at of ['2026-11-05T00:00:00Z', '2026-11-06T00:00:00Z', '2026-10-28T00:00:00Z', 'invalid']) {
     const value = input(); value.now = new Date(at); fail(value, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
   }
 });
 
+test('withdrawal evidence is required without rewriting raw High severity or claiming a patch', () => {
+  for (const patch of [{advisoryStatus:'active'}, {advisoryWithdrawnAt:null}, {upstreamLatestVersion:'3.0.4'}, {officialStatusSources:[]}]) {
+    const value=input();Object.assign(value.pending,patch);fail(value,'PENDING_OFFICIAL_STATUS_INVALID');
+  }
+  const value=input(), result=evaluateAudit(value);
+  assert.equal(result.totals.high,7);
+  assert.equal(result.knownPending.upstreamPatchedVersion,null);
+  assert.equal(value.audit.vulnerabilities.braces.severity,'high');
+});
+
 test('review passes the last millisecond before expiry and runner refuses expiry before npm', () => {
-  const before = input(); before.now = new Date('2026-10-26T23:59:59.999Z');
+  const before = input(); before.now = new Date('2026-11-04T23:59:59.999Z');
   assert.equal(evaluateAudit(before).ok, true);
   let calls = 0;
-  const result = actualRunAudit(root, () => { calls++; }, 'linux', () => new Date('2026-10-27T00:00:00Z'));
+  const result = actualRunAudit(root, () => { calls++; }, 'linux', () => new Date('2026-11-05T00:00:00Z'));
   assert.equal(calls, 0);
   assert.equal(result.failureCode, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
 });
 
 test('an audit crossing the review deadline fails after the npm response', () => {
-  let current = new Date('2026-10-26T23:59:59.999Z');
+  let current = new Date('2026-11-04T23:59:59.999Z');
   let calls = 0;
   const result = actualRunAudit(root, () => {
     if (++calls === 1) return { status: 0, stdout: '12.0.2\n' };
-    current = new Date('2026-10-27T00:00:01Z');
+    current = new Date('2026-11-05T00:00:01Z');
     return { status: 1, stdout: JSON.stringify(report()) };
   }, 'linux', () => current);
   assert.equal(calls, 2);

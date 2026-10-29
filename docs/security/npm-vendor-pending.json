@@ -3,14 +3,30 @@
   "advisoryUrl": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
   "cve": "CVE-2026-93687",
   "severity": "high",
+  "advisoryStatus": "withdrawn",
+  "advisoryWithdrawnAt": "2026-10-23T12:53:02Z",
   "upstreamPatchedVersion": null,
-  "reviewedAt": "2026-10-20T01:35:18Z",
-  "reviewUntil": "2026-10-27",
+  "upstreamLatestVersion": "3.0.3",
+  "reviewedAt": "2026-10-29T09:27:01Z",
+  "reviewUntil": "2026-11-05",
+  "officialStatusSources": [
+    "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "https://registry.npmjs.org/braces/latest"
+  ],
+  "currentAuditEvidence": {
+    "npmVersion": "12.0.2",
+    "checkedAt": "2026-10-29T09:27:01Z",
+    "rawReportSha256": "972afb3e687944e8c2def765b5d266de30c59a74089883c018bd6643ee54c5c9",
+    "advisoryPresent": false,
+    "totals": { "info": 0, "low": 0, "moderate": 0, "high": 0, "critical": 0, "total": 0 }
+  },
   "scope": "controlled-dev-build-inputs-only",
-  "risk": "Deeply nested brace patterns can exhaust the build Node.js stack. This High finding remains unresolved; reviewed source filenames/glob configuration are controlled build inputs, not browser/user-supplied patterns.",
+  "risk": "GitHub withdrew this advisory on 2026-10-23 as not practically exploitable. Its historical High severity and original affected range are retained; no patched release is claimed. Raw audit severity is not rewritten. This review covers only the unchanged, controlled build-input closure, not arbitrary untrusted brace patterns or a browser-runtime not-affected claim.",
   "publicationBlockedIfShippedNodes": true,
   "shippedNodes": [],
   "boundaryEvidence": [
+    "Official GitHub advisory/API checked on 2026-10-29 retain severity high, original range <=3.0.3 and no first patched version, and record withdrawal at 2026-10-23T12:53:02Z. The npm registry still publishes 3.0.3 as latest with the lockfile's exact integrity.",
     "The exact reverse lock dependency closure below is dev:true and is not reachable from package-lock root production dependencies.",
     "The closure enters through ember-cli, a build CLI. The gate checks literal imports in app/config/vendor JavaScript and ember-cli-build.js; only the exact build entry require('ember-cli/lib/broccoli/ember-app') may reach this closure. This static check is not packaged-browser proof.",
     "CI builds an immutable checkout with npm ci --ignore-scripts; this decision does not authorize running a build on untrusted patterns or shipping these nodes.",
