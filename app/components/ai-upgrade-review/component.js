@@ -16,7 +16,11 @@ export default Component.extend({
 
   openReview() {
     const plan = this.get('commands.pendingPlan');
-    if (this.isDestroyed || this.isDestroying || !plan || this.get('modalService.modalVisible')) { return; }
+    if (this.isDestroyed || this.isDestroying) { return; }
+    if (!plan && this.get('modalService.modalVisible') && this.get('modalService.modalType') === 'modal-confirm-ai-upgrade') {
+      this.get('modalService').toggleModal();
+    }
+    if (!plan || this.get('modalService.modalVisible')) { return; }
     this.get('modalService').toggleModal('modal-confirm-ai-upgrade', {plan});
   },
 

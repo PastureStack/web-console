@@ -242,6 +242,26 @@ async function main() {
     assert.equal(service.pendingPlan, null, 'failed terminal clears its matching plan');
   });
 
+  await test('review bridge closes only its own visible modal after the pending plan clears', async () => {
+    const source = fs.readFileSync(path.resolve(root, '../components/ai-upgrade-review/component.js'), 'utf8')
+      .replace("import Component from '@ember/component';", 'const Component = {extend: (value) => value};')
+      .replace("import { observer } from '@ember/object';", 'const observer = (key, callback) => callback;')
+      .replace("import { scheduleOnce } from '@ember/runloop';", 'const scheduleOnce = () => {};')
+      .replace("import { service } from '@ember/service';", 'const service = () => null;');
+    const {default: definition} = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+    for ( const [pendingPlan, modalType, modalVisible, expected] of [
+      [null, 'modal-confirm-ai-upgrade', true, 1], [null, 'another-modal', true, 0],
+      [null, 'modal-confirm-ai-upgrade', false, 0], [{planRef: 'newer-plan'}, 'modal-confirm-ai-upgrade', true, 0],
+    ] ) {
+      let calls = 0;
+      const bridge = Object.assign({}, definition, {commands: {pendingPlan}, modalService: {modalType, modalVisible,
+        toggleModal() { calls++; this.modalVisible = false; }},
+        get(key) { return key.split('.').reduce((object, part) => object && object[part], this); }});
+      bridge.openReview();
+      assert.equal(calls, expected);
+    }
+  });
+
   await test('auth, account, environment, schema and route changes invalidate old refs', async () => {
     for ( const field of ['generation', 'accountId', 'projectId', 'schemaProjectId', 'schemaGeneration', 'route'] ) {
       const f = fixture(), ref = await serviceRef(f), before = f.requests.length;
