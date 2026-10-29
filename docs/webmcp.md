@@ -160,17 +160,24 @@ It checks that every tool can pass the Engine's audit enum and that all three
 role overlays expose the command inputs. A component unit test alone cannot
 prove those wire contracts agree.
 
-## Candidate Catalog and Archive adapters
+## Published Catalog and Archive adapters
 
-The 1.6.200 source candidate adds named Catalog template/version/options and
-human-reviewed new Compose Stack launch through the matching Engine/Compose
-owners. Destination read/create/update are required; create does not imply the
-other operations. Secrets stay in the human input surface, not model parameters.
-Unsupported external-volume and other advanced Catalog forms remain pending.
+[Web Console 1.6.200 and bridge 0.2.2](releases/web-console-1.6.200.md) add named
+Catalog template/version/options and human-reviewed new Compose Stack launch
+through the matching Engine/Compose owners. Destination read/create/update are
+required; create does not imply the other operations. Secrets stay in the human
+input surface, not model parameters. Unsupported external-volume and other
+advanced Catalog forms remain pending.
 
 Archive/restore is limited to eligible fully stopped Stack/Service resources.
 Review mounted-directory data; restoration does not start a workload. Permissions
 and audit remain authoritative. Background authorization denial is shown through
 the existing alert, retains the original failed receipt, warns about partial
-changes and must not cause a blind retry. This section describes candidate scope,
-not complete frontend or runtime acceptance.
+changes and must not cause a blind retry.
+
+Required component CI, published archive/SBOM verification and the standalone
+ZIP's clean install/48 focused adapter and SDK cases passed. Every new console
+page still starts with browser tools off and needs explicit opt-in. Combined
+Server and designated Catalog/Archive browser, role and weak-model acceptance
+remain **PENDING**. The current 54 partially implemented source groups do not
+establish acceptance of all 243 business groups.
