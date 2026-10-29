@@ -10,9 +10,12 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Source version **1.6.196** prepares optional AI collaboration with seven typed
-tools, human upgrade approval, conditional description edits and a dedicated-Key
-stdio bridge. Publication and compatible Server assembly are pending.
+Web Console [1.6.196](https://github.com/PastureStack/web-console/releases/tag/1.6.196)
+is published with optional AI collaboration: seven typed tools, human upgrade
+approval, conditional description edits and a dedicated-Key stdio bridge.
+Browser tools start paused and require an explicit user choice. The
+[release note](docs/releases/web-console-1.6.196.md) records the producer,
+same-tree release tag, passing CI and verified artifact checksums.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
 container and produces an immutable static archive with separate runtime and
