@@ -2,6 +2,7 @@ import { computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import ModalBase from 'lacsso/components/modal-base';
+import { resourceReviewLabels } from 'ui/utils/ai-resource-review-labels';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
@@ -14,7 +15,12 @@ export default ModalBase.extend({
   plan: alias('modalService.modalOpts.plan'),
   saving: false,
   approved: false,
+  alreadyApproved: computed('approved', 'plan.confirmationState', function() { return this.get('approved') || this.get('plan.confirmationState') === 'approved'; }),
   errors: null,
+  isResourceChange: computed('plan.planKind', function() { return this.get('plan.planKind') === 'resource-change'; }),
+  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'intl.primaryLocale', function() {
+    return resourceReviewLabels(this.get('plan') || {}, (key) => this.get('intl').t(key));
+  }),
   displayExpiry: computed('plan.expiresAt', 'intl.primaryLocale', function() {
     const value = new Date(this.get('plan.expiresAt'));
     if (!Number.isFinite(value.getTime())) { return ''; }
@@ -25,8 +31,8 @@ export default ModalBase.extend({
   stale: computed('plan.planRef', 'commands.pendingPlan.planRef', function() {
     return !this.get('plan.planRef') || this.get('plan.planRef') !== this.get('commands.pendingPlan.planRef');
   }),
-  submitDisabled: computed('saving', 'approved', 'stale', function() {
-    return this.get('saving') || this.get('approved') || this.get('stale');
+  submitDisabled: computed('saving', 'alreadyApproved', 'stale', function() {
+    return this.get('saving') || this.get('alreadyApproved') || this.get('stale');
   }),
 
   didInsertElement() {

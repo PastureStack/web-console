@@ -16,6 +16,7 @@ function sourceUrl(filename) {
     .replace(/import Component from '@ember\/component';/g, 'const Component = {extend: value => value};')
     .replace(/import \{ service \} from '@ember\/service';/g, 'const service = () => null;')
     .replace(/import \{ computed \} from '@ember\/object';/g, 'const computed = (...args) => args.at(-1);')
+    .replace(/import \{ alias \} from '@ember\/object\/computed';/g, 'const alias = () => null;')
     .replace(/import ModalBase from 'lacsso\/components\/modal-base';/g, 'const ModalBase = {extend: value => value};')
     .replace(/import config from 'ui\/config\/environment';/g, "const config = {APP: {webmcpMode: 'enabled'}};")
     .replace(/from '(ui\/[^']+|\.\.?\/[^']+)'/g, (whole, specifier) => {
@@ -37,10 +38,14 @@ async function main() {
   const {boundedCollaborationMode} = await import(sourceUrl(path.join(app, 'utils/ai-collaboration-controls.js')));
   const {default: serviceDefinition} = await import(sourceUrl(path.join(app, 'services/ai-command-service.js')));
   const {default: modalDefinition} = await import(sourceUrl(path.join(app, 'components/modal-ai-collaboration/component.js')));
+  const {default: confirmationDefinition} = await import(sourceUrl(path.join(app, 'components/modal-confirm-ai-upgrade/component.js')));
   const {default: headerDefinition} = await import(sourceUrl(path.join(app, 'components/page-header-ai-control/component.js')));
   const plan = (suffix = '1') => ({id: `aiplan-${suffix.repeat(8)}-${suffix.repeat(4)}-${suffix.repeat(4)}-${suffix.repeat(4)}-${suffix.repeat(12)}`,
     serviceId: '1s1', serviceName: 'web', displayPath: 'Environment/Stack/web', currentImage: 'docker:app:1', requestedImage: 'docker:app:2',
     expiresAt: '2026-10-29T10:00:00Z', confirmationState: 'pending', status: 'preview'});
+  const resourcePlan = (suffix = '1') => ({id: `aichange-${suffix.repeat(8)}-${suffix.repeat(4)}-${suffix.repeat(4)}-${suffix.repeat(4)}-${suffix.repeat(12)}`,
+    resourceType: 'container', resourceId: '1i1', operation: 'stop', targetPath: 'Environment/Container/workload',
+    changes: [{field: 'state', before: 'running', after: 'stopped'}], expiresAt: '2026-10-29T10:00:00Z', confirmationState: 'pending', status: 'preview'});
   function fixture(mode = 'off') {
     const snapshot = {generation: 'generation-one', accountId: 'actor', projectId: 'project', projectName: 'Environment',
       schemaProjectId: 'project', schemaGeneration: 1, route: '/env/project/stacks'};
@@ -125,16 +130,103 @@ async function main() {
     const f = fixture(), requests = [], listeners = [];
     const modal = Object.assign({}, modalDefinition, {get, set, setProperties, _super() {}, commands: f.service, access: f.service.access,
       commandContext: {on: (...args) => listeners.push(args), off() {}},
-      userStore: {rawRequest: async options => { requests.push(options); return {body: {type: 'collection', data: [plan()]}}; }},
+      userStore: {rawRequest: async options => { requests.push(options); return {body: {type: 'collection', data: options.url.includes('aiServiceUpgradePlans') ? [plan()] : []}}; }},
     });
     modal.init(); assert.equal(requests.length, 0);
-    await modal.didInsertElement(); assert.equal(requests.length, 1); assert.equal(modal.plans.length, 1);
+    await modal.didInsertElement(); assert.equal(requests.length, 2); assert.equal(modal.plans.length, 1);
     assert.equal(requests[0].url, 'projects/project/aiServiceUpgradePlans?limit=20');
     const entered = deferred(), barrier = deferred();
     modal.userStore.rawRequest = async options => { requests.push(options); entered.resolve(); await barrier.promise; return {body: {data: [plan('2')]}}; };
     const late = modal.actions.refresh.call(modal); await entered.promise;
     modal.isDestroying = true; modal.willDestroy(); barrier.resolve(); await late;
-    assert.equal(modal.plans.length, 0); assert.equal(requests.length, 2);
+    assert.equal(modal.plans.length, 0); assert.equal(requests.length, 4);
+  });
+
+  await test('resource plans use human-only approval with off channels and preserve a newer pending plan', async () => {
+    const f = fixture('off'), response = resourcePlan();
+    f.service.userStore.rawRequest = async options => { f.requests.push(options); return {body: {...response, confirmationState: 'approved'}}; };
+    assert.equal(f.service.reviewInboxPlan(response).status, 'needs_user');
+    assert.equal(f.service.pendingPlan.planKind, 'resource-change');
+    const approved = await f.service.confirmPendingPlan();
+    assert.equal(approved.status, 'succeeded'); assert.equal(approved.confirmationState, 'approved');
+    const confirmedModal={get,approved:false,plan:f.service.pendingPlan};
+    assert.equal(confirmationDefinition.alreadyApproved.call(confirmedModal),true);
+    assert.equal(f.requests[0].url, `projects/project/aiResourceChangePlans/${response.id}?action=confirm`);
+    const entered = deferred(), barrier = deferred();
+    f.service.userStore.rawRequest = async () => { entered.resolve(); await barrier.promise; return {body: {...response, confirmationState: 'approved'}}; };
+    const late = f.service.confirmPendingPlan(); await entered.promise;
+    f.service.reviewInboxPlan(resourcePlan('2')); const newer = f.service.pendingPlan.planRef;
+    barrier.resolve(); await late; assert.equal(f.service.pendingPlan.planRef, newer);
+    f.snapshot.accountId = 'another';
+    assert.equal((await f.service.confirmPendingPlan()).code, 'CONTEXT_CHANGED');
+  });
+
+  await test('resource plan inbox joins both typed collections without exposing raw payload fields', async () => {
+    const f = fixture('off'), requests = [];
+    const modal = Object.assign({}, modalDefinition, {get, set, setProperties, _super() {}, commands: f.service, access: f.service.access,
+      intl: {t: key => key}, modalService: {toggleModal() {}},
+      commandContext: {on() {}, off() {}},
+      userStore: {rawRequest: async options => { requests.push(options); return {body: {data: options.url.includes('aiResourceChangePlans') ? [{...resourcePlan(), snapshot: 'SECRET_SENTINEL'}] : [plan()]}}; }},
+    });
+    modal.init(); await modal.didInsertElement();
+    assert.equal(requests.length, 2); assert.equal(modal.plans.length, 2);
+    assert.equal(modal.plans[1].planKind, 'resource-change');
+    assert.equal(modal.plans[1].displayPath, 'Environment/Container/workload');
+    assert.equal(JSON.stringify(modal.plans).includes('SECRET_SENTINEL'), false);
+    assert.deepEqual(modal.plans[1].changes, resourcePlan().changes);
+    assert.equal(modal.plans[1].targetPath, resourcePlan().targetPath);
+    modal.actions.review.call(modal, modal.plans[1]);
+    assert.equal(modal.loadError, false);
+    assert.equal(f.service.pendingPlan.serverPlanId, resourcePlan().id);
+    assert.equal(f.service.pendingPlan.planKind, 'resource-change');
+    const confirmTemplate = fs.readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
+    assert.ok(confirmTemplate.includes('this.isResourceChange'));
+    assert.ok(confirmTemplate.includes('this.reviewLabels.displayChanges'));
+    assert.ok(confirmTemplate.includes('{{change.fieldLabel}}'));
+    assert.ok(!confirmTemplate.includes('{{change.field}}'));
+    assert.ok(confirmTemplate.includes('<pre class="ai-resource-diff-value">{{change.before}}</pre>'));
+    assert.ok(confirmTemplate.includes('<pre class="ai-resource-diff-value">{{change.after}}</pre>'));
+    assert.ok(!confirmTemplate.includes('{{{'));
+  });
+
+  await test('human inbox cancellation works while tools are off and only clears the verified own plan', async () => {
+    const f=fixture('off'),plan=resourcePlan();
+    f.service.reviewInboxPlan(plan);
+    f.service.userStore.rawRequest=async options=>{f.requests.push(options);return {body:{...plan,status:'cancelled',confirmationState:'cancelled'}};};
+    const result=await f.service.cancelInboxPlan(plan,f.service.captureReviewContext());
+    assert.equal(result.status,'succeeded');assert.equal(result.confirmationState,'cancelled');assert.equal(f.service.pendingPlan,null);
+    assert.deepEqual(f.requests,[{url:`projects/project/aiResourceChangePlans/${plan.id}?action=cancel`,method:'POST',data:{}}]);
+    const g=fixture('off'),row={...plan,canCancel:true,displayPath:plan.targetPath};
+    g.service.userStore.rawRequest=async()=>({body:{...plan,status:'cancelled',confirmationState:'cancelled'}});
+    const modal=Object.assign({},modalDefinition,{get,set,setProperties,commands:g.service,intl:{t:key=>key},plans:[row],_loadGeneration:1,_loadedContext:g.service.captureReviewContext()});
+    modal.actions.requestCancel.call(modal,row);assert.equal(modal.cancelCandidate,row);
+    await modal.actions.cancelPlan.call(modal);assert.deepEqual(modal.plans,[]);assert.equal(modal.cancelCandidate,null);assert.equal(modal.cancelNotice,'webmcp.planCancelled');
+    const template=fs.readFileSync(path.join(app,'components/modal-ai-collaboration/template.hbs'),'utf8');
+    assert.ok(template.includes('if plan.canCancel'));assert.ok(template.includes('ai-collaboration-confirm-cancel'));assert.ok(template.includes('{{top-errors errors=this.errors}}'));
+  });
+
+  await test('late human cancellation preserves a newer preview and never rebuilds a dismissed plan', async () => {
+    for(const replacement of ['newer','dismiss']){
+      const f=fixture('off'),plan=resourcePlan(),entered=deferred(),barrier=deferred();
+      f.service.reviewInboxPlan(plan);
+      f.service.userStore.rawRequest=async()=>{entered.resolve();await barrier.promise;return {body:{...plan,status:'cancelled',confirmationState:'cancelled'}};};
+      const pending=f.service.cancelInboxPlan(plan,f.service.captureReviewContext());await entered.promise;
+      if(replacement==='newer')f.service.reviewInboxPlan(resourcePlan('2'));else f.service.dismissPendingPlan();
+      const current=f.service.pendingPlan;barrier.resolve();assert.equal((await pending).status,'succeeded');assert.equal(f.service.pendingPlan,current);
+    }
+  });
+
+  await test('human cancel refuses submitted plans and guards actor changes before and after submission', async () => {
+    const f=fixture('off');
+    for(const status of ['accepted','dispatching','running','unknown','succeeded','failed'])assert.equal((await f.service.cancelInboxPlan({...resourcePlan(),status})).reason,'CANNOT_CANCEL');
+    assert.equal((await f.service.cancelInboxPlan({...resourcePlan(),operationId:'existing'})).reason,'CANNOT_CANCEL');assert.equal(f.requests.length,0);
+    const entered=deferred(),barrier=deferred();f.service.access.ensureSession=async()=>{entered.resolve();await barrier.promise;};
+    const before=f.service.cancelInboxPlan(resourcePlan(),f.service.captureReviewContext());await entered.promise;f.snapshot.accountId='other';barrier.resolve();
+    assert.equal((await before).code,'CONTEXT_CHANGED');assert.equal(f.requests.length,0);
+    const g=fixture('off'),sent=deferred(),reply=deferred(),plan=resourcePlan();g.service.reviewInboxPlan(plan);
+    g.service.userStore.rawRequest=async()=>{sent.resolve();await reply.promise;return {body:{...plan,status:'cancelled',confirmationState:'cancelled'}};};
+    const after=g.service.cancelInboxPlan(plan,g.service.captureReviewContext());await sent.promise;g.snapshot.accountId='another';g.service.reviewInboxPlan(resourcePlan('2'));const newer=g.service.pendingPlan;
+    reply.resolve();const unknown=await after;assert.equal(unknown.status,'unknown');assert.equal(unknown.code,'UNKNOWN_RESULT');assert.equal(g.service.pendingPlan,newer);
   });
 
   await test('inbox actor changes stop the pending read before it reaches the API', async () => {

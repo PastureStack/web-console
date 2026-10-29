@@ -1,13 +1,21 @@
-<h3 id="ai-upgrade-title">{{t "webmcp.title"}}</h3>
+<h3 id="ai-upgrade-title">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeTitle" operation=this.reviewLabels.operationLabel resource=this.reviewLabels.resourceTypeLabel}}{{else}}{{t "webmcp.title"}}{{/if}}</h3>
 <dl class="horizontal-form">
-  <dt>{{t "webmcp.service"}}</dt><dd class="force-wrap" data-testid="ai-upgrade-target">{{this.plan.displayPath}}</dd>
-  <dt>{{t "webmcp.currentImage"}}</dt><dd class="force-wrap">{{this.plan.currentImage}}</dd>
-  <dt>{{t "webmcp.requestedImage"}}</dt><dd class="force-wrap">{{this.plan.requestedImage}}</dd>
+  <dt>{{#if this.isResourceChange}}{{t "generic.name"}}{{else}}{{t "webmcp.service"}}{{/if}}</dt><dd class="force-wrap" data-testid="ai-upgrade-target">{{this.plan.displayPath}}</dd>
+  {{#if this.isResourceChange}}
+    <dt>{{t "generic.type"}}</dt><dd class="force-wrap">{{this.reviewLabels.resourceTypeLabel}}</dd>
+    <dt>{{t "generic.actions"}}</dt><dd class="force-wrap">{{this.reviewLabels.operationLabel}}</dd>
+    {{#each this.reviewLabels.displayChanges as |change|}}<dt class="force-wrap">{{change.fieldLabel}}</dt><dd class="force-wrap">{{#unless change.informational}}<pre class="ai-resource-diff-value">{{change.before}}</pre>→{{/unless}}<pre class="ai-resource-diff-value">{{change.after}}</pre></dd>{{/each}}
+  {{else}}
+    <dt>{{t "webmcp.currentImage"}}</dt><dd class="force-wrap">{{this.plan.currentImage}}</dd>
+    <dt>{{t "webmcp.requestedImage"}}</dt><dd class="force-wrap">{{this.plan.requestedImage}}</dd>
+  {{/if}}
   <dt>{{t "webmcp.expires"}}</dt><dd>{{this.displayExpiry}}</dd>
 </dl>
-<div class="alert alert-warning">{{t "webmcp.notice"}}</div>
+<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>
+{{#if this.reviewLabels.createsStopped}}<div class="alert alert-info" data-testid="ai-resource-create-stopped">{{t "webmcp.createStoppedNotice"}}</div>{{/if}}
+{{#if this.reviewLabels.mountedDataNotice}}<div class="alert alert-warning" data-testid="ai-resource-mounted-data-notice">{{this.reviewLabels.mountedDataNotice}}</div>{{/if}}
 {{#if this.stale}}<div class="alert alert-danger" role="alert">{{t "webmcp.stale"}}</div>{{/if}}
-{{#if this.approved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{t "webmcp.approved"}}</div>{{/if}}
+{{#if this.alreadyApproved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{t "webmcp.approved"}}</div>{{/if}}
 {{top-errors errors=this.errors}}
 <div class="footer-actions">
   <button type="button" class="btn btn-primary" disabled={{this.submitDisabled}} {{action "confirm"}} data-testid="ai-upgrade-confirm">

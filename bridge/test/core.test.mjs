@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createBridge, createTransport, validateConfig, allowedRequest} from '../core.mjs';
-import {CommandContext, CommandEngine, CommandError} from '../shared-modules.mjs';
+import {CommandContext, CommandEngine, CommandError, COMMANDS} from '../shared-modules.mjs';
 
 const secret = 'secret-sentinel-that-must-never-appear';
 const config = {endpoint:'http://127.0.0.1:8888',environment:'Default',accessKey:'access-test',secretKey:secret};
@@ -117,7 +117,7 @@ test('shared business engine lists scoped refs and reports authorization failure
   assert.equal(found.status,'succeeded');assert.equal(found.items[0].displayPath,'Default/Stack/web');
   const denied=await bridge.engine.execute('get_service',{serviceRef:found.items[0].serviceRef});
   assert.equal(denied.code,'FORBIDDEN');assert.equal(JSON.stringify(denied).includes(secret),false);
-  assert.equal(bridge.tools.length,7);
+  assert.deepEqual(bridge.tools.map(item=>item.name),COMMANDS.map(item=>item.name));
   assert.equal(calls.some(call=>call.url.includes('/token')),false);
   bridge.close();
 });
