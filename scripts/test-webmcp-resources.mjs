@@ -76,20 +76,63 @@ test('resource families: every implemented descriptor projects only bounded scal
       token: secret, password: secret, recoveryEmailMasked: secret, serverAddress: secret, description: 'Readable untrusted description', labels: {x: secret},
       environment: {x: secret}, apiKeyPolicy: {x: secret}, requestObject: secret, responseObject: secret, dockerCompose: secret,
       actionLinks: {remove: secret}, links: {self: secret}, nfsConfig: {x: secret}, driverOpts: {x: secret}};
-    const f = fixture({handle: async ({url, method, data}) => ({body: method === 'POST' ? {resourceType: data.resourceType, data: [body]} : url.includes('?') ? {data: [body]} : body})});
-    const found = await f.engine.execute('find_resources', {family: family.family, resourceType: resource.resourceType});
+    const templateId = 'ctm-' + 'a'.repeat(64), versionId = 'cvm-' + 'b'.repeat(64);
+    const templateFields = {name: body.name, description: body.description, catalogId: 'library', templateBase: 'infra', templateKey: 'database',
+      catalogScope: 'global', defaultVersion: '1.0', maintainer: 'Community', license: 'Apache-2.0'};
+    const versionFields = {version: '1.0', revision: 3, minimumRancherVersion: '1.6.0', maximumRancherVersion: '2.0.0', upgradeFrom: '^0.9'};
+    const template = {...body, ...templateFields, id: templateId, type: 'catalogTemplate'};
+    const version = {...body, ...versionFields, id: versionId, type: 'catalogTemplateVersion', templateId};
+    const f = fixture({handle: async ({url, method, data}) => {
+      if (descriptor.readTransport === 'catalog') {
+        assert.equal(method, 'POST');
+        if (url === 'projects/p1/aiCatalogStackLaunchOptions') {
+          assert.deepEqual(data, {templateId, versionId});
+          return {body: {optionsRef: 'acopts-11111111-1111-1111-1111-111111111111', launchEnabled: false,
+            requiredOperations: ['read', 'create', 'update'], questions: []}};
+        }
+        assert.equal(url, 'projects/p1/aiCatalogMetadataViews');
+        if (data.versions) {
+          assert.equal(data.templateId, templateId);
+          if (data.versionId) assert.equal(data.versionId, versionId);
+          return {body: {resourceType: 'catalogTemplateVersion', data: [version], nextMarker: null}};
+        }
+        if (data.templateId) assert.equal(data.templateId, templateId);
+        return {body: {resourceType: 'catalogTemplate', data: [template], nextMarker: null}};
+      }
+      return {body: method === 'POST' ? {resourceType: data.resourceType, data: [body]} : url.includes('?') ? {data: [body]} : body};
+    }});
+    const input = {family: family.family, resourceType: resource.resourceType};
+    if (descriptor.type === 'catalogTemplateVersion') {
+      const parents = await f.engine.execute('find_resources', {family: 'catalog', resourceType: 'catalogTemplate'});
+      assert.equal(parents.status, 'succeeded'); input.parentRef = parents.items[0].resourceRef;
+    }
+    const found = await f.engine.execute('find_resources', input);
     assert.equal(found.status, 'succeeded', resource.resourceType); assert.equal(found.items.length, 1, resource.resourceType);
     const detail = await f.engine.execute('get_resource', {resourceRef: found.items[0].resourceRef});
     assert.equal(detail.status, 'succeeded', resource.resourceType);
     assert.equal(detail.resourceTextIsUntrusted, true);
     assert.equal(JSON.stringify([found, detail, f.audits]).includes(secret), false, resource.resourceType);
     assert.equal(JSON.stringify([found, detail]).includes('opaque-server-id'), false);
-    assert.equal(f.requests[0].url, descriptor.readTransport === 'view' ? 'projects/p1/aiResourceViews' : `${descriptor.scope === 'project' ? 'projects/p1/' : ''}${descriptor.collection}?limit=50`);
+    if (descriptor.readTransport === 'catalog') {
+      const expected = descriptor.type === 'catalogTemplateVersion' ? [
+        ['aiCatalogMetadataViews', {}], ['aiCatalogMetadataViews', {templateId, versions: true}],
+        ['aiCatalogMetadataViews', {templateId, versions: true, versionId}], ['aiCatalogStackLaunchOptions', {templateId, versionId}],
+      ] : [['aiCatalogMetadataViews', {}], ['aiCatalogMetadataViews', {templateId}]];
+      assert.deepEqual(f.requests.map(request => [request.url, request.method, request.data]),
+        expected.map(([collection, data]) => [`projects/p1/${collection}`, 'POST', data]));
+      for (const id of [templateId, versionId]) assert.equal(JSON.stringify([found, detail]).includes(id), false);
+      if (descriptor.type === 'catalogTemplateVersion') {
+        assert.equal(detail.parentRef, input.parentRef); assert.equal(detail.launchOptions.launchEnabled, false);
+        assert.deepEqual(detail.launchOptions.requiredOperations, ['read', 'create', 'update']);
+      }
+    } else assert.equal(f.requests[0].url, descriptor.readTransport === 'view' ? 'projects/p1/aiResourceViews' : `${descriptor.scope === 'project' ? 'projects/p1/' : ''}${descriptor.collection}?limit=50`);
     if (descriptor.readTransport === 'view') {
       assert.deepEqual(f.requests[0].data, {resourceType: descriptor.type});
       assert.deepEqual(f.requests[1].data, {resourceType: descriptor.type, resourceId: 'opaque-server-id'});
     }
-    assert.deepEqual(Object.keys(detail.fields).sort(), ['description', 'name', 'state']);
+    const expectedFields = descriptor.readTransport === 'catalog' ? descriptor.type === 'catalogTemplateVersion' ? versionFields : templateFields :
+      {description: body.description, name: body.name, state: body.state};
+    assert.deepEqual(found.items[0].fields, expectedFields); assert.deepEqual(detail.fields, expectedFields);
   }
 });
 
@@ -103,7 +146,7 @@ test('resource families: full 1024-unit descriptions are retained and truncation
   assert.equal(detail.fields.description, body.description); assert.deepEqual(detail.truncatedFields, ['name']);
   body.description += 'x';
   const truncated = await f.engine.execute('get_resource', {resourceRef: found.items[0].resourceRef});
-  assert.equal(truncated.fields.description.length, 1024); assert.deepEqual(truncated.truncatedFields, ['name', 'description']);
+  assert.equal(truncated.fields.description.length, 1024); assert.deepEqual([...truncated.truncatedFields].sort(), ['description', 'name']);
 });
 
 const planId = 'aichange-11111111-1111-1111-1111-111111111111';
