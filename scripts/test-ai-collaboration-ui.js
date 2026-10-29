@@ -473,7 +473,7 @@ async function main() {
     f.service.completeCatalogHumanInputs=async()=>({status:'succeeded'});
     await modal.loadHumanInputs();modal.humanQuestions[0].value='';await modal.actions.completeInputs.call(modal);
     assert.equal(reads,2);assert.equal(modal.humanQuestions.length,1);assert.equal(modal.humanQuestions[0].value,undefined);
-    const template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');assert.ok(template.includes('action (mut question.value) ""'));
+    const template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');assert.ok(template.includes('action (fn (mut question.value) "")'));
   });
 
   await test('Catalog safe form refresh adopts ready or expired state and drops late reads from another plan',async()=>{
