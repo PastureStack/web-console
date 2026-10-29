@@ -4400,7 +4400,7 @@ webmcp:
   service: "Serbisyo"
   currentImage: "Kasalukuyang imahe"
   requestedImage: "Hiniling na imahe"
-  notice: "Kapag inaprubahan mo ang planong ito, maaaring isagawa ng AI ang eksaktong pag-upgrade na ito. Hindi pa nagsisimula ang pag-upgrade. Pananatilihin ang iba pang mga setting ng serbisyo at ang naka-mount na datos."
+  notice: "Kapag inaprubahan mo ang planong ito, maaaring isagawa ng AI ang eksaktong pag-upgrade na ito. Hindi pa nagsisimula ang pag-upgrade. Pananatilihin ang iba pang mga setting ng serbisyo at mga pagkakakabit ng volume. Suriin kung tugma ang bagong imahe sa datos bago aprubahan."
   approve: "Aprubahan ang planong ito"
   approved: "Naaprubahan ang plano. Maaari na itong isagawa ng AI."
   review: "Suriin ang nakabinbing pag-upgrade"

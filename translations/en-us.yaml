@@ -4850,7 +4850,7 @@ webmcp:
   service: "Service"
   currentImage: "Current image"
   requestedImage: "Requested image"
-  notice: "Approving this plan lets the AI execute this exact upgrade. The upgrade has not started yet. Other service settings and mounted data are preserved."
+  notice: "Approving this plan lets the AI execute this exact upgrade. The upgrade has not started yet. Other service settings and volume mounts are retained. Check the new image’s data compatibility before approving."
   approve: "Approve this plan"
   approved: "Plan approved. The AI can now execute it."
   review: "Review pending upgrade"

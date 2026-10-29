@@ -4416,7 +4416,7 @@ webmcp:
   service: "Szolgáltatás"
   currentImage: "Jelenlegi konténerkép"
   requestedImage: "Kért konténerkép"
-  notice: "A terv jóváhagyásával engedélyezi az MI-nek, hogy pontosan ezt a frissítést hajtsa végre. A frissítés még nem indult el. A szolgáltatás egyéb beállításai és a csatolt adatok megmaradnak."
+  notice: "A terv jóváhagyásával engedélyezi az MI-nek, hogy pontosan ezt a frissítést hajtsa végre. A frissítés még nem indult el. A szolgáltatás egyéb beállításai és a kötetcsatolások megmaradnak. Jóváhagyás előtt ellenőrizze az új konténerkép adatkompatibilitását."
   approve: "A terv jóváhagyása"
   approved: "A terv jóváhagyva. Az MI most már végrehajthatja."
   review: "A függőben lévő frissítés áttekintése"

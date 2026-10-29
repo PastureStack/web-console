@@ -4453,7 +4453,7 @@ webmcp:
   service: "Dienst"
   currentImage: "Aktuelles Image"
   requestedImage: "Angefordertes Image"
-  notice: "Mit der Genehmigung dieses Plans darf die KI genau dieses Upgrade ausführen. Das Upgrade wurde noch nicht gestartet. Andere Diensteinstellungen und eingebundene Daten bleiben erhalten."
+  notice: "Mit der Genehmigung dieses Plans darf die KI genau dieses Upgrade ausführen. Das Upgrade wurde noch nicht gestartet. Andere Diensteinstellungen und Volume-Einbindungen bleiben erhalten. Prüfen Sie vor der Genehmigung die Datenkompatibilität des neuen Images."
   approve: "Diesen Plan genehmigen"
   approved: "Plan genehmigt. Die KI kann ihn jetzt ausführen."
   review: "Ausstehendes Upgrade prüfen"

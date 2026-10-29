@@ -4398,7 +4398,7 @@ webmcp:
   service: "Service"
   currentImage: "Image actuelle"
   requestedImage: "Image demandée"
-  notice: "L’approbation de ce plan autorise l’IA à exécuter exactement cette mise à niveau. La mise à niveau n’a pas encore commencé. Les autres paramètres du service et les données montées sont conservés."
+  notice: "L’approbation de ce plan autorise l’IA à exécuter exactement cette mise à niveau. La mise à niveau n’a pas encore commencé. Les autres paramètres du service et les montages de volumes sont conservés. Vérifiez la compatibilité de la nouvelle image avec les données avant d’approuver."
   approve: "Approuver ce plan"
   approved: "Plan approuvé. L’IA peut maintenant l’exécuter."
   review: "Vérifier la mise à niveau en attente"
