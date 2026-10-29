@@ -12,9 +12,23 @@ function projectResource(item, projectId) {
 
 function imageName(value) { return safeText(value, 512).replace(/^docker:/, ''); }
 
+export function waitForOperationPoll(milliseconds, signal) {
+  return new Promise((resolve, reject) => {
+    let timer;
+    const cleanup = () => {
+      clearTimeout(timer);
+      if ( signal ) { signal.removeEventListener('abort', abort); }
+    };
+    const abort = () => { cleanup(); reject(new CommandError('CANCELLED')); };
+    if ( signal && signal.aborted ) { abort(); return; }
+    if ( signal ) { signal.addEventListener('abort', abort, {once: true}); }
+    timer = setTimeout(() => { cleanup(); resolve(); }, milliseconds);
+  });
+}
+
 export class CommandEngine {
-  constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, onPlan = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta'}) {
-    Object.assign(this, {context, request, ensureSession, audit, onPlan, origin, apiEndpoint});
+  constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta'}) {
+    Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint});
   }
 
   async execute(name, input, options = {}) {
@@ -234,15 +248,31 @@ export class CommandEngine {
   operationSummary(plan, operationRef) {
     const status = OPERATION_STATUSES.includes(plan.status) ? plan.status : 'unknown';
     // Terminal success must come with explicit server verification, not merely an HTTP 200.
-    return {status: status === 'succeeded' && plan.verifiedResult !== true ? 'unknown' : status,
+    const result = {status: status === 'succeeded' && plan.verifiedResult !== true ? 'unknown' : status,
       operationRef, resourceTextIsUntrusted: true, target: {name: safeText(plan.serviceName)},
       verifiedResult: plan.verifiedResult === true, messageCode: safeText(plan.messageCode, 80)};
+    if ( result.status === 'succeeded' || result.status === 'failed' ) {
+      this.onOperation({planId: plan.id, status: result.status});
+    }
+    return result;
   }
 
   async get_operation(input, captured, signal) {
     const reference = this.context.resolve(input.operationRef, 'operation', captured);
-    const plan = await this.call(captured, `aiServiceUpgradePlans/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal);
-    this.assertPlan(plan, reference);
-    return this.operationSummary(plan, input.operationRef);
+    let result;
+    for ( let check = 0; check < 10; check++ ) {
+      const plan = await this.call(captured, `aiServiceUpgradePlans/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal);
+      this.assertPlan(plan, reference);
+      result = this.operationSummary(plan, input.operationRef);
+      if ( !['accepted', 'running'].includes(result.status) ) { return result; }
+      if ( check < 9 ) {
+        this.context.assertCurrent(captured, signal);
+        await this.wait(750, signal);
+        this.context.assertCurrent(captured, signal);
+      }
+    }
+    // A bounded read-only wait never re-submits the mutation or claims success.
+    return Object.assign(result, {retryAfterMs: 750,
+      nextStep: 'The existing operation is still running. Call get_operation again with the same operationRef; do not submit another upgrade.'});
   }
 }

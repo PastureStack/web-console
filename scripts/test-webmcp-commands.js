@@ -24,7 +24,7 @@ function deferred() {
 
 async function main() {
   const {CommandContext} = await import(moduleUrl('ai-command-context'));
-  const {CommandEngine} = await import(moduleUrl('ai-command-engine'));
+  const {CommandEngine, waitForOperationPoll} = await import(moduleUrl('ai-command-engine'));
   const {COMMANDS, publicError} = await import(moduleUrl('ai-command-contract'));
   const {registerCommandTools} = await import(moduleUrl('webmcp-tools'));
   let count = 0;
@@ -39,6 +39,7 @@ async function main() {
     context.setMode('enabled');
     const engine = new CommandEngine({context, onPlan: (value) => plans.push(value),
       ensureSession: async () => { ensureCalls++; },
+      wait: async () => {},
       audit: async (event, captured) => { audits.push({...event, projectId: captured.projectId}); return {accepted: true, requestId: `aitool-${audits.length}`}; },
       request: async (request) => {
         requests.push(request);
@@ -210,6 +211,37 @@ async function main() {
     assert.equal(f.engine.planSummary({id: 'plan-long', displayPath: 'x'.repeat(900)}, 'opaque-plan').displayPath.length, 768);
   });
 
+  await test('terminal operation clears only its current pending plan and retains query references', async () => {
+    const source = fs.readFileSync(path.resolve(root, '../services/ai-command-service.js'), 'utf8')
+      .replace("import Service, { service } from '@ember/service';", 'const Service = {extend: (value) => value}; const service = () => null;')
+      .replace("'ui/utils/ai-command-engine'", `'${moduleUrl('ai-command-engine')}'`)
+      .replace("'ui/utils/ai-command-contract'", `'${moduleUrl('ai-command-contract')}'`);
+    const {default: definition} = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+    const f = fixture(), plan = await preview(f);
+    const service = Object.assign({}, definition, {pendingPlan: f.plans.at(-1), commandContext: {context: f.context},
+      get(key) { return this[key]; }, set(key, value) { this[key] = value; }});
+    f.engine.onOperation = (operation) => service.clearCompletedPlan(operation);
+    await f.engine.confirmPlan(plan.planRef);
+    const applied = await f.engine.execute('apply_service_upgrade', {planRef: plan.planRef});
+    for ( const [status, verified] of [['accepted', false], ['running', false], ['unknown', false], ['succeeded', false]] ) {
+      f.setStatus(status, verified);
+      await f.engine.execute('get_operation', {operationRef: applied.operationRef});
+      assert.equal(service.pendingPlan.planRef, plan.planRef);
+    }
+    f.setStatus('succeeded', true);
+    await f.engine.execute('get_operation', {operationRef: applied.operationRef});
+    assert.equal(service.pendingPlan, null);
+    assert.equal((await f.engine.execute('get_operation', {operationRef: applied.operationRef})).status, 'succeeded');
+    const captured = f.context.capture(), newerRef = f.context.reference('plan', {id: 'newer-plan'}, captured);
+    service.pendingPlan = {planRef: newerRef, context: captured};
+    f.setStatus('failed', false);
+    await f.engine.execute('get_operation', {operationRef: applied.operationRef});
+    assert.equal(service.pendingPlan.planRef, newerRef, 'old terminal completion preserves the newer preview');
+    service.pendingPlan = f.plans.at(-1);
+    await f.engine.execute('get_operation', {operationRef: applied.operationRef});
+    assert.equal(service.pendingPlan, null, 'failed terminal clears its matching plan');
+  });
+
   await test('auth, account, environment, schema and route changes invalidate old refs', async () => {
     for ( const field of ['generation', 'accountId', 'projectId', 'schemaProjectId', 'schemaGeneration', 'route'] ) {
       const f = fixture(), ref = await serviceRef(f), before = f.requests.length;
@@ -263,6 +295,59 @@ async function main() {
     assert.match(unknown.nextStep, /authorized session/);
     assert.equal((await f.engine.execute('get_operation', {operationRef: reservedRef})).code, 'STALE_REFERENCE');
     assert.equal(f.requests.filter((item) => item.url.endsWith('?action=apply')).length, 1);
+  });
+
+  await test('operation polling is bounded and exits early on verified terminal state', async () => {
+    const f = fixture(), plan = await preview(f);
+    await f.engine.confirmPlan(plan.planRef);
+    const applied = await f.engine.execute('apply_service_upgrade', {planRef: plan.planRef});
+    let waits = 0;
+    f.engine.wait = async (milliseconds) => { assert.equal(milliseconds, 750); waits++; };
+    f.setStatus('running', false);
+    const before = f.requests.length;
+    const running = await f.engine.execute('get_operation', {operationRef: applied.operationRef});
+    assert.equal(f.requests.length - before, 10); assert.equal(waits, 9);
+    assert.equal(running.status, 'running'); assert.equal(running.retryAfterMs, 750);
+    assert.match(running.nextStep, /same operationRef/);
+    waits = 0;
+    f.engine.wait = async () => { waits++; if ( waits === 2 ) { f.setStatus('succeeded', true); } };
+    const earlyBefore = f.requests.length;
+    const completed = await f.engine.execute('get_operation', {operationRef: applied.operationRef});
+    assert.equal(completed.status, 'succeeded'); assert.equal(f.requests.length - earlyBefore, 3);
+    assert.equal(waits, 2);
+    assert.equal(f.requests.filter((item) => item.url.endsWith('?action=apply')).length, 1);
+  });
+
+  await test('operation polling abort or context change during wait prevents the next request', async () => {
+    for ( const reason of ['abort', 'context'] ) {
+      const f = fixture(), plan = await preview(f);
+      await f.engine.confirmPlan(plan.planRef);
+      const applied = await f.engine.execute('apply_service_upgrade', {planRef: plan.planRef});
+      const controller = new AbortController(); let waits = 0;
+      f.engine.wait = async () => {
+        waits++;
+        if ( reason === 'abort' ) { controller.abort(); } else { f.snapshot.generation = 'replacement-session'; }
+      };
+      const before = f.requests.length;
+      const result = await f.engine.execute('get_operation', {operationRef: applied.operationRef}, {signal: controller.signal});
+      assert.equal(result.code, reason === 'abort' ? 'CANCELLED' : 'CONTEXT_CHANGED');
+      assert.equal(waits, 1); assert.equal(f.requests.length - before, 1);
+    }
+  });
+
+  await test('default polling wait cleans its abort listener and timer on both outcomes without sleeping', async () => {
+    const originalSetTimeout = globalThis.setTimeout, originalClearTimeout = globalThis.clearTimeout;
+    try {
+      for ( const outcome of ['timeout', 'abort'] ) {
+        let callback, listener, removed = 0, cleared = 0;
+        globalThis.setTimeout = (fn, milliseconds) => { assert.equal(milliseconds, 750); callback = fn; return 123; };
+        globalThis.clearTimeout = (id) => { assert.equal(id, 123); cleared++; };
+        const signal = {aborted: false, addEventListener(name, fn) { listener = fn; }, removeEventListener(name, fn) { assert.equal(fn, listener); removed++; }};
+        const pending = waitForOperationPoll(750, signal);
+        if ( outcome === 'timeout' ) { callback(); await pending; } else { listener(); await assert.rejects(pending, /CANCELLED/); }
+        assert.equal(removed, 1); assert.equal(cleared, 1);
+      }
+    } finally { globalThis.setTimeout = originalSetTimeout; globalThis.clearTimeout = originalClearTimeout; }
   });
 
   await test('context change while auth awaits prevents request submission', async () => {

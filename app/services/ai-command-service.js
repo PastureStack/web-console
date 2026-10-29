@@ -23,6 +23,7 @@ export default Service.extend({
         return response.body;
       },
       onPlan: (plan) => this.set('pendingPlan', plan),
+      onOperation: (operation) => this.clearCompletedPlan(operation),
       origin: window.location.origin,
       apiEndpoint: this.get('app.apiEndpoint'),
     });
@@ -40,6 +41,15 @@ export default Service.extend({
   },
 
   dismissPendingPlan() { this.set('pendingPlan', null); },
+
+  clearCompletedPlan(operation) {
+    const pending = this.get('pendingPlan');
+    if ( !pending || !['succeeded', 'failed'].includes(operation.status) ) { return; }
+    try {
+      const reference = this.get('commandContext').context.resolve(pending.planRef, 'plan', pending.context);
+      if ( reference.id === operation.planId ) { this.set('pendingPlan', null); }
+    } catch (error) { /* A stale completion cannot change the current plan. */ }
+  },
 
   willDestroy() {
     this.get('commandContext').off('changed', this, this.dismissPendingPlan);
