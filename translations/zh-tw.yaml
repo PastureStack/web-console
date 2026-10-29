@@ -4627,7 +4627,7 @@ formResources:
 webmcp:
   cancelPlan: "取消計畫"
   cancelPlanPrompt: "要取消這筆尚未提交的計畫嗎？其核准授權將撤銷。這不會停止已提交的操作。"
-  cannotCancel: "計畫已提交或已變更，無法在此取消。請重新整理清單並查看既有操作。"
+  cannotCancel: "計畫已提交或已變更，無法在此取消。請重新整理清單並檢視既有操作。"
   planCancelled: "計畫已取消。"
   cancelFailed: "無法核對取消結果。請重新整理計畫清單；連線失敗不代表已取消。"
   childServiceState: "子服務的目標狀態"
