@@ -559,12 +559,19 @@ export default Service.extend({
         return {status: 'adopted', generation: current.generation};
       });
     }, (error) => {
-      if ( this._errorStatus(error) !== 401 ) {
+      let status = this._errorStatus(error);
+      if ( status !== 401 && status !== 409 ) {
         return reject(error);
       }
       return this.get('authSession').runExclusive(() => {
         let current = this.get('authSession').readShared();
         let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+        if ( status === 409 ) {
+          if ( !current || current.generation !== shared.generation || currentCookie !== cookie ) {
+            return {status: 'stale', generation: current && current.generation};
+          }
+          return reject(error);
+        }
         if ( current && current.generation === shared.generation && currentCookie === cookie ) {
           this._clearOwnedLocalState(shared.generation);
           return {status: 'invalid'};

@@ -521,8 +521,11 @@ module('Unit | Service | access session race', function(hooks) {
         browser.cookie = 'new-actor-cookie';
         let newer = authB.commit(generation(373), '1a2', browser.cookie);
         response.resolve(currentTokenResponse({user: 'old-user'}, '1a1'));
-        await assert.rejects(pending, error => error.status === 409,
-          'a changed cookie stops the actor lookup before adoption');
+        if (method === 'ensureSession') {
+          await assert.rejects(pending, error => error.status === 409);
+        } else {
+          assert.strictEqual((await pending).status, 'stale', 'passive peer recovery ignores an obsolete actor response');
+        }
         assert.strictEqual(authB.readShared().generation, newer.generation);
         assert.strictEqual(authB.readShared().accountId, '1a2');
         assert.strictEqual(browser.cookie, 'new-actor-cookie');
@@ -575,6 +578,18 @@ module('Unit | Service | access session race', function(hooks) {
         window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
       }
     }
+  });
+
+  test('a root conflict without a session change remains a conflict', async function(assert) {
+    let browser = {cookie: 'unchanged-conflict-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let record = auth.commit(generation(378), null, browser.cookie);
+    let access = createAccess(browser, auth, options => options.url === 'token' ?
+      resolve(currentTokenResponse({user: 'admin'}, '1a4')) : reject({status: 409}));
+    try {
+      await assert.rejects(access.adoptSharedSession(), error => error.status === 409);
+      assert.deepEqual(auth.readShared(), record, 'an unrelated conflict cannot repair or clear the session');
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
   });
 
   test('a delayed 401 cannot revoke or clear a newer TOTP or Passkey session in 100 deterministic runs', async function(assert) {
