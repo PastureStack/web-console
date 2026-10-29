@@ -521,11 +521,8 @@ module('Unit | Service | access session race', function(hooks) {
         browser.cookie = 'new-actor-cookie';
         let newer = authB.commit(generation(373), '1a2', browser.cookie);
         response.resolve(currentTokenResponse({user: 'old-user'}, '1a1'));
-        if (method === 'ensureSession') {
-          await assert.rejects(pending, error => error.status === 409);
-        } else {
-          assert.strictEqual((await pending).status, 'stale');
-        }
+        await assert.rejects(pending, error => error.status === 409,
+          'a changed cookie stops the actor lookup before adoption');
         assert.strictEqual(authB.readShared().generation, newer.generation);
         assert.strictEqual(authB.readShared().accountId, '1a2');
         assert.strictEqual(browser.cookie, 'new-actor-cookie');
