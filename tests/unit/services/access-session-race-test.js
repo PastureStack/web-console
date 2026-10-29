@@ -82,6 +82,12 @@ function createAccess(browser, authSession, handler) {
   });
 }
 
+function currentTokenResponse(token, accountId) {
+  return {body: {data: [token]}, headers: {get(name) {
+    return name === C.HEADER.USER_ID ? accountId : null;
+  }}};
+}
+
 module('Unit | Service | access session race', function(hooks) {
   hooks.beforeEach(function() {
     window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
@@ -327,17 +333,250 @@ module('Unit | Service | access session race', function(hooks) {
     for (let index = 0; index < responses.length; index++) {
       let browser = {cookie: `valid-token-${index}`};
       let auth = AuthSessionService.create({lockManager: serialLockManager()});
-      let access = createAccess(browser, auth, () => resolve({body: {data: [responses[index]]}}));
+      let access = createAccess(browser, auth, () => resolve(currentTokenResponse(responses[index], '1a1')));
       let result = await access.ensureSession();
 
       assert.strictEqual(result.status, 'active', 'the authenticated token is accepted');
       assert.ok(auth.capture(), 'a generation is committed for the authenticated response');
+      assert.strictEqual(auth.get('accountId'), '1a1', 'the verified response supplies the actor');
       assert.notOk(responses[index].jwt, 'acceptance does not depend on an exposed jwt field');
       run(() => {
         access.destroy();
         auth.destroy();
       });
       window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+    }
+  });
+
+  test('a fresh cookie uses the verified response actor when the masked token body omits accountId', async function(assert) {
+    let browser = {cookie: 'fresh-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let token = {jwt: '********', user: 'administrator', userIdentity: {externalId: 'admin'}};
+    let access = createAccess(browser, auth, () => resolve(currentTokenResponse(token, '1a1')));
+    try {
+      let result = await access.ensureSession();
+      assert.strictEqual(result.status, 'active');
+      assert.strictEqual(auth.get('accountId'), '1a1');
+      assert.strictEqual(auth.readShared().accountId, '1a1');
+      assert.notOk(Object.hasOwn(token, 'accountId'), 'the response body is not mutated');
+      assert.notOk(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY).includes(browser.cookie), 'the cookie stays out of storage');
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('invalid or absent actor metadata cannot establish a session', async function(assert) {
+    for (const [token, header] of [
+      [{user: 'admin'}, '../1a1'],
+      [{user: 'admin'}, '   '],
+      [{user: 'admin'}, null],
+      [{accountId: null, user: null, userIdentity: null, jwt: null}, '1a1'],
+    ]) {
+      let browser = {cookie: 'untrusted-metadata-cookie'};
+      let auth = AuthSessionService.create({lockManager: serialLockManager()});
+      let access = createAccess(browser, auth, () => resolve(currentTokenResponse(token, header)));
+      try {
+        await assert.rejects(access.ensureSession(), error => error.status === 401, 'identity and actor must both be verified');
+        assert.strictEqual(auth.readShared(), null, 'no actor or generation is fabricated');
+        assert.strictEqual(browser.cookie, 'untrusted-metadata-cookie', 'caller owns generation-aware cleanup');
+      } finally { run(() => { access.destroy(); auth.destroy(); }); }
+    }
+  });
+
+  test('the root user header identifies the actor and token virtual headers are ignored', async function(assert) {
+    let browser = {cookie: 'root-actor-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let paths = [];
+    let access = createAccess(browser, auth, options => {
+      paths.push(options.url);
+      if (options.url === 'token') {
+        return resolve({body: {data: [{userIdentity: {externalId: 'not-an-account-id'}, jwt: 'masked'}]},
+          headers: {get() { return '1a4'; }}});
+      }
+      return resolve({headers: {get(name) {
+        return name === C.HEADER.USER_ID ? '1a1' : '1a5';
+      }}});
+    });
+    try {
+      await access.ensureSession();
+      assert.deepEqual(paths, ['token', ''], 'actor lookup uses the unscoped API root after identity validation');
+      assert.strictEqual(auth.get('accountId'), '1a1', 'neither virtual token nor environment account becomes the actor');
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('an authenticated body actor keeps the existing one-request path', async function(assert) {
+    let browser = {cookie: 'body-actor-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let reads = 0;
+    let access = createAccess(browser, auth, options => {
+      reads++;
+      assert.strictEqual(options.url, 'token');
+      return resolve({body: {data: [{accountId: '1a1', user: 'admin'}]}, headers: {get() { return '1a4'; }}});
+    });
+    try {
+      await access.ensureSession();
+      assert.strictEqual(reads, 1);
+      assert.strictEqual(auth.get('accountId'), '1a1', 'the virtual token header does not override the authenticated body');
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('login options never trigger an actor probe even when virtual headers exist', async function(assert) {
+    let browser = {cookie: 'expired-options-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let paths = [];
+    let access = createAccess(browser, auth, options => {
+      paths.push(options.url);
+      return resolve(currentTokenResponse({accountId: null, user: null, userIdentity: null, jwt: 'masked'}, '1a4'));
+    });
+    try {
+      await assert.rejects(access.ensureSession(), error => error.status === 401);
+      assert.deepEqual(paths, ['token']);
+      assert.strictEqual(auth.readShared(), null);
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('actor lookup failures preserve their authentication or permission result', async function(assert) {
+    for (const status of [401, 403, 502]) {
+      let browser = {cookie: 'actor-lookup-cookie'};
+      let auth = AuthSessionService.create({lockManager: serialLockManager()});
+      let access = createAccess(browser, auth, options => options.url === 'token' ?
+        resolve(currentTokenResponse({user: 'admin'}, '1a4')) : reject({status}));
+      try {
+        await assert.rejects(access.ensureSession(), error => error.status === status);
+        assert.strictEqual(auth.readShared(), null);
+        assert.strictEqual(browser.cookie, 'actor-lookup-cookie');
+      } finally { run(() => { access.destroy(); auth.destroy(); }); }
+    }
+  });
+
+  test('a cookie replacement during the root actor request cannot create a session', async function(assert) {
+    let browser = {cookie: 'actor-request-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let requested = deferred(), response = deferred();
+    let access = createAccess(browser, auth, options => {
+      if (options.url === 'token') { return resolve(currentTokenResponse({user: 'old-user'}, '1a4')); }
+      requested.resolve();
+      return response.promise;
+    });
+    try {
+      let pending = access.ensureSession();
+      await requested.promise;
+      browser.cookie = 'replacement-cookie';
+      response.resolve(currentTokenResponse({}, '1a1'));
+      await assert.rejects(pending, error => error.status === 409);
+      assert.strictEqual(auth.readShared(), null);
+      assert.strictEqual(browser.cookie, 'replacement-cookie');
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('ensureSession and peer adoption repair only the matching legacy null actor', async function(assert) {
+    for (const method of ['ensureSession', 'adoptSharedSession']) {
+      let browser = {cookie: 'legacy-actor-cookie'};
+      let auth = AuthSessionService.create({lockManager: serialLockManager()});
+      let record = auth.commit(generation(370), null, browser.cookie);
+      let access = createAccess(browser, auth, () => resolve(currentTokenResponse({user: 'administrator'}, '1a1')));
+      try {
+        let result = await access[method]();
+        assert.ok(['active', 'adopted'].includes(result.status), method);
+        assert.strictEqual(auth.capture(), record.generation, 'repair preserves the validated generation');
+        assert.strictEqual(auth.get('accountId'), '1a1');
+        assert.strictEqual(auth.readShared().accountId, '1a1');
+      } finally {
+        run(() => { access.destroy(); auth.destroy(); });
+        window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+      }
+    }
+  });
+
+  test('two tabs converge when restoring the same legacy null actor', async function(assert) {
+    let browser = {cookie: 'legacy-shared-cookie'};
+    let locks = serialLockManager();
+    let authA = AuthSessionService.create({lockManager: locks});
+    let authB = AuthSessionService.create({lockManager: locks});
+    let record = authA.commit(generation(371), null, browser.cookie);
+    let responses = [deferred(), deferred()];
+    let accessA = createAccess(browser, authA, () => responses[0].promise);
+    let accessB = createAccess(browser, authB, () => responses[1].promise);
+    try {
+      let a = accessA.ensureSession(), b = accessB.ensureSession();
+      responses.forEach(response => response.resolve(currentTokenResponse({user: 'admin'}, '1a1')));
+      await Promise.all([a, b]);
+      assert.strictEqual(authA.get('accountId'), '1a1');
+      assert.strictEqual(authB.get('accountId'), '1a1');
+      assert.strictEqual(authA.capture(), record.generation);
+      assert.strictEqual(authB.capture(), record.generation);
+    } finally { run(() => { accessA.destroy(); accessB.destroy(); authA.destroy(); authB.destroy(); }); }
+  });
+
+  test('late actor repair cannot overwrite a newer login or newer null generation', async function(assert) {
+    for (const method of ['ensureSession', 'adoptSharedSession']) {
+      let browser = {cookie: 'old-actor-cookie'};
+      let locks = serialLockManager();
+      let authA = AuthSessionService.create({lockManager: locks});
+      let authB = AuthSessionService.create({lockManager: locks});
+      authA.commit(generation(372), null, browser.cookie);
+      let response = deferred(), requested = deferred();
+      let access = createAccess(browser, authA, () => { requested.resolve(); return response.promise; });
+      try {
+        let pending = access[method]();
+        await requested.promise;
+        browser.cookie = 'new-actor-cookie';
+        let newer = authB.commit(generation(373), '1a2', browser.cookie);
+        response.resolve(currentTokenResponse({user: 'old-user'}, '1a1'));
+        if (method === 'ensureSession') {
+          await assert.rejects(pending, error => error.status === 409);
+        } else {
+          assert.strictEqual((await pending).status, 'stale');
+        }
+        assert.strictEqual(authB.readShared().generation, newer.generation);
+        assert.strictEqual(authB.readShared().accountId, '1a2');
+        assert.strictEqual(browser.cookie, 'new-actor-cookie');
+      } finally {
+        run(() => { access.destroy(); authA.destroy(); authB.destroy(); });
+        window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+      }
+    }
+
+    let browser = {cookie: 'unchanged-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    auth.commit(generation(374), null, browser.cookie);
+    let response = deferred();
+    let access = createAccess(browser, auth, () => response.promise);
+    try {
+      let pending = access.ensureSession();
+      auth.commit(generation(375), null, browser.cookie);
+      response.resolve(currentTokenResponse({user: 'old-user'}, '1a1'));
+      await assert.rejects(pending, error => error.status === 409);
+      assert.strictEqual(auth.readShared().accountId, null, 'even an unbound newer generation is not repaired by an old response');
+      assert.strictEqual(auth.readShared().generation, generation(375));
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('a forbidden actor lookup preserves the legacy session for ordinary permission handling', async function(assert) {
+    let browser = {cookie: 'forbidden-actor-cookie'};
+    let auth = AuthSessionService.create({lockManager: serialLockManager()});
+    let record = auth.commit(generation(376), null, browser.cookie);
+    let access = createAccess(browser, auth, options => options.url === 'token' ?
+      resolve(currentTokenResponse({user: 'admin'}, '1a4')) : reject({status: 403}));
+    try {
+      await assert.rejects(access.adoptSharedSession(), error => error.status === 403);
+      assert.deepEqual(auth.readShared(), record);
+      assert.strictEqual(browser.cookie, 'forbidden-actor-cookie');
+    } finally { run(() => { access.destroy(); auth.destroy(); }); }
+  });
+
+  test('a verified actor mismatch never replaces an existing shared actor', async function(assert) {
+    for (const method of ['ensureSession', 'adoptSharedSession']) {
+      let browser = {cookie: 'same-cookie'};
+      let auth = AuthSessionService.create({lockManager: serialLockManager()});
+      let record = auth.commit(generation(377), '1a1', browser.cookie);
+      let access = createAccess(browser, auth, () => resolve(currentTokenResponse({user: 'other-user'}, '1a2')));
+      try {
+        await assert.rejects(access[method](), error => error.status === 409);
+        assert.deepEqual(auth.readShared(), record, 'the existing generation and actor are unchanged');
+        assert.strictEqual(browser.cookie, 'same-cookie');
+      } finally {
+        run(() => { access.destroy(); auth.destroy(); });
+        window.localStorage.removeItem(C.AUTH_SESSION.STORAGE_KEY);
+      }
     }
   });
 

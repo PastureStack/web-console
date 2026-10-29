@@ -251,6 +251,7 @@ export default Service.extend({
     if ( !cookie ) {
       return reject({status: 401, message: 'No session cookie'});
     }
+    let beforeValidation = this.get('authSession').readShared();
 
     return this._readCurrentToken().then((token) => {
       return this.get('authSession').runExclusive(() => {
@@ -260,10 +261,21 @@ export default Service.extend({
 
         let current = this.get('authSession').readShared();
         if ( !current ) {
+          if ( beforeValidation ) {
+            return reject({status: 409, message: 'Session changed during validation'});
+          }
           current = this.get('authSession').commit(
             this.get('authSession').createGeneration(), token.accountId, cookie
           );
         } else {
+          if ( current.accountId === null ) {
+            if ( !beforeValidation || current.generation !== beforeValidation.generation ) {
+              return reject({status: 409, message: 'Session changed during validation'});
+            }
+            current = this.get('authSession').commit(current.generation, token.accountId, cookie);
+          } else if ( current.accountId !== token.accountId ) {
+            return reject({status: 409, message: 'Session account changed during validation'});
+          }
           this.get('authSession').adopt(current, cookie);
         }
         this._applyTokenMetadata(token);
@@ -462,6 +474,7 @@ export default Service.extend({
   },
 
   _readCurrentToken() {
+    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
     return this.get('userStore').rawRequest({
       url: 'token',
     }).then((xhr) => {
@@ -482,7 +495,28 @@ export default Service.extend({
       if ( !token || (!hasAccountId && !hasUser && !hasUserIdentity) ) {
         return reject({status: 401, message: 'No authenticated session'});
       }
-      return token;
+      const accountIdPattern = /^[a-zA-Z0-9_-]{1,256}$/;
+      if ( hasAccountId && !accountIdPattern.test(accountId) ) {
+        return reject({status: 401, message: 'Invalid authenticated account'});
+      }
+      if ( hasAccountId ) { return token; }
+      if ( this.get('cookies').get(C.COOKIE.TOKEN) !== cookie ) {
+        return reject({status: 409, message: 'Session changed during validation'});
+      }
+      // /token uses a virtual policy account in its response headers. After
+      // validating its identity, read the real actor from the authenticated
+      // API root; project account headers identify environments, not users.
+      return this.get('userStore').rawRequest({url: ''}).then((actorResponse) => {
+        if ( this.get('cookies').get(C.COOKIE.TOKEN) !== cookie ) {
+          return reject({status: 409, message: 'Session changed during validation'});
+        }
+        let header = actorResponse.headers && typeof actorResponse.headers.get === 'function' ? actorResponse.headers.get(C.HEADER.USER_ID) : null;
+        let verifiedAccountId = typeof header === 'string' ? header.trim() : '';
+        if ( !accountIdPattern.test(verifiedAccountId) ) {
+          return reject({status: 401, message: 'No authenticated account'});
+        }
+        return Object.assign({}, token, {accountId: verifiedAccountId});
+      });
     });
   },
 
@@ -514,6 +548,11 @@ export default Service.extend({
         let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
         if ( !current || current.generation !== shared.generation || currentCookie !== cookie ) {
           return {status: 'stale', generation: current && current.generation};
+        }
+        if ( current.accountId === null ) {
+          current = this.get('authSession').commit(current.generation, token.accountId, currentCookie);
+        } else if ( current.accountId !== token.accountId ) {
+          return reject({status: 409, message: 'Session account changed during validation'});
         }
         this.get('authSession').adopt(current, currentCookie);
         this._applyTokenMetadata(token);

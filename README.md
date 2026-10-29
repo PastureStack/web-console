@@ -10,12 +10,13 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console [1.6.196](https://github.com/PastureStack/web-console/releases/tag/1.6.196)
-is published with optional AI collaboration: seven typed tools, human upgrade
-approval, conditional description edits and a dedicated-Key stdio bridge.
-Browser tools start paused and require an explicit user choice. The
-[release note](docs/releases/web-console-1.6.196.md) records the producer,
-same-tree release tag, passing CI and verified artifact checksums.
+Web Console [1.6.197](https://github.com/PastureStack/web-console/releases/tag/1.6.197)
+restores the verified browser actor when an existing cookie is opened in a
+fresh browser session. This allows the human approval inbox to work without
+requiring a new login. Optional AI collaboration still provides seven typed
+tools, conditional description edits and a dedicated-Key stdio bridge.
+Browser tools start paused and require an explicit user choice. See the
+[release note](docs/releases/web-console-1.6.197.md) for the session boundary.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
 container and produces an immutable static archive with separate runtime and
