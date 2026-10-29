@@ -7,8 +7,11 @@ import {fileURLToPath} from 'node:url';
 // No network requests, credentials, generated copies or source modification.
 const web=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 export async function checkEngineContract(engineRoot) {
-const engine=await realpath(path.resolve(engineRoot));
-const schemaRoot=await realpath(path.join(engine,'resources/content/schema'));
+const engine=path.resolve(engineRoot);
+const requestedSchema=path.resolve(engine,'resources/content/schema');
+const requestedRelative=path.relative(engine,requestedSchema);
+if(requestedRelative==='..'||requestedRelative.startsWith('..'+path.sep)||path.isAbsolute(requestedRelative))throw Error('Schema root escapes selected Engine');
+const schemaRoot=await realpath(requestedSchema);
 const schemaRelative=path.relative(engine,schemaRoot);
 if(schemaRelative==='..'||schemaRelative.startsWith('..'+path.sep)||path.isAbsolute(schemaRelative))throw Error('Schema root escapes selected Engine');
 const read=async relative=>{
