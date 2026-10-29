@@ -6,7 +6,7 @@ import {tmpdir} from 'node:os';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {loadConfig} from '../bridge/core.mjs';
-import {COMMANDS} from '../bridge/shared-modules.mjs';
+import {COMMANDS,PUBLIC_ERROR_CODES} from '../bridge/shared-modules.mjs';
 import {checkEngineContract} from './check-webmcp-engine-contract.mjs';
 
 const web=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -53,14 +53,41 @@ test('config rejects replacement before open and bounds a concurrent growth read
 
 async function fixture(dir){
   const schema=path.join(dir,'resources/content/schema');
-  const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent'];
+  const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent','aiResourceView','aiResourceChangePlan'];
+  const inputs={aiServiceUpgradePlan:['serviceId','image'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+    aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId'],
+    aiResourceChangePlan:['resourceType','operation','resourceId','parameters']};
   for(const part of ['base','admin','user','project'])await fs.mkdir(path.join(schema,part),{recursive:true});
-  for(const name of names)await fs.writeFile(path.join(schema,'base',name+'.json'),JSON.stringify({resourceFields:{serviceId:{create:true},...(name==='aiToolCallEvent'?{command:{options:[...COMMANDS.map(x=>x.name),'unknown']}}:{})}}));
-  for(const role of ['admin','user','project'])await fs.writeFile(path.join(schema,role,role+'-auth.json'),JSON.stringify({authorize:Object.fromEntries(names.flatMap(name=>[[name,'c'],[name+'.serviceId','c']]))}));
+  for(const name of names){
+    const fields=Object.fromEntries(inputs[name].map(field=>[field,{create:true}]));
+    if(name==='aiToolCallEvent'){fields.command.options=[...COMMANDS.map(x=>x.name),'unknown'];fields.reason.options=[...PUBLIC_ERROR_CODES,'NONE'];}
+    if(name==='aiResourceChangePlan'){
+      fields.resourceType.options=['stack','service','container'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','scale'];fields.parameters.type='json';
+    }
+    await fs.writeFile(path.join(schema,'base',name+'.json'),JSON.stringify({collectionMethods:['POST'],resourceFields:fields}));
+  }
+  for(const role of ['admin','user','project'])await fs.writeFile(path.join(schema,role,role+'-auth.json'),JSON.stringify({authorize:Object.fromEntries(names.flatMap(name=>[[name,'c'],...inputs[name].map(field=>[name+'.'+field,'c'])]))}));
   return schema;
 }
 test('checker reads the fixed contract in an explicitly selected Engine checkout',async t=>{
   const dir=await temp(t);await fixture(dir);await checkEngineContract(dir);
+});
+
+test('checker rejects omitted writable inputs and mismatched typed lifecycle enums',async t=>{
+  const dir=await temp(t),schema=await fixture(dir),file=path.join(schema,'base/aiResourceChangePlan.json');
+  const original=JSON.parse(await fs.readFile(file,'utf8'));
+  const missing=structuredClone(original);missing.resourceFields.parameters.create=false;await fs.writeFile(file,JSON.stringify(missing));
+  await assert.rejects(checkEngineContract(dir),/parameters is not accepted input/);
+  const wrong=structuredClone(original);wrong.resourceFields.operation.options.push('execute');await fs.writeFile(file,JSON.stringify(wrong));
+  await assert.rejects(checkEngineContract(dir),/operation enum mismatch/);
+});
+
+test('checker rejects a public capacity error missing from the durable audit enum',async t=>{
+  const dir=await temp(t),schema=await fixture(dir),file=path.join(schema,'base/aiToolCallEvent.json');
+  const event=JSON.parse(await fs.readFile(file,'utf8'));
+  event.resourceFields.reason.options=event.resourceFields.reason.options.filter(code=>code!=='CAPACITY');
+  await fs.writeFile(file,JSON.stringify(event));
+  await assert.rejects(checkEngineContract(dir),/Public error CAPACITY cannot be audited/);
 });
 test('checker rejects directory links escaping the selected Engine and schema roots',async t=>{
   const dir=await temp(t),outside=await temp(t);await fixture(outside);

@@ -7,9 +7,9 @@ try {
   const path = process.env.PASTURESTACK_BRIDGE_CONFIG;
   if (!path) throw new SetupError('CONFIG_REQUIRED');
   const bridge = await createBridge(await loadConfig(path));
-  const server = new Server({name: 'pasturestack-webmcp-bridge', version: '0.1.0'}, {
+  const server = new Server({name: 'pasturestack-webmcp-bridge', version: '0.2.0'}, {
     capabilities: {tools: {}},
-    instructions: 'Use names and returned opaque references. Never guess IDs. A human must approve upgrade plans in the console. Rejected calls must be repaired only as directed; never evade permissions. Accepted/running is not success. Read the existing operation until verifiedResult=true.',
+    instructions: 'Use names and returned opaque references. Never guess IDs. A human must approve change plans in the console. Rejected calls must be repaired only as directed; never evade permissions. Accepted/running is not success. Read the existing operation until verifiedResult=true.',
   });
   server.setRequestHandler(ListToolsRequestSchema, async () => ({tools: bridge.tools.map(tool => ({
     name: tool.name, description: tool.description, inputSchema: tool.inputSchema,
@@ -22,7 +22,9 @@ try {
   });
   server.onclose = () => bridge.close();
   server.onerror = () => {}; // Protocol errors must never dump request headers or credentials.
-  await server.connect(new StdioServerTransport(process.stdin, process.stdout, {maxBufferSize: 65536}));
+  // Request framing is bounded independently of the 1 MiB platform response
+  // limit. A valid 16K command array can exceed 64K after JSON escaping.
+  await server.connect(new StdioServerTransport(process.stdin, process.stdout, {maxBufferSize: 256 * 1024}));
   process.on('SIGINT', () => void server.close());
   process.on('SIGTERM', () => void server.close());
 } catch (error) {

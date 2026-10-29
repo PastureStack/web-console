@@ -26,6 +26,7 @@ async function main() {
   const {CommandContext} = await import(moduleUrl('ai-command-context'));
   const {CommandEngine, waitForOperationPoll} = await import(moduleUrl('ai-command-engine'));
   const {COMMANDS, publicError} = await import(moduleUrl('ai-command-contract'));
+  const legacyNames = ['find_stacks', 'find_services', 'get_service', 'update_service_description', 'preview_service_upgrade', 'apply_service_upgrade', 'get_operation'];
   const {registerCommandTools} = await import(moduleUrl('webmcp-tools'));
   let count = 0;
   const filterArgument = process.argv.find((value) => value.startsWith('--filter='));
@@ -94,7 +95,7 @@ async function main() {
   async function preview(f) { return f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2'}); }
 
   await test('seven bounded schemas reject extra fields before business requests and audit the rejection', async () => {
-    assert.equal(COMMANDS.length, 7);
+    assert.deepEqual(COMMANDS.filter((item) => legacyNames.includes(item.name)).map((item) => item.name), legacyNames);
     for ( const command of COMMANDS ) {
       assert.ok(command.inputSchema.required.length <= 2);
       assert.equal(command.inputSchema.additionalProperties, false);
@@ -173,7 +174,7 @@ async function main() {
 
   await test('description schema permits empty and UTF-16 bounded strings only', async () => {
     const command = COMMANDS.find((item) => item.name === 'update_service_description');
-    assert.equal(COMMANDS.length, 7);
+    assert.deepEqual(COMMANDS.filter((item) => legacyNames.includes(item.name)).map((item) => item.name), legacyNames);
     assert.deepEqual(command.inputSchema.required, ['serviceRef', 'description']);
     assert.equal(command.inputSchema.additionalProperties, false);
     assert.equal(command.inputSchema.properties.description.minLength, 0);
@@ -581,7 +582,7 @@ async function main() {
     const registration = registerCommandTools({context: f.context, engine: f.engine,
       modelContext: {registerTool(tool) { registered.push(tool); }}});
     await registration.ready;
-    assert.deepEqual(registered.map((tool) => tool.name), ['find_stacks', 'find_services', 'get_service', 'get_operation']);
+    assert.deepEqual(registered.map((tool) => tool.name), ['list_capabilities', 'find_resources', 'get_resource', 'find_stacks', 'find_services', 'get_service', 'get_operation']);
     assert.equal((await f.engine.execute('apply_service_upgrade', {planRef: 'guessed'})).code, 'UNAVAILABLE');
     registration.dispose(); registration.dispose();
   });

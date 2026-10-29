@@ -75,3 +75,14 @@
     }
   }
 }
+
+.ai-resource-diff-value {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+  max-height: 18rem;
+  overflow: auto;
+  margin: 0;
+  color: inherit;
+  background-color: transparent;
+}

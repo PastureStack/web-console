@@ -2,7 +2,7 @@ import {open, realpath, lstat} from 'node:fs/promises';
 import {constants} from 'node:fs';
 import path from 'node:path';
 import {randomBytes} from 'node:crypto';
-import {CommandContext, CommandEngine, COMMANDS, CommandError} from './shared-modules.mjs';
+import {CommandContext, CommandEngine, COMMANDS, CommandError, resourceDescriptors} from './shared-modules.mjs';
 
 export class SetupError extends Error {
   constructor(code) { super(code); this.code = code; }
@@ -73,23 +73,34 @@ export async function loadConfig(input, io = {open, realpath, lstat}) {
   }
 }
 
-const PATH = /^projects\/([a-zA-Z0-9_-]+)\/(stacks|services|aiServiceUpgradePlans|aiServiceDescriptionUpdates|aiToolCallEvents)(?:\/([a-zA-Z0-9_-]+))?$/;
+const PATH = /^projects\/([a-zA-Z0-9_-]+)\/(stacks|services|aiServiceUpgradePlans|aiResourceChangePlans|aiServiceDescriptionUpdates|aiToolCallEvents)(?:\/([a-zA-Z0-9_-]+))?$/;
 
 export function allowedRequest(path, method, projectId, bootstrap = false) {
-  if (typeof path !== 'string' || !path.startsWith('projects')) return false;
+  if (typeof path !== 'string') return false;
   const parsed = new URL(path, 'https://local.invalid/');
   if (parsed.origin !== 'https://local.invalid' || parsed.hash || parsed.pathname.slice(1) !== path.split('?')[0]) return false;
+  if (method === 'POST' && parsed.pathname === `/projects/${projectId}/aiResourceViews` && !parsed.search) return true;
   if (bootstrap && method === 'GET' && parsed.pathname === '/projects') {
     return [...parsed.searchParams.keys()].every(key => ['limit', 'marker'].includes(key));
+  }
+  if (method === 'GET') {
+    const queryAllowed = [...parsed.searchParams.keys()].every(key => ['limit', 'marker', 'stackId', 'serviceId', 'storagePoolId'].includes(key));
+    if (!queryAllowed) return false;
+    const read = resourceDescriptors().find(item => {
+      if (!item.bridgeRead) return false;
+      const root = item.scope === 'global' ? `/${item.collection}` : `/projects/${projectId}/${item.collection}`;
+      return parsed.pathname === root || parsed.pathname.startsWith(root + '/') && /^[a-zA-Z0-9_.:-]{1,256}$/.test(parsed.pathname.slice(root.length + 1));
+    });
+    if (read) return true;
   }
   const match = parsed.pathname.slice(1).match(PATH);
   if (!match || match[1] !== projectId) return false;
   const [, , kind, id] = match;
   if (method === 'GET') {
-    return ['stacks', 'services'].includes(kind) || kind === 'aiServiceUpgradePlans' && !!id;
+    return ['stacks', 'services'].includes(kind) || ['aiServiceUpgradePlans', 'aiResourceChangePlans'].includes(kind) && !!id;
   }
   if (method !== 'POST') return false;
-  if (kind === 'aiServiceUpgradePlans') {
+  if (['aiServiceUpgradePlans', 'aiResourceChangePlans'].includes(kind)) {
     return id ? parsed.searchParams.get('action') === 'apply' && [...parsed.searchParams.keys()].length === 1 : !parsed.search;
   }
   return !id && !parsed.search && ['aiServiceDescriptionUpdates', 'aiToolCallEvents'].includes(kind);
@@ -174,6 +185,6 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
       const data = {command: event.command, phase: event.phase, status: event.status, reason: event.reason};
       if (event.correlationId) data.correlationId = event.correlationId;
       return (await request({url: `projects/${project.id}/aiToolCallEvents`, method: 'POST', data})).body;
-    }, origin: new URL(config.endpoint).origin, apiEndpoint: new URL(config.endpoint).pathname.replace(/\/$/, '') + '/v2-beta'});
+    }, transportKind: 'stdio', origin: new URL(config.endpoint).origin, apiEndpoint: new URL(config.endpoint).pathname.replace(/\/$/, '') + '/v2-beta'});
   return {engine, tools: COMMANDS, close() { context.setMode('off'); }};
 }

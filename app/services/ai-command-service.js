@@ -56,11 +56,13 @@ export default Service.extend({
     try {
       const captured = this.captureReviewContext();
       if ( expectedContext ) { this.assertReviewContext(expectedContext); }
-      if ( !serverPlan || !/^aiplan-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serverPlan.id || '') ||
-        typeof serverPlan.serviceId !== 'string' || !serverPlan.serviceId ) { throw new CommandError('INVALID_INPUT'); }
+      const resourceChange = serverPlan && /^aichange-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serverPlan.id || '');
+      if ( !resourceChange && (!serverPlan || !/^aiplan-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(serverPlan.id || '') ||
+        typeof serverPlan.serviceId !== 'string' || !serverPlan.serviceId) ) { throw new CommandError('INVALID_INPUT'); }
       const planRef = `human_${this.get('commandContext').context.random()}`;
       const summary = this.engine.planSummary(serverPlan, planRef);
-      this.publishPlan(Object.assign({humanOnly: true, serverPlanId: serverPlan.id, serverServiceId: serverPlan.serviceId, context: captured}, summary));
+      this.publishPlan(Object.assign({humanOnly: true, serverPlanId: serverPlan.id, serverServiceId: serverPlan.serviceId,
+        serverResourceId: serverPlan.resourceId, context: captured}, summary));
       return Object.assign({status: 'needs_user'}, summary);
     } catch (error) { return publicError(error); }
   },
@@ -80,12 +82,13 @@ export default Service.extend({
       await this.get('access').ensureSession();
       this.assertReviewContext(plan.context);
       const response = await this.get('userStore').rawRequest({
-        url: `projects/${encodeURIComponent(plan.context.projectId)}/aiServiceUpgradePlans/${encodeURIComponent(plan.serverPlanId)}?action=confirm`,
+        url: `projects/${encodeURIComponent(plan.context.projectId)}/${this.engine.planCollection(plan)}/${encodeURIComponent(plan.serverPlanId)}?action=confirm`,
         method: 'POST', data: {},
       });
       this.assertReviewContext(plan.context);
       const body = response.body;
-      if ( !body || body.id !== plan.serverPlanId || body.serviceId !== plan.serverServiceId || body.confirmationState !== 'approved' ) {
+      if ( !body || body.id !== plan.serverPlanId || body.confirmationState !== 'approved' ||
+        (plan.planKind === 'resource-change' ? body.resourceType !== plan.resourceType || body.operation !== plan.operation || body.resourceId !== plan.serverResourceId : body.serviceId !== plan.serverServiceId) ) {
         throw new CommandError('INVALID_RESPONSE');
       }
       const summary = this.engine.planSummary(body, plan.planRef);
@@ -95,6 +98,52 @@ export default Service.extend({
   },
 
   dismissPendingPlan() { this.set('pendingPlan', null); },
+
+  canCancelInboxPlan(plan) {
+    return !!plan && plan.status === 'preview' && ['pending', 'approved'].includes(plan.confirmationState) &&
+      (plan.operationId === undefined || plan.operationId === null);
+  },
+
+  // Ordinary human UI only. Never exposed by COMMANDS or the Key bridge.
+  async cancelInboxPlan(plan, expectedContext) {
+    let submitted = false;
+    try {
+      const captured = expectedContext || this.captureReviewContext();
+      this.assertReviewContext(captured);
+      if ( !plan || !/^(aiplan|aichange)-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(plan.id || '') ) { throw new CommandError('INVALID_INPUT'); }
+      if ( !this.canCancelInboxPlan(plan) ) { return {status: 'rejected', code: 'CONFLICT', reason: 'CANNOT_CANCEL'}; }
+      const summary = this.engine.planSummary(plan, null);
+      await this.get('access').ensureSession(); this.assertReviewContext(captured);
+      submitted = true;
+      const response = await this.get('userStore').rawRequest({
+        url: `projects/${encodeURIComponent(captured.projectId)}/${this.engine.planCollection(summary)}/${encodeURIComponent(plan.id)}?action=cancel`, method: 'POST', data: {},
+      });
+      this.assertReviewContext(captured);
+      const body = response.body;
+      if ( !body || body.id !== plan.id || body.confirmationState !== 'cancelled' || !['preview', 'cancelled'].includes(body.status) || body.operationId ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( summary.planKind === 'resource-change' ? body.resourceType !== plan.resourceType || body.operation !== plan.operation || body.resourceId !== plan.resourceId : body.serviceId !== plan.serviceId ) { throw new CommandError('INVALID_RESPONSE'); }
+      const pending = this.get('pendingPlan');
+      if ( pending ) {
+        try {
+          if ( pending.humanOnly ) {
+            this.assertReviewContext(pending.context);
+            if ( pending.serverPlanId === plan.id ) { this.set('pendingPlan', null); }
+          } else {
+            const reference = this.get('commandContext').context.resolve(pending.planRef, 'plan', pending.context);
+            if ( reference.id === plan.id ) { this.set('pendingPlan', null); }
+          }
+        } catch (error) { /* A stale pending view cannot alter the verified cancellation. */ }
+      }
+      return {status: 'succeeded', confirmationState: 'cancelled'};
+    } catch (error) {
+      const result = publicError(error);
+      if ( submitted && (result.status === 'unknown' || result.code === 'CONTEXT_CHANGED') ) {
+        return {status: 'unknown', code: 'UNKNOWN_RESULT', nextStep: 'Refresh the plan inbox in an authorized session. Do not assume the cancellation succeeded or automatically resubmit it.'};
+      }
+      if ( result.code === 'CONFLICT' ) { result.reason = 'CANNOT_CANCEL'; }
+      return result;
+    }
+  },
 
   clearCompletedPlan(operation) {
     const pending = this.get('pendingPlan');

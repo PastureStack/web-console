@@ -1,6 +1,7 @@
 import { API_KEY_OPERATIONS, API_KEY_RESOURCE_TYPES, canonicalResourceType } from 'ui/utils/api-key-policy';
 import { scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import { selectionMatches } from 'ui/utils/api-key-scope-selection';
+import { RESOURCE_CHANGES, resourceDescriptors } from 'ui/utils/ai-resource-registry';
 
 export const POLICY_MATRIX_STATES = ['allow', 'deny', 'mixed', 'conditional', 'unknown', 'unsupported'];
 export const POLICY_MATRIX_BASIS = ['full', 'closed', 'expired', 'defaultAllow', 'defaultDeny', 'ruleAllow', 'explicitDeny',
@@ -197,13 +198,21 @@ function scopeCell(row, operation, groups, policy) {
 }
 
 function bridgeProvides(row, operation) {
-  if (!['read', 'update', 'upgrade'].includes(operation)) { return false; }
+  if (!['read', 'create', 'update', 'upgrade', 'delete'].includes(operation)) { return false; }
   // A project/stack scope is a set including descendants. Its bridge access
   // remains conditional on selecting a supported resource inside that set.
   // A resource scope is an exact point and cannot borrow descendant tools.
   if (row.kind !== 'resource') { return true; }
   const resourceType = type(row.scope.resourceType);
-  return operation === 'read' ? ['project', 'stack', 'service'].includes(resourceType) : resourceType === 'service';
+  if (operation === 'read') {
+    return resourceDescriptors().some(descriptor => type(descriptor.type) === resourceType && ['domain', 'view'].includes(descriptor.readTransport));
+  }
+  // A point grant on an existing object is not a create-destination grant.
+  if (operation === 'create') { return false; }
+  if (operation === 'upgrade') { return resourceType === 'service'; }
+  const changes = RESOURCE_CHANGES[resourceType];
+  return !!changes && (operation === 'delete' ? !!changes.remove :
+    Object.keys(changes).some(action => !['create', 'remove'].includes(action)));
 }
 
 /** Pure, finite policy-intent preview. Never an owner RBAC or API-call verdict.

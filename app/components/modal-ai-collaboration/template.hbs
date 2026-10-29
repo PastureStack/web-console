@@ -15,14 +15,22 @@
 <h4>{{t "webmcp.collaboration.pendingPlans"}}</h4>
 <p id="ai-collaboration-confirmation-source">{{t "webmcp.collaboration.confirmationSource"}}</p>
 <button type="button" class="btn btn-sm btn-default" disabled={{this.loading}} {{action "refresh"}} data-testid="ai-collaboration-refresh">{{t "webmcp.collaboration.refresh"}}</button>
+{{top-errors errors=this.errors}}
+{{#if this.cancelNotice}}<div class="alert alert-success" role="status">{{this.cancelNotice}}</div>{{/if}}
+{{#if this.cancelCandidate}}<div class="alert alert-warning" role="alert">
+  <p>{{t "webmcp.cancelPlanPrompt"}}</p><strong class="force-wrap">{{this.cancelCandidate.displayPath}}</strong>
+  <div class="mt-10"><button type="button" class="btn btn-danger" disabled={{this.cancelling}} {{action "cancelPlan"}} data-testid="ai-collaboration-confirm-cancel">{{t "webmcp.cancelPlan"}}</button>
+  <button type="button" class="btn btn-link" disabled={{this.cancelling}} {{action "keepPlan"}}>{{t "generic.cancel"}}</button></div>
+</div>{{/if}}
 {{#if this.loading}}<p role="status">{{t "generic.loading"}}</p>
 {{else if this.loadError}}<p class="alert alert-warning" role="alert">{{t "webmcp.collaboration.loadFailed"}}</p>
 {{else if this.hasLoaded}}
   <ul class="list-unstyled mt-15" data-testid="ai-collaboration-plans">
-    {{#each this.plans as |plan|}}<li class="mb-15">
+    {{#each this.plans as |plan|}}<li class="mb-15" data-ai-plan-id={{plan.id}} data-ai-resource-type={{plan.resourceType}} data-ai-operation={{plan.operation}}>
       <strong class="force-wrap">{{plan.displayPath}}</strong>
-      <div class="force-wrap">{{plan.currentImage}} → {{plan.requestedImage}}</div>
-      <button type="button" class="btn btn-sm btn-primary" {{action "review" plan}} data-testid="ai-collaboration-review-plan">{{t "webmcp.review"}}</button>
+      {{#if (eq plan.planKind "resource-change")}}<div class="force-wrap">{{plan.resourceTypeLabel}} · {{plan.operationLabel}}</div>{{else}}<div class="force-wrap">{{plan.currentImage}} → {{plan.requestedImage}}</div>{{/if}}
+      <button type="button" class="btn btn-sm btn-primary" {{action "review" plan}} data-testid="ai-collaboration-review-plan">{{t "webmcp.reviewPlan"}}</button>
+      {{#if plan.canCancel}}<button type="button" class="btn btn-sm btn-default" disabled={{this.cancelling}} {{action "requestCancel" plan}} data-testid="ai-collaboration-cancel-plan">{{t "webmcp.cancelPlan"}}</button>{{/if}}
     </li>{{else}}<li>{{t "webmcp.collaboration.noPendingPlans"}}</li>{{/each}}
   </ul>
 {{else}}<p>{{t "webmcp.collaboration.loadRequired"}}</p>{{/if}}

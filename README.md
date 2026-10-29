@@ -10,14 +10,16 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console [1.6.197](https://github.com/PastureStack/web-console/releases/tag/1.6.197)
-restores the verified browser actor when an existing cookie is opened in a
-fresh browser session. This allows the human approval inbox to work without
-requiring a new login. Optional AI collaboration still provides seven typed
-tools, conditional description edits and a dedicated-Key stdio bridge.
-Browser tools start paused and require an explicit user choice. See the
-[release note](docs/releases/web-console-1.6.197.md) for the session boundary,
-original producer and verified publication.
+This source builds Web Console **1.6.198** and stdio bridge **0.2.0**. It adds
+resource-family discovery, server-projected metadata and typed Stack, Service
+and Container lifecycle plans, while retaining the seven existing tools. Browser
+tools still start paused and require explicit opt-in. Pending adapters are
+reported separately; this batch does not cover the whole console.
+
+The [release note](docs/releases/web-console-1.6.198.md) records the scope and
+validation boundaries. Exact producer and immutable artifact identities are
+recorded with the [release assets](https://github.com/PastureStack/web-console/releases).
+Component publication and Server/browser acceptance are separate results.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
 container and produces an immutable static archive with separate runtime and
@@ -30,8 +32,8 @@ for deployment. Historical changes remain in [release notes](docs/releases).
 
 ## Features and operator guides
 
-- [Experimental AI collaboration](docs/webmcp.md): seven typed tools for
-  discovery, conditional description edits and server-owned upgrade plans.
+- [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for
+  resource discovery, conditional descriptions and server-owned lifecycle plans.
   Disabled by default. Includes human review controls and an optional
   [dedicated-Key stdio bridge](bridge/README.md); native browser tools require
   a supported secure-context browser.
