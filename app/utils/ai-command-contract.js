@@ -99,6 +99,9 @@ export function publicError(error) {
   if ( code === 'UNAVAILABLE' && status === 503 ) {
     result.nextStep = 'Resource changes are disabled on this server. Ask an operator to enable the feature, or use the normal console.';
   }
+  if ( code === 'UNAVAILABLE' && status === 422 && error && error.body && error.body.code === 'ResourceChangeUnsupported' ) {
+    result.nextStep = 'This operation is unsupported for this resource. Do not retry the same plan. If the request is service scale, Global services deploy according to eligible hosts and do not support a manual instance count. Review the service deployment configuration or eligible hosts in the console; do not guess another scale value.';
+  }
   if ( code === 'CONFLICT' && error && error.body && error.body.code === 'ResourceChangeTargetBusy' ) {
     result.reason = 'TARGET_BUSY';
     result.nextStep = 'Wait for the current operation to finish. If you have its operationRef, call get_operation with it. Then read the resource again before previewing. Do not submit parallel changes.';

@@ -5,11 +5,13 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-The released 0.1.0 ZIP contains the initial seven-tool contract. The current
-0.2.0 candidate adds resource-family discovery, safe metadata reads and typed
-stack/service/container lifecycle plans. It requires a matching Engine with
+The current 0.2.1 source contains twelve typed tools for resource-family
+discovery, safe metadata reads and stack/service/container lifecycle plans.
+Unsupported-operation replies explain that Global services follow eligible
+hosts rather than a manual instance count; they do not advise retrying the plan.
+It requires a matching Engine with
 `api.ai.resource.change.enabled=true` for those changes (default false). Do not
-expect these additions in the immutable 0.1.0 release archive. The generic
+expect this reply correction in the immutable 0.2.0 release archive. The generic
 stdio read adapter uses server-side safe views, never direct credential-bearing
 domain resources. Pending adapters are reported by `list_capabilities`.
 
@@ -20,13 +22,13 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-The candidate source archive is `pasturestack-webmcp-bridge-0.2.0.zip` with a
+The source archive is `pasturestack-webmcp-bridge-0.2.1.zip` with a
 `.zip.sha256` checksum. Extract the whole archive, keeping both `bridge/` and
 `app/utils/`; the bridge uses those exact shared command sources. With Node.js
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.0/bridge
+cd pasturestack-webmcp-bridge-0.2.1/bridge
 npm ci
 ```
 
@@ -35,7 +37,7 @@ records the included source hashes; the root also includes LICENSE and the
 bridge CycloneDX SBOM. To reproduce the source release from a checkout:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.0 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.0.zip
+python scripts/package-webmcp-bridge.py --version 0.2.1 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.1.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private
