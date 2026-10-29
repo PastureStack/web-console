@@ -10,13 +10,14 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-This source builds Web Console **1.6.198** and stdio bridge **0.2.0**. It adds
-resource-family discovery, server-projected metadata and typed Stack, Service
-and Container lifecycle plans, while retaining the seven existing tools. Browser
-tools still start paused and require explicit opt-in. Pending adapters are
-reported separately; this batch does not cover the whole console.
+This source builds Web Console **1.6.199** and stdio bridge **0.2.1**. Its twelve
+typed tools provide resource discovery, safe metadata and human-approved workload
+plans. Unsupported-operation replies now explain that Global services follow
+eligible hosts and do not support a manual instance count. Browser tools still
+start paused and require explicit opt-in. Pending adapters remain separate;
+this batch does not cover the whole console.
 
-The [release note](docs/releases/web-console-1.6.198.md) records the scope and
+The [release note](docs/releases/web-console-1.6.199.md) records the scope and
 validation boundaries. Exact producer and immutable artifact identities are
 recorded with the [release assets](https://github.com/PastureStack/web-console/releases).
 Component publication and Server/browser acceptance are separate results.
