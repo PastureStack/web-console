@@ -4249,6 +4249,15 @@ apiKeyAudit:
     load: 키 감사를 불러오지 못했습니다. 새로고침하여 다시 시도하세요.
 
 webmcp:
+  backgroundAuthorizationDenied: "백그라운드 작업이 권한 확인에서 거부되었습니다. 일부 변경은 이미 수행되었을 수 있으며 전체 완료 여부는 확인되지 않았습니다. 현재 권한과 원래 작업 기록을 확인하세요. 확인 없이 변경을 다시 제출하거나 승인하지 마세요."
+  catalogReferenceAmbiguous: "일부 리소스의 표시 이름이 같아 안전하게 구분할 수 없습니다. 선택하기 전에 일반 콘솔에서 대상을 확인하세요."
+  catalogLaunchPermissions: "카탈로그에서 생성하면 새 리소스를 읽고 서비스 연결을 설정하며 서비스를 시작할 수 있습니다. 대상 범위에 읽기, 생성 및 업데이트 권한이 필요합니다."
+  catalogExternalVolumesPending: "기존 외부 볼륨 참조(external=true)는 아직 지원되지 않습니다. 이러한 템플릿은 미리보기에서 거부되므로 일반 콘솔을 사용하세요."
+  catalogHumanInputCount: "사람의 입력이 필요한 필드 수"
+  catalogReferenceCount: "참조 리소스 수"
+  catalogCompleteInputs: "필수 입력 저장"
+  catalogInputUnknown: "입력 제출 결과를 확인할 수 없습니다. 이 창을 닫고 기존 계획을 새로 고친 후 계속하세요. 같은 입력을 자동으로 다시 제출하지 마세요."
+  catalogPartialInbox: "일부 계획 목록을 불러오지 못했습니다. 표시된 계획은 계속 사용할 수 있습니다. 새로 고쳐 나머지 목록을 확인하세요."
   cancelPlan: "계획 취소"
   cancelPlanPrompt: "아직 제출하지 않은 계획을 취소할까요? 승인이 철회됩니다. 이미 제출된 작업은 중지되지 않습니다."
   cannotCancel: "계획이 이미 제출되었거나 변경되어 여기서 취소할 수 없습니다. 목록을 새로 고치고 기존 작업을 확인하세요."

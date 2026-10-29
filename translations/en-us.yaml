@@ -4849,6 +4849,15 @@ formResources:
     map: "Use non-empty keys and values for advanced options."
 
 webmcp:
+  backgroundAuthorizationDenied: "A background authorization check denied the operation. Some changes may already have occurred; completion has not been verified. Check the current permissions and the original operation receipt. Do not blindly resubmit or approve the change again."
+  catalogReferenceAmbiguous: "Some resources have identical display names and cannot be distinguished safely. Verify the target in the normal console before selecting it."
+  catalogLaunchPermissions: "A Catalog launch reads the created resources, configures service links and may start services. The target scope needs read, create and update permissions."
+  catalogExternalVolumesPending: "References to existing external volumes (external=true) are not supported yet. These templates are rejected during preview; use the normal console."
+  catalogHumanInputCount: "Fields requiring human input"
+  catalogReferenceCount: "Referenced resources"
+  catalogCompleteInputs: "Save required inputs"
+  catalogInputUnknown: "The input submission could not be verified. Close this dialog and refresh the existing plan before continuing. Do not submit the same inputs automatically."
+  catalogPartialInbox: "Some plan lists could not be loaded. The visible plans remain available; refresh to check the other lists."
   cancelPlan: "Cancel plan"
   cancelPlanPrompt: "Cancel this unsubmitted plan? Its approval will be revoked. This does not stop an operation that has already been submitted."
   cannotCancel: "This plan has already been submitted or changed and cannot be cancelled here. Refresh the list and check its existing operation."

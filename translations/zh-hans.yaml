@@ -4292,6 +4292,15 @@ apiKeyAudit:
     load: 无法加载密钥审计。请刷新后重试。
 
 webmcp:
+  backgroundAuthorizationDenied: "后台操作因权限检查被拒绝，部分变更可能已经完成，整体完成状态尚未验证。请检查当前权限，再核对原操作记录；不要盲目重新提交或再次批准这项变更。"
+  catalogReferenceAmbiguous: "部分资源显示名称相同，无法安全区分。请先在原有控制台核对目标，再进行选择。"
+  catalogLaunchPermissions: "从目录创建会读取新资源、设置服务链接，并可能启动服务，因此目标范围需要读取、创建和更新权限。"
+  catalogExternalVolumesPending: "现有外部数据卷引用（external=true）尚未支持。这类模板会在预览阶段拒绝，请使用原有控制台。"
+  catalogHumanInputCount: "需要人工填写的字段数"
+  catalogReferenceCount: "引用资源数"
+  catalogCompleteInputs: "保存必要输入"
+  catalogInputUnknown: "无法核对输入是否已提交。请关闭窗口并刷新这条现有计划后再继续，不要自动重发相同输入。"
+  catalogPartialInbox: "部分计划列表无法加载。仍可处理当前显示的计划；请刷新以核对其余列表。"
   cancelPlan: "取消计划"
   cancelPlanPrompt: "要取消这份尚未提交的计划吗？其批准授权将撤销。这不会停止已提交的操作。"
   cannotCancel: "计划已提交或已更改，无法在此取消。请刷新列表并查看现有操作。"

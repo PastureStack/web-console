@@ -8,6 +8,8 @@ const sources = Object.freeze({
   'ai-command-context': new URL('../app/utils/ai-command-context.js', import.meta.url),
   'ai-command-engine': new URL('../app/utils/ai-command-engine.js', import.meta.url),
   'ai-resource-registry': new URL('../app/utils/ai-resource-registry.js', import.meta.url),
+  'ai-catalog-reader': new URL('../app/utils/ai-catalog-reader.js', import.meta.url),
+  'ai-catalog-launch': new URL('../app/utils/ai-catalog-launch.js', import.meta.url),
 });
 const urls = new Map();
 const loading = new Set();
@@ -36,3 +38,4 @@ export const {COMMANDS, CommandError, PUBLIC_ERROR_CODES} = contract;
 export const {CommandContext} = context;
 export const {CommandEngine} = engine;
 export const {resourceDescriptors} = await import(moduleUrl('ai-resource-registry'));
+export const {safeCatalogQuestions, catalogLaunchPlanSummary} = await import(moduleUrl('ai-catalog-launch'));

@@ -4625,6 +4625,15 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
+  backgroundAuthorizationDenied: "背景操作因權限檢查遭拒，部分變更可能已完成，整體完成狀態尚未驗證。請檢查目前權限，再開啟原操作紀錄核對；不要直接重新送出或再次核准這項變更。"
+  catalogReferenceAmbiguous: "部分資源顯示名稱相同，無法安全區分。請先在原有主控台核對目標，再進行選取。"
+  catalogLaunchPermissions: "從目錄建立會讀回新資源、設定服務連結，並可能啟動服務，因此目標範圍需要讀取、建立及更新權限。"
+  catalogExternalVolumesPending: "既有外部資料卷參照（external=true）尚未支援。這類範本會在預覽階段拒絕，請使用原有主控台。"
+  catalogHumanInputCount: "需要真人填寫的欄位數"
+  catalogReferenceCount: "參照資源數"
+  catalogCompleteInputs: "儲存必要輸入"
+  catalogInputUnknown: "無法核對輸入是否已提交。請關閉視窗並重新整理這筆既有計畫後再繼續，勿自動重送相同輸入。"
+  catalogPartialInbox: "部分計畫清單無法載入。仍可處理目前顯示的計畫；請重新整理以核對其餘清單。"
   cancelPlan: "取消計畫"
   cancelPlanPrompt: "要取消這筆尚未提交的計畫嗎？其核准授權將撤銷。這不會停止已提交的操作。"
   cannotCancel: "計畫已提交或已變更，無法在此取消。請重新整理清單並檢視既有操作。"

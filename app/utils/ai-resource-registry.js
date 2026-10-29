@@ -12,6 +12,12 @@ const resource = (type, collection, scope, fields = [], parent = null, limitatio
 });
 const project = (type, collection, fields, parent) => resource(type, collection, 'project', fields, parent);
 const global = (type, collection, fields, limitations) => resource(type, collection, 'global', fields, null, limitations);
+// Catalog is selected-project visibility over global and project templates.
+// Its typed gateway owns authorization and never returns raw template files.
+const catalog = (type, fields, parent = null) => Object.freeze({
+  type, collection: null, scope: 'project', readTransport: 'catalog', bridgeRead: false,
+  fields: Object.freeze(fields), parent: parent && Object.freeze(parent), limitations: Object.freeze([]),
+});
 const family = (name, resources, coverageStatus = 'implemented', reason = '') => Object.freeze({
   name, coverageStatus, reason, resources: Object.freeze(resources),
 });
@@ -21,13 +27,15 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('api-keys', [global('apiKey', 'apikeys', ['kind', 'expiresAt'])]),
   family('audit', [global('auditLog', 'auditLogs', ['eventType', 'resourceType', 'responseCode', 'httpStatus', 'authType', 'interactionChannel', 'decision', 'outcome', 'operation'])], 'pending-adapter', 'Engine audit metadata is implemented; the UI audit broker and combined Key/tool event query require a dedicated adapter.'),
   family('authentication', [], 'pending-adapter', 'Authentication configuration uses its dedicated authenticated API. Login and credential entry remain human ceremonies.'),
-  family('catalog', [], 'pending-adapter', 'Catalog metadata requires the dedicated catalog API adapter.'),
+  family('catalog', [catalog('catalogTemplate', ['name', 'description', 'catalogId', 'templateBase', 'templateKey', 'catalogScope', 'defaultVersion', 'maintainer', 'license']),
+    catalog('catalogTemplateVersion', ['version', 'revision', 'minimumRancherVersion', 'maximumRancherVersion', 'upgradeFrom'], {type: 'catalogTemplate', field: 'templateId', required: true})],
+  'pending-adapter', 'Template and version metadata use the dedicated authorized Catalog adapter. Configured defaultVersion and version bounds do not establish compatibility. Typed stack launch needs target-scope read, create and update permissions and a dedicated human-approved plan. External volume references (external=true), Catalog administration and upgrades still need adapters.'),
   family('certificates', [project('certificate', 'certificates', ['CN', 'issuer', 'issuedAt', 'expiresAt', 'algorithm', 'keySize'])]),
   family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount'])]),
   family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine']), global('projectTemplate', 'projectTemplates')]),
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
   family('host', [project('host', 'hosts', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
-  family('load-balancer', [project('loadBalancerService', 'loadBalancerServices', ['scale', 'healthState'], {type: 'stack', field: 'stackId'})]),
+  family('load-balancer', [project('loadBalancerService', 'loadBalancerServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'})]),
   family('mfa-passkey', [], 'human-ceremony', 'MFA enrollment, challenges, recovery codes and passkeys require the existing human security flow.'),
   family('network', [project('network', 'networks', ['kind', 'defaultPolicyAction'])]),
   family('oidc', [], 'pending-adapter', 'OIDC configuration metadata requires the dedicated authentication API adapter. Login is a human ceremony.'),
@@ -36,8 +44,8 @@ export const RESOURCE_FAMILIES = Object.freeze([
     'pending-adapter', 'Process execution currently exposes only basic id/created metadata. Joined process names, summaries and errors need a dedicated adapter; raw logs are excluded. Process pool metadata is implemented.'),
   family('registry', [project('registry', 'registries')]),
   family('secrets', [project('secret', 'secrets')]),
-  family('service', [project('service', 'services', ['scale', 'healthState'], {type: 'stack', field: 'stackId'}),
-    project('dnsService', 'dnsServices', ['scale', 'healthState'], {type: 'stack', field: 'stackId'}), project('externalService', 'externalServices', ['scale', 'healthState'], {type: 'stack', field: 'stackId'})]),
+  family('service', [project('service', 'services', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}),
+    project('dnsService', 'dnsServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}), project('externalService', 'externalServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'})]),
   family('settings', [global('setting', 'settings', ['source', 'inDb'])]),
   family('stack', [project('stack', 'stacks', ['system', 'archived'])]),
   family('storage', [project('volume', 'volumes', ['isHostPath', 'isNative']),
@@ -58,14 +66,15 @@ export function resourceDescriptors() { return RESOURCE_FAMILIES.flatMap((entry)
 const action = (fields = [], required = [], minFields = 0) => Object.freeze({fields: Object.freeze(fields), required: Object.freeze(required), minFields});
 const metadata = action(['name', 'description'], [], 1);
 export const RESOURCE_CHANGES = Object.freeze({
-  stack: Object.freeze({start: action(), stop: action(), remove: action(), create: action(['name', 'description'], ['name']), update_metadata: metadata}),
-  service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), scale: action(['scale'], ['scale']),
+  stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
+    create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
+  service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(), scale: action(['scale'], ['scale']),
     create: action(['name', 'image', 'scale', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
   container: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(),
     create: action(['name', 'image', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
-export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'image', 'scale', 'command', 'entryPoint', 'stackId',
+export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'image', 'scale', 'command', 'entryPoint', 'stackId', 'archived',
   'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can

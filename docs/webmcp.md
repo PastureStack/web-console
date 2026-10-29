@@ -159,3 +159,18 @@ When assembling a release from both source checkouts, run
 It checks that every tool can pass the Engine's audit enum and that all three
 role overlays expose the command inputs. A component unit test alone cannot
 prove those wire contracts agree.
+
+## Candidate Catalog and Archive adapters
+
+The 1.6.200 source candidate adds named Catalog template/version/options and
+human-reviewed new Compose Stack launch through the matching Engine/Compose
+owners. Destination read/create/update are required; create does not imply the
+other operations. Secrets stay in the human input surface, not model parameters.
+Unsupported external-volume and other advanced Catalog forms remain pending.
+
+Archive/restore is limited to eligible fully stopped Stack/Service resources.
+Review mounted-directory data; restoration does not start a workload. Permissions
+and audit remain authoritative. Background authorization denial is shown through
+the existing alert, retains the original failed receipt, warns about partial
+changes and must not cause a blind retry. This section describes candidate scope,
+not complete frontend or runtime acceptance.

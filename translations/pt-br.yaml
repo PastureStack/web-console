@@ -4403,6 +4403,15 @@ apiKeyAudit:
     load: "Não foi possível carregar a auditoria da chave. Atualize para tentar novamente."
 
 webmcp:
+  backgroundAuthorizationDenied: "Uma verificação de permissões negou a operação em segundo plano. Algumas alterações podem já ter ocorrido; a conclusão não foi verificada. Confira as permissões atuais e o comprovante da operação original. Não reenvie nem aprove novamente a alteração sem verificar."
+  catalogReferenceAmbiguous: "Alguns recursos têm nomes de exibição iguais e não podem ser diferenciados com segurança. Confira o destino no console normal antes de selecioná-lo."
+  catalogLaunchPermissions: "Uma implantação pelo Catálogo lê os recursos criados, configura vínculos entre serviços e pode iniciar serviços. O escopo de destino precisa de permissões de leitura, criação e atualização."
+  catalogExternalVolumesPending: "Referências a volumes externos existentes (external=true) ainda não são compatíveis. Esses modelos são recusados na prévia; use o console normal."
+  catalogHumanInputCount: "Campos que exigem entrada humana"
+  catalogReferenceCount: "Recursos referenciados"
+  catalogCompleteInputs: "Salvar entradas obrigatórias"
+  catalogInputUnknown: "Não foi possível verificar o envio das entradas. Feche esta janela e atualize o plano existente antes de continuar. Não reenvie automaticamente as mesmas entradas."
+  catalogPartialInbox: "Algumas listas de planos não puderam ser carregadas. Os planos visíveis continuam disponíveis; atualize para verificar as outras listas."
   cancelPlan: "Cancelar plano"
   cancelPlanPrompt: "Cancelar este plano ainda não enviado? Sua aprovação será revogada. Isso não interrompe uma operação já enviada."
   cannotCancel: "Este plano já foi enviado ou alterado e não pode ser cancelado aqui. Atualize a lista e verifique a operação existente."

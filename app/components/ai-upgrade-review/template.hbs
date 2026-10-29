@@ -1,3 +1,6 @@
+{{#if this.commands.operationNotice}}
+  <div class="alert alert-danger force-wrap" role="alert" data-testid="ai-resource-authorization-denied">{{t "webmcp.backgroundAuthorizationDenied"}}</div>
+{{/if}}
 {{#if this.commands.pendingPlan}}
   <div class="alert alert-info" role="status" data-testid="ai-upgrade-pending">
     {{this.commands.pendingPlan.displayPath}}

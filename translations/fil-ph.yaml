@@ -4399,6 +4399,15 @@ apiKeyAudit:
     load: "Hindi ma-load ang pag-audit ng key. I-refresh upang subukang muli."
 
 webmcp:
+  backgroundAuthorizationDenied: "Tinanggihan ang operasyon sa background sa pagsusuri ng pahintulot. Maaaring naisagawa na ang ilang pagbabago; hindi pa napatunayang kumpleto ang buong operasyon. Suriin ang kasalukuyang mga pahintulot at ang orihinal na tala ng operasyon. Huwag basta muling isumite o aprubahan ang pagbabago."
+  catalogReferenceAmbiguous: "May mga resource na magkapareho ang ipinapakitang pangalan at hindi ligtas na mapag-iba. Tiyakin muna ang target sa karaniwang console bago pumili."
+  catalogLaunchPermissions: "Binabasa ng paglunsad mula sa Catalog ang mga nagawang resource, itinatakda ang ugnayan ng serbisyo at maaaring magsimula ng mga serbisyo. Kailangan ng target na saklaw ang pahintulot na bumasa, gumawa at mag-update."
+  catalogExternalVolumesPending: "Hindi pa suportado ang pagtukoy sa mga kasalukuyang external volume (external=true). Tatanggihan ang mga template na ito sa preview; gamitin ang karaniwang console."
+  catalogHumanInputCount: "Mga field na kailangang sagutan ng tao"
+  catalogReferenceCount: "Mga tinutukoy na resource"
+  catalogCompleteInputs: "I-save ang kinakailangang sagot"
+  catalogInputUnknown: "Hindi matiyak kung naisumite ang mga sagot. Isara ang dialog at i-refresh ang umiiral na plano bago magpatuloy. Huwag awtomatikong isumite muli ang parehong sagot."
+  catalogPartialInbox: "Hindi na-load ang ilang listahan ng plano. Magagamit pa rin ang mga nakikitang plano; i-refresh upang suriin ang ibang listahan."
   cancelPlan: "Kanselahin ang plano"
   cancelPlanPrompt: "Kanselahin ang planong hindi pa naisusumite? Babawiin ang pag-apruba nito. Hindi nito ihihinto ang operasyong naisumite na."
   cannotCancel: "Naisumite o nabago na ang planong ito at hindi makakansela rito. I-refresh ang listahan at suriin ang kasalukuyang operasyon."

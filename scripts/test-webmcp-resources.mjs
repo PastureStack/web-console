@@ -300,6 +300,66 @@ test('resource lifecycle: result audit failure preserves operation recovery and 
   assert.equal(allowedRequest(`projects/p1/aiResourceChangePlans/${planId}?action=apply`, 'POST', 'p1'), true);
 });
 
+test('resource authorization failure: authorized terminal receipt stays failed and retains its original operation', async () => {
+  const f = lifecycleFixture(), targetRef = await f.target(), observed = [];
+  f.engine.onOperation = operation => observed.push(operation);
+  const preview = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'stop', targetRef});
+  await f.engine.confirmPlan(preview.planRef);
+  const accepted = await f.engine.execute('apply_resource_change', {planRef: preview.planRef});
+  Object.assign(f.plan(), {status: 'failed', verifiedResult: false, operationId: planId,
+    messageCode: 'ResourceChangeAuthorizationDenied', processId: secret, exception: secret, payload: secret});
+  const result = await f.engine.execute('get_operation', {operationRef: accepted.operationRef});
+  assert.equal(result.status, 'failed'); assert.equal(result.code, 'FORBIDDEN');
+  assert.equal(result.operationRef, accepted.operationRef); assert.equal(result.verifiedResult, false);
+  assert.equal(result.partialEffectsPossible, true); assert.equal(result.messageCode, 'ResourceChangeAuthorizationDenied');
+  assert.match(result.nextStep, /background authorization/); assert.match(result.nextStep, /Some changes may already/);
+  assert.match(result.nextStep, /same operationRef/); assert.match(result.nextStep, /Do not blindly resubmit/);
+  assert.equal(f.applies(), 1); assert.equal(f.requests.filter(request => request.method === 'GET').length, 1);
+  assert.deepEqual(observed.at(-1), {planId, status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied'});
+  assert.equal(f.audits.at(-1).reason, 'FORBIDDEN'); assert.equal(f.audits.at(-1).status, 'failed');
+  assert.equal(JSON.stringify([result, observed, f.audits]).includes(secret), false);
+});
+
+test('resource authorization failure: only the exact failed resource receipt receives the partial-change repair', () => {
+  const f = fixture();
+  for (const plan of [
+    {id: planId, status: 'accepted', messageCode: 'ResourceChangeAuthorizationDenied'},
+    {id: planId, status: 'running', messageCode: 'ResourceChangeAuthorizationDenied'},
+    {id: planId, status: 'failed', messageCode: 'OtherFailure'},
+    {id: planId, status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied-extra'},
+    {id: 'aiplan-11111111-1111-1111-1111-111111111111', status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied'},
+  ]) {
+    const result = f.engine.operationSummary(plan, 'existing-operation');
+    assert.equal(Object.hasOwn(result, 'partialEffectsPossible'), false);
+    assert.equal(Object.hasOwn(result, 'code'), false);
+  }
+  const failed = f.engine.operationSummary({id: planId, status: 'failed', verifiedResult: true,
+    messageCode: 'ResourceChangeAuthorizationDenied'}, 'existing-operation');
+  assert.equal(failed.status, 'failed'); assert.equal(failed.verifiedResult, false);
+});
+
+test('resource authorization failure: forbidden reads and late context changes do not publish a terminal receipt', async () => {
+  for (const mode of ['forbidden', 'context-changed']) {
+    const f = lifecycleFixture(), targetRef = await f.target(), observed = [];
+    const preview = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'stop', targetRef});
+    await f.engine.confirmPlan(preview.planRef);
+    const accepted = await f.engine.execute('apply_resource_change', {planRef: preview.planRef});
+    f.engine.onOperation = operation => observed.push(operation);
+    const entered = deferred(), barrier = deferred();
+    f.engine.request = async () => {
+      if (mode === 'forbidden') throw {status: 403, body: {code: 'KeyScopeDenied', message: secret}};
+      entered.resolve(); await barrier.promise;
+      return {body: {...f.plan(), status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied'}};
+    };
+    const pending = f.engine.execute('get_operation', {operationRef: accepted.operationRef});
+    if (mode === 'context-changed') { await entered.promise; f.snapshot.generation = 'other-session'; barrier.resolve(); }
+    const result = await pending;
+    assert.equal(result.status, 'rejected'); assert.equal(result.code, mode === 'forbidden' ? 'FORBIDDEN' : 'CONTEXT_CHANGED');
+    assert.equal(Object.hasOwn(result, 'partialEffectsPossible'), false); assert.deepEqual(observed, []);
+    assert.equal(f.applies(), 1); assert.equal(JSON.stringify(result).includes(secret), false);
+  }
+});
+
 test('resource lifecycle: plan capacity rejection never recommends another preview', async () => {
   const f = lifecycleFixture(), targetRef = await f.target();
   f.engine.request = async () => { throw {status:409,body:{code:'ResourceChangeQuotaExceeded',message:secret}}; };
@@ -332,7 +392,7 @@ test('resource families: reject IDs URLs methods cross-family types and pending 
     assert.equal((await f.engine.execute('find_resources', input)).code, 'INVALID_INPUT');
   }
   assert.equal((await f.engine.execute('get_resource', {resourceRef: 's1'})).code, 'STALE_REFERENCE');
-  assert.equal((await f.engine.execute('find_resources', {family: 'catalog'})).code, 'UNAVAILABLE');
+  assert.equal((await f.engine.execute('find_resources', {family: 'webhooks'})).code, 'UNAVAILABLE');
   assert.equal(f.requests.length, 0);
   assert.equal(f.audits.length, 16);
 });

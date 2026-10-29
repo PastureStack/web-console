@@ -11,13 +11,15 @@ import tempfile
 import zipfile
 
 
-VERSION = "0.2.1"
+VERSION = "0.2.2"
 SOURCE_FILES = (
     "LICENSE",
     "app/utils/ai-command-context.js",
     "app/utils/ai-command-contract.js",
     "app/utils/ai-command-engine.js",
     "app/utils/ai-resource-registry.js",
+    "app/utils/ai-catalog-reader.js",
+    "app/utils/ai-catalog-launch.js",
     "bridge/README.md",
     "bridge/core.mjs",
     "bridge/package-lock.json",
@@ -30,6 +32,12 @@ SOURCE_FILES = (
     "bridge/test/stdio.test.mjs",
     "scripts/test-webmcp-resources.mjs",
     "scripts/test-webmcp-manual-scale.mjs",
+    "bridge/test/catalog.test.mjs",
+    "scripts/test-ai-catalog-reader.mjs",
+    "scripts/test-webmcp-catalog.mjs",
+    "scripts/test-webmcp-catalog-launch.mjs",
+    "bridge/test/archive.test.mjs",
+    "scripts/test-webmcp-archive.mjs",
 )
 FORBIDDEN_PARTS = {"node_modules", ".git", "credentials", "credential", "secrets"}
 

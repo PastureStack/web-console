@@ -1,7 +1,9 @@
 import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, CommandError, publicError, safeText, validateInput } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
+import { createCatalogReader } from './ai-catalog-reader';
+import { createCatalogLaunchAdapter, catalogLaunchPlanSummary, CATALOG_LAUNCH_COLLECTION } from './ai-catalog-launch';
 
-const OPERATION_STATUSES = ['accepted', 'running', 'succeeded', 'failed', 'unknown', 'cancelled'];
+const OPERATION_STATUSES = ['accepted', 'running', 'succeeded', 'failed', 'unknown', 'cancelled', 'needs_user'];
 const APPLY_COMMANDS = ['apply_service_upgrade', 'apply_resource_change'];
 
 class UnknownOperation extends Error {
@@ -33,6 +35,9 @@ export function waitForOperationPoll(milliseconds, signal) {
 export class CommandEngine {
   constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta', transportKind = 'browser'}) {
     Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint, transportKind});
+    this.catalogReader = createCatalogReader({request, context});
+    this.catalogLaunch = createCatalogLaunchAdapter({request, context,
+      resolveResource: (reference, type, captured) => this.resolveResourceReference(reference, type, captured, 'parameters.answers')});
   }
 
   async execute(name, input, options = {}) {
@@ -74,6 +79,21 @@ export class CommandEngine {
       result.nextStep = 'The service description changed. Find the service again and read its current description before deciding on an update.';
     } else if ( name === 'update_service_description' && result.code === 'STALE_REFERENCE' ) {
       result.nextStep = 'Use get_service to load this reference description first. If the reference expired, find the service again.';
+    } else if ( name === 'find_resources' && input && input.family === 'catalog' && input.resourceType === 'catalogTemplateVersion' &&
+      ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) && result.field !== 'cursor' ) {
+      result.nextStep = 'Use find_resources with family catalog and resourceType catalogTemplate to find the exact named template. List catalogTemplateVersion with that template resourceRef as parentRef and no query. Select one returned version resourceRef; never guess a version or assume compatibility.';
+    } else if ( name === 'preview_resource_change' && input && input.operation === 'create_from_catalog' && ['INVALID_INPUT', 'STALE_REFERENCE', 'NEEDS_USER'].includes(result.code) ) {
+      if ( result.code === 'NEEDS_USER' ) {
+        result.nextStep = 'Human-only answers must be completed by the user in the console. Do not ask the model to supply passwords, secret values or defaults. Preview with safe typed answers only, then let the user complete and approve that exact plan.';
+      } else if ( result.field ) {
+        const repairs = {
+          'parameters.name': 'Provide the requested Catalog stack name in parameters.name: 1 through 63 ASCII letters, digits or dash.',
+          'parameters.description': 'Provide parameters.description as a complete string of at most 1024 UTF-16 units, or omit it. An empty string clears it; null is not accepted for Catalog launch.',
+          'parameters.startOnCreate': 'Provide parameters.startOnCreate as a boolean, or omit it for the normal true default. Review the exact value in the plan.',
+          'parameters.answers': 'Use an array of entries with a returned questionRef and exactly one typed value or authorized resourceRef. Use find_resources to obtain the referenceType requested by the question. Same-session serviceRef values are accepted only for service questions. Human-only answers belong in the console form, never in tool arguments.',
+        };
+        result.nextStep = repairs[result.field] || 'Find the exact named catalogTemplate, list its catalogTemplateVersion candidates with parentRef, select one version resourceRef, then call get_resource to obtain current questionRefs. Use that version as catalogVersionRef; do not pass targetRef, parentRef, raw IDs, YAML or guessed defaults.';
+      }
     } else if ( name === 'preview_resource_change' && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
       const repairs = {
         'parameters.image': 'Provide the exact user-requested image in parameters.image. Ask the user if it is missing; never guess an image or version.',
@@ -82,7 +102,8 @@ export class CommandEngine {
         'parameters.description': 'Provide the complete description as a string of at most 1024 UTF-16 units, or null. An empty string clears it.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
       };
-      result.nextStep = repairs[result.field] || (result.field && /^parameters\.(command|entryPoint)(\[\d+\])?$/.test(result.field) ?
+      result.nextStep = input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
+        'Preview archive or restore separately with an existing targetRef and empty parameters. Do not include a service clone, archive flag or other settings.' : repairs[result.field] || (result.field && /^parameters\.(command|entryPoint)(\[\d+\])?$/.test(result.field) ?
         'Use a string array: at most 64 items, 4096 UTF-16 units per item, 16384 in total, and no NUL. These arrays are supported only for service/container create.' :
         'Use find_resources for the target family and reuse its resourceRef as targetRef. For service create, find the stack and pass its resourceRef as parentRef. Send only the fields supported by this operation.');
     }
@@ -155,7 +176,7 @@ export class CommandEngine {
   }
 
   supportsResource(descriptor) { return descriptor.readTransport !== 'pending'; }
-  usesResourceView(descriptor) { return descriptor.readTransport === 'view' || this.transportKind === 'stdio'; }
+  usesResourceView(descriptor) { return descriptor.readTransport !== 'catalog' && (descriptor.readTransport === 'view' || this.transportKind === 'stdio'); }
 
   async readCapabilities(scope, captured, signal) {
     try {
@@ -181,13 +202,14 @@ export class CommandEngine {
       reason: safeText(entry.reason, 512), resources: entry.resources.map((descriptor) => {
         const source = descriptor.scope === 'project' ? project : global;
         const definition = source.schemas.get(descriptor.type.toLowerCase());
-        const supported = this.supportsResource(descriptor), needsCheck = supported && this.usesResourceView(descriptor);
+        const supported = this.supportsResource(descriptor), needsCheck = supported && (this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog');
         return {resourceType: descriptor.type, scope: descriptor.scope, coverageStatus: supported && !descriptor.limitations.length ? 'implemented' : 'pending-adapter',
           metadataLimitations: [...descriptor.limitations],
           canFind: needsCheck ? null : supported && !!definition && Array.isArray(definition.collectionMethods) && definition.collectionMethods.includes('GET'),
           canGet: needsCheck ? null : supported && !!definition && Array.isArray(definition.resourceMethods) && definition.resourceMethods.includes('GET'),
           authorization: needsCheck ? 'requires-server-check' : 'role-schema',
           safeFields: [...descriptor.fields], parentType: descriptor.parent ? descriptor.parent.type : null,
+          parentRequired: !!(descriptor.parent && descriptor.parent.required),
           operations: RESOURCE_CHANGES[descriptor.type] ? Object.keys(RESOURCE_CHANGES[descriptor.type]) : [],
           changeModeEnabled: captured.mode === 'enabled', changesRequireHumanApproval: true,
           unavailableReason: needsCheck ? null : !supported ? 'PENDING_ADAPTER' : source.unavailable || (!definition ? 'NOT_VISIBLE' : null)};
@@ -227,13 +249,17 @@ export class CommandEngine {
 
   async find_resources(input, captured, signal) {
     const descriptor = this.findDescriptor(input);
+    const useCatalog = descriptor.readTransport === 'catalog';
+    const catalogVersion = descriptor.type === 'catalogTemplateVersion';
+    if ( catalogVersion && input.query !== undefined ) { throw new CommandError('INVALID_INPUT', 'query'); }
     let parent;
     if ( input.parentRef ) {
       parent = this.resolveResourceReference(input.parentRef, descriptor.parent && descriptor.parent.type, captured, 'parentRef');
       if ( !descriptor.parent || parent.resourceType !== descriptor.parent.type || parent.scope !== descriptor.scope ) { throw new CommandError('INVALID_INPUT', 'parentRef'); }
     }
-    let path = `${this.resourcePath(descriptor, captured)}?limit=${MAX_PAGE_SIZE}`, marker;
-    if ( parent ) { path += `&${descriptor.parent.field}=${encodeURIComponent(parent.id)}`; }
+    if ( descriptor.parent && descriptor.parent.required && !parent ) { throw new CommandError('INVALID_INPUT', 'parentRef'); }
+    let path = useCatalog ? null : `${this.resourcePath(descriptor, captured)}?limit=${MAX_PAGE_SIZE}`, marker;
+    if ( parent && !useCatalog ) { path += `&${descriptor.parent.field}=${encodeURIComponent(parent.id)}`; }
     if ( input.cursor ) {
       const cursor = this.context.resolve(input.cursor, 'resourceCursor', captured);
       if ( cursor.family !== input.family || cursor.resourceType !== descriptor.type || cursor.query !== (input.query || '') || cursor.parentRef !== (input.parentRef || '') ) {
@@ -242,28 +268,44 @@ export class CommandEngine {
       path = cursor.path; marker = cursor.marker;
     }
     const useView = this.usesResourceView(descriptor);
-    const body = useView ? await this.resourceView(descriptor, captured, {query: input.query, marker, parentId: parent && parent.id}, signal) :
+    const body = catalogVersion ? await this.catalogReader.findVersions({templateId: parent.id, marker}, captured, signal) :
+      useCatalog ? await this.catalogReader.find({query: input.query, marker}, captured, signal) :
+      useView ? await this.resourceView(descriptor, captured, {query: input.query, marker, parentId: parent && parent.id}, signal) :
       await this.readResourcePath(path, captured, signal);
     if ( !Array.isArray(body.data) || body.data.length > MAX_PAGE_SIZE ) { throw new CommandError('INVALID_RESPONSE'); }
-    const next = useView ? body.nextMarker : this.resourceNext(body.pagination && body.pagination.next, descriptor, captured, parent);
+    const typedPage = useView || useCatalog;
+    const next = typedPage ? body.nextMarker : this.resourceNext(body.pagination && body.pagination.next, descriptor, captured, parent);
     const nextCursor = next ? this.context.reference('resourceCursor', {family: input.family, resourceType: descriptor.type,
-      query: input.query || '', parentRef: input.parentRef || '', path: useView ? null : next,
-      marker: useView ? next : null}, captured) : null;
+      query: input.query || '', parentRef: input.parentRef || '', path: typedPage ? null : next,
+      marker: typedPage ? next : null}, captured) : null;
     const items = body.data.filter((item) => this.resourceIdentity(item, descriptor, captured) && this.matches(item, input.query) &&
       (!parent || item[descriptor.parent.field] === parent.id)).map((item) => {
-      const resourceRef = this.referenceResource({id: item.id, family: input.family, resourceType: descriptor.type, scope: descriptor.scope}, captured);
+      const displayPath = useCatalog ? this.catalogDisplayPath(item, captured, parent) : safeText(item.displayPath, 768) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${descriptor.parent && typeof item[descriptor.parent.field] === 'string' ? safeText(item.stackName) || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
+      const target = {id: item.id, family: input.family, resourceType: descriptor.type, scope: descriptor.scope};
+      if ( useCatalog ) {
+        target.catalogPath = displayPath;
+        target.catalogIdentity = catalogVersion ? {...parent.catalogIdentity, version: item.version, revision: item.revision} :
+          {templateKey: item.templateKey, catalogScope: item.catalogScope, catalogId: item.catalogId};
+      }
+      if ( catalogVersion ) { target.parentId = parent.id; target.parentRef = input.parentRef; }
+      const resourceRef = this.referenceResource(target, captured);
       const parentId = descriptor.parent && item[descriptor.parent.field];
-      const parentRef = parentId && typeof parentId === 'string' ? this.referenceResource({id: parentId, family: descriptor.parent.type,
+      const parentRef = catalogVersion ? input.parentRef : parentId && typeof parentId === 'string' ? this.referenceResource({id: parentId, family: descriptor.parent.type,
         resourceType: descriptor.parent.type, scope: descriptor.scope}, captured) : null;
       return {resourceRef, resourceType: descriptor.type, scope: descriptor.scope,
-        parentRef, parentResolution: descriptor.parent ? safeText(item.stackName) ? 'resolved' : 'unavailable' : null,
-        displayPath: safeText(item.displayPath, 768) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${parentRef ? safeText(item.stackName) || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`,
-        fields: safeResourceFields(item, descriptor), truncatedFields: truncatedResourceFields(item, descriptor)};
+        parentRef, parentResolution: catalogVersion ? 'resolved' : descriptor.parent ? safeText(item.stackName) ? 'resolved' : 'unavailable' : null,
+        displayPath,
+        fields: safeResourceFields(item, descriptor), truncatedFields: this.resourceTruncation(item, descriptor)};
     });
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, family: input.family, resourceType: descriptor.type, scope: descriptor.scope,
       items, nextCursor, complete: !nextCursor};
     if ( items.some((item) => item.parentResolution === 'unavailable') ) {
       result.nextStep = 'Some parent names are unavailable. Find the visible stack by name and pass its resourceRef as parentRef to narrow this search. Do not choose a duplicate automatically.';
+    }
+    if ( useCatalog ) {
+      result.nextStep = catalogVersion ?
+        'Select the exact requested version resourceRef and use get_resource to read its safe launch questions. Version bounds and upgradeFrom are metadata, not a verified compatibility decision. Never automatically choose a version or guess defaults.' :
+        'If several templates match, ask which catalog scope and templateKey the user means. Then list catalogTemplateVersion with that template resourceRef as parentRef and no query. Do not automatically choose defaultVersion.';
     }
     return result;
   }
@@ -272,14 +314,53 @@ export class CommandEngine {
     const target = this.context.resolve(input.resourceRef, 'resource', captured);
     const descriptor = this.findDescriptor({family: target.family, resourceType: target.resourceType});
     let body;
-    if ( this.usesResourceView(descriptor) ) {
-      const view = await this.resourceView(descriptor, captured, {resourceId: target.id}, signal);
+    if ( this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog' ) {
+      const view = descriptor.type === 'catalogTemplateVersion' ? await this.catalogReader.getVersion({templateId: target.parentId, versionId: target.id}, captured, signal) :
+        descriptor.readTransport === 'catalog' ? await this.catalogReader.get({id: target.id}, captured, signal) :
+        await this.resourceView(descriptor, captured, {resourceId: target.id}, signal);
       if ( view.data.length !== 1 ) { throw new CommandError('INVALID_RESPONSE'); }
       body = view.data[0];
     } else { body = await this.readResourcePath(`${this.resourcePath(descriptor, captured)}/${encodeURIComponent(target.id)}`, captured, signal); }
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
-    return {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
-      resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: truncatedResourceFields(body, descriptor)};
+    const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
+      resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    if ( descriptor.readTransport === 'catalog' ) {
+      if ( descriptor.type === 'catalogTemplate' ) { target.catalogPath = this.catalogDisplayPath(body, captured); }
+      result.displayPath = target.catalogPath;
+    }
+    if ( descriptor.type === 'catalogTemplateVersion' ) {
+      result.parentRef = target.parentRef;
+      result.nextStep = 'Keep this exact version resourceRef as the selected metadata version. Compatibility has not been verified; use the normal console for template launch and configuration.';
+      try {
+        result.launchOptions = await this.catalogLaunch.options(target, captured, signal);
+        result.nextStep = result.launchOptions.launchEnabled ?
+          'Compatibility has not been verified. Catalog launch reads the created resources, configures service links and may start services, so the target scope requires read, create and update permission. External volume references (external=true) are not supported by this adapter. Use these questionRefs only with this catalogVersionRef. Preview stack create_from_catalog with the requested name and typed answers. Human-only inputs must be completed in the console; never guess defaults or secret values.' :
+          'Keep this exact version resourceRef as selected metadata. Compatibility has not been verified. Tool-based Catalog launch is disabled; use the normal console or ask the administrator about the existing feature setting.';
+      } catch (error) {
+        this.context.assertCurrent(captured, signal);
+        const failure = publicError(error);
+        result.launchOptions = {availability: 'unavailable', authorization: 'requires-server-check', code: failure.code, nextStep: failure.nextStep};
+      }
+    }
+    return result;
+  }
+
+  catalogDisplayPath(item, captured, parent) {
+    if ( item.type === 'catalogTemplateVersion' ) {
+      return `${safeText(parent.catalogPath, 768)}/${safeText(item.version)}${item.revision === null ? '' : ` (revision ${item.revision})`}`.slice(0, 1024);
+    }
+    // Keep the complete logical key even when shared catalog/display labels
+    // are long. Full labels remain available in the safe metadata fields.
+    return [safeText(captured.projectName, 64), safeText(item.catalogScope, 8), safeText(item.catalogId, 64),
+      safeText(item.templateKey, 512), safeText(item.name, 64)].filter(Boolean).join('/');
+  }
+
+  resourceTruncation(body, descriptor) {
+    const fields = truncatedResourceFields(body, descriptor);
+    // The Catalog reader bounds strings before projection. Preserve its safe
+    // truncation warning so an append never mistakes a prefix for full text.
+    if ( descriptor.readTransport === 'catalog' && body.truncatedFields ) { fields.push(...body.truncatedFields); }
+    return [...new Set(fields)].sort();
   }
 
   referenceResource(target, captured) {
@@ -444,6 +525,7 @@ export class CommandEngine {
   }
 
   planSummary(plan, planRef) {
+    if ( plan && typeof plan.id === 'string' && plan.id.startsWith('aicataloglaunch-') ) { return catalogLaunchPlanSummary(plan, planRef); }
     if ( plan && typeof plan.id === 'string' && plan.id.startsWith('aichange-') ) { return this.resourcePlanSummary(plan, planRef); }
     if ( !plan || typeof plan.id !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
     return {planRef, serviceName: safeText(plan.serviceName), displayPath: safeText(plan.displayPath, 768) || safeText(plan.serviceName),
@@ -479,7 +561,7 @@ export class CommandEngine {
 
   async apply_service_upgrade(input, captured, signal) {
     const reference = this.context.resolve(input.planRef, 'plan', captured);
-    if ( reference.planKind === 'resource-change' ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
+    if ( reference.planKind ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
     this.context.assertCurrent(captured, signal);
     // Reserve recovery before submission. A response can disappear after the
     // server durably accepts this plan; recovering must not create a new plan.
@@ -500,6 +582,14 @@ export class CommandEngine {
   }
 
   assertPlan(plan, reference) {
+    if ( reference.planKind === 'catalog-launch' ) {
+      const safe = catalogLaunchPlanSummary(plan, null);
+      if ( plan.id !== reference.id || reference.stackName && safe.catalogSummary.stackName !== reference.stackName ||
+        reference.catalogIdentity && Object.keys(reference.catalogIdentity).some((field) => safe.catalogSummary[field] !== reference.catalogIdentity[field]) ) {
+        throw new CommandError('INVALID_RESPONSE');
+      }
+      return;
+    }
     if ( reference.planKind === 'resource-change' ) {
       this.resourcePlanSummary(plan, null);
       if ( plan.id !== reference.id || plan.resourceType !== reference.resourceType || plan.operation !== reference.operation ||
@@ -515,11 +605,35 @@ export class CommandEngine {
     const status = plan.status === 'dispatching' ? 'running' : OPERATION_STATUSES.includes(plan.status) ? plan.status : 'unknown';
     // Terminal success must come with explicit server verification, not merely an HTTP 200.
     const result = {status: status === 'succeeded' && plan.verifiedResult !== true ? 'unknown' : status,
-      operationRef, resourceTextIsUntrusted: true, target: {name: safeText(plan.targetPath || plan.serviceName, 768)},
-      verifiedResult: plan.verifiedResult === true, messageCode: safeText(plan.messageCode, 80)};
+      operationRef, resourceTextIsUntrusted: true, target: {name: safeText(plan.targetPath || plan.serviceName || plan.summary && plan.summary.stackName, 768)},
+      verifiedResult: plan.verifiedResult === true, messageCode: safeText(plan.messageCode || plan.reason, 80)};
+    const authorizationDenied = result.status === 'failed' && plan.id && plan.id.startsWith('aichange-') &&
+      plan.messageCode === 'ResourceChangeAuthorizationDenied';
+    if ( authorizationDenied ) {
+      Object.assign(result, {code: 'FORBIDDEN', verifiedResult: false, partialEffectsPossible: true,
+        nextStep: 'A background authorization check denied this operation. Some changes may already have occurred; completion has not been verified. Check the current permissions, then query this same operationRef and inspect its original receipt and resources in the console. Do not blindly resubmit or approve another change.'});
+    }
+    if ( result.status === 'needs_user' ) {
+      result.code = 'NEEDS_USER'; result.nextStep = 'Ask the user to complete inputs and approve the existing plan in the console. No launch has been verified; do not create a replacement or submit another apply.';
+    }
+    if ( plan.id && plan.id.startsWith('aicataloglaunch-') && plan.createdResource ) {
+      const captured = this.context.capture(), created = plan.createdResource;
+      if ( created.resourceType !== 'stack' || !this.resourceIdentity(created, resourceDescriptor('stack'), captured) || typeof created.name !== 'string' ) {
+        throw new CommandError('INVALID_RESPONSE');
+      }
+      result.createdResource = {resourceType: 'stack', name: safeText(created.name), resourceRef: this.referenceResource({id: created.id, family: 'stack', resourceType: 'stack', scope: 'project'}, captured)};
+    }
     const operation = this.context.references.get(operationRef); if ( operation && operation.kind === 'operation' ) { operation.data.lastStatus = result.status; }
-    if ( result.status === 'succeeded' || result.status === 'failed' ) {
-      this.onOperation({planId: plan.id, status: result.status});
+    if ( plan.id && plan.id.startsWith('aicataloglaunch-') ) {
+      if ( result.status === 'failed' && ['CatalogLaunchSourceChanged', 'CatalogLaunchPlanExpired', 'CatalogLaunchUnsupported'].includes(plan.reason) ) {
+        const failure = publicError({status: plan.reason === 'CatalogLaunchUnsupported' ? 422 : 409, body: {code: plan.reason}});
+        result.code = failure.code; result.nextStep = failure.nextStep;
+      }
+      this.onOperation({planId: plan.id, status: result.status, planSummary: catalogLaunchPlanSummary(plan, null)});
+    } else if ( result.status === 'succeeded' || result.status === 'failed' ) {
+      const operation = {planId: plan.id, status: result.status};
+      if ( authorizationDenied ) { operation.messageCode = 'ResourceChangeAuthorizationDenied'; }
+      this.onOperation(operation);
     }
     return result;
   }
@@ -543,7 +657,12 @@ export class CommandEngine {
       nextStep: 'The existing operation is still running. Call get_operation again with the same operationRef; do not submit another change.'});
   }
 
-  planCollection(reference) { return reference.planKind === 'resource-change' ? 'aiResourceChangePlans' : 'aiServiceUpgradePlans'; }
+  planCollection(reference) {
+    if ( reference.planKind === 'catalog-launch' ) { return CATALOG_LAUNCH_COLLECTION; }
+    if ( reference.planKind === 'resource-change' ) { return 'aiResourceChangePlans'; }
+    if ( !reference.planKind ) { return 'aiServiceUpgradePlans'; }
+    throw new CommandError('INVALID_INPUT', 'planRef');
+  }
 
   existingOperation(input, captured) {
     try {
@@ -585,9 +704,14 @@ export class CommandEngine {
         (!Number.isSafeInteger(change.before) || change.before < 0 || change.after !== null && (!Number.isSafeInteger(change.after) || change.after < 0)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'affectedMountCount' && change.after !== null || change.field === 'affectedInstanceCount' && change.after !== 0 ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'startOnCreate' && (change.before !== null || change.after !== false) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'archived' && (!['archive', 'restore'].includes(plan.operation) || typeof change.before !== 'boolean' ||
+        typeof change.after !== 'boolean' || change.after !== (plan.operation === 'archive')) ) { throw new CommandError('INVALID_RESPONSE'); }
       return {field: change.field, before: change.before, after: change.after};
     });
     if ( plan.operation === 'remove' && ['affectedInstanceCount', 'affectedMountCount', 'mountedDataRule'].some((field) => !displayDiff.some((change) => change.field === field)) ) {
+      throw new CommandError('INVALID_RESPONSE');
+    }
+    if ( ['archive', 'restore'].includes(plan.operation) && (displayDiff.length !== 1 || displayDiff[0].field !== 'archived') ) {
       throw new CommandError('INVALID_RESPONSE');
     }
     return {planRef, planKind: 'resource-change', resourceType: plan.resourceType, operation: plan.operation,
@@ -595,6 +719,8 @@ export class CommandEngine {
   }
 
   async preview_resource_change(input, captured, signal) {
+    if ( input.operation === 'create_from_catalog' ) { return this.previewCatalogLaunch(input, captured, signal); }
+    if ( input.catalogVersionRef ) { throw new CommandError('INVALID_INPUT', 'catalogVersionRef'); }
     const operations = RESOURCE_CHANGES[input.resourceType];
     const descriptor = operations && Object.prototype.hasOwnProperty.call(operations, input.operation) && operations[input.operation];
     if ( !descriptor ) { throw new CommandError('INVALID_INPUT', 'operation'); }
@@ -631,18 +757,36 @@ export class CommandEngine {
 
   async apply_resource_change(input, captured, signal) {
     const reference = this.context.resolve(input.planRef, 'plan', captured);
-    if ( reference.planKind !== 'resource-change' ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
+    if ( !['resource-change', 'catalog-launch'].includes(reference.planKind) ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
     const operationRef = reference.operationRef || this.context.reference('operation', Object.assign({}, reference, {lastStatus: 'unknown'}), captured);
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
-      const plan = await this.call(captured, `aiResourceChangePlans/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
+      const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
       this.assertPlan(plan, reference);
       return this.operationSummary(plan, operationRef);
     } catch (error) {
-      if ( publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ) { throw new UnknownOperation(operationRef); }
+      if ( publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ||
+        reference.planKind === 'catalog-launch' && error.code === 'INVALID_RESPONSE' ) {
+        if ( reference.planKind === 'catalog-launch' ) { this.onOperation({planId: reference.id, status: 'unknown'}); }
+        throw new UnknownOperation(operationRef);
+      }
       const operation = this.context.references.get(operationRef); if ( operation ) { operation.data.lastStatus = 'rejected'; }
       throw error;
     }
+  }
+
+  async previewCatalogLaunch(input, captured, signal) {
+    if ( input.resourceType !== 'stack' || input.targetRef || input.parentRef || !input.catalogVersionRef ) { throw new CommandError('INVALID_INPUT', 'catalogVersionRef'); }
+    const version = this.context.resolve(input.catalogVersionRef, 'resource', captured);
+    if ( version.family !== 'catalog' || version.resourceType !== 'catalogTemplateVersion' || version.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'catalogVersionRef'); }
+    const plan = await this.catalogLaunch.preview(version, input.parameters || {}, captured, signal);
+    const reference = {id: plan.id, planKind: 'catalog-launch', resourceType: 'stack', operation: 'create_from_catalog',
+      stackName: input.parameters.name, catalogIdentity: version.catalogIdentity};
+    this.assertPlan(plan, reference);
+    const planRef = this.context.reference('plan', reference, captured), summary = catalogLaunchPlanSummary(plan, planRef);
+    this.onPlan({...summary, context: captured});
+    return {status: 'needs_user', resourceTextIsUntrusted: true, ...summary,
+      nextStep: 'Ask the user to review this exact Catalog launch in the console, complete human-only inputs and approve it. Never guess secret defaults. Then apply the same planRef and observe get_operation until verified.'};
   }
 }

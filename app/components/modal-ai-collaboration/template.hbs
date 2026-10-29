@@ -16,6 +16,7 @@
 <p id="ai-collaboration-confirmation-source">{{t "webmcp.collaboration.confirmationSource"}}</p>
 <button type="button" class="btn btn-sm btn-default" disabled={{this.loading}} {{action "refresh"}} data-testid="ai-collaboration-refresh">{{t "webmcp.collaboration.refresh"}}</button>
 {{top-errors errors=this.errors}}
+{{#if this.partialLoadError}}<p class="alert alert-warning" role="alert">{{t "webmcp.catalogPartialInbox"}}</p>{{/if}}
 {{#if this.cancelNotice}}<div class="alert alert-success" role="status">{{this.cancelNotice}}</div>{{/if}}
 {{#if this.cancelCandidate}}<div class="alert alert-warning" role="alert">
   <p>{{t "webmcp.cancelPlanPrompt"}}</p><strong class="force-wrap">{{this.cancelCandidate.displayPath}}</strong>
@@ -28,7 +29,7 @@
   <ul class="list-unstyled mt-15" data-testid="ai-collaboration-plans">
     {{#each this.plans as |plan|}}<li class="mb-15" data-ai-plan-id={{plan.id}} data-ai-resource-type={{plan.resourceType}} data-ai-operation={{plan.operation}}>
       <strong class="force-wrap">{{plan.displayPath}}</strong>
-      {{#if (eq plan.planKind "resource-change")}}<div class="force-wrap">{{plan.resourceTypeLabel}} · {{plan.operationLabel}}</div>{{else}}<div class="force-wrap">{{plan.currentImage}} → {{plan.requestedImage}}</div>{{/if}}
+      {{#if plan.resourceTypeLabel}}<div class="force-wrap">{{plan.resourceTypeLabel}} · {{plan.operationLabel}}</div>{{else}}<div class="force-wrap">{{plan.currentImage}} → {{plan.requestedImage}}</div>{{/if}}
       <button type="button" class="btn btn-sm btn-primary" {{action "review" plan}} data-testid="ai-collaboration-review-plan">{{t "webmcp.reviewPlan"}}</button>
       {{#if plan.canCancel}}<button type="button" class="btn btn-sm btn-default" disabled={{this.cancelling}} {{action "requestCancel" plan}} data-testid="ai-collaboration-cancel-plan">{{t "webmcp.cancelPlan"}}</button>{{/if}}
     </li>{{else}}<li>{{t "webmcp.collaboration.noPendingPlans"}}</li>{{/each}}
