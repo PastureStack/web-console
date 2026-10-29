@@ -76,20 +76,63 @@ test('resource families: every implemented descriptor projects only bounded scal
       token: secret, password: secret, recoveryEmailMasked: secret, serverAddress: secret, description: 'Readable untrusted description', labels: {x: secret},
       environment: {x: secret}, apiKeyPolicy: {x: secret}, requestObject: secret, responseObject: secret, dockerCompose: secret,
       actionLinks: {remove: secret}, links: {self: secret}, nfsConfig: {x: secret}, driverOpts: {x: secret}};
-    const f = fixture({handle: async ({url, method, data}) => ({body: method === 'POST' ? {resourceType: data.resourceType, data: [body]} : url.includes('?') ? {data: [body]} : body})});
-    const found = await f.engine.execute('find_resources', {family: family.family, resourceType: resource.resourceType});
+    const templateId = 'ctm-' + 'a'.repeat(64), versionId = 'cvm-' + 'b'.repeat(64);
+    const templateFields = {name: body.name, description: body.description, catalogId: 'library', templateBase: 'infra', templateKey: 'database',
+      catalogScope: 'global', defaultVersion: '1.0', maintainer: 'Community', license: 'Apache-2.0'};
+    const versionFields = {version: '1.0', revision: 3, minimumRancherVersion: '1.6.0', maximumRancherVersion: '2.0.0', upgradeFrom: '^0.9'};
+    const template = {...body, ...templateFields, id: templateId, type: 'catalogTemplate'};
+    const version = {...body, ...versionFields, id: versionId, type: 'catalogTemplateVersion', templateId};
+    const f = fixture({handle: async ({url, method, data}) => {
+      if (descriptor.readTransport === 'catalog') {
+        assert.equal(method, 'POST');
+        if (url === 'projects/p1/aiCatalogStackLaunchOptions') {
+          assert.deepEqual(data, {templateId, versionId});
+          return {body: {optionsRef: 'acopts-11111111-1111-1111-1111-111111111111', launchEnabled: false,
+            requiredOperations: ['read', 'create', 'update'], questions: []}};
+        }
+        assert.equal(url, 'projects/p1/aiCatalogMetadataViews');
+        if (data.versions) {
+          assert.equal(data.templateId, templateId);
+          if (data.versionId) assert.equal(data.versionId, versionId);
+          return {body: {resourceType: 'catalogTemplateVersion', data: [version], nextMarker: null}};
+        }
+        if (data.templateId) assert.equal(data.templateId, templateId);
+        return {body: {resourceType: 'catalogTemplate', data: [template], nextMarker: null}};
+      }
+      return {body: method === 'POST' ? {resourceType: data.resourceType, data: [body]} : url.includes('?') ? {data: [body]} : body};
+    }});
+    const input = {family: family.family, resourceType: resource.resourceType};
+    if (descriptor.type === 'catalogTemplateVersion') {
+      const parents = await f.engine.execute('find_resources', {family: 'catalog', resourceType: 'catalogTemplate'});
+      assert.equal(parents.status, 'succeeded'); input.parentRef = parents.items[0].resourceRef;
+    }
+    const found = await f.engine.execute('find_resources', input);
     assert.equal(found.status, 'succeeded', resource.resourceType); assert.equal(found.items.length, 1, resource.resourceType);
     const detail = await f.engine.execute('get_resource', {resourceRef: found.items[0].resourceRef});
     assert.equal(detail.status, 'succeeded', resource.resourceType);
     assert.equal(detail.resourceTextIsUntrusted, true);
     assert.equal(JSON.stringify([found, detail, f.audits]).includes(secret), false, resource.resourceType);
     assert.equal(JSON.stringify([found, detail]).includes('opaque-server-id'), false);
-    assert.equal(f.requests[0].url, descriptor.readTransport === 'view' ? 'projects/p1/aiResourceViews' : `${descriptor.scope === 'project' ? 'projects/p1/' : ''}${descriptor.collection}?limit=50`);
+    if (descriptor.readTransport === 'catalog') {
+      const expected = descriptor.type === 'catalogTemplateVersion' ? [
+        ['aiCatalogMetadataViews', {}], ['aiCatalogMetadataViews', {templateId, versions: true}],
+        ['aiCatalogMetadataViews', {templateId, versions: true, versionId}], ['aiCatalogStackLaunchOptions', {templateId, versionId}],
+      ] : [['aiCatalogMetadataViews', {}], ['aiCatalogMetadataViews', {templateId}]];
+      assert.deepEqual(f.requests.map(request => [request.url, request.method, request.data]),
+        expected.map(([collection, data]) => [`projects/p1/${collection}`, 'POST', data]));
+      for (const id of [templateId, versionId]) assert.equal(JSON.stringify([found, detail]).includes(id), false);
+      if (descriptor.type === 'catalogTemplateVersion') {
+        assert.equal(detail.parentRef, input.parentRef); assert.equal(detail.launchOptions.launchEnabled, false);
+        assert.deepEqual(detail.launchOptions.requiredOperations, ['read', 'create', 'update']);
+      }
+    } else assert.equal(f.requests[0].url, descriptor.readTransport === 'view' ? 'projects/p1/aiResourceViews' : `${descriptor.scope === 'project' ? 'projects/p1/' : ''}${descriptor.collection}?limit=50`);
     if (descriptor.readTransport === 'view') {
       assert.deepEqual(f.requests[0].data, {resourceType: descriptor.type});
       assert.deepEqual(f.requests[1].data, {resourceType: descriptor.type, resourceId: 'opaque-server-id'});
     }
-    assert.deepEqual(Object.keys(detail.fields).sort(), ['description', 'name', 'state']);
+    const expectedFields = descriptor.readTransport === 'catalog' ? descriptor.type === 'catalogTemplateVersion' ? versionFields : templateFields :
+      {description: body.description, name: body.name, state: body.state};
+    assert.deepEqual(found.items[0].fields, expectedFields); assert.deepEqual(detail.fields, expectedFields);
   }
 });
 
@@ -103,7 +146,7 @@ test('resource families: full 1024-unit descriptions are retained and truncation
   assert.equal(detail.fields.description, body.description); assert.deepEqual(detail.truncatedFields, ['name']);
   body.description += 'x';
   const truncated = await f.engine.execute('get_resource', {resourceRef: found.items[0].resourceRef});
-  assert.equal(truncated.fields.description.length, 1024); assert.deepEqual(truncated.truncatedFields, ['name', 'description']);
+  assert.equal(truncated.fields.description.length, 1024); assert.deepEqual([...truncated.truncatedFields].sort(), ['description', 'name']);
 });
 
 const planId = 'aichange-11111111-1111-1111-1111-111111111111';
@@ -300,6 +343,66 @@ test('resource lifecycle: result audit failure preserves operation recovery and 
   assert.equal(allowedRequest(`projects/p1/aiResourceChangePlans/${planId}?action=apply`, 'POST', 'p1'), true);
 });
 
+test('resource authorization failure: authorized terminal receipt stays failed and retains its original operation', async () => {
+  const f = lifecycleFixture(), targetRef = await f.target(), observed = [];
+  f.engine.onOperation = operation => observed.push(operation);
+  const preview = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'stop', targetRef});
+  await f.engine.confirmPlan(preview.planRef);
+  const accepted = await f.engine.execute('apply_resource_change', {planRef: preview.planRef});
+  Object.assign(f.plan(), {status: 'failed', verifiedResult: false, operationId: planId,
+    messageCode: 'ResourceChangeAuthorizationDenied', processId: secret, exception: secret, payload: secret});
+  const result = await f.engine.execute('get_operation', {operationRef: accepted.operationRef});
+  assert.equal(result.status, 'failed'); assert.equal(result.code, 'FORBIDDEN');
+  assert.equal(result.operationRef, accepted.operationRef); assert.equal(result.verifiedResult, false);
+  assert.equal(result.partialEffectsPossible, true); assert.equal(result.messageCode, 'ResourceChangeAuthorizationDenied');
+  assert.match(result.nextStep, /background authorization/); assert.match(result.nextStep, /Some changes may already/);
+  assert.match(result.nextStep, /same operationRef/); assert.match(result.nextStep, /Do not blindly resubmit/);
+  assert.equal(f.applies(), 1); assert.equal(f.requests.filter(request => request.method === 'GET').length, 1);
+  assert.deepEqual(observed.at(-1), {planId, status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied'});
+  assert.equal(f.audits.at(-1).reason, 'FORBIDDEN'); assert.equal(f.audits.at(-1).status, 'failed');
+  assert.equal(JSON.stringify([result, observed, f.audits]).includes(secret), false);
+});
+
+test('resource authorization failure: only the exact failed resource receipt receives the partial-change repair', () => {
+  const f = fixture();
+  for (const plan of [
+    {id: planId, status: 'accepted', messageCode: 'ResourceChangeAuthorizationDenied'},
+    {id: planId, status: 'running', messageCode: 'ResourceChangeAuthorizationDenied'},
+    {id: planId, status: 'failed', messageCode: 'OtherFailure'},
+    {id: planId, status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied-extra'},
+    {id: 'aiplan-11111111-1111-1111-1111-111111111111', status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied'},
+  ]) {
+    const result = f.engine.operationSummary(plan, 'existing-operation');
+    assert.equal(Object.hasOwn(result, 'partialEffectsPossible'), false);
+    assert.equal(Object.hasOwn(result, 'code'), false);
+  }
+  const failed = f.engine.operationSummary({id: planId, status: 'failed', verifiedResult: true,
+    messageCode: 'ResourceChangeAuthorizationDenied'}, 'existing-operation');
+  assert.equal(failed.status, 'failed'); assert.equal(failed.verifiedResult, false);
+});
+
+test('resource authorization failure: forbidden reads and late context changes do not publish a terminal receipt', async () => {
+  for (const mode of ['forbidden', 'context-changed']) {
+    const f = lifecycleFixture(), targetRef = await f.target(), observed = [];
+    const preview = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'stop', targetRef});
+    await f.engine.confirmPlan(preview.planRef);
+    const accepted = await f.engine.execute('apply_resource_change', {planRef: preview.planRef});
+    f.engine.onOperation = operation => observed.push(operation);
+    const entered = deferred(), barrier = deferred();
+    f.engine.request = async () => {
+      if (mode === 'forbidden') throw {status: 403, body: {code: 'KeyScopeDenied', message: secret}};
+      entered.resolve(); await barrier.promise;
+      return {body: {...f.plan(), status: 'failed', messageCode: 'ResourceChangeAuthorizationDenied'}};
+    };
+    const pending = f.engine.execute('get_operation', {operationRef: accepted.operationRef});
+    if (mode === 'context-changed') { await entered.promise; f.snapshot.generation = 'other-session'; barrier.resolve(); }
+    const result = await pending;
+    assert.equal(result.status, 'rejected'); assert.equal(result.code, mode === 'forbidden' ? 'FORBIDDEN' : 'CONTEXT_CHANGED');
+    assert.equal(Object.hasOwn(result, 'partialEffectsPossible'), false); assert.deepEqual(observed, []);
+    assert.equal(f.applies(), 1); assert.equal(JSON.stringify(result).includes(secret), false);
+  }
+});
+
 test('resource lifecycle: plan capacity rejection never recommends another preview', async () => {
   const f = lifecycleFixture(), targetRef = await f.target();
   f.engine.request = async () => { throw {status:409,body:{code:'ResourceChangeQuotaExceeded',message:secret}}; };
@@ -332,7 +435,7 @@ test('resource families: reject IDs URLs methods cross-family types and pending 
     assert.equal((await f.engine.execute('find_resources', input)).code, 'INVALID_INPUT');
   }
   assert.equal((await f.engine.execute('get_resource', {resourceRef: 's1'})).code, 'STALE_REFERENCE');
-  assert.equal((await f.engine.execute('find_resources', {family: 'catalog'})).code, 'UNAVAILABLE');
+  assert.equal((await f.engine.execute('find_resources', {family: 'webhooks'})).code, 'UNAVAILABLE');
   assert.equal(f.requests.length, 0);
   assert.equal(f.audits.length, 16);
 });

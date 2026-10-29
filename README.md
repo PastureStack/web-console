@@ -10,17 +10,17 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-This source builds Web Console **1.6.199** and stdio bridge **0.2.1**. Its twelve
-typed tools provide resource discovery, safe metadata and human-approved workload
-plans. Unsupported-operation replies now explain that Global services follow
-eligible hosts and do not support a manual instance count. Browser tools still
-start paused and require explicit opt-in. Pending adapters remain separate;
-this batch does not cover the whole console.
+This source prepares Web Console **1.6.200** and stdio bridge **0.2.2**.
+It retains the twelve tools and adds bounded Catalog Compose launch and
+stopped-resource Archive/restore workflows. Private Catalog answers require
+normal human input/review; restoration does not start workloads. Other Catalog
+administration, advanced forms and remaining frontend workflows are pending.
 
-The [release note](docs/releases/web-console-1.6.199.md) records the scope and
-validation boundaries. Exact producer and immutable artifact identities are
-recorded with the [release assets](https://github.com/PastureStack/web-console/releases).
-Component publication and Server/browser acceptance are separate results.
+The [candidate release note](docs/releases/web-console-1.6.200.md) records the
+source boundaries. Required CI, immutable artifact verification and real
+Server/browser acceptance remain separate pending gates. The previously
+published 1.6.199 / 0.2.1 artifacts are unchanged. This candidate does not
+complete the frontend inventory or its role matrix.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
 container and produces an immutable static archive with separate runtime and

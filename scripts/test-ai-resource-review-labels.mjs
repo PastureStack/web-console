@@ -11,6 +11,73 @@ const source = await readFile(path.join(root, 'app/utils/ai-resource-review-labe
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const locales = ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
 
+test('background authorization failure has translated safe text in all thirteen locales and an escaped alert', async () => {
+  const english = YAML.load(path.join(root, 'translations/en-us.yaml')).webmcp.backgroundAuthorizationDenied;
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const text = translations.webmcp.backgroundAuthorizationDenied;
+    assert.equal(typeof text, 'string', locale); assert.ok(text.length > 40, locale);
+    if (locale !== 'en-us') assert.notEqual(text, english, locale);
+    assert.doesNotMatch(text, /<[^>]+>|JWT|processId|exception|\{\{/i, locale);
+  }
+  assert.match(english, /Some changes may already/); assert.match(english, /completion has not been verified/);
+  assert.match(english, /original operation receipt/); assert.match(english, /Do not blindly resubmit/);
+  const traditional = YAML.load(path.join(root, 'translations/zh-tw.yaml')).webmcp.backgroundAuthorizationDenied;
+  assert.match(traditional, /部分變更可能已完成/); assert.match(traditional, /尚未驗證/); assert.doesNotMatch(traditional, /查看/);
+  const template = await readFile(path.join(root, 'app/components/ai-upgrade-review/template.hbs'), 'utf8');
+  preprocess(template); assert.match(template, /\{\{t "webmcp.backgroundAuthorizationDenied"\}\}/);
+  assert.doesNotMatch(template, /htmlSafe|\{\{\{/);
+});
+
+test('Catalog launch review and human input text have real labels in all thirteen locales', async()=>{
+  const english=YAML.load(path.join(root,'translations/en-us.yaml'));
+  const keys=['catalogHumanInputCount','catalogReferenceCount','catalogCompleteInputs','catalogInputUnknown','catalogPartialInbox',
+    'catalogLaunchPermissions','catalogExternalVolumesPending','catalogReferenceAmbiguous'];
+  for(const locale of locales){
+    const translations=YAML.load(path.join(root,'translations',locale+'.yaml'));
+    const t=key=>{const value=key.split('.').reduce((row,part)=>row&&row[part],translations);assert.equal(typeof value,'string',locale+': '+key);return value;};
+    for(const key of keys){assert.ok(t('webmcp.'+key));if(locale!=='en-us')assert.notEqual(t('webmcp.'+key),english.webmcp[key],locale+': '+key);}
+    for(const key of ['apiKeyAccess.scopes.global','apiKeyAccess.scopes.project','nav.environment.label','newCatalog.catalog','newCatalog.templateVersion',
+      'schema.inputService.prompt','schema.inputCertificate.prompt','schema.inputSecret.prompt'])assert.ok(t(key));
+    for(const key of ['NOT_EXECUTED','ACCEPTED','PENDING','FAILED','unknown','SUCCEEDED'])assert.ok(t('apiKeyAudit.outcomes.'+key));
+    const result=resourceReviewLabels({resourceType:'stack',operation:'create_from_catalog',displayDiff:[
+      {field:'catalogTemplate',before:null,after:'database'},{field:'catalogVersion',before:null,after:'1.0'},
+      {field:'serviceCount',before:null,after:1},{field:'volumeCount',before:null,after:0},
+      {field:'humanInputCount',before:null,after:2},{field:'referenceCount',before:null,after:1}]},t);
+    assert.equal(result.operationLabel,t('newCatalog.saveNew'));
+    for(const change of result.displayChanges)assert.ok(change.fieldLabel&&!change.fieldLabel.includes('webmcp.'));
+  }
+  for(const component of ['modal-confirm-ai-upgrade','modal-ai-collaboration'])preprocess(await readFile(path.join(root,'app/components',component,'template.hbs'),'utf8'));
+  const review=await readFile(path.join(root,'app/components/modal-confirm-ai-upgrade/template.hbs'),'utf8');
+  assert.match(review,/data-testid="ai-catalog-required-permissions">\{\{t "webmcp.catalogLaunchPermissions"\}\}/);
+  assert.match(review,/data-testid="ai-catalog-external-volume-limit">\{\{t "webmcp.catalogExternalVolumesPending"\}\}/);
+});
+
+test('archive review uses all thirteen existing translations and states nonrecursive restore and retained mounted data', async () => {
+  const english = YAML.load(path.join(root, 'translations/en-us.yaml'));
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => key.split('.').reduce((result, part) => result && result[part], translations);
+    for (const operation of ['archive', 'restore']) {
+      const labels = resourceReviewLabels({resourceType: 'service', operation, displayDiff: [{field: 'archived', before: operation === 'restore', after: operation === 'archive'}]}, t);
+      assert.equal(labels.operationLabel, t(operation === 'archive' ? 'archive.action' : 'archive.restore'));
+      assert.equal(labels.displayChanges[0].fieldLabel, t('archive.filterLabel'));
+      assert.equal(labels.displayChanges[0].after, t(operation === 'archive' ? 'generic.yess' : 'generic.noo'));
+      assert.deepEqual(labels.archiveNotices, [t(operation === 'archive' ? 'archive.explanation' : 'archive.restoreExplanation'),
+        t(operation === 'archive' ? 'archive.requiresStopped' : 'archive.restoreBeforeStart'), t('archive.dataWarning')]);
+      assert.ok(labels.archiveNotices.every(text => typeof text === 'string' && text.length > 0));
+      if (locale !== 'en-us') for (const field of ['action', 'restore', 'explanation', 'restoreExplanation', 'requiresStopped', 'restoreBeforeStart', 'dataWarning']) {
+        assert.notEqual(t('archive.' + field), english.archive[field], locale + ': ' + field);
+      }
+      if (locale === 'zh-tw') assert.ok(!JSON.stringify(labels).includes('查看'));
+    }
+  }
+  assert.deepEqual(resourceReviewLabels({resourceType: 'service', operation: 'stop', displayDiff: []}, key => key).archiveNotices, []);
+  const template = await readFile(path.join(root, 'app/components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
+  preprocess(template); assert.ok(template.includes('ai-resource-archive-notice')); assert.ok(template.includes('{{notice}}'));
+  assert.ok(!template.includes('{{{notice'));
+});
+
 test('resource review renders friendly type action fields and exact values in all thirteen locales', async () => {
   const english = YAML.load(path.join(root, 'translations/en-us.yaml')).webmcp;
   for (const locale of locales) {

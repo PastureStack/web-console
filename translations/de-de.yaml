@@ -4452,6 +4452,15 @@ apiKeyAudit:
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
 
 webmcp:
+  backgroundAuthorizationDenied: "Die Berechtigungsprüfung hat einen Hintergrundvorgang abgelehnt. Änderungen können teilweise erfolgt sein; der vollständige Abschluss ist nicht bestätigt. Prüfen Sie die aktuellen Berechtigungen und den ursprünglichen Vorgangsbeleg. Senden oder genehmigen Sie die Änderung nicht blind erneut."
+  catalogReferenceAmbiguous: "Einige Ressourcen haben identische Anzeigenamen und lassen sich nicht sicher unterscheiden. Prüfen Sie das Ziel vor der Auswahl in der normalen Konsole."
+  catalogLaunchPermissions: "Ein Katalogstart liest die erstellten Ressourcen, konfiguriert Dienstverknüpfungen und kann Dienste starten. Der Zielbereich benötigt Lese-, Erstellungs- und Aktualisierungsrechte."
+  catalogExternalVolumesPending: "Verweise auf vorhandene externe Volumes (external=true) werden noch nicht unterstützt. Solche Vorlagen werden bei der Vorschau abgelehnt; verwenden Sie die normale Konsole."
+  catalogHumanInputCount: "Felder für menschliche Eingabe"
+  catalogReferenceCount: "Referenzierte Ressourcen"
+  catalogCompleteInputs: "Erforderliche Eingaben speichern"
+  catalogInputUnknown: "Die Übermittlung konnte nicht bestätigt werden. Schließen Sie den Dialog und aktualisieren Sie den bestehenden Plan. Senden Sie dieselben Eingaben nicht automatisch erneut."
+  catalogPartialInbox: "Einige Planlisten konnten nicht geladen werden. Die sichtbaren Pläne bleiben verfügbar. Aktualisieren Sie, um die übrigen Listen zu prüfen."
   cancelPlan: "Plan abbrechen"
   cancelPlanPrompt: "Diesen noch nicht übermittelten Plan abbrechen? Seine Genehmigung wird widerrufen. Bereits übermittelte Vorgänge werden dadurch nicht gestoppt."
   cannotCancel: "Der Plan wurde bereits übermittelt oder geändert und kann hier nicht abgebrochen werden. Aktualisieren Sie die Liste und prüfen Sie den bestehenden Vorgang."

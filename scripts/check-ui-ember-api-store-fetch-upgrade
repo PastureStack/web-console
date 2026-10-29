@@ -432,7 +432,8 @@ for marker in [
 # Web 180 has 561 bindings; API Key editor/audit adds 32 and Archive adds 6.
 # WebMCP review/control templates add 10 and the Key purpose selector adds 1.
 # Web198 adds the separate requestCancel, cancelPlan and keepPlan controls.
-if template_action_count != 613:
+# Catalog human inputs add completeInputs and explicit optional empty-value controls.
+if template_action_count != 615:
     fail(f"unexpected template action count: {template_action_count}")
 # The API Key target picker adds project, stack and resource selectors.
 if power_select_count != 18:

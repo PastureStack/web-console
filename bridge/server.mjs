@@ -7,7 +7,7 @@ try {
   const path = process.env.PASTURESTACK_BRIDGE_CONFIG;
   if (!path) throw new SetupError('CONFIG_REQUIRED');
   const bridge = await createBridge(await loadConfig(path));
-  const server = new Server({name: 'pasturestack-webmcp-bridge', version: '0.2.1'}, {
+  const server = new Server({name: 'pasturestack-webmcp-bridge', version: '0.2.2'}, {
     capabilities: {tools: {}},
     instructions: 'Use names and returned opaque references. Never guess IDs. A human must approve change plans in the console. Rejected calls must be repaired only as directed; never evade permissions. Accepted/running is not success. Read the existing operation until verifiedResult=true.',
   });

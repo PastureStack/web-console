@@ -73,13 +73,13 @@ export async function loadConfig(input, io = {open, realpath, lstat}) {
   }
 }
 
-const PATH = /^projects\/([a-zA-Z0-9_-]+)\/(stacks|services|aiServiceUpgradePlans|aiResourceChangePlans|aiServiceDescriptionUpdates|aiToolCallEvents)(?:\/([a-zA-Z0-9_-]+))?$/;
+const PATH = /^projects\/([a-zA-Z0-9_-]+)\/(stacks|services|aiServiceUpgradePlans|aiResourceChangePlans|aiCatalogStackLaunchPlans|aiServiceDescriptionUpdates|aiToolCallEvents)(?:\/([a-zA-Z0-9_-]+))?$/;
 
 export function allowedRequest(path, method, projectId, bootstrap = false) {
   if (typeof path !== 'string') return false;
   const parsed = new URL(path, 'https://local.invalid/');
   if (parsed.origin !== 'https://local.invalid' || parsed.hash || parsed.pathname.slice(1) !== path.split('?')[0]) return false;
-  if (method === 'POST' && parsed.pathname === `/projects/${projectId}/aiResourceViews` && !parsed.search) return true;
+  if (method === 'POST' && ['aiResourceViews', 'aiCatalogMetadataViews', 'aiCatalogStackLaunchOptions'].some(kind => parsed.pathname === `/projects/${projectId}/${kind}`) && !parsed.search) return true;
   if (bootstrap && method === 'GET' && parsed.pathname === '/projects') {
     return [...parsed.searchParams.keys()].every(key => ['limit', 'marker'].includes(key));
   }
@@ -97,10 +97,10 @@ export function allowedRequest(path, method, projectId, bootstrap = false) {
   if (!match || match[1] !== projectId) return false;
   const [, , kind, id] = match;
   if (method === 'GET') {
-    return ['stacks', 'services'].includes(kind) || ['aiServiceUpgradePlans', 'aiResourceChangePlans'].includes(kind) && !!id;
+    return ['stacks', 'services'].includes(kind) || ['aiServiceUpgradePlans', 'aiResourceChangePlans', 'aiCatalogStackLaunchPlans'].includes(kind) && !!id;
   }
   if (method !== 'POST') return false;
-  if (['aiServiceUpgradePlans', 'aiResourceChangePlans'].includes(kind)) {
+  if (['aiServiceUpgradePlans', 'aiResourceChangePlans', 'aiCatalogStackLaunchPlans'].includes(kind)) {
     return id ? parsed.searchParams.get('action') === 'apply' && [...parsed.searchParams.keys()].length === 1 : !parsed.search;
   }
   return !id && !parsed.search && ['aiServiceDescriptionUpdates', 'aiToolCallEvents'].includes(kind);

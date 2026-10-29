@@ -4,6 +4,7 @@ import ModalBase from 'lacsso/components/modal-base';
 import config from 'ui/config/environment';
 import { boundedCollaborationMode, collaborationStatusKey } from 'ui/utils/ai-collaboration-controls';
 import { resourceReviewLabels } from 'ui/utils/ai-resource-review-labels';
+import { safeCatalogQuestions } from 'ui/utils/ai-catalog-launch';
 
 export default ModalBase.extend({
   classNames: ['lacsso', 'modal-container', 'medium-modal'],
@@ -22,6 +23,7 @@ export default ModalBase.extend({
   loading: false,
   changing: false,
   loadError: false,
+  partialLoadError: false,
   hasLoaded: false,
   plans: null,
   cancelCandidate: null,
@@ -45,7 +47,7 @@ export default ModalBase.extend({
 
   invalidateInbox() {
     this._loadGeneration++;
-    if ( !this.isDestroying && !this.isDestroyed ) { this.setProperties({plans: [], loading: false, hasLoaded: false, loadError: false, cancelCandidate: null, cancelling: false, cancelNotice: null, errors: null}); }
+    if ( !this.isDestroying && !this.isDestroyed ) { this.setProperties({plans: [], loading: false, hasLoaded: false, loadError: false, partialLoadError: false, cancelCandidate: null, cancelling: false, cancelNotice: null, errors: null}); }
   },
 
   currentLoad(generation, captured) {
@@ -56,32 +58,38 @@ export default ModalBase.extend({
 
   async loadPlans() {
     const generation = ++this._loadGeneration;
-    this.setProperties({loading: true, loadError: false, plans: [], hasLoaded: false, cancelCandidate: null, cancelNotice: null, errors: null});
+    this.setProperties({loading: true, loadError: false, partialLoadError: false, plans: [], hasLoaded: false, cancelCandidate: null, cancelNotice: null, errors: null});
     let captured;
     try {
       captured = this.get('commands').captureReviewContext();
       await this.get('access').ensureSession();
       if ( !this.currentLoad(generation, captured) ) { return; }
-      const responses = await Promise.all(['aiServiceUpgradePlans', 'aiResourceChangePlans'].map((collection) =>
+      const responses = await Promise.allSettled(['aiServiceUpgradePlans', 'aiResourceChangePlans', 'aiCatalogStackLaunchPlans'].map((collection) =>
         this.get('userStore').rawRequest({url: `projects/${encodeURIComponent(captured.projectId)}/${collection}?limit=20`, method: 'GET'})));
       if ( !this.currentLoad(generation, captured) ) { return; }
-      const plans = responses.flatMap((response, index) => {
+      const plans = responses.flatMap((result, index) => {
+        if ( result.status !== 'fulfilled' ) { return []; }
+        const response = result.value;
         if ( !response.body || !Array.isArray(response.body.data) || response.body.data.length > 20 ) { throw new Error('InvalidInbox'); }
         return response.body.data.map((plan) => {
           const resourceChange = index === 1;
-          if ( !(resourceChange ? /^aichange-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i : /^aiplan-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i).test(plan.id || '') ||
-            !resourceChange && typeof plan.serviceId !== 'string' ) {
+          const catalogLaunch = index === 2;
+          const prefix = catalogLaunch ? 'aicataloglaunch' : resourceChange ? 'aichange' : 'aiplan';
+          if ( !new RegExp(`^${prefix}-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`, 'i').test(plan.id || '') ||
+            !resourceChange && !catalogLaunch && typeof plan.serviceId !== 'string' ) {
             throw new Error('InvalidInboxPlan');
           }
           const safe = this.get('commands').engine.planSummary(plan, null);
-          const typed = resourceChange ? {targetPath: safe.displayPath, changes: safe.displayDiff,
+          const typed = resourceChange || catalogLaunch ? {targetPath: safe.displayPath, changes: safe.displayDiff,
             ...resourceReviewLabels(safe, (key) => this.get('intl').t(key))} : {};
+          if ( catalogLaunch ) { Object.assign(typed, {summary: safe.catalogSummary, missingHumanInputs: safeCatalogQuestions(plan.missingHumanInputs || [])}); }
           return Object.assign({id: plan.id, serviceId: plan.serviceId, resourceId: plan.resourceId, status: plan.status, operationId: plan.operationId,
             canCancel: this.get('commands').canCancelInboxPlan(plan)}, safe, typed);
         });
       });
       this._loadedContext = captured;
-      this.setProperties({plans, hasLoaded: true});
+      const failed = responses.filter((result) => result.status === 'rejected').length;
+      this.setProperties({plans, hasLoaded: true, loadError: failed === responses.length, partialLoadError: failed > 0 && failed < responses.length});
     } catch (error) {
       if ( !this.isDestroying && !this.isDestroyed && generation === this._loadGeneration ) { this.set('loadError', true); }
     } finally {

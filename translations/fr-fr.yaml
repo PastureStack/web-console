@@ -4397,6 +4397,15 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  backgroundAuthorizationDenied: "Un contrôle des autorisations a refusé l’opération en arrière-plan. Certaines modifications ont peut-être déjà été effectuées ; la fin de l’opération n’a pas été vérifiée. Vérifiez les autorisations actuelles et le reçu de l’opération initiale. Ne soumettez pas et n’approuvez pas à nouveau la modification sans vérification."
+  catalogReferenceAmbiguous: "Certaines ressources ont le même nom affiché et ne peuvent pas être distinguées de façon sûre. Vérifiez la cible dans la console habituelle avant de la sélectionner."
+  catalogLaunchPermissions: "Un lancement depuis le catalogue lit les ressources créées, configure les liens entre services et peut démarrer des services. La portée cible nécessite les autorisations de lecture, de création et de mise à jour."
+  catalogExternalVolumesPending: "Les références aux volumes externes existants (external=true) ne sont pas encore prises en charge. Ces modèles sont refusés lors de l’aperçu ; utilisez la console habituelle."
+  catalogHumanInputCount: "Champs nécessitant une saisie humaine"
+  catalogReferenceCount: "Ressources référencées"
+  catalogCompleteInputs: "Enregistrer les saisies requises"
+  catalogInputUnknown: "L’envoi des saisies n’a pas pu être vérifié. Fermez cette fenêtre et actualisez le plan existant avant de continuer. Ne renvoyez pas automatiquement les mêmes saisies."
+  catalogPartialInbox: "Certaines listes de plans n’ont pas pu être chargées. Les plans visibles restent disponibles ; actualisez pour vérifier les autres listes."
   cancelPlan: "Annuler le plan"
   cancelPlanPrompt: "Annuler ce plan non soumis ? Son approbation sera révoquée. Cela n’arrête pas une opération déjà soumise."
   cannotCancel: "Ce plan a déjà été soumis ou modifié et ne peut pas être annulé ici. Actualisez la liste et vérifiez l’opération existante."

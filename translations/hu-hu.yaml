@@ -4415,6 +4415,15 @@ apiKeyAudit:
     load: Nem sikerült betölteni a kulcsauditot. Frissítsen az újrapróbáláshoz.
 
 webmcp:
+  backgroundAuthorizationDenied: "A jogosultság-ellenőrzés elutasította a háttérműveletet. Néhány módosítás már megtörténhetett; a teljes befejezés nincs igazolva. Ellenőrizze a jelenlegi jogosultságokat és az eredeti művelet bizonylatát. Ellenőrzés nélkül ne küldje el és ne hagyja jóvá újra a módosítást."
+  catalogReferenceAmbiguous: "Egyes erőforrások megjelenített neve azonos, ezért nem különböztethetők meg biztonságosan. Kiválasztás előtt ellenőrizze a célt a szokásos konzolon."
+  catalogLaunchPermissions: "A katalógusból indítás beolvassa a létrehozott erőforrásokat, beállítja a szolgáltatások kapcsolatait, és szolgáltatásokat indíthat. A célhatókörben olvasási, létrehozási és frissítési jogosultság szükséges."
+  catalogExternalVolumesPending: "A meglévő külső kötetekre mutató hivatkozások (external=true) még nem támogatottak. Ezeket a sablonokat az előnézet elutasítja; használja a szokásos konzolt."
+  catalogHumanInputCount: "Emberi bevitelt igénylő mezők száma"
+  catalogReferenceCount: "Hivatkozott erőforrások száma"
+  catalogCompleteInputs: "Kötelező adatok mentése"
+  catalogInputUnknown: "A bevitel elküldése nem ellenőrizhető. Zárja be az ablakot, és folytatás előtt frissítse a meglévő tervet. Ne küldje el automatikusan újra ugyanazokat az adatokat."
+  catalogPartialInbox: "Egyes tervlisták nem tölthetők be. A látható tervek továbbra is elérhetők; frissítsen a többi lista ellenőrzéséhez."
   cancelPlan: "Terv törlése"
   cancelPlanPrompt: "Törli ezt a még el nem küldött tervet? A jóváhagyása visszavonásra kerül. Ez nem állítja le a már elküldött műveletet."
   cannotCancel: "A tervet már elküldték vagy módosították, ezért itt nem törölhető. Frissítse a listát, és ellenőrizze a meglévő műveletet."

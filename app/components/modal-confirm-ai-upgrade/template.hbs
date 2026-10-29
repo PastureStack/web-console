@@ -4,6 +4,12 @@
   {{#if this.isResourceChange}}
     <dt>{{t "generic.type"}}</dt><dd class="force-wrap">{{this.reviewLabels.resourceTypeLabel}}</dd>
     <dt>{{t "generic.actions"}}</dt><dd class="force-wrap">{{this.reviewLabels.operationLabel}}</dd>
+    {{#if this.isCatalogLaunch}}
+      <dt>{{t "nav.environment.label"}}</dt><dd class="force-wrap">{{this.plan.context.projectName}}</dd>
+      <dt>{{t "newCatalog.catalog"}}</dt><dd class="force-wrap" data-testid="ai-catalog-review-source">{{this.catalogIdentityLabels.source}}</dd>
+      <dt>{{t "newCatalog.templateVersion"}}</dt><dd class="force-wrap" data-testid="ai-catalog-review-version">{{this.catalogIdentityLabels.version}}</dd>
+      <dt>{{t "generic.state"}}</dt><dd role="status" data-testid="ai-catalog-review-status">{{t this.catalogStatusKey}}</dd>
+    {{/if}}
     {{#each this.reviewLabels.displayChanges as |change|}}<dt class="force-wrap">{{change.fieldLabel}}</dt><dd class="force-wrap">{{#unless change.informational}}<pre class="ai-resource-diff-value">{{change.before}}</pre>→{{/unless}}<pre class="ai-resource-diff-value">{{change.after}}</pre></dd>{{/each}}
   {{else}}
     <dt>{{t "webmcp.currentImage"}}</dt><dd class="force-wrap">{{this.plan.currentImage}}</dd>
@@ -11,9 +17,30 @@
   {{/if}}
   <dt>{{t "webmcp.expires"}}</dt><dd>{{this.displayExpiry}}</dd>
 </dl>
-<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>
+{{#if this.isCatalogLaunch}}
+  <p class="force-wrap" data-testid="ai-catalog-required-permissions">{{t "webmcp.catalogLaunchPermissions"}}</p>
+  <p class="force-wrap" data-testid="ai-catalog-external-volume-limit">{{t "webmcp.catalogExternalVolumesPending"}}</p>
+  {{#if this.loadingHumanInputs}}<p role="status">{{t "generic.loading"}}</p>{{/if}}
+  {{#if this.humanQuestions.length}}<section data-testid="ai-catalog-human-inputs">
+    <h4>{{t "newCatalog.config"}}</h4>
+    {{#each this.humanQuestions as |question|}}<div class="form-group">
+      <label class="form-label force-wrap">{{question.label}}{{if question.required "*"}}</label>
+      {{#if question.isReference}}
+        {{new-select classNames="form-control" content=question.choices optionLabelPath="label" optionValuePath="value" prompt=question.referencePromptKey value=question.value}}
+        {{#if question.hasAmbiguousChoices}}<p class="force-wrap" role="alert">{{t "webmcp.catalogReferenceAmbiguous"}}</p>{{/if}}
+      {{else}}
+        {{component question.inputComponent field=question value=question.value}}
+        {{#unless question.required}}<button type="button" class="btn btn-link" disabled={{this.savingHumanInputs}} {{action (fn (mut question.value) "")}}>{{t "webmcp.emptyValue"}}</button>{{/unless}}
+      {{/if}}
+      <p class="force-wrap">{{question.description}}</p>
+    </div>{{/each}}
+    <button type="button" class="btn btn-primary" disabled={{this.savingHumanInputs}} {{action "completeInputs"}} data-testid="ai-catalog-complete-inputs">{{t "webmcp.catalogCompleteInputs"}}</button>
+  </section>{{/if}}
+{{/if}}
+{{#unless (or this.catalogAfterPreview this.alreadyApproved)}}<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>{{/unless}}
 {{#if this.reviewLabels.createsStopped}}<div class="alert alert-info" data-testid="ai-resource-create-stopped">{{t "webmcp.createStoppedNotice"}}</div>{{/if}}
 {{#if this.reviewLabels.mountedDataNotice}}<div class="alert alert-warning" data-testid="ai-resource-mounted-data-notice">{{this.reviewLabels.mountedDataNotice}}</div>{{/if}}
+{{#each this.reviewLabels.archiveNotices as |notice|}}<div class="alert alert-warning" data-testid="ai-resource-archive-notice">{{notice}}</div>{{/each}}
 {{#if this.stale}}<div class="alert alert-danger" role="alert">{{t "webmcp.stale"}}</div>{{/if}}
 {{#if this.alreadyApproved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{t "webmcp.approved"}}</div>{{/if}}
 {{top-errors errors=this.errors}}
@@ -21,5 +48,5 @@
   <button type="button" class="btn btn-primary" disabled={{this.submitDisabled}} {{action "confirm"}} data-testid="ai-upgrade-confirm">
     {{#if this.saving}}{{t "saveCancel.saving"}}{{else}}{{t "webmcp.approve"}}{{/if}}
   </button>
-  <button type="button" class="btn btn-link" disabled={{this.saving}} {{action "cancel"}} data-testid="ai-upgrade-cancel">{{t "generic.closeModal"}}</button>
+  <button type="button" class="btn btn-link" disabled={{or this.saving this.savingHumanInputs}} {{action "cancel"}} data-testid="ai-upgrade-cancel">{{t "generic.closeModal"}}</button>
 </div>

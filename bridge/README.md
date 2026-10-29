@@ -5,7 +5,7 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-The current 0.2.1 source contains twelve typed tools for resource-family
+The current 0.2.2 candidate source contains twelve typed tools for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
 hosts rather than a manual instance count; they do not advise retrying the plan.
@@ -15,6 +15,21 @@ expect this reply correction in the immutable 0.2.0 release archive. The generic
 stdio read adapter uses server-side safe views, never direct credential-bearing
 domain resources. Pending adapters are reported by `list_capabilities`.
 
+The Catalog source adapter also needs a matching Engine/Catalog typed metadata
+endpoint. Use `find_resources` with `family: "catalog"` and
+`resourceType: "catalogTemplate"` to find a named template. Keep all same-name
+candidates until the user identifies the catalog scope and templateKey. Then list
+`catalogTemplateVersion` with that template's opaque `resourceRef` as `parentRef`
+and no `query`; use `get_resource` on the chosen version reference. No raw
+template ID, URL, proxy, template files, answers or credentials enter this flow.
+The configured default and version bounds are metadata, not a compatibility
+decision. Supported typed templates can be previewed for launch; human-only
+answers and approval use the normal console. Unsupported templates remain
+unavailable to these tools.
+Catalog access is checked by the server against the current actor and Key
+policy; unsupported fine-grained selectors fail closed and must not trigger
+automatic policy expansion.
+
 Human approval needs a compatible Web Console built with a `read-only` or
 `enabled` WebMCP capability ceiling. Every new console page starts with browser
 tools off; the owner can review bridge plans without enabling them or having
@@ -22,13 +37,13 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-The source archive is `pasturestack-webmcp-bridge-0.2.1.zip` with a
+After qualification and publication, the source archive is `pasturestack-webmcp-bridge-0.2.2.zip` with a
 `.zip.sha256` checksum. Extract the whole archive, keeping both `bridge/` and
 `app/utils/`; the bridge uses those exact shared command sources. With Node.js
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.1/bridge
+cd pasturestack-webmcp-bridge-0.2.2/bridge
 npm ci
 ```
 
@@ -37,7 +52,7 @@ records the included source hashes; the root also includes LICENSE and the
 bridge CycloneDX SBOM. To reproduce the source release from a checkout:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.1 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.1.zip
+python scripts/package-webmcp-bridge.py --version 0.2.2 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.2.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private
@@ -96,6 +111,26 @@ Find the service and preview the image. The owner reviews and approves the plan
 in the console's AI collaboration panel; the model applies that plan and reads
 its operation until `verifiedResult=true`. On uncertain results, inspect that
 operation instead of automatically submitting again.
+
+Catalog lookup uses the fixed metadata adapter: select a named template by its
+scope, catalog and template key, then select an exact version with its returned
+opaque reference. Reading that version also returns safe launch questions.
+Question defaults, rendered files and secret answers are never returned to the
+model. Use `preview_resource_change` with `resourceType: "stack"`,
+`operation: "create_from_catalog"`, the selected `catalogVersionRef`, and typed
+answers using `questionRef` or authorized `resourceRef` values. The owner fills
+any human-only fields and approves the exact plan in the ordinary console.
+The bridge cannot complete human inputs, confirm or cancel a plan; it can apply
+the approved plan and observe the same durable operation. Catalog source and
+input snapshots are checked by the server again before dispatch.
+The safe options metadata lists the required target-scope `read`, `create` and
+`update` permissions: launch reads the created resources, configures service
+links and may activate services. This list
+does not grant permission; the server checks the current actor and Key again.
+Templates that reference existing external volumes (`external: true`) are not
+supported by this launch adapter and are rejected during preview. Use the normal
+console for those templates. Catalog administration and upgrades also remain
+outside this adapter.
 
 Run `npm test` for transport, credential-boundary and SDK stdio tests. Live
 client and server acceptance is recorded separately.
