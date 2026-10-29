@@ -30,7 +30,7 @@
         {{#if question.hasAmbiguousChoices}}<p class="force-wrap" role="alert">{{t "webmcp.catalogReferenceAmbiguous"}}</p>{{/if}}
       {{else}}
         {{component question.inputComponent field=question value=question.value}}
-        {{#unless question.required}}<button type="button" class="btn btn-link" disabled={{this.savingHumanInputs}} {{action (mut question.value) ""}}>{{t "webmcp.emptyValue"}}</button>{{/unless}}
+        {{#unless question.required}}<button type="button" class="btn btn-link" disabled={{this.savingHumanInputs}} {{action (fn (mut question.value) "")}}>{{t "webmcp.emptyValue"}}</button>{{/unless}}
       {{/if}}
       <p class="force-wrap">{{question.description}}</p>
     </div>{{/each}}
