@@ -22,7 +22,7 @@ export default Service.extend({
         });
         return response.body;
       },
-      onPlan: (plan) => this.set('pendingPlan', plan),
+      onPlan: (plan, expectedPlanRef) => this.publishPlan(plan, expectedPlanRef),
       onOperation: (operation) => this.clearCompletedPlan(operation),
       origin: window.location.origin,
       apiEndpoint: this.get('app.apiEndpoint'),
@@ -31,6 +31,11 @@ export default Service.extend({
   },
 
   execute(name, input, options) { return this.engine.execute(name, input, options); },
+
+  publishPlan(plan, expectedPlanRef) {
+    if ( expectedPlanRef !== undefined && this.get('pendingPlan.planRef') !== expectedPlanRef ) { return; }
+    this.set('pendingPlan', plan);
+  },
 
   // Only the human confirmation component calls this method. It is never
   // included in the WebMCP registry; approval is checked again by the server.

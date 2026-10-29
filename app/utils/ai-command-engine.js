@@ -215,7 +215,7 @@ export class CommandEngine {
       const plan = await this.call(captured, `aiServiceUpgradePlans/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
       this.assertPlan(plan, reference);
       const summary = this.planSummary(plan, planRef);
-      this.onPlan(Object.assign({context: captured}, summary));
+      this.onPlan(Object.assign({context: captured}, summary), planRef);
       return Object.assign({status: 'succeeded'}, summary);
     } catch (error) { return publicError(error); }
   }

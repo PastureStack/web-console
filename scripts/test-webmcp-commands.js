@@ -28,7 +28,12 @@ async function main() {
   const {COMMANDS, publicError} = await import(moduleUrl('ai-command-contract'));
   const {registerCommandTools} = await import(moduleUrl('webmcp-tools'));
   let count = 0;
-  const test = async (name, body) => { await body(); count++; process.stdout.write(`PASS ${name}\n`); };
+  const filterArgument = process.argv.find((value) => value.startsWith('--filter='));
+  const filter = filterArgument ? filterArgument.slice('--filter='.length).toLowerCase() : '';
+  const test = async (name, body) => {
+    if ( filter && !name.toLowerCase().includes(filter) ) { return; }
+    await body(); count++; process.stdout.write(`PASS ${name}\n`);
+  };
 
   function fixture() {
     const snapshot = {generation: 'generation-one', accountId: 'actor-one', projectId: 'project-one',
@@ -209,6 +214,42 @@ async function main() {
     assert.equal(summary.displayPath, 'Environment/Alpha/web');
     assert.equal(f.engine.planSummary({id: 'fixture-plan', serviceName: 'web'}, 'fixture-ref').displayPath, 'web');
     assert.equal(f.engine.planSummary({id: 'plan-long', displayPath: 'x'.repeat(900)}, 'opaque-plan').displayPath.length, 768);
+  });
+
+  await test('late confirmation updates only the matching pending plan', async () => {
+    const source = fs.readFileSync(path.resolve(root, '../services/ai-command-service.js'), 'utf8')
+      .replace("import Service, { service } from '@ember/service';", 'const Service = {extend: (value) => value}; const service = () => null;')
+      .replace("'ui/utils/ai-command-engine'", `'${moduleUrl('ai-command-engine')}'`)
+      .replace("'ui/utils/ai-command-contract'", `'${moduleUrl('ai-command-contract')}'`);
+    const {default: definition} = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+    for ( const scenario of ['newer-plan', 'dismissed', 'matching-plan'] ) {
+      const f = fixture(), entered = deferred(), response = deferred();
+      const service = Object.assign({}, definition, {pendingPlan: null, engine: f.engine,
+        get(key) { return key.split('.').reduce((value, part) => value && value[part], this); },
+        set(key, value) { this[key] = value; }});
+      f.engine.onPlan = (plan, expectedPlanRef) => service.publishPlan(plan, expectedPlanRef);
+      const planA = await preview(f);
+      const request = f.engine.request;
+      f.engine.request = async (options) => {
+        const result = await request(options);
+        if ( options.url.endsWith('?action=confirm') ) { entered.resolve(); await response.promise; }
+        return result;
+      };
+      const confirmingA = service.confirmPendingPlan();
+      await entered.promise;
+      let expectedRef = planA.planRef;
+      if ( scenario === 'newer-plan' ) {
+        const planB = await f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:3'});
+        expectedRef = planB.planRef;
+      } else if ( scenario === 'dismissed' ) {
+        service.dismissPendingPlan(); expectedRef = null;
+      }
+      response.resolve();
+      const confirmed = await confirmingA;
+      assert.equal(confirmed.confirmationState, 'approved');
+      assert.equal(service.pendingPlan && service.pendingPlan.planRef, expectedRef, scenario);
+      if ( scenario === 'matching-plan' ) { assert.equal(service.pendingPlan.confirmationState, 'approved'); }
+    }
   });
 
   await test('terminal operation clears only its current pending plan and retains query references', async () => {
@@ -529,12 +570,15 @@ async function main() {
     assert.equal(JSON.stringify(result).includes('SECRET_SENTINEL'), false);
   });
 
-  const registry = fs.readFileSync(path.resolve(root, '../services/webmcp-registry.js'), 'utf8');
-  const initializer = fs.readFileSync(path.resolve(root, '../instance-initializers/webmcp.js'), 'utf8');
-  assert.ok(registry.includes('window.isSecureContext') && registry.includes('document.modelContext'));
-  assert.ok(!registry.includes('unregisterTool'));
-  assert.ok(initializer.indexOf("config.APP.webmcpMode === 'enabled'") < initializer.indexOf("instance.lookup('service:webmcp-registry')"));
-  process.stdout.write(`PASS ${count} WebMCP production-core unit cases and initializer boundary checks\n`);
+  assert.ok(count > 0, 'the requested test filter matched at least one case');
+  if ( !filter ) {
+    const registry = fs.readFileSync(path.resolve(root, '../services/webmcp-registry.js'), 'utf8');
+    const initializer = fs.readFileSync(path.resolve(root, '../instance-initializers/webmcp.js'), 'utf8');
+    assert.ok(registry.includes('window.isSecureContext') && registry.includes('document.modelContext'));
+    assert.ok(!registry.includes('unregisterTool'));
+    assert.ok(initializer.indexOf("config.APP.webmcpMode === 'enabled'") < initializer.indexOf("instance.lookup('service:webmcp-registry')"));
+  }
+  process.stdout.write(`PASS ${count} WebMCP production-core unit cases${filter ? ' (filtered)' : ' and initializer boundary checks'}\n`);
 }
 
 main().catch((error) => { console.error(error); process.exitCode = 1; });
