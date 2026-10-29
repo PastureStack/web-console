@@ -8,6 +8,11 @@ on:
         type: choice
         options: [full, dependency-security, host-disk, sbom]
         default: full
+      webmcp_mode:
+        description: AI collaboration build ceiling (every page starts off)
+        type: choice
+        options: [off, read-only, enabled]
+        default: off
 
 permissions:
   contents: read
@@ -88,6 +93,7 @@ jobs:
         env:
           PASTURESTACK_NODE24_IMAGE: node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a
           VALIDATION_SCOPE: ${{ inputs.validation_scope }}
+          WEBMCP_MODE: ${{ inputs.webmcp_mode }}
         run: |
           set -euo pipefail
           python -B scripts/test-ui-builder-boundary.py
@@ -122,6 +128,7 @@ jobs:
             "web-console-${package_version}-runtime.cdx.json" \
             "web-console-${package_version}-build.cdx.json" \
             "web-console-${package_version}-artifact-manifest.json" \
+            "web-console-${package_version}-webmcp.json" \
             "web-console-${package_version}-sbom.sha256" \
             browser-webpack-modules.json browser-concat-stats.tar.gz \
             builder-brotli-security.json \
@@ -154,6 +161,7 @@ jobs:
             ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-runtime.cdx.json
             ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-build.cdx.json
             ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-artifact-manifest.json
+            ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-webmcp.json
             ${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-sbom.sha256
             ${{ runner.temp }}/builder-host-inventory.json
             ${{ runner.temp }}/builder-brotli-security.json

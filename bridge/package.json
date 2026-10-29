@@ -1,0 +1,10 @@
+{
+  "name": "@pasturestack/webmcp-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Isolated stdio adapter for the shared PastureStack command contract",
+  "engines": {"node": "24.22.1"},
+  "scripts": {"start": "node server.mjs", "test": "node --test test/*.test.mjs"},
+  "dependencies": {"@modelcontextprotocol/sdk": "1.32.2"}
+}

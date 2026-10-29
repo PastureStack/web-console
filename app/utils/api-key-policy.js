@@ -18,6 +18,7 @@ export function policyErrors(policy, now = Date.now()) {
   if ( !policy || !API_KEY_MODES.includes(policy.mode) ) {
     return ['mode'];
   }
+  if ( policy.purpose != null && !['general', 'ai-bridge'].includes(policy.purpose) ) { errors.push('purpose'); }
   if ( policy.expiresAt != null && (!Number.isFinite(Date.parse(policy.expiresAt)) || Date.parse(policy.expiresAt) <= now) ) {
     errors.push('expiry');
   }
@@ -72,7 +73,7 @@ export function expiryIso(local) {
 export function policiesEqual(left, right) {
   function canonical(value) {
     let policy = initialPolicy(value);
-    return {mode: policy.mode, expiresAt: policy.expiresAt ? (Number.isFinite(Date.parse(policy.expiresAt)) ? Date.parse(policy.expiresAt) : 'INVALID') : null,
+    return {mode: policy.mode, purpose: policy.purpose || 'general', expiresAt: policy.expiresAt ? (Number.isFinite(Date.parse(policy.expiresAt)) ? Date.parse(policy.expiresAt) : 'INVALID') : null,
       defaultEffect: policy.mode === 'custom' ? policy.defaultEffect : null,
       rules: policy.mode === 'custom' ? policy.rules.map((rule) => ({
         id: rule.id, effect: rule.effect, scope: {kind: rule.scope.kind,

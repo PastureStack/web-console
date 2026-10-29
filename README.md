@@ -10,25 +10,26 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console [1.6.195](https://github.com/PastureStack/web-console/releases/tag/1.6.195)
-is published as an immutable static archive with separate runtime and build
-CycloneDX SBOMs. Its verified producer uses Node.js `24.22.1` / npm `12.0.2` in a
-digest-pinned container with Ruby absent before and after production. All 69
-focused checks and the reproducible double build passed. The
-[release note](docs/releases/web-console-1.6.195.md) records the exact producer,
-CI run, archive and SBOM checksums, and build-dependency compatibility results.
+Source version **1.6.196** prepares optional AI collaboration with seven typed
+tools, human upgrade approval, conditional description edits and a dedicated-Key
+stdio bridge. Publication and compatible Server assembly are pending.
 
-Application behavior, API/authentication/permission contracts and all 13 locales
-retain their existing contract. [SBOM coverage](docs/security/sbom.md) remains
-explicitly incomplete for inherited vendor metadata; hosted-runner Ruby is
-tracked separately. Server assembly, publication and deployment require their
-own evidence.
+The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
+container and produces an immutable static archive with separate runtime and
+build CycloneDX SBOMs. [SBOM coverage](docs/security/sbom.md) remains explicitly
+incomplete for inherited vendor metadata; hosted-runner Ruby is tracked
+separately. CI, Server assembly and deployment require their own evidence.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical changes remain in [release notes](docs/releases).
 
 ## Features and operator guides
 
+- [Experimental AI collaboration](docs/webmcp.md): seven typed tools for
+  discovery, conditional description edits and server-owned upgrade plans.
+  Disabled by default. Includes human review controls and an optional
+  [dedicated-Key stdio bridge](bridge/README.md); native browser tools require
+  a supported secure-context browser.
 - Role-aware navigation and resource actions use API schema capabilities;
   the backend remains the authorization authority.
 - [API Keys](https://github.com/PastureStack/server/blob/main/docs/api-keys.md):
@@ -91,6 +92,7 @@ and writes the release sidecars to a dedicated output directory:
 export GITHUB_SHA=$(git rev-parse HEAD)
 export SOURCE_DATE_EPOCH=$(git show -s --format=%ct "$GITHUB_SHA")
 export VALIDATION_SCOPE=sbom
+export WEBMCP_MODE=off
 release_dir=$(mktemp -d)
 bash scripts/build-ui-release-candidate "$release_dir"
 ```
@@ -99,6 +101,14 @@ The archive root and `VERSION.txt` match the numeric package version. Runtime
 inventory is checked against the packaged tree, including packaging exclusions,
 rather than the raw Ember output. This command creates a candidate; publication
 is a separate reviewed step. See [SBOM boundaries](docs/security/sbom.md).
+
+`WEBMCP_MODE` is the AI collaboration capability ceiling (`off`, `read-only`,
+or `enabled`); the producer and workflow default to `off`. Select `enabled`
+explicitly to include the full collaboration panel and tools. Every new page
+still starts with browser tools off, until the user opts in through that panel.
+The archive's `webmcp-build.json` and matching `*-webmcp.json` release sidecar
+record the ceiling and fixed `initialMode: off`; their bytes are covered by the
+archive/manifest and sidecar checksums. Publish one selected profile per version.
 
 Component tests, artifact verification, and real-host/browser acceptance are
 separate evidence. Do not infer full resource/role/hardware coverage from a

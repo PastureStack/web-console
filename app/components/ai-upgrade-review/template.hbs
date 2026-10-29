@@ -1,0 +1,6 @@
+{{#if this.commands.pendingPlan}}
+  <div class="alert alert-info" role="status" data-testid="ai-upgrade-pending">
+    {{this.commands.pendingPlan.displayPath}}
+    <button type="button" class="btn btn-sm btn-primary" {{action "review"}} data-testid="ai-upgrade-review">{{t "webmcp.review"}}</button>
+  </div>
+{{/if}}

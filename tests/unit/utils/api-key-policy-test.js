@@ -3,6 +3,16 @@ import { API_KEY_OPERATIONS, initialPolicy, policyErrors, policiesEqual, localEx
 
 module('Unit | Utility | API key policy');
 
+test('dedicated AI purpose is preserved and included in verified policy equality', function(assert) {
+  const general = {mode: 'full', defaultEffect: 'allow', expiresAt: null, rules: []};
+  const dedicated = Object.assign({}, general, {purpose: 'ai-bridge'});
+  assert.deepEqual(policyErrors(dedicated), []);
+  assert.strictEqual(initialPolicy(dedicated).purpose, 'ai-bridge');
+  assert.notOk(policiesEqual(general, dedicated));
+  assert.ok(policiesEqual(general, Object.assign({}, general, {purpose: 'general'})));
+  assert.deepEqual(policyErrors(Object.assign({}, general, {purpose: 'unknown'})), ['purpose']);
+});
+
 test('full preserves the principal ceiling without extra restriction and closed needs no grants', function(assert) {
   assert.strictEqual(initialPolicy(null).mode, 'full');
   assert.strictEqual(initialPolicy(null).defaultEffect, 'allow');

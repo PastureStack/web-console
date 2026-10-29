@@ -101,7 +101,7 @@ class BuilderBoundaryTests(unittest.TestCase):
         mounts = [tokens[i + 1] for i, token in enumerate(tokens) if token == "--mount"]
         self.assertEqual(mounts, ["type=bind,source=$repo_root,target=/source,readonly", "type=bind,source=$output_dir,target=/output"])
         environment = [tokens[i + 1].split("=")[0] for i, token in enumerate(tokens) if token == "--env"]
-        self.assertEqual(environment, ["GITHUB_SHA", "SOURCE_DATE_EPOCH", "VALIDATION_SCOPE"])
+        self.assertEqual(environment, ["GITHUB_SHA", "SOURCE_DATE_EPOCH", "VALIDATION_SCOPE", "WEBMCP_MODE"])
         self.assertNotIn("--env-file", tokens)
         self.assertNotIn("--volume", tokens)
         self.assertNotIn("-v", tokens)
@@ -110,6 +110,48 @@ class BuilderBoundaryTests(unittest.TestCase):
         self.assertIn("builder_image='" + IMAGE + "'", script)
         self.assertIn('test "$node_image" = "$builder_image"', script)
         self.assertIn("test -f /.dockerenv", script)
+
+    def test_webmcp_profile_defaults_off_and_rejects_unknown_modes(self):
+        with tempfile.TemporaryDirectory(prefix="ui-webmcp-profile-") as directory:
+            output = Path(directory) / "profile.json"
+            base_environment = {key: value for key, value in os.environ.items() if key != "WEBMCP_MODE"}
+            for mode in [None, "", "off", "read-only", "enabled", "invalid", "ENABLED"]:
+                with self.subTest(mode=mode):
+                    environment = dict(base_environment)
+                    if mode is not None:
+                        environment["WEBMCP_MODE"] = mode
+                    output.unlink(missing_ok=True)
+                    result = subprocess.run(
+                        ["bash", "-c", 'source "$1"; configure_webmcp_profile; write_webmcp_profile "$2"',
+                         "webmcp-profile-test", str(SCRIPT), str(output)],
+                        capture_output=True, text=True, env=environment,
+                    )
+                    if mode in ["invalid", "ENABLED"]:
+                        self.assertEqual(result.returncode, 2, result.stderr)
+                        self.assertFalse(output.exists())
+                    else:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        self.assertEqual(json.loads(output.read_text(encoding="utf-8")), {
+                            "ceiling": mode or "off", "initialMode": "off",
+                        })
+
+    def test_webmcp_profile_is_forwarded_packaged_and_retained(self):
+        script = SCRIPT.read_text(encoding="utf-8")
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        self.assertLess(script.index("  configure_webmcp_profile\n"), script.index("  docker run --rm"))
+        self.assertIn('--env "WEBMCP_MODE=$WEBMCP_MODE"', script)
+        self.assertLess(script.index("./node_modules/.bin/ember build --environment production"),
+                        script.index("write_webmcp_profile dist/webmcp-build.json"))
+        self.assertLess(script.index("write_webmcp_profile dist/webmcp-build.json"),
+                        script.index('bash scripts/package-static-candidate "$package_version"'))
+        self.assertIn('cmp dist/webmcp-build.json "$canonical_dist/webmcp-build.json"', script)
+        self.assertIn('"$work_root/web-console-a.tar.gz.tree/$package_version/webmcp-build.json"', script)
+        self.assertIn('"web-console-${package_version}-webmcp.json" >"web-console-${package_version}-sbom.sha256"', script)
+        self.assertRegex(workflow, r"webmcp_mode:\n(?:.*\n){2}        options: \[off, read-only, enabled\]\n        default: off")
+        self.assertIn("WEBMCP_MODE: ${{ inputs.webmcp_mode }}", workflow)
+        self.assertIn('"web-console-${package_version}-webmcp.json"', workflow)
+        self.assertIn("${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-webmcp.json", workflow)
+        self.assertIn("node scripts/test-ai-collaboration-ui.js --filter=initialization", script)
 
     def test_sbom_scope_skips_host_install_and_preserves_other_tests(self):
         workflow = WORKFLOW.read_text(encoding="utf-8")

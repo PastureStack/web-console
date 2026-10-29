@@ -430,7 +430,8 @@ for marker in [
 
 # The two ordinary-container VM quick-pick actions were removed in Web174.
 # Web 180 has 561 bindings; API Key editor/audit adds 32 and Archive adds 6.
-if template_action_count != 599:
+# WebMCP review/control templates add 10 and the Key purpose selector adds 1.
+if template_action_count != 610:
     fail(f"unexpected template action count: {template_action_count}")
 # The API Key target picker adds project, stack and resource selectors.
 if power_select_count != 18:

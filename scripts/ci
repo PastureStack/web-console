@@ -9,6 +9,8 @@ else
 fi
 
 ./scripts/check-modernization-blockers
+./scripts/check-ui-ember-api-store-fetch-upgrade
+node --test scripts/test-webmcp-path-boundaries.mjs
 ./scripts/check-ui-catalog-version-select
 node ./scripts/check-ui-catalog-form-contract.js
 node ./scripts/check-ui-code-block-contrast.js
@@ -85,7 +87,6 @@ node ./scripts/check-ui-npm-audit.js
 ./scripts/check-ui-c3-d3-bower-migration
 ./scripts/check-ui-yamljs-glob-override
 ./scripts/check-ui-glob-cjs-default-compat
-./scripts/check-ui-ember-api-store-fetch-upgrade
 ./scripts/check-ui-core-js-compat
 ./scripts/check-ui-deprecated-warning-backlog
 ./scripts/check-ui-mkdirp-override

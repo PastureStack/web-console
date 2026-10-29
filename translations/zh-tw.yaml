@@ -2053,6 +2053,7 @@ apiKeyAccess:
       mixed: 部分受限
       conditional: 需檢查實際目標
       unknown: 待確認
+      unsupported: "未提供"
     basis:
       full: 完整存取，仍限帳號權限
       closed: 沒有允許例外
@@ -2067,6 +2068,8 @@ apiKeyAccess:
       invalidPolicy: 請修正規則後再儲存
       createDestination: 須檢查新資源及建立位置
       multipleTargets: 須逐一檢查操作涉及的目標
+      aiBridge: "僅限已支援的 AI 工具，仍須符合目前權限與確認條件。"
+      aiBridgeUnsupported: "此專用用途未提供這項操作。"
   defaultEffect: 未命中規則時
   effect: 規則效果
   scope: 規則範圍
@@ -4620,3 +4623,40 @@ formResources:
     cpu: "請輸入有效 CPU 上限（配額至少為 1000 µs）。"
     ulimits: "限制名稱不可重複，數值須為大於等於 -1 的整數，且軟限制不可超過硬限制。"
     map: "進階選項的鍵與值不可留空。"
+
+webmcp:
+  title: "檢視服務升級"
+  service: "服務"
+  currentImage: "目前映像"
+  requestedImage: "要求的映像"
+  notice: "核准此計畫後，AI 即可依此計畫的確切內容執行升級。升級尚未開始。其他服務設定與磁碟區掛載將保留。核准前，請檢查新映像的資料相容性。"
+  approve: "核准此計畫"
+  approved: "計畫已核准。AI 現在可以執行此計畫。"
+  review: "檢視待執行的升級"
+  stale: "工作階段、環境或計畫已變更。請讓 AI 重新產生預覽。"
+  failed: "無法核准此計畫。請檢查錯誤後再試一次。"
+  expires: "到期時間"
+  dismiss: "關閉預覽"
+  collaboration:
+    "title": "AI 協作"
+    "mode": "此瀏覽器的工具模式"
+    "off": "暫停"
+    "readOnly": "僅查詢"
+    "enabled": "查詢與變更"
+    "cookieNotice": "此瀏覽器工具沿用您目前的登入權限，不代表 AI 與帳號已隔離。如需限制 AI 存取，請使用專用 API 金鑰與獨立 MCP bridge。"
+    "confirmationSource": "請以目前登入帳號在此檢視並核准計畫。核准僅授權這一筆變更，不會立即開始升級。"
+    "pendingPlans": "待您核准的計畫"
+    "noPendingPlans": "目前沒有待核准的計畫。"
+    "loadFailed": "無法載入計畫。請確認登入與權限後重試。"
+    "statusDisabled": "已暫停"
+    "statusRegistering": "連接中"
+    "statusEnabled": "已啟用"
+    "statusUnsupported": "此瀏覽器不支援原生 WebMCP，仍可檢視與核准計畫。"
+    "statusUnavailable": "目前無法使用"
+    "refresh": "重新整理計畫"
+    "loadRequired": "請重新整理，以載入目前帳號與環境的計畫。"
+    "keyPurpose": "金鑰用途"
+    "keyPurposeGeneral": "一般 API 存取"
+    "keyPurposeAiBridge": "AI bridge 專用"
+    "keyPurposeHelp": "此金鑰只提供已支援的 AI 查詢、描述修改與升級工具，仍受範圍規則限制。不能核准計畫、執行 Shell 或修改安全設定。"
+    "invalidPurpose": "請選擇支援的金鑰用途。"

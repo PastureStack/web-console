@@ -1,0 +1,17 @@
+<h3 id="ai-upgrade-title">{{t "webmcp.title"}}</h3>
+<dl class="horizontal-form">
+  <dt>{{t "webmcp.service"}}</dt><dd class="force-wrap" data-testid="ai-upgrade-target">{{this.plan.displayPath}}</dd>
+  <dt>{{t "webmcp.currentImage"}}</dt><dd class="force-wrap">{{this.plan.currentImage}}</dd>
+  <dt>{{t "webmcp.requestedImage"}}</dt><dd class="force-wrap">{{this.plan.requestedImage}}</dd>
+  <dt>{{t "webmcp.expires"}}</dt><dd>{{this.displayExpiry}}</dd>
+</dl>
+<div class="alert alert-warning">{{t "webmcp.notice"}}</div>
+{{#if this.stale}}<div class="alert alert-danger" role="alert">{{t "webmcp.stale"}}</div>{{/if}}
+{{#if this.approved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{t "webmcp.approved"}}</div>{{/if}}
+{{top-errors errors=this.errors}}
+<div class="footer-actions">
+  <button type="button" class="btn btn-primary" disabled={{this.submitDisabled}} {{action "confirm"}} data-testid="ai-upgrade-confirm">
+    {{#if this.saving}}{{t "saveCancel.saving"}}{{else}}{{t "webmcp.approve"}}{{/if}}
+  </button>
+  <button type="button" class="btn btn-link" disabled={{this.saving}} {{action "cancel"}} data-testid="ai-upgrade-cancel">{{t "generic.closeModal"}}</button>
+</div>

@@ -2,9 +2,9 @@ import { API_KEY_OPERATIONS, API_KEY_RESOURCE_TYPES, canonicalResourceType } fro
 import { scopeKey } from 'ui/utils/api-key-owner-capabilities';
 import { selectionMatches } from 'ui/utils/api-key-scope-selection';
 
-export const POLICY_MATRIX_STATES = ['allow', 'deny', 'mixed', 'conditional', 'unknown'];
+export const POLICY_MATRIX_STATES = ['allow', 'deny', 'mixed', 'conditional', 'unknown', 'unsupported'];
 export const POLICY_MATRIX_BASIS = ['full', 'closed', 'expired', 'defaultAllow', 'defaultDeny', 'ruleAllow', 'explicitDeny',
-  'scopeExceptions', 'unknownEvidence', 'unknownOverlap', 'invalidPolicy', 'createDestination', 'multipleTargets'];
+  'scopeExceptions', 'unknownEvidence', 'unknownOverlap', 'invalidPolicy', 'createDestination', 'multipleTargets', 'aiBridge', 'aiBridgeUnsupported'];
 
 // Engine ApiKeyTargetResolver's explicit type sets, not guesses from absent fields.
 const PROJECT_ONLY = ['host', 'network', 'secret', 'certificate', 'registry', 'storagepool',
@@ -37,6 +37,7 @@ function expiryTimestamp(value) {
 
 function validPolicy(policy) {
   if ( !policy || !['full', 'closed', 'custom'].includes(policy.mode) ) { return false; }
+  if ( policy.purpose != null && !['general', 'ai-bridge'].includes(policy.purpose) ) { return false; }
   if ( policy.mode !== 'custom' ) {
     // Editor mode switches retain inactive custom rules until review normalizes them.
     return policy.defaultEffect == null || policy.defaultEffect === (policy.mode === 'full' ? 'allow' : 'deny');
@@ -195,6 +196,16 @@ function scopeCell(row, operation, groups, policy) {
   return result;
 }
 
+function bridgeProvides(row, operation) {
+  if (!['read', 'update', 'upgrade'].includes(operation)) { return false; }
+  // A project/stack scope is a set including descendants. Its bridge access
+  // remains conditional on selecting a supported resource inside that set.
+  // A resource scope is an exact point and cannot borrow descendant tools.
+  if (row.kind !== 'resource') { return true; }
+  const resourceType = type(row.scope.resourceType);
+  return operation === 'read' ? ['project', 'stack', 'service'].includes(resourceType) : resourceType === 'service';
+}
+
 /** Pure, finite policy-intent preview. Never an owner RBAC or API-call verdict.
  * Names and ancestry are accepted only from the matching fresh selector proof.
  * key is internal rendering identity; labels never fall back to IDs or type IDs.
@@ -217,6 +228,11 @@ export function buildPolicyMatrix(policy, evidenceByRule = {}, labels = {}, now 
           expired ? {state: 'deny', basis: 'expired'} :
           policy.mode === 'full' ? {state: 'allow', basis: 'full'} :
             policy.mode === 'closed' ? {state: 'deny', basis: 'closed'} : scopeCell(row, operation, groups, policy);
-        return Object.assign({operation, policyState: result.state}, result);
+        const policyState = result.policyState || result.state;
+        if (valid && !expired && policy.purpose === 'ai-bridge' && result.state !== 'deny') {
+          result = !bridgeProvides(row, operation) ? {state: 'unsupported', basis: 'aiBridgeUnsupported'} :
+            ['allow', 'conditional'].includes(result.state) ? {state: 'conditional', basis: 'aiBridge'} : result;
+        }
+        return Object.assign({operation, policyState}, result);
       })}))};
 }
