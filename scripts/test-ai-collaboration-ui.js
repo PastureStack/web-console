@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const app = path.resolve(__dirname, '../app');
 const filterArg = process.argv.find(arg => arg.startsWith('--filter='));
-const filter = filterArg && new RegExp(filterArg.slice('--filter='.length));
+const filter = filterArg && filterArg.slice('--filter='.length);
 const cache = new Map();
 function sourceUrl(filename) {
   filename = path.resolve(filename);
@@ -56,7 +56,7 @@ async function main() {
   }
   let count = 0;
   async function test(name, body) {
-    if (filter && !filter.test(name)) { return; }
+    if (filter && !name.includes(filter)) { return; }
     await body(); count++; process.stdout.write(`PASS ${name}\n`);
   }
 

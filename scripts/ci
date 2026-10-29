@@ -10,6 +10,7 @@ fi
 
 ./scripts/check-modernization-blockers
 ./scripts/check-ui-ember-api-store-fetch-upgrade
+node --test scripts/test-webmcp-path-boundaries.mjs
 ./scripts/check-ui-catalog-version-select
 node ./scripts/check-ui-catalog-form-contract.js
 node ./scripts/check-ui-code-block-contrast.js

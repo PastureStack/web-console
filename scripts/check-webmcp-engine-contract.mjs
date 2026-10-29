@@ -1,15 +1,22 @@
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
+import {readFile, realpath} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 // Release-assembly check for two explicitly selected source checkouts.
 // No network requests, credentials, generated copies or source modification.
-const args=process.argv.slice(2);
-if(args.length!==2 || args[0]!=='--engine-root')throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine');
 const web=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const engine=path.resolve(args[1]);
-const read=async relative=>JSON.parse(await readFile(path.join(engine,'resources/content/schema',relative),'utf8'));
+export async function checkEngineContract(engineRoot) {
+const engine=await realpath(path.resolve(engineRoot));
+const schemaRoot=await realpath(path.join(engine,'resources/content/schema'));
+const schemaRelative=path.relative(engine,schemaRoot);
+if(schemaRelative==='..'||schemaRelative.startsWith('..'+path.sep)||path.isAbsolute(schemaRelative))throw Error('Schema root escapes selected Engine');
+const read=async relative=>{
+  const target=await realpath(path.resolve(schemaRoot,relative));
+  const inside=path.relative(schemaRoot,target);
+  if(inside==='..'||inside.startsWith('..'+path.sep)||path.isAbsolute(inside))throw Error('Schema file escapes selected Engine');
+  return JSON.parse(await readFile(target,'utf8'));
+};
 const source=await readFile(path.join(web,'app/utils/ai-command-contract.js'),'utf8');
 const {COMMANDS}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 const event=await read('base/aiToolCallEvent.json');
@@ -24,4 +31,15 @@ for(const type of ['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCa
     }
   }
 }
-console.log('PASS seven-tool wire audit enum and all three effective role-overlay input contracts');
+}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+  const args=process.argv.slice(2);
+  if(args.length!==2 || args[0]!=='--engine-root')throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine');
+  try {
+    await checkEngineContract(args[1]);
+    console.log('PASS seven-tool wire audit enum and all three effective role-overlay input contracts');
+  } catch {
+    console.error('WebMCP Engine contract check failed');
+    process.exitCode=1;
+  }
+}

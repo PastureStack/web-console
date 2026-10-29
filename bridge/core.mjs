@@ -1,4 +1,6 @@
-import {readFile} from 'node:fs/promises';
+import {open, realpath, lstat} from 'node:fs/promises';
+import {constants} from 'node:fs';
+import path from 'node:path';
 import {randomBytes} from 'node:crypto';
 import {CommandContext, CommandEngine, COMMANDS, CommandError} from './shared-modules.mjs';
 
@@ -25,14 +27,49 @@ export function validateConfig(input) {
   return Object.freeze({...input, endpoint: endpoint.href.replace(/\/$/, '')});
 }
 
-export async function loadConfig(path) {
+const CONFIG_LIMIT = 16 * 1024;
+const sameFile = (left, right) => left.dev === right.dev && left.ino === right.ino;
+
+export async function loadConfig(input, io = {open, realpath, lstat}) {
+  let file;
   try {
-    const bytes = await readFile(path);
-    if (bytes.length > 16 * 1024) throw new SetupError('INVALID_CONFIG');
-    return validateConfig(JSON.parse(bytes.toString('utf8')));
+    if (typeof input !== 'string' || !input || input.includes('\0')) throw new SetupError('CONFIG_UNREADABLE');
+    // The launcher selects the directory; tool arguments never reach this API.
+    const selected = path.resolve(input);
+    const parent = await io.realpath(path.dirname(selected));
+    const target = await io.realpath(selected);
+    const relative = path.relative(parent, target);
+    if (relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
+      throw new SetupError('CONFIG_UNREADABLE');
+    }
+    const before = await io.lstat(target);
+    if (!before.isFile() || before.isSymbolicLink() || before.size > CONFIG_LIMIT) throw new SetupError('INVALID_CONFIG');
+    file = await io.open(target, constants.O_RDONLY | (constants.O_NOFOLLOW || 0));
+    const opened = await file.stat();
+    if (!sameFile(before, opened) || !opened.isFile() || opened.size > CONFIG_LIMIT ||
+        await io.realpath(selected) !== target || await io.realpath(parent) !== parent) {
+      throw new SetupError('CONFIG_UNREADABLE');
+    }
+    // Bound allocation and reads even if a writer grows the file after stat.
+    const bytes = Buffer.alloc(CONFIG_LIMIT + 1);
+    let length = 0;
+    while (length < bytes.length) {
+      const {bytesRead} = await file.read(bytes, length, bytes.length - length, length);
+      if (!bytesRead) break;
+      length += bytesRead;
+    }
+    const after = await file.stat();
+    const namedAfter = await io.lstat(target);
+    if (length > CONFIG_LIMIT) throw new SetupError('INVALID_CONFIG');
+    if (!sameFile(opened, after) || !sameFile(opened, namedAfter) || namedAfter.isSymbolicLink() ||
+        opened.size !== after.size || opened.mtimeMs !== after.mtimeMs ||
+        opened.ctimeMs !== after.ctimeMs || await io.realpath(selected) !== target) throw new SetupError('CONFIG_UNREADABLE');
+    return validateConfig(JSON.parse(bytes.subarray(0, length).toString('utf8')));
   } catch (error) {
     if (error instanceof SetupError) throw error;
     throw new SetupError('CONFIG_UNREADABLE');
+  } finally {
+    await file?.close().catch(() => {});
   }
 }
 
