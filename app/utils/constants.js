@@ -117,6 +117,7 @@ var C = {
 
   HEADER: {
     ACCOUNT_ID: 'X-Api-Account-Id',
+    USER_ID: 'X-Api-User-Id',
     ACTIONS: 'X-Api-Action-Links',
     ACTIONS_VALUE: 'actionLinks',
     CSRF: 'X-Api-Csrf',
