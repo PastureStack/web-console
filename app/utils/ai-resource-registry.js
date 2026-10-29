@@ -25,7 +25,7 @@ const family = (name, resources, coverageStatus = 'implemented', reason = '') =>
 export const RESOURCE_FAMILIES = Object.freeze([
   family('accounts', [global('account', 'accounts', ['kind'])]),
   family('api-keys', [global('apiKey', 'apikeys', ['kind', 'expiresAt'])]),
-  family('audit', [global('auditLog', 'auditLogs', ['eventType', 'resourceType', 'responseCode', 'httpStatus', 'authType', 'interactionChannel', 'decision', 'outcome', 'operation'])], 'pending-adapter', 'Engine audit metadata is implemented; the UI audit broker and combined Key/tool event query require a dedicated adapter.'),
+  family('audit', [global('auditLog', 'auditLogs', ['eventType', 'resourceType', 'responseCode', 'httpStatus', 'authType', 'interactionChannel', 'decision', 'outcome', 'operation'])], 'pending-adapter', 'Typed audit metadata queries are implemented through the matching Engine and broker owner for the native session and dedicated-Key bridge. Export and raw request/response payloads remain in the human audit UI; this is partial workflow coverage.'),
   family('authentication', [], 'pending-adapter', 'Authentication configuration uses its dedicated authenticated API. Login and credential entry remain human ceremonies.'),
   family('catalog', [catalog('catalogTemplate', ['name', 'description', 'catalogId', 'templateBase', 'templateKey', 'catalogScope', 'defaultVersion', 'maintainer', 'license']),
     catalog('catalogTemplateVersion', ['version', 'revision', 'minimumRancherVersion', 'maximumRancherVersion', 'upgradeFrom'], {type: 'catalogTemplate', field: 'templateId', required: true})],
@@ -45,7 +45,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('registry', [project('registry', 'registries')]),
   family('secrets', [project('secret', 'secrets')]),
   family('service', [project('service', 'services', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}),
-    project('dnsService', 'dnsServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}), project('externalService', 'externalServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'})]),
+    resource('dnsService', 'dnsServices', 'project', ['scale', 'healthState', 'archived', 'targetServices', 'linkedServiceCount', 'unresolvedTargetCount'], {type: 'stack', field: 'stackId'}, ['Two-step Alias workflow: create makes an empty stopped Alias with no targets; update_targets needs selected same-session serviceRefs and another human-approved plan. Start is optional and separate. Named/ported/remote links and incoming-consumer cleanup remain pending.']), resource('externalService', 'externalServices', 'project', ['scale', 'healthState', 'archived', 'hostname', 'externalIpAddresses'], {type: 'stack', field: 'stackId'}, ['Typed changes cover name/description and safe DNS/IP targets. Health checks, cloning and advanced settings remain pending. Create is inactive until a separately approved start.'])]),
   family('settings', [global('setting', 'settings', ['source', 'inDb'])]),
   family('stack', [project('stack', 'stacks', ['system', 'archived'])]),
   family('storage', [project('volume', 'volumes', ['isHostPath', 'isNative']),
@@ -70,11 +70,16 @@ export const RESOURCE_CHANGES = Object.freeze({
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(), scale: action(['scale'], ['scale']),
     create: action(['name', 'image', 'scale', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
+  dnsService: Object.freeze({start: action(), stop: action(), remove: action(), update_metadata: metadata,
+    create: action(['name', 'description'], ['name']), update_targets: action(['serviceRefs'], ['serviceRefs'])}),
+  externalService: Object.freeze({start: action(), stop: action(), remove: action(), update_metadata: metadata,
+    create: action(['name', 'description', 'hostname', 'externalIpAddresses'], ['name']),
+    update_targets: action(['hostname', 'externalIpAddresses'], [], 1)}),
   container: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(),
     create: action(['name', 'image', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
-export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'image', 'scale', 'command', 'entryPoint', 'stackId', 'archived',
+export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'stackId', 'archived',
   'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can
@@ -83,11 +88,11 @@ export function safeResourceFields(body, descriptor) {
   const result = {};
   for ( const field of descriptor.fields ) {
     const value = body[field];
-    if ( typeof value === 'string' ) { result[field] = value.slice(0, field === 'description' ? 1024 : 512); }
+    if ( typeof value === 'string' ) { result[field] = value.slice(0, field === 'targetServices' ? 100000 : ['description', 'externalIpAddresses'].includes(field) ? 1024 : 512); }
     else if ( typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) || value === null ) { result[field] = value; }
   }
   return result;
 }
 export function truncatedResourceFields(body, descriptor) {
-  return descriptor.fields.filter((field) => typeof body[field] === 'string' && body[field].length > (field === 'description' ? 1024 : 512));
+  return descriptor.fields.filter((field) => typeof body[field] === 'string' && body[field].length > (field === 'targetServices' ? 100000 : ['description', 'externalIpAddresses'].includes(field) ? 1024 : 512));
 }

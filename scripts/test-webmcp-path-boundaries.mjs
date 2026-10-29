@@ -54,26 +54,38 @@ test('config rejects replacement before open and bounds a concurrent growth read
 async function fixture(dir){
   const schema=path.join(dir,'resources/content/schema');
   const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent','aiResourceView','aiResourceChangePlan','aiCatalogMetadataView',
-    'aiCatalogStackLaunchOptions','aiCatalogStackLaunchPlan','aiCatalogStackLaunchInputs'];
+    'aiCatalogStackLaunchOptions','aiCatalogStackLaunchPlan','aiCatalogStackLaunchInputs','aiAuditQuery','aiAuditSourcePageInput'];
   const inputs={aiServiceUpgradePlan:['serviceId','image'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
     aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId'],
     aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
     aiCatalogStackLaunchOptions:['templateId','versionId'],
     aiCatalogStackLaunchPlan:['templateId','versionId','optionsRef','name','description','startOnCreate','answers','referenceBindings'],
-    aiCatalogStackLaunchInputs:['answers','referenceBindings']};
+    aiCatalogStackLaunchInputs:['answers','referenceBindings'],
+    aiAuditQuery:['keyId','environmentId','from','to','lastMinutes','decision','outcome','operation','targetType','requestId','httpStatus','limit','offset','eventId'],
+    aiAuditSourcePageInput:['limit','marker','projectId','accountId','from','to','keyKind']};
   const declarations=new Map();
   for(const part of ['base','admin','user','project'])await fs.mkdir(path.join(schema,part),{recursive:true});
   for(const name of names){
     const fields=Object.fromEntries(inputs[name].map(field=>[field,{create:true}]));
     if(name==='aiToolCallEvent'){fields.command.options=[...COMMANDS.map(x=>x.name),'unknown'];fields.reason.options=[...PUBLIC_ERROR_CODES,'NONE'];}
     if(name==='aiResourceChangePlan'){
-      fields.resourceType.options=['stack','service','container'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','scale','archive','restore'];fields.parameters.type='json';
+      fields.resourceType.options=['stack','service','container','externalService','dnsService'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore'];fields.parameters.type='json';
     }
     if(name==='aiCatalogMetadataView'){
       for(const [field,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68}))Object.assign(fields[field],{type:'string',maxLength:limit});
       fields.versions.type='boolean';
     }
     const declaration={collectionMethods:['POST'],resourceMethods:[],resourceFields:fields};
+    if(name==='aiAuditQuery'){
+      declaration.pluralName='aiAuditQueries';
+      for(const key of inputs[name])Object.assign(fields[key],['lastMinutes','httpStatus','limit','offset'].includes(key)?{type:'int'}:{type:'string',maxLength:160});
+      for(const [key,type] of Object.entries({resourceType:'string',data:'array[json]',total:'int',nextOffset:'int',range:'map[string]',payloadPolicy:'string'}))fields[key]={type,create:false};
+    }
+    if(name==='aiAuditSourcePageInput'){
+      declaration.collectionMethods=[];Object.assign(fields.limit,{type:'int',min:1,max:1000});
+      for(const [key,maxLength] of Object.entries({marker:128,projectId:128,accountId:128,from:64,to:64}))Object.assign(fields[key],{type:'string',maxLength});
+      Object.assign(fields.keyKind,{type:'enum',options:['apiKey','apiKeyRestricted']});
+    }
     if(name.startsWith('aiCatalogStackLaunch')){
       for(const key of ['templateId','versionId'])if(fields[key])Object.assign(fields[key],{type:'string',required:true,maxLength:68});
       if(fields.answers)fields.answers.type='map[json]';if(fields.referenceBindings)fields.referenceBindings.type='map[string]';
@@ -93,8 +105,8 @@ async function fixture(dir){
     await fs.writeFile(path.join(schema,'base',name+'.json'),JSON.stringify(declaration));
   }
   for(const role of ['admin','user','project'])await fs.writeFile(path.join(schema,role,role+'-auth.json'),JSON.stringify({authorize:Object.fromEntries(names.flatMap(name=>[
-    [name,name==='aiCatalogStackLaunchInputs'?'r':name.startsWith('aiCatalogStackLaunch')?'cr':'c'],
-    ...Object.entries(declarations.get(name).resourceFields).map(([field,value])=>[name+'.'+field,value.create?(name.startsWith('aiCatalogStackLaunch')?'cr':'c'):'r'])]))}));
+    [name,['aiCatalogStackLaunchInputs','aiAuditSourcePageInput'].includes(name)?'r':name.startsWith('aiCatalogStackLaunch')||name==='aiAuditQuery'?'cr':'c'],
+    ...Object.entries(declarations.get(name).resourceFields).map(([field,value])=>[name+'.'+field,value.create?(name.startsWith('aiCatalogStackLaunch')||name.startsWith('aiAudit')?'cr':'c'):'r'])]))}));
   return schema;
 }
 test('checker reads the fixed contract in an explicitly selected Engine checkout',async t=>{
@@ -128,6 +140,41 @@ test('checker rejects a public capacity error missing from the durable audit enu
   event.resourceFields.reason.options=event.resourceFields.reason.options.filter(code=>code!=='CAPACITY');
   await fs.writeFile(file,JSON.stringify(event));
   await assert.rejects(checkEngineContract(dir),/Public error CAPACITY cannot be audited/);
+});
+
+test('checker enforces closed Audit methods inputs outputs and metadata in every role',async t=>{
+  const dir=await temp(t),schema=await fixture(dir);await checkEngineContract(dir);
+  const change=async(relative,mutate,pattern)=>{
+    const file=path.join(schema,relative),original=await fs.readFile(file,'utf8'),value=JSON.parse(original);
+    mutate(value);await fs.writeFile(file,JSON.stringify(value));
+    try{await assert.rejects(checkEngineContract(dir),pattern);}finally{await fs.writeFile(file,original);}
+  };
+  for(const [mutate,pattern] of [
+    [value=>{value.collectionMethods=['GET','POST'];},/aiAuditQuery must be POST-only/],
+    [value=>{value.resourceMethods=['GET'];},/aiAuditQuery must not expose resource methods/],
+    [value=>{value.resourceActions={read:{}};},/aiAuditQuery must not expose resource actions/],
+    [value=>{value.resourceFields.eventId.create=false;},/aiAuditQuery.eventId is not accepted input/],
+    [value=>{value.resourceFields.payload={type:'json',create:true};},/aiAuditQuery must retain its closed field set/],
+    [value=>{value.resourceFields.eventId.type='json';},/aiAuditQuery.eventId type mismatch/],
+    [value=>{value.resourceFields.requestId.maxLength=4096;},/aiAuditQuery.requestId bound mismatch/],
+    [value=>{value.resourceFields.payloadPolicy.create=true;},/aiAuditQuery.payloadPolicy must be read-only output/],
+    [value=>{value.resourceFields.data.update=true;},/aiAuditQuery.data must not be client-updatable/],
+    [value=>{value.resourceFields.data.type='json';},/aiAuditQuery.data type mismatch/],
+  ])await change('base/aiAuditQuery.json',mutate,pattern);
+  for(const [mutate,pattern] of [
+    [value=>{value.collectionMethods=['POST'];},/Private Audit input must not have its own collection route/],
+    [value=>{value.resourceMethods=['GET'];},/Private Audit input must not have its own resource route/],
+    [value=>{value.resourceFields.limit.max=1001;},/aiAuditSourcePageInput.limit maximum mismatch/],
+    [value=>{value.resourceFields.marker.type='json';},/aiAuditSourcePageInput.marker type mismatch/],
+    [value=>{value.resourceFields.keyKind.options.push('token');},/aiAuditSourcePageInput.keyKind enum mismatch/],
+  ])await change('base/aiAuditSourcePageInput.json',mutate,pattern);
+  for(const role of ['admin','user','project'])for(const [field,permission,pattern] of [
+    ['aiAuditQuery','crud',/must retain the exact aiAuditQuery route metadata/],
+    ['aiAuditQuery.eventId','c',/must retain exact Audit input metadata aiAuditQuery.eventId/],
+    ['aiAuditQuery.data','cr',/must retain read-only Audit output aiAuditQuery.data/],
+    ['aiAuditSourcePageInput','cr',/must retain the exact aiAuditSourcePageInput route metadata/],
+    ['aiAuditSourcePageInput.keyKind','c',/must retain exact Audit input metadata aiAuditSourcePageInput.keyKind/],
+  ])await change(role+'/'+role+'-auth.json',value=>{value.authorize[field]=permission;},pattern);
 });
 
 test('checker rejects missing Catalog version inputs and unbounded or wrongly typed selectors',async t=>{

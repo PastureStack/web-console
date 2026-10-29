@@ -1,6 +1,9 @@
+import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
+import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
 import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, CommandError, publicError, safeText, validateInput } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
+import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
 import { createCatalogLaunchAdapter, catalogLaunchPlanSummary, CATALOG_LAUNCH_COLLECTION } from './ai-catalog-launch';
 
 const OPERATION_STATUSES = ['accepted', 'running', 'succeeded', 'failed', 'unknown', 'cancelled', 'needs_user'];
@@ -36,6 +39,8 @@ export class CommandEngine {
   constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta', transportKind = 'browser'}) {
     Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint, transportKind});
     this.catalogReader = createCatalogReader({request, context});
+    this.auditReader = createAuditReader({request, context, transportKind,
+      resolveResource: (reference, captured, field) => this.resolveResourceReference(reference, null, captured, field)});
     this.catalogLaunch = createCatalogLaunchAdapter({request, context,
       resolveResource: (reference, type, captured) => this.resolveResourceReference(reference, type, captured, 'parameters.answers')});
   }
@@ -100,6 +105,7 @@ export class CommandEngine {
         'parameters.name': 'Provide the requested name in parameters.name, from 1 to 255 UTF-16 units.',
         'parameters.scale': 'Provide an integer from 0 through 100 in parameters.scale.',
         'parameters.description': 'Provide the complete description as a string of at most 1024 UTF-16 units, or null. An empty string clears it.',
+        'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the simple targets.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
       };
       result.nextStep = input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
@@ -205,12 +211,19 @@ export class CommandEngine {
         const supported = this.supportsResource(descriptor), needsCheck = supported && (this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog');
         return {resourceType: descriptor.type, scope: descriptor.scope, coverageStatus: supported && !descriptor.limitations.length ? 'implemented' : 'pending-adapter',
           metadataLimitations: [...descriptor.limitations],
+          typedAuditQuery: descriptor.type === 'auditLog' ? {
+            availability: 'implemented',
+            transport: 'native-cookie-or-dedicated-api-key', authorization: 'requires-current-native-owner-and-key-read-scope',
+            payloads: 'human-only-withheld', safeFields: [...AUDIT_FIELDS],
+            input: 'find_resources.auditFilters', maximumPageRows: 50, maximumScanRows: 20000,
+          } : null,
           canFind: needsCheck ? null : supported && !!definition && Array.isArray(definition.collectionMethods) && definition.collectionMethods.includes('GET'),
           canGet: needsCheck ? null : supported && !!definition && Array.isArray(definition.resourceMethods) && definition.resourceMethods.includes('GET'),
           authorization: needsCheck ? 'requires-server-check' : 'role-schema',
           safeFields: [...descriptor.fields], parentType: descriptor.parent ? descriptor.parent.type : null,
           parentRequired: !!(descriptor.parent && descriptor.parent.required),
           operations: RESOURCE_CHANGES[descriptor.type] ? Object.keys(RESOURCE_CHANGES[descriptor.type]) : [],
+          ...(descriptor.type === 'dnsService' ? {workflow: [...ALIAS_WORKFLOW], workflowNotice: ALIAS_CREATE_NEXT_STEP} : {}),
           changeModeEnabled: captured.mode === 'enabled', changesRequireHumanApproval: true,
           unavailableReason: needsCheck ? null : !supported ? 'PENDING_ADAPTER' : source.unavailable || (!definition ? 'NOT_VISIBLE' : null)};
       }),
@@ -248,6 +261,11 @@ export class CommandEngine {
   }
 
   async find_resources(input, captured, signal) {
+    if (input.auditFilters !== undefined) {
+      if (input.family !== 'audit' || input.resourceType !== undefined && input.resourceType !== 'auditLog' ||
+        input.query !== undefined || input.parentRef !== undefined) { throw new CommandError('INVALID_INPUT', 'auditFilters'); }
+      return this.findAuditResources(input, captured, signal);
+    }
     const descriptor = this.findDescriptor(input);
     const useCatalog = descriptor.readTransport === 'catalog';
     const catalogVersion = descriptor.type === 'catalogTemplateVersion';
@@ -262,6 +280,7 @@ export class CommandEngine {
     if ( parent && !useCatalog ) { path += `&${descriptor.parent.field}=${encodeURIComponent(parent.id)}`; }
     if ( input.cursor ) {
       const cursor = this.context.resolve(input.cursor, 'resourceCursor', captured);
+      if (cursor.auditQuery) { throw new CommandError('INVALID_INPUT', 'auditFilters'); }
       if ( cursor.family !== input.family || cursor.resourceType !== descriptor.type || cursor.query !== (input.query || '') || cursor.parentRef !== (input.parentRef || '') ) {
         throw new CommandError('INVALID_INPUT', 'cursor');
       }
@@ -312,6 +331,13 @@ export class CommandEngine {
 
   async get_resource(input, captured, signal) {
     const target = this.context.resolve(input.resourceRef, 'resource', captured);
+    if (target.auditQuery) {
+      if (target.family !== 'audit' || target.resourceType !== 'auditLog') { throw new CommandError('INVALID_INPUT', 'resourceRef'); }
+      const row = await this.auditReader.get(target, captured, signal);
+      return {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef,
+        resourceType: 'auditLog', scope: 'global', fields: auditSafeFields(row),
+        payloadPolicy: 'HUMAN_ONLY_NATIVE_AUDIT_UI', nextStep: 'Only authorized audit metadata is included. Full request/response objects remain in native human audit detail. ALLOW, HTTP success or a client-reported outcome is not verified operation completion; use the original get_operation receipt.'};
+    }
     const descriptor = this.findDescriptor({family: target.family, resourceType: target.resourceType});
     let body;
     if ( this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog' ) {
@@ -324,6 +350,22 @@ export class CommandEngine {
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
       resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    if ( descriptor.type === 'dnsService' ) {
+      const {linkedServiceCount, unresolvedTargetCount, targetServices} = body;
+      if ( linkedServiceCount === undefined && unresolvedTargetCount === undefined && targetServices === undefined ) {
+        result.targetBindings = {availability: 'unavailable'};
+        result.nextStep = 'Only Alias metadata is available; target bindings have not been resolved. Do not report the Alias workflow as configured. Read its targets in the normal console.';
+      } else {
+        const names = safeAliasTargetSummary(targetServices);
+        if ( !names || !Number.isSafeInteger(linkedServiceCount) || linkedServiceCount < 0 || !Number.isSafeInteger(unresolvedTargetCount) ||
+          unresolvedTargetCount < 0 || names.length + unresolvedTargetCount !== linkedServiceCount ) { throw new CommandError('INVALID_RESPONSE'); }
+        result.targetBindings = {availability: unresolvedTargetCount ? 'partial' : 'resolved', linkedServiceCount, unresolvedTargetCount};
+        result.nextStep = unresolvedTargetCount ?
+          'Some Alias targets could not be resolved under the current authority or the simple-link adapter. No hidden target names or IDs are available. Use the normal console; do not guess a target or claim the bindings are complete.' : linkedServiceCount === 0 ?
+            'This Alias has no targets. To configure it, find each requested service by exact name and Stack, then preview update_targets with its serviceRefs for a separate human approval. Start is optional and separate.' :
+            'Review the complete target names and Stack paths. To change them, find exact serviceRefs and preview update_targets for another human approval; an empty serviceRefs array explicitly clears the simple targets.';
+      }
+    }
     if ( descriptor.readTransport === 'catalog' ) {
       if ( descriptor.type === 'catalogTemplate' ) { target.catalogPath = this.catalogDisplayPath(body, captured); }
       result.displayPath = target.catalogPath;
@@ -361,6 +403,29 @@ export class CommandEngine {
     // truncation warning so an append never mistakes a prefix for full text.
     if ( descriptor.readTransport === 'catalog' && body.truncatedFields ) { fields.push(...body.truncatedFields); }
     return [...new Set(fields)].sort();
+  }
+
+  async findAuditResources(input, captured, signal) {
+    const cursor = input.cursor ? this.context.resolve(input.cursor, 'resourceCursor', captured) : null;
+    if (cursor && (cursor.family !== 'audit' || cursor.resourceType !== 'auditLog' || !cursor.auditQuery)) {
+      throw new CommandError('INVALID_INPUT', 'cursor');
+    }
+    const page = await this.auditReader.find(input.auditFilters, cursor, captured, signal);
+    const items = page.rows.map(row => ({
+      resourceRef: this.context.reference('resource', {id: row.id, family: 'audit', resourceType: 'auditLog',
+        scope: 'global', auditQuery: {...page.query}}, captured),
+      resourceType: 'auditLog', scope: 'global', parentRef: null, parentResolution: null,
+      displayPath: 'audit/' + safeText(row.created, 64) + '/' + safeText(row.eventType, 160),
+      fields: auditSafeFields(row), truncatedFields: [],
+    }));
+    const nextCursor = page.nextOffset === null ? null : this.context.reference('resourceCursor', {
+      family: 'audit', resourceType: 'auditLog', auditQuery: {...page.query}, offset: page.nextOffset,
+      auditFilterSignature: page.signature,
+    }, captured);
+    return {status: 'succeeded', resourceTextIsUntrusted: true, family: 'audit', resourceType: 'auditLog',
+      scope: 'global', items, nextCursor, complete: !nextCursor, total: page.total, range: page.range,
+      payloadPolicy: 'HUMAN_ONLY_NATIVE_AUDIT_UI', workflowCoverage: 'authorized-metadata-query',
+      nextStep: 'Use get_resource for safe event detail, or nextCursor with unchanged auditFilters. Each query requires current audit read scope, visible environments, and target Key metadata read when filtering a Key. Payloads remain human-only in native audit UI. Server query completion is distinct from the resource operation outcome; use the original operation receipt.'};
   }
 
   referenceResource(target, captured) {
@@ -616,6 +681,10 @@ export class CommandEngine {
     if ( result.status === 'needs_user' ) {
       result.code = 'NEEDS_USER'; result.nextStep = 'Ask the user to complete inputs and approve the existing plan in the console. No launch has been verified; do not create a replacement or submit another apply.';
     }
+    if ( plan.resourceType === 'dnsService' && plan.operation === 'create' ) {
+      result.workflow = [...ALIAS_WORKFLOW]; result.targetsBound = false;
+      if ( result.status === 'succeeded' && result.verifiedResult === true ) { result.nextStep = ALIAS_CREATE_NEXT_STEP; }
+    }
     if ( plan.id && plan.id.startsWith('aicataloglaunch-') && plan.createdResource ) {
       const captured = this.context.capture(), created = plan.createdResource;
       if ( created.resourceType !== 'stack' || !this.resourceIdentity(created, resourceDescriptor('stack'), captured) || typeof created.name !== 'string' ) {
@@ -688,8 +757,21 @@ export class CommandEngine {
     }
     const displayDiff = plan.changes.map((change) => {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
-        ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint'].includes(change.field) ? 100000 : 1024) ||
+        ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices'].includes(change.field) ? 100000 : 1024) ||
           typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'hostname' && [change.before, change.after].some((value) => value !== null && !isExternalHostname(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'targetServices' ) {
+        if ( plan.resourceType !== 'dnsService' || change.after === null ) { throw new CommandError('INVALID_RESPONSE'); }
+        safeAliasTargetSummary(change.before); safeAliasTargetSummary(change.after);
+      }
+      if ( change.field === 'externalIpAddresses' ) {
+        for ( const value of [change.before, change.after] ) {
+          if ( value === null ) { continue; }
+          let addresses;
+          try { addresses = JSON.parse(value); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
+          if ( !Array.isArray(addresses) || addresses.length < 1 || addresses.length > 16 || new Set(addresses).size !== addresses.length || addresses.some((item) => !isExternalAddress(item)) ) { throw new CommandError('INVALID_RESPONSE'); }
+        }
+      }
       if ( ['command', 'entryPoint'].includes(change.field) ) {
         for ( const value of [change.before, change.after] ) {
           if ( value === null ) { continue; }
@@ -730,10 +812,16 @@ export class CommandEngine {
     if ( Object.keys(parameters).some((field) => !descriptor.fields.includes(field)) || Object.keys(parameters).length < descriptor.minFields ) {
       throw new CommandError('INVALID_INPUT', 'parameters');
     }
+    if ( input.resourceType === 'externalService' ) { validateExternalServiceParameters(input.operation, parameters); }
+    if ( input.resourceType === 'dnsService' && input.operation === 'update_targets' ) {
+      parameters.serviceIds = aliasTargetIds(parameters.serviceRefs,
+        (reference) => this.resolveResourceReference(reference, 'service', captured, 'parameters.serviceRefs'));
+      delete parameters.serviceRefs;
+    }
     let target;
     if ( input.operation === 'create' ) {
       if ( input.targetRef ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
-      if ( input.resourceType === 'service' ) {
+      if ( ['service', 'externalService', 'dnsService'].includes(input.resourceType) ) {
         if ( !input.parentRef ) { throw new CommandError('INVALID_INPUT', 'parentRef'); }
         const parent = this.resolveResourceReference(input.parentRef, 'stack', captured, 'parentRef');
         if ( parent.resourceType !== 'stack' || parent.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'parentRef'); }
@@ -743,6 +831,9 @@ export class CommandEngine {
       if ( !input.targetRef || input.parentRef ) { throw new CommandError('INVALID_INPUT', input.parentRef ? 'parentRef' : 'targetRef'); }
       target = this.resolveResourceReference(input.targetRef, input.resourceType, captured, 'targetRef');
       if ( target.resourceType !== input.resourceType || target.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
+      if ( input.resourceType === 'dnsService' && parameters.serviceIds && parameters.serviceIds.includes(target.id) ) {
+        throw new CommandError('INVALID_INPUT', 'parameters.serviceRefs');
+      }
     }
     const data = {resourceType: input.resourceType, operation: input.operation, parameters};
     if ( target ) { data.resourceId = target.id; }
@@ -752,7 +843,10 @@ export class CommandEngine {
     const planRef = this.context.reference('plan', reference, captured);
     const summary = this.resourcePlanSummary(plan, planRef);
     this.onPlan(Object.assign({context: captured}, summary));
-    return Object.assign({status: 'needs_user', resourceTextIsUntrusted: true, nextStep: 'Ask the user to review and approve this exact change in the console.'}, summary);
+    return Object.assign({status: 'needs_user', resourceTextIsUntrusted: true,
+      ...(input.resourceType === 'dnsService' && input.operation === 'create' ? {workflow: [...ALIAS_WORKFLOW], targetsBound: false,
+        nextStep: `Ask the user to review and approve this create stage. ${ALIAS_CREATE_NEXT_STEP}`} :
+        {nextStep: 'Ask the user to review and approve this exact change in the console.'})}, summary);
   }
 
   async apply_resource_change(input, captured, signal) {

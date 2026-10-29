@@ -11,22 +11,41 @@ const commandArray = {type: 'array', maxItems: 64, 'x-maxTotalLength': 16384,
 const catalogAnswers = {type: 'array', maxItems: 100, items: schema({questionRef: string('questionRef from the selected version launchOptions.'),
   value: {type: ['string', 'number', 'boolean'], minLength: 0, maxLength: 4096, minimum: -Number.MAX_SAFE_INTEGER, maximum: Number.MAX_SAFE_INTEGER}, resourceRef: string('An authorized resourceRef, or a same-session serviceRef for service questions. Never send a raw resource ID.')}, ['questionRef']),
 description: 'Typed answers only. Each questionRef accepts exactly one value or resourceRef. For an optional reference, value "" explicitly selects no resource. Human-only inputs must be completed in the console; never send a password or secret value.'};
+const auditFilters = schema({
+  keyRef: string('Optional API Key resourceRef returned by find_resources; never supply a raw credential ID.'),
+  environmentRef: string('Optional visible project resourceRef; current environment is used by default.'),
+  environmentScope: {...string('Use current by default. all-visible explicitly requests only environments allowed by the native audit owner.'), enum: ['current', 'all-visible']},
+  from: string('Range start, inclusive, RFC3339 with timezone; supply together with to.', 64),
+  to: string('Range end, exclusive, RFC3339 with timezone; at most 366 days after from.', 64),
+  lastMinutes: {type: 'integer', minimum: 1, maximum: 527040, description: 'Relative range. Do not combine with from/to. Omitted range means the last 24 hours.'},
+  decision: {...string('Exact authorization decision.'), enum: ['ALLOW', 'DENY', 'NOT_EVALUATED']},
+  outcome: {...string('Exact outcome, such as SUCCEEDED, FAILED or UNKNOWN.', 160), pattern: '^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$'},
+  operation: {...string('Exact native audit operation.'), enum: ['read', 'create', 'update', 'delete', 'upgrade', 'execute']},
+  targetType: {...string('Optional exact target type, such as service or stack.', 160), pattern: '^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$'},
+  requestId: {...string('Optional exact correlation request ID from safe metadata.', 160), pattern: '^[A-Za-z0-9][A-Za-z0-9_.:-]{0,159}$'},
+  httpStatus: {type: 'integer', minimum: 100, maximum: 599, description: 'Exact HTTP response status.'},
+  limit: {type: 'integer', minimum: 1, maximum: 50, description: 'Page size, maximum 50. Reuse nextCursor with unchanged filters.'},
+});
 export const COMMANDS = Object.freeze([
   {name: 'list_capabilities', description: 'List the closed resource families, their implementation coverage and current read availability. Pending adapters are not implemented. Does not change environment or expose credentials.', inputSchema: schema({})},
   {name: 'find_resources', description: 'Find visible resource metadata in a named family. resourceType defaults to the first type listed by list_capabilities. Return all same-name candidates; never select the first automatically. In catalog, find catalogTemplate by name first, then list catalogTemplateVersion with its resourceRef as parentRef and no query. Version metadata does not establish compatibility. Parent and cursor references must be reused unchanged.',
     inputSchema: schema({family: {...string('Family from list_capabilities.'), enum: RESOURCE_FAMILIES.map((item) => item.name)},
       resourceType: {...string('Optional type within that family, from list_capabilities.'), enum: RESOURCE_TYPES},
       query: string('Optional resource name words.'), parentRef: string('Optional resourceRef of the parent type listed by list_capabilities.'),
-      cursor: string('The previous nextCursor, unchanged with the same family, type, query and parent.')}, ['family'])},
+      cursor: string('The previous nextCursor, unchanged with the same family, type, query, parent and audit filters.'),
+      auditFilters: {...auditFilters, description: 'Only family audit / auditLog. Explicitly query the native audit broker with these typed filters; do not combine with name query or parentRef. Available through the native browser session and the dedicated API Key bridge when matching Engine and broker audit-query components are installed. Current actor permission, Key scope and policy revision still apply. Request/response payloads remain human-only.'}}, ['family'])},
   {name: 'get_resource', description: 'Read safe metadata from a resourceRef returned by find_resources. Description is preserved through 1024 UTF-16 units. Check truncatedFields and never construct an append or replacement from truncated text. Secrets, API keys, tokens, environment variables and raw configuration are never returned.',
     inputSchema: schema({resourceRef: string('Opaque resourceRef from find_resources, unchanged.')}, ['resourceRef'])},
-  {name: 'preview_resource_change', write: true, description: 'Preview a typed stack, service or container change. A human must approve the exact server plan before apply. create needs name (and image for service/container); service create also needs parentRef of its stack. Plain create makes stopped workloads; start needs a separate plan. Catalog stack create_from_catalog needs catalogVersionRef and typed answers; startOnCreate explicitly controls service startup. Stack/service archive requires completely stopped workloads and empty parameters; it never stops or deletes them. restore clears only the target archive flag, does not start it or change parent/child flags. Other operations require targetRef. Credentials, raw IDs and arbitrary configuration are not accepted.',
+  {name: 'preview_resource_change', write: true, description: 'Preview a typed stack, service, externalService, dnsService (Alias) or container change. A human must approve the exact server plan before apply. create needs name (and image for service/container); service/externalService/dnsService create also needs parentRef of its stack. Alias create makes an empty stopped Alias without targets; after verification use update_targets with serviceRefs for a separately approved target binding. External Service create requires exactly one hostname or nonempty externalIpAddresses, without an image. Plain create makes stopped workloads; start needs a separate plan. Catalog stack create_from_catalog needs catalogVersionRef and typed answers; startOnCreate explicitly controls service startup. Stack/service archive requires completely stopped workloads and empty parameters; it never stops or deletes them. restore clears only the target archive flag, does not start it or change parent/child flags. Other operations require targetRef. Credentials, raw IDs and arbitrary configuration are not accepted.',
     inputSchema: schema({resourceType: {...string('Resource type from list_capabilities.'), enum: Object.keys(RESOURCE_CHANGES)},
       operation: {...string('A supported operation from list_capabilities.'), enum: CHANGE_OPERATIONS},
-      targetRef: string('Existing resourceRef for operations on an existing resource. Do not provide for create or create_from_catalog.'), parentRef: string('Stack resourceRef, required only for service create.'),
+      targetRef: string('Existing resourceRef for operations on an existing resource. Do not provide for create or create_from_catalog.'), parentRef: string('Stack resourceRef, required for service, externalService or dnsService create.'),
       catalogVersionRef: string('Selected catalogTemplateVersion resourceRef, required only for stack create_from_catalog. Call get_resource on it first for safe questions.'),
       parameters: schema({name: string('Exact resource name.', 255), description: {type: ['string', 'null'], minLength: 0, maxLength: 1024, description: 'Full description. Empty string and null are distinct.'},
         image: string('Exact image requested by the user. Required for service/container create.', 512), scale: {type: 'integer', minimum: 0, maximum: 100, description: 'Service scale, 0 through 100.'},
+        hostname: string('DNS hostname only, without a scheme, userinfo, port, path, query or fragment.', 253),
+        externalIpAddresses: {type: 'array', minItems: 1, maxItems: 16, uniqueItems: true, items: string('Numeric IPv4 or IPv6 address, no port or scope.', 45)},
+        serviceRefs: {type: 'array', maxItems: 16, uniqueItems: true, items: string('Same-session service resourceRef or legacy serviceRef. Never a raw ID.'), description: 'Alias update_targets only. Exact selected services; [] explicitly clears all simple targets. Creation is a separate empty stopped Alias stage.'},
         command: commandArray, entryPoint: commandArray, startOnCreate: {type: 'boolean', description: 'Catalog launch only. Defaults to true and is shown in human review.'}, answers: catalogAnswers})}, ['resourceType', 'operation'])},
   {name: 'apply_resource_change', write: true, description: 'Apply only an existing human-approved resource-change planRef. accepted/running/unknown are not completion. Query get_operation with the returned operationRef; never blindly resubmit.',
     inputSchema: schema({planRef: string('planRef from preview_resource_change, unchanged.')}, ['planRef'])},
@@ -167,6 +186,20 @@ export function publicError(error) {
     result.nextStep = 'Call find_resources again with a narrower query, such as the exact resource name, in the same family. Do not guess IDs or switch environments.';
   }
   if ( error instanceof CommandError && error.field ) { result.field = error.field; }
+  if (error instanceof CommandError && error.field === 'auditFilters.transport') {
+    result.nextStep = 'Use the current native browser session or the dedicated stdio bridge. The server must authorize audit reads and any target Key metadata under current permissions. Do not forge identity headers or treat a rejected query as complete.';
+  } else if (error instanceof CommandError && error.field === 'auditFilters.service') {
+    result.nextStep = 'The native audit owner is temporarily unavailable. This read query did not establish any result. Retry a bounded read after service recovery with the same Key/environment filters; do not change permissions or infer that zero events exist.';
+  } else if (error instanceof CommandError && error.field === 'auditFilters.audit') {
+    result.nextStep = 'The server could not durably record the query audit evidence. No successful query result was admitted. Ask the operator to restore the existing audit store; preserve the same filters and permissions.';
+  } else if (error instanceof CommandError && error.field === 'auditFilters.timeRange') {
+    result.nextStep = 'Use lastMinutes or a complete from/to timezone range within 366 days. Narrow the time range and visible environment if the native 20,000-row scan bound is reached; keep the intended Key and permission filters.';
+  } else if (error instanceof CommandError && error.field && error.field.startsWith('auditFilters')) {
+    result.nextStep = 'Call find_resources with family audit, resourceType auditLog and auditFilters. Reuse authorized API Key/project resourceRefs, choose a bounded time range and keep filters unchanged with nextCursor. Do not send raw IDs, URLs or payload fields.';
+  }
+  if (code === 'FORBIDDEN' && serverCode === 'ai_audit_cookie_required') {
+    result.nextStep = 'The server is using the earlier Cookie-only audit adapter. The dedicated bridge needs the matching Engine and broker audit-query components. Do not forge a Cookie, switch credentials or treat this denial as a successful query.';
+  }
   return result;
 }
 

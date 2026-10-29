@@ -10,31 +10,26 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console **1.6.200** and stdio bridge **0.2.2** are [published](https://github.com/PastureStack/web-console/releases/tag/1.6.200).
-They retain the twelve typed tools and add bounded Catalog Compose launch and
-stopped-resource Archive/restore workflows. Private Catalog answers require
-normal human input/review; restoration does not start workloads. Other Catalog
-administration, advanced forms and remaining frontend workflows are pending.
+Current source is Web Console **1.6.201** / bridge **0.2.3**, not yet published.
+The latest published client remains
+[1.6.200 / 0.2.2](https://github.com/PastureStack/web-console/releases/tag/1.6.200).
 
-The [release note](docs/releases/web-console-1.6.200.md) records the original
-qualified producer, immutable archive/SBOM hashes and published tag. Full CI
-passed 1,121 Ember tests with zero failures; required CodeQL and anonymous hash
-verification of all 13 release assets passed. The standalone ZIP passed a clean
-install and 48 focused adapter/SDK cases.
+The candidate retains twelve tools and extends typed workflows for External
+Services, DNS Aliases and audit metadata. Alias creation and selecting targets
+are separate human-reviewed changes. Queries use opaque references; no raw
+resource IDs, private audit payloads or credentials are exposed to tools.
+Matching Engine 0.183.360 and broker audit-query components are required.
 
-Combined Server acceptance and the designated Catalog/Archive browser, role and
-weak-model workflows remain **PENDING**. The inventory records partial typed
-source coverage for 54 of 243 business groups; this is not whole-group acceptance
-or complete frontend coverage. Earlier released artifacts remain unchanged.
+Normal UI, session, Full-access, existing Catalog/Archive and human-confirmation
+protections remain. Required CI/CodeQL, immutable artifact/clean-install proof,
+combined Server and designated browser/role/weak-model acceptance are pending.
+The [candidate release note](docs/releases/web-console-1.6.201.md) records the
+remaining boundaries. This candidate does not complete all 243 business groups.
 
-The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
-container and produces an immutable static archive with separate runtime and
-build CycloneDX SBOMs. [SBOM coverage](docs/security/sbom.md) remains explicitly
-incomplete for inherited vendor metadata; hosted-runner Ruby is tracked
-separately. CI, Server assembly and deployment require their own evidence.
-
-Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
-for deployment. Historical changes remain in [release notes](docs/releases).
+The release producer uses Node.js `24.22.1` / npm `12.0.2` and separate runtime /
+build CycloneDX SBOMs. Dependencies remain unchanged. Use the
+[Server installation guide](https://github.com/PastureStack/server#quick-start)
+for deployment. Historical published evidence remains in [release notes](docs/releases).
 
 ## Features and operator guides
 
