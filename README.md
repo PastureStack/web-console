@@ -16,7 +16,8 @@ fresh browser session. This allows the human approval inbox to work without
 requiring a new login. Optional AI collaboration still provides seven typed
 tools, conditional description edits and a dedicated-Key stdio bridge.
 Browser tools start paused and require an explicit user choice. See the
-[release note](docs/releases/web-console-1.6.197.md) for the session boundary.
+[release note](docs/releases/web-console-1.6.197.md) for the session boundary,
+original producer and verified publication.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
 container and produces an immutable static archive with separate runtime and
