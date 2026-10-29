@@ -10,17 +10,22 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-This source prepares Web Console **1.6.200** and stdio bridge **0.2.2**.
-It retains the twelve tools and adds bounded Catalog Compose launch and
+Web Console **1.6.200** and stdio bridge **0.2.2** are [published](https://github.com/PastureStack/web-console/releases/tag/1.6.200).
+They retain the twelve typed tools and add bounded Catalog Compose launch and
 stopped-resource Archive/restore workflows. Private Catalog answers require
 normal human input/review; restoration does not start workloads. Other Catalog
 administration, advanced forms and remaining frontend workflows are pending.
 
-The [candidate release note](docs/releases/web-console-1.6.200.md) records the
-source boundaries. Required CI, immutable artifact verification and real
-Server/browser acceptance remain separate pending gates. The previously
-published 1.6.199 / 0.2.1 artifacts are unchanged. This candidate does not
-complete the frontend inventory or its role matrix.
+The [release note](docs/releases/web-console-1.6.200.md) records the original
+qualified producer, immutable archive/SBOM hashes and published tag. Full CI
+passed 1,121 Ember tests with zero failures; required CodeQL and anonymous hash
+verification of all 13 release assets passed. The standalone ZIP passed a clean
+install and 48 focused adapter/SDK cases.
+
+Combined Server acceptance and the designated Catalog/Archive browser, role and
+weak-model workflows remain **PENDING**. The inventory records partial typed
+source coverage for 54 of 243 business groups; this is not whole-group acceptance
+or complete frontend coverage. Earlier released artifacts remain unchanged.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` in a digest-pinned
 container and produces an immutable static archive with separate runtime and

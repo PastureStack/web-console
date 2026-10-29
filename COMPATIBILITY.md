@@ -1,16 +1,20 @@
 # Compatibility Contract
 
-## Web Console 1.6.200 / bridge 0.2.2 source candidate
+## Web Console 1.6.200 / bridge 0.2.2
 
-The candidate retains normal UI/session/Full-access behavior and requires a
-matching Engine with private Catalog ingress protection, live actor/Key scope,
-CAS and per-child graph validation. It cannot safely target Engine 0.183.358 for
-Catalog launch. Archive/restore reuses the native stopped-only owner and never
-starts restored workloads. Fixed background authorization-denied results remain
-failed, warn about possible partial changes and cannot be blindly replayed.
-Required CI and combined runtime/browser acceptance are pending. See the
-[candidate boundaries](docs/releases/web-console-1.6.200.md).
+The [published components](docs/releases/web-console-1.6.200.md) retain normal
+UI/session/Full-access behavior and require a matching Engine with private
+Catalog ingress protection, live actor/Key scope, CAS and per-child graph
+validation. Catalog launch cannot safely target Engine 0.183.358. Archive/restore
+reuses the native stopped-only owner and never starts restored workloads. Fixed
+background authorization-denied results remain failed, warn about possible
+partial changes and cannot be blindly replayed.
 
+The original producer passed required full CI and CodeQL; the published assets
+passed anonymous byte verification. The published tag and producer share the
+same source tree. Combined Server, Catalog/Archive browser, role and weak-model
+runtime acceptance remain **PENDING**; partial source coverage is not a whole
+business-group PASS.
 
 ## Web Console 1.6.195
 
