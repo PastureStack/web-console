@@ -4392,3 +4392,17 @@ apiKeyAudit:
     range: "Saisissez des dates et heures de début et de fin valides."
     tooLarge: "La requête dépasse le périmètre que le serveur peut vérifier. Aucun résultat incomplet n’a été renvoyé. Ajustez le périmètre de la requête ; si l’échec persiste, contactez un administrateur."
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
+
+webmcp:
+  title: "Vérifier la mise à niveau du service"
+  service: "Service"
+  currentImage: "Image actuelle"
+  requestedImage: "Image demandée"
+  notice: "L’approbation de ce plan autorise l’IA à exécuter exactement cette mise à niveau. La mise à niveau n’a pas encore commencé. Les autres paramètres du service et les données montées sont conservés."
+  approve: "Approuver ce plan"
+  approved: "Plan approuvé. L’IA peut maintenant l’exécuter."
+  review: "Vérifier la mise à niveau en attente"
+  stale: "La session, l’environnement ou le plan a changé. Demandez à l’IA de générer un nouvel aperçu."
+  failed: "Le plan n’a pas pu être approuvé. Examinez l’erreur et réessayez."
+  expires: "Expire le"
+  dismiss: "Fermer l’aperçu"

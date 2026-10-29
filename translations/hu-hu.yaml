@@ -4410,3 +4410,17 @@ apiKeyAudit:
     range: Adjon meg érvényes kezdő és záró időpontot.
     tooLarge: A lekérdezés túllépi a kiszolgáló által ellenőrizhető tartományt. Hiányos eredményeket nem adtunk vissza. Módosítsa a lekérdezés hatókörét; ha továbbra is sikertelen, forduljon rendszergazdához.
     load: Nem sikerült betölteni a kulcsauditot. Frissítsen az újrapróbáláshoz.
+
+webmcp:
+  title: "A szolgáltatás frissítésének áttekintése"
+  service: "Szolgáltatás"
+  currentImage: "Jelenlegi konténerkép"
+  requestedImage: "Kért konténerkép"
+  notice: "A terv jóváhagyásával engedélyezi az MI-nek, hogy pontosan ezt a frissítést hajtsa végre. A frissítés még nem indult el. A szolgáltatás egyéb beállításai és a csatolt adatok megmaradnak."
+  approve: "A terv jóváhagyása"
+  approved: "A terv jóváhagyva. Az MI most már végrehajthatja."
+  review: "A függőben lévő frissítés áttekintése"
+  stale: "A munkamenet, a környezet vagy a terv megváltozott. Kérje meg az MI-t, hogy készítsen új előnézetet."
+  failed: "A tervet nem sikerült jóváhagyni. Ellenőrizze a hibát, és próbálja újra."
+  expires: "Lejárat"
+  dismiss: "Előnézet bezárása"

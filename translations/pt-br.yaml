@@ -4398,3 +4398,17 @@ apiKeyAudit:
     range: "Informe datas e horários de início e fim válidos."
     tooLarge: "A consulta excede o escopo que o servidor pode verificar. Nenhum resultado incompleto foi retornado. Ajuste o escopo da consulta; se a falha persistir, entre em contato com um administrador."
     load: "Não foi possível carregar a auditoria da chave. Atualize para tentar novamente."
+
+webmcp:
+  title: "Revisar a atualização do serviço"
+  service: "Serviço"
+  currentImage: "Imagem atual"
+  requestedImage: "Imagem solicitada"
+  notice: "Ao aprovar este plano, você permite que a IA execute exatamente esta atualização. A atualização ainda não foi iniciada. As outras configurações do serviço e os dados montados serão preservados."
+  approve: "Aprovar este plano"
+  approved: "Plano aprovado. A IA já pode executá-lo."
+  review: "Revisar a atualização pendente"
+  stale: "A sessão, o ambiente ou o plano mudou. Peça à IA para gerar uma nova prévia."
+  failed: "Não foi possível aprovar o plano. Revise o erro e tente novamente."
+  expires: "Expira em"
+  dismiss: "Fechar prévia"

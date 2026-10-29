@@ -29,6 +29,9 @@ for deployment. Historical changes remain in [release notes](docs/releases).
 
 ## Features and operator guides
 
+- [Experimental WebMCP](docs/webmcp.md): optional service discovery and a
+  server-owned preview, human approval, and upgrade flow. Disabled by default;
+  requires a compatible Engine and native secure-context browser support.
 - Role-aware navigation and resource actions use API schema capabilities;
   the backend remains the authorization authority.
 - [API Keys](https://github.com/PastureStack/server/blob/main/docs/api-keys.md):

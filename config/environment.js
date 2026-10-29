@@ -92,6 +92,8 @@ module.exports = function(environment) {
       // when it is created
       version: pkg.version,
       appName: 'PastureStack',
+      // Experimental native browser integration; no runtime download/polyfill.
+      webmcpMode: ['enabled', 'read-only'].includes(process.env.WEBMCP_MODE) ? process.env.WEBMCP_MODE : 'off',
       apiServer: 'http://localhost:8080',
       legacyApiEndpoint: '/v1',
       apiEndpoint: '/v2-beta',

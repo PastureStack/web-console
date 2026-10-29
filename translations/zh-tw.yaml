@@ -4620,3 +4620,17 @@ formResources:
     cpu: "請輸入有效 CPU 上限（配額至少為 1000 µs）。"
     ulimits: "限制名稱不可重複，數值須為大於等於 -1 的整數，且軟限制不可超過硬限制。"
     map: "進階選項的鍵與值不可留空。"
+
+webmcp:
+  title: "檢視服務升級"
+  service: "服務"
+  currentImage: "目前映像"
+  requestedImage: "要求的映像"
+  notice: "核准此計畫後，AI 即可依此計畫的確切內容執行升級。升級尚未開始。其他服務設定與掛載的資料將保留。"
+  approve: "核准此計畫"
+  approved: "計畫已核准。AI 現在可以執行此計畫。"
+  review: "檢視待執行的升級"
+  stale: "工作階段、環境或計畫已變更。請讓 AI 重新產生預覽。"
+  failed: "無法核准此計畫。請檢查錯誤後再試一次。"
+  expires: "到期時間"
+  dismiss: "關閉預覽"

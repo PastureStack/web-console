@@ -4287,3 +4287,17 @@ apiKeyAudit:
     range: 请输入有效的开始和结束时间。
     tooLarge: 查询超出了服务器可验证的范围，未返回不完整的结果。请调整查询范围；如果仍然失败，请联系管理员。
     load: 无法加载密钥审计。请刷新后重试。
+
+webmcp:
+  title: "审核服务升级"
+  service: "服务"
+  currentImage: "当前镜像"
+  requestedImage: "请求的镜像"
+  notice: "批准此计划后，AI 即可严格按此计划执行升级。升级尚未开始。其他服务设置和挂载的数据将保留。"
+  approve: "批准此计划"
+  approved: "计划已批准。AI 现在可以执行此计划。"
+  review: "审核待执行的升级"
+  stale: "会话、环境或计划已更改。请让 AI 重新生成预览。"
+  failed: "无法批准此计划。请检查错误后重试。"
+  expires: "到期时间"
+  dismiss: "关闭预览"

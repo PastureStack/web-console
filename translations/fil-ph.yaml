@@ -4394,3 +4394,17 @@ apiKeyAudit:
     range: "Maglagay ng wastong oras ng simula at wakas."
     tooLarge: "Lumampas ang paghahanap sa saklaw na kayang beripikahin ng server. Walang ibinalik na di-kumpletong resulta. Ayusin ang saklaw ng paghahanap; kung mabigo pa rin, makipag-ugnayan sa administrator."
     load: "Hindi ma-load ang pag-audit ng key. I-refresh upang subukang muli."
+
+webmcp:
+  title: "Suriin ang pag-upgrade ng serbisyo"
+  service: "Serbisyo"
+  currentImage: "Kasalukuyang imahe"
+  requestedImage: "Hiniling na imahe"
+  notice: "Kapag inaprubahan mo ang planong ito, maaaring isagawa ng AI ang eksaktong pag-upgrade na ito. Hindi pa nagsisimula ang pag-upgrade. Pananatilihin ang iba pang mga setting ng serbisyo at ang naka-mount na datos."
+  approve: "Aprubahan ang planong ito"
+  approved: "Naaprubahan ang plano. Maaari na itong isagawa ng AI."
+  review: "Suriin ang nakabinbing pag-upgrade"
+  stale: "Nagbago ang session, kapaligiran, o plano. Hilingin sa AI na gumawa muli ng paunang tingin."
+  failed: "Hindi maaprubahan ang plano. Suriin ang error at subukang muli."
+  expires: "Mag-e-expire"
+  dismiss: "Isara ang paunang tingin"

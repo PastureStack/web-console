@@ -4844,3 +4844,17 @@ formResources:
     cpu: "Enter a valid CPU limit (quota must be at least 1000 µs)."
     ulimits: "Limits need unique names, integer values >= -1 and soft <= hard."
     map: "Use non-empty keys and values for advanced options."
+
+webmcp:
+  title: "Review service upgrade"
+  service: "Service"
+  currentImage: "Current image"
+  requestedImage: "Requested image"
+  notice: "Approving this plan lets the AI execute this exact upgrade. The upgrade has not started yet. Other service settings and mounted data are preserved."
+  approve: "Approve this plan"
+  approved: "Plan approved. The AI can now execute it."
+  review: "Review pending upgrade"
+  stale: "The session, environment, or plan changed. Ask the AI to preview again."
+  failed: "The plan could not be approved. Review the error and try again."
+  expires: "Expires"
+  dismiss: "Dismiss preview"

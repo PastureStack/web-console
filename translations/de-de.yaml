@@ -4447,3 +4447,17 @@ apiKeyAudit:
     range: "Geben Sie eine gültige Start- und Endzeit ein."
     tooLarge: "Die Abfrage überschreitet den Bereich, den der Server überprüfen kann. Es wurden keine unvollständigen Ergebnisse zurückgegeben. Passen Sie den Abfragebereich an; falls dies weiterhin fehlschlägt, wenden Sie sich an einen Administrator."
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
+
+webmcp:
+  title: "Service-Upgrade prüfen"
+  service: "Dienst"
+  currentImage: "Aktuelles Image"
+  requestedImage: "Angefordertes Image"
+  notice: "Mit der Genehmigung dieses Plans darf die KI genau dieses Upgrade ausführen. Das Upgrade wurde noch nicht gestartet. Andere Diensteinstellungen und eingebundene Daten bleiben erhalten."
+  approve: "Diesen Plan genehmigen"
+  approved: "Plan genehmigt. Die KI kann ihn jetzt ausführen."
+  review: "Ausstehendes Upgrade prüfen"
+  stale: "Die Sitzung, die Umgebung oder der Plan wurde geändert. Bitten Sie die KI, erneut eine Vorschau zu erstellen."
+  failed: "Der Plan konnte nicht genehmigt werden. Prüfen Sie den Fehler und versuchen Sie es erneut."
+  expires: "Gültig bis"
+  dismiss: "Vorschau schließen"
