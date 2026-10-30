@@ -5,7 +5,7 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-The [published 0.2.3 archive](https://github.com/PastureStack/web-console/releases/tag/1.6.201)
+The [0.2.4 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.202)
 contains twelve typed tools for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
@@ -18,11 +18,13 @@ domain resources. Pending adapters are reported by `list_capabilities`.
 External Services require an authorized Stack reference and exactly one target
 mode (hostname or IPs). DNS Aliases are created stopped and empty; target binding
 uses selected Service references in a separate approved plan. Typed audit queries
-use the matching Engine 0.183.360 and broker owner, current Key scope and pinned
-revision. Private audit payloads remain in the human UI. Web component and ZIP
-qualification passed; matching Engine/Server and designated live workflows remain
-pending. Publication does not update the existing Server `v1.6.559` / Web `1.6.200`
-QA deployment or establish new-domain runtime acceptance.
+use the matching Engine and broker owner, current Key scope and pinned revision.
+Private audit payloads remain in the human UI. Certificate plans support only
+name and description; PEM, private keys, chains, renewal and removal stay in the
+normal human certificate UI. These metadata changes and the typed-domain audit
+integration require Engine `0.183.361` or its matching Server release. A matching
+version does not establish workflow acceptance; use the release's recorded
+validation results and documented operation limits.
 
 The Catalog source adapter also needs a matching Engine/Catalog typed metadata
 endpoint. Use `find_resources` with `family: "catalog"` and
@@ -46,14 +48,14 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-Download the numeric release's `pasturestack-webmcp-bridge-0.2.3.zip` and its
+Download the numeric release's `pasturestack-webmcp-bridge-0.2.4.zip` and its
 `.zip.sha256` checksum, then verify before extraction:
 
 ```sh
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.201/pasturestack-webmcp-bridge-0.2.3.zip
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.201/pasturestack-webmcp-bridge-0.2.3.zip.sha256
-sha256sum --check pasturestack-webmcp-bridge-0.2.3.zip.sha256
-unzip pasturestack-webmcp-bridge-0.2.3.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.202/pasturestack-webmcp-bridge-0.2.4.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.202/pasturestack-webmcp-bridge-0.2.4.zip.sha256
+sha256sum --check pasturestack-webmcp-bridge-0.2.4.zip.sha256
+unzip pasturestack-webmcp-bridge-0.2.4.zip
 ```
 
 Extract the whole archive, keeping both `bridge/` and
@@ -61,7 +63,7 @@ Extract the whole archive, keeping both `bridge/` and
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.3/bridge
+cd pasturestack-webmcp-bridge-0.2.4/bridge
 npm ci --ignore-scripts --no-audit --no-fund
 ```
 
@@ -70,7 +72,7 @@ records the included source hashes; the root also includes LICENSE and the
 bridge CycloneDX SBOM. To reproduce the source release from a checkout:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.3 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.3.zip
+python scripts/package-webmcp-bridge.py --version 0.2.4 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.4.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private

@@ -14,6 +14,7 @@ node --test scripts/test-webmcp-path-boundaries.mjs
 node --test scripts/test-ai-catalog-reader.mjs scripts/test-webmcp-catalog.mjs scripts/test-webmcp-catalog-launch.mjs scripts/test-webmcp-archive.mjs scripts/test-webmcp-resources.mjs
 node --test scripts/test-webmcp-external-service.mjs
 node --test scripts/test-webmcp-alias-service.mjs
+node --test scripts/test-webmcp-certificate-metadata.mjs
 node --test scripts/test-webmcp-audit.mjs scripts/test-webmcp-audit-extension.mjs
 node scripts/test-ai-collaboration-ui.js
 node scripts/test-ai-resource-review-labels.mjs
