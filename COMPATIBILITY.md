@@ -1,26 +1,25 @@
 # Compatibility Contract
 
-## Web Console 1.6.201 / bridge 0.2.3 published
+## Web Console 1.6.202 / bridge 0.2.4 published
 
-External Service and DNS Alias workflows need Engine 0.183.360. Alias creation
-is empty/stopped; binding selected local service references needs a separate
-human-approved plan. Unsupported link types and cross-source cleanup remain
-explicitly unavailable. Existing Catalog/Archive/session behavior is preserved.
-Typed audit queries need both the matching Engine and installed broker owner.
-An older Cookie-only adapter returns an actionable denial; the bridge must not
-forge a Cookie or switch credentials. Raw audit payloads stay human-only.
-Normal Full/legacy permissions remain unchanged. The Web component's required
-CI/CodeQL, original archive/SBOM verification, clean bridge install and anonymous
-verification of all 13 published assets passed. The original producer is
-`24715414f143e2c58cf53084bd84cbea0922798f`; tag/merged source
-`18acf40d85061533762e8d0d1b9c1f7be69afe9c` has the same tested tree.
-Documentation commits do not replace that producer or rebuild its artifacts.
+The matching typed workflows require Engine 0.183.361 and the installed audit
+broker. Certificate changes accept only name and description; PEM, private keys,
+chains and lifecycle management remain human-only. External Service and DNS
+Alias workflows retain their separate, human-approved create and target-binding
+plans. Raw audit payloads and caller credential substitution remain prohibited.
+Normal UI, Full/legacy permissions, session, Catalog and Archive behavior remain.
 
-Matching Engine 0.183.360 / Server 560 qualification and designated combined
-browser, role, cross-ID, layout and weak-model acceptance remain pending. The
-`8080` QA deployment remains Server `v1.6.559` / Web `1.6.200`; the new workflows
-are not marked runtime accepted. See the
-[published release note](docs/releases/web-console-1.6.201.md).
+Required component CI/CodeQL, original archive/SBOM verification and anonymous
+readback of all 13 published assets passed. The original producer is
+`3350a566b77c46ccf3686975bdcc8d9c14ee2985`; tag/merged source
+`1b426175a55fd63260466cacd02e962e1bd44f8f` has the same tested tree.
+The original CI reports 1,121 browser unit tests with zero failures. Documentation
+commits do not replace that producer or rebuild its artifacts.
+
+Matching Engine/Server publication and designated combined browser, role,
+cross-ID, layout and weak-model acceptance are separate pending gates. Existing
+baseline health and component tests do not establish full runtime acceptance.
+See the [published release note](docs/releases/web-console-1.6.202.md).
 
 ## Web Console 1.6.195
 

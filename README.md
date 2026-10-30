@@ -10,29 +10,30 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.201** / bridge **0.2.3**](https://github.com/PastureStack/web-console/releases/tag/1.6.201)
+[Web Console **1.6.202** / bridge **0.2.4**](https://github.com/PastureStack/web-console/releases/tag/1.6.202)
 is published with the original qualified CI artifacts. All 13 public release
-assets matched their recorded SHA256 values.
+assets passed anonymous SHA256 readback.
 
-The client retains twelve tools and extends typed workflows for External
-Services, DNS Aliases and audit metadata. Alias creation and selecting targets
-are separate human-reviewed changes. Queries use opaque references; no raw
-resource IDs, private audit payloads or credentials are exposed to tools.
-Matching Engine 0.183.360 and broker audit-query components are required.
+Twelve shared typed tools provide resource discovery and human-reviewed changes
+for supported workloads, External Services, DNS Aliases, audit metadata, and
+Certificate names/descriptions. Certificate PEM material, keys, chains, renewal
+and removal stay in the normal human interface. Tools use opaque references;
+raw resource IDs, private audit payloads and credentials are not exposed.
+The matching workflows require Engine 0.183.361 and its configured audit broker.
 
-Normal UI, session, Full-access, existing Catalog/Archive and human-confirmation
-protections remain. Web component CI/CodeQL, archive/SBOM qualification and the
-standalone ZIP's clean install passed. Matching Engine 0.183.360 and Server 560
-qualification, combined runtime and designated browser/role/weak-model acceptance
-remain pending. The designated `8080` QA deployment remains Server `v1.6.559` /
-Web `1.6.200`; publication does not establish the new domains' runtime acceptance.
-The [release note](docs/releases/web-console-1.6.201.md) records provenance and
-remaining boundaries. This release does not complete all 243 business groups.
+Normal UI, session, Full-access and human-confirmation protections remain.
+Component CI/CodeQL and original archive/SBOM verification passed, including
+1,121 browser unit tests with zero failures. Matching Engine/Server publication
+and designated combined browser, role, cross-ID and weak-model acceptance are
+separate pending gates. The deployed prior Server's baseline health is not
+acceptance of these new workflows. This release does not complete the full
+243-group frontend inventory. The [release note](docs/releases/web-console-1.6.202.md)
+records immutable provenance and remaining boundaries.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` and separate runtime /
 build CycloneDX SBOMs. Dependencies remain unchanged. Use the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
-for deployment. Historical published evidence remains in [release notes](docs/releases).
+for deployment. Historical evidence remains in [release notes](docs/releases).
 
 ## Features and operator guides
 
