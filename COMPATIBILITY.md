@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.201 / bridge 0.2.3 candidate
+## Web Console 1.6.201 / bridge 0.2.3 published
 
 External Service and DNS Alias workflows need Engine 0.183.360. Alias creation
 is empty/stopped; binding selected local service references needs a separate
@@ -9,9 +9,18 @@ explicitly unavailable. Existing Catalog/Archive/session behavior is preserved.
 Typed audit queries need both the matching Engine and installed broker owner.
 An older Cookie-only adapter returns an actionable denial; the bridge must not
 forge a Cookie or switch credentials. Raw audit payloads stay human-only.
-Normal Full/legacy permissions remain unchanged. Required CI, clean-install and
-combined runtime acceptance are pending. See the
-[candidate release note](docs/releases/web-console-1.6.201.md).
+Normal Full/legacy permissions remain unchanged. The Web component's required
+CI/CodeQL, original archive/SBOM verification, clean bridge install and anonymous
+verification of all 13 published assets passed. The original producer is
+`24715414f143e2c58cf53084bd84cbea0922798f`; tag/merged source
+`18acf40d85061533762e8d0d1b9c1f7be69afe9c` has the same tested tree.
+Documentation commits do not replace that producer or rebuild its artifacts.
+
+Matching Engine 0.183.360 / Server 560 qualification and designated combined
+browser, role, cross-ID, layout and weak-model acceptance remain pending. The
+`8080` QA deployment remains Server `v1.6.559` / Web `1.6.200`; the new workflows
+are not marked runtime accepted. See the
+[published release note](docs/releases/web-console-1.6.201.md).
 
 ## Web Console 1.6.195
 

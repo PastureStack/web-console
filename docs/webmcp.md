@@ -6,10 +6,11 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-The current 1.6.201 candidate retains the twelve tools below. Published 1.6.200
-remains the latest qualified client. New External Service, DNS Alias and audit
-query workflows require matching Engine 0.183.360 / broker components; source
-and focused tests are not live acceptance or a published release.
+[Web Console 1.6.201 / bridge 0.2.3](releases/web-console-1.6.201.md) is published
+and retains the twelve tools below. New External Service, DNS Alias and audit
+query workflows require matching Engine 0.183.360 / broker components. Web
+component qualification passed; combined Server and live workflow acceptance
+remain pending.
 
 | Tool | Purpose |
 | --- | --- |
@@ -184,7 +185,7 @@ Server and designated Catalog/Archive browser, role and weak-model acceptance
 remain **PENDING**. The published 1.6.200 overlay recorded 54 partially implemented source groups;
 that historical count does not establish acceptance of all 243 business groups.
 
-## Candidate External Service, DNS Alias and audit workflows
+## Published client adapters for External Service, DNS Alias and audit
 
 In 1.6.201 / bridge 0.2.3, External Service creation requires a selected Stack
 reference and exactly one hostname/IP mode. Creation is stopped; start and
@@ -201,6 +202,9 @@ and revision are checked for every source page. A result-set-too-large response
 requires a narrower range or environment; it is not an empty successful result.
 Raw request/response payloads and export remain in the normal human audit UI.
 
-These source candidates preserve previous protections. Full component CI/CodeQL,
-actual source-ZIP installation, combined runtime and designated role/cross-ID,
-layout and weak-model workflows remain pending.
+Web 1.6.201 component CI/CodeQL, archive/SBOM qualification, actual source-ZIP
+installation and anonymous verification of all 13 published assets passed.
+Matching Engine 0.183.360 / Server 560 qualification, combined runtime and
+designated role/cross-ID, layout and weak-model workflows remain pending.
+The designated `8080` QA deployment remains Server `v1.6.559` / Web `1.6.200`.
+These component results do not complete the full 243-group frontend inventory.
