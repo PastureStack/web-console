@@ -30,7 +30,8 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('catalog', [catalog('catalogTemplate', ['name', 'description', 'catalogId', 'templateBase', 'templateKey', 'catalogScope', 'defaultVersion', 'maintainer', 'license']),
     catalog('catalogTemplateVersion', ['version', 'revision', 'minimumRancherVersion', 'maximumRancherVersion', 'upgradeFrom'], {type: 'catalogTemplate', field: 'templateId', required: true})],
   'pending-adapter', 'Template and version metadata use the dedicated authorized Catalog adapter. Configured defaultVersion and version bounds do not establish compatibility. Typed stack launch needs target-scope read, create and update permissions and a dedicated human-approved plan. External volume references (external=true), Catalog administration and upgrades still need adapters.'),
-  family('certificates', [project('certificate', 'certificates', ['CN', 'issuer', 'issuedAt', 'expiresAt', 'algorithm', 'keySize'])]),
+  family('certificates', [resource('certificate', 'certificates', 'project', ['CN', 'issuer', 'issuedAt', 'expiresAt', 'algorithm', 'keySize'], null,
+    ['Typed changes support name/description only. PEM, private keys, certificate chains, issuance, renewal and removal remain in the normal human certificate UI.'])]),
   family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount'])]),
   family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine']), global('projectTemplate', 'projectTemplates')]),
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
@@ -66,6 +67,7 @@ export function resourceDescriptors() { return RESOURCE_FAMILIES.flatMap((entry)
 const action = (fields = [], required = [], minFields = 0) => Object.freeze({fields: Object.freeze(fields), required: Object.freeze(required), minFields});
 const metadata = action(['name', 'description'], [], 1);
 export const RESOURCE_CHANGES = Object.freeze({
+  certificate: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(), scale: action(['scale'], ['scale']),
