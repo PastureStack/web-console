@@ -10,21 +10,24 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Current source is Web Console **1.6.201** / bridge **0.2.3**, not yet published.
-The latest published client remains
-[1.6.200 / 0.2.2](https://github.com/PastureStack/web-console/releases/tag/1.6.200).
+[Web Console **1.6.201** / bridge **0.2.3**](https://github.com/PastureStack/web-console/releases/tag/1.6.201)
+is published with the original qualified CI artifacts. All 13 public release
+assets matched their recorded SHA256 values.
 
-The candidate retains twelve tools and extends typed workflows for External
+The client retains twelve tools and extends typed workflows for External
 Services, DNS Aliases and audit metadata. Alias creation and selecting targets
 are separate human-reviewed changes. Queries use opaque references; no raw
 resource IDs, private audit payloads or credentials are exposed to tools.
 Matching Engine 0.183.360 and broker audit-query components are required.
 
 Normal UI, session, Full-access, existing Catalog/Archive and human-confirmation
-protections remain. Required CI/CodeQL, immutable artifact/clean-install proof,
-combined Server and designated browser/role/weak-model acceptance are pending.
-The [candidate release note](docs/releases/web-console-1.6.201.md) records the
-remaining boundaries. This candidate does not complete all 243 business groups.
+protections remain. Web component CI/CodeQL, archive/SBOM qualification and the
+standalone ZIP's clean install passed. Matching Engine 0.183.360 and Server 560
+qualification, combined runtime and designated browser/role/weak-model acceptance
+remain pending. The designated `8080` QA deployment remains Server `v1.6.559` /
+Web `1.6.200`; publication does not establish the new domains' runtime acceptance.
+The [release note](docs/releases/web-console-1.6.201.md) records provenance and
+remaining boundaries. This release does not complete all 243 business groups.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` and separate runtime /
 build CycloneDX SBOMs. Dependencies remain unchanged. Use the
