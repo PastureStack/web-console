@@ -6,9 +6,9 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-[Web Console 1.6.201 / bridge 0.2.3](releases/web-console-1.6.201.md) is published
+[Web Console 1.6.202 / bridge 0.2.4](releases/web-console-1.6.202.md) is published
 and retains the twelve tools below. New External Service, DNS Alias and audit
-query workflows require matching Engine 0.183.360 / broker components. Web
+query workflows require matching Engine 0.183.361 / broker components. Web
 component qualification passed; combined Server and live workflow acceptance
 remain pending.
 
@@ -202,9 +202,10 @@ and revision are checked for every source page. A result-set-too-large response
 requires a narrower range or environment; it is not an empty successful result.
 Raw request/response payloads and export remain in the normal human audit UI.
 
-Web 1.6.201 component CI/CodeQL, archive/SBOM qualification, actual source-ZIP
+Web 1.6.202 component CI/CodeQL, archive/SBOM qualification, actual source-ZIP
 installation and anonymous verification of all 13 published assets passed.
-Matching Engine 0.183.360 / Server 560 qualification, combined runtime and
+Matching Engine 0.183.361 / next Server qualification, combined runtime and
 designated role/cross-ID, layout and weak-model workflows remain pending.
-The designated `8080` QA deployment remains Server `v1.6.559` / Web `1.6.200`.
+The designated prior QA deployment remains Server `v1.6.560` / Web `1.6.201`;
+its baseline health does not establish acceptance of the new workflows.
 These component results do not complete the full 243-group frontend inventory.
