@@ -6,16 +6,17 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-The current source adds the five resource-family tools below to the seven
-tools released in Web Console 1.6.197. These extensions require a matching
-Engine; source and focused tests are not live acceptance or a published release.
+The current 1.6.201 candidate retains the twelve tools below. Published 1.6.200
+remains the latest qualified client. New External Service, DNS Alias and audit
+query workflows require matching Engine 0.183.360 / broker components; source
+and focused tests are not live acceptance or a published release.
 
 | Tool | Purpose |
 | --- | --- |
 | `list_capabilities` | List 25 UI families, typed resources, read scope and explicit implemented/pending/human-ceremony coverage. |
 | `find_resources` | Find safe resource metadata, preserving duplicate candidates and parent/cursor scope. |
 | `get_resource` | Read safe metadata using an opaque reference; report any truncated fields explicitly. |
-| `preview_resource_change` | Preview a supported stack, service or container lifecycle change for human review. |
+| `preview_resource_change` | Preview a supported stack, service, External Service, DNS Alias or container change for human review. |
 | `apply_resource_change` | Apply that exact approved resource-change plan and return its recoverable operation reference. |
 | `find_stacks` | Find visible stacks by name and return opaque references. |
 | `find_services` | Find services, keeping same-name candidates separate. |
@@ -56,9 +57,10 @@ which rechecks the normal resource manager, role and Key scope. Global metadata
 and selected-environment resources have separate descriptors. A view being
 implemented does not mean the current account is authorized: capabilities
 report `requires-server-check` and the actual request decides. Authentication
-configuration, catalog, webhook and log adapters remain explicitly pending;
-MFA/passkey ceremonies use the existing human flow. Engine audit metadata does
-not claim to cover the UI's aggregated audit broker. No tool accepts raw IDs,
+configuration, webhook and terminal/log workflows remain pending. MFA/passkey
+ceremonies use the existing human flow. Typed audit queries use the matching
+Engine/broker owner; raw audit payloads and export remain human-only. Catalog
+metadata and its bounded launch adapter are described below. No tool accepts raw IDs,
 URLs, HTTP methods or caller-selected output fields.
 
 ## Browser and human controls
@@ -103,7 +105,7 @@ Choose expiry and policy there. The owner's current role remains the ceiling.
 
 This Key purpose additionally limits requests to the implemented safe resource
 views, existing project/stack/service reads, description updates, typed plans
-and tool-audit routes. It cannot
+the fixed typed audit-query route and tool-audit routes. It cannot
 approve a plan, manage Keys, log in, execute commands or call arbitrary APIs.
 The bridge refuses general-purpose Keys. Purpose and revision come from the
 server's authenticated Key context, not a client assertion. A policy change
@@ -179,5 +181,26 @@ Required component CI, published archive/SBOM verification and the standalone
 ZIP's clean install/48 focused adapter and SDK cases passed. Every new console
 page still starts with browser tools off and needs explicit opt-in. Combined
 Server and designated Catalog/Archive browser, role and weak-model acceptance
-remain **PENDING**. The current 54 partially implemented source groups do not
-establish acceptance of all 243 business groups.
+remain **PENDING**. The published 1.6.200 overlay recorded 54 partially implemented source groups;
+that historical count does not establish acceptance of all 243 business groups.
+
+## Candidate External Service, DNS Alias and audit workflows
+
+In 1.6.201 / bridge 0.2.3, External Service creation requires a selected Stack
+reference and exactly one hostname/IP mode. Creation is stopped; start and
+target updates need their own reviewed plans. DNS Alias creation is empty and
+stopped. Read the resulting Service reference, select local target references,
+then preview and approve update_targets separately. Advanced/remote links and
+incoming-consumer/cross-source cleanup remain unsupported.
+
+For audit metadata use find_resources with family audit, resourceType auditLog
+and typed auditFilters. Do not combine these with name query or parentRef.
+Select Key/environment filters through their returned opaque references. Browser
+and stdio use the matching fixed Engine/broker owner; current actor/Key policy
+and revision are checked for every source page. A result-set-too-large response
+requires a narrower range or environment; it is not an empty successful result.
+Raw request/response payloads and export remain in the normal human audit UI.
+
+These source candidates preserve previous protections. Full component CI/CodeQL,
+actual source-ZIP installation, combined runtime and designated role/cross-ID,
+layout and weak-model workflows remain pending.

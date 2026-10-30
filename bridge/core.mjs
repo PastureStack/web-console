@@ -79,6 +79,7 @@ export function allowedRequest(path, method, projectId, bootstrap = false) {
   if (typeof path !== 'string') return false;
   const parsed = new URL(path, 'https://local.invalid/');
   if (parsed.origin !== 'https://local.invalid' || parsed.hash || parsed.pathname.slice(1) !== path.split('?')[0]) return false;
+  if (path === 'pasturestack/ai-audit-queries' && method === 'POST') return true;
   if (method === 'POST' && ['aiResourceViews', 'aiCatalogMetadataViews', 'aiCatalogStackLaunchOptions'].some(kind => parsed.pathname === `/projects/${projectId}/${kind}`) && !parsed.search) return true;
   if (bootstrap && method === 'GET' && parsed.pathname === '/projects') {
     return [...parsed.searchParams.keys()].every(key => ['limit', 'marker'].includes(key));
@@ -113,7 +114,8 @@ export function createTransport(config, fetcher = fetch) {
   let verifiedRevision = null;
   return async function request({url, method = 'GET', data, signal}, projectId, bootstrap = false) {
     if (!allowedRequest(url, method, projectId, bootstrap)) throw new CommandError('FORBIDDEN');
-    const combined = signal ? AbortSignal.any([signal, AbortSignal.timeout(15000)]) : AbortSignal.timeout(15000);
+    const deadline = url === 'pasturestack/ai-audit-queries' ? 55000 : 15000;
+    const combined = signal ? AbortSignal.any([signal, AbortSignal.timeout(deadline)]) : AbortSignal.timeout(deadline);
     let response;
     try {
       response = await fetcher(new URL(url, base), {method, redirect: 'error', credentials: 'omit', signal: combined,

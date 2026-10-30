@@ -5,7 +5,7 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-The current 0.2.2 candidate source contains twelve typed tools for resource-family
+The current 0.2.3 candidate source contains twelve typed tools for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
 hosts rather than a manual instance count; they do not advise retrying the plan.
@@ -14,6 +14,13 @@ It requires a matching Engine with
 expect this reply correction in the immutable 0.2.0 release archive. The generic
 stdio read adapter uses server-side safe views, never direct credential-bearing
 domain resources. Pending adapters are reported by `list_capabilities`.
+
+External Services require an authorized Stack reference and exactly one target
+mode (hostname or IPs). DNS Aliases are created stopped and empty; target binding
+uses selected Service references in a separate approved plan. Typed audit queries
+use the matching Engine 0.183.360 and broker owner, current Key scope and pinned
+revision. Private audit payloads remain in the human UI. This candidate is not
+published; use the latest published archive until qualification is complete.
 
 The Catalog source adapter also needs a matching Engine/Catalog typed metadata
 endpoint. Use `find_resources` with `family: "catalog"` and
@@ -37,13 +44,13 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-After qualification and publication, the source archive is `pasturestack-webmcp-bridge-0.2.2.zip` with a
+After qualification and publication, the source archive is `pasturestack-webmcp-bridge-0.2.3.zip` with a
 `.zip.sha256` checksum. Extract the whole archive, keeping both `bridge/` and
 `app/utils/`; the bridge uses those exact shared command sources. With Node.js
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.2/bridge
+cd pasturestack-webmcp-bridge-0.2.3/bridge
 npm ci
 ```
 
@@ -52,7 +59,7 @@ records the included source hashes; the root also includes LICENSE and the
 bridge CycloneDX SBOM. To reproduce the source release from a checkout:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.2 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.2.zip
+python scripts/package-webmcp-bridge.py --version 0.2.3 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.3.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private

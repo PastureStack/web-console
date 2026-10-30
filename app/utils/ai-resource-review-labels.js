@@ -1,7 +1,7 @@
-const TYPES = {stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
-const OPERATIONS = {start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
+const TYPES = {dnsService: 'servicePage.type.dnsservice', externalService: 'servicePage.type.externalservice', stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
+const OPERATIONS = {update_targets: 'formTarget.target', start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
   create: 'saveCancel.create', create_from_catalog: 'newCatalog.saveNew', update_metadata: 'generic.edit', scale: 'serviceInfoPartial.scale', archive: 'archive.action', restore: 'archive.restore'};
-const FIELDS = {name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
+const FIELDS = {targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
   state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint',
   operation: 'generic.actions', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
   startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
@@ -26,7 +26,7 @@ export function resourceReviewLabels(plan, translate) {
   };
   return {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
-    createsStopped: plan.operation === 'create' && ['service', 'container'].includes(plan.resourceType),
+    createsStopped: plan.operation === 'create' && ['service', 'container', 'externalService', 'dnsService'].includes(plan.resourceType),
     archiveNotices: ['archive', 'restore'].includes(plan.operation) ? [text(plan.operation === 'archive' ? 'archive.explanation' : 'archive.restoreExplanation'),
       text(plan.operation === 'archive' ? 'archive.requiresStopped' : 'archive.restoreBeforeStart'), text('archive.dataWarning')] : [],
     mountedDataNotice: (plan.displayDiff || []).some((change) => change.field === 'mountedDataRule' && change.after === 'EXISTING_DOMAIN_RETENTION_NO_ADDITIONAL_PURGE') ? text('webmcp.domainRetentionNotice') : null,

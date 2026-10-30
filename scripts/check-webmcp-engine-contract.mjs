@@ -30,12 +30,16 @@ const wireInputs={aiServiceUpgradePlan:['serviceId','image'],aiServiceDescriptio
   aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
   aiCatalogStackLaunchOptions:['templateId','versionId'],
   aiCatalogStackLaunchPlan:['templateId','versionId','optionsRef','name','description','startOnCreate','answers','referenceBindings'],
-  aiCatalogStackLaunchInputs:['answers','referenceBindings']};
+  aiCatalogStackLaunchInputs:['answers','referenceBindings'],
+  aiAuditQuery:['keyId','environmentId','from','to','lastMinutes','decision','outcome','operation','targetType','requestId','httpStatus','limit','offset','eventId'],
+  aiAuditSourcePageInput:['limit','marker','projectId','accountId','from','to','keyKind']};
 for(const [type,inputs] of Object.entries(wireInputs)){
   if(catalogOptionsOnly&&type!=='aiCatalogStackLaunchOptions')continue;
   const schema=await read('base/'+type+'.json');
   const actionInput=type==='aiCatalogStackLaunchInputs';
+  const auditQuery=type==='aiAuditQuery',auditSource=type==='aiAuditSourcePageInput',audit=auditQuery||auditSource;
   if(actionInput){assert.deepEqual(schema.collectionMethods,[],'Human input must not have its own collection route');assert.deepEqual(schema.resourceMethods,[],'Human input must not have its own resource route');}
+  else if(auditSource){assert.deepEqual(schema.collectionMethods,[],'Private Audit input must not have its own collection route');assert.deepEqual(schema.resourceMethods,[],'Private Audit input must not have its own resource route');}
   else assert.ok(schema.collectionMethods.includes('POST'),type+' is not a POST input contract');
   for(const name of inputs)assert.equal(schema.resourceFields[name]?.create,true,type+'.'+name+' is not accepted input');
   if(type==='aiResourceChangePlan'){
@@ -52,6 +56,29 @@ for(const [type,inputs] of Object.entries(wireInputs)){
       assert.equal(schema.resourceFields[name].maxLength,limit,'Catalog '+name+' bound mismatch');
     }
     assert.equal(schema.resourceFields.versions.type,'boolean','Catalog versions must be an explicit boolean');
+  }
+  if(audit){
+    const outputs=auditQuery?{resourceType:'string',data:'array[json]',total:'int',nextOffset:'int',range:'map[string]',payloadPolicy:'string'}:{};
+    assert.deepEqual(Object.keys(schema.resourceFields).sort(),[...inputs,...Object.keys(outputs)].sort(),type+' must retain its closed field set');
+    assert.deepEqual(Object.keys(schema.resourceActions||{}),[],type+' must not expose resource actions');
+    assert.deepEqual(Object.keys(schema.collectionActions||{}),[],type+' must not expose collection actions');
+    if(auditQuery){
+      assert.equal(schema.pluralName,'aiAuditQueries');assert.deepEqual(schema.collectionMethods,['POST'],type+' must be POST-only');assert.deepEqual(schema.resourceMethods,[],type+' must not expose resource methods');
+    }
+    for(const name of inputs){
+      const field=schema.resourceFields[name],kind=auditSource?(name==='limit'?'int':name==='keyKind'?'enum':'string'):['lastMinutes','httpStatus','limit','offset'].includes(name)?'int':'string';
+      assert.equal(field.type,kind,type+'.'+name+' type mismatch');
+      assert.notEqual(field.update,true,type+'.'+name+' must not be client-updatable');
+      if(kind==='string')assert.equal(field.maxLength,auditSource?['from','to'].includes(name)?64:128:160,type+'.'+name+' bound mismatch');
+    }
+    if(auditSource){
+      assert.equal(schema.resourceFields.limit.min,1,type+'.limit minimum mismatch');assert.equal(schema.resourceFields.limit.max,1000,type+'.limit maximum mismatch');
+      assert.deepEqual([...schema.resourceFields.keyKind.options].sort(),['apiKey','apiKeyRestricted'],type+'.keyKind enum mismatch');
+    }
+    for(const [name,kind] of Object.entries(outputs)){
+      const field=schema.resourceFields[name];assert.equal(field.type,kind,type+'.'+name+' type mismatch');
+      assert.equal(field.create,false,type+'.'+name+' must be read-only output');assert.notEqual(field.update,true,type+'.'+name+' must not be client-updatable');
+    }
   }
   const catalogLaunch=type.startsWith('aiCatalogStackLaunch');
   if(catalogLaunch){
@@ -82,14 +109,17 @@ for(const [type,inputs] of Object.entries(wireInputs)){
   }
   for(const role of ['admin','user','project']){
     const {authorize}=await read(role+'/'+role+'-auth.json');
-    assert.ok(authorize[type]?.includes(actionInput?'r':'c'),role+' does not expose '+type);
+    assert.ok(authorize[type]?.includes(actionInput||auditSource?'r':'c'),role+' does not expose '+type);
+    if(audit)assert.equal(authorize[type],auditSource?'r':'cr',role+' must retain the exact '+type+' route metadata');
     if(catalogLaunch)assert.ok(authorize[type]?.includes('r'),role+' cannot retain '+type+' metadata');
     for(const [name,field] of Object.entries(schema.resourceFields)){
       if(field.create){
         assert.ok(authorize[type+'.'+name]?.includes('c'),role+' cannot accept '+type+'.'+name);
+        if(audit)assert.equal(authorize[type+'.'+name],'cr',role+' must retain exact Audit input metadata '+type+'.'+name);
         if(catalogLaunch)assert.ok(authorize[type+'.'+name]?.includes('r'),role+' cannot retain input metadata '+type+'.'+name);
       }
       else if(catalogLaunch)assert.ok(authorize[type+'.'+name]?.includes('r'),role+' cannot read safe '+type+'.'+name);
+      if(audit&&!field.create)assert.equal(authorize[type+'.'+name],'r',role+' must retain read-only Audit output '+type+'.'+name);
     }
   }
 }

@@ -10,6 +10,9 @@ const sources = Object.freeze({
   'ai-resource-registry': new URL('../app/utils/ai-resource-registry.js', import.meta.url),
   'ai-catalog-reader': new URL('../app/utils/ai-catalog-reader.js', import.meta.url),
   'ai-catalog-launch': new URL('../app/utils/ai-catalog-launch.js', import.meta.url),
+  'ai-alias-service': new URL('../app/utils/ai-alias-service.js', import.meta.url),
+  'ai-external-service': new URL('../app/utils/ai-external-service.js', import.meta.url),
+  'ai-audit-reader': new URL('../app/utils/ai-audit-reader.js', import.meta.url),
 });
 const urls = new Map();
 const loading = new Set();

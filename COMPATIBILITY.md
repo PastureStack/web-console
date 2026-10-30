@@ -1,20 +1,17 @@
 # Compatibility Contract
 
-## Web Console 1.6.200 / bridge 0.2.2
+## Web Console 1.6.201 / bridge 0.2.3 candidate
 
-The [published components](docs/releases/web-console-1.6.200.md) retain normal
-UI/session/Full-access behavior and require a matching Engine with private
-Catalog ingress protection, live actor/Key scope, CAS and per-child graph
-validation. Catalog launch cannot safely target Engine 0.183.358. Archive/restore
-reuses the native stopped-only owner and never starts restored workloads. Fixed
-background authorization-denied results remain failed, warn about possible
-partial changes and cannot be blindly replayed.
-
-The original producer passed required full CI and CodeQL; the published assets
-passed anonymous byte verification. The published tag and producer share the
-same source tree. Combined Server, Catalog/Archive browser, role and weak-model
-runtime acceptance remain **PENDING**; partial source coverage is not a whole
-business-group PASS.
+External Service and DNS Alias workflows need Engine 0.183.360. Alias creation
+is empty/stopped; binding selected local service references needs a separate
+human-approved plan. Unsupported link types and cross-source cleanup remain
+explicitly unavailable. Existing Catalog/Archive/session behavior is preserved.
+Typed audit queries need both the matching Engine and installed broker owner.
+An older Cookie-only adapter returns an actionable denial; the bridge must not
+forge a Cookie or switch credentials. Raw audit payloads stay human-only.
+Normal Full/legacy permissions remain unchanged. Required CI, clean-install and
+combined runtime acceptance are pending. See the
+[candidate release note](docs/releases/web-console-1.6.201.md).
 
 ## Web Console 1.6.195
 
