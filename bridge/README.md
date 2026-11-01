@@ -5,12 +5,14 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-Bridge **0.2.6** is a source candidate for clear audit-admission authentication
-and Key-policy errors. It preserves start/result ACK, context and revision
-protections. Required CI, publication and matching Server/native acceptance
-remain pending; the download instructions below use the published 0.2.5.
+[Bridge **0.2.6**](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
+is published with Web Console 1.6.204. Verified audit-admission authentication and
+Key-policy failures give safe corrective guidance while start/result ACK,
+context and revision protections remain. All 13 release assets passed anonymous
+byte-count/SHA256 readback. Matching Engine 0.183.365 / Server 1.6.564 assembly and native
+acceptance remain pending; use the release's documented compatibility limits.
 
-The [0.2.5 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.203)
+The [0.2.6 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
 contains twelve typed tools for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
@@ -53,14 +55,14 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-Download the numeric release's `pasturestack-webmcp-bridge-0.2.5.zip` and its
+Download the numeric release's `pasturestack-webmcp-bridge-0.2.6.zip` and its
 `.zip.sha256` checksum, then verify before extraction:
 
 ```sh
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.203/pasturestack-webmcp-bridge-0.2.5.zip
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.203/pasturestack-webmcp-bridge-0.2.5.zip.sha256
-sha256sum --check pasturestack-webmcp-bridge-0.2.5.zip.sha256
-unzip pasturestack-webmcp-bridge-0.2.5.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.204/pasturestack-webmcp-bridge-0.2.6.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.204/pasturestack-webmcp-bridge-0.2.6.zip.sha256
+sha256sum --check pasturestack-webmcp-bridge-0.2.6.zip.sha256
+unzip pasturestack-webmcp-bridge-0.2.6.zip
 ```
 
 Extract the whole archive, keeping both `bridge/` and
@@ -68,13 +70,16 @@ Extract the whole archive, keeping both `bridge/` and
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.5/bridge
+cd pasturestack-webmcp-bridge-0.2.6/bridge
 npm ci --ignore-scripts --no-audit --no-fund
 ```
 
 Its MCP entry point is the extracted `bridge/server.mjs`. `source-manifest.json`
 records the included source hashes; the root also includes LICENSE and the
-bridge CycloneDX SBOM. To package this candidate from its source checkout (not a published release):
+bridge CycloneDX SBOM. The published 0.2.6 source proof is linked in the
+[release note](../docs/releases/web-console-1.6.204.md): its fresh source ZIP/SBOM
+and original CI are separate from carried 0.2.5 dependency/install/SDK evidence.
+No new 0.2.6 install or SDK handshake is claimed. To package a source checkout:
 
 ```sh
 python scripts/package-webmcp-bridge.py --version 0.2.6 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.6.zip

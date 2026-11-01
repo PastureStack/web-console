@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.204 / bridge 0.2.6 candidate
+## Web Console 1.6.204 / bridge 0.2.6 published
 
 Audit admission preserves known 401/403 and verified Key-revision failures with
 safe corrective guidance. It still requires a durable start ACK before any
@@ -8,12 +8,31 @@ business request. Infrastructure failures and invalid ACKs fail closed; an ACK
 failure after a possible write remains UNKNOWN_RESULT without a second write.
 Browser and stdio use the same command engine and public error contract.
 
-Original full/enabled CI, CodeQL, artifact qualification, publication and matching
-Server/native acceptance remain pending. This does not complete Audit acceptance
-or the 243-group inventory. The current published component is 203 / 0.2.5 below.
-See the [candidate note](docs/releases/web-console-1.6.204.md).
+Original full/enabled CI and CodeQL passed: 1,122 Ember tests / zero failures,
+five new audit-admission source cases (four browser command cases and one actual
+bridge-core case). The 22 inherited 203 source cases comprise restricted-Key4,
+confirmation6, npm12 normalization10, reminder1 and layout-QUnit1. All 35
+collaboration source names and the 29 inherited npm-policy cases were freshly
+observed. One layout QUnit covers 96 parameter
+combinations, not 96 unique tests; four compiled modules and four theme CSS
+assets are archive-bound. The final CI audit retains 62 Moderate and zero
+High/Critical findings. The official follow-redirects 1.16.2 fix remains present.
 
-## Web Console 1.6.203 / bridge 0.2.5 published
+All 13 published assets passed actual anonymous GET, byte-count and SHA256
+verification. Producer `64caa55d0b0768de1633549b54a169ddb62c9194` and tag source
+`da24369ea12455d38f7dc63aef906eed5e38ffea` share the qualified tree. Bridge 0.2.6
+contains fresh exact-Git sources and a fresh 92-component SBOM; dependency
+components and edges match published 0.2.5 except root version. Prior 0.2.5
+dependency/clean-install/SDK evidence is explicitly carried. No new 0.2.6
+clean install, SDK handshake or dependency scan is claimed.
+
+Matching Engine 0.183.365 / Server 1.6.564 publication, assembly and designated
+runtime acceptance remain pending. The existing Server563/Engine364 deployment
+retains its own results; these component artifacts do not establish deployment
+or complete Audit, role/Key/cross-ID, weak-model or all 243 groups' acceptance.
+See the [published 204 note](docs/releases/web-console-1.6.204.md).
+
+## Web Console 1.6.203 / bridge 0.2.5 historical published baseline
 
 Adds restricted-Key discovery against the existing Engine361 typed contract.
 Default discovery remains ordinary `apiKey`; use `apiKeyRestricted` explicitly.
