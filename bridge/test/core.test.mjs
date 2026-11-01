@@ -103,6 +103,28 @@ test('bootstrap pins a revision and every later request sends it before a mutati
   assert.equal(writes,0);
 });
 
+test('audit admission reports real transport auth and revision failures without business dispatch', async () => {
+  for (const [status,code,expected] of [[401,'AuthenticationRequired','SESSION_REQUIRED'],
+    [403,'PermissionDenied','FORBIDDEN'],[403,'ApiKeyPolicyChanged','FORBIDDEN'],
+    [200,'ApiKeyPolicyChanged','CONTEXT_CHANGED']]) {
+    let admitted=false;const calls=[];
+    const bridge=await createBridge(config,{fetcher:async(url,options)=>{
+      calls.push({path:url.pathname,method:options.method,revision:options.headers['X-PastureStack-Key-Expected-Revision']});
+      if(!admitted)return response({data:[{id:'p1',name:'Default',state:'active'}]});
+      return status===200?response({accepted:true,requestId:'ack'},'2'):
+        new Response(JSON.stringify({code,message:secret}),{status});
+    }});
+    admitted=true;const initial=calls.length;
+    const result=await bridge.engine.execute('find_resources',{family:'audit',resourceType:'auditLog',auditFilters:{lastMinutes:10,limit:1}});
+    assert.equal(result.status,'rejected');assert.equal(result.code,expected);
+    assert.deepEqual(calls.slice(initial),[{path:'/v2-beta/projects/p1/aiToolCallEvents',method:'POST',revision:'1'}]);
+    assert.equal(JSON.stringify(result).includes(secret),false);
+    assert.doesNotMatch(result.nextStep,/select an environment|enable this integration/);
+    if(code==='ApiKeyPolicyChanged')assert.match(result.nextStep,/Key policy changed.*reconnect/);
+    bridge.close();
+  }
+});
+
 test('shared business engine lists scoped refs and reports authorization failure without cookie fallback', async () => {
   const calls=[];
   const bridge=await createBridge(config,{fetcher:async(url,opts)=>{

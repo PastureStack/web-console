@@ -1,5 +1,18 @@
 # Compatibility Contract
 
+## Web Console 1.6.204 / bridge 0.2.6 candidate
+
+Audit admission preserves known 401/403 and verified Key-revision failures with
+safe corrective guidance. It still requires a durable start ACK before any
+business request. Infrastructure failures and invalid ACKs fail closed; an ACK
+failure after a possible write remains UNKNOWN_RESULT without a second write.
+Browser and stdio use the same command engine and public error contract.
+
+Original full/enabled CI, CodeQL, artifact qualification, publication and matching
+Server/native acceptance remain pending. This does not complete Audit acceptance
+or the 243-group inventory. The current published component is 203 / 0.2.5 below.
+See the [candidate note](docs/releases/web-console-1.6.204.md).
+
 ## Web Console 1.6.203 / bridge 0.2.5 published
 
 Adds restricted-Key discovery against the existing Engine361 typed contract.
