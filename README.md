@@ -11,7 +11,7 @@ history, authorship, licenses, and dependency notices.
 ## Current component
 
 [Web Console **1.6.205** / bridge **0.2.7**](docs/releases/web-console-1.6.205.md)
-is a source candidate, not a published release. It adds typed Service creation
+is the current published release. It adds typed Service creation
 with native port bindings and a bounded health check. Human review shows the
 exact settings; a verified result reports assigned ports separately. These
 fields require matching Engine **0.183.366** support and a compatible Server
@@ -28,11 +28,10 @@ Pending-plan reminders use page content so footer controls remain available,
 and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
-Candidate CI qualification, publication and runtime acceptance are pending.
-The latest published component is
-[Web Console 1.6.204 / bridge 0.2.6](https://github.com/PastureStack/web-console/releases/tag/1.6.204).
-See the [candidate release note](docs/releases/web-console-1.6.205.md) for scope
-and validation boundaries.
+Original CI, archive/SBOM qualification and all 13 public assets passed
+verification. Matching Server565 runtime and designated workflow acceptance
+remain pending. See the [published release note](docs/releases/web-console-1.6.205.md)
+for producer identity and validation scope.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).

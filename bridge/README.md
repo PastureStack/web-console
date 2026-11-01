@@ -6,17 +6,19 @@ a dedicated **AI collaboration bridge** Key and the parent repository's supporte
 Node.js toolchain. It cannot approve its own change plans.
 
 [Bridge **0.2.7** / Web Console **1.6.205**](../docs/releases/web-console-1.6.205.md)
-is a source candidate, not a published archive. It adds Service create `ports`
+is published. It adds Service create `ports`
 and `healthCheck` using the same typed command contract as the browser. Matching
 Engine **0.183.366** support and a compatible Server assembly are required.
 Creation uses bridge networking and starts stopped. Human approval binds the
 exact review; verified native port assignments appear only in read-only
 `executionResult.assignedPorts`, separately from approved changes. See the
 [field contract](../docs/webmcp.md#service-create-ports-and-health-checks).
-Candidate CI, publication and runtime acceptance remain pending.
+Original CI, exact-source ZIP/SBOM qualification and all 13 release assets passed
+verification. Matching Server565 runtime and designated workflow acceptance
+remain pending.
 
-The latest published [0.2.6 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
-contains the same twelve typed tool names for resource-family
+The published [0.2.7 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.205)
+contains twelve typed tool names for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
 hosts rather than a manual instance count; they do not advise retrying the plan.
@@ -58,15 +60,14 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-Until 0.2.7 is published, the following download example uses published 0.2.6,
-which does not include the new Service create fields. Download its archive and
-`.zip.sha256` checksum, then verify before extraction:
+Download the published 0.2.7 archive and its `.zip.sha256` checksum, then verify
+before extraction:
 
 ```sh
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.204/pasturestack-webmcp-bridge-0.2.6.zip
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.204/pasturestack-webmcp-bridge-0.2.6.zip.sha256
-sha256sum --check pasturestack-webmcp-bridge-0.2.6.zip.sha256
-unzip pasturestack-webmcp-bridge-0.2.6.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.205/pasturestack-webmcp-bridge-0.2.7.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.205/pasturestack-webmcp-bridge-0.2.7.zip.sha256
+sha256sum --check pasturestack-webmcp-bridge-0.2.7.zip.sha256
+unzip pasturestack-webmcp-bridge-0.2.7.zip
 ```
 
 Extract the whole archive, keeping both `bridge/` and
@@ -74,17 +75,20 @@ Extract the whole archive, keeping both `bridge/` and
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.6/bridge
+cd pasturestack-webmcp-bridge-0.2.7/bridge
 npm ci --ignore-scripts --no-audit --no-fund
 ```
 
 Its MCP entry point is the extracted `bridge/server.mjs`. `source-manifest.json`
 records the included source hashes; the root also includes LICENSE and the
-bridge CycloneDX SBOM. The published 0.2.6 source proof is linked in the
-[release note](../docs/releases/web-console-1.6.204.md): its fresh source ZIP/SBOM
-and original CI are separate from carried 0.2.5 dependency/install/SDK evidence.
-No new 0.2.6 install or SDK handshake is claimed. To package the current 0.2.7
-source candidate, first generate a matching bridge SBOM and then run:
+bridge CycloneDX SBOM. The published 0.2.7 [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.205/bridge027-release-proof.json)
+binds producer `931562ac0302b0406c5c2b44ec7a0f94307e5b2e` and tested tree
+`ea359bababf5ed9270e88149bbfa789ba2b54d85`. The numeric 1.6.205 tag targets
+`ac928a5db556315f87abd3ffc213630aa7049d1f`, with the same tree. Fresh exact-Git
+sources and the 92-component lock-only SBOM are separate from carried 0.2.5
+dependency/install/SDK evidence; no new install, scan or SDK handshake is claimed.
+See the [release note](../docs/releases/web-console-1.6.205.md) for original CI scope.
+For local packaging, first generate a matching bridge SBOM and then run:
 
 ```sh
 python scripts/package-webmcp-bridge.py --version 0.2.7 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.7.zip
