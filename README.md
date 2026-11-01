@@ -8,6 +8,13 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
+## In development: 1.6.203 / bridge 0.2.5
+
+Restricted API Keys gain the same name-based discovery and audit-reference flow
+as ordinary Keys. Select `apiKeyRestricted` explicitly; the default searches
+`apiKey` only. This is partial family coverage, not a merged search or complete
+frontend automation. Publication and designated QA acceptance remain pending.
+
 ## Current component
 
 [Web Console **1.6.202** / bridge **0.2.4**](https://github.com/PastureStack/web-console/releases/tag/1.6.202)

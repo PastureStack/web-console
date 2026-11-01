@@ -12,7 +12,7 @@ const catalogAnswers = {type: 'array', maxItems: 100, items: schema({questionRef
   value: {type: ['string', 'number', 'boolean'], minLength: 0, maxLength: 4096, minimum: -Number.MAX_SAFE_INTEGER, maximum: Number.MAX_SAFE_INTEGER}, resourceRef: string('An authorized resourceRef, or a same-session serviceRef for service questions. Never send a raw resource ID.')}, ['questionRef']),
 description: 'Typed answers only. Each questionRef accepts exactly one value or resourceRef. For an optional reference, value "" explicitly selects no resource. Human-only inputs must be completed in the console; never send a password or secret value.'};
 const auditFilters = schema({
-  keyRef: string('Optional API Key resourceRef returned by find_resources; never supply a raw credential ID.'),
+  keyRef: string('Optional apiKey or apiKeyRestricted resourceRef returned by find_resources in api-keys with the intended resourceType; never supply a raw credential ID.'),
   environmentRef: string('Optional visible project resourceRef; current environment is used by default.'),
   environmentScope: {...string('Use current by default. all-visible explicitly requests only environments allowed by the native audit owner.'), enum: ['current', 'all-visible']},
   from: string('Range start, inclusive, RFC3339 with timezone; supply together with to.', 64),
@@ -28,7 +28,7 @@ const auditFilters = schema({
 });
 export const COMMANDS = Object.freeze([
   {name: 'list_capabilities', description: 'List the closed resource families, their implementation coverage and current read availability. Pending adapters are not implemented. Does not change environment or expose credentials.', inputSchema: schema({})},
-  {name: 'find_resources', description: 'Find visible resource metadata in a named family. resourceType defaults to the first type listed by list_capabilities. Return all same-name candidates; never select the first automatically. In catalog, find catalogTemplate by name first, then list catalogTemplateVersion with its resourceRef as parentRef and no query. Version metadata does not establish compatibility. Parent and cursor references must be reused unchanged.',
+  {name: 'find_resources', description: 'Find visible resource metadata in a named family. resourceType defaults to the first type listed by list_capabilities. In api-keys, select apiKey for legacy Keys or apiKeyRestricted for restricted or expiring Keys; the default searches apiKey only, without combining kinds. Return all same-name candidates within the selected type; never select the first automatically. In catalog, find catalogTemplate by name first, then list catalogTemplateVersion with its resourceRef as parentRef and no query. Version metadata does not establish compatibility. Parent and cursor references must be reused unchanged.',
     inputSchema: schema({family: {...string('Family from list_capabilities.'), enum: RESOURCE_FAMILIES.map((item) => item.name)},
       resourceType: {...string('Optional type within that family, from list_capabilities.'), enum: RESOURCE_TYPES},
       query: string('Optional resource name words.'), parentRef: string('Optional resourceRef of the parent type listed by list_capabilities.'),

@@ -24,6 +24,85 @@ function fixture(handle, transportKind = 'browser', audit) {
 }
 const find = (filters = {}, cursor) => ({family: 'audit', resourceType: 'auditLog', auditFilters: filters, ...(cursor ? {cursor} : {})});
 
+test('restricted Key capabilities expose explicit types and the legacy-only default boundary', async () => {
+  const f = fixture(undefined, 'stdio');
+  const caps = await f.engine.execute('list_capabilities', {});
+  const keys = caps.families.find(item => item.family === 'api-keys');
+  assert.deepEqual(keys.resources.map(item => item.resourceType), ['apiKey', 'apiKeyRestricted']);
+  assert.equal(keys.coverageStatus, 'pending-adapter');
+  assert.match(keys.reason, /apiKey only/); assert.match(keys.reason, /does not combine/);
+  for (const item of keys.resources) {
+    assert.equal(item.scope, 'global'); assert.equal(item.authorization, 'requires-server-check');
+    assert.equal(item.canFind, null); assert.equal(item.canGet, null);
+    assert.equal(item.safeFields.includes('secretValue'), false);
+    assert.equal(item.safeFields.includes('publicValue'), false);
+  }
+  const command = COMMANDS.find(item => item.name === 'find_resources');
+  assert.ok(command.inputSchema.properties.resourceType.enum.includes('apiKeyRestricted'));
+  assert.match(command.description, /apiKeyRestricted/);
+});
+
+test('restricted Key exact name resolves to an opaque ref and completes audit query and detail on both transports', async () => {
+  for (const transport of ['browser', 'stdio']) {
+    const f = fixture(({url, method, data}) => {
+      assert.equal(method, 'POST');
+      if (url === 'projects/p1/aiResourceViews') {
+        assert.deepEqual(data, {resourceType: 'apiKeyRestricted', query: 'Exact owned Key'});
+        return {body: {resourceType: 'apiKeyRestricted', data: [{id: '1c-restricted', name: 'Exact owned Key', kind: 'apiKeyRestricted',
+          publicValue: secret, secretValue: secret, apiKeyPolicy: {secret}}], nextMarker: null}};
+      }
+      assert.equal(url, 'pasturestack/ai-audit-queries');
+      assert.equal(data.keyId, '1c-restricted'); assert.equal(data.environmentId, 'p1');
+      return reply([row('event1', {keyId: data.keyId})], {range: {from: '2026-10-01T11:50:00Z', to: '2026-10-01T12:00:00Z'}});
+    }, transport);
+    const selected = await f.engine.execute('find_resources', {family: 'api-keys', resourceType: 'apiKeyRestricted', query: 'Exact owned Key'});
+    assert.equal(selected.status, 'succeeded'); assert.equal(selected.complete, true); assert.equal(selected.items.length, 1);
+    assert.equal(selected.items[0].resourceType, 'apiKeyRestricted');
+    const audit = await f.engine.execute('find_resources', find({lastMinutes: 10, keyRef: selected.items[0].resourceRef}));
+    assert.equal(audit.status, 'succeeded'); assert.equal(audit.complete, true);
+    const detail = await f.engine.execute('get_resource', {resourceRef: audit.items[0].resourceRef});
+    assert.equal(detail.status, 'succeeded'); assert.equal(detail.fields.payloadsIncluded, false);
+    assert.equal(f.requests.length, 3);
+    assert.equal(JSON.stringify([selected, audit, detail, f.audits]).includes(secret), false);
+    assert.equal(JSON.stringify(selected).includes('1c-restricted'), false);
+  }
+});
+
+test('restricted Key same-name selection remains explicit by type and default never combines candidates', async () => {
+  const f = fixture(({url, data}) => {
+    if (url === 'projects/p1/aiResourceViews') return {body: {resourceType: data.resourceType,
+      data: [{id: data.resourceType === 'apiKey' ? 'legacy-key' : 'restricted-key', name: 'Same name'}], nextMarker: null}};
+    assert.equal(url, 'pasturestack/ai-audit-queries');
+    return reply([row('event1', {keyId: data.keyId})]);
+  });
+  const legacy = await f.engine.execute('find_resources', {family: 'api-keys', query: 'Same name'});
+  const restricted = await f.engine.execute('find_resources', {family: 'api-keys', resourceType: 'apiKeyRestricted', query: 'Same name'});
+  assert.equal(legacy.items.length, 1); assert.equal(restricted.items.length, 1);
+  assert.equal(legacy.items[0].resourceType, 'apiKey'); assert.equal(restricted.items[0].resourceType, 'apiKeyRestricted');
+  assert.notEqual(legacy.items[0].resourceRef, restricted.items[0].resourceRef);
+  for (const [selection, expected] of [[legacy, 'legacy-key'], [restricted, 'restricted-key']]) {
+    const result = await f.engine.execute('find_resources', find({keyRef: selection.items[0].resourceRef}));
+    assert.equal(result.status, 'succeeded'); assert.equal(f.requests.at(-1).data.keyId, expected);
+  }
+  assert.deepEqual(f.requests.slice(0, 2).map(item => item.data), [
+    {resourceType: 'apiKey', query: 'Same name'}, {resourceType: 'apiKeyRestricted', query: 'Same name'},
+  ]);
+});
+
+test('restricted Key owner denial and mismatched server type never yield a selectable ref', async () => {
+  for (const transport of ['browser', 'stdio']) for (const denied of [true, false]) {
+    const f = fixture(({url, data}) => {
+      assert.equal(url, 'projects/p1/aiResourceViews'); assert.equal(data.resourceType, 'apiKeyRestricted');
+      if (denied) throw {status: 403, body: {code: 'OwnerPermissionDenied', message: secret}};
+      return {body: {resourceType: 'apiKey', data: [{id: 'foreign-key', name: 'Exact owned Key', secretValue: secret}]}};
+    }, transport);
+    const selected = await f.engine.execute('find_resources', {family: 'api-keys', resourceType: 'apiKeyRestricted', query: 'Exact owned Key'});
+    assert.equal(selected.code, denied ? 'FORBIDDEN' : 'INVALID_RESPONSE');
+    assert.equal(selected.items, undefined); assert.equal(f.requests.length, 1);
+    assert.equal(JSON.stringify([selected, f.audits]).includes(secret), false);
+  }
+});
+
 test('audit workflow resolves real returned Key/project refs, freezes range and reauthorizes event detail', async () => {
   const f = fixture(({url, method, data}) => {
     if (url === 'projects/p1/aiResourceViews') {
