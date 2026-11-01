@@ -4441,6 +4441,7 @@ webmcp:
   approved: "Plano aprovado. A IA já pode executá-lo."
   review: "Revisar a atualização pendente"
   stale: "A sessão, o ambiente ou o plano mudou. Peça à IA para gerar uma nova prévia."
+  forbidden: "A conta ou a chave de API atual não tem permissão para executar esta operação neste destino. Pesquise o destino novamente e gere uma nova prévia, ou entre em contato com um administrador para verificar as permissões."
   failed: "Não foi possível aprovar o plano. Revise o erro e tente novamente."
   expires: "Expira em"
   dismiss: "Fechar prévia"

@@ -4,6 +4,7 @@
 // not a fix, a runtime VEX claim, or permission to ship the affected modules.
 const fs = require('node:fs');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const { spawnSync } = require('node:child_process');
 
 const ADVISORY = 'https://github.com/advisories/GHSA-vfj7-8cjw-p6xm';
@@ -129,6 +130,63 @@ function readReviewedSources(repoRoot, io = fs) {
   return sources;
 }
 
+
+// npm12 can repeat the same meta cause and report installed npm aliases under
+// their actual package name. Preserve raw bytes; normalize only exact values.
+function canonical(value) {
+  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
+  if (plain(value)) return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';
+  return JSON.stringify(value);
+}
+function exactVia(via) {
+  if (!Array.isArray(via)) return via;
+  const seen = new Set();
+  return via.filter(item => { const key = canonical(item); if (seen.has(key)) return false; seen.add(key); return true; });
+}
+function aliasPairs(packages, name, nodes) {
+  const result = [];
+  for (const wrapper of nodes) {
+    if (!plain(packages[wrapper]) || packageName(wrapper) !== name) continue;
+    for (const [alias, spec] of Object.entries({ ...packages[wrapper].dependencies, ...packages[wrapper].optionalDependencies })) {
+      const target = resolveDependency(packages, wrapper, alias), item = packages[target];
+      if (nodes.includes(target) && packageName(target) === alias && alias !== name && plain(item) && item.name === name &&
+        packages[wrapper].version === item.version && spec === `npm:${name}@${item.version}`) result.push({wrapper, target});
+    }
+  }
+  return result;
+}
+function auditNodeMatches(packages, node, name) {
+  const item = packages[node];
+  if (!plain(item)) return false;
+  if (packageName(node) === name) return item.name === undefined || item.name === name;
+  if (item.name !== name) return false;
+  const alias = packageName(node);
+  return Object.entries(packages).some(([from, owner]) => plain(owner) &&
+    { ...owner.dependencies, ...owner.optionalDependencies, ...(!from ? owner.devDependencies : {}) }[alias] === `npm:${name}@${item.version}` &&
+    resolveDependency(packages, from, alias) === node);
+}
+const advisoryHash = (name, source) => createHash('sha512').update(JSON.stringify([name, source])).digest('base64');
+function calculatedAdvisory(via, name, vulnerability, vulnerabilities, packages) {
+  if (!plain(via) || typeof via.source !== 'string' || !/^[A-Za-z0-9+/]{86}==$/.test(via.source) ||
+    via.range !== '*' || !aliasPairs(packages, name, vulnerability.nodes).length) return false;
+  const official = item => plain(item) && Number.isSafeInteger(item.source) && item.source > 0;
+  if (typeof via.url === 'string') return vulnerability.via.some(item => official(item) &&
+    via.source === advisoryHash(name, item.source) && canonical({...via, source: item.source, range: item.range}) === canonical(item));
+  if (via.url !== null) return false;
+  return vulnerability.via.some(child => {
+    if (typeof child !== 'string' || !plain(vulnerabilities[child]) || !aliasPairs(packages, child, vulnerabilities[child].nodes).length) return false;
+    const realEdge = aliasPairs(packages, name, vulnerability.nodes).some(pair => {
+      const declared = {...packages[pair.target].dependencies, ...packages[pair.target].optionalDependencies};
+      const target = resolveDependency(packages, pair.target, child);
+      return typeof declared[child] === 'string' && vulnerabilities[child].nodes.includes(target) && auditNodeMatches(packages, target, child);
+    });
+    return realEdge && vulnerabilities[child].via.some(item => official(item) &&
+      via.source === advisoryHash(name, advisoryHash(child, item.source)) &&
+      via.title === `Depends on vulnerable versions of ${child}` && via.severity === item.severity &&
+      canonical(via.cwe) === canonical(item.cwe) && canonical(via.cvss) === canonical(item.cvss));
+  });
+}
+
 function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) {
   let totals = null;
   try {
@@ -146,7 +204,8 @@ function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) 
     need(totals.critical === 0, 'CRITICAL_VULNERABILITY');
     need(sameSet(Object.keys(audit.metadata.dependencies), ['prod', 'dev', 'optional', 'peer', 'peerOptional', 'total']) &&
       Object.values(audit.metadata.dependencies).every(n => Number.isSafeInteger(n) && n >= 0), 'NPM_AUDIT_DEPENDENCIES_INVALID');
-    const vulnerabilities = audit.vulnerabilities;
+    const vulnerabilities = Object.fromEntries(Object.entries(audit.vulnerabilities).map(([name, v]) =>
+      [name, plain(v) ? {...v, via: exactVia(v.via)} : v]));
     const observed = Object.fromEntries(LEVELS.map(k => [k, 0]));
     const allowedKeys = ['name', 'severity', 'isDirect', 'via', 'effects', 'range', 'nodes', 'fixAvailable'];
     for (const [name, v] of Object.entries(vulnerabilities)) {
@@ -156,21 +215,22 @@ function evaluateAudit({ audit, lock, pending, now = new Date(), npmExitCode }) 
         (typeof v.fixAvailable === 'boolean' || (plain(v.fixAvailable) && typeof v.fixAvailable.name === 'string' &&
           typeof v.fixAvailable.version === 'string' && typeof v.fixAvailable.isSemVerMajor === 'boolean')), 'NPM_VULNERABILITY_SHAPE_INVALID');
       observed[v.severity]++;
-      for (const node of v.nodes) need(plain(packages[node]) && packageName(node) === name, 'AUDIT_NODE_LOCK_MISMATCH');
+      for (const node of v.nodes) need(auditNodeMatches(packages, node, name), 'AUDIT_NODE_LOCK_MISMATCH');
       for (const e of v.effects) need(own(vulnerabilities, e), 'AUDIT_EFFECT_REFERENCE_INVALID');
-      need(new Set(v.via.map(x => typeof x === 'string' ? 'meta:' + x : 'advisory:' + x?.url)).size === v.via.length,
-        'AUDIT_VIA_DUPLICATE');
       for (const via of v.via) {
         if (typeof via === 'string') {
           need(own(vulnerabilities, via), 'AUDIT_VIA_REFERENCE_INVALID');
           need(LEVELS.indexOf(v.severity) >= LEVELS.indexOf(vulnerabilities[via].severity), 'AUDIT_SEVERITY_INCONSISTENT');
         }
-        else need(plain(via) && Object.keys(via).every(k => ['source', 'name', 'dependency', 'title', 'url', 'severity', 'cwe', 'cvss', 'range'].includes(k)) &&
-          Number.isSafeInteger(via.source) && via.source > 0 && via.name === name &&
-          via.dependency === name && typeof via.title === 'string' && typeof via.url === 'string' &&
-          /^https:\/\/github\.com\/advisories\/GHSA-[a-z0-9-]+$/.test(via.url) && LEVELS.includes(via.severity) &&
-          typeof via.range === 'string' && strings(via.cwe) && plain(via.cvss) && Number.isFinite(via.cvss.score) &&
-          (via.cvss.vectorString === null || typeof via.cvss.vectorString === 'string'), 'AUDIT_ADVISORY_SHAPE_INVALID');
+        else {
+          const calculated = calculatedAdvisory(via, name, v, vulnerabilities, packages);
+          need(plain(via) && Object.keys(via).every(k => ['source', 'name', 'dependency', 'title', 'url', 'severity', 'cwe', 'cvss', 'range'].includes(k)) &&
+            (Number.isSafeInteger(via.source) && via.source > 0 || calculated) && via.name === name &&
+            via.dependency === name && typeof via.title === 'string' &&
+            (typeof via.url === 'string' && /^https:\/\/github\.com\/advisories\/GHSA-[a-z0-9-]+$/.test(via.url) || calculated && via.url === null) && LEVELS.includes(via.severity) &&
+            typeof via.range === 'string' && strings(via.cwe) && plain(via.cvss) && Number.isFinite(via.cvss.score) &&
+            (via.cvss.vectorString === null || typeof via.cvss.vectorString === 'string'), 'AUDIT_ADVISORY_SHAPE_INVALID');
+        }
         if (typeof via !== 'string') need(LEVELS.indexOf(v.severity) >= LEVELS.indexOf(via.severity), 'AUDIT_SEVERITY_INCONSISTENT');
       }
     }
@@ -281,7 +341,7 @@ function runAudit(repoRoot, runner = spawnSync, platform = process.platform, clo
   return evaluateAudit({ audit, lock, pending, now: clock(), npmExitCode: result.status });
 }
 
-module.exports = { evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, npmInvocation, runAudit };
+module.exports = { exactVia, evaluateAudit, validatePending, validateReviewedImports, readReviewedSources, npmInvocation, runAudit };
 if (require.main === module) {
   const result = runAudit(path.resolve(__dirname, '..'));
   console.log(JSON.stringify(result));

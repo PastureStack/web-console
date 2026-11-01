@@ -2,7 +2,7 @@ import { computed } from '@ember/object';
 import { alias } from '@ember/object/computed';
 import { service } from '@ember/service';
 import ModalBase from 'lacsso/components/modal-base';
-import { resourceReviewLabels } from 'ui/utils/ai-resource-review-labels';
+import { resourceReviewLabels, resourceConfirmationErrorKey } from 'ui/utils/ai-resource-review-labels';
 import { createCatalogHumanForm } from 'ui/utils/ai-catalog-human-form';
 import { observer } from '@ember/object';
 
@@ -140,7 +140,7 @@ export default ModalBase.extend({
       return this.get('commands').confirmPendingPlan().then((result) => {
         if (this.isDestroyed || this.isDestroying) { return; }
         if (result.status !== 'succeeded' || result.confirmationState !== 'approved') {
-          this.set('errors', [this.get('intl').t(result.code === 'STALE_REFERENCE' || result.code === 'CONTEXT_CHANGED' ? 'webmcp.stale' : 'webmcp.failed')]);
+          this.set('errors', [this.get('intl').t(resourceConfirmationErrorKey(result.code))]);
           return;
         }
         this.set('approved', true);

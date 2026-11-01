@@ -4435,6 +4435,7 @@ webmcp:
   approved: "Plan approuvé. L’IA peut maintenant l’exécuter."
   review: "Vérifier la mise à niveau en attente"
   stale: "La session, l’environnement ou le plan a changé. Demandez à l’IA de générer un nouvel aperçu."
+  forbidden: "Le compte actuel ou la clé API ne permet pas d’effectuer cette opération sur cette cible. Recherchez à nouveau la cible et générez un nouvel aperçu, ou contactez un administrateur pour vérifier les autorisations."
   failed: "Le plan n’a pas pu être approuvé. Examinez l’erreur et réessayez."
   expires: "Expire le"
   dismiss: "Fermer l’aperçu"

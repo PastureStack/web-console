@@ -376,3 +376,111 @@ test('cold-installed addon node_modules are audited packages, while owned source
   tree['vendor/lacsso'][1] = entry('node_modules', 'link');
   assert.throws(() => readReviewedSources(root, io), { message: 'BROWSER_SOURCE_SYMLINK_UNREVIEWED' });
 });
+
+
+// Public npm12 primary report fixtures, not the failed CI run bytes. Complete
+// original-parser RED evidence stays with the capture receipts; these portable
+// cases exercise the current policy with the exact raw report structures.
+{
+const { createHash } = require('node:crypto');
+const candidate = require('./check-ui-npm-audit');
+const fixtureRoot = path.join(__dirname, 'fixtures/npm-audit');
+const captured = JSON.parse(fs.readFileSync(path.join(fixtureRoot, 'captures-and-lock-projection.json'), 'utf8'));
+function input(patched = true) {
+  const selected = captured.captures[patched ? 'after' : 'before'];
+  const bytes = fs.readFileSync(path.join(fixtureRoot, selected.rawFile));
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), selected.rawSha256);
+  const lock = clone(captured.lock);
+  if (patched) Object.assign(lock.packages['node_modules/follow-redirects'], captured.patchedFollowRedirectsNode);
+  return {audit: JSON.parse(bytes), lock, pending: clone(captured.pending),
+    now: new Date(selected.capturedUtc), npmExitCode: selected.npmExitCode};
+}
+const rejected = (value, code) => {
+  const result = candidate.evaluateAudit(value);
+  assert.equal(result.ok, false); assert.equal(result.outcome, 'FAIL_CLOSED'); assert.equal(result.failureCode, code);
+};
+
+test('captured primary raw still blocks the fixable unregistered High after normalization', () => {
+  const value = input(false);
+  assert.equal(value.audit.vulnerabilities['follow-redirects'].fixAvailable, true);
+  rejected(value, 'UNREVIEWED_HIGH_NODE');
+});
+
+test('official patched-lock raw passes clean High/Critical without mutating raw Moderate or claiming runtime unaffected', () => {
+  const value = input(), before = JSON.stringify(value.audit);
+  const result = candidate.evaluateAudit(value);
+  assert.equal(result.ok, true); assert.equal(result.outcome, 'PASS_HIGH_CRITICAL_CLEAN');
+  assert.deepEqual(result.totals, value.audit.metadata.vulnerabilities);
+  assert.equal(result.totals.high, 0); assert.equal(result.totals.critical, 0); assert.equal(result.totals.moderate, 63);
+  assert.equal(result.knownPending, null); assert.equal(result.runtimeNotAffectedClaim, false);
+  assert.equal(JSON.stringify(value.audit), before);
+});
+
+test('stable exact normalization removes repeated meta and identical objects while retaining different source and range', () => {
+  const value = input(), via = value.audit.vulnerabilities.glob.via;
+  const objects = via.filter(item => typeof item === 'object');
+  assert.equal(objects.length, 2); assert.equal(objects[0].url, objects[1].url);
+  assert.notEqual(objects[0].source, objects[1].source); assert.notEqual(objects[0].range, objects[1].range);
+  assert.equal(candidate.exactVia(via).filter(item => typeof item === 'object').length, 2);
+  const reordered = Object.fromEntries(Object.entries(objects[0]).reverse());
+  assert.deepEqual(candidate.exactVia(['glob', 'glob', objects[0], reordered, objects[1]]), ['glob', objects[0], objects[1]]);
+});
+
+test('alias identity requires actual lock package name plus the exact declared npm alias edge', () => {
+  for (const alter of [
+    value => { value.lock.packages['node_modules/glob-real'].name = 'different-package'; },
+    value => { value.lock.packages['node_modules/glob'].dependencies['glob-real'] = 'npm:different-package@13.0.6'; },
+    value => { delete value.lock.packages['node_modules/glob'].dependencies['glob-real']; },
+  ]) {
+    const value = input(); alter(value); rejected(value, 'AUDIT_NODE_LOCK_MISMATCH');
+  }
+});
+
+test('calculated advisory digest and range must match the real npm12 alias derivation', () => {
+  for (const alter of [
+    via => { via.source = 'A'.repeat(86) + '=='; },
+    via => { via.range = '>=9'; },
+    via => { via.title += ' changed'; },
+  ]) {
+    const value = input(), via = value.audit.vulnerabilities.glob.via.find(item => typeof item.source === 'string');
+    alter(via); rejected(value, 'AUDIT_ADVISORY_SHAPE_INVALID');
+  }
+});
+
+test('null-url calculated meta requires its real alias implementation-to-child lock edge', () => {
+  const value = input(); delete value.lock.packages['node_modules/rimraf-real'].dependencies.glob;
+  rejected(value, 'AUDIT_ADVISORY_SHAPE_INVALID');
+  const unknown = input(); unknown.audit.vulnerabilities.rimraf.via[0].title = 'Unknown metadata';
+  rejected(unknown, 'AUDIT_ADVISORY_SHAPE_INVALID');
+});
+
+test('unknown advisory keys and arbitrary null source entries remain fail closed', () => {
+  const value = input(); value.audit.vulnerabilities.glob.via[0].unexpected = true;
+  rejected(value, 'AUDIT_ADVISORY_SHAPE_INVALID');
+  const malformed = input(); malformed.audit.vulnerabilities.glob.via.push(null);
+  rejected(malformed, 'AUDIT_ADVISORY_SHAPE_INVALID');
+});
+
+test('Critical still blocks first and a newly promoted unregistered High cannot borrow alias normalization', () => {
+  const critical = input(); critical.audit.vulnerabilities.glob.severity = 'critical';
+  critical.audit.metadata.vulnerabilities.moderate--; critical.audit.metadata.vulnerabilities.critical++;
+  rejected(critical, 'CRITICAL_VULNERABILITY');
+  const high = input(); high.audit.vulnerabilities['follow-redirects'] = input(false).audit.vulnerabilities['follow-redirects'];
+  high.audit.metadata.vulnerabilities.high++; high.audit.metadata.vulnerabilities.total++; high.npmExitCode = 1;
+  rejected(high, 'UNREVIEWED_HIGH_NODE');
+});
+
+test('a Moderate wrapper still cannot hide a higher severity direct advisory', () => {
+  const value = input(); value.audit.vulnerabilities.glob.via[0].severity = 'high';
+  rejected(value, 'AUDIT_SEVERITY_INCONSISTENT');
+});
+
+test('review expiry, patched-version policy mutation and npm exit consistency keep their original gates', () => {
+  const expired = input(); expired.now = new Date('2026-11-05T00:00:00Z');
+  rejected(expired, 'PENDING_REVIEW_EXPIRED_OR_INVALID');
+  const policy = input(); policy.pending.upstreamPatchedVersion = '1.16.2';
+  rejected(policy, 'PENDING_POLICY_INVALID');
+  const status = input(); status.npmExitCode = 1;
+  rejected(status, 'NPM_EXIT_OR_NETWORK_ERROR');
+});
+}

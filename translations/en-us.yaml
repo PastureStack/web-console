@@ -4887,6 +4887,7 @@ webmcp:
   approved: "Plan approved. The AI can now execute it."
   review: "Review pending upgrade"
   stale: "The session, environment, or plan changed. Ask the AI to preview again."
+  forbidden: "The current account or API Key is not allowed to perform this operation on this target. Find the target again and generate a new preview, or contact an administrator to check permissions."
   failed: "The plan could not be approved. Review the error and try again."
   expires: "Expires"
   dismiss: "Dismiss preview"
