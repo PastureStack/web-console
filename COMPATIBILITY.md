@@ -1,5 +1,12 @@
 # Compatibility Contract
 
+## Candidate 1.6.203 / bridge 0.2.5
+
+Adds restricted-Key discovery against the existing Engine361 typed contract.
+Default discovery remains ordinary `apiKey`; use `apiKeyRestricted` explicitly.
+The assembled Server also needs Engine363 for accurate External Service previews
+and the retained native ServiceIndex cleanup repair. Publication and runtime acceptance remain pending.
+
 ## Web Console 1.6.202 / bridge 0.2.4 published
 
 The matching typed workflows require Engine 0.183.361 and the installed audit

@@ -24,7 +24,9 @@ const family = (name, resources, coverageStatus = 'implemented', reason = '') =>
 
 export const RESOURCE_FAMILIES = Object.freeze([
   family('accounts', [global('account', 'accounts', ['kind'])]),
-  family('api-keys', [global('apiKey', 'apikeys', ['kind', 'expiresAt'])]),
+  family('api-keys', [global('apiKey', 'apikeys', ['kind', 'expiresAt']),
+    global('apiKeyRestricted', 'apikeyrestricteds', ['kind', 'expiresAt'])], 'pending-adapter',
+  'Safe metadata reads support legacy apiKey and restricted or expiring apiKeyRestricted. Select resourceType explicitly for the intended kind, including same-name Keys. Omitting resourceType queries apiKey only and does not combine both kinds. Credential creation, policy changes and revocation remain in the normal human Key UI; this is partial workflow coverage.'),
   family('audit', [global('auditLog', 'auditLogs', ['eventType', 'resourceType', 'responseCode', 'httpStatus', 'authType', 'interactionChannel', 'decision', 'outcome', 'operation'])], 'pending-adapter', 'Typed audit metadata queries are implemented through the matching Engine and broker owner for the native session and dedicated-Key bridge. Export and raw request/response payloads remain in the human audit UI; this is partial workflow coverage.'),
   family('authentication', [], 'pending-adapter', 'Authentication configuration uses its dedicated authenticated API. Login and credential entry remain human ceremonies.'),
   family('catalog', [catalog('catalogTemplate', ['name', 'description', 'catalogId', 'templateBase', 'templateKey', 'catalogScope', 'defaultVersion', 'maintainer', 'license']),

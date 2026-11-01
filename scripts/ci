@@ -18,6 +18,7 @@ node --test scripts/test-webmcp-certificate-metadata.mjs
 node --test scripts/test-webmcp-audit.mjs scripts/test-webmcp-audit-extension.mjs
 node scripts/test-ai-collaboration-ui.js
 node scripts/test-ai-resource-review-labels.mjs
+node --test scripts/test-ai-resource-confirm-errors.mjs
 ./scripts/check-ui-catalog-version-select
 node ./scripts/check-ui-catalog-form-contract.js
 node ./scripts/check-ui-code-block-contrast.js

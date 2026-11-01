@@ -12,6 +12,12 @@ const STATES = {active: 'formPorts.preflight.state.active', inactive: 'formPorts
   removed: 'webmcp.removedState', mixed: 'webmcp.mixedState', empty: 'webmcp.emptyStack',
   start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove'};
 
+// Only an already sanitized public code selects fixed human guidance.
+export function resourceConfirmationErrorKey(code) {
+  if ( code === 'FORBIDDEN' ) { return 'webmcp.forbidden'; }
+  return ['CONFLICT', 'SESSION_REQUIRED', 'STALE_REFERENCE', 'STALE_REF', 'CONTEXT_CHANGED'].includes(code) ? 'webmcp.stale' : 'webmcp.failed';
+}
+
 // UI text only. Keep the immutable plan and its exact JSON program values intact.
 export function resourceReviewLabels(plan, translate) {
   const text = (key) => String(translate(key || 'generic.unknown'));

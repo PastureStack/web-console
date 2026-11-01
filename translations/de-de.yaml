@@ -4490,6 +4490,7 @@ webmcp:
   approved: "Plan genehmigt. Die KI kann ihn jetzt ausführen."
   review: "Ausstehendes Upgrade prüfen"
   stale: "Die Sitzung, die Umgebung oder der Plan wurde geändert. Bitten Sie die KI, erneut eine Vorschau zu erstellen."
+  forbidden: "Das aktuelle Konto oder der API-Schlüssel darf diese Aktion für dieses Ziel nicht ausführen. Suchen Sie das Ziel erneut und erstellen Sie eine neue Vorschau, oder wenden Sie sich an einen Administrator, um die Berechtigungen zu prüfen."
   failed: "Der Plan konnte nicht genehmigt werden. Prüfen Sie den Fehler und versuchen Sie es erneut."
   expires: "Gültig bis"
   dismiss: "Vorschau schließen"

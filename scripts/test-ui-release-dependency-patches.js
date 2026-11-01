@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const http = require('node:http');
 const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
+const vm = require('node:vm');
 const redirects = require('follow-redirects');
 const MarkdownIt = require('markdown-it');
 
@@ -34,7 +35,7 @@ function get(url, options) {
 
 test('official dependency patches are installed at every locked occurrence', () => {
   const lock = require('../package-lock.json');
-  for (const [name, version] of Object.entries({'follow-redirects': '1.16.1', 'markdown-it': '14.3.3'})) {
+  for (const [name, version] of Object.entries({'follow-redirects': '1.16.2', 'markdown-it': '14.3.3'})) {
     const occurrences = Object.entries(lock.packages).filter(([namePath]) => namePath.endsWith(`node_modules/${name}`));
     assert.ok(occurrences.length > 0);
     for (const [namePath, entry] of occurrences) {
@@ -75,6 +76,33 @@ test('cross-origin redirects strip array credentials and regex-significant custo
   }
 });
 
+test('cross-realm sensitiveHeaders arrays strip custom credentials across origins', async () => {
+  const target = await listen((request, response) => response.end(JSON.stringify(request.headers)));
+  const origin = await listen((request, response) => {
+    response.writeHead(302, {Location: `http://127.0.0.1:${target.address().port}/target`});
+    response.end();
+  });
+  try {
+    const sensitiveHeaders = vm.runInNewContext('["X-Token^Key", "X-Token|Key"]');
+    assert.equal(Array.isArray(sensitiveHeaders), true);
+    assert.equal(sensitiveHeaders instanceof Array, false, 'exercise the foreign-realm array boundary');
+    for (const headers of [
+      {'Authorization': 'test-auth', 'Cookie': 'test-cookie', 'X-Token^Key': 'test-one', 'X-Token|Key': 'test-two', 'X-Control': 'keep'},
+      vm.runInNewContext('["Authorization", "test-auth", "Cookie", "test-cookie", "X-Token^Key", "test-one", "X-Token|Key", "test-two", "X-Control", "keep"]'),
+    ]) {
+      const received = await get(`http://127.0.0.1:${origin.address().port}/redirect`, {headers, sensitiveHeaders});
+      assert.equal(received.authorization, undefined);
+      assert.equal(received.cookie, undefined);
+      assert.equal(received['x-token^key'], undefined);
+      assert.equal(received['x-token|key'], undefined);
+      assert.equal(received['x-control'], 'keep');
+    }
+  } finally {
+    await close(origin);
+    await close(target);
+  }
+});
+
 test('same-origin redirects retain legitimate authentication headers', async () => {
   const server = await listen((request, response) => {
     if (request.url === '/redirect') {
@@ -86,10 +114,13 @@ test('same-origin redirects retain legitimate authentication headers', async () 
   });
   try {
     const received = await get(`http://127.0.0.1:${server.address().port}/redirect`, {
-      headers: {Authorization: 'test-auth', Cookie: 'test-cookie'},
+      headers: {Authorization: 'test-auth', Cookie: 'test-cookie', 'X-Token^Key': 'test-custom', 'X-Control': 'keep'},
+      sensitiveHeaders: vm.runInNewContext('["X-Token^Key"]'),
     });
     assert.equal(received.authorization, 'test-auth');
     assert.equal(received.cookie, 'test-cookie');
+    assert.equal(received['x-token^key'], 'test-custom');
+    assert.equal(received['x-control'], 'keep');
   } finally {
     await close(server);
   }

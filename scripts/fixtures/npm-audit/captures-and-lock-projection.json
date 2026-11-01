@@ -1,0 +1,928 @@
+{
+  "schemaVersion": 1,
+  "description": "Exact public npm12 primary report bytes and a projection of only lock fields/edges needed by these policy fixtures. Full originals and original-parser causal RED are retained outside the repository. These are not the failed CI run bytes.",
+  "captures": {
+    "before": {
+      "rawFile": "npm12-before-follow-redirects.json",
+      "rawSha256": "5edfeda930b767ab22fb4b769ef61aa306260821d13faa1d0809cde4030ce5e0",
+      "capturedUtc": "2026-11-01T04:10:05.907Z",
+      "npmExitCode": 1,
+      "nodeVersion": "v24.22.1",
+      "npmVersion": "12.0.2",
+      "sourceCommit": "1c0ddbad342e21d23e898133706fa7e9fcb738fc",
+      "sourceLockSha256": "60a8b04ec29068ca0939ee702b905afb3caa17edc0f26474d50438323a093a88",
+      "sourceParserSha256": "f3bfebdd047e6111cd198d7be3d03a92863c66dc99549f4d15d05641cd5dee4d",
+      "sourcePendingSha256": "d09b6834b4610a4984ff0e0390ffc477075898df2f541ae62c147bf40df1c2ca",
+      "originalParserFailureCode": "AUDIT_VIA_DUPLICATE"
+    },
+    "after": {
+      "rawFile": "npm12-after-follow-redirects.json",
+      "rawSha256": "76e1aba28fbb0d18cdfaeaceab1588f17b3944c52f778cbf2bcbc7b4c11bc816",
+      "capturedUtc": "2026-11-01T04:14:39.264Z",
+      "npmExitCode": 0,
+      "nodeVersion": "v24.22.1",
+      "npmVersion": "12.0.2",
+      "sourceCommit": "1c0ddbad342e21d23e898133706fa7e9fcb738fc",
+      "sourceLockSha256": "a0dfad456f43949e8c7c707197a0d73c2bb54b1a2a6d0ce763db1e3be7038452",
+      "sourceParserSha256": "f3bfebdd047e6111cd198d7be3d03a92863c66dc99549f4d15d05641cd5dee4d",
+      "sourcePendingSha256": "d09b6834b4610a4984ff0e0390ffc477075898df2f541ae62c147bf40df1c2ca",
+      "originalParserFailureCode": "AUDIT_VIA_DUPLICATE"
+    }
+  },
+  "lock": {
+    "lockfileVersion": 3,
+    "packages": {
+      "": {
+        "name": "@pasturestack/web-console",
+        "version": "1.6.203",
+        "dependencies": {
+          "sass": "1.103.1"
+        }
+      },
+      "node_modules/@ember-tooling/blueprint-model": {
+        "version": "0.7.1"
+      },
+      "node_modules/@ember-tooling/blueprint-model/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/@ember-tooling/blueprint-model/node_modules/walk-sync": {
+        "version": "4.0.2"
+      },
+      "node_modules/@ember-tooling/classic-build-addon-blueprint": {
+        "version": "7.2.0"
+      },
+      "node_modules/@ember-tooling/classic-build-addon-blueprint/node_modules/walk-sync": {
+        "version": "3.0.0"
+      },
+      "node_modules/@ember-tooling/classic-build-app-blueprint": {
+        "version": "7.2.0"
+      },
+      "node_modules/@ember/app-blueprint": {
+        "version": "7.2.1"
+      },
+      "node_modules/@ember/app-blueprint/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/@ember/app-blueprint/node_modules/walk-sync": {
+        "version": "4.0.2"
+      },
+      "node_modules/@ember/legacy-built-in-components": {
+        "version": "0.5.0"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/babel-plugin-module-resolver": {
+        "version": "3.2.0"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-babel-transpiler": {
+        "version": "7.8.1"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-funnel": {
+        "version": "2.0.2"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-funnel/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-merge-trees": {
+        "version": "3.0.2"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-persistent-filter": {
+        "version": "2.3.1"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-persistent-filter/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-persistent-filter/node_modules/walk-sync": {
+        "version": "1.1.4"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/broccoli-plugin/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/ember-cli-babel": {
+        "version": "7.26.11"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/matcher-collection": {
+        "version": "1.1.2"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/@ember/legacy-built-in-components/node_modules/sync-disk-cache/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/@embroider/addon-shim": {
+        "version": "1.10.3"
+      },
+      "node_modules/@embroider/addon-shim/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/@embroider/addon-shim/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/@embroider/addon-shim/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/@embroider/addon-shim/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/@embroider/addon-shim/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/@embroider/macros": {
+        "version": "1.20.5"
+      },
+      "node_modules/@embroider/shared-internals": {
+        "version": "3.1.1"
+      },
+      "node_modules/async-disk-cache": {
+        "version": "1.3.5"
+      },
+      "node_modules/async-disk-cache/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/async-disk-cache/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/babel-plugin-module-resolver": {
+        "version": "5.0.3"
+      },
+      "node_modules/babel-plugin-module-resolver/node_modules/glob": {
+        "version": "9.3.5"
+      },
+      "node_modules/babel-plugin-module-resolver/node_modules/minimatch": {
+        "version": "8.0.7"
+      },
+      "node_modules/braces": {
+        "version": "3.0.3",
+        "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+        "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+        "dev": true
+      },
+      "node_modules/broccoli": {
+        "version": "4.0.0",
+        "resolved": "https://registry.npmjs.org/broccoli/-/broccoli-4.0.0.tgz",
+        "integrity": "sha512-p5el5/ig0QeRGFPkLMPdm7KblkTm44eicEWfwnRTz6hncghVuRZ0+XDAtCi7ynxobeE/mey5Q7lAulFkgNzxVA==",
+        "dev": true,
+        "dependencies": {
+          "findup-sync": "^5.0.0",
+          "sane": "^5.0.1"
+        }
+      },
+      "node_modules/broccoli-asset-rev": {
+        "version": "3.0.0"
+      },
+      "node_modules/broccoli-asset-rewrite": {
+        "version": "2.0.0"
+      },
+      "node_modules/broccoli-babel-transpiler": {
+        "version": "8.0.2"
+      },
+      "node_modules/broccoli-babel-transpiler/node_modules/async-disk-cache": {
+        "version": "2.1.0"
+      },
+      "node_modules/broccoli-babel-transpiler/node_modules/broccoli-persistent-filter": {
+        "version": "3.1.3"
+      },
+      "node_modules/broccoli-babel-transpiler/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/broccoli-babel-transpiler/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-babel-transpiler/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/broccoli-caching-writer": {
+        "version": "3.1.0"
+      },
+      "node_modules/broccoli-caching-writer/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-caching-writer/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-caching-writer/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-concat": {
+        "version": "4.2.7"
+      },
+      "node_modules/broccoli-concat/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/broccoli-concat/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-concat/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/broccoli-config-loader": {
+        "version": "1.0.1"
+      },
+      "node_modules/broccoli-config-replace": {
+        "version": "1.1.3"
+      },
+      "node_modules/broccoli-config-replace/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-config-replace/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-config-replace/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-debug": {
+        "version": "0.6.5"
+      },
+      "node_modules/broccoli-debug/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-debug/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-debug/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-file-creator": {
+        "version": "2.1.1"
+      },
+      "node_modules/broccoli-file-creator/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-file-creator/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-file-creator/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-filter": {
+        "version": "1.3.0"
+      },
+      "node_modules/broccoli-filter/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-filter/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-filter/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-funnel": {
+        "version": "4.0.0"
+      },
+      "node_modules/broccoli-funnel/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/broccoli-funnel/node_modules/walk-sync": {
+        "version": "4.0.2"
+      },
+      "node_modules/broccoli-kitchen-sink-helpers": {
+        "version": "0.3.1"
+      },
+      "node_modules/broccoli-kitchen-sink-helpers/node_modules/glob": {
+        "version": "5.0.15"
+      },
+      "node_modules/broccoli-merge-trees": {
+        "version": "4.2.0"
+      },
+      "node_modules/broccoli-merge-trees/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/broccoli-merge-trees/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-merge-trees/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/broccoli-persistent-filter": {
+        "version": "1.4.6"
+      },
+      "node_modules/broccoli-persistent-filter/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-persistent-filter/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-persistent-filter/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-plugin": {
+        "version": "6.0.0"
+      },
+      "node_modules/broccoli-sass-source-maps": {
+        "version": "4.3.0"
+      },
+      "node_modules/broccoli-stew": {
+        "version": "3.0.0"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-funnel": {
+        "version": "2.0.2"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-funnel/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-funnel/node_modules/walk-sync": {
+        "version": "0.3.4"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-merge-trees": {
+        "version": "3.0.2"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-merge-trees/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-persistent-filter": {
+        "version": "2.3.1"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-persistent-filter/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/broccoli-stew/node_modules/broccoli-plugin": {
+        "version": "2.1.0"
+      },
+      "node_modules/broccoli-stew/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-stew/node_modules/matcher-collection": {
+        "version": "1.1.2"
+      },
+      "node_modules/broccoli-stew/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/broccoli-stew/node_modules/walk-sync": {
+        "version": "1.1.4"
+      },
+      "node_modules/broccoli-string-replace": {
+        "version": "0.1.2"
+      },
+      "node_modules/broccoli-terser-sourcemap": {
+        "version": "4.1.1"
+      },
+      "node_modules/broccoli-terser-sourcemap/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/broccoli-terser-sourcemap/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/broccoli-terser-sourcemap/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/broccoli-terser-sourcemap/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/broccoli/node_modules/tree-sync": {
+        "version": "2.1.0"
+      },
+      "node_modules/ejs": {
+        "version": "3.1.10"
+      },
+      "node_modules/ember-api-store": {
+        "version": "2.8.5"
+      },
+      "node_modules/ember-api-store/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/ember-api-store/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-api-store/node_modules/ember-cli-babel": {
+        "version": "8.3.1"
+      },
+      "node_modules/ember-api-store/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-api-store/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-api-store/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-auto-import": {
+        "version": "2.13.1"
+      },
+      "node_modules/ember-auto-import/node_modules/@embroider/shared-internals": {
+        "version": "2.9.2"
+      },
+      "node_modules/ember-auto-import/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/ember-auto-import/node_modules/broccoli-funnel/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-auto-import/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-auto-import/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-auto-import/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-auto-import/node_modules/walk-sync": {
+        "version": "3.0.0"
+      },
+      "node_modules/ember-basic-dropdown": {
+        "version": "9.0.0"
+      },
+      "node_modules/ember-cli": {
+        "version": "7.2.0",
+        "resolved": "https://registry.npmjs.org/ember-cli/-/ember-cli-7.2.0.tgz",
+        "integrity": "sha512-EafquLJ+EVHz0nNo32NWwAfHr5UxTXn9zdlukuKZFSFrR4G6RRStmBPQ5O0bLSaQVDtU+jOe5gGTHSS4Xy3uQA==",
+        "dev": true,
+        "dependencies": {
+          "broccoli": "^4.0.0",
+          "find-yarn-workspace-root": "^2.0.0",
+          "sane": "^5.0.1"
+        }
+      },
+      "node_modules/ember-cli-babel": {
+        "version": "8.3.2"
+      },
+      "node_modules/ember-cli-babel/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/ember-cli-babel/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-cli-babel/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-cli-babel/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-cli-babel/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-cli-htmlbars": {
+        "version": "7.0.1"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/async-disk-cache": {
+        "version": "2.1.0"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/broccoli-persistent-filter": {
+        "version": "3.1.3"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/walk-sync": {
+        "version": "4.0.2"
+      },
+      "node_modules/ember-cli-htmlbars/node_modules/walk-sync/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/ember-cli-preprocess-registry": {
+        "version": "5.0.1"
+      },
+      "node_modules/ember-cli-preprocess-registry/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/ember-cli-preprocess-registry/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-cli-preprocess-registry/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-cli-preprocess-registry/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-cli-preprocess-registry/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-cli-sass": {
+        "version": "11.0.1"
+      },
+      "node_modules/ember-cli-sass/node_modules/broccoli-funnel": {
+        "version": "2.0.2"
+      },
+      "node_modules/ember-cli-sass/node_modules/broccoli-merge-trees": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-cli-sass/node_modules/broccoli-plugin": {
+        "version": "1.3.1"
+      },
+      "node_modules/ember-cli-sass/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-cli-sass/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/ember-cli-terser": {
+        "version": "4.0.2"
+      },
+      "node_modules/ember-cli-typescript": {
+        "version": "4.2.1"
+      },
+      "node_modules/ember-cli-typescript/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-cli/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/ember-cli/node_modules/broccoli-funnel/node_modules/minimatch": {
+        "version": "3.1.5"
+      },
+      "node_modules/ember-cli/node_modules/broccoli-funnel/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-cli/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-cli/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/ember-cli/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-cli/node_modules/rimraf/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-cli/node_modules/rimraf/node_modules/minimatch": {
+        "version": "3.1.5"
+      },
+      "node_modules/ember-cli/node_modules/tree-sync": {
+        "version": "2.1.0"
+      },
+      "node_modules/ember-cli/node_modules/tree-sync/node_modules/matcher-collection": {
+        "version": "1.1.2"
+      },
+      "node_modules/ember-cli/node_modules/tree-sync/node_modules/minimatch": {
+        "version": "3.1.5"
+      },
+      "node_modules/ember-cli/node_modules/tree-sync/node_modules/walk-sync": {
+        "version": "0.3.4"
+      },
+      "node_modules/ember-cli/node_modules/walk-sync": {
+        "version": "4.0.2"
+      },
+      "node_modules/ember-fetch": {
+        "version": "5.1.3"
+      },
+      "node_modules/ember-fetch/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "node_modules/ember-fetch/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "node_modules/ember-fetch/node_modules/ember-cli-babel": {
+        "version": "8.3.1"
+      },
+      "node_modules/ember-fetch/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/ember-fetch/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/ember-fetch/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/ember-load-initializers": {
+        "version": "3.0.1"
+      },
+      "node_modules/ember-power-select": {
+        "version": "9.0.2"
+      },
+      "node_modules/ember-source": {
+        "version": "7.2.0"
+      },
+      "node_modules/filelist": {
+        "version": "1.0.6"
+      },
+      "node_modules/filelist/node_modules/minimatch": {
+        "version": "5.1.9"
+      },
+      "node_modules/find-yarn-workspace-root": {
+        "version": "2.0.0",
+        "resolved": "https://registry.npmjs.org/find-yarn-workspace-root/-/find-yarn-workspace-root-2.0.0.tgz",
+        "integrity": "sha512-1IMnbjt4KzsQfnhnzNd8wUEgXZ44IzZaZmnLYx7D5FZlaHt2gW20Cri8Q+E/t5tIj4+epTBub+2Zxu/vNILzqQ==",
+        "dev": true,
+        "dependencies": {
+          "micromatch": "^4.0.2"
+        }
+      },
+      "node_modules/findup-sync": {
+        "version": "5.0.0",
+        "resolved": "https://registry.npmjs.org/findup-sync/-/findup-sync-5.0.0.tgz",
+        "integrity": "sha512-MzwXju70AuyflbgeOhzvQWAvvQdo1XL0A9bVvlXsYcFEBM87WR4OakL4OfZq+QRmr+duJubio+UtNQCPsVESzQ==",
+        "dev": true,
+        "dependencies": {
+          "micromatch": "^4.0.4"
+        }
+      },
+      "node_modules/fixturify": {
+        "version": "1.3.0"
+      },
+      "node_modules/fixturify-project": {
+        "version": "1.10.0"
+      },
+      "node_modules/follow-redirects": {
+        "version": "1.16.1"
+      },
+      "node_modules/fs-merger": {
+        "version": "3.2.1"
+      },
+      "node_modules/fs-merger/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "node_modules/fs-updater": {
+        "version": "1.0.4"
+      },
+      "node_modules/fs-updater/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/fs-updater/node_modules/rimraf": {
+        "version": "2.7.1"
+      },
+      "node_modules/glob": {
+        "version": "13.0.6",
+        "dependencies": {
+          "glob-real": "npm:glob@13.0.6"
+        }
+      },
+      "node_modules/glob-real": {
+        "name": "glob",
+        "version": "13.0.6"
+      },
+      "node_modules/glob-real/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/jake": {
+        "version": "10.9.4"
+      },
+      "node_modules/matcher-collection": {
+        "version": "2.0.1"
+      },
+      "node_modules/merge-trees": {
+        "version": "2.0.0"
+      },
+      "node_modules/micromatch": {
+        "version": "4.0.8",
+        "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz",
+        "integrity": "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==",
+        "dev": true,
+        "dependencies": {
+          "braces": "^3.0.3"
+        }
+      },
+      "node_modules/minimatch": {
+        "version": "3.1.5"
+      },
+      "node_modules/quick-temp": {
+        "version": "0.1.9"
+      },
+      "node_modules/quick-temp/node_modules/glob": {
+        "version": "10.5.0"
+      },
+      "node_modules/quick-temp/node_modules/minimatch": {
+        "version": "9.0.9"
+      },
+      "node_modules/quick-temp/node_modules/rimraf": {
+        "version": "5.0.10"
+      },
+      "node_modules/rimraf": {
+        "version": "6.1.3",
+        "dependencies": {
+          "rimraf-real": "npm:rimraf@6.1.3"
+        }
+      },
+      "node_modules/rimraf-real": {
+        "name": "rimraf",
+        "version": "6.1.3",
+        "dependencies": {
+          "glob": "^13.0.3"
+        }
+      },
+      "node_modules/sane": {
+        "version": "5.0.1",
+        "resolved": "https://registry.npmjs.org/sane/-/sane-5.0.1.tgz",
+        "integrity": "sha512-9/0CYoRz0MKKf04OMCO3Qk3RQl1PAwWAhPSQSym4ULiLpTZnrY1JoZU0IEikHu8kdk2HvKT/VwQMq/xFZ8kh1Q==",
+        "dev": true,
+        "dependencies": {
+          "micromatch": "^4.0.2"
+        }
+      },
+      "node_modules/sass": {
+        "version": "1.103.1"
+      },
+      "node_modules/sync-disk-cache": {
+        "version": "2.1.0"
+      },
+      "node_modules/sync-disk-cache/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "node_modules/sync-disk-cache/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "node_modules/testem": {
+        "version": "3.20.0"
+      },
+      "node_modules/testem/node_modules/consolidate": {
+        "version": "1.0.4"
+      },
+      "node_modules/testem/node_modules/minimatch": {
+        "version": "10.2.6"
+      },
+      "node_modules/tree-sync": {
+        "version": "1.4.0"
+      },
+      "node_modules/walk-sync": {
+        "version": "0.3.4"
+      },
+      "node_modules/walk-sync/node_modules/matcher-collection": {
+        "version": "1.1.2"
+      },
+      "node_modules/yamljs": {
+        "version": "0.3.0"
+      },
+      "node_modules/yamljs/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "vendor/ember-cli-pagination/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "vendor/ember-cli-pagination/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "vendor/ember-cli-pagination/node_modules/ember-cli-babel": {
+        "version": "8.3.1"
+      },
+      "vendor/ember-cli-pagination/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "vendor/ember-cli-pagination/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "vendor/ember-cli-pagination/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "vendor/ember-rl-dropdown/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "vendor/ember-rl-dropdown/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "vendor/ember-rl-dropdown/node_modules/ember-cli-babel": {
+        "version": "8.3.1"
+      },
+      "vendor/ember-rl-dropdown/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "vendor/ember-rl-dropdown/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "vendor/ember-rl-dropdown/node_modules/walk-sync": {
+        "version": "2.2.0"
+      },
+      "vendor/lacsso/node_modules/broccoli-funnel": {
+        "version": "3.0.8"
+      },
+      "vendor/lacsso/node_modules/broccoli-plugin": {
+        "version": "4.0.7"
+      },
+      "vendor/lacsso/node_modules/ember-cli-babel": {
+        "version": "8.3.1"
+      },
+      "vendor/lacsso/node_modules/glob": {
+        "version": "7.2.3"
+      },
+      "vendor/lacsso/node_modules/rimraf": {
+        "version": "3.0.2"
+      },
+      "vendor/lacsso/node_modules/walk-sync": {
+        "version": "2.2.0"
+      }
+    }
+  },
+  "pending": {
+    "schemaVersion": 1,
+    "advisoryUrl": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "severity": "high",
+    "upstreamPatchedVersion": null,
+    "scope": "controlled-dev-build-inputs-only",
+    "publicationBlockedIfShippedNodes": true,
+    "shippedNodes": [],
+    "advisoryStatus": "withdrawn",
+    "advisoryWithdrawnAt": "2026-10-23T12:53:02Z",
+    "upstreamLatestVersion": "3.0.3",
+    "officialStatusSources": [
+      "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+      "https://registry.npmjs.org/braces/latest"
+    ],
+    "reviewUntil": "2026-11-05",
+    "reviewedAt": "2026-10-29T09:27:01Z",
+    "nodes": [
+      {
+        "path": "node_modules/braces",
+        "version": "3.0.3",
+        "resolved": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+        "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/micromatch",
+        "version": "4.0.8",
+        "resolved": "https://registry.npmjs.org/micromatch/-/micromatch-4.0.8.tgz",
+        "integrity": "sha512-PXwfBhYu0hBCPw8Dn0E+WDYb7af3dSLVWKi3HGv84IdF4TyFoC0ysxFd0Goxw7nSv4T/PzEJQxsYsEiFCKo2BA==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/findup-sync",
+        "version": "5.0.0",
+        "resolved": "https://registry.npmjs.org/findup-sync/-/findup-sync-5.0.0.tgz",
+        "integrity": "sha512-MzwXju70AuyflbgeOhzvQWAvvQdo1XL0A9bVvlXsYcFEBM87WR4OakL4OfZq+QRmr+duJubio+UtNQCPsVESzQ==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/find-yarn-workspace-root",
+        "version": "2.0.0",
+        "resolved": "https://registry.npmjs.org/find-yarn-workspace-root/-/find-yarn-workspace-root-2.0.0.tgz",
+        "integrity": "sha512-1IMnbjt4KzsQfnhnzNd8wUEgXZ44IzZaZmnLYx7D5FZlaHt2gW20Cri8Q+E/t5tIj4+epTBub+2Zxu/vNILzqQ==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/sane",
+        "version": "5.0.1",
+        "resolved": "https://registry.npmjs.org/sane/-/sane-5.0.1.tgz",
+        "integrity": "sha512-9/0CYoRz0MKKf04OMCO3Qk3RQl1PAwWAhPSQSym4ULiLpTZnrY1JoZU0IEikHu8kdk2HvKT/VwQMq/xFZ8kh1Q==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/broccoli",
+        "version": "4.0.0",
+        "resolved": "https://registry.npmjs.org/broccoli/-/broccoli-4.0.0.tgz",
+        "integrity": "sha512-p5el5/ig0QeRGFPkLMPdm7KblkTm44eicEWfwnRTz6hncghVuRZ0+XDAtCi7ynxobeE/mey5Q7lAulFkgNzxVA==",
+        "dev": true
+      },
+      {
+        "path": "node_modules/ember-cli",
+        "version": "7.2.0",
+        "resolved": "https://registry.npmjs.org/ember-cli/-/ember-cli-7.2.0.tgz",
+        "integrity": "sha512-EafquLJ+EVHz0nNo32NWwAfHr5UxTXn9zdlukuKZFSFrR4G6RRStmBPQ5O0bLSaQVDtU+jOe5gGTHSS4Xy3uQA==",
+        "dev": true
+      }
+    ],
+    "edges": [
+      {
+        "from": "node_modules/micromatch",
+        "to": "node_modules/braces",
+        "spec": "^3.0.3"
+      },
+      {
+        "from": "node_modules/findup-sync",
+        "to": "node_modules/micromatch",
+        "spec": "^4.0.4"
+      },
+      {
+        "from": "node_modules/find-yarn-workspace-root",
+        "to": "node_modules/micromatch",
+        "spec": "^4.0.2"
+      },
+      {
+        "from": "node_modules/sane",
+        "to": "node_modules/micromatch",
+        "spec": "^4.0.2"
+      },
+      {
+        "from": "node_modules/broccoli",
+        "to": "node_modules/findup-sync",
+        "spec": "^5.0.0"
+      },
+      {
+        "from": "node_modules/broccoli",
+        "to": "node_modules/sane",
+        "spec": "^5.0.1"
+      },
+      {
+        "from": "node_modules/ember-cli",
+        "to": "node_modules/broccoli",
+        "spec": "^4.0.0"
+      },
+      {
+        "from": "node_modules/ember-cli",
+        "to": "node_modules/find-yarn-workspace-root",
+        "spec": "^2.0.0"
+      },
+      {
+        "from": "node_modules/ember-cli",
+        "to": "node_modules/sane",
+        "spec": "^5.0.1"
+      }
+    ]
+  },
+  "patchedFollowRedirectsNode": {
+    "version": "1.16.2",
+    "resolved": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.16.2.tgz",
+    "integrity": "sha512-/kVP2U8z596Ia0gwFrwyIeo74ta5aVmSeU1FfAUMAmcEP5EP7zydmag3SLiN64NaRKef3lxsq7i/g7ltJQDGow==",
+    "dev": true
+  }
+}

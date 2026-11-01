@@ -4453,6 +4453,7 @@ webmcp:
   approved: "A terv jóváhagyva. Az MI most már végrehajthatja."
   review: "A függőben lévő frissítés áttekintése"
   stale: "A munkamenet, a környezet vagy a terv megváltozott. Kérje meg az MI-t, hogy készítsen új előnézetet."
+  forbidden: "A jelenlegi fiók vagy API-kulcs nem jogosult a művelet végrehajtására ennél a célnál. Keresse meg újra a célt, és készítsen új előnézetet, vagy kérje a rendszergazdától a jogosultságok ellenőrzését."
   failed: "A tervet nem sikerült jóváhagyni. Ellenőrizze a hibát, és próbálja újra."
   expires: "Lejárat"
   dismiss: "Előnézet bezárása"

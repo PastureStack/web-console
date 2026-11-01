@@ -4437,6 +4437,7 @@ webmcp:
   approved: "Naaprubahan ang plano. Maaari na itong isagawa ng AI."
   review: "Suriin ang nakabinbing pag-upgrade"
   stale: "Nagbago ang session, kapaligiran, o plano. Hilingin sa AI na gumawa muli ng paunang tingin."
+  forbidden: "Hindi pinapayagan ang kasalukuyang account o API Key na gawin ang operasyong ito sa target na ito. Hanapin muli ang target at gumawa ng bagong preview, o makipag-ugnayan sa administrator upang suriin ang mga pahintulot."
   failed: "Hindi maaprubahan ang plano. Suriin ang error at subukang muli."
   expires: "Mag-e-expire"
   dismiss: "Isara ang paunang tingin"
