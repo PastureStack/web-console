@@ -38,3 +38,17 @@ following cross-origin redirects. The npm12 audit parser separately recognizes
 lock-proven aliases and exact duplicate causes while retaining distinct advisory
 source/range, raw findings and all existing High/Critical/review-expiry gates.
 This is not a new vulnerability exception or a claim of zero Moderate findings.
+
+## Shared pending-review layout
+
+The global pending-plan reminder could cover the footer after its review modal
+was closed, preventing normal clicks on language and CLI controls. The same
+explicitly enabled review component now lives once in authenticated page
+content. Its existing review observer, manual approval action, escaped text and
+global modal lifecycle remain intact. Scoped wrapping keeps long target paths
+and translated buttons within the page in narrow and RTL layouts. Background
+authorization notices retain their existing alert semantics.
+
+Source-level and isolated layout checks do not replace fresh archive and
+designated browser acceptance. The earlier qualified 27ba candidate is retained
+as superseded evidence; no tag or release was published from it.

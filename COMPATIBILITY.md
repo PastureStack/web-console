@@ -7,6 +7,11 @@ Default discovery remains ordinary `apiKey`; use `apiKeyRestricted` explicitly.
 The assembled Server also needs Engine363 for accurate External Service previews
 and the retained native ServiceIndex cleanup repair. Publication and runtime acceptance remain pending.
 
+Pending-plan and authorization reminders use the authenticated content flow,
+retaining the same explicit WebMCP build ceiling and human review behavior.
+They do not overlay the footer language or CLI controls; long names and review
+labels wrap within the available width, including RTL and narrow layouts.
+
 ## Web Console 1.6.202 / bridge 0.2.4 published
 
 The matching typed workflows require Engine 0.183.361 and the installed audit
