@@ -224,6 +224,98 @@ async function main() {
     assert.equal((await f.service.confirmPendingPlan()).code, 'CONTEXT_CHANGED');
   });
 
+  await test('service create review binds ports and healthCheck to the exact human confirmation', async () => {
+    const dto = {...resourcePlan(), resourceType: 'service', resourceId: null, operation: 'create', changes: [
+      {field: 'ports', before: null, after: '["8080:80/tcp"]'},
+      {field: 'healthCheck', before: null, after: '{"port":80,"interval":2000,"strategy":"recreate"}'},
+    ]};
+    for (const field of ['ports', 'healthCheck']) {
+      const f = fixture('off'); f.service.reviewInboxPlan(dto);
+      const reviewed = f.service.pendingPlan;
+      const modal = {get, plan: reviewed, commands: f.service};
+      assert.equal(confirmationDefinition.stale.call(modal), false);
+      const changed = structuredClone(dto);
+      changed.changes.find(item => item.field === field).after = field === 'ports' ? '["8081:80/tcp"]' : '{"port":81,"interval":2000,"strategy":"recreate"}';
+      f.service.publishPlan({...reviewed, ...f.service.engine.planSummary(changed, reviewed.planRef)});
+      assert.equal(confirmationDefinition.stale.call(modal), true);
+      assert.equal((await f.service.confirmPendingPlan(reviewed)).code, 'CONFLICT'); assert.equal(f.requests.length, 0);
+      f.service.reviewInboxPlan(dto);
+      const original = f.service.pendingPlan;
+      f.service.userStore.rawRequest = async options => { f.requests.push(options); return {body: {...changed, confirmationState: 'approved'}}; };
+      assert.equal((await f.service.confirmPendingPlan(original)).code, 'CONFLICT');
+      assert.equal(f.service.pendingPlan.confirmationState, 'pending'); assert.equal(f.requests.length, 1);
+    }
+  });
+
+  await test('service create verified receipt reaches the live confirmation modal and ignores stale completions', async () => {
+    for (const scenario of ['complete', 'context-changed', 'newer-plan']) {
+      const f = fixture('enabled'), entered = deferred(), barrier = deferred(), requests = [];
+      let dto = {...resourcePlan(), resourceType: 'service', resourceId: null, operation: 'create', changes: [
+        {field: 'name', before: null, after: 'web'}, {field: 'ports', before: null, after: '["80/tcp"]'},
+        {field: 'healthCheck', before: null, after: '{"port":80,"strategy":"recreate"}'},
+      ]};
+      const transport = async request => {
+        requests.push(request);
+        if (request.url === 'projects/project/aiResourceChangePlans') return {body: structuredClone(dto)};
+        if (request.url.endsWith('?action=confirm')) { dto = {...dto, confirmationState: 'approved'}; return {body: structuredClone(dto)}; }
+        if (request.url.endsWith('?action=apply')) {
+          assert.equal(dto.confirmationState, 'approved'); dto = {...dto, status: 'accepted'}; return {body: structuredClone(dto)};
+        }
+        if (request.url.endsWith('/' + dto.id)) {
+          entered.resolve(); await barrier.promise;
+          return {body: {...structuredClone(dto), status: 'succeeded', verifiedResult: true, executionResult: {assignedPorts: ['32768:80/tcp']}}};
+        }
+        throw Error('Unexpected service-create receipt route');
+      };
+      f.service.engine = new CommandEngine({context: f.context, request: transport, ensureSession: async () => {}, wait: async () => {},
+        audit: async () => ({accepted: true, requestId: 'receipt-audit'}), onPlan: (plan, expected) => f.service.publishPlan(plan, expected),
+        onOperation: operation => f.service.clearCompletedPlan(operation)});
+      const parentRef = f.context.reference('resource', {id: 'stack', family: 'stack', resourceType: 'stack', scope: 'project'}, f.context.capture());
+      const preview = await f.service.execute('preview_resource_change', {resourceType: 'service', operation: 'create', parentRef,
+        parameters: {name: 'web', image: 'nginx:1.28', ports: ['80/tcp'], healthCheck: {port: 80}}});
+      assert.equal(preview.status, 'needs_user');
+      const originalDiff = structuredClone(f.service.pendingPlan.displayDiff);
+      const modal = {get, setProperties, commands: f.service, intl: {t: key => key}, approved: false, submitDisabled: false,
+        modalService: {modalOpts: {plan: f.service.pendingPlan}}, clearHumanInputs() {},
+        get plan() { return this.modalService.modalOpts.plan; },
+        set(key, value) { if (key === 'modalService.modalOpts.plan') this.modalService.modalOpts.plan = value; else this[key] = value; },
+      };
+      await confirmationDefinition.actions.confirm.call(modal);
+      assert.equal(modal.approved, true); assert.equal(f.service.pendingPlan.confirmationState, 'approved');
+      const accepted = await f.service.execute('apply_resource_change', {planRef: preview.planRef});
+      assert.equal(accepted.status, 'accepted');
+      const pending = f.service.execute('get_operation', {operationRef: accepted.operationRef}); await entered.promise;
+      if (scenario === 'context-changed') f.snapshot.generation = 'replacement-session';
+      if (scenario === 'newer-plan') f.service.reviewInboxPlan(resourcePlan('2'));
+      const beforeCompletion = f.service.pendingPlan;
+      barrier.resolve(); const completed = await pending;
+      confirmationDefinition.pendingChanged.call(modal);
+      if (scenario === 'complete') {
+        assert.equal(completed.status, 'succeeded'); assert.equal(completed.verifiedResult, true);
+        assert.equal(f.service.pendingPlan.planRef, preview.planRef); assert.equal(f.service.pendingPlan.confirmationState, 'approved');
+        assert.deepEqual(f.service.pendingPlan.displayDiff, originalDiff); assert.notEqual(f.service.pendingPlan, beforeCompletion);
+        assert.equal(modal.modalService.modalOpts.plan, f.service.pendingPlan);
+        const reviewLabels = confirmationDefinition.reviewLabels.call(modal);
+        assert.equal(reviewLabels.executionAssignedPorts, '["32768:80/tcp"]');
+        const Handlebars = require('handlebars').create();
+        Handlebars.registerHelper('t', key => key); Handlebars.registerHelper('action', () => '');
+        Handlebars.registerHelper('or', (left, right) => left || right); Handlebars.registerHelper('top-errors', () => '');
+        const html = Handlebars.compile(fs.readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/template.hbs'), 'utf8'))({
+          plan: modal.plan, reviewLabels, isResourceChange: true, isCatalogLaunch: false, alreadyApproved: true, submitDisabled: true,
+        });
+        assert.match(html, /<section data-testid="ai-resource-execution-result">/); assert.match(html, /32768:80\/tcp/);
+      } else {
+        assert.equal(completed.code, scenario === 'context-changed' ? 'CONTEXT_CHANGED' : undefined);
+        const staleSummary = f.service.engine.resourcePlanSummary({...dto, status: 'succeeded', verifiedResult: true, executionResult: {assignedPorts: ['32768:80/tcp']}}, null);
+        f.service.clearCompletedPlan({planId: dto.id, status: 'succeeded', planSummary: staleSummary});
+        assert.equal(f.service.pendingPlan, beforeCompletion); assert.equal(f.service.pendingPlan.executionResult, undefined);
+        assert.equal(modal.modalService.modalOpts.plan.executionResult, undefined);
+        assert.equal(confirmationDefinition.reviewLabels.call(modal).executionAssignedPorts, null);
+      }
+      assert.equal(requests.filter(request => request.url.endsWith('?action=apply')).length, 1);
+    }
+  });
+
   await test('resource plan inbox joins both typed collections without exposing raw payload fields', async () => {
     const f = fixture('off'), requests = [];
     const modal = Object.assign({}, modalDefinition, {get, set, setProperties, _super() {}, commands: f.service, access: f.service.access,

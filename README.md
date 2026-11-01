@@ -10,11 +10,12 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.204** / bridge **0.2.6**](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
-is published with the original qualified CI artifacts. All 13 release assets
-passed actual anonymous GET, byte-count and SHA256 verification. Audit-admission
-errors now give fixed sign-in, permission or Key-policy guidance while retaining
-context, acknowledgement and uncertain-write protections.
+[Web Console **1.6.205** / bridge **0.2.7**](docs/releases/web-console-1.6.205.md)
+is a source candidate, not a published release. It adds typed Service creation
+with native port bindings and a bounded health check. Human review shows the
+exact settings; a verified result reports assigned ports separately. These
+fields require matching Engine **0.183.366** support and a compatible Server
+assembly. Service creation uses bridge networking and starts stopped.
 
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
@@ -27,11 +28,11 @@ Pending-plan reminders use page content so footer controls remain available,
 and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
-Matching Engine 0.183.365 / Server 1.6.564 assembly and designated browser,
-role, Key, cross-ID and weak-model runtime acceptance remain pending. The full
-243-group frontend inventory is in progress. See the
-[release note](docs/releases/web-console-1.6.204.md) for provenance, validation
-counts and the bridge's inherited dependency-evidence boundary.
+Candidate CI qualification, publication and runtime acceptance are pending.
+The latest published component is
+[Web Console 1.6.204 / bridge 0.2.6](https://github.com/PastureStack/web-console/releases/tag/1.6.204).
+See the [candidate release note](docs/releases/web-console-1.6.205.md) for scope
+and validation boundaries.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).

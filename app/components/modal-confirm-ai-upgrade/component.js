@@ -39,7 +39,7 @@ export default ModalBase.extend({
   humanQuestions: null,
   loadingHumanInputs: false,
   savingHumanInputs: false,
-  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'intl.primaryLocale', function() {
+  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'plan.executionResult', 'intl.primaryLocale', function() {
     return resourceReviewLabels(this.get('plan') || {}, (key) => this.get('intl').t(key));
   }),
   displayExpiry: computed('plan.expiresAt', 'intl.primaryLocale', function() {
@@ -49,8 +49,9 @@ export default ModalBase.extend({
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short',
     });
   }),
-  stale: computed('plan.planRef', 'commands.pendingPlan.planRef', function() {
-    return !this.get('plan.planRef') || this.get('plan.planRef') !== this.get('commands.pendingPlan.planRef');
+  stale: computed('plan.planRef', 'commands.pendingPlan.planRef', 'plan.reviewSignature', 'commands.pendingPlan.reviewSignature', function() {
+    return !this.get('plan.planRef') || this.get('plan.planRef') !== this.get('commands.pendingPlan.planRef') ||
+      this.get('plan.reviewSignature') !== this.get('commands.pendingPlan.reviewSignature');
   }),
   submitDisabled: computed('saving', 'alreadyApproved', 'stale', 'savingHumanInputs', 'plan.inputsReady', 'plan.planStatus', 'isCatalogLaunch', function() {
     return this.get('saving') || this.get('alreadyApproved') || this.get('stale') || this.get('savingHumanInputs') ||
@@ -69,6 +70,9 @@ export default ModalBase.extend({
     else if ( plan.planKind === 'catalog-launch' ) {
       if ( current !== plan ) { this.set('modalService.modalOpts.plan', current); }
       if ( current.inputsReady || current.planStatus !== 'needs_user' ) { this.clearHumanInputs(); }
+    } else if ( current.planKind === 'resource-change' && current.resourceType === 'service' && current.operation === 'create' &&
+      current.planStatus === 'succeeded' && current.verifiedResult === true && current.executionResult ) {
+      if ( current !== plan ) { this.set('modalService.modalOpts.plan', current); }
     }
   }),
 
@@ -137,7 +141,7 @@ export default ModalBase.extend({
     confirm() {
       if (this.get('submitDisabled')) { return; }
       this.setProperties({saving: true, errors: null});
-      return this.get('commands').confirmPendingPlan().then((result) => {
+      return this.get('commands').confirmPendingPlan(this.get('plan')).then((result) => {
         if (this.isDestroyed || this.isDestroying) { return; }
         if (result.status !== 'succeeded' || result.confirmationState !== 'approved') {
           this.set('errors', [this.get('intl').t(resourceConfirmationErrorKey(result.code))]);

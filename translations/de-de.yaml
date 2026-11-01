@@ -4452,6 +4452,7 @@ apiKeyAudit:
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
 
 webmcp:
+  assignedPorts: Zugewiesene Portzuordnungen
   backgroundAuthorizationDenied: "Die Berechtigungsprüfung hat einen Hintergrundvorgang abgelehnt. Änderungen können teilweise erfolgt sein; der vollständige Abschluss ist nicht bestätigt. Prüfen Sie die aktuellen Berechtigungen und den ursprünglichen Vorgangsbeleg. Senden oder genehmigen Sie die Änderung nicht blind erneut."
   catalogReferenceAmbiguous: "Einige Ressourcen haben identische Anzeigenamen und lassen sich nicht sicher unterscheiden. Prüfen Sie das Ziel vor der Auswahl in der normalen Konsole."
   catalogLaunchPermissions: "Ein Katalogstart liest die erstellten Ressourcen, konfiguriert Dienstverknüpfungen und kann Dienste starten. Der Zielbereich benötigt Lese-, Erstellungs- und Aktualisierungsrechte."

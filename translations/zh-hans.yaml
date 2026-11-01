@@ -4292,6 +4292,7 @@ apiKeyAudit:
     load: 无法加载密钥审计。请刷新后重试。
 
 webmcp:
+  assignedPorts: 实际分配的端口映射
   backgroundAuthorizationDenied: "后台操作因权限检查被拒绝，部分变更可能已经完成，整体完成状态尚未验证。请检查当前权限，再核对原操作记录；不要盲目重新提交或再次批准这项变更。"
   catalogReferenceAmbiguous: "部分资源显示名称相同，无法安全区分。请先在原有控制台核对目标，再进行选择。"
   catalogLaunchPermissions: "从目录创建会读取新资源、设置服务链接，并可能启动服务，因此目标范围需要读取、创建和更新权限。"

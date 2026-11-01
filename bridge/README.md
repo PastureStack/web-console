@@ -5,15 +5,18 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-[Bridge **0.2.6**](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
-is published with Web Console 1.6.204. Verified audit-admission authentication and
-Key-policy failures give safe corrective guidance while start/result ACK,
-context and revision protections remain. All 13 release assets passed anonymous
-byte-count/SHA256 readback. Matching Engine 0.183.365 / Server 1.6.564 assembly and native
-acceptance remain pending; use the release's documented compatibility limits.
+[Bridge **0.2.7** / Web Console **1.6.205**](../docs/releases/web-console-1.6.205.md)
+is a source candidate, not a published archive. It adds Service create `ports`
+and `healthCheck` using the same typed command contract as the browser. Matching
+Engine **0.183.366** support and a compatible Server assembly are required.
+Creation uses bridge networking and starts stopped. Human approval binds the
+exact review; verified native port assignments appear only in read-only
+`executionResult.assignedPorts`, separately from approved changes. See the
+[field contract](../docs/webmcp.md#service-create-ports-and-health-checks).
+Candidate CI, publication and runtime acceptance remain pending.
 
-The [0.2.6 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
-contains twelve typed tools for resource-family
+The latest published [0.2.6 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
+contains the same twelve typed tool names for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
 hosts rather than a manual instance count; they do not advise retrying the plan.
@@ -55,7 +58,8 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-Download the numeric release's `pasturestack-webmcp-bridge-0.2.6.zip` and its
+Until 0.2.7 is published, the following download example uses published 0.2.6,
+which does not include the new Service create fields. Download its archive and
 `.zip.sha256` checksum, then verify before extraction:
 
 ```sh
@@ -79,10 +83,11 @@ records the included source hashes; the root also includes LICENSE and the
 bridge CycloneDX SBOM. The published 0.2.6 source proof is linked in the
 [release note](../docs/releases/web-console-1.6.204.md): its fresh source ZIP/SBOM
 and original CI are separate from carried 0.2.5 dependency/install/SDK evidence.
-No new 0.2.6 install or SDK handshake is claimed. To package a source checkout:
+No new 0.2.6 install or SDK handshake is claimed. To package the current 0.2.7
+source candidate, first generate a matching bridge SBOM and then run:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.6 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.6.zip
+python scripts/package-webmcp-bridge.py --version 0.2.7 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.7.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private

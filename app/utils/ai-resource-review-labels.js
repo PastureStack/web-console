@@ -2,7 +2,7 @@ const TYPES = {certificate: 'certificatesPage.index.header', dnsService: 'servic
 const OPERATIONS = {update_targets: 'formTarget.target', start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
   create: 'saveCancel.create', create_from_catalog: 'newCatalog.saveNew', update_metadata: 'generic.edit', scale: 'serviceInfoPartial.scale', archive: 'archive.action', restore: 'archive.restore'};
 const FIELDS = {targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
-  state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint',
+  state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint', ports: 'generic.ports', healthCheck: 'newContainer.tabs.healthCheck',
   operation: 'generic.actions', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
   startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
   catalogTemplate: 'newCatalog.catalog', catalogVersion: 'newCatalog.templateVersion', serviceCount: 'apiKeyAccess.selector.types.service',
@@ -11,6 +11,8 @@ const STATES = {active: 'formPorts.preflight.state.active', inactive: 'formPorts
   running: 'formPorts.preflight.state.running', stopped: 'formPorts.preflight.state.stopped',
   removed: 'webmcp.removedState', mixed: 'webmcp.mixedState', empty: 'webmcp.emptyStack',
   start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove'};
+const HEALTH_FIELDS = {port: 'port', requestLine: 'request', interval: 'interval', responseTimeout: 'timeout', healthyThreshold: 'healthyThreshold',
+  unhealthyThreshold: 'unhealthyThreshold', initializingTimeout: 'initializingTimeout', reinitializingTimeout: 'reinitializingTimeout', strategy: 'strategy'};
 
 // Only an already sanitized public code selects fixed human guidance.
 export function resourceConfirmationErrorKey(code) {
@@ -26,12 +28,25 @@ export function resourceReviewLabels(plan, translate) {
     if ( input === null ) { return text('webmcp.nullValue'); }
     if ( input === '' ) { return text('webmcp.emptyValue'); }
     if ( typeof input === 'boolean' ) { return text(input ? 'generic.yess' : 'generic.noo'); }
+    if ( field === 'healthCheck' ) {
+      // The command engine already checked this closed JSON value. Translate
+      // its labels and units while leaving the immutable review JSON intact.
+      try {
+        const check = JSON.parse(input);
+        return Object.keys(HEALTH_FIELDS).filter((key) => Object.prototype.hasOwnProperty.call(check, key)).map((key) => {
+          const name = HEALTH_FIELDS[key], unit = ['port', 'requestLine', 'strategy'].includes(key) ? '' : ` ${text(`formHealthCheck.${name}.unit`)}`;
+          const display = key === 'strategy' ? text(`formHealthCheck.strategy.${check[key]}`) : check[key] === '' ? text('webmcp.emptyValue') : String(check[key]);
+          return `${text(`formHealthCheck.${name}.label`)}: ${display}${unit}`;
+        }).join('\n');
+      } catch (error) { return String(input); }
+    }
     if ( ['state', 'childServiceState'].includes(field) && label(STATES, input) ) { return text(label(STATES, input)); }
     if ( field === 'operation' && label(OPERATIONS, input) ) { return text(label(OPERATIONS, input)); }
     return String(input);
   };
   return {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
+    executionAssignedPorts: plan.executionResult ? JSON.stringify(plan.executionResult.assignedPorts) : null,
     createsStopped: plan.operation === 'create' && ['service', 'container', 'externalService', 'dnsService'].includes(plan.resourceType),
     archiveNotices: ['archive', 'restore'].includes(plan.operation) ? [text(plan.operation === 'archive' ? 'archive.explanation' : 'archive.restoreExplanation'),
       text(plan.operation === 'archive' ? 'archive.requiresStopped' : 'archive.restoreBeforeStart'), text('archive.dataWarning')] : [],

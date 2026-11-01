@@ -6,11 +6,12 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-[Web Console 1.6.202 / bridge 0.2.4](releases/web-console-1.6.202.md) is published
-and retains the twelve tools below. New External Service, DNS Alias and audit
-query workflows require matching Engine 0.183.361 / broker components. Web
-component qualification passed; combined Server and live workflow acceptance
-remain pending.
+[Web Console 1.6.205 / bridge 0.2.7](releases/web-console-1.6.205.md) is a source
+candidate with the twelve tools below. Service create ports and health checks
+require matching Engine 0.183.366 support. Candidate qualification, publication,
+compatible Server assembly and live workflow acceptance remain pending. External
+Service, DNS Alias and audit queries retain their matching Engine/broker
+requirements.
 
 | Tool | Purpose |
 | --- | --- |
@@ -48,8 +49,9 @@ metadata edits; service start/stop/restart/remove/scale/create and metadata edit
 and container start/stop/restart/remove/create and metadata edits. A service
 create takes a stack reference. New services and containers are created stopped;
 starting them requires a separate approved plan. Parameters contain only the
-listed name, description, image, scale and create-time command/entryPoint fields,
-never arbitrary launch configuration. Command arrays allow at most 64 strings,
+listed name, description, image, scale and create-time command/entryPoint fields;
+Service create additionally accepts `ports` and `healthCheck` as described below.
+Arbitrary launch configuration is not accepted. Command arrays allow at most 64 strings,
 4096 UTF-16 units per string and 16384 in total; NUL is rejected. The human review
 shows their actual escaped JSON, including empty and null values.
 
@@ -63,6 +65,37 @@ ceremonies use the existing human flow. Typed audit queries use the matching
 Engine/broker owner; raw audit payloads and export remain human-only. Catalog
 metadata and its bounded launch adapter are described below. No tool accepts raw IDs,
 URLs, HTTP methods or caller-selected output fields.
+
+### Service create ports and health checks
+
+Choose the intended Stack's opaque `parentRef`, then preview
+`resourceType: "service"`, `operation: "create"` with its name, image and optional settings.
+`ports` is an array of at most 64 native PortSpec strings, each 1 through 128
+UTF-16 units, for example `["8080:80/tcp", "53:53/udp", "80/tcp"]`. An omitted
+public port, including bare `80` or `80/tcp`, requests native random public-port
+allocation. Native IPv4/IPv6 bindings and port validation remain server-owned;
+do not convert these strings into port objects. CR, LF and NUL are rejected.
+`[]` publishes no ports.
+
+`healthCheck` requires container `port` (1 through 65535). Its optional fields are
+`requestLine`, `responseTimeout`, `interval`, `healthyThreshold`,
+`unhealthyThreshold`, `initializingTimeout`, `reinitializingTimeout` and
+`strategy`. Omit or use an empty request line for TCP; an HTTP example is
+`GET /health HTTP/1.0`. The request line is at most 1024 UTF-16 units and rejects
+CR, LF and NUL. Timings use milliseconds and thresholds count checks.
+The integer maximum is 2147483647; initialization timeouts may be zero and the
+other timing/threshold values must be positive. Strategy is `none` or `recreate`
+(the native default). Omit `healthCheck` for no check. Null, extra headers,
+credentials and quorum strategy configuration are not accepted.
+
+The service uses `networkMode: "bridge"` and `startOnCreate: false`; start it
+with a separate approved plan. Existing Service settings use the normal upgrade
+workflow. Human review shows port strings unchanged and health-check labels
+with their units. Approval is invalid if those reviewed settings change.
+After apply, use `get_operation` until success is verified. Only a verified
+successful Service create may return read-only `executionResult.assignedPorts`;
+those native assignments are shown separately and never amend the approved
+`changes`. An accepted or unknown result is not completion.
 
 ## Browser and human controls
 
@@ -144,6 +177,10 @@ For the resource-family and lifecycle changes, run
 `node --test scripts/test-webmcp-resources.mjs`,
 `node scripts/test-ai-collaboration-ui.js --filter="resource plan"`, and
 `node --test --test-name-pattern="bounded stdio create arrays" bridge/test/stdio.test.mjs`.
+For the Service create extension, also run
+`node --test scripts/test-webmcp-service-create.mjs`,
+`node scripts/test-ai-collaboration-ui.js --filter="service create"` and
+`node --test scripts/test-ai-resource-review-labels.mjs`.
 The stdio request frame is bounded at 256 KiB; the platform HTTP response body
 has a separate 1 MiB limit. Oversize failures never print request payloads.
 

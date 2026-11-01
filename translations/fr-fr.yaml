@@ -4397,6 +4397,7 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  assignedPorts: Mappages de ports attribués
   backgroundAuthorizationDenied: "Un contrôle des autorisations a refusé l’opération en arrière-plan. Certaines modifications ont peut-être déjà été effectuées ; la fin de l’opération n’a pas été vérifiée. Vérifiez les autorisations actuelles et le reçu de l’opération initiale. Ne soumettez pas et n’approuvez pas à nouveau la modification sans vérification."
   catalogReferenceAmbiguous: "Certaines ressources ont le même nom affiché et ne peuvent pas être distinguées de façon sûre. Vérifiez la cible dans la console habituelle avant de la sélectionner."
   catalogLaunchPermissions: "Un lancement depuis le catalogue lit les ressources créées, configure les liens entre services et peut démarrer des services. La portée cible nécessite les autorisations de lecture, de création et de mise à jour."
