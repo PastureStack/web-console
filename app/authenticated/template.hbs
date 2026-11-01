@@ -9,6 +9,9 @@
 {{/unless}}
 {{growl-mount}}
 <main class="clearfix">
+  {{#if this.app.webmcpAvailable}}
+    {{ai-upgrade-review}}
+  {{/if}}
   {{#if (and this.forceUpgrade this.projects.current.needsUpgrade)}}
     {{project-upgrade model=this.projects.current}}
   {{/if}}

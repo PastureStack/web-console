@@ -1,3 +1,5 @@
+@use "../base/colors" as colors;
+
 .protip {
   font-size: 12px;
   margin-bottom: 5px;
@@ -73,6 +75,38 @@
     .icon {
       margin-right: 8px;
     }
+  }
+}
+
+.ai-upgrade-pending {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+
+  .ai-upgrade-pending-target {
+    color: colors.$blackDark;
+    flex: 1 1 16rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  > button {
+    flex: 0 0 auto;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+
+    &:focus-visible {
+      outline: 2px solid colors.$blackDark;
+      outline-offset: 2px;
+    }
+  }
+
+  .theme-ui-dark & > button {
+    color: colors.$blackDark;
+    border-color: colors.$blackDark;
   }
 }
 

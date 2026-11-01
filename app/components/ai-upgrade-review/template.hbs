@@ -2,8 +2,8 @@
   <div class="alert alert-danger force-wrap" role="alert" data-testid="ai-resource-authorization-denied">{{t "webmcp.backgroundAuthorizationDenied"}}</div>
 {{/if}}
 {{#if this.commands.pendingPlan}}
-  <div class="alert alert-info" role="status" data-testid="ai-upgrade-pending">
-    {{this.commands.pendingPlan.displayPath}}
+  <div class="alert alert-info ai-upgrade-pending" role="status" data-testid="ai-upgrade-pending">
+    <span class="ai-upgrade-pending-target force-wrap">{{this.commands.pendingPlan.displayPath}}</span>
     <button type="button" class="btn btn-sm btn-primary" {{action "review"}} data-testid="ai-upgrade-review">{{t "webmcp.reviewPlan"}}</button>
   </div>
 {{/if}}

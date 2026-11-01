@@ -14,8 +14,9 @@ Restricted API Keys gain the same name-based discovery and audit-reference flow
 as ordinary Keys. Select `apiKeyRestricted` explicitly; the default searches
 `apiKey` only. This is partial family coverage, not a merged search or complete
 frontend automation. Confirmation errors gain clear permission guidance in all
-thirteen locales, and follow-redirects uses its official 1.16.2 patch. Publication
-and designated QA acceptance remain pending.
+thirteen locales, and follow-redirects uses its official 1.16.2 patch. Pending
+plan reminders stay in authenticated page content so footer controls remain
+available. Publication and designated QA acceptance remain pending.
 
 ## Current component
 

@@ -19,6 +19,7 @@ function sourceUrl(filename) {
     .replace(/import \{ get, computed \} from '@ember\/object';/g, 'const computed = (...args) => args.at(-1); const get = (row, key) => key.split(".").reduce((value, part) => value && value[part], row);')
     .replace(/import \{ reads \} from '@ember\/object\/computed';/g, 'const reads = () => null;')
     .replace(/import \{ observer \} from '@ember\/object';/g, 'const observer = (...args) => args.at(-1);')
+    .replace(/import \{ scheduleOnce \} from '@ember\/runloop';/g, 'const scheduleOnce = (_queue, object, callback) => callback.call(object);')
     .replace(/import \{ alias \} from '@ember\/object\/computed';/g, 'const alias = () => null;')
     .replace(/import ModalBase from 'lacsso\/components\/modal-base';/g, 'const ModalBase = {extend: value => value};')
     .replace(/import config from 'ui\/config\/environment';/g, "const config = {APP: {webmcpMode: 'enabled'}};")
@@ -74,6 +75,58 @@ async function main() {
     if (filter && !name.includes(filter)) { return; }
     await body(); count++; process.stdout.write(`PASS ${name}\n`);
   }
+
+  await test('pending reminder mounts once in authenticated content under the original build ceiling and retains normal review', async () => {
+    const Handlebars = require('handlebars').create();
+    const {preprocess, traverse} = require('@glimmer/syntax');
+    function assertNoScriptElement(html) {
+      traverse(preprocess(html), {ElementNode(node) {
+        assert.notEqual(node.tag.toLowerCase(), 'script', 'rendered reminder cannot contain a script element');
+      }});
+    }
+    for (const html of ['<script></script>', '<ScRiPt></ScRiPt>', '<SCRIPT></SCRIPT>']) assert.throws(() => assertNoScriptElement(html), assert.AssertionError);
+    const application = fs.readFileSync(path.join(app, 'application/template.hbs'), 'utf8');
+    const authenticated = fs.readFileSync(path.join(app, 'authenticated/template.hbs'), 'utf8');
+    const reminder = fs.readFileSync(path.join(app, 'components/ai-upgrade-review/template.hbs'), 'utf8');
+    assert.equal((application.match(/\{\{ai-upgrade-review\}\}/g) || []).length, 0);
+    assert.equal((authenticated.match(/\{\{ai-upgrade-review\}\}/g) || []).length, 1);
+    assert.match(authenticated, /<main[^>]*>\s*\{\{#if this\.app\.webmcpAvailable\}\}\s*\{\{ai-upgrade-review\}\}\s*\{\{\/if\}\}/);
+    const injection = fs.readFileSync(path.join(app, 'initializers/app.js'), 'utf8');
+    assert.match(injection, /Controller\.reopen\(\{ app: ownerLookup\('application:main'\) \}\)/);
+    let mounts = 0;
+    Handlebars.registerHelper('t', key => key);
+    Handlebars.registerHelper('action', () => '');
+    Handlebars.registerHelper('and', (a, b) => a && b);
+    for (const name of ['page-header', 'growl-mount', 'project-upgrade', 'console-workspace']) Handlebars.registerHelper(name, () => '');
+    Handlebars.registerHelper('outlet', () => new Handlebars.SafeString('<section data-route-outlet></section>'));
+    Handlebars.registerHelper('page-footer', () => new Handlebars.SafeString('<footer data-footer></footer>'));
+    const renderReminder = Handlebars.compile(reminder);
+    Handlebars.registerHelper('ai-upgrade-review', function() { mounts++; return new Handlebars.SafeString(renderReminder(this)); });
+    const render = Handlebars.compile(authenticated);
+    const pendingPlan = {planRef: 'same-plan', displayPath: 'Default / <ScRiPt>untrusted</sCrIpT>'};
+    for (const [available, pending, notice] of [[false, pendingPlan, null], [true, null, null], [true, pendingPlan, null], [true, null, {code: 'ResourceChangeAuthorizationDenied'}]]) {
+      mounts = 0;
+      const html = render({app: {webmcpAvailable: available}, commands: {pendingPlan: pending, operationNotice: notice}});
+      assert.equal(mounts, available ? 1 : 0);
+      assert.equal(html.includes('data-testid="ai-upgrade-pending"'), !!(available && pending));
+      assert.equal(html.includes('data-testid="ai-resource-authorization-denied"'), !!(available && notice));
+      assertNoScriptElement(html);
+      if (available && pending) {
+        assert.ok(html.indexOf('data-testid="ai-upgrade-pending"') < html.indexOf('data-route-outlet'));
+        assert.ok(html.includes('&lt;ScRiPt&gt;untrusted&lt;/sCrIpT&gt;'));
+        assert.ok(html.indexOf('data-testid="ai-upgrade-review"') < html.indexOf('data-footer'));
+      }
+    }
+    const {default: bridge} = await import(sourceUrl(path.join(app, 'components/ai-upgrade-review/component.js')));
+    for (const destroyed of [false, true, false]) {
+      const calls = [], context = {get, commands: {pendingPlan}, isDestroyed: destroyed,
+        modalService: {modalVisible: false, toggleModal: (...args) => calls.push(args)}};
+      context.openReview = () => bridge.openReview.call(context);
+      bridge.actions.review.call(context);
+      assert.equal(calls.length, destroyed ? 0 : 1, 'auth exit cannot open a stale review; re-entry can review the same pending plan');
+      if (!destroyed) assert.deepEqual(calls[0], ['modal-confirm-ai-upgrade', {plan: pendingPlan}]);
+    }
+  });
 
   await test('mode controls cannot exceed the build ceiling', async () => {
     assert.equal(boundedCollaborationMode('off', 'enabled'), 'off');
