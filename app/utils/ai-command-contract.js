@@ -135,6 +135,9 @@ export function publicError(error) {
   const entry = ERRORS[code] || ERRORS.UNKNOWN_RESULT;
   const result = {status: entry[1], code, nextStep: entry[0], contractVersion: COMMAND_VERSION};
   const serverCode = error && error.body && error.body.code;
+  if ( ['FORBIDDEN', 'CONTEXT_CHANGED'].includes(code) && serverCode === 'ApiKeyPolicyChanged' ) {
+    result.nextStep = 'The API Key policy changed. Stop this request and ask the user to review the Key and reconnect the bridge with its current policy. Do not retry automatically, broaden permissions, or try another ID or environment.';
+  }
   if ( code === 'UNAVAILABLE' && serverCode === 'ResourceChangeFeatureDisabled' ) {
     result.nextStep = 'Resource changes are disabled on this server. Ask an operator to enable the feature, or use the normal console.';
   }

@@ -25,7 +25,7 @@ function deferred() {
 async function main() {
   const {CommandContext} = await import(moduleUrl('ai-command-context'));
   const {CommandEngine, waitForOperationPoll} = await import(moduleUrl('ai-command-engine'));
-  const {COMMANDS, publicError} = await import(moduleUrl('ai-command-contract'));
+  const {COMMANDS, CommandError, publicError} = await import(moduleUrl('ai-command-contract'));
   const legacyNames = ['find_stacks', 'find_services', 'get_service', 'update_service_description', 'preview_service_upgrade', 'apply_service_upgrade', 'get_operation'];
   const {registerCommandTools} = await import(moduleUrl('webmcp-tools'));
   let count = 0;
@@ -124,6 +124,73 @@ async function main() {
     barrier.reject(new Error('audit service unavailable'));
     assert.equal((await pending).code, 'UNAVAILABLE');
     assert.equal(f.requests.length, 0); assert.equal(events.length, 1);
+  });
+
+  await test('audit admission preserves authentication denials and safe Key policy repair', async () => {
+    for ( const [error, code] of [
+      [{status: 401, body: {message: 'SECRET_SENTINEL'}}, 'SESSION_REQUIRED'],
+      [{status: 403, body: {code: 'PermissionDenied', message: 'SECRET_SENTINEL'}}, 'FORBIDDEN'],
+      [{status: 403, body: {code: 'ApiKeyPolicyChanged', message: 'SECRET_SENTINEL'}}, 'FORBIDDEN'],
+      [Object.assign(new CommandError('CONTEXT_CHANGED'), {body: {code: 'ApiKeyPolicyChanged'}}), 'CONTEXT_CHANGED'],
+      [new CommandError('FORBIDDEN'), 'FORBIDDEN'],
+    ] ) {
+      const f = fixture(); let attempts = 0;
+      f.engine.audit = async () => { attempts++; throw error; };
+      const result = await f.engine.execute('find_stacks', {});
+      assert.equal(result.status, 'rejected'); assert.equal(result.code, code);
+      assert.equal(attempts, 1); assert.equal(f.requests.length, 0); assert.equal(f.ensureCalls(), 0);
+      assert.equal(JSON.stringify(result).includes('SECRET_SENTINEL'), false);
+      assert.doesNotMatch(result.nextStep, /select an environment|enable this integration/);
+      if ( error.body?.code === 'ApiKeyPolicyChanged' ) {
+        assert.match(result.nextStep, /Key policy changed/); assert.match(result.nextStep, /reconnect/);
+        assert.match(result.nextStep, /Do not retry automatically/);
+      }
+    }
+  });
+
+  await test('audit admission keeps infrastructure and unverified acknowledgements unavailable', async () => {
+    for ( const error of [{status: 500, body: {code: 'ApiKeyPolicyChanged'}}, {status: 503},
+      {status: 409, body: {code: 'UnrecognizedAuditFailure'}}, new Error('SECRET_SENTINEL')] ) {
+      const f = fixture(); f.engine.audit = async () => { throw error; };
+      assert.equal((await f.engine.execute('find_stacks', {})).code, 'UNAVAILABLE');
+      assert.equal(f.requests.length, 0); assert.equal(f.ensureCalls(), 0);
+    }
+    for ( const acknowledgement of [null, {}, {accepted: false, requestId: 'not-durable'},
+      {accepted: true}, {accepted: true, requestId: ''}] ) {
+      const f = fixture(); f.engine.audit = async () => acknowledgement;
+      assert.equal((await f.engine.execute('find_stacks', {})).code, 'UNAVAILABLE');
+      assert.equal(f.requests.length, 0); assert.equal(f.ensureCalls(), 0);
+    }
+  });
+
+  await test('audit admission auth errors on result ACK never reject an already submitted apply', async () => {
+    for ( const status of [401, 403] ) {
+      const f = fixture(), plan = await preview(f); await f.engine.confirmPlan(plan.planRef);
+      const audit = f.engine.audit;
+      f.engine.audit = async (event, captured) => {
+        if ( event.command === 'apply_service_upgrade' && event.phase === 'result' ) {
+          throw {status, body: {code: 'ApiKeyPolicyChanged', message: 'SECRET_SENTINEL'}};
+        }
+        return audit(event, captured);
+      };
+      const result = await f.engine.execute('apply_service_upgrade', {planRef: plan.planRef});
+      assert.equal(result.status, 'unknown'); assert.equal(result.code, 'UNKNOWN_RESULT');
+      assert.ok(result.operationRef); assert.match(result.nextStep, /Do not submit another change/);
+      assert.equal(f.requests.filter((item) => item.url.endsWith('?action=apply')).length, 1);
+      assert.equal(JSON.stringify(result).includes('SECRET_SENTINEL'), false);
+    }
+  });
+
+  await test('audit admission context replacement takes precedence over an old session denial', async () => {
+    const f = fixture(), barrier = deferred(); let attempts = 0;
+    f.engine.audit = async () => { attempts++; return barrier.promise; };
+    const pending = f.engine.execute('find_stacks', {});
+    await Promise.resolve(); f.snapshot.generation = 'replacement-session';
+    barrier.reject({status: 403, body: {code: 'ApiKeyPolicyChanged'}});
+    const result = await pending;
+    assert.equal(result.code, 'CONTEXT_CHANGED'); assert.equal(result.items, undefined);
+    assert.doesNotMatch(result.nextStep, /Key policy changed/);
+    assert.equal(attempts, 1); assert.equal(f.requests.length, 0); assert.equal(f.ensureCalls(), 0);
   });
 
   await test('result audit failure after apply preserves recovery reference without a second mutation', async () => {

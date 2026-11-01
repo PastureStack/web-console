@@ -133,7 +133,7 @@ export function createTransport(config, fetcher = fetch) {
       }
       if (verifiedRevision !== null && revision !== verifiedRevision) {
         await response.body?.cancel();
-        throw new CommandError('CONTEXT_CHANGED');
+        throw Object.assign(new CommandError('CONTEXT_CHANGED'), {body: {code: 'ApiKeyPolicyChanged'}});
       }
       verifiedRevision = revision;
     }

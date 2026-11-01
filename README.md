@@ -14,6 +14,11 @@ history, authorship, licenses, and dependency notices.
 is published with the original qualified CI artifacts. All 13 public release
 assets passed actual anonymous GET, byte-count and SHA256 verification.
 
+Web Console **1.6.204** / bridge **0.2.6** is a
+[candidate](docs/releases/web-console-1.6.204.md) for clear audit-admission
+authentication and Key-policy errors. Original CI/CodeQL, publication and
+matching Server runtime acceptance remain pending.
+
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
 Certificate names/descriptions. Certificate PEM material, keys, chains, renewal

@@ -137,6 +137,11 @@ export class CommandEngine {
     let acknowledgement;
     try { acknowledgement = await this.audit(event, captured); } catch (error) {
       this.context.assertCurrent(captured);
+      // Admission still fails closed. Preserve verified authentication/policy
+      // failures so their repair does not suggest changing environments.
+      const status = Number(error && (error.status || error.statusCode || (error.response && error.response.status)));
+      if ( ['SESSION_REQUIRED', 'FORBIDDEN', 'CONTEXT_CHANGED', 'CONFLICT'].includes(publicError(error).code) &&
+        (error instanceof CommandError || [401, 403].includes(status)) ) { throw error; }
       throw new CommandError('UNAVAILABLE');
     }
     this.context.assertCurrent(captured);
