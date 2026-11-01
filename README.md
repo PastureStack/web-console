@@ -10,14 +10,11 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.203** / bridge **0.2.5**](https://github.com/PastureStack/web-console/releases/tag/1.6.203)
-is published with the original qualified CI artifacts. All 13 public release
-assets passed actual anonymous GET, byte-count and SHA256 verification.
-
-Web Console **1.6.204** / bridge **0.2.6** is a
-[candidate](docs/releases/web-console-1.6.204.md) for clear audit-admission
-authentication and Key-policy errors. Original CI/CodeQL, publication and
-matching Server runtime acceptance remain pending.
+[Web Console **1.6.204** / bridge **0.2.6**](https://github.com/PastureStack/web-console/releases/tag/1.6.204)
+is published with the original qualified CI artifacts. All 13 release assets
+passed actual anonymous GET, byte-count and SHA256 verification. Audit-admission
+errors now give fixed sign-in, permission or Key-policy guidance while retaining
+context, acknowledgement and uncertain-write protections.
 
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
@@ -30,17 +27,13 @@ Pending-plan reminders use page content so footer controls remain available,
 and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
-Component CI/CodeQL and original archive/SBOM verification passed, including
-1,122 browser unit tests with zero failures. The final CI audit retains 62
-Moderate findings and zero High/Critical findings. Matching Server 1.6.562 with
-Engine 0.183.363 and its audit broker, plus designated browser, role, cross-ID
-and weak-model runtime acceptance, remain pending. The full 243-group frontend
-inventory remains in progress. The [release note](docs/releases/web-console-1.6.203.md)
-records immutable provenance and these boundaries.
+Matching Engine 0.183.365 / Server 1.6.564 assembly and designated browser,
+role, Key, cross-ID and weak-model runtime acceptance remain pending. The full
+243-group frontend inventory is in progress. See the
+[release note](docs/releases/web-console-1.6.204.md) for provenance, validation
+counts and the bridge's inherited dependency-evidence boundary.
 
-The release producer uses Node.js `24.22.1` / npm `12.0.2` and separate runtime /
-build CycloneDX SBOMs, with the official follow-redirects `1.16.2` patch. Use the
-[Server installation guide](https://github.com/PastureStack/server#quick-start)
+Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).
 
 ## Features and operator guides
