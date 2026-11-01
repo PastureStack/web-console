@@ -4849,6 +4849,7 @@ formResources:
     map: "Use non-empty keys and values for advanced options."
 
 webmcp:
+  assignedPorts: Assigned port mappings
   backgroundAuthorizationDenied: "A background authorization check denied the operation. Some changes may already have occurred; completion has not been verified. Check the current permissions and the original operation receipt. Do not blindly resubmit or approve the change again."
   catalogReferenceAmbiguous: "Some resources have identical display names and cannot be distinguished safely. Verify the target in the normal console before selecting it."
   catalogLaunchPermissions: "A Catalog launch reads the created resources, configures service links and may start services. The target scope needs read, create and update permissions."

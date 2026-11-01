@@ -4625,6 +4625,7 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
+  assignedPorts: 實際配置的連接埠對應
   backgroundAuthorizationDenied: "背景操作因權限檢查遭拒，部分變更可能已完成，整體完成狀態尚未驗證。請檢查目前權限，再開啟原操作紀錄核對；不要直接重新送出或再次核准這項變更。"
   catalogReferenceAmbiguous: "部分資源顯示名稱相同，無法安全區分。請先在原有主控台核對目標，再進行選取。"
   catalogLaunchPermissions: "從目錄建立會讀回新資源、設定服務連結，並可能啟動服務，因此目標範圍需要讀取、建立及更新權限。"

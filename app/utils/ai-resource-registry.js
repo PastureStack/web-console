@@ -73,7 +73,7 @@ export const RESOURCE_CHANGES = Object.freeze({
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(), scale: action(['scale'], ['scale']),
-    create: action(['name', 'image', 'scale', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
+    create: action(['name', 'image', 'scale', 'description', 'command', 'entryPoint', 'ports', 'healthCheck'], ['name', 'image']), update_metadata: metadata}),
   dnsService: Object.freeze({start: action(), stop: action(), remove: action(), update_metadata: metadata,
     create: action(['name', 'description'], ['name']), update_targets: action(['serviceRefs'], ['serviceRefs'])}),
   externalService: Object.freeze({start: action(), stop: action(), remove: action(), update_metadata: metadata,
@@ -83,7 +83,7 @@ export const RESOURCE_CHANGES = Object.freeze({
     create: action(['name', 'image', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
-export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'stackId', 'archived',
+export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
   'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can

@@ -1,6 +1,6 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
-import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, CommandError, publicError, safeText, validateInput } from './ai-command-contract';
+import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, CommandError, publicError, safeText, validateInput, validateServiceCreateField } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
@@ -8,6 +8,12 @@ import { createCatalogLaunchAdapter, catalogLaunchPlanSummary, CATALOG_LAUNCH_CO
 
 const OPERATION_STATUSES = ['accepted', 'running', 'succeeded', 'failed', 'unknown', 'cancelled', 'needs_user'];
 const APPLY_COMMANDS = ['apply_service_upgrade', 'apply_resource_change'];
+const SERVICE_CREATE_FIELDS = ['ports', 'healthCheck'];
+
+export function serviceCreateReview(summary) {
+  return summary && summary.resourceType === 'service' && summary.operation === 'create' && Array.isArray(summary.displayDiff) && summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field)) ?
+    JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
+}
 
 class UnknownOperation extends Error {
   constructor(operationRef) { super('UNKNOWN_RESULT'); this.operationRef = operationRef; }
@@ -46,7 +52,7 @@ export class CommandEngine {
   }
 
   async execute(name, input, options = {}) {
-    let captured, result, startAck, businessStarted = false, descriptionMayHaveSaved = false;
+    let captured, result, startAck, businessStarted = false, descriptionMayHaveSaved = false, serviceCreateInputRejected = false;
     const commandName = COMMANDS.some((item) => item.name === name) ? name : 'unknown';
     try {
       captured = this.context.capture();
@@ -74,6 +80,9 @@ export class CommandEngine {
       } else {
         // Never expose the transport error, response body, launchConfig or token.
         result = publicError(error);
+        serviceCreateInputRejected = name === 'preview_resource_change' && input && input.resourceType === 'service' && input.operation === 'create' &&
+          input.parameters && SERVICE_CREATE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input.parameters, field)) &&
+          Number(error && (error.status || error.statusCode)) === 422 && error.body && error.body.code === 'ResourceChangeInputInvalid' && result.code === 'INVALID_INPUT';
       }
     }
     if ( result.reason === 'TARGET_BUSY' ) {
@@ -108,7 +117,11 @@ export class CommandEngine {
         'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the simple targets.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
       };
-      result.nextStep = input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
+      result.nextStep = serviceCreateInputRejected ?
+        'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching service-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
+        result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
+        'Only service create accepts ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units, or healthCheck with required port 1 through 65535 and the exact fields and bounds in the schema. Timings are milliseconds; thresholds count checks. Reuse the selected Stack parentRef unchanged.' :
+        input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
         'Preview archive or restore separately with an existing targetRef and empty parameters. Do not include a service clone, archive flag or other settings.' : repairs[result.field] || (result.field && /^parameters\.(command|entryPoint)(\[\d+\])?$/.test(result.field) ?
         'Use a string array: at most 64 items, 4096 UTF-16 units per item, 16384 in total, and no NUL. These arrays are supported only for service/container create.' :
         'Use find_resources for the target family and reuse its resourceRef as targetRef. For service create, find the stack and pass its resourceRef as parentRef. Send only the fields supported by this operation.');
@@ -228,6 +241,7 @@ export class CommandEngine {
           safeFields: [...descriptor.fields], parentType: descriptor.parent ? descriptor.parent.type : null,
           parentRequired: !!(descriptor.parent && descriptor.parent.required),
           operations: RESOURCE_CHANGES[descriptor.type] ? Object.keys(RESOURCE_CHANGES[descriptor.type]) : [],
+          ...(descriptor.type === 'service' ? {createFields: [...RESOURCE_CHANGES.service.create.fields], createFieldsServerCheckRequired: true} : {}),
           ...(descriptor.type === 'dnsService' ? {workflow: [...ALIAS_WORKFLOW], workflowNotice: ALIAS_CREATE_NEXT_STEP} : {}),
           changeModeEnabled: captured.mode === 'enabled', changesRequireHumanApproval: true,
           unavailableReason: needsCheck ? null : !supported ? 'PENDING_ADAPTER' : source.unavailable || (!definition ? 'NOT_VISIBLE' : null)};
@@ -661,9 +675,10 @@ export class CommandEngine {
       return;
     }
     if ( reference.planKind === 'resource-change' ) {
-      this.resourcePlanSummary(plan, null);
+      const summary = this.resourcePlanSummary(plan, null);
       if ( plan.id !== reference.id || plan.resourceType !== reference.resourceType || plan.operation !== reference.operation ||
         reference.resourceId && plan.resourceId !== reference.resourceId ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( reference.serviceCreateReview && serviceCreateReview(summary) !== reference.serviceCreateReview ) { throw new CommandError('CONFLICT'); }
       return;
     }
     if ( !plan || plan.id !== reference.id || (plan.serviceId && plan.serviceId !== reference.serviceId) ) {
@@ -679,6 +694,11 @@ export class CommandEngine {
       verifiedResult: plan.verifiedResult === true, messageCode: safeText(plan.messageCode || plan.reason, 80)};
     const authorizationDenied = result.status === 'failed' && plan.id && plan.id.startsWith('aichange-') &&
       plan.messageCode === 'ResourceChangeAuthorizationDenied';
+    let serviceCreateSummary;
+    if ( result.status === 'succeeded' && result.verifiedResult && plan.resourceType === 'service' && plan.operation === 'create' ) {
+      const summary = this.resourcePlanSummary(plan, null);
+      if ( summary.executionResult ) { result.executionResult = summary.executionResult; serviceCreateSummary = summary; }
+    }
     if ( authorizationDenied ) {
       Object.assign(result, {code: 'FORBIDDEN', verifiedResult: false, partialEffectsPossible: true,
         nextStep: 'A background authorization check denied this operation. Some changes may already have occurred; completion has not been verified. Check the current permissions, then query this same operationRef and inspect its original receipt and resources in the console. Do not blindly resubmit or approve another change.'});
@@ -707,6 +727,7 @@ export class CommandEngine {
     } else if ( result.status === 'succeeded' || result.status === 'failed' ) {
       const operation = {planId: plan.id, status: result.status};
       if ( authorizationDenied ) { operation.messageCode = 'ResourceChangeAuthorizationDenied'; }
+      if ( serviceCreateSummary ) { operation.planSummary = serviceCreateSummary; }
       this.onOperation(operation);
     }
     return result;
@@ -762,12 +783,16 @@ export class CommandEngine {
     }
     const displayDiff = plan.changes.map((change) => {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
-        ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices'].includes(change.field) ? 100000 : 1024) ||
+        ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices', 'ports', 'healthCheck'].includes(change.field) ? 100000 : 1024) ||
           typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'hostname' && [change.before, change.after].some((value) => value !== null && !isExternalHostname(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'targetServices' ) {
         if ( plan.resourceType !== 'dnsService' || change.after === null ) { throw new CommandError('INVALID_RESPONSE'); }
         safeAliasTargetSummary(change.before); safeAliasTargetSummary(change.after);
+      }
+      if ( SERVICE_CREATE_FIELDS.includes(change.field) ) {
+        if ( plan.resourceType !== 'service' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
+        try { validateServiceCreateField(change.field, JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
       }
       if ( change.field === 'externalIpAddresses' ) {
         for ( const value of [change.before, change.after] ) {
@@ -801,8 +826,18 @@ export class CommandEngine {
     if ( ['archive', 'restore'].includes(plan.operation) && (displayDiff.length !== 1 || displayDiff[0].field !== 'archived') ) {
       throw new CommandError('INVALID_RESPONSE');
     }
+    if ( SERVICE_CREATE_FIELDS.some((field) => displayDiff.filter((change) => change.field === field).length > 1) ) { throw new CommandError('INVALID_RESPONSE'); }
+    let executionResult;
+    if ( plan.executionResult !== undefined && plan.executionResult !== null ) {
+      const receipt = plan.executionResult;
+      if ( plan.resourceType !== 'service' || plan.operation !== 'create' || plan.status !== 'succeeded' || plan.verifiedResult !== true ||
+        !receipt || typeof receipt !== 'object' || Array.isArray(receipt) || Object.keys(receipt).length !== 1 || !Object.prototype.hasOwnProperty.call(receipt, 'assignedPorts') ) { throw new CommandError('INVALID_RESPONSE'); }
+      try { validateServiceCreateField('ports', receipt.assignedPorts); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
+      executionResult = {assignedPorts: receipt.assignedPorts.slice()};
+    }
     return {planRef, planKind: 'resource-change', resourceType: plan.resourceType, operation: plan.operation,
-      displayPath: safeText(plan.targetPath, 768), displayDiff, expiresAt: safeText(plan.expiresAt, 64), confirmationState: plan.confirmationState};
+      displayPath: safeText(plan.targetPath, 768), displayDiff, expiresAt: safeText(plan.expiresAt, 64), confirmationState: plan.confirmationState,
+      ...(executionResult ? {executionResult, verifiedResult: true, planStatus: 'succeeded'} : {})};
   }
 
   async preview_resource_change(input, captured, signal) {
@@ -812,6 +847,9 @@ export class CommandEngine {
     const descriptor = operations && Object.prototype.hasOwnProperty.call(operations, input.operation) && operations[input.operation];
     if ( !descriptor ) { throw new CommandError('INVALID_INPUT', 'operation'); }
     const parameters = Object.assign({}, input.parameters || {});
+    // New nested input must not change while the server preview is in flight.
+    if ( Array.isArray(parameters.ports) ) { parameters.ports = parameters.ports.slice(); }
+    if ( parameters.healthCheck ) { parameters.healthCheck = Object.assign({}, parameters.healthCheck); }
     const missing = descriptor.required.find((field) => !Object.prototype.hasOwnProperty.call(parameters, field));
     if ( missing ) { throw new CommandError('INVALID_INPUT', `parameters.${missing}`); }
     if ( Object.keys(parameters).some((field) => !descriptor.fields.includes(field)) || Object.keys(parameters).length < descriptor.minFields ) {
@@ -845,6 +883,19 @@ export class CommandEngine {
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
+    if ( input.resourceType === 'service' && input.operation === 'create' ) {
+      for ( const field of SERVICE_CREATE_FIELDS ) {
+        const requested = Object.prototype.hasOwnProperty.call(parameters, field), change = plan.changes.find((item) => item.field === field);
+        if ( requested !== !!change ) { throw new CommandError('INVALID_RESPONSE'); }
+        if ( requested ) {
+          const expected = field === 'healthCheck' ? {...parameters.healthCheck, strategy: parameters.healthCheck.strategy || 'recreate'} : parameters.ports;
+          const actual = JSON.parse(change.after);
+          if ( field === 'ports' ? JSON.stringify(expected) !== JSON.stringify(actual) :
+            Object.keys(expected).length !== Object.keys(actual).length || Object.keys(expected).some((key) => expected[key] !== actual[key]) ) { throw new CommandError('INVALID_RESPONSE'); }
+        }
+      }
+      reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
+    }
     const planRef = this.context.reference('plan', reference, captured);
     const summary = this.resourcePlanSummary(plan, planRef);
     this.onPlan(Object.assign({context: captured}, summary));

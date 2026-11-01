@@ -1,6 +1,24 @@
 # Compatibility Contract
 
-## Web Console 1.6.204 / bridge 0.2.6 published
+## Web Console 1.6.205 / bridge 0.2.7 source candidate
+
+Service create adds native PortSpec strings and a closed health-check object to
+the existing typed resource-change plan. Matching Engine 0.183.366 support is
+required; older servers must not be assumed to support these fields. Services
+use bridge networking and `startOnCreate: false`. Native validation retains
+automatic public-port allocation, IPv4/IPv6 bindings and the 64-entry limit.
+
+Approval binds the exact reviewed settings. Verified `executionResult.assignedPorts`
+is read-only output and does not replace or amend approved changes. Browser and
+stdio share these sources and retain command protocol version `1.0`.
+
+Package versions, the active release/test lock baseline, bridge handshake and
+bridge packager are synchronized. Dependency graphs are unchanged. Component
+CI, original artifact/SBOM qualification, publication, compatible Server assembly
+and runtime acceptance remain pending. See the
+[candidate release note](docs/releases/web-console-1.6.205.md).
+
+## Web Console 1.6.204 / bridge 0.2.6 historical published baseline
 
 Audit admission preserves known 401/403 and verified Key-revision failures with
 safe corrective guidance. It still requires a durable start ACK before any

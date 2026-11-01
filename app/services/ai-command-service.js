@@ -1,5 +1,5 @@
 import Service, { service } from '@ember/service';
-import { CommandEngine } from 'ui/utils/ai-command-engine';
+import { CommandEngine, serviceCreateReview } from 'ui/utils/ai-command-engine';
 import { publicError, CommandError } from 'ui/utils/ai-command-contract';
 import { safeCatalogQuestions, CATALOG_LAUNCH_COLLECTION } from 'ui/utils/ai-catalog-launch';
 
@@ -37,7 +37,8 @@ export default Service.extend({
   publishPlan(plan, expectedPlanRef) {
     if ( expectedPlanRef !== undefined && this.get('pendingPlan.planRef') !== expectedPlanRef ) { return; }
     this.set('operationNotice', null);
-    this.set('pendingPlan', plan);
+    const reviewSignature = serviceCreateReview(plan);
+    this.set('pendingPlan', reviewSignature ? Object.assign({}, plan, {reviewSignature}) : plan);
   },
 
   captureReviewContext() {
@@ -73,9 +74,12 @@ export default Service.extend({
 
   // Only the human confirmation component calls this method. It is never
   // included in the WebMCP registry; approval is checked again by the server.
-  confirmPendingPlan() {
+  confirmPendingPlan(reviewedPlan) {
     const plan = this.get('pendingPlan');
     if ( !plan ) { return Promise.resolve(publicError(new CommandError('STALE_REFERENCE', 'planRef'))); }
+    if ( reviewedPlan && (reviewedPlan.planRef !== plan.planRef || reviewedPlan.reviewSignature !== plan.reviewSignature) ) {
+      return Promise.resolve(publicError(new CommandError('CONFLICT', 'planRef')));
+    }
     if ( plan.humanOnly ) { return this.confirmHumanPlan(plan); }
     return this.engine.confirmPlan(plan.planRef);
   },
@@ -97,6 +101,7 @@ export default Service.extend({
       if ( plan.planKind === 'catalog-launch' ) { this.assertCatalogHumanPlan(body, plan); }
       else if ( plan.planKind === 'resource-change' ? body.resourceType !== plan.resourceType || body.operation !== plan.operation || body.resourceId !== plan.serverResourceId : body.serviceId !== plan.serverServiceId ) { throw new CommandError('INVALID_RESPONSE'); }
       const summary = this.engine.planSummary(body, plan.planRef);
+      if ( plan.reviewSignature && serviceCreateReview(summary) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
       this.publishPlan(Object.assign({}, plan, summary), plan.planRef);
       return Object.assign({status: 'succeeded'}, summary);
     } catch (error) { return publicError(error); }
@@ -228,7 +233,13 @@ export default Service.extend({
         samePlan = reference.id === operation.planId;
       }
       if ( !samePlan ) { return; }
-      if ( ['succeeded', 'failed'].includes(operation.status) ) {
+      const summary = operation.planSummary;
+      if ( operation.status === 'succeeded' && pending.planKind === 'resource-change' && pending.resourceType === 'service' && pending.operation === 'create' &&
+        summary && summary.planKind === 'resource-change' && summary.resourceType === 'service' && summary.operation === 'create' &&
+        summary.planStatus === 'succeeded' && summary.verifiedResult === true && summary.executionResult ) {
+        if ( JSON.stringify([summary.displayPath, summary.displayDiff]) !== JSON.stringify([pending.displayPath, pending.displayDiff]) ) { return; }
+        this.publishPlan({...pending, executionResult: summary.executionResult, planStatus: 'succeeded', verifiedResult: true}, pending.planRef);
+      } else if ( ['succeeded', 'failed'].includes(operation.status) ) {
         const denied = pending.planKind === 'resource-change' && operation.status === 'failed' && operation.messageCode === 'ResourceChangeAuthorizationDenied';
         this.set('operationNotice', denied ? {code: 'ResourceChangeAuthorizationDenied'} : null);
         this.set('pendingPlan', null);

@@ -11,6 +11,34 @@ const source = await readFile(path.join(root, 'app/utils/ai-resource-review-labe
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const locales = ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
 
+test('service create ports and health review use existing translated labels and units in thirteen locales', () => {
+  const check = {port: 80, requestLine: 'GET /health HTTP/1.0', interval: 2000, responseTimeout: 2000, healthyThreshold: 2,
+    unhealthyThreshold: 3, initializingTimeout: 0, reinitializingTimeout: 60000, strategy: 'recreate'};
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => {
+      const value = key.split('.').reduce((row, part) => row && row[part], translations);
+      assert.equal(typeof value, 'string', locale + ': ' + key); assert.ok(value.trim(), locale + ': ' + key); return value;
+    };
+    const plan = {resourceType: 'service', operation: 'create', executionResult: {assignedPorts: ['32768:80/tcp']}, displayDiff: [
+      {field: 'ports', before: null, after: '["8080:80/tcp"]'}, {field: 'healthCheck', before: null, after: JSON.stringify(check)}]};
+    const labels = resourceReviewLabels(plan, t), ports = labels.displayChanges[0], health = labels.displayChanges[1];
+    assert.equal(ports.fieldLabel, t('generic.ports')); assert.equal(ports.after, '["8080:80/tcp"]');
+    assert.equal(health.fieldLabel, t('newContainer.tabs.healthCheck'));
+    assert.ok(t('webmcp.assignedPorts')); assert.ok(t('apiKeyAudit.outcome'));
+    assert.equal(labels.executionAssignedPorts, '["32768:80/tcp"]');
+    if (locale !== 'en-us') assert.notEqual(t('webmcp.assignedPorts'), 'Assigned port mappings');
+    assert.ok(health.after.includes(t('formHealthCheck.port.label') + ': 80'));
+    assert.ok(health.after.includes('2000 ' + t('formHealthCheck.interval.unit')));
+    assert.ok(health.after.includes('2 ' + t('formHealthCheck.healthyThreshold.unit')));
+    assert.ok(health.after.includes(t('formHealthCheck.strategy.recreate'))); assert.ok(health.after.includes(check.requestLine));
+    assert.ok(!health.after.includes('undefined')); assert.ok(!health.after.includes('formHealthCheck.'));
+    const none = resourceReviewLabels({...plan, displayDiff: [{field: 'healthCheck', before: null, after: '{"port":80,"requestLine":"","strategy":"none"}'}]}, t);
+    assert.ok(none.displayChanges[0].after.includes(t('formHealthCheck.strategy.none')));
+    assert.ok(none.displayChanges[0].after.includes(t('webmcp.emptyValue')));
+  }
+});
+
 test('background authorization failure has translated safe text in all thirteen locales and an escaped alert', async () => {
   const english = YAML.load(path.join(root, 'translations/en-us.yaml')).webmcp.backgroundAuthorizationDenied;
   for (const locale of locales) {
@@ -125,6 +153,8 @@ test('resource review renders friendly type action fields and exact values in al
 test('resource review templates use the friendly renderer and escape complete programs with bounded scrolling', async () => {
   const template=await readFile(path.join(root,'app/components/modal-confirm-ai-upgrade/template.hbs'),'utf8');
   preprocess(template);
+  assert.match(template, /<section data-testid="ai-resource-execution-result">/);
+  assert.match(template, /\{\{this\.reviewLabels\.executionAssignedPorts\}\}/);
   assert.ok(template.includes('operation=this.reviewLabels.operationLabel resource=this.reviewLabels.resourceTypeLabel'));
   assert.ok(template.includes('{{change.fieldLabel}}')); assert.ok(!template.includes('{{change.field}}'));
   assert.ok(!template.includes('{{this.plan.operation}}')); assert.ok(!template.includes('{{this.plan.resourceType}}'));
