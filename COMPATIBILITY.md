@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.205 / bridge 0.2.7 source candidate
+## Web Console 1.6.205 / bridge 0.2.7 published
 
 Service create adds native PortSpec strings and a closed health-check object to
 the existing typed resource-change plan. Matching Engine 0.183.366 support is
@@ -12,11 +12,23 @@ Approval binds the exact reviewed settings. Verified `executionResult.assignedPo
 is read-only output and does not replace or amend approved changes. Browser and
 stdio share these sources and retain command protocol version `1.0`.
 
-Package versions, the active release/test lock baseline, bridge handshake and
-bridge packager are synchronized. Dependency graphs are unchanged. Component
-CI, original artifact/SBOM qualification, publication, compatible Server assembly
-and runtime acceptance remain pending. See the
-[candidate release note](docs/releases/web-console-1.6.205.md).
+Original full/enabled CI and CodeQL passed, including 1,122 Ember tests with zero
+failures and 12 distinct new source cases: 9 Service create, 2 human UI chain and
+1 review-label cases. Thirteen locales and the inherited layout case's 96 parameter
+combinations are not additional unique tests. Original archive/manifest/SBOM
+qualification and actual anonymous readback of all 13 assets passed.
+
+Producer `931562ac0302b0406c5c2b44ec7a0f94307e5b2e` and numeric tag source
+`ac928a5db556315f87abd3ffc213630aa7049d1f` share tested tree
+`ea359bababf5ed9270e88149bbfa789ba2b54d85`. Bridge 0.2.7 has fresh exact-Git
+sources and a fresh 92-component lock-only SBOM; unchanged dependency,
+clean-install and SDK evidence is carried from published 0.2.5. No new bridge
+install, dependency scan or SDK handshake is claimed.
+
+Matching Engine 0.183.366 and Compose 0.14.41 are published components;
+Server565 assembly/runtime and designated role/Key, cross-ID, weak-model and
+cleanup acceptance remain pending. Full 243-group coverage remains in progress.
+See the [published release note](docs/releases/web-console-1.6.205.md).
 
 ## Web Console 1.6.204 / bridge 0.2.6 historical published baseline
 

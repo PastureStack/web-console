@@ -6,11 +6,11 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-[Web Console 1.6.205 / bridge 0.2.7](releases/web-console-1.6.205.md) is a source
-candidate with the twelve tools below. Service create ports and health checks
-require matching Engine 0.183.366 support. Candidate qualification, publication,
-compatible Server assembly and live workflow acceptance remain pending. External
-Service, DNS Alias and audit queries retain their matching Engine/broker
+[Web Console 1.6.205 / bridge 0.2.7](releases/web-console-1.6.205.md) is published
+with the twelve tools below. Service create ports and health checks require
+matching Engine 0.183.366 support. Component qualification and public asset
+verification passed; Server565 runtime and live workflow acceptance remain
+pending. External Service, DNS Alias and audit queries retain their matching Engine/broker
 requirements.
 
 | Tool | Purpose |
