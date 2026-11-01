@@ -1,18 +1,36 @@
 # Compatibility Contract
 
-## Candidate 1.6.203 / bridge 0.2.5
+## Web Console 1.6.203 / bridge 0.2.5 published
 
 Adds restricted-Key discovery against the existing Engine361 typed contract.
 Default discovery remains ordinary `apiKey`; use `apiKeyRestricted` explicitly.
-The assembled Server also needs Engine363 for accurate External Service previews
-and the retained native ServiceIndex cleanup repair. Publication and runtime acceptance remain pending.
+The matching Server 1.6.562 assembly needs Engine 0.183.363 for accurate External
+Service previews and the retained native ServiceIndex cleanup repair, together
+with the installed audit broker. Engine363 is published; matching Server/runtime
+and designated workflow acceptance remain pending.
 
 Pending-plan and authorization reminders use the authenticated content flow,
 retaining the same explicit WebMCP build ceiling and human review behavior.
 They do not overlay the footer language or CLI controls; long names and review
 labels wrap within the available width, including RTL and narrow layouts.
 
-## Web Console 1.6.202 / bridge 0.2.4 published
+Original full/enabled CI and CodeQL passed, with 1,122 browser unit tests and zero
+failures. The 35 collaboration source cases include one new reminder case; one
+new QUnit layout case covers 96 parameter combinations, not 96 unique tests.
+Four compiled layout modules and all four theme CSS assets were verified in the
+original archive. Restricted-Key4, confirmation-error6 and npm12-normalization10
+retain their classification; the existing npm-policy29 are not new cases.
+The final CI audit reports 0 High, 0 Critical and 62 Moderate findings.
+
+All 13 published assets passed actual anonymous GET, byte-count and SHA256
+verification. Producer `d97a8990801a281b519573a48b0db7dd12c9a616` and tag source
+`ae409b8404e946512297f00a71bdb4c141a3d5eb` share the tested tree. Documentation
+commits do not replace the producer, tag or artifacts. Component publication does
+not establish designated browser, role, cross-ID or weak-model runtime acceptance,
+and the full 243-group inventory remains in progress. See the
+[203 release note](docs/releases/web-console-1.6.203.md).
+
+## Web Console 1.6.202 / bridge 0.2.4 historical published baseline
 
 The matching typed workflows require Engine 0.183.361 and the installed audit
 broker. Certificate changes accept only name and description; PEM, private keys,

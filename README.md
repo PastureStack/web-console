@@ -8,40 +8,33 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## In development: 1.6.203 / bridge 0.2.5
-
-Restricted API Keys gain the same name-based discovery and audit-reference flow
-as ordinary Keys. Select `apiKeyRestricted` explicitly; the default searches
-`apiKey` only. This is partial family coverage, not a merged search or complete
-frontend automation. Confirmation errors gain clear permission guidance in all
-thirteen locales, and follow-redirects uses its official 1.16.2 patch. Pending
-plan reminders stay in authenticated page content so footer controls remain
-available. Publication and designated QA acceptance remain pending.
-
 ## Current component
 
-[Web Console **1.6.202** / bridge **0.2.4**](https://github.com/PastureStack/web-console/releases/tag/1.6.202)
+[Web Console **1.6.203** / bridge **0.2.5**](https://github.com/PastureStack/web-console/releases/tag/1.6.203)
 is published with the original qualified CI artifacts. All 13 public release
-assets passed anonymous SHA256 readback.
+assets passed actual anonymous GET, byte-count and SHA256 verification.
 
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
 Certificate names/descriptions. Certificate PEM material, keys, chains, renewal
 and removal stay in the normal human interface. Tools use opaque references;
 raw resource IDs, private audit payloads and credentials are not exposed.
-The matching workflows require Engine 0.183.361 and its configured audit broker.
+Select `apiKeyRestricted` explicitly for restricted-Key discovery and audit;
+the default searches ordinary `apiKey` only. Family coverage remains partial.
+Pending-plan reminders use page content so footer controls remain available,
+and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
 Component CI/CodeQL and original archive/SBOM verification passed, including
-1,121 browser unit tests with zero failures. Matching Engine/Server publication
-and designated combined browser, role, cross-ID and weak-model acceptance are
-separate pending gates. The deployed prior Server's baseline health is not
-acceptance of these new workflows. This release does not complete the full
-243-group frontend inventory. The [release note](docs/releases/web-console-1.6.202.md)
-records immutable provenance and remaining boundaries.
+1,122 browser unit tests with zero failures. The final CI audit retains 62
+Moderate findings and zero High/Critical findings. Matching Server 1.6.562 with
+Engine 0.183.363 and its audit broker, plus designated browser, role, cross-ID
+and weak-model runtime acceptance, remain pending. The full 243-group frontend
+inventory remains in progress. The [release note](docs/releases/web-console-1.6.203.md)
+records immutable provenance and these boundaries.
 
 The release producer uses Node.js `24.22.1` / npm `12.0.2` and separate runtime /
-build CycloneDX SBOMs. Dependencies remain unchanged. Use the
+build CycloneDX SBOMs, with the official follow-redirects `1.16.2` patch. Use the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).
 
