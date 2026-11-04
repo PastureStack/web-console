@@ -3321,9 +3321,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: Fermer
 modalAuditlogInfo:
-  header: Info complémentaires de connexion
-  request: "Objet de la Requête\_:"
-  response: "Objet Réponse\_:"
+  noContent: Aucun contenu n’est disponible pour cette entrée.
+  unavailable: Ce contenu ne peut pas être affiché.
+  header: "Détails du journal d’audit"
+  request: "Objet de la requête :"
+  response: "Objet de la réponse :"
 modalContainerStop:
   uom: secondes
   header: Êtes-vous sûr de vouloir l'arrêter

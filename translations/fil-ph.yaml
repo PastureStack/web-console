@@ -3322,9 +3322,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: Isara
 modalAuditlogInfo:
-  header: Karagdagang Impormasyon sa Log
-  request: 'Hiling na Bagay:'
-  response: 'Tugon na Bagay:'
+  noContent: Walang nilalamang magagamit para sa tala na ito.
+  unavailable: Hindi maipakita ang nilalamang ito.
+  header: "Mga detalye ng tala"
+  request: "Nilalaman ng kahilingan:"
+  response: "Nilalaman ng tugon:"
 modalContainerStop:
   uom: segundo
   header: Sigurado ka bang gusto mong huminto

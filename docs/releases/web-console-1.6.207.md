@@ -36,6 +36,16 @@ display path, expose a raw Stack ID as its label, or alter the immutable
 approval payload. Existing generation, account/project/Key context guards and
 confirmation ownership remain in force.
 
+## Human audit details
+
+Audit metadata can omit request/response content or contain an already-decoded
+object or plain text. The previous unconditional JSON parser could throw during
+dialog initialization. A shared formatter now handles both fields independently,
+shows localized empty/unavailable states and renders plain text with escaping.
+The existing close action, JSON display and current payload permissions remain.
+It never retrieves additional payloads or sends human-only contents to AI tools.
+The five dialog labels/messages are reviewed in all thirteen supported locales.
+
 ## Evidence boundary
 
 Focused TCP source results comprise 17 distinct related Node methods and the

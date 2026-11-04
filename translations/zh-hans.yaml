@@ -3220,9 +3220,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: 关闭
 modalAuditlogInfo:
-  header: 额外日志信息
-  request: '请求对象:'
-  response: '响应对象:'
+  noContent: 这条记录没有可显示的内容。
+  unavailable: 无法显示此内容。
+  header: "审计日志详情"
+  request: "请求对象："
+  response: "响应对象："
 modalContainerStop:
   uom: 秒
   header: 确认要停止

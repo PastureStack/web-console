@@ -21,6 +21,13 @@ Untrusted display labels and raw resource IDs are not substituted as names.
 Approval, immutable plan data, actor/Key checks and context ownership are
 unchanged.
 
+Human audit details accept omitted, already-decoded and non-JSON values without
+blocking the dialog. Missing/unavailable contents have explicit localized
+messages; plain text uses escaped rendering, while valid JSON retains the
+existing code display. Request and response are formatted independently and
+update when the selected record changes. This does not fetch additional data
+or change audit payload permissions or the AI metadata-only boundary.
+
 This is source preparation, not a published component or runtime PASS. The
 twelve tool names/protocol `1.0` and bridge dependency graph are unchanged.
 The UI build graph converges affected minimatch 8/9 callers to the compatible

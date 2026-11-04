@@ -3322,9 +3322,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: Fechar
 modalAuditlogInfo:
-  header: Informação de Log Adicionais
-  request: 'Objeto do Pedido:'
-  response: 'Objeto de Resposta:'
+  noContent: Não há conteúdo disponível para este registro.
+  unavailable: Não é possível exibir este conteúdo.
+  header: "Detalhes do registro de auditoria"
+  request: "Objeto da solicitação:"
+  response: "Objeto da resposta:"
 modalContainerStop:
   uom: segundos
   header: Tem certeza que deseja parar

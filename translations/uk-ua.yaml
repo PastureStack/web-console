@@ -3361,9 +3361,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: Закрити
 modalAuditlogInfo:
-  header: Додаткова інформація логів
-  request: 'Об''єкт запиту:'
-  response: 'Об''єкт відповіді:'
+  noContent: Для цього запису вміст недоступний.
+  unavailable: Неможливо відобразити цей вміст.
+  header: "Подробиці журналу аудиту"
+  request: "Об’єкт запиту:"
+  response: "Об’єкт відповіді:"
 modalContainerStop:
   uom: секунд
   header: 'Ви впевнені, що бажаєте зупинити'

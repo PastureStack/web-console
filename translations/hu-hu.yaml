@@ -3331,9 +3331,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: Bezár
 modalAuditlogInfo:
-  header: További naplóinformációk
-  request: 'Kérelem tárgya:'
-  response: 'Válaszobjektum:'
+  noContent: Ehhez a bejegyzéshez nem áll rendelkezésre tartalom.
+  unavailable: Ez a tartalom nem jeleníthető meg.
+  header: "Napló részletei"
+  request: "Kérelemobjektum:"
+  response: "Válaszobjektum:"
 modalContainerStop:
   uom: másodpercig
   header: Biztosan le akarod állítani?

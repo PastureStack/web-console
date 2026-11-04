@@ -3786,9 +3786,11 @@ modalAboutComponent:
   machineService: 主機佈建服務
   close: 關閉
 modalAuditlogInfo:
-  header: 稽核詳細資料
-  request: 要求物件：
-  response: 回應物件：
+  noContent: 這筆紀錄沒有可顯示的內容。
+  unavailable: 無法顯示此內容。
+  header: "稽核詳細資料"
+  request: "要求物件："
+  response: "回應物件："
 modalContainerStop:
   uom: 秒
   header: 確認要停止
