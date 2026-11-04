@@ -10,17 +10,13 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-The [Web206 / bridge0.2.8 source candidate](docs/releases/web-console-1.6.206.md)
-adds optional image-upgrade batch size, millisecond interval and start-first
-behavior to the existing human-reviewed plan. It needs matching Engine367;
-candidate CI, publication and runtime qualification are pending.
-
-[Web Console **1.6.205** / bridge **0.2.7**](docs/releases/web-console-1.6.205.md)
-is the current published release. It adds typed Service creation
-with native port bindings and a bounded health check. Human review shows the
-exact settings; a verified result reports assigned ports separately. These
-fields require matching Engine **0.183.366** support and a compatible Server
-assembly. Service creation uses bridge networking and starts stopped.
+[Web Console **1.6.206** / bridge **0.2.8**](docs/releases/web-console-1.6.206.md)
+is the current published component. Optional image-upgrade batch size,
+millisecond interval and start-first behavior stay bound to the exact human
+review. Matching Engine **0.183.367** is published; deployment requires a
+compatible Server assembly. Existing typed Service creation retains native
+port bindings, bounded health checks and separate verified assigned-port output.
+Service creation uses bridge networking and starts stopped.
 
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
@@ -33,9 +29,11 @@ Pending-plan reminders use page content so footer controls remain available,
 and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
-Original CI, archive/SBOM qualification and all 13 public assets passed
-verification. Matching Server565 runtime and designated workflow acceptance
-remain pending. See the [published release note](docs/releases/web-console-1.6.205.md)
+Original full/enabled CI, CodeQL, archive/SBOM qualification and anonymous
+verification of all 13 public assets passed. At component publication,
+QA125/8080 still runs Server565; matching Server566 and designated workflow
+runtime acceptance remain pending. Full 243-group coverage remains in progress.
+See the [published release note](docs/releases/web-console-1.6.206.md)
 for producer identity and validation scope.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
