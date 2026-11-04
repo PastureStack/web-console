@@ -44,6 +44,7 @@
 {{/if}}
 {{#unless (or this.catalogAfterPreview this.alreadyApproved)}}<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>{{/unless}}
 {{#if this.reviewLabels.createsStopped}}<div class="alert alert-info" data-testid="ai-resource-create-stopped">{{t "webmcp.createStoppedNotice"}}</div>{{/if}}
+{{#if this.reviewLabels.externalHealthCheckNotice}}<div class="alert alert-info" data-testid="ai-external-health-check-lb-only">{{this.reviewLabels.externalHealthCheckNotice}}</div>{{/if}}
 {{#if this.reviewLabels.mountedDataNotice}}<div class="alert alert-warning" data-testid="ai-resource-mounted-data-notice">{{this.reviewLabels.mountedDataNotice}}</div>{{/if}}
 {{#each this.reviewLabels.archiveNotices as |notice|}}<div class="alert alert-warning" data-testid="ai-resource-archive-notice">{{notice}}</div>{{/each}}
 {{#if this.stale}}<div class="alert alert-danger" role="alert">{{t "webmcp.stale"}}</div>{{/if}}

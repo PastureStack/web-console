@@ -120,3 +120,30 @@
   color: inherit;
   background-color: transparent;
 }
+
+// These two dialogs have demonstrated intrinsic-width overflow in narrow RTL.
+// Bind only their outer boxes to the viewport; retain full inner values.
+.lacsso.modal-overlay > .lacsso.modal-container.medium-modal.ai-resource-review-modal,
+.lacsso.modal-overlay > .lacsso.modal-container.large-modal.audit-log-detail-modal {
+  width: calc(100vw - 40px);
+  min-inline-size: 0;
+}
+
+.lacsso.modal-overlay > .lacsso.modal-container.medium-modal.ai-resource-review-modal {
+  max-inline-size: min(750px, calc(100vw - 40px));
+
+  .horizontal-form, .horizontal-form > dt, .horizontal-form > dd, .force-wrap, .ai-resource-diff-value {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    overflow-wrap: anywhere;
+  }
+}
+
+.lacsso.modal-overlay > .lacsso.modal-container.large-modal.audit-log-detail-modal {
+  max-inline-size: min(990px, calc(100vw - 40px));
+
+  > div {
+    min-inline-size: 0;
+    max-inline-size: 100%;
+  }
+}

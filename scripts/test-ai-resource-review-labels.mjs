@@ -213,3 +213,17 @@ test('resource review templates use the friendly renderer and escape complete pr
   const inbox=await readFile(path.join(root,'app/components/modal-ai-collaboration/template.hbs'),'utf8');preprocess(inbox);
   assert.ok(inbox.includes('{{plan.resourceTypeLabel}}'));assert.ok(inbox.includes('{{plan.operationLabel}}'));
 });
+
+
+test('external TCP review explicitly reuses the native LB-only alert in all thirteen locales without changing ordinary Service or none', async () => {
+  const template = await readFile(path.join(root, 'app/components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
+  assert.doesNotThrow(() => preprocess(template)); assert.match(template, /data-testid="ai-external-health-check-lb-only"/);
+  assert.match(template, /{{this.reviewLabels.externalHealthCheckNotice}}/);
+  for (const locale of locales) {
+    const translations=YAML.load(path.join(root,'translations',locale+'.yaml'));
+    const t=key=>key.split('.').reduce((v,p)=>v&&v[p],translations);
+    const plan={resourceType:'externalService',operation:'create',displayDiff:[{field:'healthCheck',before:null,after:'{"port":443}'}]};
+    const actual=resourceReviewLabels(plan,t);assert.equal(typeof actual.externalHealthCheckNotice,'string');assert.ok(actual.externalHealthCheckNotice.trim());assert.equal(actual.externalHealthCheckNotice,t('newExternalService.alert'));
+    for(const other of [{...plan,resourceType:'service'},{...plan,operation:'update_targets'},{...plan,displayDiff:[]}])assert.equal(resourceReviewLabels(other,t).externalHealthCheckNotice,null);
+  }
+});

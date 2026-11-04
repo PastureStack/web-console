@@ -4,7 +4,7 @@ import ModalBase from 'lacsso/components/modal-base';
 import auditObjectDisplay from 'ui/utils/audit-object-display';
 
 export default ModalBase.extend({
-  classNames: ['lacsso', 'modal-container', 'large-modal'],
+  classNames: ['lacsso', 'modal-container', 'large-modal', 'audit-log-detail-modal'],
   requestObject  : alias('modalService.modalOpts.requestObject'),
   responseObject  : alias('modalService.modalOpts.responseObject'),
   requestDisplay: computed('requestObject', function() {
