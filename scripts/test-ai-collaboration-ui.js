@@ -291,17 +291,41 @@ async function main() {
       changes: [{field: 'name', before: null, after: 'app'}, {field: 'stackId', before: null, after: '1st42'}]};
     assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
     const calls = [], record = row => ({get: key => row[key]});
+    // store.all returns an Ember ArrayProxy, not an iterable or numerically indexed array.
+    const collection = {
+      get length() { return rows.length; },
+      objectAt(index) { return rows[index] && record(rows[index]); },
+      map(callback) {
+        const result = [];
+        for (let index = 0; index < this.length; index++) result.push(callback(this.objectAt(index), index, this));
+        return result;
+      },
+    };
     const modal = {get, set, setProperties, commands: f.service, plan: f.service.pendingPlan, intl: {t: key => key},
       loadingReviewStack: false, reviewStackRecord: null, errors: null, approved: false, stale: false,
-      store: {all(type) { assert.equal(type, 'stack'); return rows.map(record); },
+      store: {all(type) { assert.equal(type, 'stack'); return collection; },
         find(...args) { calls.push(args); return lookup(...args); }}, loadReviewStack: confirmationDefinition.loadReviewStack};
     Object.defineProperties(modal, {
       reviewStacks: {get() { return confirmationDefinition.reviewStacks.call(this); }},
       reviewLabels: {get() { return confirmationDefinition.reviewLabels.call(this); }},
       submitDisabled: {get() { return Boolean(confirmationDefinition.submitDisabled.call(this)); }},
     });
-    return {f, dto, modal, calls, record};
+    return {f, dto, modal, calls, record, collection};
   }
+
+  await test('create review stack identity supports noniterable Ember ArrayProxy records in warm and cold caches', async () => {
+    const exact = {id: '1st42', accountId: 'project', name: 'Real Stack'};
+    const warm = stackReviewFixture([exact]);
+    assert.equal(warm.collection.length, 1); assert.equal(warm.collection.objectAt(0).get('id'), exact.id);
+    assert.equal(warm.collection[0], undefined); assert.equal(warm.collection[Symbol.iterator], undefined);
+    assert.deepEqual(Array.from(warm.collection), [undefined], 'The fixture must expose Array.from misuse');
+    assert.equal(warm.modal.reviewLabels.displayChanges[1].after, exact.name);
+    assert.equal(warm.modal.submitDisabled, false); await warm.modal.loadReviewStack(); assert.equal(warm.calls.length, 0);
+    const cold = stackReviewFixture([{...exact, id: '1st41'}], async () => cold.record(exact));
+    assert.equal(cold.modal.submitDisabled, true); await cold.modal.loadReviewStack();
+    assert.equal(cold.modal.reviewLabels.displayChanges[1].after, exact.name); assert.equal(cold.modal.submitDisabled, false);
+    assert.deepEqual(cold.calls, [['stack', '1st42', {forceReload: true}]]);
+  });
 
   await test('create review stack identity uses exact loaded names and existing translations without parsing target paths', async () => {
     const YAML = require('yamljs'), name = 'Same / <script>Stack</script>';

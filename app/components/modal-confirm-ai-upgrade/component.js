@@ -52,7 +52,7 @@ export default ModalBase.extend({
         // These records came from the existing project-authorized Stack load.
         // Never trust a caller label or infer a parent by splitting displayPath.
         const loaded = this.get('reviewStackRecord');
-        let records = Array.from(this.get('reviewStacks') || []);
+        let records = (this.get('reviewStacks') || []).map((stack) => stack);
         if ( loaded ) { records = [...records.filter((stack) => stack.get('id') !== loaded.get('id')), loaded]; }
         stacks = records.map((stack) => ({
           id: stack.get('id'), accountId: stack.get('accountId'), name: stack.get('name'), removed: stack.get('removed'),
