@@ -5,6 +5,13 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
+## Next candidate
+
+[Web Console 1.6.208 / bridge 0.2.10](../docs/releases/web-console-1.6.208.md)
+adds bounded Volume usage references with Engine 0.183.369, an explicit native
+LB-only health-check warning and narrow AI-review layout fixes. Publication
+and native acceptance remain pending; use the published version below.
+
 [Bridge **0.2.9** / Web Console **1.6.207**](../docs/releases/web-console-1.6.207.md)
 is published. It supports a closed TCP health check for External Service create
 and readable, authoritative Stack names in create review with matching Engine

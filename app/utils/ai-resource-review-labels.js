@@ -59,6 +59,8 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
   return {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
     stackTargetUnavailable,
+    externalHealthCheckNotice: plan.resourceType === 'externalService' && plan.operation === 'create' &&
+      (plan.displayDiff || []).some((change) => change.field === 'healthCheck' && change.after !== null) ? text('newExternalService.alert') : null,
     executionAssignedPorts: plan.executionResult ? JSON.stringify(plan.executionResult.assignedPorts) : null,
     upgradeStrategyChanges: plan.upgradeStrategy ? ['startFirst', 'batchSize', 'intervalMillis'].map((field) => ({
       field, fieldLabel: text(label(FIELDS, field)), after: value(field, plan.upgradeStrategy[field]),

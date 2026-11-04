@@ -374,7 +374,7 @@ export class CommandEngine {
     }
     const descriptor = this.findDescriptor({family: target.family, resourceType: target.resourceType});
     let body;
-    if ( this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog' ) {
+    if ( this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog' || descriptor.type === 'volume' ) {
       const view = descriptor.type === 'catalogTemplateVersion' ? await this.catalogReader.getVersion({templateId: target.parentId, versionId: target.id}, captured, signal) :
         descriptor.readTransport === 'catalog' ? await this.catalogReader.get({id: target.id}, captured, signal) :
         await this.resourceView(descriptor, captured, {resourceId: target.id}, signal);
@@ -384,6 +384,10 @@ export class CommandEngine {
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
       resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    if ( descriptor.type === 'volume' ) {
+      result.usageReferences = this.volumeUsageReferences(body, captured);
+      result.nextStep = 'Usage completeness is unknown. Only listed containers were authorized in this context; no hidden names, IDs or counts are available. Empty results do not mean unused or safe to delete. Mount paths are container destinations, not host filesystem paths. Use the exact containerRef and readable Stack name to disambiguate, or inspect the normal console; retain the native removal checks.';
+    }
     if ( descriptor.type === 'dnsService' ) {
       const {linkedServiceCount, unresolvedTargetCount, targetServices} = body;
       if ( linkedServiceCount === undefined && unresolvedTargetCount === undefined && targetServices === undefined ) {
@@ -482,6 +486,27 @@ export class CommandEngine {
       }
       throw new CommandError('STALE_REFERENCE', field);
     }
+  }
+
+  volumeUsageReferences(body, captured) {
+    const rows = body.usageReferences;
+    if ( rows === undefined && body.usageReferencesStatus === undefined ) { return {availability: 'unknown', limit: 50, items: []}; }
+    if ( body.usageReferencesStatus !== 'unknown' || !Array.isArray(rows) || rows.length > 50 ) { throw new CommandError('INVALID_RESPONSE'); }
+    const fields = ['containerId', 'name', 'state', 'mountPath', 'readOnly', 'stackResolution', 'stackName'];
+    const text = (value, max) => typeof value === 'string' && value.length > 0 && value.length <= max && !/[\x00-\x1f\x7f]/.test(value);
+    // Validate the whole projection before minting any same-context reference.
+    for ( const row of rows ) {
+      if ( !row || Object.keys(row).some((key) => !fields.includes(key)) || !text(row.containerId, 256) ||
+        !/^[a-zA-Z0-9_.:-]+$/.test(row.containerId) || ['.', '..'].includes(row.containerId) ||
+        !text(row.name, 512) || !text(row.state, 512) || !text(row.mountPath, 1024) || !row.mountPath.startsWith('/') ||
+        typeof row.readOnly !== 'boolean' || !['unknown', 'resolved'].includes(row.stackResolution) ||
+        (row.stackResolution === 'resolved' ? !text(row.stackName, 512) : row.stackName !== undefined) ) { throw new CommandError('INVALID_RESPONSE'); }
+    }
+    return {availability: 'unknown', limit: 50, items: rows.map((row) => ({
+      containerRef: this.referenceResource({id: row.containerId, family: 'container', resourceType: 'container', scope: 'project'}, captured),
+      name: row.name, state: row.state, mountPath: row.mountPath, readOnly: row.readOnly,
+      stackResolution: row.stackResolution, ...(row.stackResolution === 'resolved' ? {stackName: row.stackName} : {}),
+    }))};
   }
 
   async resourceView(descriptor, captured, options, signal) {

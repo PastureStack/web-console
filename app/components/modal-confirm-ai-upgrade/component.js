@@ -9,7 +9,7 @@ import { observer } from '@ember/object';
 const humanForms = new WeakMap();
 
 export default ModalBase.extend({
-  classNames: ['lacsso', 'modal-container', 'medium-modal'],
+  classNames: ['lacsso', 'modal-container', 'medium-modal', 'ai-resource-review-modal'],
   attributeBindings: ['role', 'aria-modal', 'aria-labelledby'],
   role: 'dialog',
   'aria-modal': 'true',
