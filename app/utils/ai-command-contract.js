@@ -29,6 +29,16 @@ export function validateServiceCreateField(field, value) {
   const spec = field === 'ports' ? servicePorts : field === 'healthCheck' ? serviceHealthCheck : null;
   validateValue(value, spec, `parameters.${field}`);
 }
+export const SERVICE_UPGRADE_FIELDS = Object.freeze(['startFirst', 'batchSize', 'intervalMillis']);
+const upgradeInteger = (description, minimum) => ({type: 'integer', minimum, maximum: Number.MAX_SAFE_INTEGER, description});
+const upgradeFields = {
+  startFirst: {type: 'boolean', description: 'Optional image-upgrade strategy. Start replacement containers before stopping old ones. Omitted means false; native port and volume capacity checks still apply.'},
+  batchSize: upgradeInteger('Optional containers per upgrade batch, at least 1. Omitted means 1. The upper bound is JSON safe-integer precision, not a native product limit.', 1),
+  intervalMillis: upgradeInteger('Optional interval between upgrade batches in milliseconds, at least 100. Omitted means 2000. The upper bound is JSON safe-integer precision, not a native product limit.', 100),
+};
+export function validateServiceUpgradeStrategy(value) {
+  validateValue(value, schema(upgradeFields, SERVICE_UPGRADE_FIELDS), 'upgradeStrategy');
+}
 const catalogAnswers = {type: 'array', maxItems: 100, items: schema({questionRef: string('questionRef from the selected version launchOptions.'),
   value: {type: ['string', 'number', 'boolean'], minLength: 0, maxLength: 4096, minimum: -Number.MAX_SAFE_INTEGER, maximum: Number.MAX_SAFE_INTEGER}, resourceRef: string('An authorized resourceRef, or a same-session serviceRef for service questions. Never send a raw resource ID.')}, ['questionRef']),
 description: 'Typed answers only. Each questionRef accepts exactly one value or resourceRef. For an optional reference, value "" explicitly selects no resource. Human-only inputs must be completed in the console; never send a password or secret value.'};
@@ -80,8 +90,8 @@ export const COMMANDS = Object.freeze([
   {name: 'update_service_description', write: true, description: 'Update only the service description using the saved read snapshot. An empty string clears it. If the description changed, read a new reference before deciding; never retry an unknown write automatically.',
     inputSchema: schema({serviceRef: string('serviceRef from find_services; use get_service first if its description has not been loaded.'),
       description: {type: 'string', minLength: 0, maxLength: 1024, description: 'Full new description, at most 1024 UTF-16 code units. Empty string clears it; preserve whitespace and Unicode.'}}, ['serviceRef', 'description'])},
-  {name: 'preview_service_upgrade', write: true, description: 'Preview only: preserve other settings and create an image upgrade plan. A human must approve it in the console before apply.',
-    inputSchema: schema({serviceRef: string('serviceRef from find_services.'), image: string('The exact complete image requested by the user. Do not guess a version.', 512)}, ['serviceRef', 'image'])},
+  {name: 'preview_service_upgrade', write: true, description: 'Preview only: preserve other service settings and create an image upgrade plan. Optional startFirst, batchSize and intervalMillis need matching server support and are shown exactly in human review. Omitted strategy values remain false, 1 and 2000 milliseconds. Never drop requested settings or retry through a generic action. A human must approve the exact plan in the console before apply.',
+    inputSchema: schema({serviceRef: string('serviceRef from find_services.'), image: string('The exact complete image requested by the user. Do not guess a version.', 512), ...upgradeFields}, ['serviceRef', 'image'])},
   {name: 'apply_service_upgrade', write: true, description: 'Apply an existing server-approved plan. Reuse planRef only. Never treat accepted, running or unknown as success; do not resubmit an unknown operation.',
     inputSchema: schema({planRef: string('planRef from preview_service_upgrade.')}, ['planRef'])},
   {name: 'get_operation', description: 'Read the same operation until the server verifies its result. accepted, running and unknown are not success.',

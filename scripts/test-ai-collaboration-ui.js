@@ -224,6 +224,67 @@ async function main() {
     assert.equal((await f.service.confirmPendingPlan()).code, 'CONTEXT_CHANGED');
   });
 
+  await test('upgrade strategy human inbox binds every effective value to the exact immutable review', async () => {
+    const dto = {...plan(), upgradeStrategy: {startFirst: true, batchSize: 2, intervalMillis: 1500}};
+    for (const field of ['startFirst', 'batchSize', 'intervalMillis', 'requestedImage', 'displayPath']) {
+      const f = fixture('off'); assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
+      const reviewed = f.service.pendingPlan, modal = {get, plan: reviewed, commands: f.service};
+      assert.ok(reviewed.reviewSignature); assert.equal(Object.isFrozen(reviewed.upgradeStrategy), true);
+      const changed = structuredClone(dto);
+      if (field === 'requestedImage') changed.requestedImage = 'docker:app:3';
+      else if (field === 'displayPath') changed.displayPath = 'Environment/OtherStack/web';
+      else changed.upgradeStrategy[field] = field === 'startFirst' ? false : changed.upgradeStrategy[field] + 1;
+      f.service.publishPlan({...reviewed, ...f.service.engine.planSummary(changed, reviewed.planRef)});
+      assert.equal(confirmationDefinition.stale.call(modal), true);
+      assert.equal((await f.service.confirmPendingPlan(reviewed)).code, 'CONFLICT'); assert.equal(f.requests.length, 0);
+      f.service.reviewInboxPlan(dto);
+      const original = f.service.pendingPlan;
+      f.service.userStore.rawRequest = async options => { f.requests.push(options); return {body: {...changed, confirmationState: 'approved'}}; };
+      assert.equal((await f.service.confirmPendingPlan(original)).code, 'CONFLICT');
+      assert.equal(f.service.pendingPlan.confirmationState, 'pending');
+    }
+  });
+
+  await test('upgrade strategy preview review modal human confirmation apply and verified operation share exact values', async () => {
+    const f = fixture('enabled'), strategy = {startFirst: true, batchSize: 2, intervalMillis: 1500}, requests = [];
+    let dto = {...plan(), upgradeStrategy: strategy};
+    const transport = async options => {
+      requests.push(options);
+      if (options.url.endsWith('/aiServiceUpgradePlans')) return {body: structuredClone(dto)};
+      if (options.url.endsWith('?action=confirm')) { dto = {...dto, confirmationState: 'approved'}; return {body: structuredClone(dto)}; }
+      if (options.url.endsWith('?action=apply')) {
+        assert.equal(dto.confirmationState, 'approved'); dto = {...dto, status: 'accepted'}; return {body: structuredClone(dto)};
+      }
+      if (options.url.endsWith('/' + dto.id)) return {body: {...structuredClone(dto), status: 'succeeded', verifiedResult: true}};
+      throw Error('Unexpected upgrade strategy route');
+    };
+    f.service.engine = new CommandEngine({context: f.context, request: transport, ensureSession: async () => {}, wait: async () => {},
+      audit: async () => ({accepted: true, requestId: 'strategy-audit'}), onPlan: (value, expected) => f.service.publishPlan(value, expected),
+      onOperation: operation => f.service.clearCompletedPlan(operation)});
+    const serviceRef = f.context.reference('service', {id: '1s1'}, f.context.capture());
+    const preview = await f.service.execute('preview_service_upgrade', {serviceRef, image: 'app:2', ...strategy});
+    assert.equal(preview.status, 'needs_user'); assert.deepEqual(requests[0].data, {serviceId: '1s1', image: 'app:2', ...strategy});
+    const reviewed = f.service.pendingPlan, modal = {get, set, setProperties, commands: f.service, plan: reviewed,
+      intl: {t: key => key}, approved: false, submitDisabled: false};
+    const reviewLabels = confirmationDefinition.reviewLabels.call(modal);
+    assert.deepEqual(reviewLabels.upgradeStrategyChanges.map(row => row.after), ['generic.yess', '2', '1500 formHealthCheck.interval.unit']);
+    const Handlebars = require('handlebars').create(), template = fs.readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
+    require('@glimmer/syntax').preprocess(template);
+    Handlebars.registerHelper('t', key => key); Handlebars.registerHelper('action', () => '');
+    Handlebars.registerHelper('or', (left, right) => left || right); Handlebars.registerHelper('top-errors', () => '');
+    const html = Handlebars.compile(template)({plan: reviewed, reviewLabels, isResourceChange: false});
+    for (const field of ['startFirst', 'batchSize', 'intervalMillis']) assert.ok(html.includes('data-testid="ai-upgrade-strategy-' + field + '"'));
+    assert.ok(html.includes('1500 formHealthCheck.interval.unit'));
+    await confirmationDefinition.actions.confirm.call(modal); assert.equal(modal.approved, true);
+    assert.deepEqual(f.service.pendingPlan.upgradeStrategy, strategy);
+    const accepted = await f.service.execute('apply_service_upgrade', {planRef: preview.planRef}); assert.equal(accepted.status, 'accepted');
+    const complete = await f.service.execute('get_operation', {operationRef: accepted.operationRef});
+    assert.equal(complete.status, 'succeeded'); assert.equal(complete.verifiedResult, true);
+    assert.deepEqual(reviewed.upgradeStrategy, strategy); assert.equal(f.service.pendingPlan, null);
+    assert.equal(requests.filter(row => row.url.endsWith('?action=apply')).length, 1);
+    assert.deepEqual(requests.find(row => row.url.endsWith('?action=apply')).data, {});
+  });
+
   await test('service create review binds ports and healthCheck to the exact human confirmation', async () => {
     const dto = {...resourcePlan(), resourceType: 'service', resourceId: null, operation: 'create', changes: [
       {field: 'ports', before: null, after: '["8080:80/tcp"]'},
@@ -338,7 +399,12 @@ async function main() {
     assert.ok(confirmTemplate.includes('this.isResourceChange'));
     assert.ok(confirmTemplate.includes('this.reviewLabels.displayChanges'));
     assert.ok(confirmTemplate.includes('{{change.fieldLabel}}'));
-    assert.ok(!confirmTemplate.includes('{{change.field}}'));
+    const strategyTestId = 'data-testid="ai-upgrade-strategy-{{change.field}}"';
+    assert.equal(confirmTemplate.split(strategyTestId).length, 2);
+    const assertNoRawField = template => assert.ok(!template.replace(strategyTestId, '').includes('{{change.field}}'));
+    assertNoRawField(confirmTemplate);
+    assert.throws(() => assertNoRawField(confirmTemplate + '<dt>{{change.field}}</dt>'), assert.AssertionError);
+    assert.throws(() => assertNoRawField(confirmTemplate + '<dd title="{{change.field}}">label</dd>'), assert.AssertionError);
     assert.ok(confirmTemplate.includes('<pre class="ai-resource-diff-value">{{change.before}}</pre>'));
     assert.ok(confirmTemplate.includes('<pre class="ai-resource-diff-value">{{change.after}}</pre>'));
     assert.ok(!confirmTemplate.includes('{{{'));

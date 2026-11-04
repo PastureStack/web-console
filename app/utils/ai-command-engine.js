@@ -1,6 +1,6 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
-import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, CommandError, publicError, safeText, validateInput, validateServiceCreateField } from './ai-command-contract';
+import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateServiceUpgradeStrategy } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
@@ -13,6 +13,16 @@ const SERVICE_CREATE_FIELDS = ['ports', 'healthCheck'];
 export function serviceCreateReview(summary) {
   return summary && summary.resourceType === 'service' && summary.operation === 'create' && Array.isArray(summary.displayDiff) && summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field)) ?
     JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
+}
+
+export function serviceUpgradeReview(summary) {
+  return summary && summary.upgradeStrategy ? JSON.stringify([summary.displayPath, summary.currentImage, summary.requestedImage,
+    ...SERVICE_UPGRADE_FIELDS.map((field) => summary.upgradeStrategy[field])]) : null;
+}
+
+function upgradeStrategy(value) {
+  try { validateServiceUpgradeStrategy(value); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
+  return Object.freeze(Object.fromEntries(SERVICE_UPGRADE_FIELDS.map((field) => [field, value[field]])));
 }
 
 class UnknownOperation extends Error {
@@ -93,6 +103,9 @@ export class CommandEngine {
       result.nextStep = 'The service description changed. Find the service again and read its current description before deciding on an update.';
     } else if ( name === 'update_service_description' && result.code === 'STALE_REFERENCE' ) {
       result.nextStep = 'Use get_service to load this reference description first. If the reference expired, find the service again.';
+    } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input, field)) &&
+      ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
+      result.nextStep = 'Check startFirst, batchSize and intervalMillis against this tool schema and use a matching Engine upgrade-strategy adapter. The exact strategy must be returned for human review. Do not drop requested settings, send inServiceStrategy or launchConfig, or retry through a generic action.';
     } else if ( name === 'find_resources' && input && input.family === 'catalog' && input.resourceType === 'catalogTemplateVersion' &&
       ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) && result.field !== 'cursor' ) {
       result.nextStep = 'Use find_resources with family catalog and resourceType catalogTemplate to find the exact named template. List catalogTemplateVersion with that template resourceRef as parentRef and no query. Select one returned version resourceRef; never guess a version or assume compatibility.';
@@ -612,18 +625,34 @@ export class CommandEngine {
     if ( plan && typeof plan.id === 'string' && plan.id.startsWith('aicataloglaunch-') ) { return catalogLaunchPlanSummary(plan, planRef); }
     if ( plan && typeof plan.id === 'string' && plan.id.startsWith('aichange-') ) { return this.resourcePlanSummary(plan, planRef); }
     if ( !plan || typeof plan.id !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
-    return {planRef, serviceName: safeText(plan.serviceName), displayPath: safeText(plan.displayPath, 768) || safeText(plan.serviceName),
+    const summary = {planRef, serviceName: safeText(plan.serviceName), displayPath: safeText(plan.displayPath, 768) || safeText(plan.serviceName),
       currentImage: imageName(plan.currentImage), requestedImage: imageName(plan.requestedImage || plan.image),
       expiresAt: safeText(plan.expiresAt, 64), confirmationState: safeText(plan.confirmationState || plan.status, 64),
       displayDiff: [{field: 'image', before: imageName(plan.currentImage), after: imageName(plan.requestedImage || plan.image)}]};
+    if ( Object.prototype.hasOwnProperty.call(plan, 'upgradeStrategy') ) {
+      summary.upgradeStrategy = upgradeStrategy(plan.upgradeStrategy);
+      summary.displayDiff.push(...SERVICE_UPGRADE_FIELDS.map((field) => ({field, before: null, after: summary.upgradeStrategy[field]})));
+    }
+    return summary;
   }
 
   async preview_service_upgrade(input, captured, signal) {
     const target = this.context.resolve(input.serviceRef, 'service', captured);
-    const plan = await this.call(captured, 'aiServiceUpgradePlans', 'POST', {serviceId: target.id, image: input.image}, signal);
+    const data = {serviceId: target.id, image: input.image};
+    for ( const field of SERVICE_UPGRADE_FIELDS ) {
+      if ( Object.prototype.hasOwnProperty.call(input, field) ) { data[field] = input[field]; }
+    }
+    const plan = await this.call(captured, 'aiServiceUpgradePlans', 'POST', data, signal);
     if ( !plan || typeof plan.id !== 'string' || (plan.serviceId && plan.serviceId !== target.id) ) { throw new CommandError('INVALID_RESPONSE'); }
     const planRef = this.context.reference('plan', {id: plan.id, serviceId: target.id}, captured);
     const summary = this.planSummary(plan, planRef);
+    if ( summary.upgradeStrategy ) {
+      const expected = {startFirst: false, batchSize: 1, intervalMillis: 2000, ...data};
+      if ( SERVICE_UPGRADE_FIELDS.some((field) => summary.upgradeStrategy[field] !== expected[field]) ) { throw new CommandError('INVALID_RESPONSE'); }
+    } else if ( SERVICE_UPGRADE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input, field)) ) {
+      throw new CommandError('INVALID_RESPONSE');
+    }
+    this.context.resolve(planRef, 'plan', captured).upgradeReview = serviceUpgradeReview(summary);
     this.onPlan(Object.assign({context: captured}, summary));
     return Object.assign({status: 'needs_user', nextStep: 'Ask the user to review and confirm the plan in the console.'}, summary);
   }
@@ -649,15 +678,18 @@ export class CommandEngine {
     this.context.assertCurrent(captured, signal);
     // Reserve recovery before submission. A response can disappear after the
     // server durably accepts this plan; recovering must not create a new plan.
-    const operationRef = reference.operationRef || this.context.reference('operation', {id: reference.id, serviceId: reference.serviceId, lastStatus: 'unknown'}, captured);
+    const operationRef = reference.operationRef || this.context.reference('operation', {id: reference.id, serviceId: reference.serviceId,
+      upgradeReview: reference.upgradeReview, lastStatus: 'unknown'}, captured);
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
+    let responded = false;
     try {
       const plan = await this.call(captured, `aiServiceUpgradePlans/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
+      responded = true;
       this.assertPlan(plan, reference);
       return this.operationSummary(plan, operationRef);
     } catch (error) {
-      if ( publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ) {
+      if ( responded || publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ) {
         throw new UnknownOperation(operationRef);
       }
       const operation = this.context.references.get(operationRef); if ( operation ) { operation.data.lastStatus = 'rejected'; }
@@ -684,6 +716,7 @@ export class CommandEngine {
     if ( !plan || plan.id !== reference.id || (plan.serviceId && plan.serviceId !== reference.serviceId) ) {
       throw new CommandError('INVALID_RESPONSE');
     }
+    if ( reference.upgradeReview && serviceUpgradeReview(this.planSummary(plan, null)) !== reference.upgradeReview ) { throw new CommandError('CONFLICT'); }
   }
 
   operationSummary(plan, operationRef) {
@@ -738,7 +771,11 @@ export class CommandEngine {
     let result;
     for ( let check = 0; check < 10; check++ ) {
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal);
-      this.assertPlan(plan, reference);
+      try { this.assertPlan(plan, reference); }
+      catch (error) {
+        if ( reference.upgradeReview ) { throw new UnknownOperation(input.operationRef); }
+        throw error;
+      }
       result = this.operationSummary(plan, input.operationRef);
       if ( !['accepted', 'running'].includes(result.status) ) { return result; }
       if ( check < 9 ) {

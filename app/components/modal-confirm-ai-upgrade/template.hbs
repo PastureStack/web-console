@@ -14,6 +14,7 @@
   {{else}}
     <dt>{{t "webmcp.currentImage"}}</dt><dd class="force-wrap">{{this.plan.currentImage}}</dd>
     <dt>{{t "webmcp.requestedImage"}}</dt><dd class="force-wrap">{{this.plan.requestedImage}}</dd>
+    {{#each this.reviewLabels.upgradeStrategyChanges as |change|}}<dt class="force-wrap">{{change.fieldLabel}}</dt><dd class="force-wrap" data-testid="ai-upgrade-strategy-{{change.field}}">{{change.after}}</dd>{{/each}}
   {{/if}}
   <dt>{{t "webmcp.expires"}}</dt><dd>{{this.displayExpiry}}</dd>
 </dl>

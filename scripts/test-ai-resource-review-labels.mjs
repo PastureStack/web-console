@@ -11,6 +11,23 @@ const source = await readFile(path.join(root, 'app/utils/ai-resource-review-labe
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const locales = ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
 
+test('service upgrade strategy review preserves exact values and existing labels and millisecond units in thirteen locales', () => {
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => {
+      const value = key.split('.').reduce((row, part) => row && row[part], translations);
+      assert.equal(typeof value, 'string', locale + ': ' + key); assert.ok(value.trim()); return value;
+    };
+    for (const startFirst of [false, true]) {
+      const plan = {upgradeStrategy: {startFirst, batchSize: 2, intervalMillis: 1500}};
+      const before = JSON.stringify(plan), rows = resourceReviewLabels(plan, t).upgradeStrategyChanges;
+      assert.deepEqual(rows.map(row => row.fieldLabel), [t('formUpgrade.startStop'), t('formUpgrade.size'), t('formUpgrade.interval')]);
+      assert.deepEqual(rows.map(row => row.after), [t(startFirst ? 'generic.yess' : 'generic.noo'), '2', '1500 ' + t('formHealthCheck.interval.unit')]);
+      assert.equal(JSON.stringify(plan), before);
+    }
+  }
+});
+
 test('service create ports and health review use existing translated labels and units in thirteen locales', () => {
   const check = {port: 80, requestLine: 'GET /health HTTP/1.0', interval: 2000, responseTimeout: 2000, healthyThreshold: 2,
     unhealthyThreshold: 3, initializingTimeout: 0, reinitializingTimeout: 60000, strategy: 'recreate'};
@@ -156,7 +173,13 @@ test('resource review templates use the friendly renderer and escape complete pr
   assert.match(template, /<section data-testid="ai-resource-execution-result">/);
   assert.match(template, /\{\{this\.reviewLabels\.executionAssignedPorts\}\}/);
   assert.ok(template.includes('operation=this.reviewLabels.operationLabel resource=this.reviewLabels.resourceTypeLabel'));
-  assert.ok(template.includes('{{change.fieldLabel}}')); assert.ok(!template.includes('{{change.field}}'));
+  assert.ok(template.includes('{{change.fieldLabel}}'));
+  const strategyTestId = 'data-testid="ai-upgrade-strategy-{{change.field}}"';
+  assert.equal(template.split(strategyTestId).length, 2);
+  const assertNoRawField = value => assert.ok(!value.replace(strategyTestId, '').includes('{{change.field}}'));
+  assertNoRawField(template);
+  assert.throws(() => assertNoRawField(template + '<dt>{{change.field}}</dt>'), assert.AssertionError);
+  assert.throws(() => assertNoRawField(template + '<dd title="{{change.field}}">label</dd>'), assert.AssertionError);
   assert.ok(!template.includes('{{this.plan.operation}}')); assert.ok(!template.includes('{{this.plan.resourceType}}'));
   assert.ok(template.includes('ai-resource-create-stopped'));assert.ok(!template.includes('{{{'));
   assert.ok(template.includes('ai-resource-mounted-data-notice'));

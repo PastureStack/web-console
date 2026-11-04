@@ -5,6 +5,12 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
+The [0.2.8 / Web206 source candidate](../docs/releases/web-console-1.6.206.md)
+adds optional image-upgrade `startFirst`, `batchSize` and `intervalMillis` with
+matching Engine367. Defaults remain false/1/2000; exact effective values require
+human review. It is not yet published or runtime-qualified. The current
+published download below remains 0.2.7.
+
 [Bridge **0.2.7** / Web Console **1.6.205**](../docs/releases/web-console-1.6.205.md)
 is published. It adds Service create `ports`
 and `healthCheck` using the same typed command contract as the browser. Matching
@@ -91,7 +97,7 @@ See the [release note](../docs/releases/web-console-1.6.205.md) for original CI 
 For local packaging, first generate a matching bridge SBOM and then run:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.7 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.7.zip
+python scripts/package-webmcp-bridge.py --version 0.2.8 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.8.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private

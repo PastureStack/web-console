@@ -25,7 +25,7 @@ if(!catalogOptionsOnly){
   assert.deepEqual([...event.resourceFields.command.options].sort(),[...COMMANDS.map(t=>t.name),'unknown'].sort(),'Tool audit wire enum does not match the frontend');
   for(const code of [...PUBLIC_ERROR_CODES,'NONE'])assert.ok(event.resourceFields.reason.options.includes(code),'Public error '+code+' cannot be audited');
 }
-const wireInputs={aiServiceUpgradePlan:['serviceId','image'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
   aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId'],
   aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
   aiCatalogStackLaunchOptions:['templateId','versionId'],
@@ -42,6 +42,23 @@ for(const [type,inputs] of Object.entries(wireInputs)){
   else if(auditSource){assert.deepEqual(schema.collectionMethods,[],'Private Audit input must not have its own collection route');assert.deepEqual(schema.resourceMethods,[],'Private Audit input must not have its own resource route');}
   else assert.ok(schema.collectionMethods.includes('POST'),type+' is not a POST input contract');
   for(const name of inputs)assert.equal(schema.resourceFields[name]?.create,true,type+'.'+name+' is not accepted input');
+  if(type==='aiServiceUpgradePlan'){
+    const properties=COMMANDS.find(tool=>tool.name==='preview_service_upgrade').inputSchema.properties;
+    for(const name of ['startFirst','batchSize','intervalMillis']){
+      const field=schema.resourceFields[name],spec=properties[name];
+      assert.equal(field.type,spec.type==='integer'?'int':spec.type,type+'.'+name+' type mismatch');
+      assert.equal(field.update,false,type+'.'+name+' must not be client-updatable');
+      assert.equal(field.nullable,false,type+'.'+name+' must reject null');
+      assert.notEqual(field.required,true,type+'.'+name+' must remain optional');
+      if(spec.type==='integer'){
+        assert.equal(field.min,spec.minimum,type+'.'+name+' minimum mismatch');
+        assert.equal(field.max,spec.maximum,type+'.'+name+' precision mismatch');
+      }
+    }
+    assert.equal(schema.resourceFields.upgradeStrategy?.type,'json',type+' must return effective strategy');
+    assert.equal(schema.resourceFields.upgradeStrategy.create,false,type+'.upgradeStrategy must be read-only output');
+    assert.equal(schema.resourceFields.upgradeStrategy.update,false,type+'.upgradeStrategy must not be client-updatable');
+  }
   if(type==='aiResourceChangePlan'){
     const properties=COMMANDS.find(tool=>tool.name==='preview_resource_change').inputSchema.properties;
     // Catalog launch has its own closed collection and input contract; it must
@@ -112,6 +129,7 @@ for(const [type,inputs] of Object.entries(wireInputs)){
     assert.ok(authorize[type]?.includes(actionInput||auditSource?'r':'c'),role+' does not expose '+type);
     if(audit)assert.equal(authorize[type],auditSource?'r':'cr',role+' must retain the exact '+type+' route metadata');
     if(catalogLaunch)assert.ok(authorize[type]?.includes('r'),role+' cannot retain '+type+' metadata');
+    if(type==='aiServiceUpgradePlan')assert.equal(authorize[type+'.upgradeStrategy'],'r',role+' must retain read-only effective upgrade strategy');
     for(const [name,field] of Object.entries(schema.resourceFields)){
       if(field.create){
         assert.ok(authorize[type+'.'+name]?.includes('c'),role+' cannot accept '+type+'.'+name);

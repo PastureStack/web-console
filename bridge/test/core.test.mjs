@@ -8,6 +8,36 @@ const secret = 'secret-sentinel-that-must-never-appear';
 const config = {endpoint:'http://127.0.0.1:8888',environment:'Default',accessKey:'access-test',secretKey:secret};
 const response = (data, revision='1', purpose='ai-bridge') => new Response(JSON.stringify(data), {headers:{'content-type':'application/json','X-PastureStack-Key-Purpose':purpose,'X-PastureStack-Key-Revision':revision}});
 
+test('upgrade strategy uses the shared bridge engine and exact preview with separate human approval', async () => {
+  const strategy = {startFirst: true, batchSize: 2, intervalMillis: 1500}, requests = [];
+  let approved = false, writes = 0;
+  const plan = {id: 'aiplan-11111111-1111-1111-1111-111111111111', serviceId: 's1', serviceName: 'web',
+    displayPath: 'Default/Stack/web', currentImage: 'docker:app:1', requestedImage: 'docker:app:2', upgradeStrategy: strategy};
+  const bridge = await createBridge(config, {fetcher: async (url, options) => {
+    const data = options.body ? JSON.parse(options.body) : undefined; requests.push({path: url.pathname, search: url.search, data});
+    if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', name: 'Default', state: 'active'}]});
+    if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'request-' + requests.length});
+    if (url.pathname.endsWith('/services')) return response({data: [{id: 's1', accountId: 'p1', stackId: 'st1', name: 'web'}]});
+    if (url.pathname.endsWith('/stacks')) return response({data: [{id: 'st1', accountId: 'p1', name: 'Stack'}]});
+    if (url.pathname.endsWith('/aiServiceUpgradePlans')) return response({...plan, confirmationState: 'pending', status: 'preview'});
+    if (url.search === '?action=apply') {
+      if (!approved) return new Response(JSON.stringify({code: 'UpgradeNeedsConfirmation'}), {status: 409});
+      writes++; return response({...plan, confirmationState: 'approved', status: 'accepted', verifiedResult: false});
+    }
+    throw Error('Unexpected bridge upgrade strategy request');
+  }});
+  const found = await bridge.engine.execute('find_services', {query: 'web'});
+  const preview = await bridge.engine.execute('preview_service_upgrade', {serviceRef: found.items[0].serviceRef, image: 'app:2', ...strategy});
+  assert.equal(preview.status, 'needs_user'); assert.deepEqual(preview.upgradeStrategy, strategy);
+  assert.deepEqual(requests.find(row => row.path.endsWith('/aiServiceUpgradePlans')).data, {serviceId: 's1', image: 'app:2', ...strategy});
+  assert.equal((await bridge.engine.execute('apply_service_upgrade', {planRef: preview.planRef})).code, 'NEEDS_USER'); assert.equal(writes, 0);
+  assert.equal(allowedRequest('projects/p1/aiServiceUpgradePlans/' + plan.id + '?action=confirm', 'POST', 'p1'), false);
+  approved = true; // The fixture now represents a separately server-approved plan.
+  assert.equal((await bridge.engine.execute('apply_service_upgrade', {planRef: preview.planRef})).status, 'accepted');
+  assert.equal(writes, 1); assert.deepEqual(requests.at(-2).data, {});
+  assert.equal(JSON.stringify(preview).includes(secret), false); bridge.close();
+});
+
 test('shared Node loader preserves Ember imports and one contract error identity', async () => {
   for (const name of ['ai-command-context', 'ai-command-engine']) {
     const source = await readFile(new URL(`../../app/utils/${name}.js`, import.meta.url), 'utf8');

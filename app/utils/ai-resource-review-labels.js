@@ -1,7 +1,7 @@
 const TYPES = {certificate: 'certificatesPage.index.header', dnsService: 'servicePage.type.dnsservice', externalService: 'servicePage.type.externalservice', stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
 const OPERATIONS = {update_targets: 'formTarget.target', start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
   create: 'saveCancel.create', create_from_catalog: 'newCatalog.saveNew', update_metadata: 'generic.edit', scale: 'serviceInfoPartial.scale', archive: 'archive.action', restore: 'archive.restore'};
-const FIELDS = {targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
+const FIELDS = {startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
   state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint', ports: 'generic.ports', healthCheck: 'newContainer.tabs.healthCheck',
   operation: 'generic.actions', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
   startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
@@ -28,6 +28,7 @@ export function resourceReviewLabels(plan, translate) {
     if ( input === null ) { return text('webmcp.nullValue'); }
     if ( input === '' ) { return text('webmcp.emptyValue'); }
     if ( typeof input === 'boolean' ) { return text(input ? 'generic.yess' : 'generic.noo'); }
+    if ( field === 'intervalMillis' && input !== null ) { return `${input} ${text('formHealthCheck.interval.unit')}`; }
     if ( field === 'healthCheck' ) {
       // The command engine already checked this closed JSON value. Translate
       // its labels and units while leaving the immutable review JSON intact.
@@ -47,6 +48,9 @@ export function resourceReviewLabels(plan, translate) {
   return {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
     executionAssignedPorts: plan.executionResult ? JSON.stringify(plan.executionResult.assignedPorts) : null,
+    upgradeStrategyChanges: plan.upgradeStrategy ? ['startFirst', 'batchSize', 'intervalMillis'].map((field) => ({
+      field, fieldLabel: text(label(FIELDS, field)), after: value(field, plan.upgradeStrategy[field]),
+    })) : [],
     createsStopped: plan.operation === 'create' && ['service', 'container', 'externalService', 'dnsService'].includes(plan.resourceType),
     archiveNotices: ['archive', 'restore'].includes(plan.operation) ? [text(plan.operation === 'archive' ? 'archive.explanation' : 'archive.restoreExplanation'),
       text(plan.operation === 'archive' ? 'archive.requiresStopped' : 'archive.restoreBeforeStart'), text('archive.dataWarning')] : [],

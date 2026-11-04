@@ -1,5 +1,5 @@
 import Service, { service } from '@ember/service';
-import { CommandEngine, serviceCreateReview } from 'ui/utils/ai-command-engine';
+import { CommandEngine, serviceCreateReview, serviceUpgradeReview } from 'ui/utils/ai-command-engine';
 import { publicError, CommandError } from 'ui/utils/ai-command-contract';
 import { safeCatalogQuestions, CATALOG_LAUNCH_COLLECTION } from 'ui/utils/ai-catalog-launch';
 
@@ -37,7 +37,7 @@ export default Service.extend({
   publishPlan(plan, expectedPlanRef) {
     if ( expectedPlanRef !== undefined && this.get('pendingPlan.planRef') !== expectedPlanRef ) { return; }
     this.set('operationNotice', null);
-    const reviewSignature = serviceCreateReview(plan);
+    const reviewSignature = serviceCreateReview(plan) || serviceUpgradeReview(plan);
     this.set('pendingPlan', reviewSignature ? Object.assign({}, plan, {reviewSignature}) : plan);
   },
 
@@ -101,7 +101,7 @@ export default Service.extend({
       if ( plan.planKind === 'catalog-launch' ) { this.assertCatalogHumanPlan(body, plan); }
       else if ( plan.planKind === 'resource-change' ? body.resourceType !== plan.resourceType || body.operation !== plan.operation || body.resourceId !== plan.serverResourceId : body.serviceId !== plan.serverServiceId ) { throw new CommandError('INVALID_RESPONSE'); }
       const summary = this.engine.planSummary(body, plan.planRef);
-      if ( plan.reviewSignature && serviceCreateReview(summary) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
+      if ( plan.reviewSignature && (serviceCreateReview(summary) || serviceUpgradeReview(summary)) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
       this.publishPlan(Object.assign({}, plan, summary), plan.planRef);
       return Object.assign({status: 'succeeded'}, summary);
     } catch (error) { return publicError(error); }

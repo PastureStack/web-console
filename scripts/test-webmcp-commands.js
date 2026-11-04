@@ -94,6 +94,89 @@ async function main() {
   async function serviceRef(f) { return (await f.engine.execute('find_services', {query: 'web'})).items[0].serviceRef; }
   async function preview(f) { return f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2'}); }
 
+  function strategyFixture(strategy = {startFirst: false, batchSize: 1, intervalMillis: 2000}) {
+    const f = fixture(), request = f.engine.request;
+    f.strategy = strategy;
+    f.engine.request = async (options) => {
+      const response = await request(options);
+      if ( response.body.id === 'server-plan' && f.strategy !== undefined ) { response.body.upgradeStrategy = {...f.strategy}; }
+      return response;
+    };
+    return f;
+  }
+
+  await test('upgrade strategy: closed types native minimums and JSON precision reject before preview', async () => {
+    const f = fixture(), ref = await serviceRef(f), before = f.requests.length;
+    for ( const fields of [{startFirst: null}, {startFirst: 'true'}, {startFirst: 1}, {batchSize: 0}, {batchSize: 1.5},
+      {batchSize: Number.MAX_SAFE_INTEGER + 1}, {intervalMillis: 99}, {intervalMillis: null}, {intervalMillis: Infinity},
+      {intervalMillis: Number.MAX_SAFE_INTEGER + 1}, {inServiceStrategy: {}}, {launchConfig: {}}] ) {
+      const result = await f.engine.execute('preview_service_upgrade', {serviceRef: ref, image: 'example/web:2', ...fields});
+      assert.equal(result.code, 'INVALID_INPUT', JSON.stringify(fields));
+    }
+    assert.equal(f.requests.length, before);
+    assert.equal(JSON.stringify(f.audits).includes('example/web:2'), false);
+    const maximum = {startFirst: true, batchSize: Number.MAX_SAFE_INTEGER, intervalMillis: Number.MAX_SAFE_INTEGER};
+    const bounded = strategyFixture(maximum);
+    const result = await bounded.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(bounded), image: 'example/web:2', ...maximum});
+    assert.equal(result.status, 'needs_user'); assert.deepEqual(result.upgradeStrategy, maximum);
+    assert.equal(bounded.requests.at(-1).data.batchSize, Number.MAX_SAFE_INTEGER, 'do not clamp native requests in the client');
+  });
+
+  await test('upgrade strategy: preview preserves defaults explicit false and exact partial parameters in human review', async () => {
+    for ( const fields of [{}, {startFirst: false}, {startFirst: true, batchSize: 2, intervalMillis: 1500}, {intervalMillis: 100}] ) {
+      const effective = {startFirst: false, batchSize: 1, intervalMillis: 2000, ...fields}, f = strategyFixture(effective);
+      const result = await f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2', ...fields});
+      assert.equal(result.status, 'needs_user'); assert.deepEqual(result.upgradeStrategy, effective);
+      assert.equal(Object.isFrozen(result.upgradeStrategy), true);
+      assert.deepEqual(f.requests.at(-1).data, {serviceId: 'svc-a', image: 'example/web:2', ...fields});
+      assert.deepEqual(result.displayDiff.slice(1), Object.entries(effective).map(([field, after]) => ({field, before: null, after})));
+      assert.equal(f.requests.some((row) => row.url.includes('?action=')), false);
+      assert.equal(JSON.stringify(result).includes('SECRET_SENTINEL'), false);
+    }
+    const legacy = fixture(), result = await preview(legacy);
+    assert.equal(result.status, 'needs_user'); assert.equal(result.upgradeStrategy, undefined, 'old image-only servers remain usable without new fields');
+  });
+
+  await test('upgrade strategy: missing malformed changed or unsupported strategy never publishes or retries a weaker plan', async () => {
+    const defaults = {startFirst: false, batchSize: 1, intervalMillis: 2000};
+    for ( const strategy of [undefined, null, {...defaults, extra: true}, {...defaults, startFirst: 'false'},
+      {...defaults, batchSize: 0}, {...defaults, intervalMillis: Number.MAX_SAFE_INTEGER + 1}, {...defaults, startFirst: true}] ) {
+      const f = strategyFixture(strategy);
+      // Explicit undefined must remain missing rather than selecting the helper default.
+      f.strategy = strategy;
+      if ( strategy === null ) {
+        const request = f.engine.request;
+        f.engine.request = async (options) => { const response = await request(options); if (response.body.id === 'server-plan') response.body.upgradeStrategy = null; return response; };
+      }
+      const result = await f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2', startFirst: false});
+      assert.equal(result.code, 'INVALID_RESPONSE'); assert.equal(f.plans.length, 0);
+      assert.equal(f.requests.filter((row) => row.url.endsWith('aiServiceUpgradePlans')).length, 1);
+    }
+    const f = fixture(), request = f.engine.request;
+    f.engine.request = (options) => options.url.endsWith('aiServiceUpgradePlans') ? Promise.reject({status: 422, body: {code: 'UpgradeInputInvalid'}}) : request(options);
+    const result = await f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2', batchSize: 2});
+    assert.equal(result.code, 'INVALID_INPUT'); assert.match(result.nextStep, /matching Engine/); assert.match(result.nextStep, /Do not drop requested settings/);
+    assert.equal(f.requests.some((row) => row.url.includes('?action=apply')), false);
+  });
+
+  await test('upgrade strategy: confirm apply and operation reads bind the same immutable strategy and recover uncertain writes', async () => {
+    const strategy = {startFirst: true, batchSize: 2, intervalMillis: 1500};
+    const f = strategyFixture(strategy), plan = await f.engine.execute('preview_service_upgrade', {serviceRef: await serviceRef(f), image: 'example/web:2', ...strategy});
+    f.strategy = {...strategy, batchSize: 3};
+    assert.equal((await f.engine.confirmPlan(plan.planRef)).code, 'CONFLICT');
+    f.strategy = strategy;
+    assert.equal((await f.engine.confirmPlan(plan.planRef)).confirmationState, 'approved');
+    f.strategy = {...strategy, intervalMillis: 2000};
+    const uncertain = await f.engine.execute('apply_service_upgrade', {planRef: plan.planRef});
+    assert.equal(uncertain.status, 'unknown'); assert.ok(uncertain.operationRef);
+    assert.equal((await f.engine.execute('get_operation', {operationRef: uncertain.operationRef})).status, 'unknown');
+    f.strategy = strategy; f.setStatus('succeeded', true);
+    const completed = await f.engine.execute('get_operation', {operationRef: uncertain.operationRef});
+    assert.equal(completed.status, 'succeeded'); assert.equal(completed.verifiedResult, true);
+    const writes = f.requests.filter((row) => row.url.endsWith('?action=apply'));
+    assert.equal(writes.length, 1); assert.deepEqual(writes[0].data, {});
+  });
+
   await test('seven bounded schemas reject extra fields before business requests and audit the rejection', async () => {
     assert.deepEqual(COMMANDS.filter((item) => legacyNames.includes(item.name)).map((item) => item.name), legacyNames);
     for ( const command of COMMANDS ) {

@@ -10,6 +10,11 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
+The [Web206 / bridge0.2.8 source candidate](docs/releases/web-console-1.6.206.md)
+adds optional image-upgrade batch size, millisecond interval and start-first
+behavior to the existing human-reviewed plan. It needs matching Engine367;
+candidate CI, publication and runtime qualification are pending.
+
 [Web Console **1.6.205** / bridge **0.2.7**](docs/releases/web-console-1.6.205.md)
 is the current published release. It adds typed Service creation
 with native port bindings and a bounded health check. Human review shows the
