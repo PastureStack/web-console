@@ -10,13 +10,14 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.206** / bridge **0.2.8**](docs/releases/web-console-1.6.206.md)
-is the current published component. Optional image-upgrade batch size,
-millisecond interval and start-first behavior stay bound to the exact human
-review. Matching Engine **0.183.367** is published; deployment requires a
-compatible Server assembly. Existing typed Service creation retains native
-port bindings, bounded health checks and separate verified assigned-port output.
-Service creation uses bridge networking and starts stopped.
+[Web Console **1.6.207** / bridge **0.2.9**](docs/releases/web-console-1.6.207.md)
+is the current published component. External Service creation supports a closed
+TCP health check, and Service/container review shows the authoritative Stack
+name. Human audit details handle missing, decoded and plain-text contents.
+Matching Engine **0.183.368** is published; deployment requires a compatible
+Server assembly. Optional image-upgrade settings stay bound to the exact human
+review. Typed Service creation retains native port bindings, bounded health
+checks and verified assigned-port output, uses bridge networking and starts stopped.
 
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
@@ -30,10 +31,9 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original full/enabled CI, CodeQL, archive/SBOM qualification and anonymous
-verification of all 13 public assets passed. At component publication,
-QA125/8080 still runs Server565; matching Server566 and designated workflow
-runtime acceptance remain pending. Full 243-group coverage remains in progress.
-See the [published release note](docs/releases/web-console-1.6.206.md)
+verification of all 13 public assets passed. Server assembly and designated
+workflow runtime acceptance remain separate from component publication.
+See the [published release note](docs/releases/web-console-1.6.207.md)
 for producer identity and validation scope.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)

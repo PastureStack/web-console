@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.207 / bridge 0.2.9 candidate
+## Web Console 1.6.207 / bridge 0.2.9 published
 
 External Service create accepts a closed TCP `healthCheck`: required `port`
 (1–65535) and optional positive integer `interval`, `responseTimeout`,
@@ -28,19 +28,44 @@ existing code display. Request and response are formatted independently and
 update when the selected record changes. This does not fetch additional data
 or change audit payload permissions or the AI metadata-only boundary.
 
-This is source preparation, not a published component or runtime PASS. The
-twelve tool names/protocol `1.0` and bridge dependency graph are unchanged.
+The component is published. The twelve tool names/protocol `1.0` and bridge
+dependency graph are unchanged.
 The UI build graph converges affected minimatch 8/9 callers to the compatible
 10.2.6 API and applies the pinned official 11.0.1 preprocessing fix at source
 build time. The glob wrapper uses its upstream raw entry so its external
 matcher receives the same fix. Local build entries verify patched bytes before
 loading plugins. SBOM keeps the real npm identity and records the backport;
-raw vulnerability reports remain unchanged. Required full CI and artifact
-qualification for this build change are pending.
+raw vulnerability reports remain unchanged. The original CI audit retains 49
+Moderate and zero High/Critical findings; SBOM coverage remains incomplete.
+
+Original full/enabled CI [41914388958](https://github.com/PastureStack/web-console/actions/runs/41914388958)
+and native CodeQL [41914393313](https://github.com/PastureStack/web-console/actions/runs/41914393313)
+passed. The 1,127 browser tests have zero failures and include the five new
+modal QUnit cases; four new formatter Node cases also passed. The CodeQL
+aggregator has zero annotations. Both original archive provenance and runtime
+SBOM cryptographic attestations, exact artifact/SBOM qualification and actual
+anonymous byte-count/SHA256 verification of all 13 public assets passed.
+Producer `e3f8fbe872d91df6837d5de3339a0efde645ac74` and normal PR247
+squash/tag source `00855544be1da90d8de63a823b437e2140b29c4e` share tested tree
+`11fde8f7eff0861eaf06a0357edc649b1caffb2c`. Public asset digests and the
+precise backport/SBOM boundary are in the
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.207/web207-release-metadata.json)
+and [release note](docs/releases/web-console-1.6.207.md).
+
+Bridge 0.2.9 contains 35 exact source files in 37 entries and a 92-component
+SBOM. Its unchanged dependency graph carries the published 0.2.5 clean-install
+evidence; no new install or dependency scan is claimed. A new real SDK stdio
+handshake verified version 0.2.9 and the twelve tools. The immutable ZIP keeps
+its producer-snapshot README; the repository's current bridge README is the
+installation authority. Matching Engine 0.183.368 is published and its exact
+source contracts passed. Its native release attestation is verified; its
+workflow did not provide SLSA provenance, and none is inferred.
+
 Existing focused TCP source results are carried; the Stack collection-shape
 regression retains its original failure and four affected passing cases.
-Required CI, artifact qualification, designated runtime/permission/UI and
-cleanup acceptance remain pending. Full 243-group coverage is not complete.
+Server assembly and designated runtime/permission/UI/cleanup acceptance remain
+separate. Component publication does not establish Server567 or native Audit
+Case12 acceptance. Full 243-group coverage is not complete.
 
 ## Web Console 1.6.206 / bridge 0.2.8 published
 
