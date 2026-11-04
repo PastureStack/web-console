@@ -8,23 +8,19 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Next candidate
-
-[Web Console 1.6.208 / bridge 0.2.10](docs/releases/web-console-1.6.208.md)
-adds bounded Volume usage references with Engine 0.183.369, an explicit native
-LB-only health-check warning and narrow AI-review layout fixes. Publication
-and native acceptance remain pending; use the published version below.
-
 ## Current component
 
-[Web Console **1.6.207** / bridge **0.2.9**](docs/releases/web-console-1.6.207.md)
-is the current published component. External Service creation supports a closed
-TCP health check, and Service/container review shows the authoritative Stack
-name. Human audit details handle missing, decoded and plain-text contents.
-Matching Engine **0.183.368** is published; deployment requires a compatible
-Server assembly. Optional image-upgrade settings stay bound to the exact human
-review. Typed Service creation retains native port bindings, bounded health
-checks and verified assigned-port output, uses bridge networking and starts stopped.
+[Web Console **1.6.208** / bridge **0.2.10**](docs/releases/web-console-1.6.208.md)
+is the version described by this source tree. Use the completed matching
+release and its recorded verification results for installation. Matching
+Engine **0.183.369** and a compatible Server assembly are required.
+
+Volume detail shows bounded, currently readable container references with
+context-bound identities and authorized Stack names. Completeness stays unknown;
+empty results do not establish unused or safe deletion. External Service TCP
+health-check review explicitly states the native load-balancer-only boundary.
+AI confirmation and Audit detail dialogs retain complete values in narrow RTL
+viewports. Native permissions, Key scope and human approval remain unchanged.
 
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
@@ -37,11 +33,10 @@ Pending-plan reminders use page content so footer controls remain available,
 and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
-Original full/enabled CI, CodeQL, archive/SBOM qualification and anonymous
-verification of all 13 public assets passed. Server assembly and designated
-workflow runtime acceptance remain separate from component publication.
-See the [published release note](docs/releases/web-console-1.6.207.md)
-for producer identity and validation scope.
+Original CI, artifact checks, archive/SBOM attestations and public asset digests
+are recorded in the matching
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.208/web208-release-metadata.json).
+Component publication does not establish designated Server/workflow acceptance.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).

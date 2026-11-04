@@ -89,6 +89,28 @@ def verify_archive(path, prefix, payloads):
             raise ValueError("ZIP CRC verification failed")
 
 
+def verify_install_versions(web_version, bridge_version, readme):
+    """Keep the active install block bound to both source package versions."""
+    blocks = [part.split("```", 1)[0] for part in readme.split("```sh\n")[1:]]
+    installs = [block for block in blocks if "WEB_CONSOLE_VERSION=" in block or "BRIDGE_VERSION=" in block]
+    if len(installs) != 1:
+        raise ValueError("Exactly one version-bound Bridge install block is required")
+    lines = [line.strip() for line in installs[0].splitlines() if line.strip()]
+    for name, version in (("WEB_CONSOLE_VERSION", web_version), ("BRIDGE_VERSION", bridge_version)):
+        if [line for line in lines if line.startswith(name + "=")] != [name + "=" + version]:
+            raise ValueError("Bridge install versions must match the source packages")
+    archive = "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
+    url = "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/" + archive
+    expected = [f'curl --fail --location --remote-name "{url}"',
+                f'curl --fail --location --remote-name "{url}.sha256"',
+                f'sha256sum --check "{archive}.sha256"', f'unzip "{archive}"',
+                'cd "pasturestack-webmcp-bridge-${BRIDGE_VERSION}/bridge"']
+    commands = [line for line in lines if line.startswith(("curl ", "sha256sum ", "unzip ", "cd "))]
+    if commands != expected:
+        raise ValueError("Download, checksum, extraction and cd must use the source-version variables")
+    return {"webVersion": web_version, "bridgeVersion": bridge_version}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path, help="Destination .zip file; its parent is created if needed")
@@ -97,6 +119,9 @@ def main():
     parser.add_argument("--version", default=VERSION, choices=[VERSION], help="Expected bridge source version")
     args = parser.parse_args()
     root = args.source_root.resolve(strict=True)
+    verify_install_versions(json.loads(checked_source(root, "package.json"))["version"],
+                            json.loads(checked_source(root, "bridge/package.json"))["version"],
+                            checked_source(root, "bridge/README.md").decode("utf-8"))
     output = args.output.resolve()
     if output.suffix.lower() != ".zip":
         raise ValueError("--output must name a .zip file")

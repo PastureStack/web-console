@@ -1,16 +1,27 @@
 # Compatibility Contract
 
-## Web Console 1.6.208 / bridge 0.2.10 candidate — not published
+## Web Console 1.6.208 / bridge 0.2.10 source contract
 
-Existing get_resource Volume detail uses the Engine 0.183.369 bounded,
-authorized usage projection in both browser and shared stdio core. Opaque
-references retain their captured context; hidden identities/counts and host
-source paths are excluded. Completeness remains unknown and no deletion grant
-is inferred. External TCP review reuses the native thirteen-locale LB-only
-warning. Scoped AI confirmation and Audit detail styles contain full long values at
-narrow RTL widths without truncation; Audit code retains native scrolling. No new tool, permission or write is introduced.
-Source checks are scoped; full original CI, artifact and native acceptance are
-pending. See the [candidate note](docs/releases/web-console-1.6.208.md).
+Existing get_resource Volume detail uses Engine 0.183.369's bounded,
+authorized usage projection in browser and shared stdio core. At most fifty
+container references retain their captured context. Hidden identities/counts
+and host source paths are excluded. Completeness stays unknown, and an empty
+result does not grant deletion. Current native role/Key and object checks remain.
+
+External TCP review reuses the native thirteen-locale LB-only warning.
+Scoped AI confirmation and Audit detail styles retain full values at narrow RTL
+widths; Audit code keeps its native scrolling. No tool, permission or write is
+added. Bridge installation uses the root/bridge package versions for every
+download, checksum, extraction and working-directory step; its version guard
+rejects stale instructions before packaging.
+
+Original CI, exact tested producer/tree, dependency evidence, attestations and
+publication results belong to the matching
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.208/web208-release-metadata.json)
+and [Bridge proof](https://github.com/PastureStack/web-console/releases/download/1.6.208/bridge030-release-proof.json).
+They are not inferred from a source version. Designated Server, role/Key,
+weak-model and native layout acceptance remain separate and pending. Historical
+published evidence follows; no whole-family or 243-group completion is claimed.
 
 ## Web Console 1.6.207 / bridge 0.2.9 published
 
