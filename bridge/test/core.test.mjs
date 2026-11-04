@@ -8,6 +8,48 @@ const secret = 'secret-sentinel-that-must-never-appear';
 const config = {endpoint:'http://127.0.0.1:8888',environment:'Default',accessKey:'access-test',secretKey:secret};
 const response = (data, revision='1', purpose='ai-bridge') => new Response(JSON.stringify(data), {headers:{'content-type':'application/json','X-PastureStack-Key-Purpose':purpose,'X-PastureStack-Key-Revision':revision}});
 
+test('external TCP create uses the shared bridge schema owner and immutable human review without a new route', async () => {
+  const healthCheck = {port: 443, interval: 2000, responseTimeout: 1000, healthyThreshold: 2, unhealthyThreshold: 3};
+  const requests = [], id = 'aichange-11111111-1111-1111-1111-111111111111';
+  let plan, writes = 0;
+  const bridge = await createBridge(config, {fetcher: async (url, options) => {
+    const data = options.body ? JSON.parse(options.body) : undefined; requests.push({path: url.pathname, search: url.search, data});
+    if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', name: 'Default', state: 'active'}]});
+    if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'request-' + requests.length});
+    if (url.pathname.endsWith('/aiResourceViews')) return response({resourceType: 'stack', data: [{id: 'st1', name: 'Stack', accountId: 'p1'}]});
+    if (url.pathname.endsWith('/aiResourceChangePlans')) {
+      plan = {id, resourceType: 'externalService', operation: 'create', resourceId: null, targetPath: 'Default/Stack/db',
+        confirmationState: 'pending', status: 'preview', verifiedResult: false, changes: [
+          {field: 'name', before: null, after: 'db'}, {field: 'hostname', before: null, after: 'db.example.test'},
+          {field: 'healthCheck', before: null, after: JSON.stringify(data.parameters.healthCheck)}, {field: 'startOnCreate', before: null, after: false}]};
+      return response(plan);
+    }
+    if (url.search === '?action=apply') { writes++; return response({...plan, status: 'accepted'}); }
+    if (url.pathname.endsWith('/' + id)) return response(plan);
+    throw Error('Unexpected external TCP bridge route');
+  }});
+  try {
+    const parents = await bridge.engine.execute('find_resources', {family: 'stack', query: 'Stack'});
+    const input = {resourceType: 'externalService', operation: 'create', parentRef: parents.items[0].resourceRef,
+      parameters: {name: 'db', hostname: 'db.example.test', healthCheck}};
+    const preview = await bridge.engine.execute('preview_resource_change', input);
+    assert.equal(preview.status, 'needs_user');
+    assert.deepEqual(requests.find(row => row.path.endsWith('/aiResourceChangePlans')).data,
+      {resourceType: 'externalService', operation: 'create', parameters: {...input.parameters, stackId: 'st1'}});
+    const count = requests.filter(row => row.path.endsWith('/aiResourceChangePlans')).length;
+    assert.equal((await bridge.engine.execute('preview_resource_change', {...input, parameters: {...input.parameters,
+      healthCheck: {...healthCheck, requestLine: 'GET / HTTP/1.0'}}})).code, 'INVALID_INPUT');
+    assert.equal(requests.filter(row => row.path.endsWith('/aiResourceChangePlans')).length, count);
+    plan.confirmationState = 'approved'; // Represents a separate human server-side approval.
+    plan.changes.find(row => row.field === 'healthCheck').after = JSON.stringify({...healthCheck, port: 8443});
+    assert.equal((await bridge.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'CONFLICT');
+    assert.equal(writes, 0);
+    assert.equal(allowedRequest('projects/p1/aiResourceChangePlans/' + id + '?action=confirm', 'POST', 'p1'), false);
+    assert.equal(requests.some(row => row.path.includes('/externalServices')), false);
+    assert.equal(JSON.stringify(preview).includes(secret), false); assert.equal(COMMANDS.length, 12);
+  } finally { bridge.close(); }
+});
+
 test('upgrade strategy uses the shared bridge engine and exact preview with separate human approval', async () => {
   const strategy = {startFirst: true, batchSize: 2, intervalMillis: 1500}, requests = [];
   let approved = false, writes = 0;

@@ -1,6 +1,6 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
-import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateServiceUpgradeStrategy } from './ai-command-contract';
+import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
@@ -11,7 +11,8 @@ const APPLY_COMMANDS = ['apply_service_upgrade', 'apply_resource_change'];
 const SERVICE_CREATE_FIELDS = ['ports', 'healthCheck'];
 
 export function serviceCreateReview(summary) {
-  return summary && summary.resourceType === 'service' && summary.operation === 'create' && Array.isArray(summary.displayDiff) && summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field)) ?
+  return summary && summary.operation === 'create' && Array.isArray(summary.displayDiff) &&
+    (summary.resourceType === 'externalService' || summary.resourceType === 'service' && summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field))) ?
     JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
 }
 
@@ -130,7 +131,8 @@ export class CommandEngine {
         'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the simple targets.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
       };
-      result.nextStep = serviceCreateInputRejected ?
+      result.nextStep = input && input.resourceType === 'externalService' && input.parameters && Object.prototype.hasOwnProperty.call(input.parameters, 'healthCheck') ?
+        'Only External Service create accepts this TCP healthCheck: required integer port 1 through 65535, with optional integer interval, responseTimeout, healthyThreshold and unhealthyThreshold. Timings are milliseconds and thresholds count checks. Omit the whole healthCheck for none; do not use null, HTTP requestLine, Host, URL, strategy, or send it through update_targets or update_metadata. Reuse the selected Stack parentRef and preserve all requested settings.' : serviceCreateInputRejected ?
         'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching service-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
         result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
         'Only service create accepts ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units, or healthCheck with required port 1 through 65535 and the exact fields and bounds in the schema. Timings are milliseconds; thresholds count checks. Reuse the selected Stack parentRef unchanged.' :
@@ -664,6 +666,9 @@ export class CommandEngine {
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
+      if ( reference.resourceType === 'externalService' && reference.operation === 'create' ) {
+        this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
+      }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
       this.assertPlan(plan, reference);
       const summary = this.planSummary(plan, planRef);
@@ -827,7 +832,10 @@ export class CommandEngine {
         if ( plan.resourceType !== 'dnsService' || change.after === null ) { throw new CommandError('INVALID_RESPONSE'); }
         safeAliasTargetSummary(change.before); safeAliasTargetSummary(change.after);
       }
-      if ( SERVICE_CREATE_FIELDS.includes(change.field) ) {
+      if ( change.field === 'healthCheck' && plan.resourceType === 'externalService' ) {
+        if ( plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
+        try { validateExternalServiceHealthCheck(JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
+      } else if ( SERVICE_CREATE_FIELDS.includes(change.field) ) {
         if ( plan.resourceType !== 'service' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
         try { validateServiceCreateField(change.field, JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
       }
@@ -933,6 +941,15 @@ export class CommandEngine {
       }
       reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
     }
+    if ( input.resourceType === 'externalService' && input.operation === 'create' ) {
+      const requested = Object.prototype.hasOwnProperty.call(parameters, 'healthCheck'), change = plan.changes.find((item) => item.field === 'healthCheck');
+      if ( requested !== !!change ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( requested ) {
+        const actual = JSON.parse(change.after), expected = parameters.healthCheck;
+        if ( Object.keys(expected).length !== Object.keys(actual).length || Object.keys(expected).some((key) => expected[key] !== actual[key]) ) { throw new CommandError('INVALID_RESPONSE'); }
+      }
+      reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
+    }
     const planRef = this.context.reference('plan', reference, captured);
     const summary = this.resourcePlanSummary(plan, planRef);
     this.onPlan(Object.assign({context: captured}, summary));
@@ -949,6 +966,9 @@ export class CommandEngine {
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
+      if ( reference.resourceType === 'externalService' && reference.operation === 'create' ) {
+        this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
+      }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
       this.assertPlan(plan, reference);
       return this.operationSummary(plan, operationRef);

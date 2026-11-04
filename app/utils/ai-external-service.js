@@ -1,4 +1,4 @@
-import {CommandError} from './ai-command-contract';
+import {CommandError, validateExternalServiceHealthCheck} from './ai-command-contract';
 
 export function isExternalHostname(value) {
   if ( typeof value !== 'string' || !value || value.length > 253 ) { return false; }
@@ -32,5 +32,8 @@ export function validateExternalServiceParameters(operation, parameters) {
   const ips = parameters.externalIpAddresses;
   if ( hasIps && (!Array.isArray(ips) || ips.length < 1 || ips.length > 16 || ips.some((item) => !isExternalAddress(item)) || new Set(ips).size !== ips.length) ) {
     throw new CommandError('INVALID_INPUT', 'parameters.externalIpAddresses');
+  }
+  if ( operation === 'create' && Object.prototype.hasOwnProperty.call(parameters, 'healthCheck') ) {
+    validateExternalServiceHealthCheck(parameters.healthCheck);
   }
 }

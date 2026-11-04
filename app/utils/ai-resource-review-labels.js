@@ -34,12 +34,14 @@ export function resourceReviewLabels(plan, translate) {
       // its labels and units while leaving the immutable review JSON intact.
       try {
         const check = JSON.parse(input);
-        return Object.keys(HEALTH_FIELDS).filter((key) => Object.prototype.hasOwnProperty.call(check, key)).map((key) => {
+        const rows = Object.keys(HEALTH_FIELDS).filter((key) => Object.prototype.hasOwnProperty.call(check, key)).map((key) => {
           const name = HEALTH_FIELDS[key], unit = ['port', 'requestLine', 'strategy'].includes(key) ? '' : ` ${text(`formHealthCheck.${name}.unit`)}`;
           const display = key === 'strategy' ? text(`formHealthCheck.strategy.${check[key]}`) : check[key] === '' ? text('webmcp.emptyValue') : String(check[key]);
           return `${text(`formHealthCheck.${name}.label`)}: ${display}${unit}`;
-        }).join('\n');
-      } catch (error) { return String(input); }
+        });
+        if ( plan.resourceType === 'externalService' ) { rows.unshift(`${text('formHealthCheck.label')}: ${text('formHealthCheck.checkType.tcp')}`); }
+        return rows.join('\n');
+      } catch (error) { return plan.resourceType === 'externalService' ? text('generic.unknown') : String(input); }
     }
     if ( ['state', 'childServiceState'].includes(field) && label(STATES, input) ) { return text(label(STATES, input)); }
     if ( field === 'operation' && label(OPERATIONS, input) ) { return text(label(OPERATIONS, input)); }
