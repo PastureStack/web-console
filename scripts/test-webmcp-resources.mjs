@@ -138,7 +138,13 @@ test('resource families: every implemented descriptor projects only bounded scal
 
 test('resource families: full 1024-unit descriptions are retained and truncation is explicit', async () => {
   const body = {id: 'v1', name: 'x'.repeat(600), description: '🌿'.repeat(512)};
-  const f = fixture({handle: async ({url}) => ({body: url.includes('?') ? {data: [body]} : body})});
+  const f = fixture({handle: async ({url, method, data}) => {
+    if (url === 'projects/p1/aiResourceViews') {
+      assert.equal(method, 'POST'); assert.deepEqual(data, {resourceType: 'volume', resourceId: 'v1'});
+      return {body: {resourceType: 'volume', data: [body]}};
+    }
+    return {body: url.includes('?') ? {data: [body]} : body};
+  }});
   const found = await f.engine.execute('find_resources', {family: 'storage'});
   assert.equal(found.items[0].fields.description, body.description);
   assert.deepEqual(found.items[0].truncatedFields, ['name']);
