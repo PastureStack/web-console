@@ -91,6 +91,7 @@ def verify_archive(path, prefix, payloads):
 
 def verify_install_versions(web_version, bridge_version, readme):
     """Keep the active install block bound to both source package versions."""
+    readme = readme.replace("\r\n", "\n")
     blocks = [part.split("```", 1)[0] for part in readme.split("```sh\n")[1:]]
     installs = [block for block in blocks if "WEB_CONSOLE_VERSION=" in block or "BRIDGE_VERSION=" in block]
     if len(installs) != 1:

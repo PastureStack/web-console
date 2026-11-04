@@ -14,7 +14,7 @@ class BridgeInstallVersionTest(unittest.TestCase):
     def setUp(self):
         self.web = json.loads((ROOT / "package.json").read_bytes())["version"]
         self.bridge = json.loads((ROOT / "bridge/package.json").read_bytes())["version"]
-        self.readme = (ROOT / "bridge/README.md").read_text(encoding="utf-8")
+        self.readme = (ROOT / "bridge/README.md").read_bytes().decode("utf-8")
 
     def check(self, text):
         return owner.verify_install_versions(self.web, self.bridge, text)
@@ -22,6 +22,10 @@ class BridgeInstallVersionTest(unittest.TestCase):
     def test_current_install_matches_both_package_versions(self):
         self.assertEqual(self.check(self.readme), {"webVersion": self.web, "bridgeVersion": self.bridge})
         self.assertEqual(owner.VERSION, self.bridge)
+        crlf = self.readme.replace("\r\n", "\n").replace("\n", "\r\n")
+        self.assertEqual(self.check(crlf), {"webVersion": self.web, "bridgeVersion": self.bridge})
+        with self.assertRaises(ValueError):
+            self.check(crlf.replace("BRIDGE_VERSION=" + self.bridge, "BRIDGE_VERSION=0.0.0"))
 
     def test_stale_web_or_bridge_assignment_is_rejected(self):
         for name, value in (("WEB_CONSOLE_VERSION", self.web), ("BRIDGE_VERSION", self.bridge)):
