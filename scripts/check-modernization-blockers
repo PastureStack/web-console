@@ -51,6 +51,8 @@ if [[ "$(tr -d '\r' < app/application/template.hbs | grep -Fxc '<BasicDropdownWo
   failures=$((failures + 1))
 fi
 
+python3 scripts/test-bridge-install-versions.py
+
 require_no_pattern 'rancher/dind|deb\.nodesource\.com/setup_6|setup_6\.x|phantomjs|npm install -g bower|releases\.rancher\.com/ui' \
   'EOL or unreviewed upstream artifact build dependency in executable UI entrypoints' \
   scripts/bootstrap scripts/build scripts/build-static scripts/ci scripts/update-dependencies

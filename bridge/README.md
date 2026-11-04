@@ -5,30 +5,23 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-## Next candidate
+## Current source version
 
-[Web Console 1.6.208 / bridge 0.2.10](../docs/releases/web-console-1.6.208.md)
-adds bounded Volume usage references with Engine 0.183.369, an explicit native
-LB-only health-check warning and narrow AI-review layout fixes. Publication
-and native acceptance remain pending; use the published version below.
+[Bridge **0.2.10** / Web Console **1.6.208**](../docs/releases/web-console-1.6.208.md)
+uses matching Engine **0.183.369**. Install only from the completed matching
+release; publication and Server/runtime acceptance are separate guarantees.
 
-[Bridge **0.2.9** / Web Console **1.6.207**](../docs/releases/web-console-1.6.207.md)
-is published. It supports a closed TCP health check for External Service create
-and readable, authoritative Stack names in create review with matching Engine
-**0.183.368**. Optional image-upgrade `startFirst`, `batchSize` and
-`intervalMillis` retain defaults false/1/2000; human approval binds the exact
-effective settings. Server assembly and runtime/workflow acceptance are separate
-from component publication.
+The twelve shared typed tools support resource discovery, safe metadata reads
+and human-reviewed lifecycle plans. Volume detail can show at most fifty
+currently readable container references, with readable Stack names where
+separately authorized. Completeness remains unknown; empty references never
+prove unused or safe deletion. External Service TCP health checks apply only
+when the External Service is a load-balancer target. The shared AI review and
+Audit detail dialogs preserve full values within narrow RTL viewports.
 
-The published [0.2.9 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.207)
-contains twelve typed tool names for resource-family
-discovery, safe metadata reads and stack/service/container lifecycle plans.
-Unsupported-operation replies explain that Global services follow eligible
-hosts rather than a manual instance count; they do not advise retrying the plan.
-It requires a matching Engine with
-`api.ai.resource.change.enabled=true` for those changes (default false). The generic
-stdio read adapter uses server-side safe views, never direct credential-bearing
-domain resources. Pending adapters are reported by `list_capabilities`.
+Optional image-upgrade settings remain bound to the exact human review.
+The bridge cannot approve its own plans. Native owner, role, Key and revision
+checks remain authoritative, and unsupported capabilities stay unavailable.
 
 External Services require an authorized Stack reference and exactly one target
 mode (hostname or IPs). DNS Aliases are created stopped and empty; target binding
@@ -36,10 +29,8 @@ uses selected Service references in a separate approved plan. Typed audit querie
 use the matching Engine and broker owner, current Key scope and pinned revision.
 Private audit payloads remain in the human UI. Certificate plans support only
 name and description; PEM, private keys, chains, renewal and removal stay in the
-normal human certificate UI. These metadata changes and the typed-domain audit
-integration require Engine `0.183.361` or its matching Server release. A matching
-version does not establish workflow acceptance; use the release's recorded
-validation results and documented operation limits.
+normal human certificate UI. A matching version does not establish workflow acceptance; use the release's
+recorded validation results and documented operation limits.
 
 The Catalog source adapter also needs a matching Engine/Catalog typed metadata
 endpoint. Use `find_resources` with `family: "catalog"` and
@@ -63,44 +54,38 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-Download the published 0.2.9 archive and its `.zip.sha256` checksum, then verify
-before extraction:
+## Install the matching release
+
+After the matching release is available, download its ZIP and checksum. Verify
+before extraction. Keep both `bridge/` and `app/utils/`: they contain the exact
+shared command sources. Node.js 24.22.1 is required.
 
 ```sh
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.207/pasturestack-webmcp-bridge-0.2.9.zip
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.207/pasturestack-webmcp-bridge-0.2.9.zip.sha256
-sha256sum --check pasturestack-webmcp-bridge-0.2.9.zip.sha256
-unzip pasturestack-webmcp-bridge-0.2.9.zip
-```
-
-Extract the whole archive, keeping both `bridge/` and
-`app/utils/`; the bridge uses those exact shared command sources. With Node.js
-24.22.1 available, install from the extracted directory:
-
-```sh
-cd pasturestack-webmcp-bridge-0.2.9/bridge
+WEB_CONSOLE_VERSION=1.6.208
+BRIDGE_VERSION=0.2.10
+curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
+curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
+sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
+unzip "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
+cd "pasturestack-webmcp-bridge-${BRIDGE_VERSION}/bridge"
 npm ci --ignore-scripts --no-audit --no-fund
 ```
 
-Its MCP entry point is the extracted `bridge/server.mjs`. `source-manifest.json`
-records the included source hashes; the root also includes LICENSE and the
-bridge CycloneDX SBOM. The published 0.2.9 [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.207/bridge029-release-proof.json)
-binds 35 exact-Git source files to producer
-`e3f8fbe872d91df6837d5de3339a0efde645ac74` and tested tree
-`11fde8f7eff0861eaf06a0357edc649b1caffb2c`. The numeric 1.6.207 tag targets
-`00855544be1da90d8de63a823b437e2140b29c4e`, with the same tree. The unchanged
-92-component graph carries the 0.2.5 clean-install evidence; no new install or
-dependency scan is claimed. A new real SDK stdio handshake verified version
-0.2.9 and all twelve tools. See the [release note](../docs/releases/web-console-1.6.207.md)
-for original CI, artifact and validation scope.
+The MCP entry point is the extracted `bridge/server.mjs`.
+`source-manifest.json` records included source hashes; the archive also includes
+LICENSE and the bridge CycloneDX SBOM. The matching
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.208/web208-release-metadata.json)
+and [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.208/bridge030-release-proof.json)
+record the exact producer, tested tree, dependency evidence and SDK handshake.
+Use those release records rather than a producer hash copied into this README.
+Clean-install evidence is explicitly carried from 0.2.5 only when the unchanged
+dependency graph and current source qualification establish that relationship;
+this is not a new installation or native workflow claim.
 
-This repository's current README is the installation authority. The immutable
-release ZIP retains the README from its producer snapshot; later documentation
-updates do not replace that ZIP or its source manifest.
-For local packaging, first generate a matching bridge SBOM and then run:
+For local packaging from a repository checkout, provide the matching SBOM:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.9 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.9.zip
+python scripts/package-webmcp-bridge.py --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/bridge.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private
