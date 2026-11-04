@@ -285,6 +285,137 @@ async function main() {
     assert.deepEqual(requests.find(row => row.url.endsWith('?action=apply')).data, {});
   });
 
+  function stackReviewFixture(rows = [], lookup = async () => { throw Error('Unexpected Stack lookup'); }, resourceType = 'service') {
+    const f = fixture('off'), dto = {...resourcePlan(), resourceType, resourceId: null, operation: 'create',
+      targetPath: 'Environment / path / contains / slashes / app', stackName: 'model-supplied-label',
+      changes: [{field: 'name', before: null, after: 'app'}, {field: 'stackId', before: null, after: '1st42'}]};
+    assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
+    const calls = [], record = row => ({get: key => row[key]});
+    // store.all returns an Ember ArrayProxy, not an iterable or numerically indexed array.
+    const collection = {
+      get length() { return rows.length; },
+      objectAt(index) { return rows[index] && record(rows[index]); },
+      map(callback) {
+        const result = [];
+        for (let index = 0; index < this.length; index++) result.push(callback(this.objectAt(index), index, this));
+        return result;
+      },
+    };
+    const modal = {get, set, setProperties, commands: f.service, plan: f.service.pendingPlan, intl: {t: key => key},
+      loadingReviewStack: false, reviewStackRecord: null, errors: null, approved: false, stale: false,
+      store: {all(type) { assert.equal(type, 'stack'); return collection; },
+        find(...args) { calls.push(args); return lookup(...args); }}, loadReviewStack: confirmationDefinition.loadReviewStack};
+    Object.defineProperties(modal, {
+      reviewStacks: {get() { return confirmationDefinition.reviewStacks.call(this); }},
+      reviewLabels: {get() { return confirmationDefinition.reviewLabels.call(this); }},
+      submitDisabled: {get() { return Boolean(confirmationDefinition.submitDisabled.call(this)); }},
+    });
+    return {f, dto, modal, calls, record, collection};
+  }
+
+  await test('create review stack identity supports noniterable Ember ArrayProxy records in warm and cold caches', async () => {
+    const exact = {id: '1st42', accountId: 'project', name: 'Real Stack'};
+    const warm = stackReviewFixture([exact]);
+    assert.equal(warm.collection.length, 1); assert.equal(warm.collection.objectAt(0).get('id'), exact.id);
+    assert.equal(warm.collection[0], undefined); assert.equal(warm.collection[Symbol.iterator], undefined);
+    assert.deepEqual(Array.from(warm.collection), [undefined], 'The fixture must expose Array.from misuse');
+    assert.equal(warm.modal.reviewLabels.displayChanges[1].after, exact.name);
+    assert.equal(warm.modal.submitDisabled, false); await warm.modal.loadReviewStack(); assert.equal(warm.calls.length, 0);
+    const cold = stackReviewFixture([{...exact, id: '1st41'}], async () => cold.record(exact));
+    assert.equal(cold.modal.submitDisabled, true); await cold.modal.loadReviewStack();
+    assert.equal(cold.modal.reviewLabels.displayChanges[1].after, exact.name); assert.equal(cold.modal.submitDisabled, false);
+    assert.deepEqual(cold.calls, [['stack', '1st42', {forceReload: true}]]);
+  });
+
+  await test('create review stack identity uses exact loaded names and existing translations without parsing target paths', async () => {
+    const YAML = require('yamljs'), name = 'Same / <script>Stack</script>';
+    for (const resourceType of ['service', 'container']) {
+      const x = stackReviewFixture([{id: '1st41', accountId: 'project', name},
+        {id: '1st42', accountId: 'foreign', name: 'FOREIGN_SECRET'}, {id: '1st42', accountId: 'project', name}], undefined, resourceType);
+      const original = JSON.stringify(x.modal.plan);
+      for (const locale of ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua']) {
+        const translations = YAML.load(path.join(app, '../translations', locale + '.yaml'));
+        const t = key => { const value = key.split('.').reduce((row, part) => row && row[part], translations); assert.equal(typeof value, 'string', locale + ': ' + key); return value; };
+        x.modal.intl = {t};
+        assert.equal(x.modal.reviewLabels.displayChanges.find(row => row.field === 'stackId').after, name);
+        assert.equal(x.modal.reviewLabels.displayChanges.find(row => row.field === 'stackId').fieldLabel, t('apiKeyAccess.selector.types.stack'));
+        for (const key of ['generic.loading', 'generic.unknown', 'action.retry', 'webmcp.failed']) assert.ok(t(key));
+      }
+      assert.equal(x.modal.submitDisabled, false); await x.modal.loadReviewStack(); assert.equal(x.calls.length, 0);
+      const Handlebars = require('handlebars').create(), template = fs.readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
+      require('@glimmer/syntax').preprocess(template);
+      Handlebars.registerHelper('t', key => key); Handlebars.registerHelper('action', () => '');
+      Handlebars.registerHelper('or', (left, right) => left || right); Handlebars.registerHelper('top-errors', () => '');
+      const html = Handlebars.compile(template)({plan: x.modal.plan, reviewLabels: x.modal.reviewLabels, isResourceChange: true});
+      assert.ok(html.includes('Same / &lt;script&gt;Stack&lt;/script&gt;'));
+      for (const value of ['1st42', '1st41', 'FOREIGN_SECRET', 'model-supplied-label', '<script>']) assert.ok(!html.includes(value), value);
+      assert.equal(JSON.stringify(x.modal.plan), original);
+      x.f.service.userStore.rawRequest = async options => { x.f.requests.push(options); return {body: {...x.dto, confirmationState: 'approved'}}; };
+      await confirmationDefinition.actions.confirm.call(x.modal);
+      assert.equal(x.modal.approved, true); assert.equal(x.f.requests.length, 1); assert.deepEqual(x.f.requests[0].data, {});
+      assert.ok(x.f.requests[0].url.endsWith('/' + x.dto.id + '?action=confirm'));
+    }
+  });
+
+  await test('create review stack identity loads cache misses normally and retains the plan through errors and retry', async () => {
+    const exact = {id: '1st42', accountId: 'project', name: 'Real / Stack'};
+    const cold = stackReviewFixture([], async () => cold.record(exact));
+    const original = cold.modal.plan;
+    assert.equal(cold.modal.submitDisabled, true);
+    assert.equal(cold.modal.reviewLabels.displayChanges[1].after, 'generic.unknown');
+    let initialLoad;
+    cold.modal.loadReviewStack = () => { initialLoad = confirmationDefinition.loadReviewStack.call(cold.modal); return initialLoad; };
+    cold.modal._super = () => {}; cold.modal.element = {querySelector: () => null}; cold.modal.loadHumanInputs = () => {};
+    confirmationDefinition.didInsertElement.call(cold.modal);
+    assert.equal(cold.modal.loadingReviewStack, true);
+    await confirmationDefinition.actions.confirm.call(cold.modal); assert.equal(cold.f.requests.length, 0);
+    await initialLoad;
+    assert.deepEqual(cold.calls, [['stack', '1st42', {forceReload: true}]]);
+    assert.equal(cold.modal.reviewLabels.displayChanges[1].after, exact.name); assert.equal(cold.modal.submitDisabled, false);
+    assert.equal(cold.modal.plan, original); assert.equal(cold.f.service.pendingPlan, original); assert.equal(cold.f.requests.length, 0);
+    let attempts = 0;
+    const retry = stackReviewFixture([], async () => {
+      if (++attempts === 1) throw Object.assign(Error('PRIVATE_RAW_1st42'), {status: 403});
+      return retry.record(exact);
+    });
+    await retry.modal.loadReviewStack();
+    assert.deepEqual(retry.modal.errors, ['webmcp.failed']); assert.equal(retry.modal.submitDisabled, true);
+    assert.equal(retry.modal.plan, retry.f.service.pendingPlan); assert.equal(retry.f.context.snapshot().accountId, 'actor');
+    await confirmationDefinition.actions.retryReviewStack.call(retry.modal);
+    assert.equal(retry.calls.length, 2); assert.equal(retry.modal.errors, null); assert.equal(retry.modal.submitDisabled, false);
+    for (const bad of [{...exact, id: '1st43'}, {...exact, accountId: 'foreign'}, {...exact, removed: 'now'}, {...exact, name: ''}]) {
+      const x = stackReviewFixture([bad], async () => x.record(bad));
+      await x.modal.loadReviewStack();
+      assert.equal(x.modal.reviewLabels.stackTargetUnavailable, true); assert.equal(x.modal.submitDisabled, true);
+      assert.equal(x.modal.reviewLabels.displayChanges[1].after, 'generic.unknown');
+      assert.deepEqual(x.modal.errors, ['webmcp.failed']);
+      await confirmationDefinition.actions.confirm.call(x.modal); assert.equal(x.f.requests.length, 0);
+      assert.equal(x.modal.plan, x.f.service.pendingPlan);
+    }
+    const duplicate = stackReviewFixture([exact, {...exact, name: 'Ambiguous'}], async () => duplicate.record(exact));
+    assert.equal(duplicate.modal.submitDisabled, true); await duplicate.modal.loadReviewStack();
+    assert.equal(duplicate.modal.reviewLabels.displayChanges[1].after, exact.name); assert.equal(duplicate.modal.submitDisabled, false);
+  });
+
+  await test('create review stack identity ignores late results after context session plan or modal changes', async () => {
+    for (const scenario of ['generation', 'actor', 'project', 'new-plan', 'same-id-replacement', 'dismissed', 'destroyed']) {
+      const reply = deferred(), x = stackReviewFixture([], () => reply.promise), original = x.modal.plan;
+      const loading = x.modal.loadReviewStack(); assert.equal(x.modal.loadingReviewStack, true);
+      await x.modal.loadReviewStack(); assert.equal(x.calls.length, 1, 'No duplicate concurrent lookup');
+      if (scenario === 'generation') x.f.snapshot.generation = 'generation-two';
+      if (scenario === 'actor') x.f.snapshot.accountId = 'another-actor';
+      if (scenario === 'project') x.f.snapshot.projectId = x.f.snapshot.schemaProjectId = 'other-project';
+      if (scenario === 'new-plan') x.f.service.reviewInboxPlan(resourcePlan('2'));
+      if (scenario === 'same-id-replacement') x.f.service.reviewInboxPlan(x.dto);
+      if (scenario === 'dismissed') x.f.service.dismissPendingPlan();
+      if (scenario === 'destroyed') x.modal.isDestroyed = true;
+      reply.resolve(x.record({id: '1st42', accountId: 'project', name: 'LATE_PRIVATE_STACK'})); await loading;
+      assert.equal(x.modal.reviewStackRecord, null, scenario); assert.equal(x.modal.plan, original);
+      assert.ok(!JSON.stringify(x.modal.reviewLabels).includes('LATE_PRIVATE_STACK'), scenario);
+      assert.equal(x.f.requests.length, 0); assert.equal(x.modal.approved, false);
+    }
+  });
+
   await test('service create review binds ports and healthCheck to the exact human confirmation', async () => {
     const dto = {...resourcePlan(), resourceType: 'service', resourceId: null, operation: 'create', changes: [
       {field: 'ports', before: null, after: '["8080:80/tcp"]'},

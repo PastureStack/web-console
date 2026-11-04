@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "description": "Reviewed browser source ownership; hashes use LF-normalized text and raw binary. Snapshot identifiers are not asserted upstream releases.",
   "guards": {
-    "ember-cli-build.js": "5d2565643ddac860af4385d26c53e44036da7dc1ae08ea4d4f83903f9a6a69b1",
+    "ember-cli-build.js": "63ec6443128ff35d5595777f89e2057f0192ac64908b08f2641da4e372b43552",
     "app/styles/app-light.scss": "5135dcf2d7257ba4ae59676243fbd46dc50f0e71e048f9ad83f9f3879d1eeb67",
     "app/styles/app-dark.scss": "2a7df97325751ab28c9ba439b46a67407b24107e9f588eb7d6d478f319bd42d0"
   },

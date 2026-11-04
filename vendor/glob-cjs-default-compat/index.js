@@ -1,6 +1,8 @@
 "use strict";
 
-const modernGlob = require("glob-real");
+// The official raw entry resolves the reviewed external matcher. The default
+// glob 13 bundle embeds an older minimatch and would bypass the lock override.
+const modernGlob = require("glob-real/raw");
 const source = modernGlob && modernGlob.default && typeof modernGlob.default.hasMagic === "function"
   ? modernGlob.default
   : modernGlob;

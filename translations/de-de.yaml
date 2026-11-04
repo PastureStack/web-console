@@ -3371,9 +3371,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: Schliessen
 modalAuditlogInfo:
-  header: Zusätzliche Loginformationen
-  request: 'Anfrage Objekt:'
-  response: 'Antwort Objekt:'
+  noContent: Für diesen Eintrag sind keine Inhalte verfügbar.
+  unavailable: Dieser Inhalt kann nicht angezeigt werden.
+  header: "Protokolldetails"
+  request: "Anfrageobjekt:"
+  response: "Antwortobjekt:"
 modalContainerStop:
   uom: Sekunden
   header: 'Sind Sie sicher, dass Sie aufhören möchten?'

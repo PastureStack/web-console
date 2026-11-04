@@ -19,8 +19,18 @@ function childExpansion(version) {
   switch (version) {
     case "1.1.21":
       return require("../node_modules/brace-expansion");
-    case "2.1.7":
-      return require("../node_modules/babel-plugin-module-resolver/node_modules/brace-expansion");
+    case "2.1.7": {
+      const locations = Object.entries(require("../package-lock.json").packages)
+        .filter(([location, info]) => location.endsWith("node_modules/brace-expansion") && info.version === "2.1.7")
+        .map(([location]) => location);
+      assert.deepEqual(locations, ["node_modules/filelist/node_modules/brace-expansion"], "the reviewed brace 2 child must be the unique locked 2.1.7 instance");
+      const metadata = require("../node_modules/filelist/node_modules/brace-expansion/package.json");
+      assert.equal(metadata.name, "brace-expansion");
+      assert.equal(metadata.version, "2.1.7");
+      const expand = require("../node_modules/filelist/node_modules/brace-expansion");
+      assert.equal(typeof expand, "function", "brace 2 retains its callable CommonJS API");
+      return expand;
+    }
     case "5.0.12":
       return require("../node_modules/@ember/app-blueprint/node_modules/brace-expansion").expand;
     default:

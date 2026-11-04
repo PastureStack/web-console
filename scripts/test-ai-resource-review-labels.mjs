@@ -11,6 +11,30 @@ const source = await readFile(path.join(root, 'app/utils/ai-resource-review-labe
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const locales = ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
 
+test('external TCP health review uses clear existing labels and exact values in thirteen locales without JSON or HTTP controls', () => {
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => {
+      const value = key.split('.').reduce((row, part) => row && row[part], translations);
+      assert.equal(typeof value, 'string', locale + ': ' + key); assert.ok(value.trim()); return value;
+    };
+    for (const check of [{port: 443}, {port: 5432, interval: 2000, responseTimeout: 1000, healthyThreshold: 2, unhealthyThreshold: 3}]) {
+      const plan = {resourceType: 'externalService', operation: 'create', displayDiff: [{field: 'healthCheck', before: null, after: JSON.stringify(check)}]};
+      const original = JSON.stringify(plan), friendly = resourceReviewLabels(plan, t), change = friendly.displayChanges[0];
+      assert.equal(friendly.resourceTypeLabel, t('servicePage.type.externalservice')); assert.equal(friendly.createsStopped, true);
+      assert.equal(change.fieldLabel, t('newContainer.tabs.healthCheck'));
+      const rows = [t('formHealthCheck.label') + ': ' + t('formHealthCheck.checkType.tcp'), t('formHealthCheck.port.label') + ': ' + check.port];
+      for (const [field, name] of [['interval', 'interval'], ['responseTimeout', 'timeout'], ['healthyThreshold', 'healthyThreshold'], ['unhealthyThreshold', 'unhealthyThreshold']]) {
+        if (Object.hasOwn(check, field)) rows.push(t('formHealthCheck.' + name + '.label') + ': ' + check[field] + ' ' + t('formHealthCheck.' + name + '.unit'));
+      }
+      assert.equal(change.after, rows.join('\n')); assert.equal(JSON.stringify(plan), original);
+      assert.doesNotMatch(change.after, /\{|\}|"port"|requestLine|strategy|formHealthCheck\.|undefined/);
+    }
+    const malformed = resourceReviewLabels({resourceType: 'externalService', operation: 'create', displayDiff: [{field: 'healthCheck', before: null, after: 'PRIVATE_RAW_JSON'}]}, t);
+    assert.equal(malformed.displayChanges[0].after, t('generic.unknown'));
+  }
+});
+
 test('service upgrade strategy review preserves exact values and existing labels and millisecond units in thirteen locales', () => {
   for (const locale of locales) {
     const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));

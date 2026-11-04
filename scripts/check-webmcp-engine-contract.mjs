@@ -4,22 +4,48 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {COMMANDS,PUBLIC_ERROR_CODES} from '../bridge/shared-modules.mjs';
 
+async function containedSourcePath(root, relative, message) {
+  // Enforce the selected owner before metadata access and again after links
+  // resolve; a sibling such as engine-escape is never a child of engine.
+  const requested=path.resolve(root,relative);
+  if(!requested.startsWith(path.join(root,path.sep)))throw Error(message);
+  const canonical=await realpath(requested);
+  // relative() retains Windows owner spelling without changing the canonical
+  // location; unlike lowercasing a filename, this preserves the actual path.
+  const target=path.resolve(root,path.relative(root,canonical));
+  if(!target.startsWith(path.join(root,path.sep)))throw Error(message);
+  return target;
+}
+const readContainedSource=async(root,relative,message)=>readFile(await containedSourcePath(root,relative,message),'utf8');
+
 // Release-assembly check for two explicitly selected source checkouts.
 // No network requests, credentials, generated copies or source modification.
-export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false} = {}) {
+export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false, externalTcpOnly = false} = {}) {
 const engine=path.resolve(engineRoot);
-const requestedSchema=path.resolve(engine,'resources/content/schema');
-const requestedRelative=path.relative(engine,requestedSchema);
-if(requestedRelative==='..'||requestedRelative.startsWith('..'+path.sep)||path.isAbsolute(requestedRelative))throw Error('Schema root escapes selected Engine');
-const schemaRoot=await realpath(requestedSchema);
-const schemaRelative=path.relative(engine,schemaRoot);
-if(schemaRelative==='..'||schemaRelative.startsWith('..'+path.sep)||path.isAbsolute(schemaRelative))throw Error('Schema root escapes selected Engine');
-const read=async relative=>{
-  const target=await realpath(path.resolve(schemaRoot,relative));
-  const inside=path.relative(schemaRoot,target);
-  if(inside==='..'||inside.startsWith('..'+path.sep)||path.isAbsolute(inside))throw Error('Schema file escapes selected Engine');
-  return JSON.parse(await readFile(target,'utf8'));
-};
+const schemaRoot=await containedSourcePath(engine,'resources/content/schema','Schema root escapes selected Engine');
+const read=async relative=>JSON.parse(await readContainedSource(schemaRoot,relative,'Schema file escapes selected Engine'));
+if(externalTcpOnly){
+  const external=await read('base/externalService.json'),user=await read('user/user-auth.json');
+  assert.equal(external.resourceFields.healthCheck.type,'instanceHealthCheck','External health check must retain its native type');
+  assert.equal(user.authorize['externalService.healthCheck'],'cr','External health check is native create/read, never update');
+  const tool=COMMANDS.find(item=>item.name==='preview_resource_change');
+  const condition=tool.inputSchema.allOf.find(item=>item.if.properties.resourceType.const==='externalService');
+  const check=condition.then.properties.parameters.properties.healthCheck;
+  assert.equal(condition.then.properties.operation.const,'create');assert.equal(check.additionalProperties,false);
+  assert.deepEqual(check.required,['port']);
+  assert.deepEqual(Object.keys(check.properties).sort(),['port','interval','responseTimeout','healthyThreshold','unhealthyThreshold'].sort());
+  const model=await readContainedSource(engine,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java',
+    'Native health model escapes selected Engine');
+  assert.match(model,/@Field\(required = true, min = 1, max = 65535\)\s+public Integer getPort\(\)/);
+  assert.equal(check.properties.port.minimum,1);assert.equal(check.properties.port.maximum,65535);
+  for(const name of ['interval','responseTimeout','healthyThreshold','unhealthyThreshold']){
+    assert.match(model,new RegExp('Integer '+name+';'),'Native '+name+' must retain Integer precision');
+    // A positive typed subset; native Integer metadata supplies no timing default.
+    assert.equal(check.properties[name].type,'integer');assert.equal(check.properties[name].minimum,1);
+    assert.equal(check.properties[name].maximum,2147483647);assert.equal(Object.hasOwn(check.properties[name],'default'),false);
+  }
+  return;
+}
 if(!catalogOptionsOnly){
   const event=await read('base/aiToolCallEvent.json');
   assert.deepEqual([...event.resourceFields.command.options].sort(),[...COMMANDS.map(t=>t.name),'unknown'].sort(),'Tool audit wire enum does not match the frontend');
@@ -144,11 +170,12 @@ for(const [type,inputs] of Object.entries(wireInputs)){
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const args=process.argv.slice(2);
-  if(![2,3].includes(args.length)||args[0]!=='--engine-root'||args.length===3&&args[2]!=='--catalog-options-only')
-    throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine [--catalog-options-only]');
+  if(![2,3].includes(args.length)||args[0]!=='--engine-root'||args.length===3&&!['--catalog-options-only','--external-tcp-only'].includes(args[2]))
+    throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine [--catalog-options-only|--external-tcp-only]');
   try {
-    await checkEngineContract(args[1],{catalogOptionsOnly:args.length===3});
-    console.log(args.length===3?'PASS Catalog options readonly schema and three-role contract':'PASS tool wire audit enum and effective role-overlay input contracts');
+    await checkEngineContract(args[1],{catalogOptionsOnly:args[2]==='--catalog-options-only',externalTcpOnly:args[2]==='--external-tcp-only'});
+    console.log(args[2]==='--external-tcp-only'?'PASS External TCP create/read native schema and closed typed-subset contract':
+      args[2]==='--catalog-options-only'?'PASS Catalog options readonly schema and three-role contract':'PASS tool wire audit enum and effective role-overlay input contracts');
   } catch {
     console.error('WebMCP Engine contract check failed');
     process.exitCode=1;

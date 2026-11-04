@@ -3267,9 +3267,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: بستن
 modalAuditlogInfo:
-  header: افزودنitional Log Info
-  request: 'شی درخواست:'
-  response: 'هدف پاسخ:'
+  noContent: برای این رکورد محتوایی در دسترس نیست.
+  unavailable: نمایش این محتوا ممکن نیست.
+  header: "جزئیات گزارش رویداد"
+  request: "محتوای درخواست:"
+  response: "محتوای پاسخ:"
 modalContainerStop:
   uom: ثانیه
   header: آیا مطمئن هستید که می خواهید متوقف شوید؟

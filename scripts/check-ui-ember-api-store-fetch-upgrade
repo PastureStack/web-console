@@ -433,8 +433,19 @@ for marker in [
 # WebMCP review/control templates add 10 and the Key purpose selector adds 1.
 # Web198 adds the separate requestCancel, cancelPlan and keepPlan controls.
 # Catalog human inputs add completeInputs and explicit optional empty-value controls.
-if template_action_count != 615:
+# Web207 adds the Stack lookup retry in modal-confirm-ai-upgrade, bound to its
+# existing authorized lookup rather than another create/apply action.
+if template_action_count != 616:
     fail(f"unexpected template action count: {template_action_count}")
+stack_review_template = (repo / "app/components/modal-confirm-ai-upgrade/template.hbs").read_text(encoding="utf-8")
+stack_review_component = (repo / "app/components/modal-confirm-ai-upgrade/component.js").read_text(encoding="utf-8")
+if stack_review_template.count('{{action "retryReviewStack"}}') != 1:
+    fail("Stack review must retain exactly one retryReviewStack template binding")
+for marker in ('{{#if this.reviewLabels.stackTargetUnavailable}}', 'data-testid="ai-resource-stack-unavailable"', '{{#if this.loadingReviewStack}}'):
+    if marker not in stack_review_template:
+        fail(f"Stack lookup retry visibility marker missing: {marker}")
+if 'retryReviewStack() { return this.loadReviewStack(); }' not in stack_review_component:
+    fail("Stack lookup retry must delegate to the existing authorized lookup")
 # The API Key target picker adds project, stack and resource selectors.
 if power_select_count != 18:
     fail(f"unexpected modern PowerSelect count: {power_select_count}")

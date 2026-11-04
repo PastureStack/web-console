@@ -21,6 +21,10 @@ function fixture() {
             {field: 'externalIpAddresses', before: null, after: parameters.externalIpAddresses ? JSON.stringify(parameters.externalIpAddresses) : null}, {field: 'startOnCreate', before: null, after: false}]
             : [{field: 'state', before: 'inactive', after: 'active'}],
           confirmationState: 'pending', status: 'preview', verifiedResult: false, expiresAt: '2026-10-30T12:00:00Z'};
+        if (operation === 'create' && Object.hasOwn(parameters, 'healthCheck')) {
+          plan.changes.push({field: 'healthCheck', before: null, after: JSON.stringify(resourceType === 'service' ?
+            {...parameters.healthCheck, strategy: parameters.healthCheck.strategy || 'recreate'} : parameters.healthCheck)});
+        }
         return {body: {...plan}};
       }
       if (request.url.endsWith('?action=confirm')) { plan.confirmationState = 'approved'; return {body: {...plan}}; }
@@ -45,6 +49,114 @@ test('external service: exact selected opaque Stack parent creates a stopped nat
   assert.equal(Object.hasOwn(f.requests.at(-1).data.parameters, 'image'), false);
   assert.equal(JSON.stringify(preview).includes('st2'), false); assert.equal(JSON.stringify(preview).includes(planId), false);
   assert.equal(preview.displayDiff.find(item => item.field === 'startOnCreate').after, false);
+});
+
+const tcp = {port: 5432, interval: 2000, responseTimeout: 1000, healthyThreshold: 2, unhealthyThreshold: 3};
+function tcpInput(f, healthCheck = tcp) {
+  return {resourceType: 'externalService', operation: 'create', parentRef: f.context.reference('resource',
+    {id: 'st2', family: 'stack', resourceType: 'stack', scope: 'project'}, f.context.capture()),
+    parameters: {name: 'orders-db', hostname: 'db.example.test', ...(healthCheck === undefined ? {} : {healthCheck})}};
+}
+
+test('external TCP: shared tool schema describes a closed create-only five-field TCP object', () => {
+  assert.equal(COMMANDS.length, 12);
+  const tool = COMMANDS.find(item => item.name === 'preview_resource_change');
+  const condition = tool.inputSchema.allOf.find(item => item.if.properties.resourceType.const === 'externalService');
+  const check = condition.then.properties.parameters.properties.healthCheck;
+  assert.equal(condition.then.properties.operation.const, 'create');
+  assert.deepEqual(check.required, ['port']); assert.equal(check.additionalProperties, false);
+  assert.deepEqual(Object.keys(check.properties).sort(), ['port', 'interval', 'responseTimeout', 'healthyThreshold', 'unhealthyThreshold'].sort());
+  assert.equal(check.properties.port.minimum, 1); assert.equal(check.properties.port.maximum, 65535);
+  assert.match(tool.description, /TCP healthCheck/); assert.match(tool.description, /no HTTP fields/);
+});
+
+test('external TCP: exact requested fields and omitted native defaults survive preview and require human approval', async () => {
+  for (const check of [{port: 1}, {port: 65535}, tcp,
+    {port: 443, interval: 1, responseTimeout: 1, healthyThreshold: 1, unhealthyThreshold: 1},
+    {port: 443, interval: 2147483647, responseTimeout: 2147483647, healthyThreshold: 2147483647, unhealthyThreshold: 2147483647}]) {
+    const f = fixture(), input = tcpInput(f, check), original = structuredClone(input.parameters);
+    const preview = await f.engine.execute('preview_resource_change', input);
+    assert.equal(preview.status, 'needs_user'); assert.deepEqual(input.parameters, original);
+    assert.deepEqual(f.requests[0].data.parameters, {...original, stackId: 'st2'});
+    assert.deepEqual(JSON.parse(preview.displayDiff.find(row => row.field === 'healthCheck').after), check);
+    assert.equal(preview.displayDiff.find(row => row.field === 'startOnCreate').after, false);
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'NEEDS_USER');
+    assert.equal(f.dispatches(), 0);
+    await f.engine.confirmPlan(preview.planRef);
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).status, 'accepted');
+    assert.equal(f.dispatches(), 1); assert.ok(f.requests.every(row => !row.url.includes('/externalServices')));
+  }
+});
+
+test('external TCP: no health check preserves the old intent and ordinary Service still accepts its HTTP subset', async () => {
+  const f = fixture(), none = tcpInput(f); delete none.parameters.healthCheck;
+  const preview = await f.engine.execute('preview_resource_change', none);
+  assert.equal(preview.status, 'needs_user'); assert.equal(Object.hasOwn(f.requests[0].data.parameters, 'healthCheck'), false);
+  assert.equal(preview.displayDiff.some(row => row.field === 'healthCheck'), false);
+  const service = fixture(), input = tcpInput(service);
+  input.resourceType = 'service'; input.parameters = {name: 'web', image: 'app:1', healthCheck: {port: 80, requestLine: 'GET /health HTTP/1.0', strategy: 'none'}};
+  const ordinary = await service.engine.execute('preview_resource_change', input);
+  assert.equal(ordinary.status, 'needs_user');
+  assert.deepEqual(JSON.parse(ordinary.displayDiff.find(row => row.field === 'healthCheck').after), input.parameters.healthCheck);
+});
+
+test('external TCP: null wrong types fractional bounds HTTP and unknown fields fail before any preview request', async () => {
+  const f = fixture(), input = tcpInput(f);
+  const invalid = [null, [], '', 1, {}, {port: '5432'}, {port: null}, {port: 0}, {port: 65536}, {port: 1.5},
+    ...['strategy', 'requestLine', 'url', 'Host', 'host', 'headers', 'initializingTimeout', 'reinitializingTimeout', 'unknown'].map(field => ({port: 5432, [field]: 'PRIVATE'}))];
+  for (const field of ['interval', 'responseTimeout', 'healthyThreshold', 'unhealthyThreshold']) {
+    for (const value of [null, '2', true, 1.5, 0, -1, 2147483648]) invalid.push({port: 5432, [field]: value});
+  }
+  for (const healthCheck of invalid) {
+    const result = await f.engine.execute('preview_resource_change', {...input, parameters: {...input.parameters, healthCheck}});
+    assert.equal(result.code, 'INVALID_INPUT', JSON.stringify(healthCheck));
+    assert.match(result.nextStep, /TCP healthCheck/); assert.doesNotMatch(JSON.stringify(result), /PRIVATE/);
+  }
+  const targetRef = f.context.reference('resource', {id: 'external2', family: 'service', resourceType: 'externalService', scope: 'project'}, f.context.capture());
+  for (const operation of ['update_targets', 'update_metadata', 'start']) {
+    assert.equal((await f.engine.execute('preview_resource_change', {resourceType: 'externalService', operation, targetRef,
+      parameters: {healthCheck: tcp, ...(operation === 'update_targets' ? {hostname: 'db.test'} : {})}})).code, 'INVALID_INPUT');
+  }
+  assert.equal(f.requests.length, 0); assert.equal(f.dispatches(), 0);
+});
+
+test('external TCP: missing extra malformed or changed health review cannot be approved or applied', async () => {
+  for (const replacement of [undefined, {port: 5433}, {...tcp, strategy: 'recreate'}, {...tcp, requestLine: null}, null]) {
+    const f = fixture(), original = f.engine.request;
+    f.engine.request = async request => {
+      const value = await original(request);
+      if (request.url === 'projects/p1/aiResourceChangePlans') {
+        const changes = f.plan().changes.filter(row => row.field !== 'healthCheck');
+        if (replacement !== undefined) changes.push({field: 'healthCheck', before: null, after: JSON.stringify(replacement)});
+        f.plan().changes = changes; value.body.changes = changes;
+      }
+      return value;
+    };
+    assert.equal((await f.engine.execute('preview_resource_change', tcpInput(f))).code, 'INVALID_RESPONSE');
+    assert.equal(f.dispatches(), 0);
+  }
+  for (const check of [tcp, undefined]) {
+    const f = fixture(), input = tcpInput(f); if (check === undefined) delete input.parameters.healthCheck;
+    const preview = await f.engine.execute('preview_resource_change', input); assert.equal(preview.status, 'needs_user');
+    const changes = f.plan().changes.filter(row => row.field !== 'healthCheck');
+    changes.push({field: 'healthCheck', before: null, after: JSON.stringify({port: 5433})}); f.plan().changes = changes;
+    assert.equal((await f.engine.confirmPlan(preview.planRef)).code, 'CONFLICT');
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'CONFLICT');
+    assert.equal(f.dispatches(), 0); assert.equal(f.requests.some(row => row.url.endsWith('?action=confirm') || row.url.endsWith('?action=apply')), false);
+  }
+  const f = fixture(); await f.engine.execute('preview_resource_change', tcpInput(f));
+  const health = f.plan().changes.find(row => row.field === 'healthCheck');
+  assert.throws(() => f.engine.resourcePlanSummary({...f.plan(), changes: [...f.plan().changes, health]}, 'ref'), error => error.code === 'INVALID_RESPONSE');
+  assert.throws(() => f.engine.resourcePlanSummary({...f.plan(), operation: 'update_targets'}, 'ref'), error => error.code === 'INVALID_RESPONSE');
+  const injected = fixture(), original = injected.engine.request;
+  injected.engine.request = async request => {
+    const value = await original(request);
+    if (request.url === 'projects/p1/aiResourceChangePlans') value.body.changes.push({field: 'healthCheck', before: null, after: '{"port":443}'});
+    return value;
+  };
+  const none = tcpInput(injected); delete none.parameters.healthCheck;
+  assert.equal((await injected.engine.execute('preview_resource_change', none)).code, 'INVALID_RESPONSE');
+  assert.equal(injected.dispatches(), 0);
 });
 
 test('external service: URL, raw IDs, mixed modes, unsafe IPs and unknown configuration never dispatch', async () => {

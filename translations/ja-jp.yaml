@@ -3515,9 +3515,11 @@ modalAboutComponent:
   machineService: Host Provisioner
   close: 閉じる
 modalAuditlogInfo:
-  header: 追加のログ情報
-  request: 'リクエストオブジェクト:'
-  response: 'レスポンスオブジェクト:'
+  noContent: この記録には表示できる内容がありません。
+  unavailable: この内容を表示できません。
+  header: "監査ログの詳細"
+  request: "リクエストオブジェクト:"
+  response: "レスポンスオブジェクト:"
 modalContainerStop:
   uom: 秒
   header: 本当に停止してもよろしいですか?

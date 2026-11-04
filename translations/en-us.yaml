@@ -3932,7 +3932,9 @@ modalAboutComponent:
   close: Close
 
 modalAuditlogInfo:
-  header: Additional Log Info
+  noContent: No content is available for this record.
+  unavailable: This content cannot be displayed.
+  header: "Audit log details"
   request: "Request Object:"
   response: "Response Object:"
 

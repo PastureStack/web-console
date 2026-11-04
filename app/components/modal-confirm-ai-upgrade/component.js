@@ -39,8 +39,27 @@ export default ModalBase.extend({
   humanQuestions: null,
   loadingHumanInputs: false,
   savingHumanInputs: false,
-  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'plan.executionResult', 'plan.upgradeStrategy', 'intl.primaryLocale', function() {
-    return resourceReviewLabels(this.get('plan') || {}, (key) => this.get('intl').t(key));
+  reviewStackRecord: null,
+  loadingReviewStack: false,
+  reviewStacks: computed(function() { return this.get('store').all('stack'); }),
+  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'plan.context.signature', 'plan.executionResult', 'plan.upgradeStrategy',
+    'reviewStacks.@each.{id,accountId,name,removed}', 'reviewStackRecord.{id,accountId,name,removed}', 'commands.pendingPlan.planRef', 'intl.primaryLocale', function() {
+    const plan = this.get('plan') || {};
+    let stacks = [];
+    if ( plan.operation === 'create' && ['service', 'container'].includes(plan.resourceType) && (plan.displayDiff || []).some((change) => change.field === 'stackId') ) {
+      try {
+        this.get('commands').assertReviewContext(plan.context);
+        // These records came from the existing project-authorized Stack load.
+        // Never trust a caller label or infer a parent by splitting displayPath.
+        const loaded = this.get('reviewStackRecord');
+        let records = (this.get('reviewStacks') || []).map((stack) => stack);
+        if ( loaded ) { records = [...records.filter((stack) => stack.get('id') !== loaded.get('id')), loaded]; }
+        stacks = records.map((stack) => ({
+          id: stack.get('id'), accountId: stack.get('accountId'), name: stack.get('name'), removed: stack.get('removed'),
+        }));
+      } catch (error) { stacks = []; }
+    }
+    return resourceReviewLabels(plan, (key) => this.get('intl').t(key), stacks);
   }),
   displayExpiry: computed('plan.expiresAt', 'intl.primaryLocale', function() {
     const value = new Date(this.get('plan.expiresAt'));
@@ -53,8 +72,8 @@ export default ModalBase.extend({
     return !this.get('plan.planRef') || this.get('plan.planRef') !== this.get('commands.pendingPlan.planRef') ||
       this.get('plan.reviewSignature') !== this.get('commands.pendingPlan.reviewSignature');
   }),
-  submitDisabled: computed('saving', 'alreadyApproved', 'stale', 'savingHumanInputs', 'plan.inputsReady', 'plan.planStatus', 'isCatalogLaunch', function() {
-    return this.get('saving') || this.get('alreadyApproved') || this.get('stale') || this.get('savingHumanInputs') ||
+  submitDisabled: computed('saving', 'alreadyApproved', 'stale', 'reviewLabels.stackTargetUnavailable', 'loadingReviewStack', 'savingHumanInputs', 'plan.inputsReady', 'plan.planStatus', 'isCatalogLaunch', function() {
+    return this.get('saving') || this.get('alreadyApproved') || this.get('stale') || this.get('reviewLabels.stackTargetUnavailable') || this.get('loadingReviewStack') || this.get('savingHumanInputs') ||
       this.get('isCatalogLaunch') && (!this.get('plan.inputsReady') || this.get('plan.planStatus') !== 'needs_user');
   }),
 
@@ -62,6 +81,30 @@ export default ModalBase.extend({
     const form = humanForms.get(this); if ( form ) { form.clear(); }
     humanForms.delete(this);
     if ( !this.isDestroyed && !this.isDestroying ) { this.set('humanQuestions', []); }
+  },
+
+  async loadReviewStack() {
+    const plan = this.get('plan');
+    if ( this.get('loadingReviewStack') || !plan || this.get('commands.pendingPlan') !== plan || !this.get('reviewLabels.stackTargetUnavailable') ) { return; }
+    const changes = (plan.displayDiff || []).filter((change) => change.field === 'stackId');
+    if ( changes.length !== 1 || typeof changes[0].after !== 'string' || !changes[0].after ) { return; }
+    const id = changes[0].after, request = {};
+    this._reviewStackRequest = request;
+    this.setProperties({loadingReviewStack: true, errors: null});
+    const current = () => !this.isDestroyed && !this.isDestroying && this.get('plan') === plan && this.get('commands.pendingPlan') === plan;
+    try {
+      this.get('commands').assertReviewContext(plan.context);
+      const stack = await this.get('store').find('stack', id, {forceReload: true});
+      this.get('commands').assertReviewContext(plan.context);
+      if ( !current() ) { return; }
+      if ( stack.get('id') !== id || stack.get('accountId') !== plan.context.projectId || stack.get('removed') ||
+        typeof stack.get('name') !== 'string' || !stack.get('name').trim() || stack.get('name').length > 1024 ) { throw new Error('UnavailableStack'); }
+      this.set('reviewStackRecord', stack);
+    } catch (error) {
+      if ( current() ) { this.set('errors', [this.get('intl').t('webmcp.failed')]); }
+    } finally {
+      if ( !this.isDestroyed && !this.isDestroying && this._reviewStackRequest === request ) { this.set('loadingReviewStack', false); }
+    }
   },
 
   pendingChanged: observer('commands.pendingPlan', 'commands.pendingPlan.planRef', function() {
@@ -105,6 +148,7 @@ export default ModalBase.extend({
     this._super(...arguments);
     const cancel = this.element.querySelector('[data-testid="ai-upgrade-cancel"]');
     if (cancel) { cancel.focus(); }
+    this.loadReviewStack();
     this.loadHumanInputs();
   },
 
@@ -113,6 +157,7 @@ export default ModalBase.extend({
   escToClose() { return !this.get('saving') && !this.get('savingHumanInputs') && this._super(...arguments); },
 
   actions: {
+    retryReviewStack() { return this.loadReviewStack(); },
     async completeInputs() {
       if ( this.get('savingHumanInputs') || this.get('stale') ) { return; }
       const form = humanForms.get(this), plan = this.get('plan');

@@ -32,6 +32,9 @@ docker run --rm \
     cp package.json "$tmpdir/package.json"
     cp package-lock.json "$tmpdir/package-lock.json"
     cp scripts/node24-lock-smoke.js "$tmpdir/node24-lock-smoke.js"
+    mkdir -p "$tmpdir/scripts" "$tmpdir/vendor/minimatch-security-backport"
+    cp scripts/apply-minimatch-security-backport.cjs "$tmpdir/scripts/apply-minimatch-security-backport.cjs"
+    cp vendor/minimatch-security-backport/minimatch-10.2.6-pasturestack.1.tgz "$tmpdir/vendor/minimatch-security-backport/"
     mkdir -p "$tmpdir/tests/unit/vendor"
     cp tests/unit/vendor/api-store-create-order-test.js "$tmpdir/tests/unit/vendor/api-store-create-order-test.js"
     mkdir -p "$tmpdir/public/licenses"
@@ -67,6 +70,7 @@ docker run --rm \
     npm install --global --ignore-scripts --no-audit --no-fund npm@12.0.2 >/dev/null
     test "$(npm --version)" = 12.0.2
     npm ci --ignore-scripts --no-audit --no-fund
+    node scripts/apply-minimatch-security-backport.cjs
     ./node_modules/.bin/ember --version
     ./node_modules/.bin/testem --version
     node node24-lock-smoke.js

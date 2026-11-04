@@ -23,7 +23,7 @@ package = json.loads(Path("package.json").read_text(encoding="utf-8"))
 dev_deps = package.get("devDependencies", {}) or {}
 if "forever-agent" in dev_deps:
     fail("FOREVER_AGENT_STILL_DECLARED")
-expected_glob = "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz"
+expected_glob = "file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz"
 if dev_deps.get("glob") != expected_glob:
     fail("GLOB_VERSION_UNEXPECTED", actual=dev_deps.get("glob"), expected=expected_glob)
 

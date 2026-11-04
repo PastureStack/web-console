@@ -75,6 +75,7 @@ build_inside_container() {
   verifier_manifest_sha=$(sha256sum tools/sbom-verifier/package.json | awk '{print $1}')
   verifier_lock_sha=$(sha256sum tools/sbom-verifier/package-lock.json | awk '{print $1}')
   npm ci --ignore-scripts --no-audit --no-fund
+  node scripts/apply-minimatch-security-backport.cjs
   npm ci --prefix tools/sbom-verifier --ignore-scripts --no-audit --no-fund
   npm audit --prefix tools/sbom-verifier --audit-level=low
   schema_dir="$PWD/tools/sbom-verifier/schemas"
@@ -107,6 +108,7 @@ build_inside_container() {
     export CONCAT_STATS=1
     export CONCAT_STATS_PATH="$PWD/build/security-browser/concat-stats"
     export PASTURESTACK_MODULE_INVENTORY=1
+    node scripts/apply-minimatch-security-backport.cjs --check
     ./node_modules/.bin/ember build --environment production
     write_webmcp_profile dist/webmcp-build.json
     node scripts/finalize-ui-webpack-inventory.js

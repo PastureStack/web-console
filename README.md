@@ -95,9 +95,17 @@ Use the supported toolchain in [COMPATIBILITY.md](COMPATIBILITY.md):
 
 ```sh
 npm ci --ignore-scripts
+node scripts/apply-minimatch-security-backport.cjs
 npm run build -- --environment=production
 npm test
 ```
+
+The explicit source-build step applies the pinned upstream minimatch security
+fix while retaining the API required by this Ember toolchain. Build, test and
+development-server entries verify those bytes before loading build plugins.
+Repeat the step after reinstalling dependencies; a missing or altered backport
+fails with a diagnostic instead of silently running an unpatched build.
+See [the backport provenance](vendor/minimatch-security-backport/UPSTREAM.md).
 
 To produce a release candidate with Docker, use the same isolated producer as
 CI. It installs the frozen application and schema-verifier dependencies,
