@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.206 / bridge 0.2.8 source candidate
+## Web Console 1.6.206 / bridge 0.2.8 published
 
 The existing image-upgrade tool accepts optional `startFirst`, `batchSize` and
 `intervalMillis`, using native defaults false/1/2000. Batch size is at least 1;
@@ -17,12 +17,27 @@ secondary launch configurations, native port/volume preflight and readiness/
 cleanup verification retain their existing owners. No new tools or raw native
 configuration input is added; command protocol remains `1.0`.
 
-Package roots, active lock baseline, strict producer version guard and bridge
-handshake/packager are synchronized without dependency changes. Source checks
-are separate from pending original CI, publication and matching runtime gates.
-See the [candidate note](docs/releases/web-console-1.6.206.md).
+Original full/enabled CI and CodeQL passed: 1,122 browser tests with zero
+failures and 9 distinct new source cases (4 command, 2 human UI, 1 bridge,
+1 label and 1 contract). Thirteen-locale label parameters do not add unique
+cases. Original archive/manifest/SBOM qualification, both cryptographic
+attestations and actual anonymous byte-count/SHA256 readback of all 13 public
+assets passed. Producer `d890c430f5c6e72578b1585d1ccc11103bc47bfe` and tag
+source `dff010676392cb77a7bcc3a1ca72b3a915407ce8` share tested tree
+`f9fb88c00c5846115ad8dfd7cc7964bcc40ce50b`.
 
-## Web Console 1.6.205 / bridge 0.2.7 published
+Bridge 0.2.8 contains 35 exact-Git source files in 37 archive entries. Its
+92-component dependency graph is unchanged from published 0.2.5 except root
+version. Prior clean-install, dependency and SDK-handshake evidence is carried;
+no new bridge install, dependency scan or SDK handshake is claimed.
+
+Matching Engine 0.183.367 is published. At component publication QA125/8080
+still runs Server565; Server566 assembly/runtime, designated role/Key, cross-ID,
+human-dialog layout, weak-model and cleanup acceptance remain pending. Full
+243-group coverage remains in progress. See the
+[published release note](docs/releases/web-console-1.6.206.md).
+
+## Web Console 1.6.205 / bridge 0.2.7 historical published baseline
 
 Service create adds native PortSpec strings and a closed health-check object to
 the existing typed resource-change plan. Matching Engine 0.183.366 support is
