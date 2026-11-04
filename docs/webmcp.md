@@ -6,6 +6,16 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
+The Web206 / bridge0.2.8 source candidate adds optional `startFirst` (boolean),
+`batchSize` (integer ≥1) and `intervalMillis` (integer ≥100 milliseconds) to
+`preview_service_upgrade`. Defaults remain false/1/2000. Matching Engine367
+returns the closed effective `upgradeStrategy`; human approval binds it with
+the image and target. Native preflight can still reject a start-first strategy
+for ports or volumes. Missing support never causes a retry with settings
+removed. Integers must be exactly representable in JSON through
+9007199254740991; this is not a native product maximum. Candidate CI, publication
+and runtime qualification remain pending; see the [candidate note](releases/web-console-1.6.206.md).
+
 [Web Console 1.6.205 / bridge 0.2.7](releases/web-console-1.6.205.md) is published
 with the twelve tools below. Service create ports and health checks require
 matching Engine 0.183.366 support. Component qualification and public asset

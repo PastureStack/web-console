@@ -1,5 +1,27 @@
 # Compatibility Contract
 
+## Web Console 1.6.206 / bridge 0.2.8 source candidate
+
+The existing image-upgrade tool accepts optional `startFirst`, `batchSize` and
+`intervalMillis`, using native defaults false/1/2000. Batch size is at least 1;
+the interval is at least 100 milliseconds. Integers are bounded by JSON's exact
+safe-integer range, not a native product maximum. Engine367 must return all
+effective values in a closed `upgradeStrategy` for the exact human review.
+Requested settings are never dropped for older servers. Omitted fields retain
+legacy image-only compatibility.
+
+The approved image, target path and strategy stay bound through confirmation,
+apply and operation reads. A mismatched response after apply remains unknown
+under the same operation reference. Ordinary service upgrade UI, primary and
+secondary launch configurations, native port/volume preflight and readiness/
+cleanup verification retain their existing owners. No new tools or raw native
+configuration input is added; command protocol remains `1.0`.
+
+Package roots, active lock baseline, strict producer version guard and bridge
+handshake/packager are synchronized without dependency changes. Source checks
+are separate from pending original CI, publication and matching runtime gates.
+See the [candidate note](docs/releases/web-console-1.6.206.md).
+
 ## Web Console 1.6.205 / bridge 0.2.7 published
 
 Service create adds native PortSpec strings and a closed health-check object to

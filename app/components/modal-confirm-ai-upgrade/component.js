@@ -39,7 +39,7 @@ export default ModalBase.extend({
   humanQuestions: null,
   loadingHumanInputs: false,
   savingHumanInputs: false,
-  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'plan.executionResult', 'intl.primaryLocale', function() {
+  reviewLabels: computed('plan.displayDiff.[]', 'plan.resourceType', 'plan.operation', 'plan.executionResult', 'plan.upgradeStrategy', 'intl.primaryLocale', function() {
     return resourceReviewLabels(this.get('plan') || {}, (key) => this.get('intl').t(key));
   }),
   displayExpiry: computed('plan.expiresAt', 'intl.primaryLocale', function() {

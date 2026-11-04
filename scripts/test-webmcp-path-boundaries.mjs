@@ -55,7 +55,7 @@ async function fixture(dir){
   const schema=path.join(dir,'resources/content/schema');
   const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent','aiResourceView','aiResourceChangePlan','aiCatalogMetadataView',
     'aiCatalogStackLaunchOptions','aiCatalogStackLaunchPlan','aiCatalogStackLaunchInputs','aiAuditQuery','aiAuditSourcePageInput'];
-  const inputs={aiServiceUpgradePlan:['serviceId','image'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+  const inputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
     aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId'],
     aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
     aiCatalogStackLaunchOptions:['templateId','versionId'],
@@ -68,6 +68,12 @@ async function fixture(dir){
   for(const name of names){
     const fields=Object.fromEntries(inputs[name].map(field=>[field,{create:true}]));
     if(name==='aiToolCallEvent'){fields.command.options=[...COMMANDS.map(x=>x.name),'unknown'];fields.reason.options=[...PUBLIC_ERROR_CODES,'NONE'];}
+    if(name==='aiServiceUpgradePlan'){
+      Object.assign(fields.startFirst,{type:'boolean',update:false,nullable:false});
+      Object.assign(fields.batchSize,{type:'int',update:false,nullable:false,min:1,max:Number.MAX_SAFE_INTEGER});
+      Object.assign(fields.intervalMillis,{type:'int',update:false,nullable:false,min:100,max:Number.MAX_SAFE_INTEGER});
+      fields.upgradeStrategy={type:'json',create:false,update:false};
+    }
     if(name==='aiResourceChangePlan'){
       fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore'];fields.parameters.type='json';
     }
@@ -111,6 +117,26 @@ async function fixture(dir){
 }
 test('checker reads the fixed contract in an explicitly selected Engine checkout',async t=>{
   const dir=await temp(t);await fixture(dir);await checkEngineContract(dir);
+});
+
+test('upgrade strategy contract rejects precision bounds required fields and writable review output drift',async t=>{
+  const dir=await temp(t),schema=await fixture(dir),file=path.join(schema,'base/aiServiceUpgradePlan.json');
+  const original=await fs.readFile(file,'utf8');await checkEngineContract(dir);
+  for(const [mutate,pattern] of [
+    [value=>{delete value.resourceFields.startFirst;},/startFirst is not accepted input/],
+    [value=>{value.resourceFields.batchSize.max=2147483647;},/batchSize precision mismatch/],
+    [value=>{value.resourceFields.intervalMillis.min=0;},/intervalMillis minimum mismatch/],
+    [value=>{value.resourceFields.startFirst.required=true;},/startFirst must remain optional/],
+    [value=>{value.resourceFields.startFirst.nullable=true;},/startFirst must reject null/],
+    [value=>{value.resourceFields.upgradeStrategy.create=true;},/upgradeStrategy must be read-only output/],
+  ]){
+    const value=JSON.parse(original);mutate(value);await fs.writeFile(file,JSON.stringify(value));
+    await assert.rejects(checkEngineContract(dir),pattern);
+  }
+  await fs.writeFile(file,original);
+  const roleFile=path.join(schema,'user/user-auth.json'),role=JSON.parse(await fs.readFile(roleFile,'utf8'));
+  role.authorize['aiServiceUpgradePlan.upgradeStrategy']='cr';await fs.writeFile(roleFile,JSON.stringify(role));
+  await assert.rejects(checkEngineContract(dir),/read-only effective upgrade strategy/);
 });
 
 test('checker rejects omitted writable inputs and mismatched typed lifecycle enums',async t=>{

@@ -17,6 +17,7 @@ node --test scripts/test-webmcp-alias-service.mjs
 node --test scripts/test-webmcp-certificate-metadata.mjs
 node --test scripts/test-webmcp-audit.mjs scripts/test-webmcp-audit-extension.mjs
 node scripts/test-webmcp-commands.js --filter=audit
+node scripts/test-webmcp-commands.js --filter='upgrade strategy:'
 node --test bridge/test/core.test.mjs
 node scripts/test-ai-collaboration-ui.js
 node scripts/test-ai-resource-review-labels.mjs
