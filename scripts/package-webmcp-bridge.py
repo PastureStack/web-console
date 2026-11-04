@@ -11,7 +11,7 @@ import tempfile
 import zipfile
 
 
-VERSION = "0.2.8"
+VERSION = "0.2.9"
 SOURCE_FILES = (
     "LICENSE",
     "app/utils/ai-command-context.js",

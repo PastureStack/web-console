@@ -1,5 +1,33 @@
 # Compatibility Contract
 
+## Web Console 1.6.207 / bridge 0.2.9 candidate
+
+External Service create accepts a closed TCP `healthCheck`: required `port`
+(1–65535) and optional positive integer `interval`, `responseTimeout`,
+`healthyThreshold` and `unhealthyThreshold`. Timing values must fit a Java
+Integer; this is the typed adapter's exact subset, not a native timing default
+or product maximum. Omission retains no health check. HTTP request lines,
+custom headers, strategies and unknown fields are rejected rather than silently
+removed. Native `healthCheck` remains a top-level External Service field.
+Matching Engine 0.183.368 support is required; older servers must not receive a
+weaker retry. Ordinary External Service forms and existing update operations
+retain their native behavior.
+
+Service/container create review resolves the Stack label from the authorized
+store using the exact captured project and Stack identity. An uncached Stack
+uses the existing authorized object read; pending/error/retry states cannot
+enable confirmation. Ember ArrayProxy and normal arrays are both supported.
+Untrusted display labels and raw resource IDs are not substituted as names.
+Approval, immutable plan data, actor/Key checks and context ownership are
+unchanged.
+
+This is committed source preparation, not a published component or runtime
+PASS. The dependency graphs and twelve tool names/protocol `1.0` are unchanged.
+Existing focused TCP source results are carried; the Stack collection-shape
+regression retains its original failure and four affected passing cases.
+Required CI, artifact qualification, designated runtime/permission/UI and
+cleanup acceptance remain pending. Full 243-group coverage is not complete.
+
 ## Web Console 1.6.206 / bridge 0.2.8 published
 
 The existing image-upgrade tool accepts optional `startFirst`, `batchSize` and

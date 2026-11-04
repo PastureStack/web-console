@@ -5,25 +5,20 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-The [0.2.8 / Web206 source candidate](../docs/releases/web-console-1.6.206.md)
-adds optional image-upgrade `startFirst`, `batchSize` and `intervalMillis` with
-matching Engine367. Defaults remain false/1/2000; exact effective values require
-human review. It is not yet published or runtime-qualified. The current
-published download below remains 0.2.7.
+The [0.2.9 / Web207 source candidate](../docs/releases/web-console-1.6.207.md)
+adds a closed TCP health check to External Service create and readable,
+authoritative Stack names in create review. It requires matching Engine368
+and is not yet published or runtime-qualified.
 
-[Bridge **0.2.7** / Web Console **1.6.205**](../docs/releases/web-console-1.6.205.md)
-is published. It adds Service create `ports`
-and `healthCheck` using the same typed command contract as the browser. Matching
-Engine **0.183.366** support and a compatible Server assembly are required.
-Creation uses bridge networking and starts stopped. Human approval binds the
-exact review; verified native port assignments appear only in read-only
-`executionResult.assignedPorts`, separately from approved changes. See the
-[field contract](../docs/webmcp.md#service-create-ports-and-health-checks).
-Original CI, exact-source ZIP/SBOM qualification and all 13 release assets passed
-verification. Matching Server565 runtime and designated workflow acceptance
-remain pending.
+[Bridge **0.2.8** / Web Console **1.6.206**](../docs/releases/web-console-1.6.206.md)
+is published. It adds optional image-upgrade `startFirst`, `batchSize` and
+`intervalMillis` with matching Engine **0.183.367**. Defaults remain
+false/1/2000; human approval binds the exact effective settings. Original CI,
+exact-source ZIP/SBOM qualification and all 13 public release assets passed
+verification. Matching Server566 runtime/workflow acceptance is separate from
+component publication.
 
-The published [0.2.7 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.205)
+The published [0.2.8 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.206)
 contains twelve typed tool names for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
@@ -97,7 +92,7 @@ See the [release note](../docs/releases/web-console-1.6.205.md) for original CI 
 For local packaging, first generate a matching bridge SBOM and then run:
 
 ```sh
-python scripts/package-webmcp-bridge.py --version 0.2.8 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.8.zip
+python scripts/package-webmcp-bridge.py --version 0.2.9 --sbom /path/to/webmcp-bridge.cdx.json --output /path/to/pasturestack-webmcp-bridge-0.2.9.zip
 ```
 
 Store the following configuration outside the extracted source tree in a private
