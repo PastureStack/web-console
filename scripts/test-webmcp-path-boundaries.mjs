@@ -279,16 +279,17 @@ async function externalTcpFixture(dir){
   return schema;
 }
 
-test('Engine source boundary: accepts canonical checkout aliases and internal directory links',async t=>{
+test('Engine source boundary: preserves checkout selection and internal directory links',async t=>{
   const parent=await temp(t),dir=path.join(parent,'自訂 Engine checkout'),alias=path.join(parent,'selected-alias');
   await fs.mkdir(dir);const schema=await externalTcpFixture(dir);
   await checkEngineContract(dir,{externalTcpOnly:true});
   await checkEngineContract(path.relative(process.cwd(),dir),{externalTcpOnly:true});
-  await fs.symlink(dir,alias,'junction');await checkEngineContract(alias,{externalTcpOnly:true});
+  await fs.symlink(dir,alias,'junction');
+  await assert.rejects(checkEngineContract(alias,{externalTcpOnly:true}),/Schema root escapes selected Engine/);
   await fs.rename(schema,path.join(dir,'native-schemas'));await fs.symlink(path.join(dir,'native-schemas'),schema,'junction');
   await fs.rename(path.join(dir,'code'),path.join(dir,'native-models'));await fs.symlink(path.join(dir,'native-models'),path.join(dir,'code'),'junction');
-  await checkEngineContract(alias,{externalTcpOnly:true});
-  if(process.platform==='win32')await checkEngineContract(alias.toLowerCase(),{externalTcpOnly:true});
+  await checkEngineContract(dir,{externalTcpOnly:true});
+  if(process.platform==='win32')await checkEngineContract(dir.toLowerCase(),{externalTcpOnly:true});
 });
 
 test('Engine source boundary: rejects a schema root in a sibling with the same prefix',async t=>{

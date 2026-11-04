@@ -4,20 +4,25 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {COMMANDS,PUBLIC_ERROR_CODES} from '../bridge/shared-modules.mjs';
 
-async function readContainedSource(root, relative, message) {
-  // Resolve links before the separator-bound prefix check, so a sibling such
-  // as engine-escape is never accepted as a child of the selected engine.
-  const target=path.resolve(await realpath(path.resolve(root,relative)));
+async function containedSourcePath(root, relative, message) {
+  // Enforce the selected owner before metadata access and again after links
+  // resolve; a sibling such as engine-escape is never a child of engine.
+  const requested=path.resolve(root,relative);
+  if(!requested.startsWith(path.join(root,path.sep)))throw Error(message);
+  const canonical=await realpath(requested);
+  // relative() retains Windows owner spelling without changing the canonical
+  // location; unlike lowercasing a filename, this preserves the actual path.
+  const target=path.resolve(root,path.relative(root,canonical));
   if(!target.startsWith(path.join(root,path.sep)))throw Error(message);
-  return readFile(target,'utf8');
+  return target;
 }
+const readContainedSource=async(root,relative,message)=>readFile(await containedSourcePath(root,relative,message),'utf8');
 
 // Release-assembly check for two explicitly selected source checkouts.
 // No network requests, credentials, generated copies or source modification.
 export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false, externalTcpOnly = false} = {}) {
-const engine=path.resolve(await realpath(path.resolve(engineRoot)));
-const schemaRoot=path.resolve(await realpath(path.resolve(engine,'resources/content/schema')));
-if(!schemaRoot.startsWith(path.join(engine,path.sep)))throw Error('Schema root escapes selected Engine');
+const engine=path.resolve(engineRoot);
+const schemaRoot=await containedSourcePath(engine,'resources/content/schema','Schema root escapes selected Engine');
 const read=async relative=>JSON.parse(await readContainedSource(schemaRoot,relative,'Schema file escapes selected Engine'));
 if(externalTcpOnly){
   const external=await read('base/externalService.json'),user=await read('user/user-auth.json');
