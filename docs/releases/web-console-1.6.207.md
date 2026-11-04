@@ -46,8 +46,16 @@ all four affected lookup/collection cases pass. Independent source review
 closed that specific defect. These results are not browser/runtime acceptance.
 
 Web/bridge package roots, active test lock, producer version guard, bridge
-handshake and packager are synchronized. Dependency graphs are unchanged, so
-this preparation installs no new dependencies. The twelve tool names and
+handshake and packager are synchronized. The bridge dependency graph is
+unchanged. The UI build graph converges affected minimatch 8/9 callers to
+10.2.6 and applies the exact upstream 11.0.1 preprocessing security fix from
+pinned source. This retains the RegExp/matchOne API required by the existing
+Ember callers. The glob wrapper uses the official raw export so the external
+matcher receives the same fix. Explicit build preparation and read-only entry
+checks cover CI, npm build/test/start and direct Ember builds. Build SBOMs keep
+the actual npm identity and add verified backport file hashes; raw scanner
+reports are not rewritten. Full CI and artifact verification for this change
+are still required. The twelve tool names and
 command protocol `1.0` remain unchanged. Required CI, exact original artifact
 qualification, release/digest, runtime permission/ID boundaries, visible
 review/receipt and owned-fixture cleanup still require their own evidence.

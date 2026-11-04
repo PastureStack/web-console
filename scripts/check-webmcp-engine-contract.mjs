@@ -4,22 +4,21 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {COMMANDS,PUBLIC_ERROR_CODES} from '../bridge/shared-modules.mjs';
 
+async function readContainedSource(root, relative, message) {
+  // Resolve links before the separator-bound prefix check, so a sibling such
+  // as engine-escape is never accepted as a child of the selected engine.
+  const target=path.resolve(await realpath(path.resolve(root,relative)));
+  if(!target.startsWith(path.join(root,path.sep)))throw Error(message);
+  return readFile(target,'utf8');
+}
+
 // Release-assembly check for two explicitly selected source checkouts.
 // No network requests, credentials, generated copies or source modification.
 export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false, externalTcpOnly = false} = {}) {
-const engine=path.resolve(engineRoot);
-const requestedSchema=path.resolve(engine,'resources/content/schema');
-const requestedRelative=path.relative(engine,requestedSchema);
-if(requestedRelative==='..'||requestedRelative.startsWith('..'+path.sep)||path.isAbsolute(requestedRelative))throw Error('Schema root escapes selected Engine');
-const schemaRoot=await realpath(requestedSchema);
-const schemaRelative=path.relative(engine,schemaRoot);
-if(schemaRelative==='..'||schemaRelative.startsWith('..'+path.sep)||path.isAbsolute(schemaRelative))throw Error('Schema root escapes selected Engine');
-const read=async relative=>{
-  const target=await realpath(path.resolve(schemaRoot,relative));
-  const inside=path.relative(schemaRoot,target);
-  if(inside==='..'||inside.startsWith('..'+path.sep)||path.isAbsolute(inside))throw Error('Schema file escapes selected Engine');
-  return JSON.parse(await readFile(target,'utf8'));
-};
+const engine=path.resolve(await realpath(path.resolve(engineRoot)));
+const schemaRoot=path.resolve(await realpath(path.resolve(engine,'resources/content/schema')));
+if(!schemaRoot.startsWith(path.join(engine,path.sep)))throw Error('Schema root escapes selected Engine');
+const read=async relative=>JSON.parse(await readContainedSource(schemaRoot,relative,'Schema file escapes selected Engine'));
 if(externalTcpOnly){
   const external=await read('base/externalService.json'),user=await read('user/user-auth.json');
   assert.equal(external.resourceFields.healthCheck.type,'instanceHealthCheck','External health check must retain its native type');
@@ -30,10 +29,8 @@ if(externalTcpOnly){
   assert.equal(condition.then.properties.operation.const,'create');assert.equal(check.additionalProperties,false);
   assert.deepEqual(check.required,['port']);
   assert.deepEqual(Object.keys(check.properties).sort(),['port','interval','responseTimeout','healthyThreshold','unhealthyThreshold'].sort());
-  const modelPath=await realpath(path.join(engine,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java'));
-  const relative=path.relative(engine,modelPath);
-  if(relative==='..'||relative.startsWith('..'+path.sep)||path.isAbsolute(relative))throw Error('Native health model escapes selected Engine');
-  const model=await readFile(modelPath,'utf8');
+  const model=await readContainedSource(engine,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java',
+    'Native health model escapes selected Engine');
   assert.match(model,/@Field\(required = true, min = 1, max = 65535\)\s+public Integer getPort\(\)/);
   assert.equal(check.properties.port.minimum,1);assert.equal(check.properties.port.maximum,65535);
   for(const name of ['interval','responseTimeout','healthyThreshold','unhealthyThreshold']){

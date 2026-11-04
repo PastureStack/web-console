@@ -54,7 +54,7 @@
         "ember-truth-helpers": "5.0.0",
         "exists-sync": "file:vendor/exists-sync-compat/exists-sync-1.0.0-rc16.0.tgz",
         "express": "5.2.1",
-        "glob": "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz",
+        "glob": "file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz",
         "http-proxy": "1.18.1",
         "identicon.js": "2.3.3",
         "inflight": "file:vendor/inflight-compat/inflight-1.1.0-rc16.0.tgz",
@@ -4984,14 +4984,27 @@
         "resolve": "^1.22.8"
       }
     },
+    "node_modules/babel-plugin-module-resolver/node_modules/balanced-match": {
+      "version": "4.0.4",
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+      "integrity": "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==",
+      "dev": true,
+      "license": "MIT",
+      "engines": {
+        "node": "18 || 20 || >=22"
+      }
+    },
     "node_modules/babel-plugin-module-resolver/node_modules/brace-expansion": {
-      "version": "2.1.7",
-      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.1.7.tgz",
-      "integrity": "sha512-uZbew1NqdmPDTMJ8ah1y+b+9QEJrfkXFk3RcTQw3X0jW/xRUvFKsg1CfQdSYGdTbXZWExtU3J3ccxtnfw1Fi0g==",
+      "version": "5.0.12",
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.12.tgz",
+      "integrity": "sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "balanced-match": "^1.0.0"
+        "balanced-match": "^4.0.2"
+      },
+      "engines": {
+        "node": "20 || >=22"
       }
     },
     "node_modules/babel-plugin-module-resolver/node_modules/glob": {
@@ -5022,16 +5035,16 @@
       "license": "ISC"
     },
     "node_modules/babel-plugin-module-resolver/node_modules/minimatch": {
-      "version": "8.0.7",
-      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-8.0.7.tgz",
-      "integrity": "sha512-V+1uQNdzybxa14e/p00HZnQNNcTjnRJjDxg2V8wtkjFctq4M7hXFws4oekyTP0Jebeq7QYtpFyOeBAjc88zvYg==",
+      "version": "10.2.6",
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
+      "integrity": "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==",
       "dev": true,
-      "license": "ISC",
+      "license": "BlueOak-1.0.0",
       "dependencies": {
-        "brace-expansion": "^2.0.1"
+        "brace-expansion": "^5.0.8"
       },
       "engines": {
-        "node": ">=16 || 14 >=14.17"
+        "node": "18 || 20 || >=22"
       },
       "funding": {
         "url": "https://github.com/sponsors/isaacs"
@@ -13123,8 +13136,8 @@
     },
     "node_modules/glob": {
       "version": "13.0.6",
-      "resolved": "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz",
-      "integrity": "sha512-ihgMTs50bjKhfOEQz8YD3f1yv4yTL3dISA8+McdI9L2tha8FstQ79mOM2S15JF9HI4OChD5tmu5esrZOBIZm5Q==",
+      "resolved": "file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz",
+      "integrity": "sha512-LPCb+0dVinDNlDIYxngHSXy3GGZNRaBvwh1LiSSPc6BAplz2TsnfcorhtuM9UrG+XN8cGPiNSrGybF54pn6MiA==",
       "dev": true,
       "license": "ISC",
       "dependencies": {
@@ -16535,14 +16548,27 @@
         "underscore.string": "~3.3.6"
       }
     },
+    "node_modules/quick-temp/node_modules/balanced-match": {
+      "version": "4.0.4",
+      "resolved": "https://registry.npmjs.org/balanced-match/-/balanced-match-4.0.4.tgz",
+      "integrity": "sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==",
+      "dev": true,
+      "license": "MIT",
+      "engines": {
+        "node": "18 || 20 || >=22"
+      }
+    },
     "node_modules/quick-temp/node_modules/brace-expansion": {
-      "version": "2.1.7",
-      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-2.1.7.tgz",
-      "integrity": "sha512-uZbew1NqdmPDTMJ8ah1y+b+9QEJrfkXFk3RcTQw3X0jW/xRUvFKsg1CfQdSYGdTbXZWExtU3J3ccxtnfw1Fi0g==",
+      "version": "5.0.12",
+      "resolved": "https://registry.npmjs.org/brace-expansion/-/brace-expansion-5.0.12.tgz",
+      "integrity": "sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==",
       "dev": true,
       "license": "MIT",
       "dependencies": {
-        "balanced-match": "^1.0.0"
+        "balanced-match": "^4.0.2"
+      },
+      "engines": {
+        "node": "20 || >=22"
       }
     },
     "node_modules/quick-temp/node_modules/glob": {
@@ -16575,16 +16601,16 @@
       "license": "ISC"
     },
     "node_modules/quick-temp/node_modules/minimatch": {
-      "version": "9.0.9",
-      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-9.0.9.tgz",
-      "integrity": "sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==",
+      "version": "10.2.6",
+      "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-10.2.6.tgz",
+      "integrity": "sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==",
       "dev": true,
-      "license": "ISC",
+      "license": "BlueOak-1.0.0",
       "dependencies": {
-        "brace-expansion": "^2.0.2"
+        "brace-expansion": "^5.0.8"
       },
       "engines": {
-        "node": ">=16 || 14 >=14.17"
+        "node": "18 || 20 || >=22"
       },
       "funding": {
         "url": "https://github.com/sponsors/isaacs"

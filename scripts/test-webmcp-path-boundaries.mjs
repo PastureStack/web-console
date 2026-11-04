@@ -267,6 +267,52 @@ test('checker rejects directory links escaping the selected Engine and schema ro
   await fs.symlink(path.join(outside,'resources/content/schema/base'),path.join(schema,'base'),'junction');
   await assert.rejects(checkEngineContract(other),/Schema file escapes selected Engine/);
 });
+async function externalTcpFixture(dir){
+  const schema=path.join(dir,'resources/content/schema');
+  await fs.mkdir(path.join(schema,'base'),{recursive:true});await fs.mkdir(path.join(schema,'user'));
+  await fs.writeFile(path.join(schema,'base/externalService.json'),JSON.stringify({resourceFields:{healthCheck:{type:'instanceHealthCheck'}}}));
+  await fs.writeFile(path.join(schema,'user/user-auth.json'),JSON.stringify({authorize:{'externalService.healthCheck':'cr'}}));
+  const model=path.join(dir,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java');
+  await fs.mkdir(path.dirname(model),{recursive:true});
+  await fs.writeFile(model,'@Field(required = true, min = 1, max = 65535)\npublic Integer getPort()\n'+
+    ['interval','responseTimeout','healthyThreshold','unhealthyThreshold'].map(name=>'Integer '+name+';').join('\n'));
+  return schema;
+}
+
+test('Engine source boundary: accepts canonical checkout aliases and internal directory links',async t=>{
+  const parent=await temp(t),dir=path.join(parent,'自訂 Engine checkout'),alias=path.join(parent,'selected-alias');
+  await fs.mkdir(dir);const schema=await externalTcpFixture(dir);
+  await checkEngineContract(dir,{externalTcpOnly:true});
+  await checkEngineContract(path.relative(process.cwd(),dir),{externalTcpOnly:true});
+  await fs.symlink(dir,alias,'junction');await checkEngineContract(alias,{externalTcpOnly:true});
+  await fs.rename(schema,path.join(dir,'native-schemas'));await fs.symlink(path.join(dir,'native-schemas'),schema,'junction');
+  await fs.rename(path.join(dir,'code'),path.join(dir,'native-models'));await fs.symlink(path.join(dir,'native-models'),path.join(dir,'code'),'junction');
+  await checkEngineContract(alias,{externalTcpOnly:true});
+  if(process.platform==='win32')await checkEngineContract(alias.toLowerCase(),{externalTcpOnly:true});
+});
+
+test('Engine source boundary: rejects a schema root in a sibling with the same prefix',async t=>{
+  const parent=await temp(t),dir=path.join(parent,'engine'),outside=path.join(parent,'engine-escape');
+  const outsideSchema=await externalTcpFixture(outside);await fs.mkdir(path.join(dir,'resources/content'),{recursive:true});
+  await fs.symlink(outsideSchema,path.join(dir,'resources/content/schema'),'junction');
+  await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),/Schema root escapes selected Engine/);
+});
+
+test('Engine source boundary: rejects a schema file in a sibling with the same prefix',async t=>{
+  const dir=await temp(t),schema=await externalTcpFixture(dir),outside=path.join(path.dirname(schema),'schema-escape');
+  await fs.mkdir(outside);await fs.rename(path.join(schema,'base'),path.join(outside,'base'));
+  await fs.symlink(path.join(outside,'base'),path.join(schema,'base'),'junction');
+  await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),/Schema file escapes selected Engine/);
+});
+
+test('Engine source boundary: rejects the native model in a sibling with the same prefix',async t=>{
+  const parent=await temp(t),dir=path.join(parent,'engine'),outside=path.join(parent,'engine-escape');
+  await externalTcpFixture(dir);await externalTcpFixture(outside);
+  await fs.rename(path.join(dir,'code'),path.join(dir,'original-code'));
+  await fs.symlink(path.join(outside,'code'),path.join(dir,'code'),'junction');
+  await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),/Native health model escapes selected Engine/);
+});
+
 test('UI test filtering treats regex metacharacters literally',()=>{
   const script=path.join(web,'scripts/test-ai-collaboration-ui.js');
   const run=value=>spawnSync(process.execPath,[script,'--filter='+value],{cwd:web,encoding:'utf8',timeout:10000});

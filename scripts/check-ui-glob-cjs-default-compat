@@ -8,7 +8,9 @@ lock_path="docs/baselines/npm-package-lock.sass-replacement.node24-ignore-script
 
 python3 - <<'PY'
 import json
+import re
 import sys
+import tarfile
 from pathlib import Path
 
 package = json.loads(Path("package.json").read_text(encoding="utf-8"))
@@ -17,18 +19,43 @@ packages = lock.get("packages", {})
 failures = []
 
 glob_dep = package.get("devDependencies", {}).get("glob")
-if glob_dep != "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz":
+if glob_dep != "file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz":
     failures.append(f"root glob dependency is {glob_dep!r}")
 
 root_glob = packages.get("node_modules/glob", {})
 if root_glob.get("version") != "13.0.6":
     failures.append(f"root glob version is {root_glob.get('version')!r}")
-if root_glob.get("resolved") != "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz":
+if root_glob.get("resolved") != "file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz":
     failures.append(f"root glob resolved is {root_glob.get('resolved')!r}")
 
 glob_real = packages.get("node_modules/glob-real", {})
 if glob_real.get("version") != "13.0.6":
     failures.append(f"glob-real version is {glob_real.get('version')!r}")
+
+# A source edit without repacking the installed wrapper must fail closed.
+archive_path = Path("vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz")
+with tarfile.open(archive_path, "r:gz") as archive:
+    rows = archive.getmembers()
+    if len(rows) != 3 or {row.name for row in rows} != {"package/index.js", "package/package.json", "package/UPSTREAM.md"} or not all(row.isfile() for row in rows):
+        failures.append("glob compatibility archive must contain the exact three regular source files")
+    else:
+        for name in ("index.js", "package.json", "UPSTREAM.md"):
+            if archive.extractfile("package/" + name).read() != Path("vendor/glob-cjs-default-compat", name).read_bytes().replace(b"\r\n", b"\n"):
+                failures.append(f"packed glob wrapper differs from reviewed source: {name}")
+wrapper = Path("vendor/glob-cjs-default-compat/index.js").read_text(encoding="utf-8")
+if 'const modernGlob = require("glob-real/raw");' not in wrapper:
+    failures.append("glob compatibility wrapper must use the official raw entry")
+default_import = re.compile(r'''\b(?:require\s*\(\s*|import\s*\(\s*|import\s+|from\s*)["']glob-real["']''')
+sources = list(Path('.').glob('*.js'))
+for directory in ('app', 'config', 'server', 'scripts'):
+    sources.extend(path for path in Path(directory).rglob('*') if path.suffix in ('.js', '.mjs', '.cjs')
+                   and 'node_modules' not in path.parts)
+for source in sources:
+    if default_import.search(source.read_text(encoding='utf-8')):
+        failures.append(f"first-party default glob-real import bypasses the reviewed raw entry: {source}")
+for name, row in packages.items():
+    if name != "node_modules/glob" and "glob-real" in {**row.get('dependencies', {}), **row.get('optionalDependencies', {})}:
+        failures.append(f"unreviewed glob-real dependency edge: {name}")
 
 for retired_path in (
     "node_modules/ember-intl/node_modules/glob",
@@ -43,7 +70,7 @@ if failures:
     print(f"failure_count={len(failures)}")
     sys.exit(1)
 
-print("UI_GLOB_CJS_DEFAULT_COMPAT_OK root=13.0.6 wrapper=file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz glob_real=13.0.6")
+print("UI_GLOB_CJS_DEFAULT_COMPAT_OK root=13.0.6 wrapper=file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz glob_real=13.0.6 entry=raw")
 print("The first-party tools resolve the reviewed CommonJS default wrapper; addon-owned deprecated glob paths are locked by the exact deprecation inventory gate.")
 print("failure_count=0")
 PY

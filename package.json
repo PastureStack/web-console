@@ -14,11 +14,15 @@
     "test": "tests"
   },
   "scripts": {
+    "prebuild": "node scripts/apply-minimatch-security-backport.cjs --check",
     "build": "ember build",
     "build-static": "./scripts/build-static",
+    "preember": "node scripts/apply-minimatch-security-backport.cjs --check",
     "ember": "ember",
     "legacy-dependencies": "./scripts/update-dependencies",
+    "prestart": "node scripts/apply-minimatch-security-backport.cjs --check",
     "start": "ember server",
+    "pretest": "node scripts/apply-minimatch-security-backport.cjs --check",
     "test": "ember test --ssl=false --host 127.0.0.1 --config-file testem.js"
   },
   "overrides": {
@@ -44,6 +48,7 @@
     "js-yaml": "4.3.2",
     "morgan": "1.12.1",
     "markdown-it": "14.3.3",
+    "minimatch@>=7.0.0 <11.0.1": "10.2.6",
     "nanoid": "3.3.18",
     "qs": "6.16.1",
     "rtlcss": "4.3.0",
@@ -102,7 +107,7 @@
     "ember-truth-helpers": "5.0.0",
     "exists-sync": "file:vendor/exists-sync-compat/exists-sync-1.0.0-rc16.0.tgz",
     "express": "5.2.1",
-    "glob": "file:vendor/glob-cjs-default-compat/glob-13.0.6.tgz",
+    "glob": "file:vendor/glob-cjs-default-compat/glob-13.0.6-pasturestack.2.tgz",
     "http-proxy": "1.18.1",
     "identicon.js": "2.3.3",
     "inflight": "file:vendor/inflight-compat/inflight-1.1.0-rc16.0.tgz",

@@ -21,8 +21,15 @@ Untrusted display labels and raw resource IDs are not substituted as names.
 Approval, immutable plan data, actor/Key checks and context ownership are
 unchanged.
 
-This is committed source preparation, not a published component or runtime
-PASS. The dependency graphs and twelve tool names/protocol `1.0` are unchanged.
+This is source preparation, not a published component or runtime PASS. The
+twelve tool names/protocol `1.0` and bridge dependency graph are unchanged.
+The UI build graph converges affected minimatch 8/9 callers to the compatible
+10.2.6 API and applies the pinned official 11.0.1 preprocessing fix at source
+build time. The glob wrapper uses its upstream raw entry so its external
+matcher receives the same fix. Local build entries verify patched bytes before
+loading plugins. SBOM keeps the real npm identity and records the backport;
+raw vulnerability reports remain unchanged. Required full CI and artifact
+qualification for this build change are pending.
 Existing focused TCP source results are carried; the Stack collection-shape
 regression retains its original failure and four affected passing cases.
 Required CI, artifact qualification, designated runtime/permission/UI and

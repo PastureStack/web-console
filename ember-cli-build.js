@@ -1,4 +1,7 @@
 /* global require, module */
+// Verify the explicit source-build preparation before loading build plugins,
+// including direct Ember CLI invocations outside npm's prebuild hook.
+require('./scripts/apply-minimatch-security-backport.cjs').applyProject(__dirname, true);
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
 var BroccoliFunnel = require('broccoli-funnel');
 var BroccoliMergeTrees = require('broccoli-merge-trees');

@@ -148,6 +148,24 @@ function installedPackages(root, lock, namespace = 'npm') {
   return installed;
 }
 
+function annotateBuildBackport(root, pkg, installed) {
+  if (pkg.overrides?.['minimatch@>=7.0.0 <11.0.1'] !== '10.2.6') return undefined;
+  const proof = require('./apply-minimatch-security-backport.cjs').applyProject(root, true);
+  for (const location of proof.packages) {
+    const component = installed.get(location)?.component;
+    assert.ok(component && component.name === 'minimatch' && component.version === '10.2.6',
+      'verified backport must identify its actual installed SBOM component');
+    const metadata = json(path.join(root, location, 'backport.json'));
+    component.properties.push(property('locally-modified', 'true'),
+      property('security-backport', metadata.cve), property('security-backport-archive-sha256', proof.archiveSha256),
+      property('security-backport-upstream-commit', metadata.officialFixCommit),
+      property('security-backport-patched-files', JSON.stringify(metadata.patchedFiles)));
+  }
+  return { cve: 'CVE-2026-118764', upstreamVersion: proof.upstreamVersion,
+    archiveSha256: proof.archiveSha256, packages: proof.packages, originalNpmIdentityRetained: true,
+    rawVulnerabilityReportsRewritten: false };
+}
+
 function resolveDependency(installed, from, name) {
   let directory = from;
   for (;;) {
@@ -350,6 +368,7 @@ function generate(options) {
   const commit = options.sourceCommit || process.env.GITHUB_SHA || childProcess.execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
   assert.match(commit, /^[a-f0-9]{40}$/i, 'exact source commit is required');
   const installed = installedPackages(root, lock);
+  const matcherBackport = annotateBuildBackport(root, pkg, installed);
   const allInstalled = new Set(installed.keys());
   const buildEdges = dependencyGraph(installed, lock, allInstalled);
   const verifier = verifierClosure(root, options);
@@ -481,12 +500,14 @@ function generate(options) {
     property('coverage-limitations', 'npm installed closure only; operating system, Node.js, npm and external CI actions are not inventoried.' +
       (verifier ? ' The separate release schema verifier installed closure is included.' : ' External schema verifier tools are not included because --verifier-root was not provided.')));
   buildBom.compositions = [{ aggregate: 'incomplete', assemblies: [archiveRef] }];
+  if (matcherBackport) buildBom.metadata.properties.push(property('verified-source-backport', JSON.stringify(matcherBackport)));
   const artifactManifest = { schemaVersion: 1, name: pkg.name, version: pkg.version, sourceCommit: commit.toLowerCase(),
     sourceDateEpoch: Number(epoch), lockSha256: lockHash, archive: { name: artifact.name, sha256: artifact.sha256 },
     inventory: { webpackSha256: sha256(fs.readFileSync(inventoryPath)), retainedWebpack, retainedConcat,
       concat: stats.map(({ name, sha256: digest }) => ({ name, sha256: digest })) },
     files: artifact.files, coverage: 'incomplete', limitations: sort(limitations) };
   if (verifier) artifactManifest.buildInputs = { verifier: verifier.identity };
+  if (matcherBackport) artifactManifest.buildInputs = { ...artifactManifest.buildInputs, matcherBackport };
   const result = { 'runtime.cdx.json': runtimeBom, 'build.cdx.json': buildBom, 'artifact-manifest.json': artifactManifest };
   for (const document of Object.values(result)) {
     const encoded = JSON.stringify(document);
@@ -511,7 +532,7 @@ function main(args) {
     buildComponents: documents['build.cdx.json'].components.length, coverage: 'incomplete', archiveSha256: documents['artifact-manifest.json'].archive.sha256 }));
 }
 
-module.exports = { generate, readTar, sourceHash, sourcePackage, purl, installedPackages, dependencyGraph, verifyArchive };
+module.exports = { generate, readTar, sourceHash, sourcePackage, purl, installedPackages, dependencyGraph, verifyArchive, annotateBuildBackport };
 if (require.main === module) {
   try { main(process.argv.slice(2)); } catch (error) { console.error('UI_SBOM_FAILED: ' + error.message); process.exitCode = 1; }
 }

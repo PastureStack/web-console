@@ -20,6 +20,12 @@ vendor/shell-quote/shell-quote-global.js text eol=lf
 vendor/ember-fetch-compat/** text eol=lf
 vendor/ember-fetch-compat/*.tgz -text
 
+# Preserve the exact upstream/security-patch inputs and reproducible local archives.
+vendor/minimatch-security-backport/** text eol=lf
+vendor/minimatch-security-backport/*.tgz -text
+vendor/glob-cjs-default-compat/** text eol=lf
+vendor/glob-cjs-default-compat/*.tgz -text
+
 # Match the canonical source bytes packed into the API-store compatibility archive.
 vendor/ember-api-store-compat/** text eol=lf
 vendor/ember-api-store-compat/*.tgz -text

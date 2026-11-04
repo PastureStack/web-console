@@ -1,6 +1,7 @@
 {
   "name": "glob",
   "version": "13.0.6",
+  "pasturestackCompatibilityRevision": "raw-minimatch-security-backport-1",
   "description": "RC16 compatibility wrapper around glob 13 for legacy Babel _interopRequireDefault callers.",
   "main": "index.js",
   "license": "ISC",

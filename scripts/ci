@@ -8,6 +8,8 @@ else
   cd "$(dirname "$CWD")"
 fi
 
+node scripts/apply-minimatch-security-backport.cjs --check
+node --test scripts/test-ui-minimatch-compat.js
 ./scripts/check-modernization-blockers
 ./scripts/check-ui-ember-api-store-fetch-upgrade
 node --test scripts/test-webmcp-path-boundaries.mjs
