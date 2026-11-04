@@ -47,6 +47,9 @@
 {{#if this.reviewLabels.mountedDataNotice}}<div class="alert alert-warning" data-testid="ai-resource-mounted-data-notice">{{this.reviewLabels.mountedDataNotice}}</div>{{/if}}
 {{#each this.reviewLabels.archiveNotices as |notice|}}<div class="alert alert-warning" data-testid="ai-resource-archive-notice">{{notice}}</div>{{/each}}
 {{#if this.stale}}<div class="alert alert-danger" role="alert">{{t "webmcp.stale"}}</div>{{/if}}
+{{#if this.reviewLabels.stackTargetUnavailable}}<div class="alert alert-warning" data-testid="ai-resource-stack-unavailable">
+  {{#if this.loadingReviewStack}}<span role="status">{{t "generic.loading"}}</span>{{else}}<button type="button" class="btn btn-link" {{action "retryReviewStack"}}>{{t "action.retry"}}</button>{{/if}}
+</div>{{/if}}
 {{#if this.alreadyApproved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{t "webmcp.approved"}}</div>{{/if}}
 {{top-errors errors=this.errors}}
 <div class="footer-actions">

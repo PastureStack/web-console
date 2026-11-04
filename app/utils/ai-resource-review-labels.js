@@ -21,11 +21,20 @@ export function resourceConfirmationErrorKey(code) {
 }
 
 // UI text only. Keep the immutable plan and its exact JSON program values intact.
-export function resourceReviewLabels(plan, translate) {
+export function resourceReviewLabels(plan, translate, stacks = []) {
   const text = (key) => String(translate(key || 'generic.unknown'));
   const label = (map, key) => Object.prototype.hasOwnProperty.call(map, key) ? map[key] : null;
+  const stackParent = plan.operation === 'create' && ['service', 'container'].includes(plan.resourceType);
+  const stackName = (id) => {
+    if ( typeof id !== 'string' || !plan.context || typeof plan.context.projectId !== 'string' ) { return null; }
+    const matches = stacks.filter((stack) => stack.id === id && stack.accountId === plan.context.projectId && !stack.removed);
+    return matches.length === 1 && typeof matches[0].name === 'string' && matches[0].name.trim() && matches[0].name.length <= 1024 ? matches[0].name : null;
+  };
+  const stackTargetUnavailable = stackParent && (plan.displayDiff || []).some((change) => change.field === 'stackId' &&
+    [change.before, change.after].some((id) => id !== null && !stackName(id)));
   const value = (field, input) => {
     if ( input === null ) { return text('webmcp.nullValue'); }
+    if ( field === 'stackId' && stackParent ) { return stackName(input) || text('generic.unknown'); }
     if ( input === '' ) { return text('webmcp.emptyValue'); }
     if ( typeof input === 'boolean' ) { return text(input ? 'generic.yess' : 'generic.noo'); }
     if ( field === 'intervalMillis' && input !== null ) { return `${input} ${text('formHealthCheck.interval.unit')}`; }
@@ -49,6 +58,7 @@ export function resourceReviewLabels(plan, translate) {
   };
   return {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
+    stackTargetUnavailable,
     executionAssignedPorts: plan.executionResult ? JSON.stringify(plan.executionResult.assignedPorts) : null,
     upgradeStrategyChanges: plan.upgradeStrategy ? ['startFirst', 'batchSize', 'intervalMillis'].map((field) => ({
       field, fieldLabel: text(label(FIELDS, field)), after: value(field, plan.upgradeStrategy[field]),
