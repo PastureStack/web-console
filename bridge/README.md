@@ -5,20 +5,15 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-The [0.2.9 / Web207 source candidate](../docs/releases/web-console-1.6.207.md)
-adds a closed TCP health check to External Service create and readable,
-authoritative Stack names in create review. It requires matching Engine368
-and is not yet published or runtime-qualified.
+[Bridge **0.2.9** / Web Console **1.6.207**](../docs/releases/web-console-1.6.207.md)
+is published. It supports a closed TCP health check for External Service create
+and readable, authoritative Stack names in create review with matching Engine
+**0.183.368**. Optional image-upgrade `startFirst`, `batchSize` and
+`intervalMillis` retain defaults false/1/2000; human approval binds the exact
+effective settings. Server assembly and runtime/workflow acceptance are separate
+from component publication.
 
-[Bridge **0.2.8** / Web Console **1.6.206**](../docs/releases/web-console-1.6.206.md)
-is published. It adds optional image-upgrade `startFirst`, `batchSize` and
-`intervalMillis` with matching Engine **0.183.367**. Defaults remain
-false/1/2000; human approval binds the exact effective settings. Original CI,
-exact-source ZIP/SBOM qualification and all 13 public release assets passed
-verification. Matching Server566 runtime/workflow acceptance is separate from
-component publication.
-
-The published [0.2.8 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.206)
+The published [0.2.9 release archive](https://github.com/PastureStack/web-console/releases/tag/1.6.207)
 contains twelve typed tool names for resource-family
 discovery, safe metadata reads and stack/service/container lifecycle plans.
 Unsupported-operation replies explain that Global services follow eligible
@@ -61,14 +56,14 @@ native browser support. The operator must separately opt in to
 `api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
 both Engine flags default to false.
 
-Download the published 0.2.7 archive and its `.zip.sha256` checksum, then verify
+Download the published 0.2.9 archive and its `.zip.sha256` checksum, then verify
 before extraction:
 
 ```sh
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.205/pasturestack-webmcp-bridge-0.2.7.zip
-curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.205/pasturestack-webmcp-bridge-0.2.7.zip.sha256
-sha256sum --check pasturestack-webmcp-bridge-0.2.7.zip.sha256
-unzip pasturestack-webmcp-bridge-0.2.7.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.207/pasturestack-webmcp-bridge-0.2.9.zip
+curl --fail --location --remote-name https://github.com/PastureStack/web-console/releases/download/1.6.207/pasturestack-webmcp-bridge-0.2.9.zip.sha256
+sha256sum --check pasturestack-webmcp-bridge-0.2.9.zip.sha256
+unzip pasturestack-webmcp-bridge-0.2.9.zip
 ```
 
 Extract the whole archive, keeping both `bridge/` and
@@ -76,19 +71,25 @@ Extract the whole archive, keeping both `bridge/` and
 24.22.1 available, install from the extracted directory:
 
 ```sh
-cd pasturestack-webmcp-bridge-0.2.7/bridge
+cd pasturestack-webmcp-bridge-0.2.9/bridge
 npm ci --ignore-scripts --no-audit --no-fund
 ```
 
 Its MCP entry point is the extracted `bridge/server.mjs`. `source-manifest.json`
 records the included source hashes; the root also includes LICENSE and the
-bridge CycloneDX SBOM. The published 0.2.7 [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.205/bridge027-release-proof.json)
-binds producer `931562ac0302b0406c5c2b44ec7a0f94307e5b2e` and tested tree
-`ea359bababf5ed9270e88149bbfa789ba2b54d85`. The numeric 1.6.205 tag targets
-`ac928a5db556315f87abd3ffc213630aa7049d1f`, with the same tree. Fresh exact-Git
-sources and the 92-component lock-only SBOM are separate from carried 0.2.5
-dependency/install/SDK evidence; no new install, scan or SDK handshake is claimed.
-See the [release note](../docs/releases/web-console-1.6.205.md) for original CI scope.
+bridge CycloneDX SBOM. The published 0.2.9 [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.207/bridge029-release-proof.json)
+binds 35 exact-Git source files to producer
+`e3f8fbe872d91df6837d5de3339a0efde645ac74` and tested tree
+`11fde8f7eff0861eaf06a0357edc649b1caffb2c`. The numeric 1.6.207 tag targets
+`00855544be1da90d8de63a823b437e2140b29c4e`, with the same tree. The unchanged
+92-component graph carries the 0.2.5 clean-install evidence; no new install or
+dependency scan is claimed. A new real SDK stdio handshake verified version
+0.2.9 and all twelve tools. See the [release note](../docs/releases/web-console-1.6.207.md)
+for original CI, artifact and validation scope.
+
+This repository's current README is the installation authority. The immutable
+release ZIP retains the README from its producer snapshot; later documentation
+updates do not replace that ZIP or its source manifest.
 For local packaging, first generate a matching bridge SBOM and then run:
 
 ```sh
