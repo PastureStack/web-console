@@ -130,7 +130,7 @@ test('resource families: every implemented descriptor projects only bounded scal
       assert.deepEqual(f.requests[0].data, {resourceType: descriptor.type});
       assert.deepEqual(f.requests[1].data, {resourceType: descriptor.type, resourceId: 'opaque-server-id'});
     }
-    const expectedFields = descriptor.readTransport === 'catalog' ? descriptor.type === 'catalogTemplateVersion' ? versionFields : templateFields :
+    const expectedFields = descriptor.type === 'processInstance' ? {} : descriptor.readTransport === 'catalog' ? descriptor.type === 'catalogTemplateVersion' ? versionFields : templateFields :
       {description: body.description, name: body.name, state: body.state};
     assert.deepEqual(found.items[0].fields, expectedFields); assert.deepEqual(detail.fields, expectedFields);
   }

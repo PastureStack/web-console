@@ -5,7 +5,7 @@ const bridgeReads = ['project', 'stack', 'service'];
 const nativeReads = ['project', 'stack', 'service', 'container', 'host', 'network', 'volume', 'storagePool', 'backupTarget', 'snapshot', 'virtualMachine'];
 const viewReads = ['project', 'account', 'stack', 'service', 'loadBalancerService', 'dnsService', 'externalService', 'container', 'virtualMachine', 'host',
   'volume', 'snapshot', 'backup', 'backupTarget', 'storagePool', 'storageDriver', 'network', 'networkDriver', 'certificate', 'registry', 'registryCredential',
-  'apiKey', 'apiKeyRestricted', 'setting', 'activeSetting', 'machineDriver', 'secret', 'processExecution', 'projectTemplate', 'processPool', 'auditLog'];
+  'apiKey', 'apiKeyRestricted', 'setting', 'activeSetting', 'machineDriver', 'secret', 'processInstance', 'processExecution', 'projectTemplate', 'processPool', 'auditLog'];
 const resource = (type, collection, scope, fields = [], parent = null, limitations = []) => Object.freeze({
   type, collection, scope, readTransport: ['service', 'loadBalancerService', 'dnsService', 'externalService'].includes(type) ? 'view' : nativeReads.includes(type) ? 'domain' : viewReads.includes(type) ? 'view' : 'pending',
   bridgeRead: bridgeReads.includes(type), fields: Object.freeze([...common, ...fields]), parent: parent && Object.freeze(parent), limitations: Object.freeze(limitations),
@@ -44,8 +44,8 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('network', [project('network', 'networks', ['kind', 'defaultPolicyAction'])]),
   family('oidc', [], 'pending-adapter', 'OIDC configuration metadata requires the dedicated authentication API adapter. Login is a human ceremony.'),
   family('orchestration', [project('kubernetesStack', 'kubernetesStacks', ['namespace'])], 'pending-adapter', 'Orchestration APIs require a dedicated adapter.'),
-  family('processes', [global('processExecution', 'processExecutions', [], ['Only basic id/created metadata; named process summaries and errors need a dedicated adapter. Raw logs are excluded.']), global('processPool', 'processPools', ['activeTasks', 'poolSize', 'queueSize'])],
-    'pending-adapter', 'Process execution currently exposes only basic id/created metadata. Joined process names, summaries and errors need a dedicated adapter; raw logs are excluded. Process pool metadata is implemented.'),
+  family('processes', [global('processExecution', 'processExecutions', [], ['Only basic id/created metadata; named process summaries and errors need a dedicated adapter. Raw logs are excluded.']), global('processPool', 'processPools', ['activeTasks', 'poolSize', 'queueSize']), Object.freeze({...global('processInstance', 'processInstances'), fields: Object.freeze(['name', 'processName', 'phase', 'exitReason', 'startTime', 'endTime', 'runAfter', 'created', 'executionCount', 'diagnosticStatus', 'diagnosticCompleteness', 'diagnosticTruncated', 'diagnosticTruncationReason', 'hasException', 'failedHandler'])})],
+    'pending-adapter', 'ProcessInstance list and detail use current native global process read permission, never Project ownership. Only registered process/handler names, fixed phase/exitReason, times and bounded diagnostics are returned. Diagnostic completeness remains unknown; no exception text, stack traces, payloads or replay is exposed. Custom Key scopes unsupported by the native owner remain denied. Existing processExecution and processPool metadata remain separate partial subsets.'),
   family('registry', [project('registry', 'registries')]),
   family('secrets', [project('secret', 'secrets')]),
   family('service', [project('service', 'services', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}),
@@ -93,6 +93,7 @@ export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hos
 // Only scalar allowlisted values cross the boundary. Nested structures can
 // contain credentials (including audit payloads, stack YAML and key policies).
 export function safeResourceFields(body, descriptor) {
+  if ( descriptor.type === 'processInstance' ) { return safeProcessFields(body); }
   const result = {};
   for ( const field of descriptor.fields ) {
     const value = body[field];
@@ -103,4 +104,33 @@ export function safeResourceFields(body, descriptor) {
 }
 export function truncatedResourceFields(body, descriptor) {
   return descriptor.fields.filter((field) => typeof body[field] === 'string' && body[field].length > (field === 'targetServices' ? 100000 : ['description', 'externalIpAddresses'].includes(field) ? 1024 : 512));
+}
+
+// Server registry attestation owns these names; no untrusted resource labels or log text are substituted.
+const PROCESS_PHASES = new Set(['REQUESTED', 'STARTED', 'PRE_LISTENERS', 'PRE_LISTENERS_DONE', 'HANDLERS', 'HANDLER_DONE', 'POST_LISTENERS', 'POST_LISTENERS_DONE', 'DONE']);
+const PROCESS_EXITS = new Set(['ALREADY_DONE', 'CANCELED', 'AUTHORIZATION_DENIED', 'AUDIT_PENDING', 'DELAY', 'STATE_CHANGED', 'DONE', 'DELEGATE', 'SCHEDULED', 'PROCESS_ALREADY_IN_PROGRESS', 'RESOURCE_BUSY', 'RETRY_EXCEPTION', 'UNKNOWN_EXCEPTION', 'TIMEOUT', 'CHAIN']);
+function safeProcessFields(body) {
+  const result = {};
+  if ( body.name === 'unknown' ) { result.name = 'unknown'; }
+  if ( typeof body.processName === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,127}$/.test(body.processName) && body.name === body.processName ) {
+    result.name = body.processName; result.processName = body.processName;
+  }
+  if ( PROCESS_PHASES.has(body.phase) ) { result.phase = body.phase; }
+  if ( PROCESS_EXITS.has(body.exitReason) ) { result.exitReason = body.exitReason; }
+  for ( const field of ['startTime', 'endTime', 'runAfter', 'created'] ) {
+    if ( body[field] === null ) { result[field] = null; }
+    else if ( typeof body[field] === 'string' && body[field].length <= 32 && /^\d{4}-\d\d-\d\dT/.test(body[field]) && Number.isFinite(Date.parse(body[field])) ) { result[field] = body[field]; }
+  }
+  if ( Number.isSafeInteger(body.executionCount) && body.executionCount >= 0 ) { result.executionCount = body.executionCount; }
+  if ( ['available', 'unknown'].includes(body.diagnosticStatus) ) { result.diagnosticStatus = body.diagnosticStatus; }
+  if ( body.diagnosticCompleteness === 'unknown' ) { result.diagnosticCompleteness = 'unknown'; }
+  if ( typeof body.hasException === 'boolean' ) { result.hasException = body.hasException; }
+  if ( typeof body.failedHandler === 'string' && /^[A-Za-z][A-Za-z0-9_.-]{0,127}$/.test(body.failedHandler) ) { result.failedHandler = body.failedHandler; }
+  if ( body.diagnosticTruncated === true ) {
+    result.diagnosticStatus = 'unknown'; result.diagnosticCompleteness = 'unknown';
+    result.diagnosticTruncated = true;
+    if ( ['source_limit', 'entry_budget', 'utf8_budget'].includes(body.diagnosticTruncationReason) ) { result.diagnosticTruncationReason = body.diagnosticTruncationReason; }
+    delete result.hasException; delete result.failedHandler;
+  }
+  return result;
 }

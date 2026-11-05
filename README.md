@@ -8,6 +8,10 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
+## Next candidate: Web1.6.212 / Bridge0.2.14
+
+Read-only process diagnosis is in [source and CI preparation](docs/releases/web-console-1.6.212.md). It is not published; keep using the published installation below.
+
 ## Current component
 
 [Web Console **1.6.211** / bridge **0.2.13**](docs/releases/web-console-1.6.211.md)
