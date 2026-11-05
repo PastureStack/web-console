@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/webmcp-bridge",
-  "version": "0.2.16",
+  "version": "0.2.17",
   "private": true,
   "type": "module",
   "description": "Isolated stdio adapter for the shared PastureStack command contract",

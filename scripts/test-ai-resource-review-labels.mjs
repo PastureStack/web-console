@@ -11,6 +11,27 @@ const source = await readFile(path.join(root, 'app/utils/ai-resource-review-labe
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const locales = ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
 
+test('service upgrade lifecycle review reuses existing action and field labels in all thirteen locales without rewriting the exact native checkpoint', () => {
+  const actions = {finish_upgrade: 'action.finishUpgrade', rollback: 'action.rollback', cancel_upgrade: 'action.cancelUpgrade'};
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => {
+      const value = key.split('.').reduce((row, part) => row && row[part], translations);
+      assert.equal(typeof value, 'string', locale + ': ' + key); assert.ok(value.trim()); return value;
+    };
+    for (const [operation, label] of Object.entries(actions)) {
+      const state = operation === 'cancel_upgrade' ? 'canceled-upgrade' : 'active';
+      const plan = {resourceType: 'service', operation, displayDiff: [{field: 'operation', before: null, after: operation}, {field: 'state', before: 'upgraded', after: state}]};
+      const original = JSON.stringify(plan), result = resourceReviewLabels(plan, t);
+      assert.equal(result.operationLabel, t(label)); assert.equal(result.resourceTypeLabel, t('apiKeyAccess.selector.types.service'));
+      assert.equal(result.displayChanges[0].fieldLabel, t('generic.actions')); assert.equal(result.displayChanges[0].after, t(label));
+      assert.equal(result.displayChanges[1].fieldLabel, t('generic.state'));
+      assert.equal(result.displayChanges[1].after, state === 'active' ? t('formPorts.preflight.state.active') : state);
+      assert.equal(JSON.stringify(plan), original); assert.equal(result.archiveNotices.length, 0);
+    }
+  }
+});
+
 test('external TCP health review uses clear existing labels and exact values in thirteen locales without JSON or HTTP controls', () => {
   for (const locale of locales) {
     const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));

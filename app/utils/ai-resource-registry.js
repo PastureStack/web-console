@@ -69,6 +69,12 @@ export function resourceDescriptors() { return RESOURCE_FAMILIES.flatMap((entry)
 
 const action = (fields = [], required = [], minFields = 0) => Object.freeze({fields: Object.freeze(fields), required: Object.freeze(required), minFields});
 const metadata = action(['name', 'description'], [], 1);
+// Closed human-review projection; native authorization and generation CAS remain server-owned.
+export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
+  finish_upgrade: Object.freeze({before: Object.freeze(['upgraded']), after: 'active'}),
+  rollback: Object.freeze({before: Object.freeze(['upgrading', 'upgraded', 'canceled-upgrade']), after: 'active'}),
+  cancel_upgrade: Object.freeze({before: Object.freeze(['upgrading', 'finishing-upgrade']), after: 'canceled-upgrade'}),
+});
 export const RESOURCE_CHANGES = Object.freeze({
   project: Object.freeze({update_metadata: metadata}),
   loadBalancerService: Object.freeze({update_metadata: metadata}),
@@ -76,7 +82,8 @@ export const RESOURCE_CHANGES = Object.freeze({
   host: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
-  service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(), scale: action(['scale'], ['scale']),
+  service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(),
+    finish_upgrade: action(), rollback: action(), cancel_upgrade: action(), scale: action(['scale'], ['scale']),
     create: action(['name', 'image', 'scale', 'description', 'command', 'entryPoint', 'ports', 'healthCheck'], ['name', 'image']), update_metadata: metadata}),
   dnsService: Object.freeze({start: action(), stop: action(), remove: action(), update_metadata: metadata,
     create: action(['name', 'description'], ['name']), update_targets: action(['serviceRefs'], ['serviceRefs'])}),
