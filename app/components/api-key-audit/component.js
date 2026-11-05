@@ -5,6 +5,8 @@ import { later, cancel } from '@ember/runloop';
 import { API_KEY_OPERATIONS, apiKeyError, expiryIso } from 'ui/utils/api-key-policy';
 
 const FILTERS = ['decision', 'outcome', 'httpStatus', 'operation', 'targetType', 'requestId'];
+const CLIENT_REASONS = ['NONE', 'INVALID_INPUT', 'UNAVAILABLE', 'CONTEXT_CHANGED', 'STALE_REFERENCE', 'FORBIDDEN',
+  'SESSION_REQUIRED', 'CONFLICT', 'NEEDS_USER', 'INVALID_RESPONSE', 'UNKNOWN_RESULT', 'CANCELLED', 'CAPACITY'];
 const PHASES = ['decision', 'response', 'attempt', 'continuation', 'completion', 'handshake'];
 const TARGET_TYPES = ['stack', 'service', 'container', 'host', 'volume', 'network', 'secret', 'certificate',
   'project', 'setting', 'userPreference', 'registry', 'storagePool', 'networkPolicy', 'projectMember',
@@ -119,6 +121,18 @@ export default Component.extend({
       let value = record[field];
       safe[field] = typeof value === 'string' || typeof value === 'number' ? String(value).slice(0, 256) : '';
     });
+    // Client reports are evidence of what the client said, never an ALLOW/DENY
+    // authorization decision. Keep the platform reason and decision intact.
+    if ( record.evidenceSource === 'client_reported' && record.decision === 'NOT_EVALUATED' && record.outcome === 'REPORTED' ) {
+      safe.isClientReport = true;
+      safe.clientReportedReason = CLIENT_REASONS.includes(record.clientReportedReason) ? record.clientReportedReason : '';
+      if ( safe.clientReportedReason === 'NEEDS_USER' ) { safe.clientReportedReasonLabelKey = 'apiKeyAudit.clientNeedsUser'; }
+      if ( safe.clientReportedReason === 'NEEDS_USER' && record.clientReportedCommand === 'preview_resource_change' &&
+        record.clientReportedPhase === 'result' && record.clientReportedStatus === 'needs_user' &&
+        record.clientReportedReasonDetail === 'BRIDGE_PROJECT_BINDING_REQUIRED' ) {
+        safe.clientReportedReasonDetailLabelKey = 'webmcp.bridgeProjectBindingRequired';
+      }
+    }
     safe.preview = record.preview === true;
     safe.targetLabelKey = TARGET_TYPES.includes(safe.targetType) ?
       safe.targetType === 'subscribe' ? 'apiKeyAudit.resources.subscribe' :
@@ -134,6 +148,15 @@ export default Component.extend({
       safe.outcome === 'SUCCEEDED' && safe.phase === 'completion' ? 'apiKeyAudit.completionSucceeded' :
       this.get('outcomes').includes(safe.outcome) ? `apiKeyAudit.outcomes.${safe.outcome}` : 'apiKeyAudit.outcomes.unknown';
     safe.phaseLabelKey = PHASES.includes(safe.phase) ? `apiKeyAudit.phases.${safe.phase}` : 'apiKeyAudit.phases.unknown';
+    if ( safe.isClientReport ) {
+      // Label the canonical report envelope without changing its raw evidence
+      // or presenting it as an authorization decision or a resource operation.
+      if ( safe.operation === 'toolReport' ) { safe.operationLabelKey = 'apiKeyAudit.clientToolReport'; }
+      if ( safe.phase === 'client-report' ) { safe.phaseLabelKey = 'apiKeyAudit.clientToolReport'; }
+      safe.decisionLabelKey = 'apiKeyAudit.clientNotEvaluated';
+      safe.outcomeLabelKey = 'apiKeyAudit.clientReported';
+      if ( !safe.targetType && record.resourceType === 'aiToolCallEvent' ) { safe.targetLabelKey = 'apiKeyAudit.clientToolEvent'; }
+    }
     safe.reason = REASONS.includes(record.reason) ? record.reason : '';
     safe.reasonLabelKey = safe.reason ? `apiKeyAudit.reasons.${safe.reason}` : 'apiKeyAudit.reasons.unknown';
     safe.responseCode = /^[A-Za-z][A-Za-z0-9_.:-]{0,79}$/.test(safe.responseCode) ? safe.responseCode : '';

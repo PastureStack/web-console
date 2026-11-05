@@ -243,3 +243,27 @@ test('the subscription audit label is present as actual translated text in every
       `${locale} has human wording rather than a missing key or raw target type`);
   }
 });
+
+
+test('client report cause stays separate from platform decision and requires the canonical evidence tuple', function(assert) {
+  const component = audit(() => resolve());
+  const report = {resourceType: 'aiToolCallEvent', operation: 'toolReport', phase: 'client-report',
+    decision: 'NOT_EVALUATED', outcome: 'REPORTED', evidenceSource: 'client_reported', reason: 'KeyPolicyDenied',
+    clientReportedCommand: 'preview_resource_change', clientReportedPhase: 'result', clientReportedStatus: 'needs_user',
+    clientReportedReason: 'NEEDS_USER', clientReportedReasonDetail: 'BRIDGE_PROJECT_BINDING_REQUIRED'};
+  const safe = component.safeRecord(report);
+  assert.strictEqual(safe.clientReportedReasonLabelKey, 'apiKeyAudit.clientNeedsUser');
+  assert.strictEqual(safe.clientReportedReasonDetailLabelKey, 'webmcp.bridgeProjectBindingRequired');
+  assert.strictEqual(safe.decision, 'NOT_EVALUATED'); assert.strictEqual(safe.reasonLabelKey, 'apiKeyAudit.reasons.KeyPolicyDenied');
+  assert.strictEqual(safe.decisionLabelKey, 'apiKeyAudit.clientNotEvaluated');
+  assert.strictEqual(safe.operationLabelKey, 'apiKeyAudit.clientToolReport');
+  assert.strictEqual(safe.phaseLabelKey, 'apiKeyAudit.clientToolReport');
+  assert.strictEqual(safe.outcomeLabelKey, 'apiKeyAudit.clientReported');
+  assert.strictEqual(safe.targetLabelKey, 'apiKeyAudit.clientToolEvent');
+  assert.strictEqual(safe.operation, 'toolReport'); assert.strictEqual(safe.phase, 'client-report');
+  assert.strictEqual(safe.outcome, 'REPORTED'); assert.strictEqual(safe.targetId, '', 'no synthetic target ID');
+  assert.strictEqual(component.safeRecord({...report, evidenceSource: 'server_observed'}).clientReportedReasonDetailLabelKey, undefined);
+  assert.strictEqual(component.safeRecord({...report, decision: 'DENY'}).clientReportedReasonDetailLabelKey, undefined);
+  assert.strictEqual(component.safeRecord({...report, clientReportedReasonDetail: 'raw-private-error'}).clientReportedReasonDetailLabelKey, undefined);
+  destroyOwned(component);
+});

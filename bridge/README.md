@@ -5,12 +5,17 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-## Current release
+## Release identity and support
 
-[Bridge **0.2.11** / Web Console **1.6.209**](../docs/releases/web-console-1.6.209.md)
-is published and requires matching published Engine **0.183.370** support.
-Artifact qualification, public byte verification and native release attestation
-passed. Designated Server/runtime acceptance remains separate.
+This checkout's source versions are recorded in `package.json` and
+`bridge/package.json`. Check the matching GitHub release for publication,
+artifact qualification and required Engine support. A source version or CI run
+alone does not establish release availability or native workflow acceptance.
+
+Project metadata plans support name/description only for the selected
+environment. Editing another visible environment requires a normal context
+switch and a fresh resource reference; membership, networking, authentication
+and lifecycle changes remain in their normal human workflows.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
 and human-reviewed lifecycle plans. Host plans support only name/description;
@@ -63,13 +68,15 @@ both Engine flags default to false.
 
 ## Install the matching release
 
-Download the matching release ZIP and checksum, then verify before extraction.
+Confirm that the matching numeric release is public, then download its ZIP and
+checksum and verify before extraction. These source-bound commands are not a
+publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.209
-BRIDGE_VERSION=0.2.11
+WEB_CONSOLE_VERSION=1.6.210
+BRIDGE_VERSION=0.2.12
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
@@ -80,14 +87,12 @@ npm ci --ignore-scripts --no-audit --no-fund
 
 The MCP entry point is the extracted `bridge/server.mjs`.
 `source-manifest.json` records included source hashes; the archive also includes
-LICENSE and the bridge CycloneDX SBOM. The matching
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.209/web209-release-metadata.json)
-and [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.209/bridge031-release-proof.json)
-record the exact producer, tested tree, dependency evidence and SDK handshake.
-Use those release records rather than a producer hash copied into this README.
-The current 0.2.11 SDK handshake passed. Its unchanged dependency graph carries
-the published 0.2.5 clean-install evidence; no new installation, dependency scan
-or native workflow acceptance is claimed.
+LICENSE and the bridge CycloneDX SBOM. The matching GitHub release's metadata
+and source proof record the exact producer, tested tree, dependency evidence
+and SDK handshake. Use those release records rather than a producer hash or
+validation claim copied into this README. Dependency installation, source tests,
+artifact authenticity and designated native workflow acceptance are separate
+evidence; a version bump does not establish any of them.
 
 For local packaging from a repository checkout, provide the matching SBOM:
 
@@ -112,6 +117,55 @@ default-deny Key needs an exact read rule for that environment resource as well
 as separate rules for allowed workloads. An environment-resource rule does not
 grant access to all stacks. Do not put credentials in prompts, command-line
 arguments, repository files or URLs. HTTPS is required except for loopback tests.
+
+To allow this bridge to rename its selected environment permanently, first
+create a stable-bound profile using the explicit local writer:
+
+Use Node.js 24.22.1. Quote each path; the following examples work with spaces
+in private profile paths. In a POSIX shell:
+
+```sh
+node "/absolute/path/to/bridge/bind-profile.mjs" --from "/private/path/Existing profile.json" --output "/private/path/New bound profile.json"
+```
+
+In Windows PowerShell, use the installed Node.js 24.22.1 executable:
+
+```powershell
+& "C:\path\to\node.exe" "C:\path\to\bridge\bind-profile.mjs" --from "C:\private\Existing profile.json" --output "C:\private\New bound profile.json"
+```
+
+The writer uses the human environment name already in the input profile. It
+verifies the dedicated Key's current visibility and captures the exact server
+identity. Choose by the displayed environment name and description, not by an
+internal ID or UUID. If the name is shared, an interactive terminal can select
+by friendly description and creation date; indistinguishable or noninteractive ambiguity
+fails without choosing the first result. Enter or `q` cancels without writing.
+There are no ID, UUID, credential or force arguments. The output must be a new
+file; existing and read-only input profiles are never changed. The new private
+file contains the existing credentials and only an additional closed
+`environmentBinding` with the normalized endpoint, internal ID and opaque
+server UUID. Do not construct that binding from model output.
+
+The writer's `all=true` discovery uses the normal native project listing. It does
+not grant access: the Key remains limited by its current policy and the account's
+live permissions, including the normal administrator visibility boundary.
+
+Change your MCP client's `PASTURESTACK_BRIDGE_CONFIG` to the new private profile
+and reconnect normally. The legacy four-field profile remains supported, but
+stdio name changes require this explicit binding. Existing discovery, reads,
+description-only changes and unchanged names can keep the legacy profile. A bound bridge verifies the same visible active server
+identity after every restart and uses its current name. A hidden, replaced or
+endpoint-mismatched target fails closed, without falling back to another
+environment with the old name. No sidecar is created and no profile is updated
+automatically. New processes need fresh opaque references; never reuse old
+references or treat a same-process restore as proof of restart behavior.
+After a verified Project metadata operation, one bounded native read updates
+the in-memory environment label without changing the session generation or
+invalidating current references. It never copies a name from tool arguments or
+a plan label. A transient label-read failure preserves the verified operation
+receipt; the next command gets one read-only recovery attempt before business
+dispatch. If that read still fails, retry the read later, not the mutation.
+Authorization, policy-revision and identity failures remain closed.
 
 Start `node /absolute/path/to/bridge/server.mjs` with
 `PASTURESTACK_BRIDGE_CONFIG` pointing to the private file. stdout is exclusively

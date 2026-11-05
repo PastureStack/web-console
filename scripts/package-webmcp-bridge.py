@@ -11,7 +11,7 @@ import tempfile
 import zipfile
 
 
-VERSION = "0.2.11"
+VERSION = "0.2.12"
 SOURCE_FILES = (
     "LICENSE",
     "app/utils/ai-command-context.js",
@@ -29,8 +29,11 @@ SOURCE_FILES = (
     "bridge/package-lock.json",
     "bridge/package.json",
     "bridge/server.mjs",
+    "bridge/bind-profile.mjs",
     "bridge/shared-modules.mjs",
     "bridge/test/core.test.mjs",
+    "bridge/test/profile-binding.test.mjs",
+    "bridge/test/audit-detail.test.mjs",
     "bridge/test/manual-scale.test.mjs",
     "bridge/test/resources.test.mjs",
     "bridge/test/stdio.test.mjs",
@@ -48,6 +51,8 @@ SOURCE_FILES = (
     "scripts/test-webmcp-alias-service.mjs",
     "scripts/test-webmcp-certificate-metadata.mjs",
     "scripts/test-webmcp-host-metadata.mjs",
+    "scripts/test-webmcp-project-metadata.mjs",
+    "scripts/test-webmcp-project-profile-binding.mjs",
     "scripts/test-webmcp-host-workloads.mjs",
     "scripts/test-webmcp-stack-ref-guidance.mjs",
     "scripts/test-webmcp-audit.mjs",

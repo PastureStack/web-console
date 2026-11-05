@@ -4304,6 +4304,13 @@ apiKeyAccess:
     reload: "Hindi ma-load muli ang key. Suriin ang kasalukuyang access."
 
 apiKeyAudit:
+  clientReportNotice: "Iniulat ng client; hindi ito desisyon ng server sa pahintulot."
+  clientReportedReason: "Dahilang iniulat ng client"
+  clientNeedsUser: "Kailangan ng aksiyon ng user (ulat ng client)"
+  clientToolReport: "Ulat ng kasangkapan"
+  clientNotEvaluated: "Hindi sinuri ang pahintulot"
+  clientReported: "Naiulat"
+  clientToolEvent: "Kaganapan ng kasangkapan"
   unknownOperation: "Hindi makilalang operasyon; magsiyasat gamit ang request ID"
   unknownTarget: "Hindi makilalang uri ng resource"
   resources:
@@ -4401,6 +4408,7 @@ apiKeyAudit:
     load: "Hindi ma-load ang pag-audit ng key. I-refresh upang subukang muli."
 
 webmcp:
+  bridgeProjectBindingRequired: "Bago palitan ang pangalan ng environment sa pamamagitan ng bridge, hilingin sa user na gumawa ng bagong lokal na profile na nakatali sa environment at kumonekta muli gamit ang bagong file. Huwag baguhin ang dating profile. Maaari pa ring baguhin nang hiwalay ang paglalarawan."
   assignedPorts: Mga naitalagang pagtutugma ng port
   backgroundAuthorizationDenied: "Tinanggihan ang operasyon sa background sa pagsusuri ng pahintulot. Maaaring naisagawa na ang ilang pagbabago; hindi pa napatunayang kumpleto ang buong operasyon. Suriin ang kasalukuyang mga pahintulot at ang orihinal na tala ng operasyon. Huwag basta muling isumite o aprubahan ang pagbabago."
   catalogReferenceAmbiguous: "May mga resource na magkapareho ang ipinapakitang pangalan at hindi ligtas na mapag-iba. Tiyakin muna ang target sa karaniwang console bago pumili."

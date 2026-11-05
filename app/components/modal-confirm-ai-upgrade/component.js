@@ -189,7 +189,7 @@ export default ModalBase.extend({
       return this.get('commands').confirmPendingPlan(this.get('plan')).then((result) => {
         if (this.isDestroyed || this.isDestroying) { return; }
         if (result.status !== 'succeeded' || result.confirmationState !== 'approved') {
-          this.set('errors', [this.get('intl').t(resourceConfirmationErrorKey(result.code))]);
+          this.set('errors', [this.get('intl').t(resourceConfirmationErrorKey(result.code, result.reason))]);
           return;
         }
         this.set('approved', true);

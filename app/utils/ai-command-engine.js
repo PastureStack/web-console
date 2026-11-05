@@ -52,9 +52,13 @@ export function waitForOperationPoll(milliseconds, signal) {
   });
 }
 
+// Result objects never expose the private, per-engine Project completion notice.
+const projectOperationNotices = new WeakMap();
+
 export class CommandEngine {
-  constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta', transportKind = 'browser'}) {
-    Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint, transportKind});
+  constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta', transportKind = 'browser', canRenameSelectedProject = async () => false}) {
+    Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint, transportKind, canRenameSelectedProject});
+    projectOperationNotices.set(this, new WeakMap());
     this.catalogReader = createCatalogReader({request, context});
     this.auditReader = createAuditReader({request, context, transportKind,
       resolveResource: (reference, captured, field) => this.resolveResourceReference(reference, null, captured, field)});
@@ -63,7 +67,8 @@ export class CommandEngine {
   }
 
   async execute(name, input, options = {}) {
-    let captured, result, startAck, businessStarted = false, descriptionMayHaveSaved = false, serviceCreateInputRejected = false;
+    const startedAt = Date.now();
+    let captured, result, startAck, operationNotice, businessStarted = false, descriptionMayHaveSaved = false, serviceCreateInputRejected = false;
     const commandName = COMMANDS.some((item) => item.name === name) ? name : 'unknown';
     try {
       captured = this.context.capture();
@@ -75,9 +80,12 @@ export class CommandEngine {
       if ( command.write && captured.mode !== 'enabled' ) { throw new CommandError('UNAVAILABLE'); }
       await this.ensureSession();
       this.context.assertCurrent(captured, options.signal);
+      if ( this.transportKind === 'stdio' ) { captured = this.context.capture(); }
       businessStarted = true;
       result = await this[name](input, captured, options.signal);
       descriptionMayHaveSaved = name === 'update_service_description' && result.saved === true;
+      operationNotice = projectOperationNotices.get(this).get(result);
+      projectOperationNotices.get(this).delete(result);
       this.context.assertCurrent(captured, options.signal);
       result = Object.assign({contractVersion: COMMAND_VERSION}, result);
     } catch (error) {
@@ -122,6 +130,9 @@ export class CommandEngine {
         };
         result.nextStep = repairs[result.field] || 'Find the exact named catalogTemplate, list its catalogTemplateVersion candidates with parentRef, select one version resourceRef, then call get_resource to obtain current questionRefs. Use that version as catalogVersionRef; do not pass targetRef, parentRef, raw IDs, YAML or guessed defaults.';
       }
+    } else if ( name === 'preview_resource_change' && input && input.resourceType === 'project' && input.operation === 'update_metadata' &&
+      result.code === 'INVALID_INPUT' && result.field === 'targetRef' ) {
+      result.nextStep = 'Only the currently selected environment can be edited. If the target is another visible environment, ask the user to switch environments normally, then call find_resources again for a fresh project resourceRef. Never guess an ID or modify the original reference.';
     } else if ( name === 'preview_resource_change' && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
       const repairs = {
         'parameters.image': 'Provide the exact user-requested image in parameters.image. Ask the user if it is missing; never guess an image or version.',
@@ -143,8 +154,15 @@ export class CommandEngine {
     }
     if ( !startAck ) { return result; }
     try {
-      await this.recordAudit({command: commandName, phase: 'result', status: result.status,
-        reason: result.code || 'NONE', correlationId: startAck.requestId}, captured);
+      const event = {command: commandName, phase: 'result', status: result.status,
+        reason: result.code || 'NONE', correlationId: startAck.requestId};
+      if ( this.transportKind === 'stdio' && name === 'preview_resource_change' && input && input.resourceType === 'project' &&
+        input.operation === 'update_metadata' && result.status === 'needs_user' && result.code === 'NEEDS_USER' &&
+        result.reason === 'BRIDGE_PROJECT_BINDING_REQUIRED' && Array.isArray(startAck.supportedReasonDetails) &&
+        startAck.supportedReasonDetails.includes('BRIDGE_PROJECT_BINDING_REQUIRED') ) {
+        event.reasonDetail = 'BRIDGE_PROJECT_BINDING_REQUIRED';
+      }
+      await this.recordAudit(event, captured);
     } catch (error) {
       // Never submit audit under a replacement session, or convert a possible
       // write into a claimed rejection/success because its result ACK failed.
@@ -156,6 +174,21 @@ export class CommandEngine {
         return descriptionMayHaveSaved ? this.unknownDescriptionOutcome() : publicError(new CommandError('UNAVAILABLE'));
       }
       return businessStarted ? this.unknownOutcome(result.operationRef, captured) : publicError(new CommandError('UNAVAILABLE'));
+    }
+    if ( operationNotice ) {
+      let labelWarning;
+      try { labelWarning = await this.onOperation(operationNotice, {signal: options.signal, startedAt}); } catch (error) {
+        // The operation and result ACK are already verified. Report only a
+        // fixed label warning, never the private observer error or a failed write.
+        labelWarning = 'BRIDGE_PROJECT_LABEL_REFRESH_PENDING';
+      }
+      if ( ['BRIDGE_PROJECT_LABEL_REFRESH_PENDING', 'BRIDGE_PROJECT_LABEL_REFRESH_BLOCKED'].includes(labelWarning) ) {
+        const pending = labelWarning === 'BRIDGE_PROJECT_LABEL_REFRESH_PENDING';
+        result.warnings = [{reason: labelWarning, retryable: pending, ...(pending ? {retryAfterMs: 1000} : {}),
+          nextStep: pending ? 'The recorded operation result is unchanged, but its environment label could not be refreshed. Retry a read in this same environment later; do not reapply, create another plan, rebind the profile or change targets.' :
+            'The recorded operation result is unchanged, but the current environment label is unavailable. Check the existing profile and permissions in the normal console. Do not reapply, broaden access, rebind the profile or change targets.'}];
+      }
+      try { this.context.assertCurrent(captured, options.signal); } catch (contextError) { return publicError(contextError); }
     }
     return result;
   }
@@ -815,7 +848,10 @@ export class CommandEngine {
       const operation = {planId: plan.id, status: result.status};
       if ( authorizationDenied ) { operation.messageCode = 'ResourceChangeAuthorizationDenied'; }
       if ( serviceCreateSummary ) { operation.planSummary = serviceCreateSummary; }
-      this.onOperation(operation);
+      if ( this.transportKind === 'stdio' && plan.resourceType === 'project' && plan.operation === 'update_metadata' ) {
+        projectOperationNotices.get(this).set(result, Object.assign({}, operation, {resourceType: plan.resourceType,
+          operation: plan.operation, resourceId: plan.resourceId, verifiedResult: result.verifiedResult === true}));
+      } else { this.onOperation(operation); }
     }
     return result;
   }
@@ -967,10 +1003,21 @@ export class CommandEngine {
     } else {
       if ( !input.targetRef || input.parentRef ) { throw new CommandError('INVALID_INPUT', input.parentRef ? 'parentRef' : 'targetRef'); }
       target = this.resolveResourceReference(input.targetRef, input.resourceType, captured, 'targetRef');
-      if ( target.resourceType !== input.resourceType || target.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
+      const selectedProject = input.resourceType === 'project' && input.operation === 'update_metadata' &&
+        target.scope === 'global' && target.id === captured.projectId;
+      if ( target.resourceType !== input.resourceType ||
+        (input.resourceType === 'project' ? !selectedProject : target.scope !== 'project') ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
       if ( input.resourceType === 'dnsService' && parameters.serviceIds && parameters.serviceIds.includes(target.id) ) {
         throw new CommandError('INVALID_INPUT', 'parameters.serviceRefs');
       }
+    }
+    if ( this.transportKind === 'stdio' && input.resourceType === 'project' && input.operation === 'update_metadata' &&
+      Object.prototype.hasOwnProperty.call(parameters, 'name') ) {
+      // Only the adapter's private, freshly checked closure can remove this
+      // local setup restriction. It never grants native write authority.
+      const ready = await this.canRenameSelectedProject({name: parameters.name, signal});
+      this.context.assertCurrent(captured, signal);
+      if ( ready !== true ) { throw new CommandError('NEEDS_USER', 'bridge.environmentBinding'); }
     }
     const data = {resourceType: input.resourceType, operation: input.operation, parameters};
     if ( target ) { data.resourceId = target.id; }

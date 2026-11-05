@@ -1,4 +1,4 @@
-const TYPES = {host: 'apiKeyAccess.selector.types.host', certificate: 'certificatesPage.index.header', dnsService: 'servicePage.type.dnsservice', externalService: 'servicePage.type.externalservice', stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
+const TYPES = {project: 'apiKeyAccess.selector.types.project', host: 'apiKeyAccess.selector.types.host', certificate: 'certificatesPage.index.header', dnsService: 'servicePage.type.dnsservice', externalService: 'servicePage.type.externalservice', stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
 const OPERATIONS = {update_targets: 'formTarget.target', start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
   create: 'saveCancel.create', create_from_catalog: 'newCatalog.saveNew', update_metadata: 'generic.edit', scale: 'serviceInfoPartial.scale', archive: 'archive.action', restore: 'archive.restore'};
 const FIELDS = {startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
@@ -15,7 +15,8 @@ const HEALTH_FIELDS = {port: 'port', requestLine: 'request', interval: 'interval
   unhealthyThreshold: 'unhealthyThreshold', initializingTimeout: 'initializingTimeout', reinitializingTimeout: 'reinitializingTimeout', strategy: 'strategy'};
 
 // Only an already sanitized public code selects fixed human guidance.
-export function resourceConfirmationErrorKey(code) {
+export function resourceConfirmationErrorKey(code, reason) {
+  if ( code === 'NEEDS_USER' && reason === 'BRIDGE_PROJECT_BINDING_REQUIRED' ) { return 'webmcp.bridgeProjectBindingRequired'; }
   if ( code === 'FORBIDDEN' ) { return 'webmcp.forbidden'; }
   return ['CONFLICT', 'SESSION_REQUIRED', 'STALE_REFERENCE', 'STALE_REF', 'CONTEXT_CHANGED'].includes(code) ? 'webmcp.stale' : 'webmcp.failed';
 }

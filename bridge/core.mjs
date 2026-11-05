@@ -10,7 +10,7 @@ export class SetupError extends Error {
 
 export function validateConfig(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input) ||
-      Object.keys(input).some(key => !['endpoint', 'environment', 'accessKey', 'secretKey'].includes(key))) {
+      Object.keys(input).some(key => !['endpoint', 'environment', 'accessKey', 'secretKey', 'environmentBinding'].includes(key))) {
     throw new SetupError('INVALID_CONFIG');
   }
   for (const name of ['endpoint', 'environment', 'accessKey', 'secretKey']) {
@@ -24,7 +24,27 @@ export function validateConfig(input) {
       endpoint.protocol !== 'https:' && !(endpoint.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(endpoint.hostname))) {
     throw new SetupError('HTTPS_REQUIRED');
   }
-  return Object.freeze({...input, endpoint: endpoint.href.replace(/\/$/, '')});
+  const normalized = endpoint.href.replace(/\/+$/, '');
+  let binding;
+  if (Object.hasOwn(input, 'environmentBinding')) {
+    const value = input.environmentBinding;
+    if (!value || typeof value !== 'object' || Array.isArray(value) ||
+        Object.keys(value).sort().join(',') !== 'endpoint,id,uuid' || value.endpoint !== normalized ||
+        !validProjectId(value.id) || !validProjectUuid(value.uuid)) throw new SetupError('INVALID_ENVIRONMENT_BINDING');
+    binding = Object.freeze({...value});
+  }
+  return Object.freeze({...input, endpoint: normalized, ...(binding ? {environmentBinding: binding} : {})});
+}
+
+const validProjectId = value => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,128}$/.test(value);
+// Native Default uses "adminProject"; UUID is an opaque server identity, not RFC-only.
+const validProjectUuid = value => typeof value === 'string' && value.length > 0 && value.length <= 255 && !/[\u0000-\u001f\u007f]/.test(value);
+
+function verifyProject(project, id, uuid) {
+  if (!project || project.id !== id || project.state !== 'active' || project.removed ||
+      typeof project.name !== 'string' || !project.name.trim() || project.name.length > 2048 ||
+      uuid !== undefined && project.uuid !== uuid) throw new SetupError('ENVIRONMENT_BINDING_MISMATCH');
+  return project;
 }
 
 const CONFIG_LIMIT = 16 * 1024;
@@ -82,7 +102,8 @@ export function allowedRequest(path, method, projectId, bootstrap = false) {
   if (path === 'pasturestack/ai-audit-queries' && method === 'POST') return true;
   if (method === 'POST' && ['aiResourceViews', 'aiCatalogMetadataViews', 'aiCatalogStackLaunchOptions'].some(kind => parsed.pathname === `/projects/${projectId}/${kind}`) && !parsed.search) return true;
   if (bootstrap && method === 'GET' && parsed.pathname === '/projects') {
-    return [...parsed.searchParams.keys()].every(key => ['limit', 'marker'].includes(key));
+    return [...parsed.searchParams.keys()].every(key => ['limit', 'marker', 'all'].includes(key)) &&
+      (!parsed.searchParams.has('all') || parsed.searchParams.getAll('all').length === 1 && parsed.searchParams.get('all') === 'true');
   }
   if (method === 'GET') {
     const queryAllowed = [...parsed.searchParams.keys()].every(key => ['limit', 'marker', 'stackId', 'serviceId', 'storagePoolId'].includes(key));
@@ -157,14 +178,12 @@ export function createTransport(config, fetcher = fetch) {
   };
 }
 
-export async function createBridge(config, {fetcher, random = () => randomBytes(24).toString('hex')} = {}) {
-  config = validateConfig(config);
-  const transport = createTransport(config, fetcher);
-  let path = 'projects?limit=100', selected = [];
+async function visibleByName(config, transport, writer = false) {
+  let path = 'projects?limit=100' + (writer ? '&all=true' : ''), selected = [];
   for (let page = 0; path && page < 20; page++) {
     const {body} = await transport({url: path}, null, true);
     if (!Array.isArray(body.data)) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
-    selected.push(...body.data.filter(item => item.name === config.environment && item.state === 'active' && typeof item.id === 'string'));
+    selected.push(...body.data.filter(item => item.name === config.environment && item.state === 'active' && !item.removed && validProjectId(item.id)));
     const next = body.pagination?.next;
     if (!next) { path = null; break; }
     const nextUrl = new URL(next, config.endpoint + '/v2-beta/');
@@ -172,20 +191,125 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
     if (nextUrl.origin !== base.origin || nextUrl.pathname !== base.pathname || nextUrl.username || nextUrl.password || nextUrl.hash) {
       throw new SetupError('INVALID_ENVIRONMENT_PAGE');
     }
+    if (nextUrl.searchParams.has('all') && (!writer || nextUrl.searchParams.getAll('all').length !== 1 || nextUrl.searchParams.get('all') !== 'true')) {
+      throw new SetupError('INVALID_ENVIRONMENT_PAGE');
+    }
+    if (writer) nextUrl.searchParams.set('all', 'true');
     path = 'projects' + nextUrl.search;
   }
   if (path) throw new SetupError('ENVIRONMENT_SCAN_LIMIT');
-  if (selected.length !== 1) throw new SetupError(selected.length ? 'AMBIGUOUS_ENVIRONMENT' : 'ENVIRONMENT_NOT_VISIBLE');
-  const project = selected[0];
+  if (new Set(selected.map(item => item.id)).size !== selected.length) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  return selected;
+}
+
+async function exactProject(transport, id, uuid, signal, bootstrap = false) {
+  const {body} = await transport({url: 'projects/' + id, signal}, id, bootstrap);
+  return verifyProject(body, id, uuid);
+}
+
+// Explicit profile preparation only. No filesystem, prompts, public tool or implicit save.
+export async function prepareBoundProfile(input, {fetcher, select} = {}) {
+  const config = validateConfig(input), transport = createTransport(config, fetcher);
+  let project;
+  if (config.environmentBinding) {
+    const binding = config.environmentBinding;
+    project = await exactProject(transport, binding.id, binding.uuid, undefined, true);
+  } else {
+    const candidates = await visibleByName(config, transport, true);
+    if (!candidates.length) throw new SetupError('ENVIRONMENT_NOT_VISIBLE');
+    let index = 0;
+    if (candidates.length > 1) {
+      if (typeof select !== 'function') throw new SetupError('AMBIGUOUS_ENVIRONMENT');
+      index = await select(candidates.map(item => Object.freeze({name: item.name, description: item.description, created: item.created})));
+      if (index === null) throw new SetupError('PROFILE_BINDING_CANCELLED');
+      if (!Number.isInteger(index) || index < 0 || index >= candidates.length) throw new SetupError('AMBIGUOUS_ENVIRONMENT');
+    }
+    const selected = candidates[index];
+    project = await exactProject(transport, selected.id, selected.uuid, undefined, true);
+    if (project.name !== config.environment) throw new SetupError('ENVIRONMENT_SELECTION_CHANGED');
+  }
+  if (!validProjectUuid(project.uuid)) throw new SetupError('ENVIRONMENT_IDENTITY_UNAVAILABLE');
+  return validateConfig({...config, environment: project.name,
+    environmentBinding: {endpoint: config.endpoint, id: project.id, uuid: project.uuid}});
+}
+
+export async function createBridge(config, {fetcher, random = () => randomBytes(24).toString('hex')} = {}) {
+  config = validateConfig(config);
+  const transport = createTransport(config, fetcher);
+  let project;
+  if (config.environmentBinding) {
+    const binding = config.environmentBinding;
+    project = await exactProject(transport, binding.id, binding.uuid, undefined, true);
+  } else {
+    const selected = await visibleByName(config, transport);
+    if (selected.length !== 1) throw new SetupError(selected.length ? 'AMBIGUOUS_ENVIRONMENT' : 'ENVIRONMENT_NOT_VISIBLE');
+    project = selected[0];
+  }
   const snapshot = {generation: random(), accountId: config.accessKey, projectId: project.id,
     projectName: project.name, schemaProjectId: project.id, schemaGeneration: 1, route: 'stdio'};
   const context = new CommandContext(() => snapshot, random);
   context.setMode('enabled');
-  const request = options => transport(options, project.id);
-  const engine = new CommandEngine({context, request, ensureSession: async () => {},
+  const projectPlans = new Set();
+  let nameFailure = null, nameRetryable = false;
+  const identityFailure = error => error instanceof SetupError && error.code === 'ENVIRONMENT_BINDING_MISMATCH' ? new CommandError('CONTEXT_CHANGED') : error;
+  const retryableNameFailure = () => new CommandError('UNKNOWN_RESULT', 'bridge.projectLabelRefresh');
+  async function refreshName(observation) {
+    nameFailure = retryableNameFailure(); nameRetryable = true;
+    try {
+      const remaining = observation ? 5000 - (Date.now() - observation.startedAt) : 1000;
+      if (remaining <= 0) throw nameFailure;
+      const deadline = AbortSignal.timeout(Math.max(1, Math.min(1000, remaining)));
+      const signal = observation?.signal ? AbortSignal.any([observation.signal, deadline]) : deadline;
+      const captured = context.capture();
+      const current = await exactProject(transport, project.id, config.environmentBinding.uuid, signal);
+      context.assertCurrent(captured, signal);
+      snapshot.projectName = current.name;
+      nameFailure = null; nameRetryable = false;
+    } catch (error) {
+      const failure = identityFailure(error), status = Number(error && (error.status || error.statusCode));
+      nameRetryable = !(failure instanceof SetupError || failure instanceof CommandError && ['CONTEXT_CHANGED', 'FORBIDDEN', 'SESSION_REQUIRED'].includes(failure.code) ||
+        status >= 400 && status < 500 && ![408, 429].includes(status));
+      // Preserve the normal tool-level hidden-resource mapping through audit admission.
+      nameFailure = nameRetryable ? retryableNameFailure() : status === 404 ? new CommandError('FORBIDDEN') : failure;
+      throw nameFailure;
+    }
+  }
+  const request = options => {
+    if (nameFailure && !nameRetryable) throw nameFailure;
+    return transport(options, project.id);
+  };
+  const canRenameSelectedProject = async ({name, signal}) => {
+    let current;
+    try { current = await exactProject(transport, project.id, config.environmentBinding && config.environmentBinding.uuid, signal); }
+    catch (error) {
+      throw identityFailure(error);
+    }
+    return !!config.environmentBinding || current.name === name;
+  };
+  const engine = new CommandEngine({context, request, ensureSession: async () => {
+    if (nameFailure) {
+      if (!nameRetryable) throw nameFailure;
+      await refreshName(null); // One read-only recovery before this command's business dispatch.
+    }
+  }, canRenameSelectedProject,
+    onPlan: summary => {
+      if (!config.environmentBinding || summary.resourceType !== 'project' || summary.operation !== 'update_metadata') return;
+      const reference = context.resolve(summary.planRef, 'plan', summary.context);
+      if (reference.resourceId === project.id) projectPlans.add(reference.id);
+    },
+    onOperation: async (operation, budget) => {
+      if (!projectPlans.has(operation.planId) || operation.resourceType !== 'project' || operation.operation !== 'update_metadata' || operation.resourceId !== project.id) return;
+      projectPlans.delete(operation.planId);
+      if (operation.status !== 'succeeded' || operation.verifiedResult !== true) return;
+      // Invoked after result audit ACK. Never replace the verified operation result.
+      try { await refreshName(budget || {startedAt: Date.now()}); }
+      catch { return nameRetryable ? 'BRIDGE_PROJECT_LABEL_REFRESH_PENDING' : 'BRIDGE_PROJECT_LABEL_REFRESH_BLOCKED'; }
+    },
     audit: async event => {
       const data = {command: event.command, phase: event.phase, status: event.status, reason: event.reason};
       if (event.correlationId) data.correlationId = event.correlationId;
+      if (event.command === 'preview_resource_change' && event.phase === 'result' && event.status === 'needs_user' && event.reason === 'NEEDS_USER' &&
+          event.reasonDetail === 'BRIDGE_PROJECT_BINDING_REQUIRED') data.reasonDetail = event.reasonDetail;
       return (await request({url: `projects/${project.id}/aiToolCallEvents`, method: 'POST', data})).body;
     }, transportKind: 'stdio', origin: new URL(config.endpoint).origin, apiEndpoint: new URL(config.endpoint).pathname.replace(/\/$/, '') + '/v2-beta'});
   return {engine, tools: COMMANDS, close() { context.setMode('off'); }};

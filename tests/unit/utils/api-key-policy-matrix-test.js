@@ -33,12 +33,15 @@ test('dedicated bridge exact resource cells match the provided resource and oper
     const value = buildPolicyMatrix(policy, {target: evidence}, labels);
     for (const operation of API_KEY_OPERATIONS) {
       const provided = operation === 'read' || operation === 'upgrade' && resourceType === 'service' ||
-        operation === 'update' && resourceType === 'host' ||
+        operation === 'update' && ['host', 'project'].includes(resourceType) ||
         ['update', 'delete'].includes(operation) && ['stack', 'service', 'container'].includes(resourceType);
       const actual = cell(value, key(scope), operation);
       assert.strictEqual(actual.policyState, 'allow', `${resourceType}/${operation} retains the stored policy ceiling`);
       assert.strictEqual(actual.state, provided ? 'conditional' : 'unsupported', `${resourceType}/${operation}`);
       assert.strictEqual(actual.basis, provided ? 'aiBridge' : 'aiBridgeUnsupported', `${resourceType}/${operation} explains the bridge boundary`);
+      if (resourceType === 'project' && !['read', 'update'].includes(operation)) {
+        assert.strictEqual(actual.state, 'unsupported', `Project ${operation} stays outside the metadata-only bridge subset`);
+      }
     }
   }
 });

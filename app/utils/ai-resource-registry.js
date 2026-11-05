@@ -35,7 +35,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('certificates', [resource('certificate', 'certificates', 'project', ['CN', 'issuer', 'issuedAt', 'expiresAt', 'algorithm', 'keySize'], null,
     ['Typed changes support name/description only. PEM, private keys, certificate chains, issuance, renewal and removal remain in the normal human certificate UI.'])]),
   family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount'])]),
-  family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine']), global('projectTemplate', 'projectTemplates')]),
+  family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine'], ['Typed changes support name/description only for the currently selected environment. Other visible environments remain queryable; use the normal environment switch and search again for a fresh reference before editing. Membership, authentication, networking, orchestration and lifecycle changes remain in their normal human workflows.']), global('projectTemplate', 'projectTemplates')]),
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
   family('host', [resource('host', 'hosts', 'project', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb'], null,
     ['Host detail may include at most 50 freshly authorized container references with readable Stack names. Workload completeness stays unknown, including when empty; it does not establish an empty Host or authorize evacuation, deactivation or scheduling. Typed changes support nonempty custom name and description only. Clearing the custom name, labels, capacity/scheduling, hostname, agent lifecycle and credentials remain in the normal human host UI.']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
@@ -70,6 +70,7 @@ export function resourceDescriptors() { return RESOURCE_FAMILIES.flatMap((entry)
 const action = (fields = [], required = [], minFields = 0) => Object.freeze({fields: Object.freeze(fields), required: Object.freeze(required), minFields});
 const metadata = action(['name', 'description'], [], 1);
 export const RESOURCE_CHANGES = Object.freeze({
+  project: Object.freeze({update_metadata: metadata}),
   certificate: Object.freeze({update_metadata: metadata}),
   host: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
