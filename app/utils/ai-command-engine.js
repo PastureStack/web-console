@@ -122,6 +122,9 @@ export class CommandEngine {
         };
         result.nextStep = repairs[result.field] || 'Find the exact named catalogTemplate, list its catalogTemplateVersion candidates with parentRef, select one version resourceRef, then call get_resource to obtain current questionRefs. Use that version as catalogVersionRef; do not pass targetRef, parentRef, raw IDs, YAML or guessed defaults.';
       }
+    } else if ( name === 'preview_resource_change' && input && input.resourceType === 'project' && input.operation === 'update_metadata' &&
+      result.code === 'INVALID_INPUT' && result.field === 'targetRef' ) {
+      result.nextStep = 'Only the currently selected environment can be edited. If the target is another visible environment, ask the user to switch environments normally, then call find_resources again for a fresh project resourceRef. Never guess an ID or modify the original reference.';
     } else if ( name === 'preview_resource_change' && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
       const repairs = {
         'parameters.image': 'Provide the exact user-requested image in parameters.image. Ask the user if it is missing; never guess an image or version.',
@@ -967,7 +970,10 @@ export class CommandEngine {
     } else {
       if ( !input.targetRef || input.parentRef ) { throw new CommandError('INVALID_INPUT', input.parentRef ? 'parentRef' : 'targetRef'); }
       target = this.resolveResourceReference(input.targetRef, input.resourceType, captured, 'targetRef');
-      if ( target.resourceType !== input.resourceType || target.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
+      const selectedProject = input.resourceType === 'project' && input.operation === 'update_metadata' &&
+        target.scope === 'global' && target.id === captured.projectId;
+      if ( target.resourceType !== input.resourceType ||
+        (input.resourceType === 'project' ? !selectedProject : target.scope !== 'project') ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
       if ( input.resourceType === 'dnsService' && parameters.serviceIds && parameters.serviceIds.includes(target.id) ) {
         throw new CommandError('INVALID_INPUT', 'parameters.serviceRefs');
       }

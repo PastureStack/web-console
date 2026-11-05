@@ -5,12 +5,17 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-## Current release
+## Release identity and support
 
-[Bridge **0.2.11** / Web Console **1.6.209**](../docs/releases/web-console-1.6.209.md)
-is published and requires matching published Engine **0.183.370** support.
-Artifact qualification, public byte verification and native release attestation
-passed. Designated Server/runtime acceptance remains separate.
+This checkout's source versions are recorded in `package.json` and
+`bridge/package.json`. Check the matching GitHub release for publication,
+artifact qualification and required Engine support. A source version or CI run
+alone does not establish release availability or native workflow acceptance.
+
+Project metadata plans support name/description only for the selected
+environment. Editing another visible environment requires a normal context
+switch and a fresh resource reference; membership, networking, authentication
+and lifecycle changes remain in their normal human workflows.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
 and human-reviewed lifecycle plans. Host plans support only name/description;
@@ -63,13 +68,15 @@ both Engine flags default to false.
 
 ## Install the matching release
 
-Download the matching release ZIP and checksum, then verify before extraction.
+Confirm that the matching numeric release is public, then download its ZIP and
+checksum and verify before extraction. These source-bound commands are not a
+publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.209
-BRIDGE_VERSION=0.2.11
+WEB_CONSOLE_VERSION=1.6.210
+BRIDGE_VERSION=0.2.12
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
@@ -80,14 +87,12 @@ npm ci --ignore-scripts --no-audit --no-fund
 
 The MCP entry point is the extracted `bridge/server.mjs`.
 `source-manifest.json` records included source hashes; the archive also includes
-LICENSE and the bridge CycloneDX SBOM. The matching
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.209/web209-release-metadata.json)
-and [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.209/bridge031-release-proof.json)
-record the exact producer, tested tree, dependency evidence and SDK handshake.
-Use those release records rather than a producer hash copied into this README.
-The current 0.2.11 SDK handshake passed. Its unchanged dependency graph carries
-the published 0.2.5 clean-install evidence; no new installation, dependency scan
-or native workflow acceptance is claimed.
+LICENSE and the bridge CycloneDX SBOM. The matching GitHub release's metadata
+and source proof record the exact producer, tested tree, dependency evidence
+and SDK handshake. Use those release records rather than a producer hash or
+validation claim copied into this README. Dependency installation, source tests,
+artifact authenticity and designated native workflow acceptance are separate
+evidence; a version bump does not establish any of them.
 
 For local packaging from a repository checkout, provide the matching SBOM:
 
