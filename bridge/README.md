@@ -74,7 +74,7 @@ publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
-This source checkout targets Web Console 1.6.211 / Bridge 0.2.13. Run the matching commands below only after that GitHub release is published; until then, use the current published installation instructions in the repository README.
+Web Console 1.6.211 / Bridge 0.2.13 is published. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.211

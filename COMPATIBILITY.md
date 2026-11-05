@@ -1,5 +1,54 @@
 # Compatibility Contract
 
+## Web Console 1.6.211 / bridge 0.2.13 published
+
+Passive session validation uses one synchronous IndexedDB transaction when Web
+Locks are unavailable. It retains the cookie/generation CAS checks and native
+API-root actor verification, respects an existing asynchronous authentication
+lease, and creates no durable passive lease for a reload to abandon.
+Validation-only token and API-root reads use the captured bearer with browser
+credentials omitted, so late responses cannot replace a newer cookie. Ordinary
+API requests retain their existing credentials behavior.
+
+Login acceptance, MFA challenge acceptance and explicit logout keep their
+asynchronous mutex and ownership checks. A pending logout DELETE still excludes
+passive adoption. Unexpired asynchronous leases from older JavaScript are not
+force-reclaimed.
+
+Original full/enabled CI
+[42077118132](https://github.com/PastureStack/web-console/actions/runs/42077118132)
+passed 1,140 browser tests with zero failures or skips. All 50 focused methods
+were observed once: 39 retained Node methods, 5 retained QUnit methods, and 6
+new real-Service QUnit methods. Three new barriers each execute 100 deterministic
+iterations. The existing expired-session case also passed its unchanged invalid
+result with added zero-GET/zero-extra-clear assertions; it is not a seventh new
+case. A separate Chromium loopback check verified the real locked Fetch
+adapter's omitted-credentials and ordinary same-origin Cookie behavior without
+calling the platform. Required CodeQL passed with zero new results.
+
+Producer `57b5370d9c7bf9fdd7de5907da4dd3c29c963005` and normal PR257
+merge/tag target `ecb68f91234da891dcf59cf60c4d47242ea6a058` share tested tree
+`91afcfc17d9cd85da786e68b1f3f03226b27c649`. Original artifact `13438647735`
+has SHA256 `276b3b9283aea67074cd28d04f1285a325d210114136d711f71038d65be2ec07`.
+Archive SLSA and runtime CycloneDX attestations passed. Publication reused the
+original CI bytes; all thirteen public assets passed anonymous byte-count and
+SHA256 readback, and immutable native-release crypto verified thirteen asset
+subjects plus the signed tag. See the
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.211/web211-release-metadata.json)
+and [published release note](docs/releases/web-console-1.6.211.md).
+
+Bridge 0.2.13 contains 45 Git source files, 46 manifest rows and 47 ZIP entries.
+Its actual SDK1.32.2 handshake passed. The unchanged 92-component/95-location
+graph carries the published 0.2.5 clean-install evidence; there was no new
+install or dependency scan. The immutable archive preserves its source-time
+README snapshot; current repository instructions are authoritative. Matching
+Engine 0.183.372 is unchanged, its workflow SLSA remains not provided, and runtime
+SBOM coverage remains incomplete.
+
+Designated Server acceptance of this session change, Project/LB native cases,
+new weak-model subcases and the 52 new audit-block layouts remain separate and
+pending. Component publication is not whole-family/243-group completion.
+
 ## Web Console 1.6.210 / bridge 0.2.12 published
 
 Matching published Engine 0.183.372 supports human-approved name/description
