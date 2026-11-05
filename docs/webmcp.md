@@ -6,29 +6,30 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-The Web206 / bridge0.2.8 source candidate adds optional `startFirst` (boolean),
-`batchSize` (integer ≥1) and `intervalMillis` (integer ≥100 milliseconds) to
-`preview_service_upgrade`. Defaults remain false/1/2000. Matching Engine367
-returns the closed effective `upgradeStrategy`; human approval binds it with
-the image and target. Native preflight can still reject a start-first strategy
-for ports or volumes. Missing support never causes a retry with settings
-removed. Integers must be exactly representable in JSON through
-9007199254740991; this is not a native product maximum. Candidate CI, publication
-and runtime qualification remain pending; see the [candidate note](releases/web-console-1.6.206.md).
+The [current published component](../README.md#current-component) lists the
+compatible Web Console, bridge and Engine versions. A component release alone
+does not establish acceptance of a Server deployment or every frontend workflow.
 
-[Web Console 1.6.205 / bridge 0.2.7](releases/web-console-1.6.205.md) is published
-with the twelve tools below. Service create ports and health checks require
-matching Engine 0.183.366 support. Component qualification and public asset
-verification passed; Server565 runtime and live workflow acceptance remain
-pending. External Service, DNS Alias and audit queries retain their matching Engine/broker
-requirements.
+preview_service_upgrade supports optional startFirst (boolean), batchSize
+(integer >=1) and intervalMillis (integer >=100 milliseconds). Defaults are
+false/1/2000. Matching Engine support returns the effective upgradeStrategy;
+human approval binds it with the image and target. Native preflight can reject
+a start-first strategy for ports or volumes. Missing support never causes a retry
+with settings removed. Integers must be exactly representable in JSON through
+9007199254740991; this is not a native product maximum.
+
+The twelve shared tools below provide bounded discovery, previews,
+human-approved changes and verified operation readback. Supported fields and
+resource types remain explicit; use list_capabilities and the matching
+component documentation before planning a change. Catalog launch, External
+Service, DNS Alias and audit queries retain their dedicated owner requirements.
 
 | Tool | Purpose |
 | --- | --- |
 | `list_capabilities` | List 25 UI families, typed resources, read scope and explicit implemented/pending/human-ceremony coverage. |
 | `find_resources` | Find safe resource metadata, preserving duplicate candidates and parent/cursor scope. |
 | `get_resource` | Read safe metadata using an opaque reference; report any truncated fields explicitly. |
-| `preview_resource_change` | Preview a supported stack, service, External Service, DNS Alias or container change for human review. |
+| `preview_resource_change` | Preview a supported typed resource change for human review. |
 | `apply_resource_change` | Apply that exact approved resource-change plan and return its recoverable operation reference. |
 | `find_stacks` | Find visible stacks by name and return opaque references. |
 | `find_services` | Find services, keeping same-name candidates separate. |
@@ -75,6 +76,24 @@ ceremonies use the existing human flow. Typed audit queries use the matching
 Engine/broker owner; raw audit payloads and export remain human-only. Catalog
 metadata and its bounded launch adapter are described below. No tool accepts raw IDs,
 URLs, HTTP methods or caller-selected output fields.
+
+### Project and load-balancer metadata
+
+`preview_resource_change` accepts only `name` and `description` for the currently
+selected Project or a load balancer. Project editing requires an opaque reference
+to that selected environment; switch normally and search again for another one.
+Load-balancer metadata uses the existing Service owner and requires readable
+Stack context. Neither path authorizes members/network/auth changes, load-balancer
+configuration, ports, certificates, backend links, scale or lifecycle actions.
+
+Before permanently renaming a Project through stdio, use the explicit
+[Bridge profile setup](../bridge/README.md) to create a new bound private profile.
+The human chooses a name/description; internal IDs and opaque UUIDs are captured
+and revalidated automatically. Existing profiles keep their query and description
+behavior. Client-reported setup diagnostics remain clearly labeled as reports,
+not backend authorization decisions; the platform audit detail requires the
+matching Server broker projection. Publication and source tests are distinct
+from the designated runtime cases.
 
 ### Service create ports and health checks
 
