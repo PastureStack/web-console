@@ -5,12 +5,12 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-## Current source version
+## Current release
 
 [Bridge **0.2.11** / Web Console **1.6.209**](../docs/releases/web-console-1.6.209.md)
-is a source candidate requiring matching Engine **0.183.370** support. Install
-only after the matching release is qualified and published; candidate source
-checks do not establish artifact or Server/runtime acceptance.
+is published and requires matching published Engine **0.183.370** support.
+Artifact qualification, public byte verification and native release attestation
+passed. Designated Server/runtime acceptance remains separate.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
 and human-reviewed lifecycle plans. Host plans support only name/description;
@@ -63,8 +63,8 @@ both Engine flags default to false.
 
 ## Install the matching release
 
-After the matching release is available, download its ZIP and checksum. Verify
-before extraction. Keep both `bridge/` and `app/utils/`: they contain the exact
+Download the matching release ZIP and checksum, then verify before extraction.
+Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
 ```sh
@@ -85,9 +85,9 @@ LICENSE and the bridge CycloneDX SBOM. The matching
 and [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.209/bridge031-release-proof.json)
 record the exact producer, tested tree, dependency evidence and SDK handshake.
 Use those release records rather than a producer hash copied into this README.
-Clean-install evidence is explicitly carried from 0.2.5 only when the unchanged
-dependency graph and current source qualification establish that relationship;
-this is not a new installation or native workflow claim.
+The current 0.2.11 SDK handshake passed. Its unchanged dependency graph carries
+the published 0.2.5 clean-install evidence; no new installation, dependency scan
+or native workflow acceptance is claimed.
 
 For local packaging from a repository checkout, provide the matching SBOM:
 

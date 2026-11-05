@@ -11,10 +11,9 @@ history, authorship, licenses, and dependency notices.
 ## Current component
 
 [Web Console **1.6.209** / bridge **0.2.11**](docs/releases/web-console-1.6.209.md)
-is the source candidate in this tree. Matching Engine **0.183.370** support and
-a qualified compatible Server assembly are required. Install only from the
-completed matching release; artifact qualification and native acceptance remain
-pending for this candidate.
+is published. Matching published Engine **0.183.370** and a qualified compatible
+Server assembly are required. Use the numeric release versions in the linked
+installation guides. Native acceptance of this new Host batch remains pending.
 
 Host changes are limited to human-approved name/description updates. Host detail
 shows at most fifty freshly authorized container references and readable Stack
@@ -38,8 +37,8 @@ Pending-plan reminders use page content so footer controls remain available,
 and confirmation errors provide safe permission guidance in all thirteen locales.
 
 Normal UI, session, Full-access and human-confirmation protections remain.
-Once qualified and published, original CI, artifact checks, archive/SBOM
-attestations and public asset digests are recorded in the matching
+Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
+verification of all thirteen public assets passed. Evidence is recorded in the
 [release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.209/web209-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 
