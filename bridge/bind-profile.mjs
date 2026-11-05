@@ -1,6 +1,6 @@
 // Explicit local profile writer. Never imported by the MCP server or exposed as a tool.
 import {open, lstat, unlink} from 'node:fs/promises';
-import {constants} from 'node:fs';
+import {constants, realpathSync} from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {createInterface} from 'node:readline/promises';
@@ -48,12 +48,14 @@ async function privateFile(file, destination) {
     return;
   }
   // Apply a private ACL only to our new, still-empty file before writing credentials.
-  const system = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32');
   try {
-    const {stdout} = await runFile(path.join(system, 'whoami.exe'), ['/user', '/fo', 'csv', '/nh'], {windowsHide: true, timeout: 5000, maxBuffer: 16384});
+    // Resolve the OS kernel namespace, never an environment or PATH override.
+    const whoami = realpathSync.native(String.raw`\\?\GLOBALROOT\SystemRoot\System32\whoami.exe`);
+    const icacls = realpathSync.native(String.raw`\\?\GLOBALROOT\SystemRoot\System32\icacls.exe`);
+    const {stdout} = await runFile(whoami, ['/user', '/fo', 'csv', '/nh'], {windowsHide: true, timeout: 5000, maxBuffer: 16384});
     const match = stdout.match(/,"(S-1-[0-9-]+)"\s*$/);
     if (!match) throw new Error();
-    await runFile(path.join(system, 'icacls.exe'), [destination, '/inheritance:r', '/grant:r', '*' + match[1] + ':(F)', '/q'],
+    await runFile(icacls, [destination, '/inheritance:r', '/grant:r', '*' + match[1] + ':(F)', '/q'],
       {windowsHide: true, timeout: 5000, maxBuffer: 16384});
   } catch { throw new SetupError('PRIVATE_PROFILE_REQUIRED'); }
 }
@@ -61,19 +63,21 @@ async function privateFile(file, destination) {
 export async function bindProfile({from, output}, {fetcher, interactive = !!(process.stdin.isTTY && process.stdout.isTTY), choose,
   terminalOutput = process.stdout, secureFile = privateFile} = {}) {
   const destination = path.resolve(output);
-  try { await lstat(destination); throw new SetupError('PROFILE_OUTPUT_EXISTS'); }
-  catch (error) { if (error.code !== 'ENOENT') throw error; }
-  const config = await loadConfig(from);
-  const prepared = await prepareBoundProfile(config, {fetcher,
-    select: rows => selectFriendly(rows, {config, interactive, choose, output: terminalOutput})});
-  const bytes = Buffer.from(JSON.stringify(prepared, null, 2) + '\n');
-  if (bytes.length > 16 * 1024) throw new SetupError('INVALID_CONFIG');
   let file, identity;
   try {
     try { file = await open(destination, constants.O_WRONLY | constants.O_CREAT | constants.O_EXCL | (constants.O_NOFOLLOW || 0), 0o600); }
     catch (error) { if (error.code === 'EEXIST') throw new SetupError('PROFILE_OUTPUT_EXISTS'); throw error; }
     identity = await file.stat();
     await secureFile(file, destination);
+    const secured = await lstat(destination);
+    if (!secured.isFile() || secured.isSymbolicLink() || secured.dev !== identity.dev || secured.ino !== identity.ino) throw new SetupError('PRIVATE_PROFILE_REQUIRED');
+    // Claim and protect the new empty file before reading credentials or doing
+    // discovery. Existing outputs are rejected before credential reads or network calls.
+    const config = await loadConfig(from);
+    const prepared = await prepareBoundProfile(config, {fetcher,
+      select: rows => selectFriendly(rows, {config, interactive, choose, output: terminalOutput})});
+    const bytes = Buffer.from(JSON.stringify(prepared, null, 2) + '\n');
+    if (bytes.length > 16 * 1024) throw new SetupError('INVALID_CONFIG');
     const named = await lstat(destination);
     if (!named.isFile() || named.isSymbolicLink() || named.dev !== identity.dev || named.ino !== identity.ino) throw new SetupError('PRIVATE_PROFILE_REQUIRED');
     await file.writeFile(bytes); await file.sync();

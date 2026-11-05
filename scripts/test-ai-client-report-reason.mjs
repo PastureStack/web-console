@@ -46,7 +46,8 @@ test('client report: binding cause is shown separately without becoming a platfo
       const label = key.split('.').reduce((row, part) => row && row[part], doc);
       assert.equal(typeof label, 'string'); assert.ok(label.trim().length > 0, locale + ': complete human label');
       if (locale !== 'en-us') assert.notEqual(label, key.split('.').reduce((row, part) => row && row[part], english));
-      assert.doesNotMatch(label, /NOT_EVALUATED|REPORTED|toolReport|client-report|apiKeyAudit\.|<script>|\{\{/); labels.push(label);
+      assert.doesNotMatch(label, /NOT_EVALUATED|REPORTED|toolReport|client-report|apiKeyAudit\.|\{\{/);
+      assert.doesNotMatch(label, /<script>/i); labels.push(label);
     }
     assert.equal(new Set(labels).size, 13);
   }
@@ -94,7 +95,7 @@ test('client report: list and detail use escaped fixed labels with thirteen actu
       const value = key.split('.').reduce((row, part) => row && row[part], doc);
       assert.equal(typeof value, 'string'); assert.ok(value.trim().length > 0, locale + ': translated label is not empty');
       if (locale !== 'en-us') assert.notEqual(value, key.split('.').reduce((row, part) => row && row[part], english));
-      assert.doesNotMatch(value, /PRIVATE-|BRIDGE_PROJECT|NEEDS_USER|apiKeyAudit\.|<script>|\{\{/); values.push(value);
+      assert.doesNotMatch(value, /PRIVATE-|BRIDGE_PROJECT|NEEDS_USER|apiKeyAudit\.|<script>|\{\{/i); values.push(value);
     }
     assert.equal(new Set(values).size, 13);
   }

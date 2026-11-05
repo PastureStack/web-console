@@ -150,7 +150,7 @@ test('bridge profile setup needs-user guidance follows the real modal error life
     const text = document.webmcp.bridgeProjectBindingRequired;
     assert.equal(typeof text, 'string'); assert.ok(text.length > 20);
     if (locale !== 'en-us') assert.notEqual(text, YAML.parse(readFileSync(path.join(root, 'translations/en-us.yaml'), 'utf8')).webmcp.bridgeProjectBindingRequired);
-    assert.doesNotMatch(text, /BRIDGE_PROJECT|NEEDS_USER|webmcp\.|PRIVATE-|<script>|accessKey|secretKey/);
+    assert.doesNotMatch(text, /BRIDGE_PROJECT|NEEDS_USER|webmcp\.|PRIVATE-|<script>|accessKey|secretKey/i);
     const f = fixture(async () => result);
     f.instance.intl.t = key => key.split('.').reduce((row, part) => row && row[part], document);
     await f.confirm();

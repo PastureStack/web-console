@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp, writeFile, readFile, chmod, stat, readdir, unlink, rmdir} from 'node:fs/promises';
+import {mkdtemp, writeFile, readFile, chmod, open, readdir, unlink, rmdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {createBridge, validateConfig, prepareBoundProfile, allowedRequest} from '../core.mjs';
@@ -182,10 +182,20 @@ test('actual core preflight stays inside shared audited engine: legacy rename de
 test('writer creates a fresh private profile without changing read-only input or printing credentials/identity', async () => {
   await temporary(async directory => {
     const from = path.join(directory, 'legacy.json'), output = path.join(directory, 'bound.json'), raw = JSON.stringify(config);
-    await writeFile(from, raw); await chmod(from, 0o400); const beforeMode = (await stat(from)).mode; let printed = '';
+    await writeFile(from, raw); await chmod(from, 0o400); let printed = '';
+    const inspectInput = async () => {
+      const file = await open(from, 'r');
+      try {
+        const raw = await file.readFile('utf8'), info = await file.stat();
+        return {raw, mode: info.mode, dev: info.dev, ino: info.ino};
+      } finally { await file.close(); }
+    };
+    const before = await inspectInput();
+    assert.equal(before.mode & 0o222, 0, 'original input is not writable');
     const status = await main(['--from', from, '--output', output], {fetcher: server([{...original}]),
       write: text => { printed += text; }, error: text => { printed += text; }});
-    assert.equal(status, 0); assert.equal(await readFile(from, 'utf8'), raw); assert.equal((await stat(from)).mode, beforeMode);
+    assert.equal(status, 0); assert.equal(before.raw, raw); assert.deepEqual(await inspectInput(), before, 'reopened input preserves bytes, mode and native identity');
+    await assert.rejects(open(output, 'wx'), error => error.code === 'EEXIST');
     const saved = JSON.parse(await readFile(output, 'utf8'));
     assert.deepEqual(Object.keys(saved).sort(), ['accessKey', 'endpoint', 'environment', 'environmentBinding', 'secretKey']);
     assert.deepEqual(saved.environmentBinding, {endpoint: config.endpoint, id: 'p1', uuid: 'adminProject'});
@@ -193,7 +203,7 @@ test('writer creates a fresh private profile without changing read-only input or
     for (const value of [secret, config.accessKey, 'adminProject', 'p1']) assert.equal(printed.includes(value), false);
     let network = 0;
     assert.equal(await main(['--from', from, '--output', output], {fetcher: async () => { network++; }, write() {}, error() {}}), 1);
-    assert.equal(network, 0); assert.equal(await readFile(from, 'utf8'), raw);
+    assert.equal(network, 0); assert.deepEqual(await inspectInput(), before, 'collision does not replace or change the original pathname');
     assert.equal(await main(['--from', from, '--output', from], {write() {}, error() {}}), 1);
   });
 });
@@ -269,4 +279,23 @@ test('all query is one literal true on bootstrap collection GET only; legacy pag
   await assert.rejects(createBridge(config, {fetcher: async () => { calls++; return response({data: [original], pagination: {next: config.endpoint + '/v2-beta/projects?all=true&marker=next'}}); }}),
     {code: 'INVALID_ENVIRONMENT_PAGE'});
   assert.equal(calls, 1);
+});
+
+
+test('writer claims a private exclusive output before config or network and cleans only its failed empty file', async () => {
+  await temporary(async directory => {
+    const from = path.join(directory, 'missing-private-profile.json'), output = path.join(directory, 'new-bound.json');
+    let protectedEmpty = 0, network = 0, message = '';
+    const options = {fetcher: async () => { network++; throw new Error('must not fetch'); },
+      secureFile: async file => { assert.equal((await file.stat()).size, 0); protectedEmpty++; },
+      write() {}, error: text => { message = text; }};
+    assert.equal(await main(['--from', from, '--output', output], options), 1);
+    assert.match(message, /CONFIG_UNREADABLE/); assert.equal(protectedEmpty, 1); assert.equal(network, 0);
+    await assert.rejects(open(output, 'r'), error => error.code === 'ENOENT');
+    await writeFile(output, 'original-owned-sentinel');
+    assert.equal(await main(['--from', from, '--output', output], options), 1);
+    assert.match(message, /PROFILE_OUTPUT_EXISTS/); assert.equal(protectedEmpty, 1); assert.equal(network, 0);
+    const retained = await open(output, 'r');
+    try { assert.equal(await retained.readFile('utf8'), 'original-owned-sentinel'); } finally { await retained.close(); }
+  });
 });
