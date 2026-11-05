@@ -1,5 +1,19 @@
 # Compatibility Contract
 
+## Web Console 1.6.214 / bridge 0.2.16 published
+
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.214) uses matching published Engine **0.183.373** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous byte-count/SHA256 readback, and native release verification covers thirteen asset subjects plus the signed tag. Original archive provenance and runtime SBOM attestations passed without rebuilding the CI artifact.
+
+Both bound-profile startup and explicit rewriting now learn the server-verified dedicated-Key purpose/revision through one fixed project collection discovery, then perform the exact bound Project GET. Discovery rows, names and pagination cannot select or replace the bound target. The exact GET retains endpoint, ID, opaque UUID, active/nonremoved identity, visibility and current-Key checks. Missing purpose/revision, revocation or a policy change fails closed. Legacy unbound name selection and native Engine authorization are unchanged.
+
+The original full/enabled CI passed **1,140 browser tests**, zero failures/skips and **61 focused methods**: 58 carried plus three new bound-bootstrap Node methods. The four directly affected compatibility/observer methods also passed on this producer. Bridge qualification retained 47 source files, 48 manifest rows, 49 ZIP entries and the unchanged 92-component/95-location dependency evidence, with one new real SDK handshake passing. No new dependency installation or vulnerability scan is inferred.
+
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.214/web214-release-metadata.json) records producer `2e4e55a3aa9a09d49be1f0e98a4095115015147b`, normal merge/tag target `776afedaefcd7e3e853448e2b49e6ded28a2f6cb` and tested tree `3d23363fe3da0a7d971fe9f120126aa820e6bfb5`. This later documentation commit is not the artifact producer. Immutable assets and the GitHub release body retain their publication-time bytes. Platform workflows and weak-model acceptance remain separate and pending; whole-family/243-group completion is not claimed.
+
+## Web Console 1.6.213 / bridge 0.2.15 published baseline
+
+[The immutable 213 release](https://github.com/PastureStack/web-console/releases/tag/1.6.213) added shared list/detail opaque Stack-parent references from the fresh typed server response. Reading each parent still requires native role and current-Key authorization; no display-path parsing or cached name grants access. Catalog parent handling, Host and Volume contracts are unchanged. Its original CI passed 1,140 browser tests and 58 focused methods, with thirteen anonymous assets, fourteen native cryptographic subjects and one Bridge SDK handshake. Producer `a0db85adeef666842a5e2b142667bf68a30b5974`, normal merge/tag target `8b7abfc3846cbbc822d0e4e97e1ec075532e94d8` and tree `e5eaf04ab4819fb77311f08da616c980a755f3c3` remain immutable. The 214 release corrects bound-profile revision bootstrap; it does not replace 213 assets.
+
 ## Web Console 1.6.212 / bridge 0.2.14 published
 
 [The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.212) requires matching published Engine **0.183.373** and a qualified compatible Server assembly. All thirteen assets passed anonymous byte-count/SHA256 readback; native release verification covers thirteen asset subjects and the signed tag. Original archive provenance and SBOM attestations passed.

@@ -80,7 +80,7 @@ publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
-Web Console 1.6.214 / Bridge 0.2.16 is a source candidate and is not published. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
+Web Console 1.6.214 / Bridge 0.2.16 is published. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.214
