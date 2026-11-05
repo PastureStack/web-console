@@ -327,6 +327,20 @@ export class CommandEngine {
     return `${path}${next.search}`;
   }
 
+  stackParentProjection(body, descriptor, captured) {
+    if ( !descriptor.parent || descriptor.parent.type !== 'stack' ) { return null; }
+    // Typed resource views only include Stack names after the native parent
+    // owner and current Key authorize them. Never recover a name from a path.
+    const id = body[descriptor.parent.field], name = safeText(body.stackName);
+    const hasParentId = typeof id === 'string' && id;
+    const resolved = hasParentId && name &&
+      (body.parentResolution === undefined || body.parentResolution === 'resolved');
+    // Retain list's opaque relationship ref even when its name is unavailable;
+    // resolving that ref still performs a fresh authorized Stack read.
+    return {parentRef: hasParentId ? this.referenceResource({id, family: 'stack', resourceType: 'stack', scope: descriptor.scope}, captured) : null,
+      parentResolution: resolved ? 'resolved' : 'unavailable', stackName: resolved ? name : null};
+  }
+
   async find_resources(input, captured, signal) {
     if (input.auditFilters !== undefined) {
       if (input.family !== 'audit' || input.resourceType !== undefined && input.resourceType !== 'auditLog' ||
@@ -366,7 +380,9 @@ export class CommandEngine {
       marker: typedPage ? next : null}, captured) : null;
     const items = body.data.filter((item) => this.resourceIdentity(item, descriptor, captured) && this.matches(item, input.query) &&
       (!parent || item[descriptor.parent.field] === parent.id)).map((item) => {
-      const displayPath = descriptor.type === 'processInstance' ? `(global)/processes/${safeResourceFields(item, descriptor).name || 'unknown'}` : useCatalog ? this.catalogDisplayPath(item, captured, parent) : safeText(item.displayPath, 768) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${descriptor.parent && typeof item[descriptor.parent.field] === 'string' ? safeText(item.stackName) || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
+      const stackParent = this.stackParentProjection(item, descriptor, captured);
+      const displayPath = descriptor.type === 'processInstance' ? `(global)/processes/${safeResourceFields(item, descriptor).name || 'unknown'}` : useCatalog ? this.catalogDisplayPath(item, captured, parent) :
+        (!stackParent && safeText(item.displayPath, 768)) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${stackParent ? stackParent.stackName || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
       const target = {id: item.id, family: input.family, resourceType: descriptor.type, scope: descriptor.scope};
       if ( useCatalog ) {
         target.catalogPath = displayPath;
@@ -375,11 +391,9 @@ export class CommandEngine {
       }
       if ( catalogVersion ) { target.parentId = parent.id; target.parentRef = input.parentRef; }
       const resourceRef = this.referenceResource(target, captured);
-      const parentId = descriptor.parent && item[descriptor.parent.field];
-      const parentRef = catalogVersion ? input.parentRef : parentId && typeof parentId === 'string' ? this.referenceResource({id: parentId, family: descriptor.parent.type,
-        resourceType: descriptor.parent.type, scope: descriptor.scope}, captured) : null;
+      const parentRef = catalogVersion ? input.parentRef : stackParent ? stackParent.parentRef : null;
       return {resourceRef, resourceType: descriptor.type, scope: descriptor.scope,
-        parentRef, parentResolution: catalogVersion ? 'resolved' : descriptor.parent ? safeText(item.stackName) ? 'resolved' : 'unavailable' : null,
+        parentRef, parentResolution: catalogVersion ? 'resolved' : stackParent ? stackParent.parentResolution : null,
         displayPath,
         fields: safeResourceFields(item, descriptor), truncatedFields: this.resourceTruncation(item, descriptor)};
     });
@@ -417,6 +431,10 @@ export class CommandEngine {
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
       resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    const stackParent = this.stackParentProjection(body, descriptor, captured);
+    if ( stackParent ) {
+      result.parentRef = stackParent.parentRef; result.parentResolution = stackParent.parentResolution;
+    }
     if ( descriptor.type === 'processInstance' ) {
       result.payloadPolicy = 'HUMAN_ONLY_NATIVE_PROCESS_ERROR_UI';
       result.nextStep = 'These are bounded, authorized process diagnostic facts, not a verified business-operation result. Diagnostic completeness remains unknown, including for empty logs or missing fields. Use the normal process UI for raw exceptions; do not guess causes, replay, retry, or change resources.';
@@ -462,6 +480,12 @@ export class CommandEngine {
         const failure = publicError(error);
         result.launchOptions = {availability: 'unavailable', authorization: 'requires-server-check', code: failure.code, nextStep: failure.nextStep};
       }
+    }
+    if ( stackParent ) {
+      const nextStep = stackParent.parentResolution === 'resolved' ?
+        'Use get_resource with this parentRef to read the current authorized Stack name before selecting a same-name resource. Do not infer the parent from labels or choose a duplicate automatically.' :
+        'The parent Stack is unavailable under current permissions. No parent name or ID is included. Use the normal console or an authorized visible Stack; do not guess the parent.';
+      result.nextStep = result.nextStep ? `${nextStep} ${result.nextStep}` : nextStep;
     }
     return result;
   }

@@ -35,6 +35,12 @@ Optional image-upgrade settings remain bound to the exact human review.
 The bridge cannot approve its own plans. Native owner, role, Key and revision
 checks remain authoritative, and unsupported capabilities stay unavailable.
 
+For Service and load-balancer metadata, `get_resource` includes the same opaque
+Stack relationship reference as discovery. Use `get_resource(parentRef)` to read
+the current authorized Stack name before choosing a same-name resource. Parent
+resolution stays unavailable when the name cannot be read; possessing a reference
+does not grant parent access. No Stack name is inferred from a display path.
+
 External Services require an authorized Stack reference and exactly one target
 mode (hostname or IPs). DNS Aliases are created stopped and empty; target binding
 uses selected Service references in a separate approved plan. Typed audit queries
@@ -74,11 +80,11 @@ publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
-Web Console 1.6.212 / Bridge 0.2.14 is a source candidate and is not published; the root README currently documents published Web211/Bridge0.2.13. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
+Web Console 1.6.213 / Bridge 0.2.15 is a source candidate and is not published; the root README currently documents published Web212/Bridge0.2.14. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.212
-BRIDGE_VERSION=0.2.14
+WEB_CONSOLE_VERSION=1.6.213
+BRIDGE_VERSION=0.2.15
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
