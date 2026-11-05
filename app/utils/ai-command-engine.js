@@ -366,7 +366,7 @@ export class CommandEngine {
       marker: typedPage ? next : null}, captured) : null;
     const items = body.data.filter((item) => this.resourceIdentity(item, descriptor, captured) && this.matches(item, input.query) &&
       (!parent || item[descriptor.parent.field] === parent.id)).map((item) => {
-      const displayPath = useCatalog ? this.catalogDisplayPath(item, captured, parent) : safeText(item.displayPath, 768) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${descriptor.parent && typeof item[descriptor.parent.field] === 'string' ? safeText(item.stackName) || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
+      const displayPath = descriptor.type === 'processInstance' ? `(global)/processes/${safeResourceFields(item, descriptor).name || 'unknown'}` : useCatalog ? this.catalogDisplayPath(item, captured, parent) : safeText(item.displayPath, 768) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${descriptor.parent && typeof item[descriptor.parent.field] === 'string' ? safeText(item.stackName) || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
       const target = {id: item.id, family: input.family, resourceType: descriptor.type, scope: descriptor.scope};
       if ( useCatalog ) {
         target.catalogPath = displayPath;
@@ -417,6 +417,10 @@ export class CommandEngine {
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
       resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    if ( descriptor.type === 'processInstance' ) {
+      result.payloadPolicy = 'HUMAN_ONLY_NATIVE_PROCESS_ERROR_UI';
+      result.nextStep = 'These are bounded, authorized process diagnostic facts, not a verified business-operation result. Diagnostic completeness remains unknown, including for empty logs or missing fields. Use the normal process UI for raw exceptions; do not guess causes, replay, retry, or change resources.';
+    }
     if ( descriptor.type === 'volume' ) {
       result.usageReferences = this.volumeUsageReferences(body, captured);
       result.nextStep = 'Usage completeness is unknown. Only listed containers were authorized in this context; no hidden names, IDs or counts are available. Empty results do not mean unused or safe to delete. Mount paths are container destinations, not host filesystem paths. Use the exact containerRef and readable Stack name to disambiguate, or inspect the normal console; retain the native removal checks.';
