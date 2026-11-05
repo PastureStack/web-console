@@ -10,10 +10,20 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.209** / bridge **0.2.11**](docs/releases/web-console-1.6.209.md)
-is published. Matching published Engine **0.183.370** and a qualified compatible
-Server assembly are required. Use the numeric release versions in the linked
-installation guides. Native acceptance of this new Host batch remains pending.
+[Web Console **1.6.210** / bridge **0.2.12**](docs/releases/web-console-1.6.210.md)
+is published. Matching published Engine **0.183.372** and a qualified compatible
+Server assembly are required. The new platform Key-audit detail also requires
+the Server571 broker projection. Use numeric release versions in the linked
+installation guides.
+
+Human-reviewed metadata changes include the currently selected Project and
+load-balancer names/descriptions. Editing another visible Project requires a
+normal context switch and a fresh reference. Load-balancer configuration, ports,
+backend links, certificates, scale and lifecycle stay outside this metadata subset.
+The explicit Bridge profile writer binds a new private profile to the chosen
+Project's stable native identity, so a permanent rename survives restart without
+switching to another same-name Project. Existing profiles retain their query
+and description workflows; see the [Bridge setup guide](bridge/README.md).
 
 Host changes are limited to human-approved name/description updates. Host detail
 shows at most fifty freshly authorized container references and readable Stack
@@ -39,8 +49,10 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.209/web209-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.210/web210-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
+Project/LB runtime cases, new weak-model cases and the 52 new audit layouts remain
+separate and pending; whole-family/243-group completion is not claimed.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).

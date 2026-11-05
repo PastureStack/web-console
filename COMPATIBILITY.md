@@ -1,5 +1,56 @@
 # Compatibility Contract
 
+## Web Console 1.6.210 / bridge 0.2.12 published
+
+Matching published Engine 0.183.372 supports human-approved name/description
+updates for the currently selected Project and load balancers. Other visible
+Projects remain queryable; editing requires a normal context switch and a fresh
+opaque reference. Project members, networking, authentication and templates are
+unchanged. Load-balancer updates retain the native Service owner, canonical
+service-resource Key scopes and separately authorized Stack context; ports,
+backend links, certificates, scaling and lifecycle are outside this subset.
+
+The explicit local Bridge writer creates a new private profile without replacing
+the original. It captures a stable native Project ID and bounded opaque UUID
+behind the human choice. Restart revalidates the exact identity; hidden, removed
+or replaced Projects fail closed without a name fallback. Legacy profiles retain
+existing query and description behavior; permanent rename requires normal setup.
+
+Optional setup detail is sent only after the original audit ACK advertises it.
+The Key audit UI labels client reports as client reports, with NOT_EVALUATED
+kept distinct from backend authorization decisions. This detail also requires
+the Server571 broker projection. Verified operation results remain successful
+when a bounded Project-label refresh needs read-only recovery; business actions
+are not reapplied.
+
+Original full/enabled CI
+[42038620043](https://github.com/PastureStack/web-console/actions/runs/42038620043)
+passed 1,134 browser tests with zero failures or skips. All 44 focused methods
+ran once on this producer: Project 8 Node/2 QUnit, profile/audit/writer 27 Node/2
+QUnit, and load-balancer metadata 4 Node/1 QUnit. Required native CodeQL passed
+with zero results and aggregator annotations. The original archive SLSA and
+runtime CycloneDX attestations passed. Artifact `13419872841` has SHA256
+`d4623cc72707bd543096967c495f5550d89054dd6566d512e3f5c8c27dfd64d3`;
+the release reused those original bytes without rebuilding.
+
+Producer `23f2bbd3d820ab681771599248dc8b3d9fab5786` and normal PR255
+merge/tag target `345f179e24c986a2a5bf2d5ab11796a5ccfbf8da` share tested tree
+`ecd1017aa921e62802ff401795e7021685fd0c58`. All thirteen public assets passed
+anonymous byte-count/SHA256 readback, and the immutable native release
+attestation verified thirteen asset subjects plus its signed tag. See the
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.210/web210-release-metadata.json)
+and [published release note](docs/releases/web-console-1.6.210.md).
+
+Bridge 0.2.12 contains 45 Git source files, 46 manifest rows and 47 ZIP entries.
+The 92-component/95-location SDK1.32.2 graph is unchanged. Its new actual SDK
+handshake passed; clean-install evidence is carried from 0.2.5, without a new
+install or dependency scan. Runtime SBOM coverage remains incomplete. Engine372
+provides no workflow SLSA attestation, and none is inferred.
+
+Project7, LB7, new weak-model subcases and the 52 new audit-block layouts remain
+pending designated runtime acceptance. Publication does not establish Server571
+acceptance or whole-family/243-group completion.
+
 ## Web Console 1.6.209 / bridge 0.2.11 published
 
 Matching Engine 0.183.370 adds human-reviewed Host name/description plans and
