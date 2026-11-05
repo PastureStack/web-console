@@ -8,17 +8,18 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Next candidate: Web1.6.212 / Bridge0.2.14
-
-Read-only process diagnosis is in [source and CI preparation](docs/releases/web-console-1.6.212.md). It is not published; keep using the published installation below.
-
 ## Current component
 
-[Web Console **1.6.211** / bridge **0.2.13**](docs/releases/web-console-1.6.211.md)
-is published. Matching published Engine **0.183.372** and a qualified compatible
+[Web Console **1.6.212** / bridge **0.2.14**](https://github.com/PastureStack/web-console/releases/tag/1.6.212)
+is published. Matching published Engine **0.183.373** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
+
+Read-only process discovery, details and bounded diagnostics use the native
+global process owner and fresh role, Key and schema checks. Registered names
+and fixed enums replace raw logs and payloads. Hidden, empty or truncated
+diagnostics remain unknown; Project ownership grants no global process access.
 
 Human-reviewed metadata changes include the currently selected Project and
 load-balancer names/descriptions. Editing another visible Project requires a
@@ -53,10 +54,10 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.211/web211-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.212/web212-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
-Project/LB runtime cases, new weak-model cases and the 52 new audit layouts remain
-separate and pending; whole-family/243-group completion is not claimed.
+Native Process acceptance remains pending; whole-family/243-group completion is
+not claimed.
 
 Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
 for deployment. Historical evidence remains in [release notes](docs/releases).
