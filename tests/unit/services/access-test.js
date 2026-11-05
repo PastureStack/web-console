@@ -30,6 +30,9 @@ function authSessionStub() {
     runExclusive(callback) {
       return resolve().then(callback);
     },
+    runPassiveSynchronous(callback) {
+      return resolve().then(callback);
+    },
     readShared() {
       return shared;
     },

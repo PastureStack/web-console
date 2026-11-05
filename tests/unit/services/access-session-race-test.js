@@ -194,13 +194,17 @@ module('Unit | Service | access session race', function(hooks) {
     let browser = {cookie: 'expired-owned-token'};
     let auth = AuthSessionService.create({lockManager: serialLockManager()});
     let owned = auth.commit(generation(20), '1a1', browser.cookie);
-    let access = createAccess(browser, auth, () => resolve({body: {data: [{
+    let requests = 0;
+    let access = createAccess(browser, auth, () => {
+      requests++;
+      return resolve({body: {data: [{
       accountId: null,
       jwt: null,
       user: null,
       userIdentity: null,
       security: true,
-    }]}}));
+      }]}});
+    });
     let clears = 0;
     let clearOwnedLocalState = access._clearOwnedLocalState.bind(access);
     access._clearOwnedLocalState = (sessionGeneration) => {
@@ -209,10 +213,14 @@ module('Unit | Service | access session race', function(hooks) {
     };
 
     let first = await access._validateAndAdopt(owned, browser.cookie);
+    let firstRequests = requests;
+    let firstClears = clears;
     let second = await access._validateAndAdopt(owned, 'expired-owned-token');
 
     assert.strictEqual(first.status, 'invalid', 'the matching expired session becomes invalid');
     assert.strictEqual(second.status, 'invalid', 'a duplicate result converges without a route reload');
+    assert.strictEqual(requests, firstRequests, 'already absent cookie does not issue another GET');
+    assert.strictEqual(clears, firstClears, 'already cleared state is not cleared again');
     assert.strictEqual(clears, 1, 'shared and local state are cleared exactly once');
     assert.strictEqual(browser.cookie, undefined, 'the matching expired cookie is removed');
     assert.strictEqual(window.localStorage.getItem(C.AUTH_SESSION.STORAGE_KEY), null,

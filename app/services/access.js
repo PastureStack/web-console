@@ -36,12 +36,18 @@ export default Service.extend({
 
   testAuth(generation) {
     generation = generation || this.captureGeneration();
+    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+    if ( !cookie ) {
+      return reject({status: 401, message: 'No session cookie'});
+    }
     // Do not hold the authentication mutex while a network request is in
     // flight.  A deliberately delayed response from an old session must be
     // allowed to overlap a newer login; the captured generation is checked
     // after the response settles.
     return this.get('userStore').rawRequest({
       url: '',
+      credentials: 'omit',
+      headers: {Authorization: 'Bearer ' + cookie},
     }).then((xhr) => {
       let loaded = this.get('loadedVersion');
       let cur = xhr.headers.get(C.HEADER.RANCHER_VERSION);
@@ -253,16 +259,16 @@ export default Service.extend({
     }
     let beforeValidation = this.get('authSession').readShared();
 
-    return this._readCurrentToken().then((token) => {
-      return this.get('authSession').runExclusive(() => {
+    return this._readCurrentToken(cookie).then((token) => {
+      return this.get('authSession').runPassiveSynchronous(() => {
         if ( this.get('cookies').get(C.COOKIE.TOKEN) !== cookie ) {
-          return reject({status: 409, message: 'Session changed during validation'});
+          throw {status: 409, message: 'Session changed during validation'};
         }
 
         let current = this.get('authSession').readShared();
         if ( !current ) {
           if ( beforeValidation ) {
-            return reject({status: 409, message: 'Session changed during validation'});
+            throw {status: 409, message: 'Session changed during validation'};
           }
           current = this.get('authSession').commit(
             this.get('authSession').createGeneration(), token.accountId, cookie
@@ -270,11 +276,11 @@ export default Service.extend({
         } else {
           if ( current.accountId === null ) {
             if ( !beforeValidation || current.generation !== beforeValidation.generation ) {
-              return reject({status: 409, message: 'Session changed during validation'});
+              throw {status: 409, message: 'Session changed during validation'};
             }
             current = this.get('authSession').commit(current.generation, token.accountId, cookie);
           } else if ( current.accountId !== token.accountId ) {
-            return reject({status: 409, message: 'Session account changed during validation'});
+            throw {status: 409, message: 'Session account changed during validation'};
           }
           this.get('authSession').adopt(current, cookie);
         }
@@ -290,7 +296,7 @@ export default Service.extend({
     // by login commit.  Reading first allowed a peer notification to observe
     // the cookie write but miss the immediately following generation commit,
     // then incorrectly conclude that the new session was invalid.
-    return authSession.runExclusive(() => {
+    return authSession.runPassiveSynchronous(() => {
       let shared = authSession.readShared();
       let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
       if ( !shared || !cookie ) {
@@ -313,7 +319,7 @@ export default Service.extend({
 
     let shared = this.get('authSession').readShared();
     let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
-    return this.get('authSession').runExclusive(() => {
+    return this.get('authSession').runPassiveSynchronous(() => {
       shared = this.get('authSession').readShared();
       cookie = this.get('cookies').get(C.COOKIE.TOKEN);
       if ( shared && !cookie && this.get('authSession').owns(shared.generation) ) {
@@ -401,7 +407,7 @@ export default Service.extend({
 
   clearLocalSession(generation) {
     generation = generation || this.captureGeneration();
-    return this.get('authSession').runExclusive(() => {
+    return this.get('authSession').runPassiveSynchronous(() => {
       let shared = this.get('authSession').readShared();
       if ( shared && (!generation || shared.generation !== generation) ) {
         return {status: 'stale', generation: shared.generation};
@@ -473,10 +479,18 @@ export default Service.extend({
     return false;
   },
 
-  _readCurrentToken() {
-    let cookie = this.get('cookies').get(C.COOKIE.TOKEN);
+  _readCurrentToken(cookie) {
+    let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+    if ( !cookie || !currentCookie ) {
+      return reject({status: 401, message: 'No session cookie'});
+    }
+    if ( currentCookie !== cookie ) {
+      return reject({status: 409, message: 'Session changed during validation'});
+    }
     return this.get('userStore').rawRequest({
       url: 'token',
+      credentials: 'omit',
+      headers: {Authorization: 'Bearer ' + cookie},
     }).then((xhr) => {
       let data = xhr && xhr.body && xhr.body.data;
       let token = data && data[0];
@@ -506,7 +520,7 @@ export default Service.extend({
       // /token uses a virtual policy account in its response headers. After
       // validating its identity, read the real actor from the authenticated
       // API root; project account headers identify environments, not users.
-      return this.get('userStore').rawRequest({url: ''}).then((actorResponse) => {
+      return this.get('userStore').rawRequest({url: '', credentials: 'omit', headers: {Authorization: 'Bearer ' + cookie}}).then((actorResponse) => {
         if ( this.get('cookies').get(C.COOKIE.TOKEN) !== cookie ) {
           return reject({status: 409, message: 'Session changed during validation'});
         }
@@ -542,8 +556,8 @@ export default Service.extend({
   },
 
   _validateAndAdopt(shared, cookie) {
-    return this._readCurrentToken().then((token) => {
-      return this.get('authSession').runExclusive(() => {
+    return this._readCurrentToken(cookie).then((token) => {
+      return this.get('authSession').runPassiveSynchronous(() => {
         let current = this.get('authSession').readShared();
         let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
         if ( !current || current.generation !== shared.generation || currentCookie !== cookie ) {
@@ -552,7 +566,7 @@ export default Service.extend({
         if ( current.accountId === null ) {
           current = this.get('authSession').commit(current.generation, token.accountId, currentCookie);
         } else if ( current.accountId !== token.accountId ) {
-          return reject({status: 409, message: 'Session account changed during validation'});
+          throw {status: 409, message: 'Session account changed during validation'};
         }
         this.get('authSession').adopt(current, currentCookie);
         this._applyTokenMetadata(token);
@@ -563,14 +577,14 @@ export default Service.extend({
       if ( status !== 401 && status !== 409 ) {
         return reject(error);
       }
-      return this.get('authSession').runExclusive(() => {
+      return this.get('authSession').runPassiveSynchronous(() => {
         let current = this.get('authSession').readShared();
         let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
         if ( status === 409 ) {
           if ( !current || current.generation !== shared.generation || currentCookie !== cookie ) {
             return {status: 'stale', generation: current && current.generation};
           }
-          return reject(error);
+          throw error;
         }
         if ( current && current.generation === shared.generation && currentCookie === cookie ) {
           this._clearOwnedLocalState(shared.generation);

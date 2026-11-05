@@ -291,6 +291,57 @@ export default Service.extend(Evented, {
     return this._runIndexedDbExclusive(callback);
   },
 
+  runPassiveSynchronous(callback) {
+    let apply = () => {
+      let value = callback();
+      if ( value && typeof value.then === 'function' ) {
+        throw new Error('Passive authentication callbacks must be synchronous');
+      }
+      return value;
+    };
+    let manager = this.get('lockManager');
+    if ( manager === undefined ) {
+      manager = window.navigator && window.navigator.locks;
+    }
+    if ( manager && typeof manager.request === 'function' ) {
+      return manager.request(C.AUTH_SESSION.LOCK_NAME, {mode: 'exclusive'}, apply);
+    }
+    return this._openLockDatabase().then((db) => this._runPassiveIndexedDbTransaction(db, apply));
+  },
+
+  _runPassiveIndexedDbTransaction(db, callback) {
+    // The transaction itself serializes synchronous state commits. Unlike the
+    // async login/logout lease, it cannot leave a 30s owner behind on reload.
+    return new Promise((resolveCommit, rejectCommit) => {
+      let transaction = db.transaction(LOCK_STORE, 'readwrite');
+      let request = transaction.objectStore(LOCK_STORE).get(C.AUTH_SESSION.LOCK_NAME);
+      let busy = false;
+      let value;
+      let failure;
+      request.onsuccess = () => {
+        let current = request.result;
+        if ( current && Number.isFinite(current.expiresAt) && current.expiresAt > Date.now() ) {
+          busy = true;
+          return;
+        }
+        try {
+          value = callback();
+        } catch (error) {
+          failure = error;
+          transaction.abort();
+        }
+      };
+      transaction.oncomplete = () => resolveCommit({busy, value});
+      transaction.onerror = () => rejectCommit(failure || transaction.error || new Error('Unable to commit passive authentication state'));
+      transaction.onabort = () => rejectCommit(failure || transaction.error || new Error('Passive authentication transaction aborted'));
+    }).then((outcome) => {
+      if ( outcome.busy ) {
+        return this._waitForLock().then(() => this._runPassiveIndexedDbTransaction(db, callback));
+      }
+      return outcome.value;
+    });
+  },
+
   _openLockDatabase() {
     if ( !window.indexedDB ) {
       return reject(new Error('Cross-tab authentication mutex is unavailable'));
