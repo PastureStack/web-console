@@ -1,25 +1,11 @@
-# Web Console 1.6.208 / bridge 0.2.10 candidate
+# Web Console 1.6.208 / Bridge 0.2.10
 
-This source candidate is not published or runtime-qualified. Matching Engine
-0.183.369 and a new Server assembly are required for Volume usage references.
+Volume detail uses the existing typed safe-read pipeline to show at most fifty currently readable active/stopped container references, with context-bound opaque identities and separately authorized Stack names. Hidden identities/counts, host source paths and secrets are excluded. Completeness stays unknown: empty or partial references never establish unused or safe-to-delete status. Existing tools, Key/role boundaries and native deletion behavior are unchanged.
 
-The existing resource detail presents at most 50 currently readable container
-references with contextual opaque containerRef values, names, states, container
-destination paths, read-only mode and an authorized Stack name where available.
-No raw target IDs, host filesystem paths, secrets or hidden identities/counts
-reach the model. Completeness is always unknown; empty or partial references
-never establish unused or safe-to-delete status. Existing query tools, grants
-and deletion behavior remain unchanged in browser and shared stdio core.
+External Service CREATE human review reuses the thirteen-locale native warning that TCP health checks apply only when the service is a load-balancer target. Scoped AI confirmation and Audit detail dialogs contain full long values in narrow RTL viewports; native Audit code scrolling and desktop limits remain. Installation instructions bind downloads, checksum verification, extraction and cd to the exact Web/Bridge package versions, including Windows CRLF handling. No approval or permission bypass is added.
 
-External Service CREATE review reuses the existing thirteen-locale native
-warning that TCP health checks apply only when the External Service is a load
-balancer backend. The tool description states the same boundary; this does not
-add an independent monitoring owner or HTTP health checks.
+Original full/enabled CI passed 1129 browser tests with zero failures, including two new layout QUnit cases. Three new Volume shared-core Node cases, one thirteen-locale warning case and four install-version Python controls passed. Existing formatter/modal cases and raw-field display protections remain. Original archive provenance and runtime SBOM cryptographic attestations were verified. Exact compatible build matcher backport/SBOM evidence and unchanged raw audit reports remain included; coverage is not a whole-product zero-vulnerability claim.
 
-The shared AI confirmation modal and Audit details now contain long values within
-narrow RTL and LTR viewports without truncation. Source-only browser layout
-witnesses cover narrow/desktop, light/dark and upgrade/Resource Change views.
-Three focused shared-core Node tests and one thirteen-locale review test pass.
-Two new QUnit layout cases and the complete necessary CI/artifact qualification
-remain pending; existing unaffected evidence is carried, not rerun. Native
-fa-ir/390/dark, Resource Change, role/Key and weak-model acceptance are pending.
+Bridge 0.2.10 has 36 source files in 38 deterministic ZIP entries and preserves twelve tools/protocol 1.0. The unchanged 92-component graph explicitly carries the genuine published 0.2.5 clean-install evidence; no new dependency installation was run. A real current SDK stdio handshake passed for this archive. The source manifest and release metadata record the tested producer/tree and exact asset hashes; the README does not embed a stale producer identity.
+
+Matching Engine v0.183.369 is immutable-published and its native release attestation is verified. Engine workflow SLSA was not provided. Designated Server 568 and native role/Key/reference/audit/layout acceptance remain separate and pending. No whole-family or 243-group runtime completion is claimed.
