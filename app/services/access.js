@@ -480,10 +480,11 @@ export default Service.extend({
   },
 
   _readCurrentToken(cookie) {
-    if ( !cookie ) {
+    let currentCookie = this.get('cookies').get(C.COOKIE.TOKEN);
+    if ( !cookie || !currentCookie ) {
       return reject({status: 401, message: 'No session cookie'});
     }
-    if ( this.get('cookies').get(C.COOKIE.TOKEN) !== cookie ) {
+    if ( currentCookie !== cookie ) {
       return reject({status: 409, message: 'Session changed during validation'});
     }
     return this.get('userStore').rawRequest({
