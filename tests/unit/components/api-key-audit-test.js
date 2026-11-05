@@ -120,6 +120,21 @@ test('operation, decision and unknown result display keys are safe while wire va
   destroyOwned(component);
 });
 
+test('load balancer metadata audit uses the translated subtype without exposing configuration', function(assert) {
+  let component = audit(() => resolve());
+  let record = component.safeRecord({targetType: 'loadBalancerService', targetId: '1s7', operation: 'update',
+    decision: 'ALLOW', outcome: 'SUCCEEDED', phase: 'response', httpStatus: 200,
+    lbConfig: {privateValue: 'PRIVATE-CANARY'}, certificateIds: ['PRIVATE-CANARY'], launchConfig: {secret: 'PRIVATE-CANARY'}});
+  assert.strictEqual(record.targetType, 'loadBalancerService', 'keeps the exact canonical subtype');
+  assert.strictEqual(record.targetLabelKey, 'servicePage.type.loadbalancerservice', 'uses the existing translated LB label');
+  assert.strictEqual(record.operationLabelKey, 'apiKeyAccess.operations.update');
+  assert.strictEqual(record.decision, 'ALLOW', 'label does not rewrite authoritative wire decisions');
+  assert.strictEqual(record.outcome, 'SUCCEEDED');
+  assert.notOk(JSON.stringify(record).includes('PRIVATE-CANARY'), 'configuration and certificate material are excluded');
+  assert.strictEqual(component.safeRecord({targetType: 'unknown-lb-private'}).targetLabelKey, 'apiKeyAudit.unknownTarget');
+  destroyOwned(component);
+});
+
 test('bounded scan rejection offers a narrower query rather than a partial count', async function(assert) {
   let component = audit(() => reject({status: 422, body: {code: 'result_set_too_large'}}));
   await component.load();

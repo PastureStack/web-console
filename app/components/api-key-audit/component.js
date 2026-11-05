@@ -9,7 +9,7 @@ const CLIENT_REASONS = ['NONE', 'INVALID_INPUT', 'UNAVAILABLE', 'CONTEXT_CHANGED
   'SESSION_REQUIRED', 'CONFLICT', 'NEEDS_USER', 'INVALID_RESPONSE', 'UNKNOWN_RESULT', 'CANCELLED', 'CAPACITY'];
 const PHASES = ['decision', 'response', 'attempt', 'continuation', 'completion', 'handshake'];
 const TARGET_TYPES = ['stack', 'service', 'container', 'host', 'volume', 'network', 'secret', 'certificate',
-  'project', 'setting', 'userPreference', 'registry', 'storagePool', 'networkPolicy', 'projectMember',
+  'project', 'loadBalancerService', 'setting', 'userPreference', 'registry', 'storagePool', 'networkPolicy', 'projectMember',
   'apiKey', 'apiKeyRestricted', 'account', 'auditLog', 'subscribe'];
 const REASONS = ['KeyFullAccess', 'KeyRuleAllowed', 'KeyScopedCollection', 'KeyPolicyDenied', 'KeyScopeDenied',
   'OwnerPermissionDenied', 'ApiKeyExpired', 'ApiKeyRevoked', 'ApiKeyPolicyChanged', 'PolicyChanged',
@@ -136,6 +136,7 @@ export default Component.extend({
     safe.preview = record.preview === true;
     safe.targetLabelKey = TARGET_TYPES.includes(safe.targetType) ?
       safe.targetType === 'subscribe' ? 'apiKeyAudit.resources.subscribe' :
+        safe.targetType === 'loadBalancerService' ? 'servicePage.type.loadbalancerservice' :
         `apiKeyAccess.selector.types.${safe.targetType}` : 'apiKeyAudit.unknownTarget';
     safe.operationLabelKey = API_KEY_OPERATIONS.includes(safe.operation) ?
       `apiKeyAccess.operations.${safe.operation}` : 'apiKeyAudit.unknownOperation';
