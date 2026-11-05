@@ -1,7 +1,7 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
 import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy } from './ai-command-contract';
-import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
+import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
 import { createCatalogLaunchAdapter, catalogLaunchPlanSummary, CATALOG_LAUNCH_COLLECTION } from './ai-catalog-launch';
@@ -147,6 +147,8 @@ export class CommandEngine {
         'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching service-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
         result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
         'Only service create accepts ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units, or healthCheck with required port 1 through 65535 and the exact fields and bounds in the schema. Timings are milliseconds; thresholds count checks. Reuse the selected Stack parentRef unchanged.' :
+        input && input.resourceType === 'service' && Object.prototype.hasOwnProperty.call(SERVICE_UPGRADE_LIFECYCLE, input.operation) && result.field && result.field.startsWith('parameters') ?
+        'Use this selected Service targetRef and empty parameters for the existing upgrade lifecycle action. Do not send an image, strategy, state or raw action. A new image upgrade uses preview_service_upgrade and a separate human-approved plan; do not silently substitute it.' :
         input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
         'Preview archive or restore separately with an existing targetRef and empty parameters. Do not include a service clone, archive flag or other settings.' : repairs[result.field] || (result.field && /^parameters\.(command|entryPoint)(\[\d+\])?$/.test(result.field) ?
         'Use a string array: at most 64 items, 4096 UTF-16 units per item, 16384 in total, and no NUL. These arrays are supported only for service/container create.' :
@@ -858,6 +860,10 @@ export class CommandEngine {
       result.workflow = [...ALIAS_WORKFLOW]; result.targetsBound = false;
       if ( result.status === 'succeeded' && result.verifiedResult === true ) { result.nextStep = ALIAS_CREATE_NEXT_STEP; }
     }
+    if ( plan.resourceType === 'service' && plan.operation === 'cancel_upgrade' && result.status === 'succeeded' && result.verifiedResult === true ) {
+      result.completionScope = 'cancellation-checkpoint';
+      result.nextStep = 'Only the native upgrade cancellation checkpoint is verified. The upgrade or rollback has not been completed. Read the same Service again before requesting a separately approved next operation.';
+    }
     if ( plan.id && plan.id.startsWith('aicataloglaunch-') && plan.createdResource ) {
       const captured = this.context.capture(), created = plan.createdResource;
       if ( created.resourceType !== 'stack' || !this.resourceIdentity(created, resourceDescriptor('stack'), captured) || typeof created.name !== 'string' ) {
@@ -983,6 +989,12 @@ export class CommandEngine {
     }
     if ( ['archive', 'restore'].includes(plan.operation) && (displayDiff.length !== 1 || displayDiff[0].field !== 'archived') ) {
       throw new CommandError('INVALID_RESPONSE');
+    }
+    if ( plan.resourceType === 'service' && Object.prototype.hasOwnProperty.call(SERVICE_UPGRADE_LIFECYCLE, plan.operation) ) {
+      const expected = SERVICE_UPGRADE_LIFECYCLE[plan.operation], operation = displayDiff.find((change) => change.field === 'operation'),
+        state = displayDiff.find((change) => change.field === 'state');
+      if ( displayDiff.length !== 2 || !operation || operation.before !== null || operation.after !== plan.operation ||
+        !state || !expected.before.includes(state.before) || state.after !== expected.after ) { throw new CommandError('INVALID_RESPONSE'); }
     }
     if ( SERVICE_CREATE_FIELDS.some((field) => displayDiff.filter((change) => change.field === field).length > 1) ) { throw new CommandError('INVALID_RESPONSE'); }
     let executionResult;
