@@ -207,13 +207,20 @@ async function exactProject(transport, id, uuid, signal, bootstrap = false) {
   return verifyProject(body, id, uuid);
 }
 
+async function boundProject(transport, binding) {
+  // Only collection discovery may precede the first server-verified Key revision.
+  // Its rows never select the target: the subsequent exact GET is authoritative.
+  const {body} = await transport({url: 'projects?limit=1'}, null, true);
+  if (!Array.isArray(body?.data)) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  return exactProject(transport, binding.id, binding.uuid, undefined, true);
+}
+
 // Explicit profile preparation only. No filesystem, prompts, public tool or implicit save.
 export async function prepareBoundProfile(input, {fetcher, select} = {}) {
   const config = validateConfig(input), transport = createTransport(config, fetcher);
   let project;
   if (config.environmentBinding) {
-    const binding = config.environmentBinding;
-    project = await exactProject(transport, binding.id, binding.uuid, undefined, true);
+    project = await boundProject(transport, config.environmentBinding);
   } else {
     const candidates = await visibleByName(config, transport, true);
     if (!candidates.length) throw new SetupError('ENVIRONMENT_NOT_VISIBLE');
@@ -238,8 +245,7 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
   const transport = createTransport(config, fetcher);
   let project;
   if (config.environmentBinding) {
-    const binding = config.environmentBinding;
-    project = await exactProject(transport, binding.id, binding.uuid, undefined, true);
+    project = await boundProject(transport, config.environmentBinding);
   } else {
     const selected = await visibleByName(config, transport);
     if (selected.length !== 1) throw new SetupError(selected.length ? 'AMBIGUOUS_ENVIRONMENT' : 'ENVIRONMENT_NOT_VISIBLE');
