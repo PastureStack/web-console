@@ -252,6 +252,17 @@ export function publicError(error) {
   if (code === 'FORBIDDEN' && serverCode === 'ai_audit_cookie_required') {
     result.nextStep = 'The server is using the earlier Cookie-only audit adapter. The dedicated bridge needs the matching Engine and broker audit-query components. Do not forge a Cookie, switch credentials or treat this denial as a successful query.';
   }
+  if ( code === 'UNKNOWN_RESULT' && error instanceof CommandError && error.field === 'bridge.projectLabelRefresh' ) {
+    result.reason = 'BRIDGE_PROJECT_LABEL_REFRESH_PENDING';
+    delete result.field;
+    result.retryable = true; result.retryAfterMs = 1000;
+    result.nextStep = 'The environment label refresh is temporarily unavailable. Retry a read in this same environment later. Do not reapply the completed operation, create another plan, rebind the profile or change the target.';
+  }
+  if ( code === 'NEEDS_USER' && error instanceof CommandError && error.field === 'bridge.environmentBinding' ) {
+    result.reason = 'BRIDGE_PROJECT_BINDING_REQUIRED';
+    result.field = 'parameters.name';
+    result.nextStep = 'Ask the user to create a new bound local bridge profile with the installed bind-profile.mjs setup described in the Bridge README, then reconnect using that new file before renaming this environment. Keep the existing profile unchanged. Description-only edits remain available. Never supply IDs, credentials or binding flags through tool arguments.';
+  }
   return result;
 }
 

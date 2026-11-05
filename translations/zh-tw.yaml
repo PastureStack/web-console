@@ -2151,6 +2151,13 @@ apiKeyAccess:
     readback: 已送出設定，但尚未完成重新讀取驗證。請重新讀取最新版本，勿重複建立金鑰。
     reload: 無法重新讀取金鑰。請確認目前存取權限。
 apiKeyAudit:
+  clientReportNotice: "用戶端回報；這不是伺服器的授權決策。"
+  clientReportedReason: "用戶端回報原因"
+  clientNeedsUser: "需要使用者處理（用戶端回報）"
+  clientToolReport: "工具回報"
+  clientNotEvaluated: "未評估授權"
+  clientReported: "已回報"
+  clientToolEvent: "工具事件"
   unknownOperation: 無法辨識的操作；請使用請求 ID 查核
   unknownTarget: 無法辨識的資源類型
   resources:
@@ -4627,6 +4634,7 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
+  bridgeProjectBindingRequired: "透過橋接器重新命名此環境前，請使用者建立新的已綁定本機設定檔，並以新檔案重新連線。保留原設定檔不變；仍可單獨編輯說明。"
   assignedPorts: 實際配置的連接埠對應
   backgroundAuthorizationDenied: "背景操作因權限檢查遭拒，部分變更可能已完成，整體完成狀態尚未驗證。請檢查目前權限，再開啟原操作紀錄核對；不要直接重新送出或再次核准這項變更。"
   catalogReferenceAmbiguous: "部分資源顯示名稱相同，無法安全區分。請先在原有主控台核對目標，再進行選取。"

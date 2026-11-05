@@ -4197,6 +4197,13 @@ apiKeyAccess:
     readback: 配置已提交，但尚未通过重新读取完成验证。请重新加载密钥，不要再次创建。
     reload: 无法重新加载密钥。请检查当前访问权限。
 apiKeyAudit:
+  clientReportNotice: "客户端报告；这不是服务器的授权决定。"
+  clientReportedReason: "客户端报告原因"
+  clientNeedsUser: "需要用户处理（客户端报告）"
+  clientToolReport: "工具报告"
+  clientNotEvaluated: "未评估授权"
+  clientReported: "已报告"
+  clientToolEvent: "工具调用事件"
   unknownOperation: 无法识别的操作，请使用请求 ID 进行调查
   unknownTarget: 无法识别的资源类型
   resources:
@@ -4294,6 +4301,7 @@ apiKeyAudit:
     load: 无法加载密钥审计。请刷新后重试。
 
 webmcp:
+  bridgeProjectBindingRequired: "通过桥接器重命名此环境前，请用户创建新的已绑定本地配置文件，并使用新文件重新连接。保留原配置文件不变；仍可单独编辑描述。"
   assignedPorts: 实际分配的端口映射
   backgroundAuthorizationDenied: "后台操作因权限检查被拒绝，部分变更可能已经完成，整体完成状态尚未验证。请检查当前权限，再核对原操作记录；不要盲目重新提交或再次批准这项变更。"
   catalogReferenceAmbiguous: "部分资源显示名称相同，无法安全区分。请先在原有控制台核对目标，再进行选择。"

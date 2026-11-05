@@ -15,7 +15,8 @@ const HEALTH_FIELDS = {port: 'port', requestLine: 'request', interval: 'interval
   unhealthyThreshold: 'unhealthyThreshold', initializingTimeout: 'initializingTimeout', reinitializingTimeout: 'reinitializingTimeout', strategy: 'strategy'};
 
 // Only an already sanitized public code selects fixed human guidance.
-export function resourceConfirmationErrorKey(code) {
+export function resourceConfirmationErrorKey(code, reason) {
+  if ( code === 'NEEDS_USER' && reason === 'BRIDGE_PROJECT_BINDING_REQUIRED' ) { return 'webmcp.bridgeProjectBindingRequired'; }
   if ( code === 'FORBIDDEN' ) { return 'webmcp.forbidden'; }
   return ['CONFLICT', 'SESSION_REQUIRED', 'STALE_REFERENCE', 'STALE_REF', 'CONTEXT_CHANGED'].includes(code) ? 'webmcp.stale' : 'webmcp.failed';
 }

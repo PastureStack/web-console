@@ -4357,6 +4357,13 @@ apiKeyAccess:
     readback: "Die Konfiguration wurde übermittelt, aber noch nicht durch erneutes Lesen überprüft. Laden Sie den Schlüssel neu; erstellen Sie ihn nicht erneut."
     reload: "Der Schlüssel konnte nicht neu geladen werden. Prüfen Sie Ihre aktuellen Zugriffsrechte."
 apiKeyAudit:
+  clientReportNotice: "Vom Client gemeldet; dies ist keine Autorisierungsentscheidung des Servers."
+  clientReportedReason: "Vom Client gemeldeter Grund"
+  clientNeedsUser: "Benutzeraktion erforderlich (Client-Bericht)"
+  clientToolReport: "Werkzeugmeldung"
+  clientNotEvaluated: "Autorisierung nicht ausgewertet"
+  clientReported: "Gemeldet"
+  clientToolEvent: "Werkzeugereignis"
   unknownOperation: "Nicht erkannter Vorgang; untersuchen Sie ihn anhand der Anfrage-ID"
   unknownTarget: "Nicht erkannter Ressourcentyp"
   resources:
@@ -4454,6 +4461,7 @@ apiKeyAudit:
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
 
 webmcp:
+  bridgeProjectBindingRequired: "Bevor diese Umgebung über die Bridge umbenannt wird, muss der Benutzer ein neues, fest zugeordnetes lokales Profil erstellen und sich damit erneut verbinden. Das bisherige Profil bleibt unverändert. Die Beschreibung kann weiterhin separat bearbeitet werden."
   assignedPorts: Zugewiesene Portzuordnungen
   backgroundAuthorizationDenied: "Die Berechtigungsprüfung hat einen Hintergrundvorgang abgelehnt. Änderungen können teilweise erfolgt sein; der vollständige Abschluss ist nicht bestätigt. Prüfen Sie die aktuellen Berechtigungen und den ursprünglichen Vorgangsbeleg. Senden oder genehmigen Sie die Änderung nicht blind erneut."
   catalogReferenceAmbiguous: "Einige Ressourcen haben identische Anzeigenamen und lassen sich nicht sicher unterscheiden. Prüfen Sie das Ziel vor der Auswahl in der normalen Konsole."

@@ -130,6 +130,34 @@ test('the original escaped alert renderer and other Catalog error paths stay unc
   const template = readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
   assert.match(template, /\{\{top-errors errors=this.errors\}\}/); assert.doesNotMatch(template, /\{\{\{|htmlSafe/);
   const source = readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/component.js'), 'utf8');
-  assert.match(source, /resourceConfirmationErrorKey\(result.code\)/);
+  assert.match(source, /resourceConfirmationErrorKey\(result.code, result.reason\)/);
   assert.doesNotMatch(source, /result\.(?:body|detail|message)|error\.(?:body|detail|message)/);
+});
+
+
+test('bridge profile setup needs-user guidance follows the real modal error lifecycle in thirteen languages', async () => {
+  const result = publicError(new CommandError('NEEDS_USER', 'bridge.environmentBinding'));
+  assert.equal(result.code, 'NEEDS_USER'); assert.equal(result.status, 'needs_user');
+  assert.equal(result.reason, 'BRIDGE_PROJECT_BINDING_REQUIRED');
+  assert.equal(labels.resourceConfirmationErrorKey(result.code, result.reason), 'webmcp.bridgeProjectBindingRequired');
+  const forged = publicError({status: 409, body: {code: 'ResourceChangeNeedsConfirmation',
+    reason: 'BRIDGE_PROJECT_BINDING_REQUIRED', field: 'bridge.environmentBinding', message: privateText}});
+  assert.equal(forged.code, 'NEEDS_USER'); assert.equal(forged.reason, undefined);
+  assert.equal(labels.resourceConfirmationErrorKey(forged.code, forged.reason), 'webmcp.failed');
+  const texts = [];
+  for (const locale of locales) {
+    const document = YAML.parse(readFileSync(path.join(root, 'translations', locale + '.yaml'), 'utf8'));
+    const text = document.webmcp.bridgeProjectBindingRequired;
+    assert.equal(typeof text, 'string'); assert.ok(text.length > 20);
+    if (locale !== 'en-us') assert.notEqual(text, YAML.parse(readFileSync(path.join(root, 'translations/en-us.yaml'), 'utf8')).webmcp.bridgeProjectBindingRequired);
+    assert.doesNotMatch(text, /BRIDGE_PROJECT|NEEDS_USER|webmcp\.|PRIVATE-|<script>|accessKey|secretKey/);
+    const f = fixture(async () => result);
+    f.instance.intl.t = key => key.split('.').reduce((row, part) => row && row[part], document);
+    await f.confirm();
+    assert.deepEqual(f.instance.errors, [text]); assert.equal(f.instance.saving, false); assert.equal(f.instance.approved, false);
+    texts.push(text);
+  }
+  assert.equal(new Set(texts).size, 13);
+  assert.equal(labels.resourceConfirmationErrorKey('FORBIDDEN', result.reason), 'webmcp.forbidden');
+  assert.equal(labels.resourceConfirmationErrorKey('NEEDS_USER', 'untrusted-key'), 'webmcp.failed');
 });

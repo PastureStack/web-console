@@ -12,6 +12,7 @@ function fixture(transportKind = 'stdio') {
   const faults = {}, requests = [], rows = ['p2', 'p1'].map(id => ({id, name: 'same-name', description: id === 'p1' ? null : '', state: 'active',
     orchestration: 'cattle', members: ['PRIVATE-MEMBERS'], data: {network: 'PRIVATE-NETWORK'}, auth: 'PRIVATE-AUTH'}));
   const engine = new CommandEngine({context, transportKind, ensureSession: async () => {}, wait: async () => {},
+    canRenameSelectedProject: async () => true, // This existing positive fixture represents an explicitly bound adapter.
     audit: async () => ({accepted: true, requestId: `audit${++sequence}`}), request: async request => {
       requests.push(request);
       if (request.url === `projects/${snapshot.projectId}/aiResourceViews`) return {body: {resourceType: 'project',

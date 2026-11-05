@@ -2239,6 +2239,13 @@ apiKeyAccess:
     readback: The configuration was submitted but has not been verified by a fresh read. Reload the key; do not create it again.
     reload: Could not reload the key. Check current access.
 apiKeyAudit:
+  clientReportNotice: "Reported by the client; this is not a server authorization decision."
+  clientReportedReason: "Client-reported reason"
+  clientNeedsUser: "User action required (client report)"
+  clientToolReport: "Tool report"
+  clientNotEvaluated: "Authorization not evaluated"
+  clientReported: "Reported"
+  clientToolEvent: "Tool event"
   unknownOperation: Unrecognized operation; investigate using the request ID
   unknownTarget: Unrecognized resource type
   resources:
@@ -4851,6 +4858,7 @@ formResources:
     map: "Use non-empty keys and values for advanced options."
 
 webmcp:
+  bridgeProjectBindingRequired: "To rename this environment through the bridge, ask the user to create a new bound local profile and reconnect with the new file. Keep the existing profile unchanged. Description-only edits remain available."
   assignedPorts: Assigned port mappings
   backgroundAuthorizationDenied: "A background authorization check denied the operation. Some changes may already have occurred; completion has not been verified. Check the current permissions and the original operation receipt. Do not blindly resubmit or approve the change again."
   catalogReferenceAmbiguous: "Some resources have identical display names and cannot be distinguished safely. Verify the target in the normal console before selecting it."

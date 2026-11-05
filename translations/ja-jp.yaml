@@ -4502,6 +4502,13 @@ apiKeyAccess:
     readback: 設定は送信されましたが、再読み込みによる検証が済んでいません。キーを再読み込みしてください。作成し直さないでください。
     reload: キーを再読み込みできませんでした。現在のアクセス権を確認してください。
 apiKeyAudit:
+  clientReportNotice: "クライアントからの報告です。サーバーによる認可判断ではありません。"
+  clientReportedReason: "クライアントが報告した理由"
+  clientNeedsUser: "ユーザーの対応が必要（クライアント報告）"
+  clientToolReport: "ツールからの報告"
+  clientNotEvaluated: "権限は未評価"
+  clientReported: "報告済み"
+  clientToolEvent: "ツールイベント"
   unknownOperation: 認識できない操作です。リクエスト ID を使って調査してください
   unknownTarget: 認識できないリソースの種類
   resources:
@@ -4599,6 +4606,7 @@ apiKeyAudit:
     load: キーの監査を読み込めませんでした。更新して再試行してください。
 
 webmcp:
+  bridgeProjectBindingRequired: "ブリッジ経由でこの環境の名前を変更する前に、環境に紐付けた新しいローカルプロファイルを作成し、新しいファイルで再接続するようユーザーに依頼してください。既存のプロファイルは変更しません。説明だけの編集は引き続き可能です。"
   assignedPorts: 実際に割り当てられたポートマッピング
   backgroundAuthorizationDenied: "バックグラウンド操作が権限確認で拒否されました。一部の変更は実行済みの可能性があり、全体の完了は確認されていません。現在の権限と元の操作記録を確認してください。確認せずに変更を再送信したり、再承認したりしないでください。"
   catalogReferenceAmbiguous: "表示名が同じため安全に区別できないリソースがあります。選択する前に通常のコンソールで対象を確認してください。"

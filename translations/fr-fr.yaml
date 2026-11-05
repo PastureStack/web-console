@@ -4302,6 +4302,13 @@ apiKeyAccess:
     readback: "La configuration a été soumise, mais n’a pas été vérifiée par une nouvelle lecture. Rechargez la clé ; ne la recréez pas."
     reload: "Impossible de recharger la clé. Vérifiez vos droits d’accès actuels."
 apiKeyAudit:
+  clientReportNotice: "Signalé par le client ; ce n’est pas une décision d’autorisation du serveur."
+  clientReportedReason: "Motif signalé par le client"
+  clientNeedsUser: "Action de l’utilisateur requise (signalement du client)"
+  clientToolReport: "Rapport de l’outil"
+  clientNotEvaluated: "Autorisation non évaluée"
+  clientReported: "Signalé"
+  clientToolEvent: "Événement de l’outil"
   unknownOperation: "Opération non reconnue ; examinez-la à l’aide de l’identifiant de requête"
   unknownTarget: "Type de ressource non reconnu"
   resources:
@@ -4399,6 +4406,7 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  bridgeProjectBindingRequired: "Avant de renommer cet environnement avec le pont, demandez à l’utilisateur de créer un nouveau profil local lié à cet environnement, puis de se reconnecter avec ce fichier. Conservez le profil existant sans modification. La description peut toujours être modifiée séparément."
   assignedPorts: Mappages de ports attribués
   backgroundAuthorizationDenied: "Un contrôle des autorisations a refusé l’opération en arrière-plan. Certaines modifications ont peut-être déjà été effectuées ; la fin de l’opération n’a pas été vérifiée. Vérifiez les autorisations actuelles et le reçu de l’opération initiale. Ne soumettez pas et n’approuvez pas à nouveau la modification sans vérification."
   catalogReferenceAmbiguous: "Certaines ressources ont le même nom affiché et ne peuvent pas être distinguées de façon sûre. Vérifiez la cible dans la console habituelle avant de la sélectionner."

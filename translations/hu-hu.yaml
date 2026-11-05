@@ -4320,6 +4320,13 @@ apiKeyAccess:
     readback: A konfigurációt elküldtük, de friss beolvasással még nem ellenőriztük. Töltse újra a kulcsot; ne hozza létre újra.
     reload: Nem sikerült újratölteni a kulcsot. Ellenőrizze az aktuális hozzáférését.
 apiKeyAudit:
+  clientReportNotice: "Az ügyfél jelentése; ez nem a kiszolgáló jogosultsági döntése."
+  clientReportedReason: "Az ügyfél által jelentett ok"
+  clientNeedsUser: "Felhasználói beavatkozás szükséges (ügyféljelentés)"
+  clientToolReport: "Eszközjelentés"
+  clientNotEvaluated: "A jogosultságot nem értékelték"
+  clientReported: "Jelentve"
+  clientToolEvent: "Eszközesemény"
   unknownOperation: Ismeretlen művelet; vizsgálja ki a kérésazonosító alapján
   unknownTarget: Ismeretlen erőforrástípus
   resources:
@@ -4417,6 +4424,7 @@ apiKeyAudit:
     load: Nem sikerült betölteni a kulcsauditot. Frissítsen az újrapróbáláshoz.
 
 webmcp:
+  bridgeProjectBindingRequired: "A környezet hídon keresztüli átnevezése előtt kérje meg a felhasználót, hogy hozzon létre egy új, a környezethez rögzített helyi profilt, majd az új fájllal csatlakozzon újra. A meglévő profil maradjon változatlan. A leírás továbbra is külön szerkeszthető."
   assignedPorts: Kiosztott port-hozzárendelések
   backgroundAuthorizationDenied: "A jogosultság-ellenőrzés elutasította a háttérműveletet. Néhány módosítás már megtörténhetett; a teljes befejezés nincs igazolva. Ellenőrizze a jelenlegi jogosultságokat és az eredeti művelet bizonylatát. Ellenőrzés nélkül ne küldje el és ne hagyja jóvá újra a módosítást."
   catalogReferenceAmbiguous: "Egyes erőforrások megjelenített neve azonos, ezért nem különböztethetők meg biztonságosan. Kiválasztás előtt ellenőrizze a célt a szokásos konzolon."
