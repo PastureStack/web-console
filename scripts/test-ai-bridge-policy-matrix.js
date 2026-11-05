@@ -56,7 +56,8 @@ async function main() {
   test('sensitive metadata reads never advertise credential or infrastructure writes', () => {
     for (const resourceType of ['certificate', 'setting', 'registry', 'apiKey', 'account', 'host', 'volume']) {
       for (const cell of point(resourceType)) {
-        assert.equal(cell.state, cell.operation === 'read' ? 'conditional' : 'unsupported', `${resourceType}/${cell.operation}`);
+        const metadataUpdate = cell.operation === 'update' && ['certificate', 'host'].includes(resourceType);
+        assert.equal(cell.state, cell.operation === 'read' || metadataUpdate ? 'conditional' : 'unsupported', `${resourceType}/${cell.operation}`);
       }
     }
   });

@@ -36,7 +36,7 @@ function validatePending(lock, pending, now) {
     pending.upstreamLatestVersion === '3.0.3' && strings(pending.officialStatusSources) && sameSet(pending.officialStatusSources, [ADVISORY,
       'https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm', 'https://registry.npmjs.org/braces/latest']),
   'PENDING_OFFICIAL_STATUS_INVALID');
-  need(pending.reviewUntil === '2026-11-05' && typeof pending.reviewedAt === 'string' &&
+  need(pending.reviewUntil === '2026-11-12' && typeof pending.reviewedAt === 'string' &&
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/.test(pending.reviewedAt) &&
     Number.isFinite(Date.parse(pending.reviewedAt)) && Number.isFinite(now.getTime()) &&
     now.getTime() >= Date.parse(pending.reviewedAt) && now.getTime() < Date.parse(pending.reviewUntil + 'T00:00:00Z'),

@@ -1,27 +1,30 @@
 # Compatibility Contract
 
-## Web Console 1.6.208 / bridge 0.2.10 source contract
+## Web Console 1.6.209 / bridge 0.2.11 source candidate
 
-Existing get_resource Volume detail uses Engine 0.183.369's bounded,
-authorized usage projection in browser and shared stdio core. At most fifty
-container references retain their captured context. Hidden identities/counts
-and host source paths are excluded. Completeness stays unknown, and an empty
-result does not grant deletion. Current native role/Key and object checks remain.
+Matching Engine 0.183.370 adds human-reviewed Host name/description plans and
+bounded Host workload detail. Host infrastructure, credentials, evacuation,
+deactivation and scheduling remain normal human workflows. Browser and stdio
+Host reads use the same typed owner. At most fifty currently readable container
+references are returned; completeness is always unknown.
 
-External TCP review reuses the native thirteen-locale LB-only warning.
-Scoped AI confirmation and Audit detail styles retain full values at narrow RTL
-widths; Audit code keeps its native scrolling. No tool, permission or write is
-added. Bridge installation uses the root/bridge package versions for every
-download, checksum, extraction and working-directory step; its version guard
-rejects stale instructions before packaging.
+Host and existing Volume reads resolve optional Stack names through the native
+Service relation when the container's persisted direct Stack is absent and the
+current role schema permits that relation. Service and Stack each require fresh
+native/Key authorization. Multiple, hidden or changed relationships remain
+unknown, without candidate IDs/counts. Empty results do not establish safe
+removal. Opaque references retain their captured context.
 
-Original CI, exact tested producer/tree, dependency evidence, attestations and
-publication results belong to the matching
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.208/web208-release-metadata.json)
-and [Bridge proof](https://github.com/PastureStack/web-console/releases/download/1.6.208/bridge030-release-proof.json).
-They are not inferred from a source version. Designated Server, role/Key,
-weak-model and native layout acceptance remain separate and pending. Historical
-published evidence follows; no whole-family or 243-group completion is claimed.
+Service-search guidance accepts only returned opaque Stack references, or a
+query-only search with readable Stack names. It does not relax reference format,
+roles, Key scope or native permission checks. The twelve tools and protocol 1.0
+remain unchanged.
+
+The six Host metadata, three Host workload and three Stack-reference guidance
+Node source cases passed before version preparation. Original candidate CI,
+artifact/SBOM attestations, public asset byte verification and designated native
+acceptance are pending; no published or runtime result is inferred here. The
+matching release records will carry the exact producer/tree and evidence.
 
 ## Web Console 1.6.207 / bridge 0.2.9 published
 

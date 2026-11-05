@@ -7,17 +7,24 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Current source version
 
-[Bridge **0.2.10** / Web Console **1.6.208**](../docs/releases/web-console-1.6.208.md)
-uses matching Engine **0.183.369**. Install only from the completed matching
-release; publication and Server/runtime acceptance are separate guarantees.
+[Bridge **0.2.11** / Web Console **1.6.209**](../docs/releases/web-console-1.6.209.md)
+is a source candidate requiring matching Engine **0.183.370** support. Install
+only after the matching release is qualified and published; candidate source
+checks do not establish artifact or Server/runtime acceptance.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
-and human-reviewed lifecycle plans. Volume detail can show at most fifty
-currently readable container references, with readable Stack names where
-separately authorized. Completeness remains unknown; empty references never
-prove unused or safe deletion. External Service TCP health checks apply only
-when the External Service is a load-balancer target. The shared AI review and
-Audit detail dialogs preserve full values within narrow RTL viewports.
+and human-reviewed lifecycle plans. Host plans support only name/description;
+infrastructure, evacuation and deactivation stay in normal human workflows.
+Host detail shows at most fifty freshly readable container references. Host and
+Volume detail can include a separately authorized Stack name, including native
+Service containers whose direct Stack field is absent. Ambiguous or unreadable
+relations remain unknown; hidden identities and counts are not returned. Empty
+references never prove an empty Host, unused storage or safe removal.
+
+`find_services` accepts an opaque `stackRef` from `find_stacks`, never a name or
+raw ID. Search by query without `stackRef` and compare returned Stack names, or
+look up a fresh Stack reference first. Ref validity and native permissions remain
+unchanged.
 
 Optional image-upgrade settings remain bound to the exact human review.
 The bridge cannot approve its own plans. Native owner, role, Key and revision
@@ -61,8 +68,8 @@ before extraction. Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.208
-BRIDGE_VERSION=0.2.10
+WEB_CONSOLE_VERSION=1.6.209
+BRIDGE_VERSION=0.2.11
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
@@ -74,8 +81,8 @@ npm ci --ignore-scripts --no-audit --no-fund
 The MCP entry point is the extracted `bridge/server.mjs`.
 `source-manifest.json` records included source hashes; the archive also includes
 LICENSE and the bridge CycloneDX SBOM. The matching
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.208/web208-release-metadata.json)
-and [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.208/bridge030-release-proof.json)
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.209/web209-release-metadata.json)
+and [source proof](https://github.com/PastureStack/web-console/releases/download/1.6.209/bridge031-release-proof.json)
 record the exact producer, tested tree, dependency evidence and SDK handshake.
 Use those release records rather than a producer hash copied into this README.
 Clean-install evidence is explicitly carried from 0.2.5 only when the unchanged

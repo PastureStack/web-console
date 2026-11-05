@@ -33,6 +33,7 @@ test('dedicated bridge exact resource cells match the provided resource and oper
     const value = buildPolicyMatrix(policy, {target: evidence}, labels);
     for (const operation of API_KEY_OPERATIONS) {
       const provided = operation === 'read' || operation === 'upgrade' && resourceType === 'service' ||
+        operation === 'update' && resourceType === 'host' ||
         ['update', 'delete'].includes(operation) && ['stack', 'service', 'container'].includes(resourceType);
       const actual = cell(value, key(scope), operation);
       assert.strictEqual(actual.policyState, 'allow', `${resourceType}/${operation} retains the stored policy ceiling`);
