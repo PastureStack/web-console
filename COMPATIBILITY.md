@@ -1,5 +1,17 @@
 # Compatibility Contract
 
+## Web Console 1.6.212 / bridge 0.2.14 published
+
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.212) requires matching published Engine **0.183.373** and a qualified compatible Server assembly. All thirteen assets passed anonymous byte-count/SHA256 readback; native release verification covers thirteen asset subjects and the signed tag. Original archive provenance and SBOM attestations passed.
+
+Read-only Process discovery, details and diagnostic summaries use the existing find/get tools and native global schemas, actor authority and Key limits. Project ownership grants no global process permission. Only registered process/handler names, fixed enums and safe timing metadata are projected. Raw exception messages, causes, stack traces, data/result payloads and descendant graphs are excluded. Empty, hidden or truncated diagnostics remain unknown. Source, entry and UTF-8 bounds retain fixed safe truncation reasons without partial conclusions.
+
+Original CI passed 1,140 browser tests with zero failures and all 53 focused methods: 50 carried plus 3 new Process Node methods. The existing passive-session protections, metadata review/approval and opaque-reference boundaries remain in place. Required CodeQL passed; the dependency graph is unchanged.
+
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.212/web212-release-metadata.json) records producer `b62a2a2e6a24030c98fa0dc4bc1d2681039a1051`, normal merge/tag target `273da92496394502fe7a984f82ecb9bc2f616d77` and tested tree `1cbe62f0c717066163776d0221bb4c6dbb607add`. This later documentation commit is not the artifact producer; the original release assets and note retain their release-time bytes.
+
+Native Process acceptance and matching assembled-Server acceptance remain pending. Component publication is not whole-family or whole-243-group completion. The sections below preserve historical release-time evidence.
+
 ## Web Console 1.6.211 / bridge 0.2.13 published
 
 Passive session validation uses one synchronous IndexedDB transaction when Web
