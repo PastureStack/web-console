@@ -10,7 +10,7 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.210** / bridge **0.2.12**](docs/releases/web-console-1.6.210.md)
+[Web Console **1.6.211** / bridge **0.2.13**](docs/releases/web-console-1.6.211.md)
 is published. Matching published Engine **0.183.372** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
@@ -49,7 +49,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.210/web210-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.211/web211-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Project/LB runtime cases, new weak-model cases and the 52 new audit layouts remain
 separate and pending; whole-family/243-group completion is not claimed.
