@@ -195,7 +195,6 @@ test('writer creates a fresh private profile without changing read-only input or
     const status = await main(['--from', from, '--output', output], {fetcher: server([{...original}]),
       write: text => { printed += text; }, error: text => { printed += text; }});
     assert.equal(status, 0); assert.equal(before.raw, raw); assert.deepEqual(await inspectInput(), before, 'reopened input preserves bytes, mode and native identity');
-    await assert.rejects(open(output, 'wx'), error => error.code === 'EEXIST');
     const saved = JSON.parse(await readFile(output, 'utf8'));
     assert.deepEqual(Object.keys(saved).sort(), ['accessKey', 'endpoint', 'environment', 'environmentBinding', 'secretKey']);
     assert.deepEqual(saved.environmentBinding, {endpoint: config.endpoint, id: 'p1', uuid: 'adminProject'});
@@ -205,6 +204,7 @@ test('writer creates a fresh private profile without changing read-only input or
     assert.equal(await main(['--from', from, '--output', output], {fetcher: async () => { network++; }, write() {}, error() {}}), 1);
     assert.equal(network, 0); assert.deepEqual(await inspectInput(), before, 'collision does not replace or change the original pathname');
     assert.equal(await main(['--from', from, '--output', from], {write() {}, error() {}}), 1);
+    await assert.rejects(open(output, 'wx'), error => error.code === 'EEXIST');
   });
 });
 
@@ -284,18 +284,27 @@ test('all query is one literal true on bootstrap collection GET only; legacy pag
 
 test('writer claims a private exclusive output before config or network and cleans only its failed empty file', async () => {
   await temporary(async directory => {
-    const from = path.join(directory, 'missing-private-profile.json'), output = path.join(directory, 'new-bound.json');
+    const from = path.join(directory, 'missing-private-profile.json'), output = path.join(directory, 'new-bound.json'),
+      collision = path.join(directory, 'existing-bound.json');
     let protectedEmpty = 0, network = 0, message = '';
     const options = {fetcher: async () => { network++; throw new Error('must not fetch'); },
       secureFile: async file => { assert.equal((await file.stat()).size, 0); protectedEmpty++; },
       write() {}, error: text => { message = text; }};
     assert.equal(await main(['--from', from, '--output', output], options), 1);
     assert.match(message, /CONFIG_UNREADABLE/); assert.equal(protectedEmpty, 1); assert.equal(network, 0);
-    await assert.rejects(open(output, 'r'), error => error.code === 'ENOENT');
-    await writeFile(output, 'original-owned-sentinel');
-    assert.equal(await main(['--from', from, '--output', output], options), 1);
+    await writeFile(collision, 'original-owned-sentinel', {flag: 'wx', mode: 0o600});
+    const inspectCollision = async () => {
+      const file = await open(collision, 'r');
+      try {
+        const raw = await file.readFile('utf8'), info = await file.stat();
+        return {raw, mode: info.mode, dev: info.dev, ino: info.ino};
+      } finally { await file.close(); }
+    };
+    const before = await inspectCollision();
+    assert.equal(await main(['--from', from, '--output', collision], options), 1);
     assert.match(message, /PROFILE_OUTPUT_EXISTS/); assert.equal(protectedEmpty, 1); assert.equal(network, 0);
-    const retained = await open(output, 'r');
-    try { assert.equal(await retained.readFile('utf8'), 'original-owned-sentinel'); } finally { await retained.close(); }
+    assert.equal(before.raw, 'original-owned-sentinel');
+    assert.deepEqual(await inspectCollision(), before, 'fresh pathname FD retains original bytes, permissions and native identity');
+    await assert.rejects(open(output, 'r'), error => error.code === 'ENOENT');
   });
 });
