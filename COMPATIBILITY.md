@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.209 / bridge 0.2.11 source candidate
+## Web Console 1.6.209 / bridge 0.2.11 published
 
 Matching Engine 0.183.370 adds human-reviewed Host name/description plans and
 bounded Host workload detail. Host infrastructure, credentials, evacuation,
@@ -20,11 +20,25 @@ query-only search with readable Stack names. It does not relax reference format,
 roles, Key scope or native permission checks. The twelve tools and protocol 1.0
 remain unchanged.
 
+Original full/enabled CI
+[41958050589](https://github.com/PastureStack/web-console/actions/runs/41958050589)
+passed 1,129 browser tests with zero failures, including retained scopes.
 The six Host metadata, three Host workload and three Stack-reference guidance
-Node source cases passed before version preparation. Original candidate CI,
-artifact/SBOM attestations, public asset byte verification and designated native
-acceptance are pending; no published or runtime result is inferred here. The
-matching release records will carry the exact producer/tree and evidence.
+Node cases and required CodeQL passed. Original archive provenance and runtime
+SBOM attestations, exact artifact qualification, anonymous byte-count/SHA256
+readback of all thirteen public assets and native release attestation passed.
+Producer `caf5e8e9be78c89cacbdbf11891be1ed21772f89` and normal PR252
+merge/tag source `13a9432e1559b5e3f4d1a4c1a0cdda2e2ea4007b` share tested tree
+`6ba4a59811704da11e5bc1f18c288689a0d46250`. See the
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.209/web209-release-metadata.json)
+and [published release note](docs/releases/web-console-1.6.209.md).
+
+Bridge 0.2.11 contains 39 Git source files in 41 ZIP entries and retains the
+92-component dependency graph across 95 installed locations. Its current
+version/tool SDK handshake passed. Clean-install evidence is carried from
+published 0.2.5; no new install or dependency scan is claimed. Matching Engine
+0.183.370 is published. Designated Server569 and new Host runtime acceptance
+remain separate and pending; whole-family/243-group completion is not claimed.
 
 ## Web Console 1.6.207 / bridge 0.2.9 published
 
