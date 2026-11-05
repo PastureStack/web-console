@@ -52,6 +52,7 @@ SOURCE_FILES = (
     "scripts/test-webmcp-certificate-metadata.mjs",
     "scripts/test-webmcp-host-metadata.mjs",
     "scripts/test-webmcp-project-metadata.mjs",
+    "scripts/test-webmcp-lb-metadata.mjs",
     "scripts/test-webmcp-project-profile-binding.mjs",
     "scripts/test-webmcp-host-workloads.mjs",
     "scripts/test-webmcp-stack-ref-guidance.mjs",

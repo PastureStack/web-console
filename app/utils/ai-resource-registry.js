@@ -71,6 +71,7 @@ const action = (fields = [], required = [], minFields = 0) => Object.freeze({fie
 const metadata = action(['name', 'description'], [], 1);
 export const RESOURCE_CHANGES = Object.freeze({
   project: Object.freeze({update_metadata: metadata}),
+  loadBalancerService: Object.freeze({update_metadata: metadata}),
   certificate: Object.freeze({update_metadata: metadata}),
   host: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),

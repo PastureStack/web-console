@@ -75,7 +75,7 @@ async function fixture(dir){
       fields.upgradeStrategy={type:'json',create:false,update:false};
     }
     if(name==='aiResourceChangePlan'){
-      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore'];fields.parameters.type='json';
+      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore'];fields.parameters.type='json';
     }
     if(name==='aiCatalogMetadataView'){
       for(const [field,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68}))Object.assign(fields[field],{type:'string',maxLength:limit});
@@ -146,6 +146,8 @@ test('checker rejects omitted writable inputs and mismatched typed lifecycle enu
   await assert.rejects(checkEngineContract(dir),/parameters is not accepted input/);
   const absentProject=structuredClone(original);absentProject.resourceFields.resourceType.options=absentProject.resourceFields.resourceType.options.filter(type=>type!=='project');
   await fs.writeFile(file,JSON.stringify(absentProject));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
+  const absentLoadBalancer=structuredClone(original);absentLoadBalancer.resourceFields.resourceType.options=absentLoadBalancer.resourceFields.resourceType.options.filter(type=>type!=='loadBalancerService');
+  await fs.writeFile(file,JSON.stringify(absentLoadBalancer));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const extraAccount=structuredClone(original);extraAccount.resourceFields.resourceType.options.push('account');
   await fs.writeFile(file,JSON.stringify(extraAccount));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const wrong=structuredClone(original);wrong.resourceFields.operation.options.push('execute');await fs.writeFile(file,JSON.stringify(wrong));
