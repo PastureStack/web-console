@@ -43,6 +43,11 @@ test('Core records fixed completion warning and recovery state even for unexpect
       changes: [{field: 'name', before: 'Before', after: 'After'}]};
     const bound = {...config, environmentBinding: {endpoint: config.endpoint, id: 'p1', uuid: 'adminProject'}};
     const bridge = await createBridge(bound, {fetcher: async (url, options) => {
+      if (url.pathname.endsWith('/projects')) {
+        assert.equal(url.search, '?limit=1'); assert.equal(options.method, 'GET');
+        assert.equal(options.headers['X-PastureStack-Key-Expected-Revision'], undefined);
+        return response({data: []});
+      }
       if (url.pathname.endsWith('/aiToolCallEvents')) { events.push(JSON.parse(options.body)); return response({accepted: true, requestId: 'ack-' + events.length}); }
       if (url.pathname.endsWith('/aiResourceViews')) return response({resourceType: 'project', data: [row], nextMarker: null});
       if (url.pathname.endsWith('/aiResourceChangePlans')) return response(plan);
