@@ -12,6 +12,75 @@ const original = {id: 'p1', uuid: 'adminProject', name: 'Before', description: '
 const bound = () => ({...config, environmentBinding: {endpoint: config.endpoint, id: original.id, uuid: original.uuid}});
 const response = (value, purpose = 'ai-bridge', revision = '7') => new Response(JSON.stringify(value),
   {headers: {'Content-Type': 'application/json', 'X-PastureStack-Key-Purpose': purpose, 'X-PastureStack-Key-Revision': revision}});
+
+test('bound bootstrap learns the current revision from one discovery before either caller reads the exact bound Project', async () => {
+  for (const caller of [createBridge, prepareBoundProfile]) {
+    const calls = [], current = {...original, name: 'Renamed current environment'};
+    const fetcher = async (url, options) => {
+      const revision = options.headers['X-PastureStack-Key-Expected-Revision'];
+      calls.push({path: url.pathname, query: url.search, revision});
+      assert.equal(options.method, 'GET'); assert.equal(options.body, undefined);
+      if (url.pathname.endsWith('/projects')) {
+        assert.equal(url.search, '?limit=1'); assert.equal(revision, undefined);
+        return response({data: [], pagination: null});
+      }
+      assert.equal(url.pathname, '/v2-beta/projects/p1');
+      // Engine only permits revisionless project collection discovery, never a single GET.
+      if (revision !== '7') return new Response(JSON.stringify({code: 'ApiKeyPolicyChanged'}), {status: 403});
+      return response(current);
+    };
+    const result = await caller(bound(), {fetcher});
+    assert.deepEqual(calls, [{path: '/v2-beta/projects', query: '?limit=1', revision: undefined},
+      {path: '/v2-beta/projects/p1', query: '', revision: '7'}]);
+    if (caller === createBridge) {
+      assert.equal(result.engine.context.capture().projectName, current.name); result.close();
+    } else {
+      assert.equal(result.environment, current.name); assert.deepEqual(result.environmentBinding, bound().environmentBinding);
+    }
+  }
+});
+
+test('bound bootstrap never selects discovery rows or follows pagination and exact ID UUID and visibility remain authoritative', async () => {
+  for (const rows of [[], [original, original], [{...original, id: 'p2', uuid: 'wrong', name: 'Before'}]]) {
+    const calls = [], bridge = await createBridge(bound(), {fetcher: async (url, options) => {
+      calls.push(url.pathname + url.search); assert.equal(options.method, 'GET');
+      return response(url.pathname.endsWith('/projects') ? {data: rows, pagination: {next: '/projects?marker=untrusted'}} : original);
+    }});
+    assert.equal(bridge.engine.context.capture().projectId, original.id); bridge.close();
+    assert.deepEqual(calls, ['/v2-beta/projects?limit=1', '/v2-beta/projects/p1']);
+  }
+  for (const target of [null, [original, original], {...original, id: 'p2'}, {...original, uuid: 'replacement'}, {...original, state: 'inactive'}]) {
+    const calls = [];
+    await assert.rejects(createBridge(bound(), {fetcher: async (url, options) => {
+      calls.push(url.pathname + url.search); assert.equal(options.method, 'GET');
+      return response(url.pathname.endsWith('/projects') ? {data: []} : target);
+    }}));
+    assert.deepEqual(calls, ['/v2-beta/projects?limit=1', '/v2-beta/projects/p1']);
+  }
+});
+
+test('bound bootstrap missing purpose revision credential and cross-revision failures stop before any business dispatch', async () => {
+  for (const failure of ['discovery-denied', 'hidden', 'revision', 'missing-revision', 'purpose', 'malformed-discovery']) {
+    const calls = [];
+    await assert.rejects(createBridge(bound(), {fetcher: async (url, options) => {
+      calls.push(url.pathname + url.search);
+      if (url.pathname.endsWith('/projects')) {
+        if (failure === 'discovery-denied') return new Response(JSON.stringify({code: 'Forbidden'}), {status: 403});
+        if (failure === 'missing-revision') return new Response(JSON.stringify({data: [original]}), {headers: {'X-PastureStack-Key-Purpose': 'ai-bridge'}});
+        if (failure === 'purpose') return response({data: [original]}, 'general');
+        if (failure === 'malformed-discovery') return response({data: 'not-a-collection'});
+        return response({data: [original]});
+      }
+      assert.equal(options.headers['X-PastureStack-Key-Expected-Revision'], '7');
+      if (failure === 'hidden') return new Response(JSON.stringify({code: 'Forbidden'}), {status: 403});
+      return response(original, 'ai-bridge', '8');
+    }}));
+    assert.equal(calls[0], '/v2-beta/projects?limit=1');
+    assert.equal(calls.length, ['hidden', 'revision'].includes(failure) ? 2 : 1);
+  }
+  assert.equal(allowedRequest('projects?limit=1', 'GET', null, true), true);
+  assert.equal(allowedRequest('projects?id=p1&limit=2', 'GET', 'p1', true), false);
+});
 function server(rows, requests = []) {
   return async (url, options) => {
     requests.push({path: url.pathname, method: options.method, revision: options.headers['X-PastureStack-Key-Expected-Revision']});
@@ -119,7 +188,7 @@ test('legacy config stays unchanged; binding is closed endpoint-scoped and accep
   assert.deepEqual(validateConfig(normalized), normalized);
   assert.equal(validateConfig({...config, endpoint: 'https://example.test/platform///'}).endpoint, base);
   const calls = [], scoped = await createBridge(normalized, {fetcher: server([{...original}], calls)}); scoped.close();
-  assert.equal(calls[0].path, '/platform/v2-beta/projects/p1');
+  assert.deepEqual(calls.map(x => x.path), ['/platform/v2-beta/projects', '/platform/v2-beta/projects/p1']);
 });
 
 test('permanent rename then new bridge instance retains UUID despite old name reuse; old refs stay stale', async () => {
@@ -128,7 +197,7 @@ test('permanent rename then new bridge instance retains UUID despite old name re
   assert.equal(found.status, 'succeeded'); const oldRef = found.items[0].resourceRef; first.close();
   rows[0].name = 'After'; rows.push({...original, id: 'p2', uuid: 'other-project', name: 'Before'});
   const calls = [], second = await createBridge(bound(), {fetcher: server(rows, calls)});
-  assert.deepEqual(calls.map(x => x.path), ['/v2-beta/projects/p1']);
+  assert.deepEqual(calls.map(x => x.path), ['/v2-beta/projects', '/v2-beta/projects/p1']);
   assert.equal((await second.engine.execute('get_resource', {resourceRef: oldRef})).code, 'STALE_REFERENCE');
   const fresh = await second.engine.execute('find_resources', {family: 'environment', resourceType: 'project'});
   const own = fresh.items.find(x => x.fields.name === 'After'); assert(own); assert.notEqual(own.resourceRef, oldRef);
@@ -139,7 +208,7 @@ test('permanent rename then new bridge instance retains UUID despite old name re
 test('bound UUID reuse, hidden target, endpoint mismatch and ordinary key never fall back to a name lookup', async () => {
   for (const rows of [[{...original, uuid: 'reused-uuid'}], [], [{...original, state: 'inactive'}]]) {
     const calls = []; await assert.rejects(createBridge(bound(), {fetcher: server(rows, calls)}));
-    assert.deepEqual(calls.map(x => x.path), ['/v2-beta/projects/p1']);
+    assert.deepEqual(calls.map(x => x.path), ['/v2-beta/projects', '/v2-beta/projects/p1']);
   }
   let calls = 0;
   await assert.rejects(createBridge({...bound(), endpoint: config.endpoint + '/different'}, {fetcher: async () => { calls++; }}), {code: 'INVALID_ENVIRONMENT_BINDING'});

@@ -80,11 +80,11 @@ publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
-Web Console 1.6.213 / Bridge 0.2.15 is a source candidate and is not published; the root README currently documents published Web212/Bridge0.2.14. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
+Web Console 1.6.214 / Bridge 0.2.16 is a source candidate and is not published. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.213
-BRIDGE_VERSION=0.2.15
+WEB_CONSOLE_VERSION=1.6.214
+BRIDGE_VERSION=0.2.16
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
