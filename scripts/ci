@@ -19,6 +19,9 @@ node --test scripts/test-webmcp-volume-usage.mjs
 node --test scripts/test-webmcp-external-service.mjs
 node --test scripts/test-webmcp-alias-service.mjs
 node --test scripts/test-webmcp-certificate-metadata.mjs
+node --test scripts/test-webmcp-host-metadata.mjs
+node --test scripts/test-webmcp-host-workloads.mjs
+node --test scripts/test-webmcp-stack-ref-guidance.mjs
 node --test scripts/test-webmcp-audit.mjs scripts/test-webmcp-audit-extension.mjs
 node scripts/test-webmcp-commands.js --filter=audit
 node scripts/test-webmcp-commands.js --filter='upgrade strategy:'

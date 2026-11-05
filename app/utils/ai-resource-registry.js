@@ -37,7 +37,8 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount'])]),
   family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine']), global('projectTemplate', 'projectTemplates')]),
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
-  family('host', [project('host', 'hosts', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
+  family('host', [resource('host', 'hosts', 'project', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb'], null,
+    ['Host detail may include at most 50 freshly authorized container references with readable Stack names. Workload completeness stays unknown, including when empty; it does not establish an empty Host or authorize evacuation, deactivation or scheduling. Typed changes support nonempty custom name and description only. Clearing the custom name, labels, capacity/scheduling, hostname, agent lifecycle and credentials remain in the normal human host UI.']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
   family('load-balancer', [project('loadBalancerService', 'loadBalancerServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'})]),
   family('mfa-passkey', [], 'human-ceremony', 'MFA enrollment, challenges, recovery codes and passkeys require the existing human security flow.'),
   family('network', [project('network', 'networks', ['kind', 'defaultPolicyAction'])]),
@@ -70,6 +71,7 @@ const action = (fields = [], required = [], minFields = 0) => Object.freeze({fie
 const metadata = action(['name', 'description'], [], 1);
 export const RESOURCE_CHANGES = Object.freeze({
   certificate: Object.freeze({update_metadata: metadata}),
+  host: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(), scale: action(['scale'], ['scale']),

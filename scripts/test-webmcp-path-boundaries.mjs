@@ -75,7 +75,7 @@ async function fixture(dir){
       fields.upgradeStrategy={type:'json',create:false,update:false};
     }
     if(name==='aiResourceChangePlan'){
-      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore'];fields.parameters.type='json';
+      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore'];fields.parameters.type='json';
     }
     if(name==='aiCatalogMetadataView'){
       for(const [field,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68}))Object.assign(fields[field],{type:'string',maxLength:limit});
