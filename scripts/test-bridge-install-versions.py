@@ -1,6 +1,7 @@
 """Focused release install-version controls; no package build, network or install."""
 import importlib.util
 import json
+import re
 from pathlib import Path
 import unittest
 
@@ -22,6 +23,9 @@ class BridgeInstallVersionTest(unittest.TestCase):
     def test_current_install_matches_both_package_versions(self):
         self.assertEqual(self.check(self.readme), {"webVersion": self.web, "bridgeVersion": self.bridge})
         self.assertEqual(owner.VERSION, self.bridge)
+        server = (ROOT / "bridge/server.mjs").read_text(encoding="utf-8")
+        advertised = re.findall(r"new Server\(\{name: 'pasturestack-webmcp-bridge', version: '([^']+)'\}", server)
+        self.assertEqual(advertised, [self.bridge], "SDK initialization must advertise the packaged Bridge version")
         crlf = self.readme.replace("\r\n", "\n").replace("\n", "\r\n")
         self.assertEqual(self.check(crlf), {"webVersion": self.web, "bridgeVersion": self.bridge})
         with self.assertRaises(ValueError):
