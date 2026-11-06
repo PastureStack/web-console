@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CommandContext, CommandEngine, COMMANDS, resourceDescriptors} from '../bridge/shared-modules.mjs';
 import {allowedRequest} from '../bridge/core.mjs';
+import {resourceReviewLabels} from '../app/utils/ai-resource-review-labels.js';
 
 const secret = 'PRIVATE_VALUE_MUST_NOT_LEAVE';
 const legacy = ['find_stacks', 'find_services', 'get_service', 'update_service_description', 'preview_service_upgrade', 'apply_service_upgrade', 'get_operation'];
@@ -18,6 +19,222 @@ function fixture({transportKind = 'browser', handle, audit} = {}) {
   return {engine, context, snapshot, requests, audits};
 }
 const schema = descriptor => ({id: descriptor.type, collectionMethods: ['GET'], resourceMethods: ['GET'], resourceFields: {key: {default: secret}}});
+
+function tcpBalancerFixture({changePreview, applyError} = {}) {
+  let plan, applies = 0;
+  const f = fixture({handle: async ({url, method, data}) => {
+    if(url === 'projects/p1/stacks?limit=50') return {body:{data:[{id:'native-stack',type:'stack',accountId:'p1',name:'Blue'}]}};
+    if(url === 'projects/p1/aiResourceViews') return {body:{resourceType:data.resourceType,data:[
+      {id:'native-backend-one',type:'service',accountId:'p1',name:'db',stackId:'native-stack',stackName:'Blue',parentResolution:'resolved'},
+      {id:'native-backend-two',type:'service',accountId:'p1',name:'db',stackId:'native-other-stack',stackName:'Green',parentResolution:'resolved'}]}};
+    if(url === 'projects/p1/aiResourceChangePlans' && method === 'POST') {
+      plan={id:'aichange-00000000-0000-4000-8000-000000000077',resourceType:'loadBalancerService',operation:'create',
+        targetPath:'Environment / Blue / edge',status:'preview',verifiedResult:false,confirmationState:'pending',expiresAt:'2026-11-06T12:00:00Z',
+        changes:[{field:'name',before:null,after:data.parameters.name},
+          {field:'portRules',before:null,after:JSON.stringify(data.parameters.portRules.map(rule=>({protocol:rule.protocol,access:rule.access,
+            sourcePort:rule.sourcePort,targetPort:rule.targetPort,target:rule.serviceId==='native-backend-one'?'Blue / db':'Green / db'})))},
+          {field:'startOnCreate',before:null,after:data.parameters.startOnCreate},{field:'scale',before:null,after:1},
+          {field:'image',before:null,after:'docker:registry.test/lb:1'}]};
+      if(changePreview) changePreview(plan);return {body:plan};
+    }
+    if(url.includes('aiResourceChangePlans/') && method === 'GET') return {body:plan};
+    if(url.endsWith('?action=confirm')) {plan.confirmationState='approved';return {body:plan};}
+    if(url.endsWith('?action=apply')) {
+      applies++;if(applyError) throw applyError;
+      plan={...plan,operationId:plan.id,status:'accepted',verifiedResult:false};return {body:plan};
+    }
+    throw Error('unexpected TCP fixture transport');
+  }});
+  return {...f,plan:()=>plan,applies:()=>applies,refs:async()=>{
+    const stacks=await f.engine.execute('find_resources',{family:'stack',resourceType:'stack'});
+    const services=await f.engine.execute('find_resources',{family:'service',resourceType:'service'});
+    assert.equal(stacks.status,'succeeded');assert.equal(services.status,'succeeded');
+    return {parentRef:stacks.items[0].resourceRef,serviceRefs:services.items.map(row=>row.resourceRef)};
+  }};
+}
+const tcpBalancerInput=(refs,startOnCreate=true)=>({resourceType:'loadBalancerService',operation:'create',parentRef:refs.parentRef,
+  parameters:{name:'edge',startOnCreate,portRules:refs.serviceRefs.map((serviceRef,index)=>({protocol:'tcp',access:index?'internal':'public',
+    sourcePort:index?9000:8080,targetPort:index?81:80,serviceRef}))}});
+
+test('TCP LB create: capabilities disclose the closed rule schema and a complete opaque-reference example without a new tool', async () => {
+  const f=fixture({transportKind:'stdio'}),result=await f.engine.execute('list_capabilities',{});
+  const resource=result.families.find(row=>row.family==='load-balancer').resources.find(row=>row.resourceType==='loadBalancerService');
+  assert.ok(resource.operations.includes('create'));assert.equal(COMMANDS.length,12);
+  const workflow=resource.createWorkflow;assert.equal(workflow.availability,'requires-fresh-server-check');
+  assert.deepEqual(workflow.portRules.items.required,['protocol','access','sourcePort','targetPort','serviceRef']);
+  assert.equal(workflow.portRules.items.additionalProperties,false);assert.deepEqual(workflow.portRules.items.properties.protocol.enum,['tcp']);
+  assert.deepEqual(workflow.portRules.items.properties.access.enum,['public','internal']);
+  assert.equal(typeof workflow.example.parameters.startOnCreate,'boolean');assert.equal(workflow.example.parameters.portRules[0].targetPort,80);
+  assert.match(workflow.parent,/find_resources/);assert.match(workflow.target,/same-name/);assert.match(workflow.example.parentRef,/returned/);
+});
+
+test('TCP LB create: explicit startup and every listener/backend reach fresh human review without raw IDs', async () => {
+  for(const start of [false,true]) {
+    const f=tcpBalancerFixture(),refs=await f.refs(),input=tcpBalancerInput(refs,start),before=JSON.stringify(input);
+    const preview=await f.engine.execute('preview_resource_change',input);
+    assert.equal(preview.status,'needs_user');assert.equal(f.applies(),0);assert.equal(JSON.stringify(input),before);
+    const submitted=f.requests.at(-1).data.parameters;assert.equal(submitted.stackId,'native-stack');
+    assert.deepEqual(submitted.portRules.map(row=>row.serviceId),['native-backend-one','native-backend-two']);
+    assert.ok(submitted.portRules.every(row=>!Object.hasOwn(row,'serviceRef')));
+    const rows=JSON.parse(preview.displayDiff.find(row=>row.field==='portRules').after);
+    assert.deepEqual(rows.map(row=>row.target),['Blue / db','Green / db']);assert.equal(rows[1].targetPort,81);
+    assert.equal(preview.displayDiff.find(row=>row.field==='startOnCreate').after,start);
+    assert.equal(JSON.stringify([preview,f.audits]).includes('native-backend'),false);
+    assert.equal(COMMANDS.length,12);await f.engine.confirmPlan(preview.planRef);
+    const applied=await f.engine.execute('apply_resource_change',{planRef:preview.planRef});
+    assert.equal(applied.status,'accepted');assert.equal(applied.verifiedResult,false);assert.ok(applied.operationRef);
+    const reads=f.requests.filter(row=>row.method==='GET'&&row.url.includes('aiResourceChangePlans/'));
+    assert.ok(reads.length>=1,'the exact immutable review is re-read before apply');
+    f.plan().status='succeeded';f.plan().verifiedResult=true;
+    const done=await f.engine.execute('get_operation',{operationRef:applied.operationRef});
+    assert.equal(done.status,'succeeded');assert.equal(done.verifiedResult,true);assert.equal(f.applies(),1);
+  }
+});
+
+test('TCP LB create: unsupported protocol/raw configuration/missing choices/stale references reject before preview HTTP', async () => {
+  const f=tcpBalancerFixture(),refs=await f.refs(),base=tcpBalancerInput(refs),before=f.requests.length;
+  const bad=[{...base,parameters:{...base.parameters,startOnCreate:undefined}},
+    {...base,parameters:{...base.parameters,lbConfig:{portRules:[]}}},
+    {...base,parameters:{...base.parameters,portRules:[{...base.parameters.portRules[0],serviceId:'1s9'}]}},
+    {...base,parameters:{...base.parameters,portRules:[{...base.parameters.portRules[0],protocol:'https'}]}},
+    {...base,parameters:{...base.parameters,portRules:[{...base.parameters.portRules[0],weight:10}]}},
+    {...base,parameters:{...base.parameters,portRules:[{...base.parameters.portRules[0],sourcePort:42}]}},
+    {...base,parameters:{...base.parameters,portRules:[{...base.parameters.portRules[0],serviceRef:'raw-id'}]}},
+    {...base,parameters:{...base.parameters,portRules:[]}},
+    {...base,parameters:{...base.parameters,portRules:[base.parameters.portRules[0],{...base.parameters.portRules[1],sourcePort:8080}]}}];
+  for(const input of bad) {
+    const result=await f.engine.execute('preview_resource_change',input);assert.ok(['INVALID_INPUT','STALE_REFERENCE'].includes(result.code));
+    assert.match(result.nextStep,/do not drop or downgrade/);assert.match(result.nextStep,/serviceRef/);
+  }
+  assert.equal(f.requests.length,before);f.snapshot.generation='g2';
+  assert.equal((await f.engine.execute('preview_resource_change',base)).code,'STALE_REFERENCE');assert.equal(f.requests.length,before);
+});
+
+test('TCP LB create: server omissions/reordering/startup changes and post-approval checkpoint tampering never apply', async () => {
+  for(const mutate of [plan=>plan.changes=plan.changes.filter(row=>row.field!=='portRules'),
+    plan=>plan.changes.find(row=>row.field==='startOnCreate').after=false,
+    plan=>{const row=plan.changes.find(row=>row.field==='portRules');row.after=JSON.stringify(JSON.parse(row.after).reverse());},
+    plan=>{const row=plan.changes.find(row=>row.field==='portRules');row.after=JSON.stringify([{protocol:'tcp',access:'public',sourcePort:8080,targetPort:80,target:'Blue / db',serviceId:'PRIVATE'}]);}]) {
+    const f=tcpBalancerFixture({changePreview:mutate}),refs=await f.refs();
+    assert.equal((await f.engine.execute('preview_resource_change',tcpBalancerInput(refs))).code,'INVALID_RESPONSE');assert.equal(f.applies(),0);
+  }
+  const f=tcpBalancerFixture(),refs=await f.refs(),preview=await f.engine.execute('preview_resource_change',tcpBalancerInput(refs));
+  await f.engine.confirmPlan(preview.planRef);f.plan().changes.find(row=>row.field==='image').after='docker:other:1';
+  assert.equal((await f.engine.execute('apply_resource_change',{planRef:preview.planRef})).code,'CONFLICT');assert.equal(f.applies(),0);
+});
+
+test('TCP LB create: forbidden or uncertain apply keeps the original operation and never falls back or reconstructs a create', async () => {
+  for(const status of [403,500]) {
+    const f=tcpBalancerFixture({applyError:{status,body:{code:status===403?'ApiKeyRevoked':'InternalError',message:secret}}}),refs=await f.refs();
+    const preview=await f.engine.execute('preview_resource_change',tcpBalancerInput(refs));await f.engine.confirmPlan(preview.planRef);
+    const result=await f.engine.execute('apply_resource_change',{planRef:preview.planRef});assert.equal(f.applies(),1);
+    assert.equal(result.status,status===403?'rejected':'unknown');if(status===500)assert.ok(result.operationRef);
+    assert.equal(JSON.stringify([result,f.audits]).includes(secret),false);
+    assert.equal(f.requests.filter(row=>row.url==='projects/p1/aiResourceChangePlans').length,1);
+  }
+});
+
+test('TCP LB create: existing human labels show both named Stack targets and exact ports without mutating reviewed JSON', () => {
+  const rows=[{protocol:'tcp',access:'public',sourcePort:8080,targetPort:80,target:'Blue / db'},
+    {protocol:'tcp',access:'internal',sourcePort:9000,targetPort:81,target:'Green / db'}];
+  const plan={resourceType:'loadBalancerService',operation:'create',displayDiff:[{field:'portRules',before:null,after:JSON.stringify(rows)},
+    {field:'startOnCreate',before:null,after:true}]},before=JSON.stringify(plan),keys=[];
+  const review=resourceReviewLabels(plan,key=>{keys.push(key);return key;});
+  assert.equal(review.createsStopped,false);assert.equal(review.displayChanges[0].fieldLabel,'formBalancerRules.label');
+  assert.match(review.displayChanges[0].after,/Blue \/ db/);assert.match(review.displayChanges[0].after,/Green \/ db/);
+  assert.match(review.displayChanges[0].after,/8080/);assert.match(review.displayChanges[0].after,/81/);
+  assert.ok(keys.includes('formBalancerRules.access.internal'));assert.equal(JSON.stringify(plan),before);
+});
+
+const policyReadOperations = ['read','create','update','upgrade','delete','exec','logs','export'];
+function policyReadCeiling(observed = false) {
+  return {basis:'native-owner-ceiling',effectiveAuthorization:'not-evaluated',reason:'OWNER_CEILING_IS_NOT_EFFECTIVE_AUTHORIZATION',
+    operations:policyReadOperations.map(operation=>({operation,status:observed&&operation==='read'?'observed':'unknown'}))};
+}
+function policyReadSource(rules = [], revision = 0) {
+  return {availability:'available',representation:'configured-policy-read-only',revision,
+    configuredPolicy:{mode:rules.length?'custom':'full',defaultEffect:rules.length?'deny':'allow',purpose:'general',expiresAt:null,rules},
+    defaultOwnerCapabilities:policyReadCeiling(),allConfiguredRulesIncluded:true,
+    scopePreviewComplete:rules.every(rule=>rule.scope.availability==='resolved'),previewComplete:false,effectiveAuthorization:'not-evaluated',
+    reason:rules.every(rule=>rule.scope.availability==='resolved')?'OWNER_CEILING_IS_NOT_EFFECTIVE_AUTHORIZATION':'SCOPE_PREVIEW_INCOMPLETE'};
+}
+function policyReadRule(ordinal, id, accountId = 'p1') {
+  return {ordinal,effect:ordinal%2?'deny':'allow',operations:['read','update'],
+    scope:{kind:'resource',resourceType:'service',availability:'resolved',reason:'NONE',target:{id,type:'service',name:'same-name',accountId}},
+    ownerCapabilities:policyReadCeiling(true)};
+}
+function policyReadFixture(kind, read, extra = {}) {
+  const key = {id:'native-key-id',type:kind,accountId:'a1',name:'same-name',kind,state:'active',apiKeyPolicyRead:read,
+    secretValue:secret,publicValue:secret,data:{TOKEN:secret}};
+  return fixture({transportKind:extra.transportKind,handle:async options=>{
+    assert.equal(options.method,'POST');assert.equal(options.url,'projects/p1/aiResourceViews');
+    if(extra.handle) return extra.handle(options,key);
+    return {body:{resourceType:options.data.resourceType,data:[key],nextMarker:null}};
+  }});
+}
+
+test('API Key configured policy: detail retains full legacy revision zero and all 128 configured rules without raw identifiers or list expansion', async () => {
+  for(const kind of ['apiKey','apiKeyRestricted']) {
+    const read=kind==='apiKey'?policyReadSource():policyReadSource(Array.from({length:128},(_,index)=>policyReadRule(index+1,'native-scope-service')),7);
+    const f=policyReadFixture(kind,read);f.context.setMode('read-only');
+    const found=await f.engine.execute('find_resources',{family:'api-keys',resourceType:kind});
+    assert.equal(found.status,'succeeded');assert.equal(JSON.stringify(found).includes('configuredPolicy'),false);
+    const detail=await f.engine.execute('get_resource',{resourceRef:found.items[0].resourceRef});
+    assert.equal(detail.status,'succeeded');assert.ok(detail.policyRead,'configured policy detail must be projected');assert.equal(detail.policyRead.representation,'configured-policy-read-only');
+    assert.equal(detail.policyRead.revision,kind==='apiKey'?0:7);assert.equal(detail.policyRead.previewComplete,false);
+    assert.equal(detail.policyRead.effectiveAuthorization,'not-evaluated');
+    const rules=detail.policyRead.configuredPolicy.rules;assert.equal(rules.length,kind==='apiKey'?0:128);
+    if(rules.length) {
+      assert.equal(rules.filter(rule=>rule.effect==='deny').length,64);assert.equal(detail.policyRead.configuredPolicy.defaultEffect,'deny');
+      assert.equal(new Set(rules.map(rule=>rule.scope.target.resourceRef)).size,1);
+      assert.equal(rules[0].ownerCapabilities.operations.find(item=>item.operation==='read').status,'observed');
+    }
+    assert.equal(JSON.stringify([found,detail]).includes('native-key-id'),false);
+    assert.equal(JSON.stringify([found,detail]).includes('native-scope-service'),false);
+    assert.equal(JSON.stringify([found,detail,f.audits]).includes(secret),false);
+    assert.equal(f.requests.length,2,'scope projection must not create browser HTTP requests per rule');
+    assert.deepEqual(f.audits.map(event=>[event.command,event.phase]),[['find_resources','start'],['find_resources','result'],['get_resource','start'],['get_resource','result']]);
+  }
+});
+
+test('API Key configured policy: same-name targets keep distinct opaque refs and missing or foreign-context scopes stay explicitly incomplete', async () => {
+  const rules=[policyReadRule(1,'native-service-one'),policyReadRule(2,'native-service-two'),policyReadRule(3,'native-service-foreign','p2')];
+  rules.push({ordinal:4,effect:'deny',operations:['delete'],scope:{kind:'stack',resourceType:'stack',availability:'unavailable',reason:'SCOPE_TARGET_UNAVAILABLE'},ownerCapabilities:policyReadCeiling()});
+  const f=policyReadFixture('apiKeyRestricted',policyReadSource(rules,3));
+  const found=await f.engine.execute('find_resources',{family:'api-keys',resourceType:'apiKeyRestricted'});
+  const detail=await f.engine.execute('get_resource',{resourceRef:found.items[0].resourceRef});assert.equal(detail.status,'succeeded');assert.ok(detail.policyRead,'configured policy detail must be projected');
+  const actual=detail.policyRead.configuredPolicy.rules;assert.notEqual(actual[0].scope.target.resourceRef,actual[1].scope.target.resourceRef);
+  assert.equal(actual[0].scope.target.name,actual[1].scope.target.name);assert.equal(actual[2].scope.availability,'unavailable');
+  assert.equal(actual[2].scope.reason,'SCOPE_CONTEXT_UNAVAILABLE');assert.equal(actual[3].scope.reason,'SCOPE_TARGET_UNAVAILABLE');
+  assert.equal(actual[2].scope.target,undefined);assert.equal(actual[3].scope.target,undefined);assert.equal(detail.policyRead.scopePreviewComplete,false);
+  assert.equal(detail.policyRead.reason,'SCOPE_PREVIEW_INCOMPLETE');assert.ok(detail.policyRead.message.length>10);
+  assert.ok(actual[2].ownerCapabilities.operations.every(item=>item.status==='unknown'));
+  const output=JSON.stringify(detail);for(const raw of ['native-service-one','native-service-two','native-service-foreign','p2','resourceId']) assert.equal(output.includes(raw),false,raw);
+});
+
+test('API Key configured policy: malformed matrices revoked reads and stale refs fail closed while the twelve-tool input contract stays unchanged', async () => {
+  assert.equal(COMMANDS.length,12);const command=COMMANDS.find(item=>item.name==='get_resource');
+  assert.deepEqual(Object.keys(command.inputSchema.properties),['resourceRef']);
+  for(const mutate of [read=>read.configuredPolicy.rules.push({...policyReadRule(1,'native-scope-service'),effect:'permit'}),
+    read=>read.defaultOwnerCapabilities.basis='effective-key-grant',read=>read.url='http://foreign/',
+    read=>read.configuredPolicy.expiresAt='yesterday',
+    read=>{read.configuredPolicy.rules.push({ordinal:1,effect:'deny',operations:['read'],scope:{kind:'stack',resourceType:'stack',availability:'unavailable',reason:'SCOPE_TARGET_UNAVAILABLE'},ownerCapabilities:{url:'http://foreign/'}});read.scopePreviewComplete=false;}]) {
+    const read=policyReadSource();mutate(read);const f=policyReadFixture('apiKey',read);
+    const found=await f.engine.execute('find_resources',{family:'api-keys',resourceType:'apiKey'});
+    const detail=await f.engine.execute('get_resource',{resourceRef:found.items[0].resourceRef});assert.equal(detail.code,'INVALID_RESPONSE');
+    assert.equal(JSON.stringify(detail).includes(secret),false);
+  }
+  let revoked=false;
+  const f=policyReadFixture('apiKey',policyReadSource(),{handle:async(options,key)=>{
+    if(revoked&&options.data.resourceId) throw {status:403,body:{code:'ApiKeyRevoked',message:secret}};
+    return {body:{resourceType:'apiKey',data:[key],nextMarker:null}};
+  }});
+  const found=await f.engine.execute('find_resources',{family:'api-keys',resourceType:'apiKey'});revoked=true;
+  assert.equal((await f.engine.execute('get_resource',{resourceRef:found.items[0].resourceRef})).code,'FORBIDDEN');
+  const before=f.requests.length;f.snapshot.generation='g2';
+  assert.equal((await f.engine.execute('get_resource',{resourceRef:found.items[0].resourceRef})).code,'STALE_REFERENCE');
+  assert.equal(f.requests.length,before);assert.equal(JSON.stringify(f.audits).includes(secret),false);
+});
 
 test('resource families: closed twelve-tool schemas retain all seven existing commands', () => {
   assert.deepEqual(COMMANDS.map(item => item.name), ['list_capabilities', 'find_resources', 'get_resource', 'preview_resource_change', 'apply_resource_change', ...legacy]);
@@ -543,4 +760,113 @@ test('resource families: safe-view markers stay opaque and malformed detail cann
     f.engine.request = async () => ({body});
     assert.equal((await f.engine.execute('get_resource', {resourceRef: first.items[0].resourceRef})).code, 'INVALID_RESPONSE');
   }
+});
+
+
+test('Next candidate combined wiring: one engine reads Key configured policy and previews TCP create plus shared LB start and stop',async()=>{
+  let plan,index=200;
+  const f=fixture({handle:async({url,method,data})=>{
+    if(method==='GET'&&['schemas?limit=1000','projects/p1/schemas?limit=1000'].includes(url)) return {body:{data:[]}};
+    if(url==='projects/p1/stacks?limit=50') return {body:{data:[{id:'native-next-stack',type:'stack',accountId:'p1',name:'Blue'}]}};
+    if(url==='projects/p1/aiResourceViews') {
+      const common={accountId:'p1',name:'shared',stackId:'native-next-stack',stackName:'Blue',parentResolution:'resolved'};
+      const row=data.resourceType==='apiKey'?{id:'native-next-key',type:'apiKey',accountId:'a1',name:'Key',kind:'apiKey',state:'active',apiKeyPolicyRead:policyReadSource()}:
+        data.resourceType==='service'?{...common,id:'native-next-backend',type:'service'}:{...common,id:'native-next-lb',type:'loadBalancerService',state:'inactive'};
+      return {body:{resourceType:data.resourceType,data:[row]}};
+    }
+    assert.equal(url,'projects/p1/aiResourceChangePlans');assert.equal(method,'POST');
+    const create=data.operation==='create';
+    if(create) {
+      assert.equal(data.parameters.stackId,'native-next-stack');assert.equal(data.parameters.startOnCreate,false);
+      assert.deepEqual(data.parameters.portRules,[{protocol:'tcp',access:'public',sourcePort:8080,targetPort:80,serviceId:'native-next-backend'}]);
+    } else {assert.equal(data.resourceId,'native-next-lb');assert.deepEqual(data.parameters,{});}
+    plan={id:`aichange-00000000-0000-4000-8000-000000000${index++}`,resourceType:'loadBalancerService',operation:data.operation,
+      ...(create?{}:{resourceId:data.resourceId}),targetPath:'Environment / Blue / shared',status:'preview',verifiedResult:false,
+      confirmationState:'pending',expiresAt:'2026-11-06T12:00:00Z',changes:create?[{field:'name',before:null,after:'edge'},
+        {field:'portRules',before:null,after:JSON.stringify([{protocol:'tcp',access:'public',sourcePort:8080,targetPort:80,target:'Blue / shared'}])},
+        {field:'startOnCreate',before:null,after:false},{field:'scale',before:null,after:1},{field:'image',before:null,after:'docker:registry.test/lb:1'}]:
+        [{field:'state',before:data.operation==='start'?'inactive':'active',after:data.operation==='start'?'active':'inactive'}]};return {body:plan};
+  }});
+  const caps=await f.engine.execute('list_capabilities',{}),lb=caps.families.find(row=>row.family==='load-balancer').resources[0];
+  for(const operation of ['create','start','stop']) assert.ok(lb.operations.includes(operation));
+  for(const operation of ['scale','remove','upgrade','restart']) assert.equal(lb.operations.includes(operation),false);
+  assert.deepEqual(lb.createWorkflow.portRules.items.required,['protocol','access','sourcePort','targetPort','serviceRef']);
+  const keys=await f.engine.execute('find_resources',{family:'api-keys',resourceType:'apiKey'});
+  const detail=await f.engine.execute('get_resource',{resourceRef:keys.items[0].resourceRef});
+  assert.equal(detail.policyRead.representation,'configured-policy-read-only');assert.equal(detail.policyRead.effectiveAuthorization,'not-evaluated');
+  const stacks=await f.engine.execute('find_resources',{family:'stack',resourceType:'stack'});
+  const services=await f.engine.execute('find_resources',{family:'service',resourceType:'service'});
+  const create=await f.engine.execute('preview_resource_change',tcpBalancerInput({parentRef:stacks.items[0].resourceRef,serviceRefs:[services.items[0].resourceRef]},false));
+  assert.equal(create.status,'needs_user');assert.equal(JSON.parse(create.displayDiff.find(row=>row.field==='portRules').after)[0].target,'Blue / shared');
+  const rows=await f.engine.execute('find_resources',{family:'load-balancer',resourceType:'loadBalancerService'});
+  for(const operation of ['start','stop']) {
+    const preview=await f.engine.execute('preview_resource_change',{resourceType:'loadBalancerService',operation,targetRef:rows.items[0].resourceRef,parameters:{}});
+    assert.equal(preview.status,'needs_user');assert.deepEqual(preview.displayDiff,[{field:'state',before:operation==='start'?'inactive':'active',after:operation==='start'?'active':'inactive'}]);
+    assert.equal(preview.displayPath,'Environment / Blue / shared');assert.equal(JSON.stringify(preview).includes('native-next-'),false);
+  }
+  assert.equal(COMMANDS.length,12);assert.equal(f.requests.filter(row=>row.url.endsWith('?action=apply')).length,0);
+  assert.equal(f.requests.filter(row=>row.url==='projects/p1/aiResourceChangePlans').length,3);
+});
+
+function lbLifecycleFixture({denyApply=false}={}) {
+  let plan,applies=0;
+  const f=fixture({handle:async({url,method,data})=>{
+    if(method==='GET'&&['schemas?limit=1000','projects/p1/schemas?limit=1000'].includes(url)) return {body:{data:[]}};
+    if(url==='projects/p1/aiResourceViews') return {body:{resourceType:'loadBalancerService',data:[
+      {id:'native-lb-blue',type:'loadBalancerService',accountId:'p1',name:'edge',state:'inactive',stackId:'native-stack-blue',stackName:'Blue',parentResolution:'resolved'},
+      {id:'native-lb-green',type:'loadBalancerService',accountId:'p1',name:'edge',state:'active',stackId:'native-stack-green',stackName:'Green',parentResolution:'resolved'}]}};
+    if(url==='projects/p1/aiResourceChangePlans'&&method==='POST') {
+      assert.deepEqual(data.parameters,{});assert.ok(['start','stop'].includes(data.operation));
+      const blue=data.resourceId==='native-lb-blue';
+      plan={id:'aichange-00000000-0000-4000-8000-000000000088',resourceType:'loadBalancerService',operation:data.operation,resourceId:data.resourceId,
+        targetPath:`Environment / ${blue?'Blue':'Green'} / edge`,status:'preview',verifiedResult:false,confirmationState:'pending',expiresAt:'2026-11-06T12:00:00Z',
+        changes:[{field:'state',before:data.operation==='start'?'inactive':'active',after:data.operation==='start'?'active':'inactive'}]};return {body:plan};
+    }
+    if(url.includes('aiResourceChangePlans/')&&method==='GET') return {body:plan};
+    if(url.endsWith('?action=confirm')) {plan.confirmationState='approved';return {body:plan};}
+    if(url.endsWith('?action=apply')) {
+      applies++;if(denyApply) throw {status:403,body:{code:'ApiKeyRevoked',message:secret}};
+      plan={...plan,operationId:plan.id,status:'accepted',verifiedResult:false};return {body:plan};
+    }
+    throw Error('unexpected LB lifecycle transport');
+  }});return {...f,plan:()=>plan,applies:()=>applies};
+}
+
+test('LB shared Service lifecycle: capabilities and same-name opaque targets require human approval then one native start or stop receipt',async()=>{
+  for(const operation of ['start','stop']) {
+    const f=lbLifecycleFixture(),caps=await f.engine.execute('list_capabilities',{});
+    const resource=caps.families.find(row=>row.family==='load-balancer').resources[0];
+    assert.ok(resource.operations.includes('start'));assert.ok(resource.operations.includes('stop'));
+    for(const unsupported of ['restart','remove','scale','upgrade']) assert.equal(resource.operations.includes(unsupported),false);
+    assert.equal(COMMANDS.length,12);
+    const found=await f.engine.execute('find_resources',{family:'load-balancer',resourceType:'loadBalancerService',query:'edge'});
+    assert.equal(found.items.length,2);const chosen=found.items[operation==='start'?0:1];
+    assert.equal(chosen.fields.name,'edge');assert.match(chosen.displayPath,operation==='start'?/Blue/:/Green/);
+    const preview=await f.engine.execute('preview_resource_change',{resourceType:'loadBalancerService',operation,targetRef:chosen.resourceRef,parameters:{}});
+    assert.equal(preview.status,'needs_user');assert.equal(f.applies(),0);assert.match(preview.displayPath,operation==='start'?/Blue/:/Green/);
+    assert.deepEqual(preview.displayDiff,[{field:'state',before:operation==='start'?'inactive':'active',after:operation==='start'?'active':'inactive'}]);
+    assert.equal(JSON.stringify(preview).includes('native-lb-'),false);await f.engine.confirmPlan(preview.planRef);
+    const applied=await f.engine.execute('apply_resource_change',{planRef:preview.planRef});
+    assert.equal(applied.status,'accepted');assert.equal(applied.verifiedResult,false);assert.equal(f.applies(),1);
+    f.plan().status='running';let observed=await f.engine.execute('get_operation',{operationRef:applied.operationRef});
+    assert.equal(observed.status,'running');assert.equal(observed.verifiedResult,false);
+    f.plan().status='succeeded';f.plan().verifiedResult=true;observed=await f.engine.execute('get_operation',{operationRef:applied.operationRef});
+    assert.equal(observed.verifiedResult,true);assert.equal(f.applies(),1);
+  }
+});
+
+test('LB shared Service lifecycle: injected config raw IDs stale contexts and revoked applies never broaden or replay the action',async()=>{
+  const f=lbLifecycleFixture(),found=await f.engine.execute('find_resources',{family:'load-balancer',resourceType:'loadBalancerService'});
+  const input={resourceType:'loadBalancerService',operation:'start',targetRef:found.items[0].resourceRef,parameters:{}};
+  const before=f.requests.length;
+  for(const field of ['lbConfig','portRules','launchConfig','ports','certificateIds','volumes','scale','action'])
+    assert.equal((await f.engine.execute('preview_resource_change',{...input,parameters:{[field]:'UNAPPROVED'}})).code,'INVALID_INPUT');
+  assert.equal((await f.engine.execute('preview_resource_change',{...input,targetRef:'native-lb-blue'})).code,'STALE_REFERENCE');
+  f.snapshot.projectId='foreign';f.snapshot.schemaProjectId='foreign';assert.equal((await f.engine.execute('preview_resource_change',input)).code,'STALE_REFERENCE');
+  assert.equal(f.requests.length,before);
+  const denied=lbLifecycleFixture({denyApply:true}),rows=await denied.engine.execute('find_resources',{family:'load-balancer',resourceType:'loadBalancerService'});
+  const preview=await denied.engine.execute('preview_resource_change',{resourceType:'loadBalancerService',operation:'start',targetRef:rows.items[0].resourceRef,parameters:{}});
+  await denied.engine.confirmPlan(preview.planRef);const result=await denied.engine.execute('apply_resource_change',{planRef:preview.planRef});
+  assert.equal(result.status,'rejected');assert.equal(result.code,'FORBIDDEN');assert.equal(denied.applies(),1);
+  assert.equal(JSON.stringify(result).includes(secret),false);assert.equal(denied.requests.filter(row=>row.url.endsWith('?action=apply')).length,1);
 });

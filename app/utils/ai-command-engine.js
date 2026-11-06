@@ -1,7 +1,7 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
-import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy } from './ai-command-contract';
-import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields } from './ai-resource-registry';
+import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
+import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, truncatedResourceFields, configuredPolicyRead } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
 import { createCatalogLaunchAdapter, catalogLaunchPlanSummary, CATALOG_LAUNCH_COLLECTION } from './ai-catalog-launch';
@@ -12,8 +12,8 @@ const SERVICE_CREATE_FIELDS = ['ports', 'healthCheck'];
 
 export function serviceCreateReview(summary) {
   return summary && summary.operation === 'create' && Array.isArray(summary.displayDiff) &&
-    (summary.resourceType === 'externalService' || ['service', 'container'].includes(summary.resourceType) &&
-      summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field))) ?
+    (['externalService', 'loadBalancerService'].includes(summary.resourceType) || ['service', 'container'].includes(summary.resourceType) &&
+      summary.displayDiff.some((change) => [...SERVICE_CREATE_FIELDS, 'portRules'].includes(change.field))) ?
     JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
 }
 
@@ -143,7 +143,9 @@ export class CommandEngine {
         'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the simple targets.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
       };
-      result.nextStep = input && input.resourceType === 'externalService' && input.parameters && Object.prototype.hasOwnProperty.call(input.parameters, 'healthCheck') ?
+      result.nextStep = input && input.resourceType === 'loadBalancerService' && input.operation === 'create' ?
+        'Find the exact Stack and backend services by name and Stack, and reuse their same-session parentRef/serviceRef. Provide explicit startOnCreate and 1 through 16 complete ordered rules: protocol tcp, access public or internal, sourcePort and targetPort 1 through 65535 (listener 42 is reserved). Never guess a target port, raw ID or image. HTTPS/TLS/HTTP, certificates, selectors and arbitrary configuration require the normal console; do not drop or downgrade requested settings.' :
+        input && input.resourceType === 'externalService' && input.parameters && Object.prototype.hasOwnProperty.call(input.parameters, 'healthCheck') ?
         'Only External Service create accepts this TCP healthCheck: required integer port 1 through 65535, with optional integer interval, responseTimeout, healthyThreshold and unhealthyThreshold. Timings are milliseconds and thresholds count checks. Omit the whole healthCheck for none; do not use null, HTTP requestLine, Host, URL, strategy, or send it through update_targets or update_metadata. Reuse the selected Stack parentRef and preserve all requested settings.' : serviceCreateInputRejected ?
         'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching typed-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
         result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
@@ -293,6 +295,7 @@ export class CommandEngine {
           parentRequired: !!(descriptor.parent && descriptor.parent.required),
           operations: RESOURCE_CHANGES[descriptor.type] ? Object.keys(RESOURCE_CHANGES[descriptor.type]) : [],
           ...(descriptor.type === 'service' ? {createFields: [...RESOURCE_CHANGES.service.create.fields], createFieldsServerCheckRequired: true} : {}),
+          ...(descriptor.type === 'loadBalancerService' ? {createFields: [...RESOURCE_CHANGES.loadBalancerService.create.fields], createWorkflow: TCP_LOAD_BALANCER_CREATE, createFieldsServerCheckRequired: true} : {}),
           ...(descriptor.type === 'dnsService' ? {workflow: [...ALIAS_WORKFLOW], workflowNotice: ALIAS_CREATE_NEXT_STEP} : {}),
           changeModeEnabled: captured.mode === 'enabled', changesRequireHumanApproval: true,
           unavailableReason: needsCheck ? null : !supported ? 'PENDING_ADAPTER' : source.unavailable || (!definition ? 'NOT_VISIBLE' : null)};
@@ -434,6 +437,25 @@ export class CommandEngine {
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
       resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    if ( ['apiKey', 'apiKeyRestricted'].includes(descriptor.type) ) {
+      try {
+        result.policyRead = configuredPolicyRead(body.apiKeyPolicyRead || {availability: 'unavailable',
+          representation: 'configured-policy-read-only', previewComplete: false, reason: 'POLICY_FIELDS_UNAVAILABLE',
+          effectiveAuthorization: 'not-evaluated'}, target => {
+          const family = RESOURCE_FAMILIES.find(item => item.resources.some(resource => resource.type === target.type));
+          const typed = family && resourceDescriptor(family.name, target.type);
+          if ( !typed || !this.resourceIdentity(target, typed, captured) ||
+            typed.scope === 'project' && target.accountId !== captured.projectId ) { return null; }
+          const resourceRef = this.referenceResource({id: target.id, family: family.name, resourceType: typed.type,
+            scope: typed.scope, name: safeText(target.name)}, captured);
+          const projected = {resourceRef, resourceType: typed.type, name: safeText(target.name) || `(${typed.type})`};
+          const parent = this.stackParentProjection(target, typed, captured);
+          if ( parent ) { projected.parentRef = parent.parentRef; projected.parentResolution = parent.parentResolution; }
+          return projected;
+        });
+      } catch (_invalid) { throw new CommandError('INVALID_RESPONSE'); }
+      result.nextStep = 'This is a read-only configured-policy snapshot, not current Key usability or an effective authorization matrix. Credential state, expiry, owner ceilings and fresh native authorization still apply. Missing scope previews stay unavailable; policy changes remain in the normal Key UI.';
+    }
     const stackParent = this.stackParentProjection(body, descriptor, captured);
     if ( stackParent ) {
       result.parentRef = stackParent.parentRef; result.parentResolution = stackParent.parentResolution;
@@ -779,7 +801,7 @@ export class CommandEngine {
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
-      if ( reference.resourceType === 'externalService' && reference.operation === 'create' ) {
+      if ( ['externalService', 'loadBalancerService'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -945,8 +967,12 @@ export class CommandEngine {
     }
     const displayDiff = plan.changes.map((change) => {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
-        ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices', 'ports', 'healthCheck'].includes(change.field) ? 100000 : 1024) ||
+        ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices', 'ports', 'healthCheck', 'portRules'].includes(change.field) ? 100000 : 1024) ||
           typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'portRules' ) {
+        if ( plan.resourceType !== 'loadBalancerService' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
+        try { validateTcpLoadBalancerReview(JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
+      }
       if ( change.field === 'hostname' && [change.before, change.after].some((value) => value !== null && !isExternalHostname(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'targetServices' ) {
         if ( plan.resourceType !== 'dnsService' || change.after === null ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -981,7 +1007,7 @@ export class CommandEngine {
       if ( ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount'].includes(change.field) &&
         (!Number.isSafeInteger(change.before) || change.before < 0 || change.after !== null && (!Number.isSafeInteger(change.after) || change.after < 0)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'affectedMountCount' && change.after !== null || change.field === 'affectedInstanceCount' && change.after !== 0 ) { throw new CommandError('INVALID_RESPONSE'); }
-      if ( change.field === 'startOnCreate' && (change.before !== null || change.after !== false) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'startOnCreate' && (change.before !== null || (plan.resourceType === 'loadBalancerService' && plan.operation === 'create' ? typeof change.after !== 'boolean' : change.after !== false)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'archived' && (!['archive', 'restore'].includes(plan.operation) || typeof change.before !== 'boolean' ||
         typeof change.after !== 'boolean' || change.after !== (plan.operation === 'archive')) ) { throw new CommandError('INVALID_RESPONSE'); }
       return {field: change.field, before: change.before, after: change.after};
@@ -1033,10 +1059,20 @@ export class CommandEngine {
         (reference) => this.resolveResourceReference(reference, 'service', captured, 'parameters.serviceRefs'));
       delete parameters.serviceRefs;
     }
+    let tcpExpected;
+    if ( input.resourceType === 'loadBalancerService' && input.operation === 'create' ) {
+      validateTcpLoadBalancerRules(parameters.portRules);
+      tcpExpected = parameters.portRules.map(rule => ({...rule}));
+      parameters.portRules = tcpExpected.map(rule => {
+        const target = this.resolveResourceReference(rule.serviceRef, 'service', captured, 'parameters.portRules');
+        if ( !['service', 'externalService'].includes(target.resourceType) || target.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'parameters.portRules'); }
+        const native = {...rule, serviceId: target.id}; delete native.serviceRef; return native;
+      });
+    }
     let target;
     if ( input.operation === 'create' ) {
       if ( input.targetRef ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
-      if ( ['service', 'externalService', 'dnsService'].includes(input.resourceType) ) {
+      if ( ['service', 'externalService', 'dnsService', 'loadBalancerService'].includes(input.resourceType) ) {
         if ( !input.parentRef ) { throw new CommandError('INVALID_INPUT', 'parentRef'); }
         const parent = this.resolveResourceReference(input.parentRef, 'stack', captured, 'parentRef');
         if ( parent.resourceType !== 'stack' || parent.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'parentRef'); }
@@ -1088,6 +1124,14 @@ export class CommandEngine {
       }
       reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
     }
+    if ( tcpExpected ) {
+      const rules = plan.changes.filter(item => item.field === 'portRules'), starts = plan.changes.filter(item => item.field === 'startOnCreate');
+      if ( rules.length !== 1 || starts.length !== 1 || starts[0].after !== parameters.startOnCreate ) { throw new CommandError('INVALID_RESPONSE'); }
+      let actual; try { actual = JSON.parse(rules[0].after); validateTcpLoadBalancerReview(actual); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( actual.length !== tcpExpected.length || actual.some((rule, index) =>
+        ['protocol', 'access', 'sourcePort', 'targetPort'].some(field => rule[field] !== tcpExpected[index][field])) ) { throw new CommandError('INVALID_RESPONSE'); }
+      reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
+    }
     const planRef = this.context.reference('plan', reference, captured);
     const summary = this.resourcePlanSummary(plan, planRef);
     this.onPlan(Object.assign({context: captured}, summary));
@@ -1104,7 +1148,7 @@ export class CommandEngine {
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
-      if ( reference.resourceType === 'externalService' && reference.operation === 'create' ) {
+      if ( ['externalService', 'loadBalancerService'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
