@@ -10,11 +10,18 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.217** / bridge **0.2.19**](https://github.com/PastureStack/web-console/releases/tag/1.6.217)
-is published. Matching published Engine **0.183.377** and a qualified compatible
+[Web Console **1.6.218** / bridge **0.2.20**](https://github.com/PastureStack/web-console/releases/tag/1.6.218)
+is published. Matching published Engine **0.183.378** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
+
+API Key details show configured policy and read-only capability information,
+without claiming effective grants. Typed TCP load-balancer creation requires
+explicit activation and complete ordered listener/backend rules. Load balancers
+can start or stop through the native lifecycle while preserving configuration.
+Writes retain fresh authority, human review and durable receipts; native
+acceptance of these new workflows remains pending.
 
 AI resource reviews stay anchored to the viewport when the page is scrolled.
 Long values scroll within the dialog; narrow layouts, classic scrollbars and
@@ -77,7 +84,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.217/web217-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.218/web218-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Native Process acceptance remains pending; whole-family/243-group completion is
 not claimed.
