@@ -1,5 +1,7 @@
-# Web Console 1.6.220 / Bridge 0.2.22 candidate
+# Web Console 1.6.220 / Bridge 0.2.22
 
-The existing typed tools support human-reviewed manual scale changes for non-global load balancers. Reviews retain exact scale values, current native role/Key checks, private configuration CAS and inactive-state preservation. Ordinary Service limits and Global rejection remain unchanged. Metadata previews with misplaced name or description now explain the nested parameters envelope without submitting a write or bypassing human approval.
+Non-Global load balancers support a separately human-approved manual scale plan. It preserves active/inactive state, native role and Key checks, and the reviewed configuration. Ordinary Service scale limits remain unchanged. Metadata previews explain the nested parameters envelope when name or description is misplaced; validation and human confirmation remain mandatory.
 
-This source candidate requires matching Engine 0.183.379 and a qualified Server assembly. Normal full/enabled CI, original archives, Bridge source/SBOM/SDK qualification, immutable publication and native acceptance remain pending. No full-243-group completion or new dependency installation is claimed.
+Original full/enabled CI passed 1142 browser tests and 93 focused methods (88 carried and five new). Original archive, double-build evidence, runtime/build SBOMs and cryptographic CI attestations are retained. Bridge 0.2.22 has one fresh loopback SDK handshake; its unchanged dependency graph and clean-install evidence are carried from 0.2.5 without a new install.
+
+This release matches published Engine v0.183.379. Server assembly, deployment and native business acceptance remain pending; no full243-group completion is claimed.
