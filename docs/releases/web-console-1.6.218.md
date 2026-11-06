@@ -1,9 +1,7 @@
-# Web Console 1.6.218 / Bridge 0.2.20 candidate
+# Web Console 1.6.218 / Bridge 0.2.20
 
-Existing typed tools can show a Key's configured policy without exposing credentials or treating owner-capability previews as effective authorization. Complete native deny/rule semantics and conservative unknown results are retained; resource lists do not expand each Key's policy.
+API Key details show configured policy and read-only capability information without claiming effective grants. Typed TCP load-balancer creation requires explicit activation and complete ordered listener/backend rules. Load balancers can start or stop through the existing native lifecycle with their configuration preserved. All writes retain fresh authority, human review and durable receipts.
 
-Load-balancer creation accepts the closed TCP subset: an authorized Stack reference, backend Service references, listener access and source/target ports, plus explicit startOnCreate. The review shows readable Stack/backend paths for same-name targets. HTTPS/TLS/HTTP, certificates, selectors, arbitrary configuration and scheduling are rejected. Existing load balancers gain separately reviewed start/stop with empty parameters through the shared Service lifecycle; remove, scale and upgrade are not added.
+Original full/enabled CI passed 1141 browser tests and 87 focused methods (75 carried and 12 new Node methods). The original archive, double-build proof, runtime/build SBOMs and cryptographic CI attestations are reused without rebuilding. Bridge 0.2.20 has 48 source files, 49 manifest rows and 50 ZIP entries, with the unchanged 92-component/95-location SDK graph. One fresh loopback SDK handshake passed; clean-install evidence is carried from 0.2.5 without a new install.
 
-This source candidate requires matching Engine v0.183.378. It uses the existing 12 tools, opaque references, human confirmation, canonical audit and native authority paths. Bridge 0.2.20 retains the 48-path allowlist and existing dependency graph; the new source archive must be qualified from this candidate's actual producer rather than reusing immutable 0.2.19 bytes.
-
-Normal CI and actual browser/focused totals, original artifacts, SDK qualification, immutable publication, assembled runtime and native traffic/role/weak-model acceptance remain pending. Source controls do not establish native acceptance or completion of the 243-group inventory.
+This release is bound to published Engine v0.183.378 and its current source ABI. Immutable-release crypto and anonymous bytes are verified separately after publication. Server assembly, deployment and native business/weak-model acceptance remain pending; no full243-group completion is claimed.
