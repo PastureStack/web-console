@@ -8,21 +8,19 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Source candidate: Web Console 1.6.220 / Bridge 0.2.22
-
-This unpublished candidate adds human-reviewed manual load-balancer scaling
-through the existing typed tools. It requires matching Engine 0.183.379 and a
-qualified Server assembly. Native Global, role and Key checks remain authoritative;
-CI, original artifacts, publication and native acceptance are pending. Current
-installation instructions below remain on the published version.
-
 ## Current component
 
-[Web Console **1.6.219** / bridge **0.2.21**](https://github.com/PastureStack/web-console/releases/tag/1.6.219)
-is published. Matching published Engine **0.183.378** and a qualified compatible
+[Web Console **1.6.220** / bridge **0.2.22**](https://github.com/PastureStack/web-console/releases/tag/1.6.220)
+is published. Matching published Engine **0.183.379** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
+
+Non-Global load balancers support a separately human-approved manual scale
+plan while preserving configuration and active/inactive state. Native Global,
+role and Key checks remain binding. Metadata previews explain the nested
+`parameters` envelope when name or description is misplaced, without submitting
+a write or bypassing human confirmation. Native acceptance remains pending.
 
 API Key client-report explanations and long code values wrap inside their list
 and detail columns, including narrow RTL layouts. Other audit grid cells retain
@@ -96,7 +94,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.219/web219-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.220/web220-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Native Process acceptance remains pending; whole-family/243-group completion is
 not claimed.
