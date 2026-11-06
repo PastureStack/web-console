@@ -309,7 +309,7 @@ test('CLI has no raw-ID/force parameters; private-output failure retains source 
   });
 });
 
-test('explicit writer alone requests native all visibility, keeps paging and rechecks exact Key permission', async () => {
+test('shared discovery requests native all visibility, keeps paging and rechecks exact Key permission', async () => {
   const target = {...original, id: 'p2', uuid: 'nonmember-project', name: 'Nonmember'};
   for (const role of ['admin', 'member', 'denied-key']) {
     const calls = [], fetcher = async (url, options) => {
@@ -332,11 +332,11 @@ test('explicit writer alone requests native all visibility, keeps paging and rec
     else await assert.rejects(prepareBoundProfile({...config, environment: target.name}, {fetcher}), error => error.status === 403);
   }
   const calls = [], legacy = await createBridge(config, {fetcher: async url => { calls.push(url.pathname + url.search); return response({data: [original]}); }});
-  legacy.close(); assert.deepEqual(calls, ['/v2-beta/projects?limit=100']);
+  legacy.close(); assert.deepEqual(calls, ['/v2-beta/projects?limit=100&all=true']);
   assert.throws(() => validateConfig({...config, isAdmin: true}), {code: 'INVALID_CONFIG'});
 });
 
-test('all query is one literal true on bootstrap collection GET only; legacy paging cannot opt in', async () => {
+test('all query is one literal true on bootstrap collection GET only; pagination rejects other values', async () => {
   assert.equal(allowedRequest('projects?limit=100&all=true', 'GET', null, true), true);
   for (const query of ['all=false', 'all=True', 'all=1', 'all=', 'all=true&all=true', 'all=true&all=false']) {
     assert.equal(allowedRequest('projects?' + query, 'GET', null, true), false);
@@ -345,11 +345,82 @@ test('all query is one literal true on bootstrap collection GET only; legacy pag
   assert.equal(allowedRequest('projects/p1?all=true', 'GET', 'p1', true), false);
   assert.equal(allowedRequest('projects?all=true', 'POST', 'p1', true), false);
   let calls = 0;
-  await assert.rejects(createBridge(config, {fetcher: async () => { calls++; return response({data: [original], pagination: {next: config.endpoint + '/v2-beta/projects?all=true&marker=next'}}); }}),
+  await assert.rejects(createBridge(config, {fetcher: async () => { calls++; return response({data: [original], pagination: {next: config.endpoint + '/v2-beta/projects?all=false&marker=next'}}); }}),
     {code: 'INVALID_ENVIRONMENT_PAGE'});
   assert.equal(calls, 1);
 });
 
+
+test('legacy native all visibility selects a nonmember admin Project across pages', async () => {
+  const target = {...original, id: 'p2', uuid: 'native-nonmember-project', name: 'Nonmember'};
+  const calls = [], bridge = await createBridge({...config, environment: target.name}, {fetcher: async (url, options) => {
+    calls.push({path: url.pathname, all: url.searchParams.getAll('all'), revision: options.headers['X-PastureStack-Key-Expected-Revision']});
+    assert.equal(url.origin, config.endpoint); assert.equal(url.pathname, '/v2-beta/projects');
+    assert.equal(options.method, 'GET'); assert.equal(options.body, undefined);
+    assert.equal(options.credentials, 'omit'); assert.equal(options.redirect, 'error');
+    assert.equal(options.headers.Authorization, 'Basic ' + Buffer.from(config.accessKey + ':' + secret).toString('base64'));
+    assert.equal('Cookie' in options.headers, false);
+    // The native admin collection needs all=true; direct access alone does not
+    // put this Project in the caller's ordinary member-only collection.
+    if (url.searchParams.get('all') !== 'true') return response({data: [original]});
+    if (!url.searchParams.has('marker')) return response({data: [original], pagination: {next: config.endpoint + '/v2-beta/projects?limit=100&marker=next'}});
+    return response({data: [target]});
+  }});
+  try {
+    assert.equal(bridge.engine.context.capture().projectId, target.id);
+    assert.deepEqual(calls, [{path: '/v2-beta/projects', all: ['true'], revision: undefined},
+      {path: '/v2-beta/projects', all: ['true'], revision: '7'}]);
+  } finally { bridge.close(); }
+});
+
+test('legacy native all visibility cannot broaden account or Key visibility or choose an absent or ambiguous target', async () => {
+  const target = {...original, id: 'p2', uuid: 'native-nonmember-project', name: 'Nonmember'};
+  for (const role of ['nonadmin', 'noaccess', 'restricted-key', 'empty', 'ambiguous']) {
+    let calls = 0;
+    await assert.rejects(createBridge({...config, environment: target.name}, {fetcher: async url => {
+      calls++; assert.deepEqual(url.searchParams.getAll('all'), ['true']);
+      if (role === 'noaccess') return new Response(JSON.stringify({code: 'PermissionDenied', message: secret}), {status: 403});
+      // all=true is only a native listing option. The server still applies the
+      // actual principal/Key policy; the bridge never synthesizes hidden rows.
+      return response({data: role === 'empty' ? [] : role === 'ambiguous' ? [target, {...target, id: 'p3'}] : [original]});
+    }}), error => {
+      assert.equal(JSON.stringify(error).includes(secret), false);
+      return role === 'noaccess' ? error.status === 403 : error.code === (role === 'ambiguous' ? 'AMBIGUOUS_ENVIRONMENT' : 'ENVIRONMENT_NOT_VISIBLE');
+    });
+    assert.equal(calls, 1);
+  }
+});
+
+test('legacy native all visibility retains the page limit and rejects unsafe pagination', async () => {
+  let calls = 0;
+  await assert.rejects(createBridge(config, {fetcher: async url => {
+    calls++; assert.deepEqual(url.searchParams.getAll('all'), ['true']);
+    return response({data: [], pagination: {next: config.endpoint + '/v2-beta/projects?marker=' + calls}});
+  }}), {code: 'ENVIRONMENT_SCAN_LIMIT'});
+  assert.equal(calls, 20);
+  for (const next of ['https://other.test/v2-beta/projects?marker=next',
+    config.endpoint + '/v2-beta/projects?all=false&marker=next',
+    config.endpoint + '/v2-beta/projects?all=true&all=true&marker=next',
+    config.endpoint + '/v2-beta/projects/p2?marker=next']) {
+    calls = 0;
+    await assert.rejects(createBridge(config, {fetcher: async () => {
+      calls++; return response({data: [], pagination: {next}});
+    }}), {code: 'INVALID_ENVIRONMENT_PAGE'});
+    assert.equal(calls, 1);
+  }
+});
+
+test('legacy native all visibility still requires dedicated purpose and one verified Key revision', async () => {
+  await assert.rejects(createBridge(config, {fetcher: async () => response({data: [original]}, 'general')}), {code: 'DEDICATED_KEY_REQUIRED'});
+  let calls = 0;
+  await assert.rejects(createBridge(config, {fetcher: async (url, options) => {
+    calls++;
+    if (calls === 1) return response({data: [], pagination: {next: config.endpoint + '/v2-beta/projects?marker=next'}}, 'ai-bridge', '7');
+    assert.equal(options.headers['X-PastureStack-Key-Expected-Revision'], '7');
+    return response({data: [original]}, 'ai-bridge', '8');
+  }}), {code: 'CONTEXT_CHANGED'});
+  assert.equal(calls, 2);
+});
 
 test('writer claims a private exclusive output before config or network and cleans only its failed empty file', async () => {
   await temporary(async directory => {
