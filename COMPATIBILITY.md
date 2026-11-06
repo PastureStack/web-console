@@ -1,5 +1,15 @@
 # Compatibility Contract
 
+## Web Console 1.6.215 / bridge 0.2.17 published
+
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.215) pairs with published Engine **0.183.375** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous byte-count/SHA256 readback; native release verification covers thirteen asset subjects plus the signed tag. Original archive provenance and runtime SBOM attestations passed without rebuilding the CI artifact.
+
+The existing twelve-tool protocol adds three ordinary-Service lifecycle intents: `finish_upgrade`, `rollback` and `cancel_upgrade`, each with exactly empty parameters. Native phase, fresh owner and Key upgrade authority, the captured upgrade generation, human confirmation and the original durable operation remain authoritative. Finish/rollback require native process and configuration/instance retirement readback. Cancellation verifies only the native canceled-upgrade checkpoint. There is no `cancel_rollback` capability or arbitrary action proxy.
+
+Original full/enabled CI passed **1,140 browser tests**, zero failures/skips and **69 focused methods**: 61 carried identities plus eight new lifecycle/review-label Node methods. Bridge qualification retained 48 source files, 49 manifest rows, 50 ZIP entries and the unchanged 92-component/95-location dependency evidence, with one new real SDK handshake passing. No new dependency installation or vulnerability scan is inferred.
+
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.215/web215-release-metadata.json) records producer `c66adfaff3bc1aeef13502b36ff613b203dd7364`, normal merge/tag target `8fe0730ac4193845e8306cd615218e8053a2517a` and tested tree `b1ed18051d1bd7fc30cbd6c5385b98299cfbb6dd`. The exact matching Engine375 publication includes the Project metadata transition fix. This later documentation commit is not the artifact producer. Immutable assets and the GitHub release body retain their publication-time bytes. Designated native workflows and weak-model acceptance remain pending; whole-family/243-group completion is not claimed.
+
 ## Web Console 1.6.214 / bridge 0.2.16 published
 
 [The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.214) uses matching published Engine **0.183.373** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous byte-count/SHA256 readback, and native release verification covers thirteen asset subjects plus the signed tag. Original archive provenance and runtime SBOM attestations passed without rebuilding the CI artifact.

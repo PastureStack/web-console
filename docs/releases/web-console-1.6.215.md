@@ -1,4 +1,4 @@
-# Web Console 1.6.215 / Bridge 0.2.17 candidate — not published
+# Web Console 1.6.215 / Bridge 0.2.17
 
 The existing twelve typed tools now expose three ordinary-Service upgrade
 lifecycle operations through preview_resource_change, normal human review,
@@ -21,8 +21,17 @@ Human review displays only the operation and native state transition. The
 existing action and field labels are reused in all thirteen locales. Private
 configuration, generation fingerprints and credentials are not model outputs.
 
-This source requires matching Engine v0.183.374 once published and a qualified
-Server assembly. Published Web214/Bridge0.2.16 installation instructions and
-immutable assets remain unchanged. Focused source controls, normal required CI,
-artifact qualification and native/weak-model acceptance are separate; pending
-platform acceptance is not a whole-family or whole-243-group result.
+This [immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.215)
+pairs with published Engine v0.183.375 and requires a qualified compatible Server
+assembly. Its original full/enabled CI passed 1,140 browser tests and 69 focused
+methods: 61 carried identities and eight new lifecycle/review-label Node methods.
+All thirteen public assets passed anonymous byte-count/SHA256 readback and native
+verification of fourteen cryptographic subjects. Bridge qualification covers
+48 source files, 49 manifest rows, 50 ZIP entries and one real SDK handshake.
+
+The producer is `c66adfaff3bc1aeef13502b36ff613b203dd7364`; normal merge/tag target
+`8fe0730ac4193845e8306cd615218e8053a2517a` shares tested tree
+`b1ed18051d1bd7fc30cbd6c5385b98299cfbb6dd`. These artifact identities and immutable
+assets remain unchanged by this later documentation update. Designated native
+and weak-model acceptance remain pending; component publication is not a
+whole-family or whole-243-group result.

@@ -77,6 +77,26 @@ Engine/broker owner; raw audit payloads and export remain human-only. Catalog
 metadata and its bounded launch adapter are described below. No tool accepts raw IDs,
 URLs, HTTP methods or caller-selected output fields.
 
+### Service upgrade completion and rollback
+
+For ordinary `resourceType: "service"`, use `preview_resource_change` with one
+of the operations below and `parameters: {}`. The same human confirmation,
+`apply_resource_change` and `get_operation` flow applies. The native owner,
+current Key upgrade ceiling and captured upgrade generation still decide access.
+
+| Operation | Required native phase | Verified checkpoint |
+| --- | --- | --- |
+| `finish_upgrade` | `upgraded` | `active` |
+| `rollback` | `upgrading`, `upgraded` or `canceled-upgrade` | `active` |
+| `cancel_upgrade` | `upgrading` or `finishing-upgrade` | `canceled-upgrade` |
+
+The model supplies no image, strategy, action URL or configuration. Finish and
+rollback wait for the native process and actual configuration/instance retirement
+readback. A cancel receipt verifies cancellation only; it does not finish an
+upgrade or rollback. `cancel_rollback` is unavailable because there is no native
+capability. Keep an accepted, running or unknown operation and read its receipt;
+do not reapply it. The existing dedicated image-upgrade flow remains separate.
+
 ### Project and load-balancer metadata
 
 `preview_resource_change` accepts only `name` and `description` for the currently
@@ -138,7 +158,7 @@ records it with `initialMode: off` in `webmcp-build.json` and the matching relea
 sidecar. Both the producer and workflow default to an off ceiling.
 
 The compatible Engine must separately enable `api.ai.service.upgrade.enabled`
-for upgrade plans. Its default remains false.
+for dedicated image-upgrade plans. Its default remains false.
 The new resource-change plans independently require
 `api.ai.resource.change.enabled=true`; that flag also defaults to false.
 

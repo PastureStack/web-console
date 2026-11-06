@@ -10,8 +10,8 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.214** / bridge **0.2.16**](https://github.com/PastureStack/web-console/releases/tag/1.6.214)
-is published. Matching published Engine **0.183.373** and a qualified compatible
+[Web Console **1.6.215** / bridge **0.2.17**](https://github.com/PastureStack/web-console/releases/tag/1.6.215)
+is published. Matching published Engine **0.183.375** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
@@ -48,6 +48,12 @@ Bound Bridge profiles first learn the server-verified dedicated-Key revision
 through discovery, then read the exact saved Project identity. Discovery rows
 never select a target or replace its saved endpoint, ID or opaque UUID.
 
+Ordinary Service upgrade plans now include finish, rollback and cancel-upgrade
+through the same preview, human review and verified-operation flow. These three
+operations take empty parameters and retain native phase, owner and Key upgrade
+checks. Cancellation verifies its native checkpoint; it does not complete an
+upgrade or rollback. Cancel-rollback remains unavailable.
+
 Twelve shared typed tools provide resource discovery and human-reviewed changes
 for supported workloads, External Services, DNS Aliases, audit metadata, and
 Certificate names/descriptions. Certificate PEM material, keys, chains, renewal
@@ -61,7 +67,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.214/web214-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.215/web215-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Native Process acceptance remains pending; whole-family/243-group completion is
 not claimed.
