@@ -82,20 +82,13 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Confirm that the matching numeric release is public, then download its ZIP and
-checksum and verify before extraction. These source-bound commands are not a
-publication claim.
-Keep both `bridge/` and `app/utils/`: they contain the exact
-shared command sources. Node.js 24.22.1 is required.
-
-Web Console 1.6.215 / Bridge 0.2.17 is published and pairs with Engine 0.183.375.
-This source checkout prepares Web216 / Bridge0.2.18 for matching Engine376;
-publication and native acceptance are pending. The version-bound block below
-documents that candidate and must wait for its qualified publication. For the
-currently available release, use the published 215 release's installation guide.
-Use a qualified compatible Server assembly. The current repository README is
-authoritative for installation; an immutable downloaded archive preserves its
-packaging-time README snapshot.
+Web Console 1.6.216 / Bridge 0.2.18 is published and pairs with Engine 0.183.376.
+Download the matching numeric release and checksum, verify it, then extract.
+Keep both `bridge/` and `app/utils/`: they contain the exact shared command
+sources. Node.js 24.22.1 and a qualified compatible Server assembly are required.
+The current repository README is authoritative for installation; an immutable
+downloaded archive preserves its packaging-time README snapshot. Component
+publication does not establish native workflow acceptance.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.216

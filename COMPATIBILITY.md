@@ -1,13 +1,16 @@
 # Compatibility Contract
 
-## Web Console 1.6.216 / bridge 0.2.18 candidate — not published
+## Web Console 1.6.216 / bridge 0.2.18 published
 
-The existing twelve typed tools accept native port-specification strings for standalone Container create. The browser and stdio clients share the closed schema, exact mapping review and human-confirmation signature. Name, image, description, command and entry point remain available. Raw launch configuration, environment and Service-only health checks are not accepted for Container creation.
+The existing twelve typed tools accept native port specifications for standalone Container create. Browser and stdio clients share the closed schema, exact mapping review and human-confirmation signature. Name, image, description, command and entry point remain available. Raw launch configuration, environment and Service-only health checks are outside this Container subset.
 
-Create leaves the Container stopped and verifies its saved mapping configuration. It does not reserve a port, allocate a dynamic host port or prove a live binding. A start operation needs its own human-approved plan. Existing Service port allocation and health-check behavior are unchanged. Native role, Key and revision checks remain authoritative; unsupported servers fail closed without dropping requested settings or retrying through a generic route.
+Create leaves the Container stopped and verifies saved configuration. It does not reserve a port, allocate a dynamic host port or prove a live binding. Start needs a separate approved plan. Service allocation and health checks remain unchanged. Native role, Key and revision checks remain authoritative; unsupported servers fail closed without dropping requested settings or using a generic route.
 
-This source candidate targets Engine v0.183.376 and a qualified compatible Server assembly. Local focused source controls passed; normal required CI, original artifact/SDK qualification, publication and designated native workflow acceptance remain pending. Published 215/.17 remains available; the Bridge installation block is bound to this source candidate and must wait for publication. No whole-family or whole-243-group completion is claimed.
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.216) pairs with published Engine **0.183.376** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous bytes/SHA256 readback; native release verification covers fourteen subjects including the signed tag. Original archive provenance and runtime SBOM attestations passed without rebuilding.
 
+Original full/enabled CI passed 1,140 browser tests with zero failures/skips and 74 focused methods (69 carried plus 5 new Container port methods). Bridge qualification retained 48 source files, 49 manifest rows, 50 ZIP entries and the unchanged 92-component/95-location dependency graph, with one new real SDK handshake. Clean-install evidence is carried from 0.2.5; no new installation or scan is claimed.
+
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.216/web216-release-metadata.json) records producer `ab4026507d50bae079933697c2511b7daf5b7cfd`, normal merge/tag target `7499b704a185618b72afde8abfeb964b7f9465c8` and tested tree `8c93f46816167f839dc104801e30f7c7ed3dc2ab`. This documentation commit is separate from the artifact producer. Immutable assets and the release body retain their publication-time bytes. Native Container port, weak-model and whole-243-group acceptance remain separate and pending.
 
 ## Web Console 1.6.215 / bridge 0.2.17 published
 
