@@ -1,5 +1,13 @@
 # Compatibility Contract
 
+## Source candidate: Web Console 1.6.220 / Bridge 0.2.22
+
+This unpublished candidate adds human-reviewed manual load-balancer scaling
+through the existing typed tools. It requires matching Engine 0.183.379 and a
+qualified Server assembly. Native Global, role and Key checks remain authoritative;
+CI, original artifacts, publication and native acceptance are pending. Current
+installation instructions below remain on the published version.
+
 ## Web Console 1.6.219 / bridge 0.2.21 published
 
 Client-reported audit explanations and long code values wrap within their existing list/detail columns. The original text, native-authority distinctions, unrelated grid-cell wrapping and horizontal scrolling remain unchanged. Narrow and RTL layouts share the same scoped fix.

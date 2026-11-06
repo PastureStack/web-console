@@ -134,11 +134,16 @@ export class CommandEngine {
     } else if ( name === 'preview_resource_change' && input && input.resourceType === 'project' && input.operation === 'update_metadata' &&
       result.code === 'INVALID_INPUT' && result.field === 'targetRef' ) {
       result.nextStep = 'Only the currently selected environment can be edited. If the target is another visible environment, ask the user to switch environments normally, then call find_resources again for a fresh project resourceRef. Never guess an ID or modify the original reference.';
+    } else if ( name === 'preview_resource_change' && input && input.operation === 'update_metadata' && RESOURCE_CHANGES[input.resourceType] && RESOURCE_CHANGES[input.resourceType].update_metadata &&
+      result.code === 'INVALID_INPUT' && ['name', 'description'].includes(result.field) && Object.prototype.hasOwnProperty.call(input, result.field) ) {
+      result.nextStep = 'Put name and description inside parameters, not at the top level. Keep resourceType, operation and the same selected targetRef at the top level. For example, parameters: {"name":"<requested name>","description":"<requested description>"}; description may also be null. Resubmit preview_resource_change with the corrected envelope. The resulting plan still requires the user to review and confirm it; do not apply it automatically.';
     } else if ( name === 'preview_resource_change' && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
       const repairs = {
         'parameters.image': 'Provide the exact user-requested image in parameters.image. Ask the user if it is missing; never guess an image or version.',
         'parameters.name': 'Provide the requested name in parameters.name, from 1 to 255 UTF-16 units.',
-        'parameters.scale': 'Provide an integer from 0 through 100 in parameters.scale.',
+        'parameters.scale': input.resourceType === 'loadBalancerService' ?
+          'Provide an integer of at least 1 in parameters.scale for a non-Global load balancer. The native int representation ceiling is 2147483647. Scaling does not start an inactive load balancer.' :
+          'Provide an integer from 0 through 100 in parameters.scale.',
         'parameters.description': 'Provide the complete description as a string of at most 1024 UTF-16 units, or null. An empty string clears it.',
         'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the simple targets.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
@@ -1053,6 +1058,10 @@ export class CommandEngine {
     if ( Object.keys(parameters).some((field) => !descriptor.fields.includes(field)) || Object.keys(parameters).length < descriptor.minFields ) {
       throw new CommandError('INVALID_INPUT', 'parameters');
     }
+    if ( Object.prototype.hasOwnProperty.call(parameters, 'scale') &&
+      (input.resourceType === 'loadBalancerService' ? parameters.scale < 1 : parameters.scale > 100) ) {
+      throw new CommandError('INVALID_INPUT', 'parameters.scale');
+    }
     if ( input.resourceType === 'externalService' ) { validateExternalServiceParameters(input.operation, parameters); }
     if ( input.resourceType === 'dnsService' && input.operation === 'update_targets' ) {
       parameters.serviceIds = aliasTargetIds(parameters.serviceRefs,
@@ -1102,6 +1111,11 @@ export class CommandEngine {
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
+    if ( input.resourceType === 'loadBalancerService' && input.operation === 'scale' &&
+      (plan.changes.length !== 1 || plan.changes[0].field !== 'scale' || plan.changes[0].after !== parameters.scale ||
+        !Number.isInteger(plan.changes[0].before) || plan.changes[0].before < 0 || plan.changes[0].before > 2147483647) ) {
+      throw new CommandError('INVALID_RESPONSE');
+    }
     if ( ['service', 'container'].includes(input.resourceType) && input.operation === 'create' ) {
       for ( const field of input.resourceType === 'service' ? SERVICE_CREATE_FIELDS : ['ports'] ) {
         const requested = Object.prototype.hasOwnProperty.call(parameters, field), change = plan.changes.find((item) => item.field === field);
