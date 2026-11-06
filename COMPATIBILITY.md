@@ -1,14 +1,14 @@
 # Compatibility Contract
 
-## Web Console 1.6.218 / bridge 0.2.20 published
+## Web Console 1.6.219 / bridge 0.2.21 published
 
-Configured API Key policy details preserve native rule order and deny semantics without exposing credential material or claiming effective grants. TCP load-balancer creation accepts explicit activation and complete ordered rules through the existing typed tools. Shared load-balancer start/stop retains native lifecycle, configuration readback, current role/Key checks and human approval.
+Client-reported audit explanations and long code values wrap within their existing list/detail columns. The original text, native-authority distinctions, unrelated grid-cell wrapping and horizontal scrolling remain unchanged. Narrow and RTL layouts share the same scoped fix.
 
-[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.218) pairs with published Engine **0.183.378** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous bytes/SHA256 readback; native release verification covers fourteen subjects including the signed tag. Original archive and runtime/build SBOM attestations passed without rebuilding.
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.219) pairs with published Engine **0.183.378** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous bytes/SHA256 readback; native release verification covers fourteen subjects including the signed tag. Original archive and runtime/build SBOM attestations passed without rebuilding.
 
-Original full/enabled CI passed 1,141 browser tests with zero failures/skips and 87 focused methods (75 carried plus 12 new Node methods). Bridge qualification retained 48 source files, 49 manifest rows, 50 ZIP entries and the unchanged 92-component/95-location dependency graph, with one new real SDK handshake. Clean-install evidence is carried from 0.2.5; no new installation or scan is claimed.
+Original full/enabled CI passed 1,142 browser tests with zero failures/skips and 88 focused methods (87 carried plus one new DOM regression). Bridge qualification retained 48 source files, 49 manifest rows, 50 ZIP entries and the unchanged 92-component/95-location dependency graph, with one new real SDK handshake. Clean-install evidence is carried from 0.2.5; no new installation or scan is claimed.
 
-[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.218/web218-release-metadata.json) records producer `330222163d93fa27f0174dd172e0277a0b6b06c0`, normal merge/tag target `a01fc8d39edb06f899dcca2660ac380cb67fbcba` and tested tree `e7dff8d6502b1fb19b60363c700f05c81dffcff0`. This documentation commit is separate from the artifact producer. Immutable assets and the release body retain their publication-time bytes. Server deployment, native business/weak-model and whole-243-group acceptance remain separate and pending.
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.219/web219-release-metadata.json) records producer `7d158eda4afa5b579c5e8e494d7e6e05de0864c3`, normal merge/tag target `5eaa72f09fb1a6ee5bbc0e1553d4f3424cf18ff2` and tested tree `62310516b5cfdffa31a358d4ea7b6a3dc1c13642`. This documentation commit is separate from the artifact producer. Immutable assets and the release body retain their publication-time bytes. Server deployment, native business/weak-model and whole-243-group acceptance remain separate and pending.
 
 ## Web Console 1.6.216 / bridge 0.2.18 published
 
