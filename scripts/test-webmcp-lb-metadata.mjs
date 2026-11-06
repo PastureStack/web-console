@@ -92,7 +92,7 @@ test('LB metadata: forbidden Stack or stale plan remains rejected and uncertain 
 
 test('LB metadata: capability and existing thirteen locale labels describe the closed subset and canonical audit target', async () => {
   const f = fixture(), capability = (await f.engine.execute('list_capabilities', {})).families.find(item => item.family === 'load-balancer').resources[0];
-  assert.deepEqual(capability.operations, ['start', 'stop', 'update_metadata', 'create']);
+  assert.deepEqual(capability.operations, ['start', 'stop', 'scale', 'update_metadata', 'create']);
   const tool = COMMANDS.find(command => command.name === 'preview_resource_change');
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('loadBalancerService'));
   assert.match(tool.description, /Load-balancer metadata updates still allow only name and description/);
@@ -107,4 +107,40 @@ test('LB metadata: capability and existing thirteen locale labels describe the c
   }
   const source = readFileSync(new URL('../app/components/api-key-audit/component.js', import.meta.url), 'utf8').replace(/\s+/g, ' ');
   assert.match(source, /safe\.targetType === 'loadBalancerService' \? 'servicePage\.type\.loadbalancerservice'/);
+});
+
+test('LB metadata: misplaced root metadata receives a parameters repair and corrected preview still requires a human', async () => {
+  for (const transport of ['browser', 'stdio']) for (const first of ['name', 'description']) {
+    const f = fixture(transport), found = await f.engine.execute('find_resources', {family: 'load-balancer'});
+    const targetRef = found.items[1].resourceRef, parameters = {name: 'renamed', description: 'requested description'};
+    const rootFields = first === 'name' ? parameters : {description: parameters.description, name: parameters.name};
+    const before = f.requests.length;
+    const rejected = await f.engine.execute('preview_resource_change', {resourceType: 'loadBalancerService', operation: 'update_metadata', targetRef, ...rootFields});
+    assert.equal(rejected.code, 'INVALID_INPUT'); assert.equal(rejected.field, first);
+    assert.match(rejected.nextStep, /name and description inside parameters/);
+    assert.match(rejected.nextStep, /same selected targetRef/);
+    assert.equal(f.requests.length, before); assert.equal(f.dispatches(), 0); assert.equal(f.plan(), undefined);
+    const preview = await f.engine.execute('preview_resource_change', {resourceType: 'loadBalancerService', operation: 'update_metadata', targetRef, parameters});
+    assert.equal(preview.status, 'needs_user'); assert.equal(preview.confirmationState, 'pending');
+    assert.deepEqual(preview.displayDiff, [{field: 'name', before: 'shared', after: parameters.name}, {field: 'description', before: '', after: parameters.description}]);
+    assert.equal(f.requests.at(-1).data.resourceId, 'lb-1'); assert.deepEqual(f.requests.at(-1).data.parameters, parameters);
+    assert.equal(f.dispatches(), 0); assert.ok(f.requests.every(request => !/[?&]action=(confirm|apply)/.test(request.url)));
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'NEEDS_USER');
+    assert.equal(f.dispatches(), 0); assert.equal(f.plan().confirmationState, 'pending');
+    assert.equal(JSON.stringify(rejected).includes('PRIVATE-CANARY'), false);
+    const adjacentBefore = f.requests.length;
+    for (const resourceType of ['host', 'stack']) {
+      for (const field of ['name', 'description']) {
+        const adjacent = await f.engine.execute('preview_resource_change', {resourceType, operation: 'update_metadata', targetRef, [field]: 'requested'});
+        assert.equal(adjacent.code, 'INVALID_INPUT'); assert.equal(adjacent.field, field);
+        assert.match(adjacent.nextStep, /name and description inside parameters/);
+      }
+      for (const operation of ['start', 'stop', 'remove']) {
+        const other = await f.engine.execute('preview_resource_change', {resourceType, operation, targetRef, name: 'requested'});
+        assert.equal(other.code, 'INVALID_INPUT');
+        assert.doesNotMatch(other.nextStep || '', /name and description inside parameters/);
+      }
+    }
+    assert.equal(f.requests.length, adjacentBefore); assert.equal(f.dispatches(), 0);
+  }
 });
