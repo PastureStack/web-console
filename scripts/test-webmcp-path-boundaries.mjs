@@ -56,7 +56,7 @@ async function fixture(dir){
   const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent','aiResourceView','aiResourceChangePlan','aiCatalogMetadataView',
     'aiCatalogStackLaunchOptions','aiCatalogStackLaunchPlan','aiCatalogStackLaunchInputs','aiAuditQuery','aiAuditSourcePageInput'];
   const inputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
-    aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId'],
+    aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view'],
     aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
     aiCatalogStackLaunchOptions:['templateId','versionId'],
     aiCatalogStackLaunchPlan:['templateId','versionId','optionsRef','name','description','startOnCreate','answers','referenceBindings'],
@@ -68,6 +68,7 @@ async function fixture(dir){
   for(const name of names){
     const fields=Object.fromEntries(inputs[name].map(field=>[field,{create:true}]));
     if(name==='aiToolCallEvent'){fields.command.options=[...COMMANDS.map(x=>x.name),'unknown'];fields.reason.options=[...PUBLIC_ERROR_CODES,'NONE'];}
+    if(name==='aiResourceView')Object.assign(fields.view,{type:'string',maxLength:32,options:['stack_graph']});
     if(name==='aiServiceUpgradePlan'){
       Object.assign(fields.startFirst,{type:'boolean',update:false,nullable:false});
       Object.assign(fields.batchSize,{type:'int',update:false,nullable:false,min:1,max:Number.MAX_SAFE_INTEGER});

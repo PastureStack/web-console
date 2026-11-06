@@ -214,7 +214,9 @@ test('API Key configured policy: same-name targets keep distinct opaque refs and
 
 test('API Key configured policy: malformed matrices revoked reads and stale refs fail closed while the twelve-tool input contract stays unchanged', async () => {
   assert.equal(COMMANDS.length,12);const command=COMMANDS.find(item=>item.name==='get_resource');
-  assert.deepEqual(Object.keys(command.inputSchema.properties),['resourceRef']);
+  assert.deepEqual(Object.keys(command.inputSchema.properties),['resourceRef','view']);
+  assert.deepEqual(command.inputSchema.properties.view.enum,['stack_graph']);
+  assert.deepEqual(command.inputSchema.required,['resourceRef']);
   for(const mutate of [read=>read.configuredPolicy.rules.push({...policyReadRule(1,'native-scope-service'),effect:'permit'}),
     read=>read.defaultOwnerCapabilities.basis='effective-key-grant',read=>read.url='http://foreign/',
     read=>read.configuredPolicy.expiresAt='yesterday',
@@ -869,4 +871,80 @@ test('LB shared Service lifecycle: injected config raw IDs stale contexts and re
   await denied.engine.confirmPlan(preview.planRef);const result=await denied.engine.execute('apply_resource_change',{planRef:preview.planRef});
   assert.equal(result.status,'rejected');assert.equal(result.code,'FORBIDDEN');assert.equal(denied.applies(),1);
   assert.equal(JSON.stringify(result).includes(secret),false);assert.equal(denied.requests.filter(row=>row.url.endsWith('?action=apply')).length,1);
+});
+
+function stackGraphFixture(transportKind = 'stdio') {
+  const root = {id: 'native-stack', type: 'stack', accountId: 'p1', name: 'Blue', state: 'inactive', dockerCompose: secret};
+  const graph = {subset: 'ordinary-service-links', completeness: 'unknown', permissionCompleteness: 'unknown', nodeLimit: 32, edgeLimit: 32,
+    limitReached: false, nodes: ['1s9', '1s10'].map(id => ({id, type: 'service', accountId: 'p1', name: 'same-name', nameTruncated: false, state: 'inactive'})),
+    edges: [{sourceId: '1s9', targetId: '1s10', relationship: 'service-link'}]};
+  const faults = {};
+  const f = fixture({transportKind, handle: async ({url, data}) => {
+    if (url === 'projects/p1/stacks?limit=50') return {body: {data: [root]}};
+    if (url === 'projects/p1/stacks/native-stack') return {body: root};
+    if (url === 'projects/p1/aiResourceViews') {
+      if (data.view) {
+        if (faults.error) throw faults.error;
+        return {body: {resourceType: 'stack', data: [{...root, stackGraph: faults.graph || graph}]}};
+      }
+      return {body: {resourceType: data.resourceType, data: data.resourceType === 'stack' ? [root] :
+        [{id: data.resourceId, type: 'service', accountId: 'p1', name: 'same-name', state: 'inactive'}]}};
+    }
+    if (url.startsWith('projects/p1/services/')) return {body: {id: url.split('/').at(-1), type: 'service', accountId: 'p1', name: 'same-name', state: 'inactive'}};
+    throw Error('Unexpected fixed graph fixture route');
+  }});
+  return {...f, graph, faults};
+}
+
+test('Stack graph: opt-in ordinary Service links preserve 12 tools, opaque same-name refs and ordinary detail cost', async () => {
+  assert.equal(COMMANDS.length, 12);
+  for (const transport of ['browser', 'stdio']) {
+    const f = stackGraphFixture(transport), found = await f.engine.execute('find_resources', {family: 'stack'}), resourceRef = found.items[0].resourceRef;
+    const ordinary = await f.engine.execute('get_resource', {resourceRef}); assert.equal(ordinary.status, 'succeeded'); assert.equal(ordinary.graph, undefined);
+    assert.equal(f.requests.some(request => request.data?.view), false);
+    const result = await f.engine.execute('get_resource', {resourceRef, view: 'stack_graph'});
+    assert.equal(result.status, 'succeeded'); assert.equal(result.graph.nodes.length, 2); assert.equal(result.graph.edges.length, 1);
+    assert.equal(result.graph.completeness, 'unknown'); assert.equal(result.graph.permissionCompleteness, 'unknown');
+    const [first, second] = result.graph.nodes; assert.equal(first.name, second.name); assert.notEqual(first.resourceRef, second.resourceRef);
+    assert.equal(result.graph.edges[0].sourceRef, first.resourceRef); assert.equal(result.graph.edges[0].targetRef, second.resourceRef);
+    assert.equal((await f.engine.execute('get_resource', {resourceRef: second.resourceRef})).fields.name, 'same-name');
+    const serialized = JSON.stringify(result);
+    for (const forbidden of ['1s9', '1s10', 'native-stack', secret, 'dockerCompose']) assert.equal(serialized.includes(forbidden), false);
+    assert.ok(f.requests.every(request => !/[?&]action=/.test(request.url) && !request.url.includes('ChangePlan')));
+    assert.equal(f.requests.filter(request => request.data?.view === 'stack_graph').length, 1);
+    const before = f.requests.length;
+    assert.equal((await f.engine.execute('get_resource', {resourceRef: first.resourceRef, view: 'stack_graph'})).code, 'INVALID_INPUT');
+    assert.equal((await f.engine.execute('get_resource', {resourceRef, view: 'compose'})).code, 'INVALID_INPUT');
+    assert.equal(f.requests.length, before);
+  }
+});
+
+test('Stack graph: cross-project nodes, hidden endpoints, payloads, bounds and changed authority fail closed without fallback', async () => {
+  const variants = [
+    graph => { graph.nodes[1].accountId = 'foreign'; }, graph => { graph.edges[0].targetId = 'hidden'; },
+    graph => { graph.nodes[0].dockerCompose = secret; }, graph => { graph.hiddenCount = 7; },
+    graph => { graph.nodes.push({...graph.nodes[0]}); }, graph => { graph.nodes[0].type = 'loadBalancerService'; },
+    graph => { graph.completeness = 'complete'; }, graph => { graph.limitReached = true; },
+    graph => { graph.nodes = Array.from({length: 33}, (_, index) => ({...graph.nodes[0], id: 's' + index})); },
+  ];
+  for (const mutate of variants) {
+    const f = stackGraphFixture(), resourceRef = (await f.engine.execute('find_resources', {family: 'stack'})).items[0].resourceRef;
+    f.faults.graph = structuredClone(f.graph); mutate(f.faults.graph);
+    const result = await f.engine.execute('get_resource', {resourceRef, view: 'stack_graph'});
+    assert.equal(result.code, 'INVALID_RESPONSE'); assert.equal(JSON.stringify(result).includes(secret), false);
+    assert.equal(f.requests.filter(request => request.data?.view === 'stack_graph').length, 1);
+  }
+  for (const code of ['ApiKeyPolicyChanged', 'ApiKeyRevoked', 'OwnerPermissionDenied']) {
+    const f = stackGraphFixture(), resourceRef = (await f.engine.execute('find_resources', {family: 'stack'})).items[0].resourceRef;
+    f.faults.error = {status: 403, body: {code}};
+    assert.equal((await f.engine.execute('get_resource', {resourceRef, view: 'stack_graph'})).code, 'FORBIDDEN');
+    assert.equal(f.requests.filter(request => request.data?.view).length, 1);
+  }
+  const f = stackGraphFixture(), resourceRef = (await f.engine.execute('find_resources', {family: 'stack'})).items[0].resourceRef;
+  f.faults.graph = {...f.graph, nodes: [], edges: []};
+  const empty = await f.engine.execute('get_resource', {resourceRef, view: 'stack_graph'});
+  assert.equal(empty.graph.completeness, 'unknown'); assert.equal(empty.graph.limitReached, false); assert.match(empty.nextStep, /Never infer/);
+  f.snapshot.projectId = f.snapshot.schemaProjectId = 'foreign';
+  const count = f.requests.length;
+  assert.equal((await f.engine.execute('get_resource', {resourceRef, view: 'stack_graph'})).code, 'STALE_REFERENCE'); assert.equal(f.requests.length, count);
 });

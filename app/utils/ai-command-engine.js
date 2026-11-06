@@ -423,6 +423,9 @@ export class CommandEngine {
 
   async get_resource(input, captured, signal) {
     const target = this.context.resolve(input.resourceRef, 'resource', captured);
+    if ( input.view !== undefined && (target.resourceType !== 'stack' || target.scope !== 'project') ) {
+      throw new CommandError('INVALID_INPUT', 'view');
+    }
     if (target.auditQuery) {
       if (target.family !== 'audit' || target.resourceType !== 'auditLog') { throw new CommandError('INVALID_INPUT', 'resourceRef'); }
       const row = await this.auditReader.get(target, captured, signal);
@@ -432,16 +435,20 @@ export class CommandEngine {
     }
     const descriptor = this.findDescriptor({family: target.family, resourceType: target.resourceType});
     let body;
-    if ( this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog' || ['volume', 'host'].includes(descriptor.type) ) {
+    if ( input.view === 'stack_graph' || this.usesResourceView(descriptor) || descriptor.readTransport === 'catalog' || ['volume', 'host'].includes(descriptor.type) ) {
       const view = descriptor.type === 'catalogTemplateVersion' ? await this.catalogReader.getVersion({templateId: target.parentId, versionId: target.id}, captured, signal) :
         descriptor.readTransport === 'catalog' ? await this.catalogReader.get({id: target.id}, captured, signal) :
-        await this.resourceView(descriptor, captured, {resourceId: target.id}, signal);
+          await this.resourceView(descriptor, captured, {resourceId: target.id, view: input.view}, signal);
       if ( view.data.length !== 1 ) { throw new CommandError('INVALID_RESPONSE'); }
       body = view.data[0];
     } else { body = await this.readResourcePath(`${this.resourcePath(descriptor, captured)}/${encodeURIComponent(target.id)}`, captured, signal); }
     if ( !this.resourceIdentity(body, descriptor, captured) || body.id !== target.id ) { throw new CommandError('INVALID_RESPONSE'); }
     const result = {status: 'succeeded', resourceTextIsUntrusted: true, resourceRef: input.resourceRef, family: target.family,
       resourceType: descriptor.type, scope: descriptor.scope, fields: safeResourceFields(body, descriptor), truncatedFields: this.resourceTruncation(body, descriptor)};
+    if ( input.view === 'stack_graph' ) {
+      result.graph = this.stackGraphProjection(body.stackGraph, captured);
+      result.nextStep = 'This opt-in graph contains only bounded, currently authorized ordinary Service links and authorized parents. Follow each node resourceRef with get_resource for current details; compare all same-name refs. Completeness and permission completeness are unknown, including when empty or below the limits. Other Service kinds, arbitrary link strings and hidden relationships are not represented. Never infer that a Stack is empty or safe to stop, remove or change from this graph.';
+    }
     if ( ['apiKey', 'apiKeyRestricted'].includes(descriptor.type) ) {
       try {
         result.policyRead = configuredPolicyRead(body.apiKeyPolicyRead || {availability: 'unavailable',
@@ -624,9 +631,37 @@ export class CommandEngine {
     }))};
   }
 
+  stackGraphProjection(graph, captured) {
+    const keys = ['subset', 'completeness', 'permissionCompleteness', 'nodeLimit', 'edgeLimit', 'limitReached', 'nodes', 'edges'];
+    if ( !graph || typeof graph !== 'object' || Array.isArray(graph) || Object.keys(graph).length !== keys.length ||
+      Object.keys(graph).some(key => !keys.includes(key)) || graph.subset !== 'ordinary-service-links' || graph.completeness !== 'unknown' ||
+      graph.permissionCompleteness !== 'unknown' || graph.nodeLimit !== 32 || graph.edgeLimit !== 32 || typeof graph.limitReached !== 'boolean' ||
+      !Array.isArray(graph.nodes) || graph.nodes.length > 32 || !Array.isArray(graph.edges) || graph.edges.length > 32 ||
+      graph.limitReached !== (graph.nodes.length === 32 || graph.edges.length === 32) ) { throw new CommandError('INVALID_RESPONSE'); }
+    const nodes = new Map(), projected = [];
+    const text = (value, maximum) => typeof value === 'string' && value.length > 0 && value.length <= maximum && !/[\x00-\x1f\x7f]/.test(value);
+    for ( const node of graph.nodes ) {
+      if ( !node || Object.keys(node).sort().join(',') !== 'accountId,id,name,nameTruncated,state,type' ||
+        !text(node.id, 128) || !/^[A-Za-z0-9_.:-]+$/.test(node.id) || ['.', '..'].includes(node.id) || nodes.has(node.id) ||
+        node.type !== 'service' || node.accountId !== captured.projectId || !text(node.name, 256) || !text(node.state, 64) ||
+        typeof node.nameTruncated !== 'boolean' ) { throw new CommandError('INVALID_RESPONSE'); }
+      const resourceRef = this.referenceResource({id: node.id, family: 'service', resourceType: 'service', scope: 'project'}, captured);
+      nodes.set(node.id, resourceRef);
+      projected.push({resourceRef, resourceType: 'service', name: node.name, nameTruncated: node.nameTruncated, state: node.state});
+    }
+    const seen = new Set(), edges = graph.edges.map(edge => {
+      if ( !edge || Object.keys(edge).sort().join(',') !== 'relationship,sourceId,targetId' || edge.relationship !== 'service-link' ||
+        !nodes.has(edge.sourceId) || !nodes.has(edge.targetId) || seen.has(JSON.stringify([edge.sourceId, edge.targetId])) ) { throw new CommandError('INVALID_RESPONSE'); }
+      seen.add(JSON.stringify([edge.sourceId, edge.targetId]));
+      return {sourceRef: nodes.get(edge.sourceId), targetRef: nodes.get(edge.targetId), relationship: 'service-link'};
+    });
+    return {subset: graph.subset, completeness: 'unknown', permissionCompleteness: 'unknown', nodeLimit: 32, edgeLimit: 32,
+      limitReached: graph.limitReached, nodes: projected, edges};
+  }
+
   async resourceView(descriptor, captured, options, signal) {
     const data = {resourceType: descriptor.type};
-    for ( const field of ['resourceId', 'query', 'marker', 'parentId'] ) {
+    for ( const field of ['resourceId', 'query', 'marker', 'parentId', 'view'] ) {
       if ( options[field] !== undefined ) { data[field] = options[field]; }
     }
     const body = await this.call(captured, 'aiResourceViews', 'POST', data, signal);
