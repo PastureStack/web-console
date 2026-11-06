@@ -130,6 +130,16 @@
 }
 
 .lacsso.modal-overlay > .lacsso.modal-container.medium-modal.ai-resource-review-modal {
+  position: fixed;
+  width: calc(100% - 40px);
+  inset-block-start: 20px;
+  inset-block-end: auto;
+  inset-inline: 0;
+  margin-block: 0;
+  margin-inline: auto;
+  max-block-size: calc(100vh - 40px);
+  max-block-size: calc(100dvh - 40px);
+  overflow-y: auto;
   max-inline-size: min(750px, calc(100vw - 40px));
 
   .horizontal-form, .horizontal-form > dt, .horizontal-form > dd, .force-wrap, .ai-resource-diff-value {

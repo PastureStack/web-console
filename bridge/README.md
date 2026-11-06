@@ -82,7 +82,8 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Web Console 1.6.216 / Bridge 0.2.18 is published and pairs with Engine 0.183.376.
+Web Console 1.6.217 / Bridge 0.2.19 is a source candidate requiring the matching Engine 0.183.377.
+Use this version-bound install block only after the matching numeric release and qualified component metadata are published.
 Download the matching numeric release and checksum, verify it, then extract.
 Keep both `bridge/` and `app/utils/`: they contain the exact shared command
 sources. Node.js 24.22.1 and a qualified compatible Server assembly are required.
@@ -91,8 +92,8 @@ downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.216
-BRIDGE_VERSION=0.2.18
+WEB_CONSOLE_VERSION=1.6.217
+BRIDGE_VERSION=0.2.19
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

@@ -18,6 +18,23 @@ async function containedSourcePath(root, relative, message) {
 }
 const readContainedSource=async(root,relative,message)=>readFile(await containedSourcePath(root,relative,message),'utf8');
 
+// Optional private backend inputs do not change the twelve Web/Bridge tools.
+// All older inputs and every other field/method/role assertion remain exact.
+function auditSourceInputNames(schema, required) {
+  const inputs=[...required];
+  const optional={keyId:{type:'string',create:true,maxLength:128},capabilitiesOnly:{type:'boolean',create:true}};
+  for(const [name,specification] of Object.entries(optional)){
+    if(!Object.hasOwn(schema.resourceFields,name))continue;
+    const field={...schema.resourceFields[name]};
+    for(const flag of ['required','update','readOnCreateOnly']){
+      if(Object.hasOwn(field,flag)){assert.equal(field[flag],false,'Private Audit '+name+' must stay optional/readable/non-updatable');delete field[flag];}
+    }
+    assert.deepEqual(field,specification,'Private Audit '+name+' has an unexpected contract');
+    inputs.push(name);
+  }
+  return inputs;
+}
+
 // Release-assembly check for two explicitly selected source checkouts.
 // No network requests, credentials, generated copies or source modification.
 export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false, externalTcpOnly = false} = {}) {
@@ -59,11 +76,12 @@ const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchS
   aiCatalogStackLaunchInputs:['answers','referenceBindings'],
   aiAuditQuery:['keyId','environmentId','from','to','lastMinutes','decision','outcome','operation','targetType','requestId','httpStatus','limit','offset','eventId'],
   aiAuditSourcePageInput:['limit','marker','projectId','accountId','from','to','keyKind']};
-for(const [type,inputs] of Object.entries(wireInputs)){
+for(const [type,requiredInputs] of Object.entries(wireInputs)){
   if(catalogOptionsOnly&&type!=='aiCatalogStackLaunchOptions')continue;
   const schema=await read('base/'+type+'.json');
   const actionInput=type==='aiCatalogStackLaunchInputs';
   const auditQuery=type==='aiAuditQuery',auditSource=type==='aiAuditSourcePageInput',audit=auditQuery||auditSource;
+  const inputs=auditSource?auditSourceInputNames(schema,requiredInputs):requiredInputs;
   if(actionInput){assert.deepEqual(schema.collectionMethods,[],'Human input must not have its own collection route');assert.deepEqual(schema.resourceMethods,[],'Human input must not have its own resource route');}
   else if(auditSource){assert.deepEqual(schema.collectionMethods,[],'Private Audit input must not have its own collection route');assert.deepEqual(schema.resourceMethods,[],'Private Audit input must not have its own resource route');}
   else assert.ok(schema.collectionMethods.includes('POST'),type+' is not a POST input contract');
@@ -109,7 +127,7 @@ for(const [type,inputs] of Object.entries(wireInputs)){
       assert.equal(schema.pluralName,'aiAuditQueries');assert.deepEqual(schema.collectionMethods,['POST'],type+' must be POST-only');assert.deepEqual(schema.resourceMethods,[],type+' must not expose resource methods');
     }
     for(const name of inputs){
-      const field=schema.resourceFields[name],kind=auditSource?(name==='limit'?'int':name==='keyKind'?'enum':'string'):['lastMinutes','httpStatus','limit','offset'].includes(name)?'int':'string';
+      const field=schema.resourceFields[name],kind=auditSource?(name==='limit'?'int':name==='keyKind'?'enum':name==='capabilitiesOnly'?'boolean':'string'):['lastMinutes','httpStatus','limit','offset'].includes(name)?'int':'string';
       assert.equal(field.type,kind,type+'.'+name+' type mismatch');
       assert.notEqual(field.update,true,type+'.'+name+' must not be client-updatable');
       if(kind==='string')assert.equal(field.maxLength,auditSource?['from','to'].includes(name)?64:128:160,type+'.'+name+' bound mismatch');
