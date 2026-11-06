@@ -897,3 +897,12 @@ button.audit-log-primary-control:focus,
     align-items: stretch;
   }
 }
+
+/* Client-report prose wraps locally; other grid cells keep their resize/nowrap policy. */
+.api-key-audit .api-key-audit-client-report,
+.api-key-audit .api-key-audit-client-report p,
+.api-key-audit .api-key-audit-client-report code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}

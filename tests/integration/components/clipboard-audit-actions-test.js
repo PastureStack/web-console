@@ -2,7 +2,7 @@ import Service from '@ember/service';
 import { run, cancel } from '@ember/runloop';
 import { setComponentTemplate } from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
-import { click, find, focus, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
+import { click, find, findAll, focus, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
 import { defer } from 'rsvp';
 import { module, test } from 'qunit';
 import ApiKeyAudit from 'ui/components/api-key-audit/component';
@@ -467,5 +467,63 @@ module('Integration | Component | clipboard event and audit actions', function(h
     await settled();
     assert.ok(find('.api-key-audit h3'), 'the real details click renders its returned record');
     assert.deepEqual(this.copied, ['request-audit'], 'details did not trigger another clipboard write');
+  });
+
+  test('client-report list and detail prose wraps inside managed grid columns without changing other cells', async function(assert) {
+    const context = this;
+    this.owner.register('service:user-store', Service.extend({rawRequest() { throw new Error('No audit transport is needed for layout'); }}));
+    const CapturedAudit = ApiKeyAudit.extend({didInsertElement() { this._super(...arguments); context.audit = this; }});
+    setComponentTemplate(auditTemplate, CapturedAudit);
+    this.owner.register('component:api-key-audit', CapturedAudit);
+    await render(precompileTemplate('{{api-key-audit}}'));
+    const record = {id: '1al42', keyId: '1c42', requestId: 'request-audit', resourceType: 'aiToolCallEvent',
+      operation: 'toolReport', phase: 'client-report', decision: 'NOT_EVALUATED', outcome: 'REPORTED', evidenceSource: 'client_reported',
+      clientReportedCommand: 'preview_resource_change', clientReportedPhase: 'result', clientReportedStatus: 'needs_user',
+      clientReportedReason: 'NEEDS_USER', clientReportedReasonDetail: 'BRIDGE_PROJECT_BINDING_REQUIRED'};
+    run(() => {
+      const safe = this.audit.safeRecord(record);
+      this.audit.setProperties({keyId: '1c42', rows: [safe], detail: safe, total: 1});
+    });
+    await settled();
+    // Reproduce the real column-manager attribute and a bounded decision column;
+    // the other columns deliberately retain the normal horizontal table overflow.
+    const table = find('.api-key-audit table.grid');
+    table.setAttribute('data-resizable-columns', 'true');
+    table.style.cssText = 'table-layout:fixed;width:1050px;min-width:1050px';
+    const columns = document.createElement('colgroup');
+    for (const width of [90,90,90,343,90,90,90,90,77]) {
+      const column = document.createElement('col'); column.style.width = `${width}px`; columns.appendChild(column);
+    }
+    table.insertBefore(columns, table.firstChild);
+    this.testRoot.style.width = '390px';
+    const detail = find('.api-key-audit-client-report').closest('section.api-key-audit').querySelector(':scope > section.well');
+    detail.style.width = '343px';
+    for (const locale of ['en-us', 'fa-ir']) {
+      if (locale !== 'en-us') {
+        const response = await fetch(`/translations/${locale}.json`);
+        assert.true(response.ok, 'the actual RTL production translation asset exists');
+        this.intl.addTranslations(locale, await response.json());
+      }
+      this.intl.setLocale([locale]); this.testRoot.dir = locale === 'fa-ir' ? 'rtl' : 'ltr';
+      await settled(); await document.fonts.ready;
+      const blocks = findAll('.api-key-audit .api-key-audit-client-report');
+      assert.strictEqual(blocks.length, 2, `${locale}: actual list and detail semantic blocks render`);
+      assert.strictEqual(getComputedStyle(table.querySelector('td')).whiteSpace, 'nowrap', 'unrelated managed cells still use the original nowrap policy');
+      const host = table.parentElement;
+      assert.true(host.scrollWidth > host.clientWidth, 'normal wide-table horizontal scrolling remains available');
+      for (const block of blocks) {
+        const expected = ['apiKeyAudit.clientReportNotice', 'apiKeyAudit.clientReportedReason', 'webmcp.bridgeProjectBindingRequired'].map(key => String(this.intl.t(key)));
+        expected[1] += ': ' + String(this.intl.t('apiKeyAudit.clientNeedsUser'));
+        assert.deepEqual([...block.children].map(p => p.textContent.replace(/\s+/g, ' ').trim()), expected.map(t => t.replace(/\s+/g, ' ').trim()), 'all three actual translated paragraphs remain literal');
+        assert.strictEqual(getComputedStyle(block).whiteSpace, 'normal', `${locale}: the block overrides inherited nowrap`);
+        assert.strictEqual(getComputedStyle(block).overflowWrap, 'anywhere', 'long unbroken text can shrink to the bounded column');
+        assert.true(block.clientWidth > 0 && block.scrollWidth <= block.clientWidth + 2, `${locale}: prose stays inside the block`);
+        const token = document.createElement('code'); token.textContent = 'BINDING_REFERENCE_'.repeat(30); block.appendChild(token);
+        assert.strictEqual(getComputedStyle(token).whiteSpace, 'normal', 'inline code cannot restore nowrap inside the semantic block');
+        assert.true(block.scrollWidth <= block.clientWidth + 2 && token.getClientRects().length > 1, 'an unbroken inline token wraps over multiple lines without overflowing');
+        token.remove();
+        assert.true([...block.children].every(p => p.scrollWidth <= p.clientWidth + 2), 'all translated paragraphs fit their own widths');
+      }
+    }
   });
 });
