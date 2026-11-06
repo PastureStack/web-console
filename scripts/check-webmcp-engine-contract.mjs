@@ -69,7 +69,7 @@ if(!catalogOptionsOnly){
   for(const code of [...PUBLIC_ERROR_CODES,'NONE'])assert.ok(event.resourceFields.reason.options.includes(code),'Public error '+code+' cannot be audited');
 }
 const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
-  aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId'],
+  aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view'],
   aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
   aiCatalogStackLaunchOptions:['templateId','versionId'],
   aiCatalogStackLaunchPlan:['templateId','versionId','optionsRef','name','description','startOnCreate','answers','referenceBindings'],
@@ -110,6 +110,15 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
     for(const name of ['resourceType','operation'])assert.deepEqual([...schema.resourceFields[name].options].sort(),
       properties[name].enum.filter(value=>name!=='operation'||value!=='create_from_catalog').sort(),'Typed change '+name+' enum mismatch');
     assert.equal(schema.resourceFields.parameters.type,'json','Typed parameters must preserve JSON values');
+  }
+  if(type==='aiResourceView'){
+    const field=schema.resourceFields.view;
+    const tool=COMMANDS.find(item=>item.name==='get_resource').inputSchema;
+    assert.equal(field.type,'string');assert.equal(field.maxLength,32);
+    assert.deepEqual(field.options,['stack_graph']);assert.notEqual(field.required,true);assert.notEqual(field.update,true);
+    assert.deepEqual(Object.keys(tool.properties).sort(),['resourceRef','view']);
+    assert.equal(tool.properties.view.type,'string');assert.deepEqual(tool.properties.view.enum,field.options);
+    assert.deepEqual(tool.required,['resourceRef']);assert.equal(tool.additionalProperties,false);
   }
   if(type==='aiCatalogMetadataView'){
     for(const [name,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68})){
