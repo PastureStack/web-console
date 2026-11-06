@@ -8,19 +8,21 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Source candidate: Web Console 1.6.221 / Bridge 0.2.23
-
-An explicit get_resource({resourceRef,view:"stack_graph"}) reads bounded ordinary-Service dependency links from a fresh Stack reference. The existing twelve tools, fresh native visibility and Key authority remain binding. Nodes and links carry opaque references; raw configuration and hidden counts are excluded. Both completeness fields remain unknown. Ordinary detail performs no graph query when view is omitted.
-
-This source candidate requires matching Engine 0.183.380 and a qualified Server assembly. Normal full/enabled CI, original archive/Bridge source-SBOM-SDK qualification, immutable publication and eight native criteria remain pending. No whole-243-group completion or dependency installation is claimed.
-
 ## Current component
 
-[Web Console **1.6.220** / bridge **0.2.22**](https://github.com/PastureStack/web-console/releases/tag/1.6.220)
-is published. Matching published Engine **0.183.379** and a qualified compatible
+[Web Console **1.6.221** / bridge **0.2.23**](https://github.com/PastureStack/web-console/releases/tag/1.6.221)
+is published. Matching published Engine **0.183.380** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
+
+An explicit `get_resource({resourceRef, view: "stack_graph"})` reads bounded
+ordinary-Service dependency links from a fresh Stack reference. The existing
+twelve tools, fresh native visibility and Key authority remain binding. Nodes
+and links carry opaque references; raw configuration and hidden counts are
+excluded. Both completeness fields remain unknown. Ordinary detail performs no
+graph query when `view` is omitted. All eight native Stack graph criteria remain
+pending.
 
 Non-Global load balancers support a separately human-approved manual scale
 plan while preserving configuration and active/inactive state. Native Global,
@@ -100,7 +102,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.220/web220-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.221/web221-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Native Process acceptance remains pending; whole-family/243-group completion is
 not claimed.

@@ -1,11 +1,14 @@
 # Compatibility Contract
 
-## Source candidate: Web Console 1.6.221 / Bridge 0.2.23
+## Web Console 1.6.221 / bridge 0.2.23 published
 
-An explicit get_resource({resourceRef,view:"stack_graph"}) reads bounded ordinary-Service dependency links from a fresh Stack reference. The existing twelve tools, fresh native visibility and Key authority remain binding. Nodes and links carry opaque references; raw configuration and hidden counts are excluded. Both completeness fields remain unknown. Ordinary detail performs no graph query when view is omitted.
+An explicit `get_resource({resourceRef, view: "stack_graph"})` reads bounded ordinary-Service dependency links from a fresh Stack reference. The existing twelve tools, fresh native visibility and Key authority remain binding. Nodes and links carry opaque references; raw configuration and hidden counts are excluded. Both completeness fields remain unknown. Ordinary detail performs no graph query when `view` is omitted.
 
-This source candidate requires matching Engine 0.183.380 and a qualified Server assembly. Normal full/enabled CI, original archive/Bridge source-SBOM-SDK qualification, immutable publication and eight native criteria remain pending. No whole-243-group completion or dependency installation is claimed.
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.221) pairs with published Engine **0.183.380** and requires a qualified compatible Server assembly. All thirteen assets passed anonymous bytes/SHA256 readback; native release verification covers fourteen subjects including the signed tag. Original archive and runtime/build SBOM attestations passed without rebuilding.
 
+Original full/enabled CI passed 1,142 browser tests with zero failures/skips and 95 focused methods (93 carried plus two new Stack graph Node methods). Bridge qualification retained 49 source files, 50 manifest rows, 51 ZIP entries and the unchanged 92-component/95-location dependency graph, with one new real SDK handshake. Its twelve public tools remain unchanged. Clean-install evidence is carried from 0.2.5; no new installation or scan is claimed.
+
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.221/web221-release-metadata.json) records producer `1b26bcb625c2c6d3b6e27cd5987eba1f0d6db6bc`, normal merge/tag target `d398fa1c0ce4f184720d9d55fbb1680a1b231379` and tested tree `5ce105a129b8406a66651f6a0e885fedfbbbc305`. This documentation commit is separate from the artifact producer. Immutable assets and the release body retain their publication-time bytes. Component publication does not establish Server deployment. All eight native Stack graph criteria, native business/weak-model and whole-243-group acceptance remain separate and pending.
 
 ## Web Console 1.6.220 / bridge 0.2.22 published
 

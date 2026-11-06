@@ -82,7 +82,7 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Web Console 1.6.217 / Bridge 0.2.19 is published and requires matching Engine 0.183.377.
+Web Console 1.6.221 / Bridge 0.2.23 is published and requires matching Engine 0.183.380.
 The numeric release and qualified component metadata are publicly verified.
 Download the matching numeric release and checksum, verify it, then extract.
 Keep both `bridge/` and `app/utils/`: they contain the exact shared command
@@ -91,10 +91,9 @@ The current repository README is authoritative for installation; an immutable
 downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
-For this candidate source, the source-bound block below requires Web Console
-1.6.221 / Bridge 0.2.23 and matching Engine 0.183.380. Use it only after those
-numeric release assets and metadata have been published and verified. The
-currently published installation above remains unchanged until then.
+The numeric release assets and component metadata are published and verified.
+The block below selects this matching release; a qualified Server assembly and
+native Stack graph acceptance remain separate and pending.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.221
