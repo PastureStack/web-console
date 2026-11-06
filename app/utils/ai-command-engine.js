@@ -12,7 +12,8 @@ const SERVICE_CREATE_FIELDS = ['ports', 'healthCheck'];
 
 export function serviceCreateReview(summary) {
   return summary && summary.operation === 'create' && Array.isArray(summary.displayDiff) &&
-    (summary.resourceType === 'externalService' || summary.resourceType === 'service' && summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field))) ?
+    (summary.resourceType === 'externalService' || ['service', 'container'].includes(summary.resourceType) &&
+      summary.displayDiff.some((change) => SERVICE_CREATE_FIELDS.includes(change.field))) ?
     JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
 }
 
@@ -99,7 +100,7 @@ export class CommandEngine {
       } else {
         // Never expose the transport error, response body, launchConfig or token.
         result = publicError(error);
-        serviceCreateInputRejected = name === 'preview_resource_change' && input && input.resourceType === 'service' && input.operation === 'create' &&
+        serviceCreateInputRejected = name === 'preview_resource_change' && input && ['service', 'container'].includes(input.resourceType) && input.operation === 'create' &&
           input.parameters && SERVICE_CREATE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input.parameters, field)) &&
           Number(error && (error.status || error.statusCode)) === 422 && error.body && error.body.code === 'ResourceChangeInputInvalid' && result.code === 'INVALID_INPUT';
       }
@@ -144,9 +145,9 @@ export class CommandEngine {
       };
       result.nextStep = input && input.resourceType === 'externalService' && input.parameters && Object.prototype.hasOwnProperty.call(input.parameters, 'healthCheck') ?
         'Only External Service create accepts this TCP healthCheck: required integer port 1 through 65535, with optional integer interval, responseTimeout, healthyThreshold and unhealthyThreshold. Timings are milliseconds and thresholds count checks. Omit the whole healthCheck for none; do not use null, HTTP requestLine, Host, URL, strategy, or send it through update_targets or update_metadata. Reuse the selected Stack parentRef and preserve all requested settings.' : serviceCreateInputRejected ?
-        'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching service-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
+        'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching typed-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
         result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
-        'Only service create accepts ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units, or healthCheck with required port 1 through 65535 and the exact fields and bounds in the schema. Timings are milliseconds; thresholds count checks. Reuse the selected Stack parentRef unchanged.' :
+        'Service and Container create accept ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units. Container create verifies stopped configuration; start and live host bindings need a separate approved plan. Only Service create accepts healthCheck with required port 1 through 65535 and the exact schema fields and bounds. Timings are milliseconds; thresholds count checks. Service create requires the selected Stack parentRef unchanged; Container create has no parentRef.' :
         input && input.resourceType === 'service' && Object.prototype.hasOwnProperty.call(SERVICE_UPGRADE_LIFECYCLE, input.operation) && result.field && result.field.startsWith('parameters') ?
         'Use this selected Service targetRef and empty parameters for the existing upgrade lifecycle action. Do not send an image, strategy, state or raw action. A new image upgrade uses preview_service_upgrade and a separate human-approved plan; do not silently substitute it.' :
         input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
@@ -955,7 +956,8 @@ export class CommandEngine {
         if ( plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
         try { validateExternalServiceHealthCheck(JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
       } else if ( SERVICE_CREATE_FIELDS.includes(change.field) ) {
-        if ( plan.resourceType !== 'service' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
+        if ( !(['service', 'container'].includes(plan.resourceType) && (change.field === 'ports' || plan.resourceType === 'service')) ||
+          plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
         try { validateServiceCreateField(change.field, JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
       }
       if ( change.field === 'externalIpAddresses' ) {
@@ -1064,8 +1066,8 @@ export class CommandEngine {
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
-    if ( input.resourceType === 'service' && input.operation === 'create' ) {
-      for ( const field of SERVICE_CREATE_FIELDS ) {
+    if ( ['service', 'container'].includes(input.resourceType) && input.operation === 'create' ) {
+      for ( const field of input.resourceType === 'service' ? SERVICE_CREATE_FIELDS : ['ports'] ) {
         const requested = Object.prototype.hasOwnProperty.call(parameters, field), change = plan.changes.find((item) => item.field === field);
         if ( requested !== !!change ) { throw new CommandError('INVALID_RESPONSE'); }
         if ( requested ) {
