@@ -1,7 +1,9 @@
-# Web Console 1.6.216 / Bridge 0.2.18 candidate — not published
+# Web Console 1.6.216 / Bridge 0.2.18
 
-The existing twelve typed tools accept native port-specification strings for standalone Container create. The browser and stdio clients share the closed schema, exact mapping review and human-confirmation signature. Name, image, description, command and entry point remain available. Raw launch configuration, environment and Service-only health checks are not accepted for Container creation.
+Standalone Container creation accepts native port mappings through the existing typed preview, human approval, apply and verified-operation flow. Exact mappings stay bound to review; name, image, description, command and entry point remain supported. Create verifies stopped mapping configuration, not a live binding or reservation. Start requires a separate approved plan. Service allocation and health checks are unchanged, and native role/Key checks remain authoritative.
 
-Create leaves the Container stopped and verifies its saved mapping configuration. It does not reserve a port, allocate a dynamic host port or prove a live binding. A start operation needs its own human-approved plan. Existing Service port allocation and health-check behavior are unchanged. Native role, Key and revision checks remain authoritative; unsupported servers fail closed without dropping requested settings or retrying through a generic route.
+The original full/enabled CI observed 1140 browser tests with zero failures/skips and all 74 focused methods: 69 carried identities and 5 new Container port Node cases. Original CI bytes are reused without rebuilding. Archive SLSA and runtime CycloneDX attestations are verified; native immutable release attestation is verified after publication.
 
-This source candidate targets Engine v0.183.376 and a qualified compatible Server assembly. Local focused source controls passed; normal required CI, original artifact/SDK qualification, publication and designated native workflow acceptance remain pending. Published 215/.17 remains available; the Bridge installation block is bound to this source candidate and must wait for publication. No whole-family or whole-243-group completion is claimed.
+Bridge 0.2.18 contains 48 source files, 49 manifest rows and 50 ZIP entries, with the unchanged 92-component/95-location SDK 1.32.2 graph. One fresh loopback SDK handshake is qualified; clean-install evidence is carried from 0.2.5 without installation. Matching Engine v0.183.376 is required; its workflow SLSA is NOT_PROVIDED.
+
+Designated Container port and weak-model acceptance remain pending. No completion of all 243 groups, new scan, zero-vulnerability or complete runtime SBOM claim is made.

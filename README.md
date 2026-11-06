@@ -8,17 +8,19 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Next candidate: Web Console 1.6.216 / Bridge 0.2.18
-
-Standalone Container port mappings are in [source and CI preparation](docs/releases/web-console-1.6.216.md). Creation verifies stopped configuration only; live bindings require a separately approved start. Matching Engine376, publication and native acceptance remain pending. Use the current published component below.
-
 ## Current component
 
-[Web Console **1.6.215** / bridge **0.2.17**](https://github.com/PastureStack/web-console/releases/tag/1.6.215)
-is published. Matching published Engine **0.183.375** and a qualified compatible
+[Web Console **1.6.216** / bridge **0.2.18**](https://github.com/PastureStack/web-console/releases/tag/1.6.216)
+is published. Matching published Engine **0.183.376** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
+
+Standalone Container create plans accept native port mappings with exact human
+review. Creation verifies stopped configuration, without reserving a port or
+proving a live binding. Start requires a separate approved plan; existing
+Service allocation and health checks remain unchanged. Native Container port
+acceptance remains pending.
 
 Read-only process discovery, details and bounded diagnostics use the native
 global process owner and fresh role, Key and schema checks. Registered names
@@ -71,7 +73,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.215/web215-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.216/web216-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Native Process acceptance remains pending; whole-family/243-group completion is
 not claimed.
