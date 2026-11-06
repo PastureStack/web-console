@@ -113,6 +113,9 @@ export class CommandEngine {
       result.nextStep = 'The service description changed. Find the service again and read its current description before deciding on an update.';
     } else if ( name === 'update_service_description' && result.code === 'STALE_REFERENCE' ) {
       result.nextStep = 'Use get_service to load this reference description first. If the reference expired, find the service again.';
+    } else if ( name === 'get_resource' && result.code === 'INVALID_INPUT' && result.field === 'resourceRef' &&
+      input && /^(stack|service)_/.test(input.resourceRef) ) {
+      result.nextStep = 'Call find_resources with family stack or service to obtain a resourceRef, then reuse that returned resourceRef unchanged in get_resource. For a Stack graph, use family stack and get_resource with view stack_graph. stackRef from find_stacks and serviceRef from find_services belong to legacy tools; never pass them as resourceRef or change their prefix. Keep the same environment and credentials.';
     } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input, field)) &&
       ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
       result.nextStep = 'Check startFirst, batchSize and intervalMillis against this tool schema and use a matching Engine upgrade-strategy adapter. The exact strategy must be returned for human review. Do not drop requested settings, send inServiceStrategy or launchConfig, or retry through a generic action.';
@@ -422,6 +425,7 @@ export class CommandEngine {
   }
 
   async get_resource(input, captured, signal) {
+    if ( /^(stack|service)_/.test(input.resourceRef) ) { throw new CommandError('INVALID_INPUT', 'resourceRef'); }
     const target = this.context.resolve(input.resourceRef, 'resource', captured);
     if ( input.view !== undefined && (target.resourceType !== 'stack' || target.scope !== 'project') ) {
       throw new CommandError('INVALID_INPUT', 'view');

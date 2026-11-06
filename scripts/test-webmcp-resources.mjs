@@ -881,6 +881,10 @@ function stackGraphFixture(transportKind = 'stdio') {
   const faults = {};
   const f = fixture({transportKind, handle: async ({url, data}) => {
     if (url === 'projects/p1/stacks?limit=50') return {body: {data: [root]}};
+    if (url === 'projects/p1/stacks?limit=1000') return {body: {data: [root]}};
+    if (url === 'projects/p1/services?limit=50') return {body: {data: [
+      {id: '1s9', type: 'service', accountId: 'p1', stackId: root.id, name: 'same-name', state: 'inactive'},
+    ]}};
     if (url === 'projects/p1/stacks/native-stack') return {body: root};
     if (url === 'projects/p1/aiResourceViews') {
       if (data.view) {
@@ -888,13 +892,82 @@ function stackGraphFixture(transportKind = 'stdio') {
         return {body: {resourceType: 'stack', data: [{...root, stackGraph: faults.graph || graph}]}};
       }
       return {body: {resourceType: data.resourceType, data: data.resourceType === 'stack' ? [root] :
-        [{id: data.resourceId, type: 'service', accountId: 'p1', name: 'same-name', state: 'inactive'}]}};
+        [{id: data.resourceId || '1s9', type: 'service', accountId: 'p1', name: 'same-name', state: 'inactive'}]}};
     }
     if (url.startsWith('projects/p1/services/')) return {body: {id: url.split('/').at(-1), type: 'service', accountId: 'p1', name: 'same-name', state: 'inactive'}};
     throw Error('Unexpected fixed graph fixture route');
   }});
   return {...f, graph, faults};
 }
+
+test('Resource reference guidance: tool descriptions distinguish legacy refs from generic Stack graph refs without schema rejection', () => {
+  assert.equal(COMMANDS.length, 12);
+  const detail = COMMANDS.find(row => row.name === 'get_resource');
+  const stacks = COMMANDS.find(row => row.name === 'find_stacks');
+  const services = COMMANDS.find(row => row.name === 'find_services');
+  for (const description of [detail.description, detail.inputSchema.properties.resourceRef.description]) {
+    assert.match(description, /find_resources/);
+    assert.match(description, /stackRef/);
+    assert.match(description, /serviceRef/);
+  }
+  assert.match(stacks.description, /legacy/i);
+  assert.match(stacks.description, /find_resources/);
+  assert.match(stacks.description, /stack_graph/);
+  assert.match(services.description, /resourceRef/);
+  assert.match(detail.inputSchema.properties.view.description, /find_resources/);
+  assert.equal(Object.hasOwn(detail.inputSchema.properties.resourceRef, 'pattern'), false,
+    'wrong namespaces must reach the shared audited command handler');
+});
+
+test('Resource reference guidance: legacy Stack and Service refs reject with audited correction and recover through generic reads only', async () => {
+  for (const transport of ['browser', 'stdio']) {
+    const f = stackGraphFixture(transport);
+    const stacks = await f.engine.execute('find_stacks', {query: 'Blue'});
+    const services = await f.engine.execute('find_services', {query: 'same-name'});
+    assert.equal(stacks.status, 'succeeded'); assert.equal(services.status, 'succeeded');
+    for (const reference of [stacks.items[0].stackRef, services.items[0].serviceRef]) {
+      for (const view of [undefined, 'stack_graph']) {
+        const requests = f.requests.length, audits = f.audits.length;
+        const result = await f.engine.execute('get_resource', {resourceRef: reference, ...(view ? {view} : {})});
+        assert.equal(result.code, 'INVALID_INPUT'); assert.equal(result.field, 'resourceRef');
+        assert.equal(result.status, 'rejected'); assert.match(result.nextStep, /find_resources/);
+        for (const word of ['stack', 'service', 'resourceRef', 'stackRef', 'serviceRef', 'stack_graph']) assert.ok(result.nextStep.includes(word));
+        assert.match(result.nextStep, /unchanged/); assert.match(result.nextStep, /never|do not/i);
+        assert.equal(JSON.stringify(result).includes(reference), false);
+        assert.equal(f.requests.length, requests, 'invalid namespaces cause no native resource request');
+        assert.deepEqual(f.audits.slice(audits).map(row => [row.command, row.phase, row.reason]),
+          [['get_resource', 'start', 'NONE'], ['get_resource', 'result', 'INVALID_INPUT']]);
+      }
+    }
+    const stack = await f.engine.execute('find_resources', {family: 'stack', query: 'Blue'});
+    const graph = await f.engine.execute('get_resource', {resourceRef: stack.items[0].resourceRef, view: 'stack_graph'});
+    assert.equal(graph.status, 'succeeded'); assert.equal(graph.graph.nodes.length, 2);
+    const service = await f.engine.execute('find_resources', {family: 'service', query: 'same-name'});
+    const detail = await f.engine.execute('get_resource', {resourceRef: service.items[0].resourceRef});
+    assert.equal(detail.status, 'succeeded'); assert.equal(detail.fields.name, 'same-name');
+    assert.ok(f.requests.every(row => row.method === 'GET' || row.method === 'POST' && row.url === 'projects/p1/aiResourceViews'));
+    assert.ok(f.requests.every(row => !/[?&]action=/.test(row.url) && !row.url.includes('ChangePlan')));
+    assert.equal(JSON.stringify(f.audits).includes('native-stack'), false);
+  }
+});
+
+test('Resource reference guidance: genuine expired and unknown generic refs retain stale-reference behavior and both audit events', async () => {
+  for (const transport of ['browser', 'stdio']) {
+    const f = stackGraphFixture(transport);
+    const found = await f.engine.execute('find_resources', {family: 'stack'});
+    const expired = found.items[0].resourceRef;
+    f.context.invalidate();
+    for (const reference of [expired, 'resource_unknown-nonce', 'resource_stack_unknown-nonce', 'resource_service_unknown-nonce']) {
+      const requests = f.requests.length, audits = f.audits.length;
+      const result = await f.engine.execute('get_resource', {resourceRef: reference, view: 'stack_graph'});
+      assert.equal(result.code, 'STALE_REFERENCE'); assert.equal(result.field, 'resourceRef');
+      assert.equal(result.nextStep, 'Search again and reuse the new reference unchanged.');
+      assert.equal(f.requests.length, requests);
+      assert.deepEqual(f.audits.slice(audits).map(row => [row.command, row.phase, row.reason]),
+        [['get_resource', 'start', 'NONE'], ['get_resource', 'result', 'STALE_REFERENCE']]);
+    }
+  }
+});
 
 test('Stack graph: opt-in ordinary Service links preserve 12 tools, opaque same-name refs and ordinary detail cost', async () => {
   assert.equal(COMMANDS.length, 12);
