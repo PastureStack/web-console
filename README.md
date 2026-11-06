@@ -8,6 +8,10 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
+## Next candidate: Web Console 1.6.216 / Bridge 0.2.18
+
+Standalone Container port mappings are in [source and CI preparation](docs/releases/web-console-1.6.216.md). Creation verifies stopped configuration only; live bindings require a separately approved start. Matching Engine376, publication and native acceptance remain pending. Use the current published component below.
+
 ## Current component
 
 [Web Console **1.6.215** / bridge **0.2.17**](https://github.com/PastureStack/web-console/releases/tag/1.6.215)

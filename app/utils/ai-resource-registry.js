@@ -91,7 +91,7 @@ export const RESOURCE_CHANGES = Object.freeze({
     create: action(['name', 'description', 'hostname', 'externalIpAddresses', 'healthCheck'], ['name']),
     update_targets: action(['hostname', 'externalIpAddresses'], [], 1)}),
   container: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(),
-    create: action(['name', 'image', 'description', 'command', 'entryPoint'], ['name', 'image']), update_metadata: metadata}),
+    create: action(['name', 'image', 'description', 'command', 'entryPoint', 'ports'], ['name', 'image']), update_metadata: metadata}),
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
 export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
