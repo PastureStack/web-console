@@ -2,7 +2,7 @@ const TYPES = {loadBalancerService: 'servicePage.type.loadbalancerservice', proj
 const OPERATIONS = {update_targets: 'formTarget.target', start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
   create: 'saveCancel.create', create_from_catalog: 'newCatalog.saveNew', update_metadata: 'generic.edit', scale: 'serviceInfoPartial.scale', archive: 'archive.action', restore: 'archive.restore',
   finish_upgrade: 'action.finishUpgrade', rollback: 'action.rollback', cancel_upgrade: 'action.cancelUpgrade'};
-const FIELDS = {startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
+const FIELDS = {portRules: 'formBalancerRules.label',startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
   state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint', ports: 'generic.ports', healthCheck: 'newContainer.tabs.healthCheck',
   operation: 'generic.actions', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
   startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
@@ -40,6 +40,10 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     if ( input === '' ) { return text('webmcp.emptyValue'); }
     if ( typeof input === 'boolean' ) { return text(input ? 'generic.yess' : 'generic.noo'); }
     if ( field === 'intervalMillis' && input !== null ) { return `${input} ${text('formHealthCheck.interval.unit')}`; }
+    if ( field === 'portRules' ) {
+      const rows = JSON.parse(input);
+      return rows.map(rule => `${text('formBalancerRules.protocol.label')}: TCP; ${text('formBalancerRules.access.label')}: ${text(`formBalancerRules.access.${rule.access}`)}; ${text('formBalancerRules.sourcePort.label')}: ${rule.sourcePort}; ${text('formBalancerRules.target')}: ${rule.target}; ${text('formBalancerRules.targetPort.label')}: ${rule.targetPort}`).join('\n');
+    }
     if ( field === 'healthCheck' ) {
       // The command engine already checked this closed JSON value. Translate
       // its labels and units while leaving the immutable review JSON intact.
@@ -67,7 +71,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     upgradeStrategyChanges: plan.upgradeStrategy ? ['startFirst', 'batchSize', 'intervalMillis'].map((field) => ({
       field, fieldLabel: text(label(FIELDS, field)), after: value(field, plan.upgradeStrategy[field]),
     })) : [],
-    createsStopped: plan.operation === 'create' && ['service', 'container', 'externalService', 'dnsService'].includes(plan.resourceType),
+    createsStopped: plan.operation === 'create' && (['service', 'container', 'externalService', 'dnsService'].includes(plan.resourceType) || plan.resourceType === 'loadBalancerService' && (plan.displayDiff || []).some(change => change.field === 'startOnCreate' && change.after === false)),
     archiveNotices: ['archive', 'restore'].includes(plan.operation) ? [text(plan.operation === 'archive' ? 'archive.explanation' : 'archive.restoreExplanation'),
       text(plan.operation === 'archive' ? 'archive.requiresStopped' : 'archive.restoreBeforeStart'), text('archive.dataWarning')] : [],
     mountedDataNotice: (plan.displayDiff || []).some((change) => change.field === 'mountedDataRule' && change.after === 'EXISTING_DOMAIN_RETENTION_NO_ADDITIONAL_PURGE') ? text('webmcp.domainRetentionNotice') : null,

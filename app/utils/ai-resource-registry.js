@@ -26,7 +26,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('accounts', [global('account', 'accounts', ['kind'])]),
   family('api-keys', [global('apiKey', 'apikeys', ['kind', 'expiresAt']),
     global('apiKeyRestricted', 'apikeyrestricteds', ['kind', 'expiresAt'])], 'pending-adapter',
-  'Safe metadata reads support legacy apiKey and restricted or expiring apiKeyRestricted. Select resourceType explicitly for the intended kind, including same-name Keys. Omitting resourceType queries apiKey only and does not combine both kinds. Credential creation, policy changes and revocation remain in the normal human Key UI; this is partial workflow coverage.'),
+  'Safe metadata reads support legacy apiKey and restricted or expiring apiKeyRestricted. Detail can return a configured-policy snapshot and partial native owner-ceiling facts, never effective Key authorization. Unavailable scope previews remain explicit and cannot be applied as a permission matrix. Select resourceType explicitly for the intended kind, including same-name Keys. Omitting resourceType queries apiKey only and does not combine both kinds. Credential creation, policy changes and revocation remain in the normal human Key UI; this is partial workflow coverage.'),
   family('audit', [global('auditLog', 'auditLogs', ['eventType', 'resourceType', 'responseCode', 'httpStatus', 'authType', 'interactionChannel', 'decision', 'outcome', 'operation'])], 'pending-adapter', 'Typed audit metadata queries are implemented through the matching Engine and broker owner for the native session and dedicated-Key bridge. Export and raw request/response payloads remain in the human audit UI; this is partial workflow coverage.'),
   family('authentication', [], 'pending-adapter', 'Authentication configuration uses its dedicated authenticated API. Login and credential entry remain human ceremonies.'),
   family('catalog', [catalog('catalogTemplate', ['name', 'description', 'catalogId', 'templateBase', 'templateKey', 'catalogScope', 'defaultVersion', 'maintainer', 'license']),
@@ -39,7 +39,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
   family('host', [resource('host', 'hosts', 'project', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb'], null,
     ['Host detail may include at most 50 freshly authorized container references with readable Stack names. Workload completeness stays unknown, including when empty; it does not establish an empty Host or authorize evacuation, deactivation or scheduling. Typed changes support nonempty custom name and description only. Clearing the custom name, labels, capacity/scheduling, hostname, agent lifecycle and credentials remain in the normal human host UI.']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
-  family('load-balancer', [project('loadBalancerService', 'loadBalancerServices', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'})]),
+  family('load-balancer', [resource('loadBalancerService', 'loadBalancerServices', 'project', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}, ['Typed create is the ordered TCP service-reference subset only, with explicit startOnCreate, scale 1 and the current server-managed image. HTTPS/TLS/HTTP, certificates, selectors, custom configuration, scheduling, and existing LB port/configuration edits remain outside it. Shared Service start/stop accept empty parameters, fresh targetRef and a separate human approval; restart/remove/scale/upgrade are not offered. Metadata updates still support name/description only.'])]),
   family('mfa-passkey', [], 'human-ceremony', 'MFA enrollment, challenges, recovery codes and passkeys require the existing human security flow.'),
   family('network', [project('network', 'networks', ['kind', 'defaultPolicyAction'])]),
   family('oidc', [], 'pending-adapter', 'OIDC configuration metadata requires the dedicated authentication API adapter. Login is a human ceremony.'),
@@ -61,6 +61,108 @@ export const RESOURCE_FAMILIES = Object.freeze([
 
 export const RESOURCE_TYPES = Object.freeze([...new Set(RESOURCE_FAMILIES.flatMap((entry) => entry.resources.map((item) => item.type)))]);
 export function resourceFamily(name) { return RESOURCE_FAMILIES.find((entry) => entry.name === name); }
+
+const policyOperations = ['read', 'create', 'update', 'upgrade', 'delete', 'exec', 'logs', 'export'];
+const policyMessages = {
+  POLICY_FIELDS_UNAVAILABLE: 'The native role does not expose the configured policy and revision.',
+  POLICY_NOT_CANONICAL: 'The native configured policy cannot be represented by this closed read projection.',
+  SCOPE_TARGET_UNAVAILABLE: 'This configured scope has no freshly authorized readable target preview.',
+  SCOPE_CONTEXT_UNAVAILABLE: 'This scope cannot be referenced in the current selected environment.',
+  SCOPE_PREVIEW_INCOMPLETE: 'All configured rules are included, but some scope targets cannot be fully previewed.',
+  KEY_OWNER_CONTEXT_UNAVAILABLE: 'The current actor is not proven to be this Key owner.',
+  SCOPE_CAPABILITY_METADATA_UNAVAILABLE: 'Complete native owner-ceiling metadata is unavailable for this scope.',
+  OWNER_CEILING_IS_NOT_EFFECTIVE_AUTHORIZATION: 'Owner-ceiling facts are not this Key effective authorization or an approval to apply a change.',
+};
+const policyDictionary = value => !!value && typeof value === 'object' && !Array.isArray(value);
+const policyText = value => typeof value === 'string' && value.length <= 512 && !/[\x00-\x1f\x7f]/.test(value);
+function policyRequire(value) { if ( !value ) { throw new TypeError('Invalid configured-policy read projection'); } }
+function policyKeys(value, keys) { policyRequire(policyDictionary(value) && Object.keys(value).every(key => keys.includes(key))); }
+function policyCapabilities(raw) {
+  policyKeys(raw, ['basis', 'effectiveAuthorization', 'operations', 'reason']);
+  policyRequire(raw.basis === 'native-owner-ceiling' && raw.effectiveAuthorization === 'not-evaluated' &&
+    ['KEY_OWNER_CONTEXT_UNAVAILABLE', 'SCOPE_CAPABILITY_METADATA_UNAVAILABLE', 'OWNER_CEILING_IS_NOT_EFFECTIVE_AUTHORIZATION'].includes(raw.reason) &&
+    Array.isArray(raw.operations) && raw.operations.length === policyOperations.length);
+  const seen = new Set();
+  const operations = raw.operations.map(item => {
+    policyKeys(item, ['operation', 'status']);
+    policyRequire(policyOperations.includes(item.operation) && !seen.has(item.operation) && ['observed', 'unavailable', 'unknown'].includes(item.status));
+    seen.add(item.operation);
+    return {operation: item.operation, status: item.status};
+  });
+  return {basis: 'native-owner-ceiling', effectiveAuthorization: 'not-evaluated', operations,
+    reason: raw.reason, message: policyMessages[raw.reason]};
+}
+function unavailablePolicyCapabilities() {
+  return policyCapabilities({basis: 'native-owner-ceiling', effectiveAuthorization: 'not-evaluated',
+    reason: 'SCOPE_CAPABILITY_METADATA_UNAVAILABLE', operations: policyOperations.map(operation => ({operation, status: 'unknown'}))});
+}
+
+// This is detail-only. No native scope ID or arbitrary nested field reaches a model.
+export function configuredPolicyRead(raw, referenceTarget) {
+  policyKeys(raw, ['availability', 'representation', 'previewComplete', 'reason', 'effectiveAuthorization',
+    'revision', 'configuredPolicy', 'defaultOwnerCapabilities', 'allConfiguredRulesIncluded', 'scopePreviewComplete']);
+  policyRequire(raw.representation === 'configured-policy-read-only' && raw.previewComplete === false && raw.effectiveAuthorization === 'not-evaluated');
+  if ( raw.availability === 'unavailable' ) {
+    policyRequire(['POLICY_FIELDS_UNAVAILABLE', 'POLICY_NOT_CANONICAL'].includes(raw.reason) &&
+      Object.keys(raw).every(key => ['availability', 'representation', 'previewComplete', 'reason', 'effectiveAuthorization'].includes(key)));
+    return {availability: 'unavailable', representation: raw.representation, previewComplete: false,
+      effectiveAuthorization: 'not-evaluated', reason: raw.reason, message: policyMessages[raw.reason]};
+  }
+  policyRequire(raw.availability === 'available' && Number.isSafeInteger(raw.revision) && raw.revision >= 0 &&
+    raw.allConfiguredRulesIncluded === true && typeof raw.scopePreviewComplete === 'boolean' &&
+    ['SCOPE_PREVIEW_INCOMPLETE', 'OWNER_CEILING_IS_NOT_EFFECTIVE_AUTHORIZATION'].includes(raw.reason));
+  const policy = raw.configuredPolicy;
+  policyKeys(policy, ['mode', 'defaultEffect', 'purpose', 'expiresAt', 'rules']);
+  policyRequire(['full', 'closed', 'custom'].includes(policy.mode) && ['allow', 'deny'].includes(policy.defaultEffect) &&
+    ['general', 'ai-bridge'].includes(policy.purpose) && (policy.expiresAt === null ||
+      typeof policy.expiresAt === 'string' && policy.expiresAt.length <= 64 && /^[+-]?\d{4,10}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?Z$/.test(policy.expiresAt)) &&
+    Array.isArray(policy.rules) && policy.rules.length <= 128 &&
+    (policy.mode === 'custom' || policy.rules.length === 0 && policy.defaultEffect === (policy.mode === 'full' ? 'allow' : 'deny')));
+  let sourceComplete = true, currentComplete = true;
+  const rules = policy.rules.map((rule, index) => {
+    policyKeys(rule, ['ordinal', 'effect', 'operations', 'scope', 'ownerCapabilities']);
+    policyRequire(rule.ordinal === index+1 && ['allow', 'deny'].includes(rule.effect) && Array.isArray(rule.operations) &&
+      rule.operations.length > 0 && rule.operations.length <= policyOperations.length &&
+      new Set(rule.operations).size === rule.operations.length && rule.operations.every(operation => policyOperations.includes(operation)));
+    const ownerCapabilities = policyCapabilities(rule.ownerCapabilities);
+    const scope = rule.scope;
+    policyKeys(scope, ['kind', 'resourceType', 'availability', 'reason', 'target']);
+    policyRequire(['global', 'project', 'stack', 'resource'].includes(scope.kind) && ['resolved', 'unavailable'].includes(scope.availability) &&
+      (scope.resourceType === undefined || RESOURCE_TYPES.includes(scope.resourceType)) &&
+      (scope.kind !== 'project' || scope.resourceType === 'project' || scope.availability === 'unavailable') &&
+      (scope.kind !== 'stack' || scope.resourceType === 'stack' || scope.availability === 'unavailable') &&
+      scope.reason === (scope.availability === 'resolved' ? 'NONE' : 'SCOPE_TARGET_UNAVAILABLE'));
+    let target = null;
+    if ( scope.kind === 'global' ) {
+      policyRequire(scope.resourceType === undefined && scope.target === undefined && scope.availability === 'resolved');
+    } else if ( scope.availability === 'resolved' ) {
+      policyKeys(scope.target, ['id', 'type', 'name', 'accountId', 'stackId', 'stackName', 'parentResolution']);
+      policyRequire(scope.resourceType && scope.target.type === scope.resourceType && policyText(scope.target.id) &&
+        /^[a-zA-Z0-9_.:-]{1,256}$/.test(scope.target.id) && !['.', '..'].includes(scope.target.id) &&
+        Object.values(scope.target).every(policyText));
+      target = referenceTarget(scope.target);
+      if ( !target ) { currentComplete = false; }
+    } else {
+      policyRequire(scope.target === undefined); sourceComplete = false; currentComplete = false;
+    }
+    const projectedScope = {kind: scope.kind, availability: scope.kind === 'global' || target ? 'resolved' : 'unavailable'};
+    if ( scope.resourceType ) { projectedScope.resourceType = scope.resourceType; }
+    if ( target ) { projectedScope.target = target; }
+    if ( projectedScope.availability === 'unavailable' ) {
+      projectedScope.reason = scope.availability === 'resolved' ? 'SCOPE_CONTEXT_UNAVAILABLE' : 'SCOPE_TARGET_UNAVAILABLE';
+      projectedScope.message = policyMessages[projectedScope.reason];
+    }
+    return {ordinal: rule.ordinal, effect: rule.effect, operations: rule.operations.slice(), scope: projectedScope,
+      ownerCapabilities: scope.kind !== 'global' && !target ? unavailablePolicyCapabilities() : ownerCapabilities};
+  });
+  policyRequire(sourceComplete === raw.scopePreviewComplete);
+  const reason = sourceComplete && currentComplete ? 'OWNER_CEILING_IS_NOT_EFFECTIVE_AUTHORIZATION' : 'SCOPE_PREVIEW_INCOMPLETE';
+  return {availability: 'available', representation: 'configured-policy-read-only', revision: raw.revision,
+    configuredPolicy: {mode: policy.mode, defaultEffect: policy.defaultEffect, purpose: policy.purpose, expiresAt: policy.expiresAt, rules},
+    defaultOwnerCapabilities: policyCapabilities(raw.defaultOwnerCapabilities), allConfiguredRulesIncluded: true,
+    scopePreviewComplete: sourceComplete && currentComplete, effectiveAuthorization: 'not-evaluated', previewComplete: false,
+    reason, message: policyMessages[reason]};
+}
 export function resourceDescriptor(familyName, type) {
   const entry = resourceFamily(familyName);
   return entry && entry.resources.find((item) => item.type === (type || entry.resources[0] && entry.resources[0].type));
@@ -77,7 +179,7 @@ export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
 });
 export const RESOURCE_CHANGES = Object.freeze({
   project: Object.freeze({update_metadata: metadata}),
-  loadBalancerService: Object.freeze({update_metadata: metadata}),
+  loadBalancerService: Object.freeze({start: action(), stop: action(), update_metadata: metadata, create: action(['name', 'description', 'startOnCreate', 'portRules'], ['name', 'startOnCreate', 'portRules'])}),
   certificate: Object.freeze({update_metadata: metadata}),
   host: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
@@ -95,7 +197,7 @@ export const RESOURCE_CHANGES = Object.freeze({
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
 export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
-  'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
+  'portRules', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can
 // contain credentials (including audit payloads, stack YAML and key policies).

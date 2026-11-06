@@ -92,10 +92,10 @@ test('LB metadata: forbidden Stack or stale plan remains rejected and uncertain 
 
 test('LB metadata: capability and existing thirteen locale labels describe the closed subset and canonical audit target', async () => {
   const f = fixture(), capability = (await f.engine.execute('list_capabilities', {})).families.find(item => item.family === 'load-balancer').resources[0];
-  assert.deepEqual(capability.operations, ['update_metadata']);
+  assert.deepEqual(capability.operations, ['start', 'stop', 'update_metadata', 'create']);
   const tool = COMMANDS.find(command => command.name === 'preview_resource_change');
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('loadBalancerService'));
-  assert.match(tool.description, /Load-balancer metadata changes allow only name and description/);
+  assert.match(tool.description, /Load-balancer metadata updates still allow only name and description/);
   const yaml = createRequire(import.meta.url)('yamljs');
   const locales = ['de-de', 'en-us', 'fa-ir', 'fil-ph', 'fr-fr', 'ja-jp', 'ko-kr', 'hu-hu', 'pt-br', 'ru-ru', 'uk-ua', 'zh-hans', 'zh-tw'];
   for (const locale of locales) {

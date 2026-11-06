@@ -91,9 +91,14 @@ The current repository README is authoritative for installation; an immutable
 downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
+For this candidate source, the source-bound block below requires Web Console
+1.6.218 / Bridge 0.2.20 and matching Engine 0.183.378. Use it only after those
+numeric release assets and metadata have been published and verified. The
+currently published installation above remains unchanged until then.
+
 ```sh
-WEB_CONSOLE_VERSION=1.6.217
-BRIDGE_VERSION=0.2.19
+WEB_CONSOLE_VERSION=1.6.218
+BRIDGE_VERSION=0.2.20
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
