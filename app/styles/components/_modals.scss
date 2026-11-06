@@ -131,6 +131,7 @@
 
 .lacsso.modal-overlay > .lacsso.modal-container.medium-modal.ai-resource-review-modal {
   position: fixed;
+  width: calc(100% - 40px);
   inset-block-start: 20px;
   inset-block-end: auto;
   inset-inline: 0;

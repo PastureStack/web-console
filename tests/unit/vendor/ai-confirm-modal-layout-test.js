@@ -80,10 +80,14 @@ test('resource review stays inside the viewport on a scrolled page and retains r
       await new Promise(resolve => frame.contentWindow.requestAnimationFrame(() => frame.contentWindow.requestAnimationFrame(resolve)));
       const modal=frame.contentDocument.querySelector('[role="dialog"]'), title=modal.querySelector('h3');
       const bounds=modal.getBoundingClientRect(), label=`${width}/${height}/${theme}/${direction}/${kind}`;
+      const measurement={label,innerWidth:frame.contentWindow.innerWidth,clientWidth:frame.contentDocument.documentElement.clientWidth,
+        scrollbar:frame.contentWindow.innerWidth-frame.contentDocument.documentElement.clientWidth,
+        left:bounds.left,top:bounds.top,right:bounds.right,bottom:bounds.bottom,width:bounds.width,height:bounds.height};
+      console.info('AI_REVIEW_VIEWPORT_MEASUREMENT '+JSON.stringify(measurement));
       assert.strictEqual(frame.contentWindow.scrollY,248,`${label}: page remains scrolled`);
       assert.strictEqual(frame.contentWindow.getComputedStyle(modal).position,'fixed',`${label}: viewport anchored`);
       assert.ok(bounds.top>=19&&bounds.bottom<=height-19,`${label}: complete outer box inside viewport`);
-      assert.ok(bounds.left>=19&&bounds.right<=width-19,`${label}: logical inline centering fits viewport`);
+      assert.ok(bounds.left>=19&&bounds.right<=width-19,`${label}: logical inline centering fits viewport ${JSON.stringify(measurement)}`);
       assert.ok(title.getBoundingClientRect().top>=bounds.top,`${label}: heading initially visible`);
       assert.ok(modal.scrollWidth<=modal.clientWidth+1,`${label}: no horizontal clipping`);
       assert.strictEqual(modal.querySelector('dd').textContent,rows[0][1],`${label}: full original review value retained`);
