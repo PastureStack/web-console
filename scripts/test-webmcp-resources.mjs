@@ -788,8 +788,8 @@ test('Next candidate combined wiring: one engine reads Key configured policy and
         [{field:'state',before:data.operation==='start'?'inactive':'active',after:data.operation==='start'?'active':'inactive'}]};return {body:plan};
   }});
   const caps=await f.engine.execute('list_capabilities',{}),lb=caps.families.find(row=>row.family==='load-balancer').resources[0];
-  for(const operation of ['create','start','stop']) assert.ok(lb.operations.includes(operation));
-  for(const operation of ['scale','remove','upgrade','restart']) assert.equal(lb.operations.includes(operation),false);
+  for(const operation of ['create','start','stop','scale']) assert.ok(lb.operations.includes(operation));
+  for(const operation of ['remove','upgrade','restart']) assert.equal(lb.operations.includes(operation),false);
   assert.deepEqual(lb.createWorkflow.portRules.items.required,['protocol','access','sourcePort','targetPort','serviceRef']);
   const keys=await f.engine.execute('find_resources',{family:'api-keys',resourceType:'apiKey'});
   const detail=await f.engine.execute('get_resource',{resourceRef:keys.items[0].resourceRef});
@@ -836,8 +836,8 @@ test('LB shared Service lifecycle: capabilities and same-name opaque targets req
   for(const operation of ['start','stop']) {
     const f=lbLifecycleFixture(),caps=await f.engine.execute('list_capabilities',{});
     const resource=caps.families.find(row=>row.family==='load-balancer').resources[0];
-    assert.ok(resource.operations.includes('start'));assert.ok(resource.operations.includes('stop'));
-    for(const unsupported of ['restart','remove','scale','upgrade']) assert.equal(resource.operations.includes(unsupported),false);
+    assert.ok(resource.operations.includes('start'));assert.ok(resource.operations.includes('stop'));assert.ok(resource.operations.includes('scale'));
+    for(const unsupported of ['restart','remove','upgrade']) assert.equal(resource.operations.includes(unsupported),false);
     assert.equal(COMMANDS.length,12);
     const found=await f.engine.execute('find_resources',{family:'load-balancer',resourceType:'loadBalancerService',query:'edge'});
     assert.equal(found.items.length,2);const chosen=found.items[operation==='start'?0:1];
