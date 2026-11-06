@@ -10,11 +10,15 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.216** / bridge **0.2.18**](https://github.com/PastureStack/web-console/releases/tag/1.6.216)
-is published. Matching published Engine **0.183.376** and a qualified compatible
+[Web Console **1.6.217** / bridge **0.2.19**](https://github.com/PastureStack/web-console/releases/tag/1.6.217)
+is published. Matching published Engine **0.183.377** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires
 the Server571 broker projection. Use numeric release versions in the linked
 installation guides.
+
+AI resource reviews stay anchored to the viewport when the page is scrolled.
+Long values scroll within the dialog; narrow layouts, classic scrollbars and
+RTL keep the reviewed values and confirmation footer reachable.
 
 Standalone Container create plans accept native port mappings with exact human
 review. Creation verifies stopped configuration, without reserving a port or
@@ -73,7 +77,7 @@ and confirmation errors provide safe permission guidance in all thirteen locales
 Normal UI, session, Full-access and human-confirmation protections remain.
 Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
 verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.216/web216-release-metadata.json).
+[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.217/web217-release-metadata.json).
 Component publication does not establish designated Server/workflow acceptance.
 Native Process acceptance remains pending; whole-family/243-group completion is
 not claimed.

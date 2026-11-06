@@ -82,8 +82,8 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Web Console 1.6.217 / Bridge 0.2.19 is a source candidate requiring the matching Engine 0.183.377.
-Use this version-bound install block only after the matching numeric release and qualified component metadata are published.
+Web Console 1.6.217 / Bridge 0.2.19 is published and requires matching Engine 0.183.377.
+The numeric release and qualified component metadata are publicly verified.
 Download the matching numeric release and checksum, verify it, then extract.
 Keep both `bridge/` and `app/utils/`: they contain the exact shared command
 sources. Node.js 24.22.1 and a qualified compatible Server assembly are required.
