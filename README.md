@@ -10,110 +10,16 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-Web Console **1.6.222** / bridge **0.2.24** is a source candidate. It fixes legacy
-Bridge discovery of native administrator-visible private environments. See the
-[candidate release note](docs/releases/web-console-1.6.222.md); CI, publication
-and runtime acceptance remain pending.
+[Web Console **1.6.222** / Bridge **0.2.24**](https://github.com/PastureStack/web-console/releases/tag/1.6.222)
+is published. The published component is qualified against Engine **0.183.380**;
+deployment requires a qualified compatible Server assembly. Use numeric release
+versions in the [Server installation guide](https://github.com/PastureStack/server#quick-start).
 
-[Web Console **1.6.221** / bridge **0.2.23**](https://github.com/PastureStack/web-console/releases/tag/1.6.221)
-is published. Matching published Engine **0.183.380** and a qualified compatible
-Server assembly are required. The new platform Key-audit detail also requires
-the Server571 broker projection. Use numeric release versions in the linked
-installation guides.
-
-An explicit `get_resource({resourceRef, view: "stack_graph"})` reads bounded
-ordinary-Service dependency links from a fresh Stack reference. The existing
-twelve tools, fresh native visibility and Key authority remain binding. Nodes
-and links carry opaque references; raw configuration and hidden counts are
-excluded. Both completeness fields remain unknown. Ordinary detail performs no
-graph query when `view` is omitted. All eight native Stack graph criteria remain
-pending.
-
-Non-Global load balancers support a separately human-approved manual scale
-plan while preserving configuration and active/inactive state. Native Global,
-role and Key checks remain binding. Metadata previews explain the nested
-`parameters` envelope when name or description is misplaced, without submitting
-a write or bypassing human confirmation. Native acceptance remains pending.
-
-API Key client-report explanations and long code values wrap inside their list
-and detail columns, including narrow RTL layouts. Other audit grid cells retain
-their horizontal scrolling and resize behavior.
-
-API Key details show configured policy and read-only capability information,
-without claiming effective grants. Typed TCP load-balancer creation requires
-explicit activation and complete ordered listener/backend rules. Load balancers
-can start or stop through the native lifecycle while preserving configuration.
-Writes retain fresh authority, human review and durable receipts; native
-acceptance of these new workflows remains pending.
-
-AI resource reviews stay anchored to the viewport when the page is scrolled.
-Long values scroll within the dialog; narrow layouts, classic scrollbars and
-RTL keep the reviewed values and confirmation footer reachable.
-
-Standalone Container create plans accept native port mappings with exact human
-review. Creation verifies stopped configuration, without reserving a port or
-proving a live binding. Start requires a separate approved plan; existing
-Service allocation and health checks remain unchanged. Native Container port
-acceptance remains pending.
-
-Read-only process discovery, details and bounded diagnostics use the native
-global process owner and fresh role, Key and schema checks. Registered names
-and fixed enums replace raw logs and payloads. Hidden, empty or truncated
-diagnostics remain unknown; Project ownership grants no global process access.
-
-Human-reviewed metadata changes include the currently selected Project and
-load-balancer names/descriptions. Editing another visible Project requires a
-normal context switch and a fresh reference. Load-balancer configuration, ports,
-backend links, certificates, scale and lifecycle stay outside this metadata subset.
-The explicit Bridge profile writer binds a new private profile to the chosen
-Project's stable native identity, so a permanent rename survives restart without
-switching to another same-name Project. Existing profiles retain their query
-and description workflows; see the [Bridge setup guide](bridge/README.md).
-
-Host changes are limited to human-approved name/description updates. Host detail
-shows at most fifty freshly authorized container references and readable Stack
-names. Host and Volume reads share the native Service-to-Stack relation when a
-container has no direct Stack field. Ambiguous, hidden or changed relations stay
-unknown; empty results do not establish an empty Host, unused storage or safe
-removal. Host lifecycle and scheduling remain separate normal workflows.
-
-Service lookup guidance explains when to omit `stackRef` and compare Stack names,
-or first obtain an opaque reference from `find_stacks`. Native authorization,
-reference validation, Key scope and human approval remain unchanged.
-
-Resource list and detail share fresh typed Stack-parent references. Follow
-`get_resource(parentRef)` to read the currently authorized Stack name before
-selecting a same-name resource; unavailable parent names remain unavailable.
-Bound Bridge profiles first learn the server-verified dedicated-Key revision
-through discovery, then read the exact saved Project identity. Discovery rows
-never select a target or replace its saved endpoint, ID or opaque UUID.
-
-Ordinary Service upgrade plans now include finish, rollback and cancel-upgrade
-through the same preview, human review and verified-operation flow. These three
-operations take empty parameters and retain native phase, owner and Key upgrade
-checks. Cancellation verifies its native checkpoint; it does not complete an
-upgrade or rollback. Cancel-rollback remains unavailable.
-
-Twelve shared typed tools provide resource discovery and human-reviewed changes
-for supported workloads, External Services, DNS Aliases, audit metadata, and
-Certificate names/descriptions. Certificate PEM material, keys, chains, renewal
-and removal stay in the normal human interface. Tools use opaque references;
-raw resource IDs, private audit payloads and credentials are not exposed.
-Select `apiKeyRestricted` explicitly for restricted-Key discovery and audit;
-the default searches ordinary `apiKey` only. Family coverage remains partial.
-Pending-plan reminders use page content so footer controls remain available,
-and confirmation errors provide safe permission guidance in all thirteen locales.
-
-Normal UI, session, Full-access and human-confirmation protections remain.
-Original CI, artifact checks, archive/SBOM attestations and anonymous byte/SHA256
-verification of all thirteen public assets passed. Evidence is recorded in the
-[release metadata](https://github.com/PastureStack/web-console/releases/download/1.6.221/web221-release-metadata.json).
-Component publication does not establish designated Server/workflow acceptance.
-Native Process acceptance remains pending; whole-family/243-group completion is
-not claimed.
-
-Use the [Server installation guide](https://github.com/PastureStack/server#quick-start)
-for deployment. Historical evidence remains in [release notes](docs/releases).
+This release fixes legacy Bridge discovery of native administrator-visible
+private environments and clarifies generic resource references. See the
+[release note](docs/releases/web-console-1.6.222.md) for changes, verification and
+upgrade boundaries. Component publication does not establish native workflow or
+complete WebMCP coverage.
 
 ## Features and operator guides
 
@@ -142,6 +48,34 @@ for deployment. Historical evidence remains in [release notes](docs/releases).
   late callbacks or remounts. Open a new entry explicitly after ending a session.
 - [Operator-selected storage removal](docs/storage-bulk-remove.md): selection,
   preview, confirmation, and bounded concurrent removal.
+
+### AI workflow boundaries
+
+The twelve shared tools use opaque references and fresh native role, membership,
+schema and API Key checks. Supported families remain partial. Plans require
+human review and durable completion receipts; client reports do not establish
+authorization or business success. The Engine's four independent AI flags remain
+default-off, and each Web Console page starts with browser tools off.
+
+Resource views exclude credentials, Certificate PEM material, private audit
+payloads and raw process logs. Process reads use the native global owner;
+Project ownership grants no global process access. Select `apiKeyRestricted`
+explicitly for restricted-Key discovery and audit; the default searches ordinary
+`apiKey` only. API Key policy details describe configured policy, not effective
+grants.
+
+The optional `get_resource({resourceRef, view: "stack_graph"})` reads bounded
+ordinary-Service links. Completeness remains unknown; ordinary detail performs
+no graph query without the selector. Empty or unavailable Host, Volume and
+process results do not establish unused resources, safe removal or completeness.
+
+Container creation verifies stopped configuration, including supported native
+port mappings; a live port binding requires a separate approved start. Typed TCP
+load-balancer creation requires explicit activation and complete ordered rules.
+Load-balancer metadata changes do not edit listeners, backends, certificates,
+scale or lifecycle. Certificate material and advanced configuration remain in
+the normal human interface. Native workflow acceptance is documented separately
+in the release notes.
 
 Catalog translations use optional `io.pasturestack.catalog.name.<locale>` and
 `io.pasturestack.catalog.description.<locale>` labels. Unknown locales and
