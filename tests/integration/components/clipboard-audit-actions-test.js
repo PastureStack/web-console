@@ -2,7 +2,7 @@ import Service from '@ember/service';
 import { run, cancel } from '@ember/runloop';
 import { setComponentTemplate } from '@ember/component';
 import { precompileTemplate } from '@ember/template-compilation';
-import { click, find, focus, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
+import { click, find, findAll, focus, render, settled, setupContext, setupRenderingContext, teardownContext, waitUntil } from '@ember/test-helpers';
 import { defer } from 'rsvp';
 import { module, test } from 'qunit';
 import ApiKeyAudit from 'ui/components/api-key-audit/component';
