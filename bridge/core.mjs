@@ -178,8 +178,10 @@ export function createTransport(config, fetcher = fetch) {
   };
 }
 
-async function visibleByName(config, transport, writer = false) {
-  let path = 'projects?limit=100' + (writer ? '&all=true' : ''), selected = [];
+async function visibleByName(config, transport) {
+  // Match native administrator visibility. The server still applies the
+  // authenticated account's role and Key policy to every returned Project.
+  let path = 'projects?limit=100&all=true', selected = [];
   for (let page = 0; path && page < 20; page++) {
     const {body} = await transport({url: path}, null, true);
     if (!Array.isArray(body.data)) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
@@ -191,10 +193,10 @@ async function visibleByName(config, transport, writer = false) {
     if (nextUrl.origin !== base.origin || nextUrl.pathname !== base.pathname || nextUrl.username || nextUrl.password || nextUrl.hash) {
       throw new SetupError('INVALID_ENVIRONMENT_PAGE');
     }
-    if (nextUrl.searchParams.has('all') && (!writer || nextUrl.searchParams.getAll('all').length !== 1 || nextUrl.searchParams.get('all') !== 'true')) {
+    if (nextUrl.searchParams.has('all') && (nextUrl.searchParams.getAll('all').length !== 1 || nextUrl.searchParams.get('all') !== 'true')) {
       throw new SetupError('INVALID_ENVIRONMENT_PAGE');
     }
-    if (writer) nextUrl.searchParams.set('all', 'true');
+    nextUrl.searchParams.set('all', 'true');
     path = 'projects' + nextUrl.search;
   }
   if (path) throw new SetupError('ENVIRONMENT_SCAN_LIMIT');
@@ -222,7 +224,7 @@ export async function prepareBoundProfile(input, {fetcher, select} = {}) {
   if (config.environmentBinding) {
     project = await boundProject(transport, config.environmentBinding);
   } else {
-    const candidates = await visibleByName(config, transport, true);
+    const candidates = await visibleByName(config, transport);
     if (!candidates.length) throw new SetupError('ENVIRONMENT_NOT_VISIBLE');
     let index = 0;
     if (candidates.length > 1) {

@@ -91,13 +91,14 @@ The current repository README is authoritative for installation; an immutable
 downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
-The numeric release assets and component metadata are published and verified.
-The block below selects this matching release; a qualified Server assembly and
-native Stack graph acceptance remain separate and pending.
+This checkout prepares Web Console 1.6.222 / Bridge 0.2.24. These candidate assets
+are not published. The source-version block below is for packaging and use after
+that matching release is published; continue using the published 1.6.221 / 0.2.23
+baseline above until then. Normal CI and native acceptance remain pending.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.221
-BRIDGE_VERSION=0.2.23
+WEB_CONSOLE_VERSION=1.6.222
+BRIDGE_VERSION=0.2.24
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
@@ -167,9 +168,11 @@ file contains the existing credentials and only an additional closed
 `environmentBinding` with the normalized endpoint, internal ID and opaque
 server UUID. Do not construct that binding from model output.
 
-The writer's `all=true` discovery uses the normal native project listing. It does
-not grant access: the Key remains limited by its current policy and the account's
-live permissions, including the normal administrator visibility boundary.
+Both legacy profile startup and the writer use the normal native `all=true`
+Project listing, including private environments visible to a native administrator
+who is not a member. This query does not grant access: the Key remains limited by
+its current policy and the account's live permissions. Missing and same-name
+ambiguous environments still fail without selecting a target.
 
 Change your MCP client's `PASTURESTACK_BRIDGE_CONFIG` to the new private profile
 and reconnect normally. The legacy four-field profile remains supported, but

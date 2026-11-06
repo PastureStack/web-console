@@ -10,6 +10,11 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
+Web Console **1.6.222** / bridge **0.2.24** is a source candidate. It fixes legacy
+Bridge discovery of native administrator-visible private environments. See the
+[candidate release note](docs/releases/web-console-1.6.222.md); CI, publication
+and runtime acceptance remain pending.
+
 [Web Console **1.6.221** / bridge **0.2.23**](https://github.com/PastureStack/web-console/releases/tag/1.6.221)
 is published. Matching published Engine **0.183.380** and a qualified compatible
 Server assembly are required. The new platform Key-audit detail also requires

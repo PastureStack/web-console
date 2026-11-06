@@ -1,5 +1,9 @@
 # Compatibility Contract
 
+## Web Console 1.6.222 / bridge 0.2.24 source candidate
+
+Legacy Bridge discovery now requests the native `all=true` Project collection, as the administrator console and explicit profile writer already do. Native account roles and Key policies still determine visibility; missing or ambiguous targets fail closed. Bounded paging, one-origin credentials, dedicated Key purpose/revision and bound-profile UUID checks remain in force. The twelve tools and dependency graph are unchanged. Normal CI, publication and native acceptance are pending; the published installation baseline below remains 1.6.221 / 0.2.23.
+
 ## Web Console 1.6.221 / bridge 0.2.23 published
 
 An explicit `get_resource({resourceRef, view: "stack_graph"})` reads bounded ordinary-Service dependency links from a fresh Stack reference. The existing twelve tools, fresh native visibility and Key authority remain binding. Nodes and links carry opaque references; raw configuration and hidden counts are excluded. Both completeness fields remain unknown. Ordinary detail performs no graph query when `view` is omitted.
