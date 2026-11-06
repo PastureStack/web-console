@@ -35,6 +35,13 @@ Optional image-upgrade settings remain bound to the exact human review.
 The bridge cannot approve its own plans. Native owner, role, Key and revision
 checks remain authoritative, and unsupported capabilities stay unavailable.
 
+For an ordinary Service, the existing resource-change flow also offers
+`finish_upgrade`, `rollback` and `cancel_upgrade` with `parameters: {}` only.
+Use the same opaque reference, human review and operation receipt. Native phase,
+owner, Key upgrade ceiling and private generation checks remain in the Engine.
+A successful cancel receipt proves its cancellation checkpoint, not a completed
+upgrade or rollback. `cancel_rollback` remains unsupported.
+
 For Service and load-balancer metadata, `get_resource` includes the same opaque
 Stack relationship reference as discovery. Use `get_resource(parentRef)` to read
 the current authorized Stack name before choosing a same-name resource. Parent
@@ -69,8 +76,9 @@ Human approval needs a compatible Web Console built with a `read-only` or
 `enabled` WebMCP capability ceiling. Every new console page starts with browser
 tools off; the owner can review bridge plans without enabling them or having
 native browser support. The operator must separately opt in to
-`api.ai.bridge.enabled` and, for upgrade plans, `api.ai.service.upgrade.enabled`;
-both Engine flags default to false.
+`api.ai.bridge.enabled` and, for dedicated image-upgrade plans,
+`api.ai.service.upgrade.enabled`. Resource-change plans independently require
+`api.ai.resource.change.enabled=true`. These Engine flags default to false.
 
 ## Install the matching release
 
@@ -80,7 +88,10 @@ publication claim.
 Keep both `bridge/` and `app/utils/`: they contain the exact
 shared command sources. Node.js 24.22.1 is required.
 
-Web Console 1.6.215 / Bridge 0.2.17 is a source candidate and is not published; the root README documents the current published release. The current repository README is authoritative for installation; an immutable downloaded archive preserves its packaging-time README snapshot.
+Web Console 1.6.215 / Bridge 0.2.17 is published and pairs with Engine 0.183.375.
+Use a qualified compatible Server assembly. The current repository README is
+authoritative for installation; an immutable downloaded archive preserves its
+packaging-time README snapshot.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.215
