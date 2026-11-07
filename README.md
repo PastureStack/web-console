@@ -21,6 +21,11 @@ private environments and clarifies generic resource references. See the
 upgrade boundaries. Component publication does not establish native workflow or
 complete WebMCP coverage.
 
+Source candidate 1.6.223 / Bridge 0.2.25 adds reviewed Service dependency-link
+replacement and Registry activation/deactivation with Engine 0.183.383 or newer.
+Its [candidate note](docs/releases/web-console-1.6.223.md) separates source checks
+from pending publication and native acceptance.
+
 ## Features and operator guides
 
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for

@@ -60,7 +60,7 @@ test('service create: twelve tools describe closed native fields and refuse raw 
   const tool = COMMANDS.find(item => item.name === 'preview_resource_change');
   const fields = tool.inputSchema.properties.parameters.properties;
   assert.equal(fields.ports.type, 'array'); assert.equal(fields.ports.maxItems, 64);
-  assert.match(fields.ports.description, /8080:80\/tcp/); assert.match(tool.description, /Existing service settings use upgrade/);
+  assert.match(fields.ports.description, /8080:80\/tcp/); assert.match(tool.description, /Existing launch settings use upgrade, never update_metadata or a raw launchConfig/);
   assert.deepEqual(fields.healthCheck.required, ['port']); assert.equal(fields.healthCheck.additionalProperties, false);
   for (const key of ['launchConfig', 'environment', 'headers', 'recreateOnQuorumStrategyConfig']) assert.equal(Object.hasOwn(fields, key), false);
 });

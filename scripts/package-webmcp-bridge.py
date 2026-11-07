@@ -11,7 +11,7 @@ import tempfile
 import zipfile
 
 
-VERSION = "0.2.24"
+VERSION = "0.2.25"
 SOURCE_FILES = (
     "LICENSE",
     "app/utils/ai-command-context.js",
@@ -50,6 +50,8 @@ SOURCE_FILES = (
     "scripts/test-webmcp-archive.mjs",
     "scripts/test-webmcp-external-service.mjs",
     "scripts/test-webmcp-alias-service.mjs",
+    "scripts/test-webmcp-service-links.mjs",
+    "scripts/test-webmcp-registry-lifecycle.mjs",
     "scripts/test-webmcp-certificate-metadata.mjs",
     "scripts/test-webmcp-host-metadata.mjs",
     "scripts/test-webmcp-project-metadata.mjs",

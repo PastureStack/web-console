@@ -35,6 +35,19 @@ Optional image-upgrade settings remain bound to the exact human review.
 The bridge cannot approve its own plans. Native owner, role, Key and revision
 checks remain authoritative, and unsupported capabilities stay unavailable.
 
+For an ordinary Service, `preview_resource_change` accepts `operation: "update_links"`
+with `parameters: {serviceRefs: [...]}`. Select fresh generic `resourceRef` values
+from `find_resources` or an authorized Stack graph, compare complete Stack/name
+paths, and approve the exact before/after target set. An empty array explicitly
+clears simple links. Named, port-qualified, remote or incomplete links remain
+unsupported. Graph completeness stays unknown; the native server checks the
+complete write snapshot and rejects concurrent changes.
+
+For a Registry, only separately approved `start` and `stop` with empty parameters
+are supported. Select its fresh same-session `resourceRef` by a known safe
+`serverAddress`; unknown or unsafe addresses cannot authorize a preview. Registry
+credentials, create/remove and arbitrary storage-pool edits remain human workflows.
+
 For an ordinary Service, the existing resource-change flow also offers
 `finish_upgrade`, `rollback` and `cancel_upgrade` with `parameters: {}` only.
 Use the same opaque reference, human review and operation receipt. Native phase,
@@ -82,8 +95,11 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Web Console 1.6.221 / Bridge 0.2.23 is published and requires matching Engine 0.183.380.
-The numeric release and qualified component metadata are publicly verified.
+Use the immutable release matching the source versions below. Confirm its GitHub
+release and qualification metadata before downloading. This source requires
+Engine **0.183.383** or a later explicitly qualified compatible assembly. Earlier
+Engines do not provide the complete ordinary-Service link replacement and Registry
+lifecycle contracts used by these source adapters.
 Download the matching numeric release and checksum, verify it, then extract.
 Keep both `bridge/` and `app/utils/`: they contain the exact shared command
 sources. Node.js 24.22.1 and a qualified compatible Server assembly are required.
@@ -91,14 +107,14 @@ The current repository README is authoritative for installation; an immutable
 downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
-This checkout prepares Web Console 1.6.222 / Bridge 0.2.24. These candidate assets
+This checkout prepares Web Console 1.6.223 / Bridge 0.2.25. These candidate assets
 are not published. The source-version block below is for packaging and use after
-that matching release is published; continue using the published 1.6.221 / 0.2.23
-baseline above until then. Normal CI and native acceptance remain pending.
+that matching release is published; continue using the published 1.6.222 / 0.2.24
+baseline until then. Normal CI and native acceptance remain pending.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.222
-BRIDGE_VERSION=0.2.24
+WEB_CONSOLE_VERSION=1.6.223
+BRIDGE_VERSION=0.2.25
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

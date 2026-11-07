@@ -1,8 +1,30 @@
 # Compatibility Contract
 
-## Web Console 1.6.222 / bridge 0.2.24 source candidate
+## Web Console 1.6.223 / bridge 0.2.25 source candidate
 
-Legacy Bridge discovery now requests the native `all=true` Project collection, as the administrator console and explicit profile writer already do. Native account roles and Key policies still determine visibility; missing or ambiguous targets fail closed. Bounded paging, one-origin credentials, dedicated Key purpose/revision and bound-profile UUID checks remain in force. The twelve tools and dependency graph are unchanged. Normal CI, publication and native acceptance are pending; the published installation baseline below remains 1.6.221 / 0.2.23.
+The existing twelve tools add ordinary-Service dependency-link replacement and
+Registry activation/deactivation. Engine 0.183.383 or newer is required for
+these new typed operations. Plans retain current account/Key permissions,
+configuration consistency, exact targets and normal human review. The two new
+focused scripts are included in CI and the Bridge source archive; no external
+dependency is added. Formal CI, publication and matched native role/Key/CAS,
+layout and cleanup acceptance remain pending.
+
+## Web Console 1.6.222 / bridge 0.2.24 published
+
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.222)
+was qualified against Engine 0.183.380. It fixes native administrator-visible
+Project discovery and explains how to replace legacy references with the opaque
+references returned by generic tools. The twelve tools and Key/role boundaries
+remain unchanged. A separately qualified Server assembly is required.
+
+All thirteen public assets passed anonymous size/SHA256 readback; native release
+verification covered fourteen subjects, and original source/archive and SBOM
+attestations passed. Original CI passed 1,142 browser tests and 102 focused
+methods. Published metadata binds producer `f2cbf6fc32f1317465f88aa0eaa9430b94b78e0a`,
+tested tree `e5eb18bb3482113eebf326d5cc87fbce7bafbbc9` and tag target
+`4f34a06205ade11c0b487c41d2bf87f203336370`. These component qualifications do
+not establish complete native WebMCP business coverage.
 
 ## Web Console 1.6.221 / bridge 0.2.23 published
 

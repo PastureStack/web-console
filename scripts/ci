@@ -17,7 +17,8 @@ node --test scripts/test-webmcp-path-boundaries.mjs
 node --test scripts/test-ai-catalog-reader.mjs scripts/test-webmcp-catalog.mjs scripts/test-webmcp-catalog-launch.mjs scripts/test-webmcp-archive.mjs scripts/test-webmcp-resources.mjs scripts/test-webmcp-service-create.mjs
 node --test scripts/test-webmcp-volume-usage.mjs
 node --test scripts/test-webmcp-external-service.mjs
-node --test scripts/test-webmcp-alias-service.mjs
+node --test scripts/test-webmcp-alias-service.mjs scripts/test-webmcp-service-links.mjs
+node --test scripts/test-webmcp-registry-lifecycle.mjs
 node --test scripts/test-webmcp-certificate-metadata.mjs
 node --test scripts/test-webmcp-host-metadata.mjs
 node --test scripts/test-webmcp-project-metadata.mjs
