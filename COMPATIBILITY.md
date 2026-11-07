@@ -1,14 +1,28 @@
 # Compatibility Contract
 
-## Web Console 1.6.223 / bridge 0.2.25 source candidate
+## Web Console 1.6.223 / bridge 0.2.25 published
 
 The existing twelve tools add ordinary-Service dependency-link replacement and
 Registry activation/deactivation. Engine 0.183.383 or newer is required for
 these new typed operations. Plans retain current account/Key permissions,
 configuration consistency, exact targets and normal human review. The two new
 focused scripts are included in CI and the Bridge source archive; no external
-dependency is added. Formal CI, publication and matched native role/Key/CAS,
-layout and cleanup acceptance remain pending.
+dependency is added.
+
+[The immutable release](https://github.com/PastureStack/web-console/releases/tag/1.6.223)
+contains thirteen original assets verified by anonymous bytes/SHA256 readback;
+immutable-release verification covers fourteen cryptographic subjects. Original
+archive and runtime/build SBOM attestations passed. Original CI passed 1,142
+browser tests and 126 focused methods (102 existing identities and 24 new), with
+zero failures or skips. The unchanged 92-component Bridge dependency graph
+retains its original clean-install evidence; Bridge 0.2.25 passed one new real
+SDK stdio handshake. This is not a new dependency scan.
+
+[Published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.223/web223-release-metadata.json)
+binds producer `4409b1ce6e70ab60e28b04e42a5ab9f3a2386593`, tested tree
+`b20f7ab2d821c565dbd8a099e941cf8641fdb667` and merge/tag target
+`04794089cdc8e6461ca74e68634deffd6b156215`. Matched Server assembly and native
+role/Key/CAS, layout and cleanup acceptance remain separate requirements.
 
 ## Web Console 1.6.222 / bridge 0.2.24 published
 

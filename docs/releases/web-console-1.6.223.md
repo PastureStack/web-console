@@ -1,6 +1,6 @@
-# Web Console 1.6.223 / Bridge 0.2.25 candidate
+# Web Console 1.6.223 / Bridge 0.2.25
 
-This source candidate adds two workflows to the existing twelve tools:
+This release adds two workflows to the existing twelve tools:
 
 - Replace or clear an ordinary Service's dependency links using returned
   Service references. Preview shows the complete before/after set; duplicates,
@@ -18,7 +18,15 @@ translated labels are reused across thirteen locales; their source-key checks
 do not establish native multilingual layout acceptance. No new dependency or
 public tool is added. Feature ceilings and page-level opt-ins remain unchanged.
 
-Focused source/overlap tests are retained separately from formal CI, immutable
-publication and real native role/Key/CAS/cleanup acceptance, which remain pending.
-The published installation baseline is Web Console 1.6.222 / Bridge 0.2.24.
+Original CI passed 1,142 browser tests and 126 focused methods with zero failures
+or skips. The original static archive, runtime/build SBOMs and their attestations
+passed qualification without rebuilding. Thirteen public assets passed anonymous
+size/SHA256 readback; immutable-release verification covers fourteen subjects.
+Bridge 0.2.25 passed one new real SDK stdio handshake, separately from the
+unchanged dependency graph's original clean-install evidence.
+
+The [published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.223/web223-release-metadata.json)
+records exact producer, tested tree, tag target and artifact digests. Matched
+Server and real native role/Key/CAS/cleanup acceptance remain separate; component
+publication does not establish complete frontend coverage.
 Preserve the previous qualified Server assembly and operator settings for rollback.
