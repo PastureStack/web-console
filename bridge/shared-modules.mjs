@@ -13,6 +13,7 @@ const sources = Object.freeze({
   'ai-alias-service': new URL('../app/utils/ai-alias-service.js', import.meta.url),
   'ai-external-service': new URL('../app/utils/ai-external-service.js', import.meta.url),
   'ai-audit-reader': new URL('../app/utils/ai-audit-reader.js', import.meta.url),
+  'ai-container-logs': new URL('../app/utils/ai-container-logs.js', import.meta.url),
 });
 const urls = new Map();
 const loading = new Set();

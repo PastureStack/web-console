@@ -68,8 +68,8 @@ if(!catalogOptionsOnly){
   assert.deepEqual([...event.resourceFields.command.options].sort(),[...COMMANDS.map(t=>t.name),'unknown'].sort(),'Tool audit wire enum does not match the frontend');
   for(const code of [...PUBLIC_ERROR_CODES,'NONE'])assert.ok(event.resourceFields.reason.options.includes(code),'Public error '+code+' cannot be audited');
 }
-const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
-  aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view'],
+const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis','ports','healthCheck'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+  aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view','tailLines'],
   aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
   aiCatalogStackLaunchOptions:['templateId','versionId'],
   aiCatalogStackLaunchPlan:['templateId','versionId','optionsRef','name','description','startOnCreate','answers','referenceBindings'],
@@ -99,6 +99,17 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
         assert.equal(field.max,spec.maximum,type+'.'+name+' precision mismatch');
       }
     }
+    assert.notEqual(schema.resourceFields.image.required,true,type+'.image must remain optional');
+    for(const [name,kind,nullable] of [['ports','array[string]',false],['healthCheck','json',true]]){
+      const field=schema.resourceFields[name];
+      assert.equal(field.type,kind,type+'.'+name+' type mismatch');
+      assert.equal(field.update,false,type+'.'+name+' must not be client-updatable');
+      assert.equal(field.nullable,nullable,type+'.'+name+' null semantics mismatch');
+      assert.notEqual(field.required,true,type+'.'+name+' must remain optional');
+    }
+    assert.equal(schema.resourceFields.configurationChanges?.type,'array[json]',type+' must return configuration review');
+    assert.equal(schema.resourceFields.configurationChanges.create,false,type+'.configurationChanges must be read-only output');
+    assert.equal(schema.resourceFields.configurationChanges.update,false,type+'.configurationChanges must not be client-updatable');
     assert.equal(schema.resourceFields.upgradeStrategy?.type,'json',type+' must return effective strategy');
     assert.equal(schema.resourceFields.upgradeStrategy.create,false,type+'.upgradeStrategy must be read-only output');
     assert.equal(schema.resourceFields.upgradeStrategy.update,false,type+'.upgradeStrategy must not be client-updatable');
@@ -115,10 +126,18 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
     const field=schema.resourceFields.view;
     const tool=COMMANDS.find(item=>item.name==='get_resource').inputSchema;
     assert.equal(field.type,'string');assert.equal(field.maxLength,32);
-    assert.deepEqual(field.options,['stack_graph']);assert.notEqual(field.required,true);assert.notEqual(field.update,true);
-    assert.deepEqual(Object.keys(tool.properties).sort(),['resourceRef','view']);
+    assert.deepEqual(field.options,['stack_graph','container_logs']);assert.notEqual(field.required,true);assert.notEqual(field.update,true);
+    assert.deepEqual(Object.keys(tool.properties).sort(),['resourceRef','tailLines','view']);
     assert.equal(tool.properties.view.type,'string');assert.deepEqual(tool.properties.view.enum,field.options);
     assert.deepEqual(tool.required,['resourceRef']);assert.equal(tool.additionalProperties,false);
+    const tail=schema.resourceFields.tailLines,limit=tool.properties.tailLines;
+    assert.equal(tail.type,'int');assert.equal(tail.min,1);assert.equal(tail.max,200);
+    assert.notEqual(tail.required,true);assert.notEqual(tail.update,true,'Container logs tailLines must not be client-updatable');
+    assert.equal(limit.type,'integer');assert.equal(limit.minimum,1);assert.equal(limit.maximum,200);
+    const logs=schema.resourceFields.logs;
+    assert.equal(logs.type,'map[json]');assert.equal(logs.create,false,'Container logs must be read-only output');
+    assert.notEqual(logs.update,true,'Container logs must not be client-updatable');
+    assert.notEqual(logs.readOnCreateOnly,true,'Container logs output must stay readable');
   }
   if(type==='aiCatalogMetadataView'){
     for(const [name,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68})){
@@ -182,7 +201,14 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
     assert.ok(authorize[type]?.includes(actionInput||auditSource?'r':'c'),role+' does not expose '+type);
     if(audit)assert.equal(authorize[type],auditSource?'r':'cr',role+' must retain the exact '+type+' route metadata');
     if(catalogLaunch)assert.ok(authorize[type]?.includes('r'),role+' cannot retain '+type+' metadata');
-    if(type==='aiServiceUpgradePlan')assert.equal(authorize[type+'.upgradeStrategy'],'r',role+' must retain read-only effective upgrade strategy');
+    if(type==='aiResourceView'){
+      assert.equal(authorize[type+'.tailLines'],'cr',role+' must retain exact bounded logs input metadata');
+      assert.equal(authorize[type+'.logs'],'r',role+' must retain read-only container logs output');
+    }
+    if(type==='aiServiceUpgradePlan'){
+      assert.equal(authorize[type+'.upgradeStrategy'],'r',role+' must retain read-only effective upgrade strategy');
+      assert.equal(authorize[type+'.configurationChanges'],'r',role+' must retain read-only configuration review');
+    }
     for(const [name,field] of Object.entries(schema.resourceFields)){
       if(field.create){
         assert.ok(authorize[type+'.'+name]?.includes('c'),role+' cannot accept '+type+'.'+name);

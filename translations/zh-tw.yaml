@@ -4634,6 +4634,7 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
+  localVolumeCreateNotice: "只建立尚未配置的本機 Volume 紀錄，不會在 Host 建立或掛載儲存空間。名稱可能重複；本計畫只驗證原生回傳的新紀錄，不會採用舊的同名卷。請選擇不同名稱，避免混淆既有資料。"
   bridgeProjectBindingRequired: "透過橋接器重新命名此環境前，請使用者建立新的已綁定本機設定檔，並以新檔案重新連線。保留原設定檔不變；仍可單獨編輯說明。"
   assignedPorts: 實際配置的連接埠對應
   backgroundAuthorizationDenied: "背景操作因權限檢查遭拒，部分變更可能已完成，整體完成狀態尚未驗證。請檢查目前權限，再開啟原操作紀錄核對；不要直接重新送出或再次核准這項變更。"

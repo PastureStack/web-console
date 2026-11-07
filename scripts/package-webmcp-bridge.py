@@ -11,12 +11,13 @@ import tempfile
 import zipfile
 
 
-VERSION = "0.2.25"
+VERSION = "0.2.26"
 SOURCE_FILES = (
     "LICENSE",
     "app/utils/ai-command-context.js",
     "app/utils/ai-command-contract.js",
     "app/utils/ai-command-engine.js",
+    "app/utils/ai-container-logs.js",
     "app/utils/ai-resource-registry.js",
     "app/utils/ai-external-service.js",
     "app/utils/ai-alias-service.js",
@@ -59,6 +60,10 @@ SOURCE_FILES = (
     "scripts/test-webmcp-process-diagnostics.mjs",
     "scripts/test-webmcp-stack-parent-detail.mjs",
     "scripts/test-webmcp-service-upgrade-lifecycle.mjs",
+    "scripts/test-webmcp-service-upgrade-config.mjs",
+    "scripts/test-webmcp-volume-create.mjs",
+    "scripts/test-webmcp-container-logs.mjs",
+    "scripts/test-webmcp-complete-cohort-overlap.mjs",
     "scripts/test-webmcp-project-profile-binding.mjs",
     "scripts/test-webmcp-host-workloads.mjs",
     "scripts/test-webmcp-stack-ref-guidance.mjs",

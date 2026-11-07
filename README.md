@@ -21,6 +21,14 @@ Registry activation/deactivation to the existing twelve tools. See the
 upgrade boundaries. Component publication does not establish native workflow or
 complete WebMCP coverage.
 
+## Upcoming component
+
+Source candidate **1.6.224 / Bridge 0.2.26** requires matching Engine 0.183.384
+and a newly qualified Server for typed Service configuration, builtin-local
+logical Volume create and bounded Container logs. CI/artifacts/native acceptance
+remain pending. The current published component remains **1.6.223 / Bridge 0.2.25**.
+See [upcoming notes](docs/releases/web-console-1.6.224.md).
+
 ## Features and operator guides
 
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for

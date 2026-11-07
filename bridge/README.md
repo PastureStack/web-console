@@ -99,7 +99,7 @@ native browser support. The operator must separately opt in to
 
 Use the immutable release matching the source versions below. Confirm its GitHub
 release and qualification metadata before downloading. This source requires
-Engine **0.183.383** or a later explicitly qualified compatible assembly. Earlier
+The upcoming source requires Engine **0.183.384** or a later explicitly qualified compatible assembly. Earlier
 Engines do not provide the complete ordinary-Service link replacement and Registry
 lifecycle contracts used by these source adapters.
 Download the matching numeric release and checksum, verify it, then extract.
@@ -109,14 +109,14 @@ The current repository README is authoritative for installation; an immutable
 downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
-This checkout prepares Web Console 1.6.223 / Bridge 0.2.25. These candidate assets
+This checkout prepares the upcoming Web Console 1.6.224 / Bridge 0.2.26. These candidate assets
 are not published. The source-version block below is for packaging and use after
 that matching release is published; continue using the published 1.6.222 / 0.2.24
 baseline until then. Normal CI and native acceptance remain pending.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.223
-BRIDGE_VERSION=0.2.25
+WEB_CONSOLE_VERSION=1.6.224
+BRIDGE_VERSION=0.2.26
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
@@ -270,3 +270,10 @@ outside this adapter.
 
 Run `npm test` for transport, credential-boundary and SDK stdio tests. Live
 client and server acceptance is recorded separately.
+
+## Upcoming component
+
+Bridge 0.2.26 / Web Console 1.6.224 require matching Engine 0.183.384 and a
+newly qualified Server for typed Service config, local logical Volume create and
+bounded logs. Current published Bridge 0.2.25 / Web 1.6.223 remain above.
+New CI, source archive, actual SDK and native qualification remain pending.

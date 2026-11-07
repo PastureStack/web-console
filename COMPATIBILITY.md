@@ -1,5 +1,13 @@
 # Compatibility Contract
 
+## Upcoming Web Console 1.6.224 / Bridge 0.2.26 source candidate
+
+Matching Engine 0.183.384 and a newly qualified Server are required for the
+supported Service config-only subset, detached local logical Volume create
+and bounded Container logs. Roles/Keys, normal human confirmation, CAS and full
+configuration preservation remain. Advanced health checks/drivers, all-frontend
+coverage, new artifact digests and native acceptance are not claimed.
+
 ## Web Console 1.6.223 / bridge 0.2.25 published
 
 The existing twelve tools add ordinary-Service dependency-link replacement and

@@ -251,8 +251,8 @@ test('API Key configured policy: same-name targets keep distinct opaque refs and
 
 test('API Key configured policy: malformed matrices revoked reads and stale refs fail closed while the twelve-tool input contract stays unchanged', async () => {
   assert.equal(COMMANDS.length,12);const command=COMMANDS.find(item=>item.name==='get_resource');
-  assert.deepEqual(Object.keys(command.inputSchema.properties),['resourceRef','view']);
-  assert.deepEqual(command.inputSchema.properties.view.enum,['stack_graph']);
+  assert.deepEqual(Object.keys(command.inputSchema.properties),['resourceRef','view','tailLines']);
+  assert.deepEqual(command.inputSchema.properties.view.enum,['stack_graph', 'container_logs']);
   assert.deepEqual(command.inputSchema.required,['resourceRef']);
   for(const mutate of [read=>read.configuredPolicy.rules.push({...policyReadRule(1,'native-scope-service'),effect:'permit'}),
     read=>read.defaultOwnerCapabilities.basis='effective-key-grant',read=>read.url='http://foreign/',

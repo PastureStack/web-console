@@ -30,7 +30,8 @@
     {{#each this.plans as |plan|}}<li class="mb-15" data-ai-plan-id={{plan.id}} data-ai-resource-type={{plan.resourceType}} data-ai-operation={{plan.operation}}>
       <strong class="force-wrap">{{plan.displayPath}}</strong>
       {{#if plan.resourceTypeLabel}}<div class="force-wrap">{{plan.resourceTypeLabel}} · {{plan.operationLabel}}</div>{{else}}<div class="force-wrap">{{plan.currentImage}} → {{plan.requestedImage}}</div>{{/if}}
-      <button type="button" class="btn btn-sm btn-primary" {{action "review" plan}} data-testid="ai-collaboration-review-plan">{{t "webmcp.reviewPlan"}}</button>
+      {{#if plan.staleLink}}<p class="alert alert-warning" role="alert" data-testid="ai-collaboration-stale-link">{{t "webmcp.stale"}}</p>{{/if}}
+      <button type="button" class="btn btn-sm btn-primary" disabled={{plan.staleLink}} {{action "review" plan}} data-testid="ai-collaboration-review-plan">{{t "webmcp.reviewPlan"}}</button>
       {{#if plan.canCancel}}<button type="button" class="btn btn-sm btn-default" disabled={{this.cancelling}} {{action "requestCancel" plan}} data-testid="ai-collaboration-cancel-plan">{{t "webmcp.cancelPlan"}}</button>{{/if}}
     </li>{{else}}<li>{{t "webmcp.collaboration.noPendingPlans"}}</li>{{/each}}
   </ul>

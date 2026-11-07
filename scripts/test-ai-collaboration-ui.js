@@ -76,6 +76,34 @@ async function main() {
     await body(); count++; process.stdout.write(`PASS ${name}\n`);
   }
 
+  await test('stale ordinary-link inbox warns blocks review and preserves exact-context cancellation only', async () => {
+    const f = fixture(); let reviewed = 0; let cancelledContext; let toggled = 0;
+    f.service.reviewInboxPlan = () => { reviewed++; return {status: 'needs_user'}; };
+    const make = (extra = {}) => ({...resourcePlan('f'), resourceType: 'service', resourceId: '1s1', operation: 'update_links',
+      changes: [{field: 'targetServices', before: '[]', after: '["Environment / Stack / target"]'}],
+      confirmationState: 'approved', operationId: null, messageCode: 'ResourceChangePlanStale', ...extra});
+    let serverPlan = make();
+    const modal = Object.assign({}, modalDefinition, {get, set, setProperties, _loadGeneration: 0, commands: f.service,
+      access: {ensureSession: async () => {}}, intl: {t: key => key}, modalService: {toggleModal() { toggled++; }},
+      userStore: {rawRequest: async options => ({body: {data: options.url.includes('/aiResourceChangePlans') ? [serverPlan] : []}})}});
+    await modal.loadPlans(); const stale = modal.plans[0];
+    assert.equal(stale.staleLink, true); assert.equal(stale.canCancel, true);
+    modalDefinition.actions.review.call(modal, stale); assert.equal(reviewed, 0); assert.equal(toggled, 0);
+    modalDefinition.actions.requestCancel.call(modal, stale); assert.equal(modal.cancelCandidate, stale);
+    f.service.cancelInboxPlan = async (plan, context) => { assert.equal(plan, stale); cancelledContext = context; return {status: 'succeeded', confirmationState: 'cancelled'}; };
+    await modalDefinition.actions.cancelPlan.call(modal); assert.equal(cancelledContext, modal._loadedContext); assert.equal(modal.plans.length, 0);
+    for (const extra of [{messageCode: 'OtherConflict'}, {messageCode: null},
+      {resourceType: 'registry', resourceId: '1sp1', operation: 'stop', changes: [{field: 'state', before: 'active', after: 'inactive'}]}]) {
+      serverPlan = make(extra); await modal.loadPlans(); assert.equal(modal.plans[0].staleLink, false);
+      modalDefinition.actions.review.call(modal, modal.plans[0]);
+    }
+    assert.equal(reviewed, 3); assert.equal(toggled, 3);
+    const template = fs.readFileSync(path.join(app, 'components/modal-ai-collaboration/template.hbs'), 'utf8');
+    assert.match(template, /\{\{#if plan\.staleLink\}\}[\s\S]*?data-testid="ai-collaboration-stale-link"[\s\S]*?\{\{t "webmcp\.stale"\}\}/);
+    assert.match(template, /disabled=\{\{plan\.staleLink\}\}[^{]*\{\{action "review" plan\}\}/);
+    assert.match(template, /\{\{#if plan\.canCancel\}\}[\s\S]*?data-testid="ai-collaboration-cancel-plan"/);
+  });
+
   await test('pending reminder mounts once in authenticated content under the original build ceiling and retains normal review', async () => {
     const Handlebars = require('handlebars').create();
     const {preprocess, traverse} = require('@glimmer/syntax');
@@ -222,6 +250,75 @@ async function main() {
     barrier.resolve(); await late; assert.equal(f.service.pendingPlan.planRef, newer);
     f.snapshot.accountId = 'another';
     assert.equal((await f.service.confirmPendingPlan()).code, 'CONTEXT_CHANGED');
+  });
+
+  await test('upgrade configuration human inbox freezes exact before-after and rejects a replaced review', async () => {
+    const dto = {...plan(), requestedImage: 'docker:app:1', upgradeStrategy: {startFirst: false, batchSize: 1, intervalMillis: 2000},
+      configurationChanges: [{field: 'ports', before: '["8080:80/tcp"]', after: '[]'}, {field: 'healthCheck', before: '{"port":80}', after: null}]};
+    const f = fixture('off'); assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
+    const reviewed = f.service.pendingPlan, modal = {get, plan: reviewed, commands: f.service};
+    assert.ok(reviewed.reviewSignature); assert.ok(Object.isFrozen(reviewed.configurationChanges));
+    assert.ok(Object.isFrozen(reviewed.configurationChanges[0]));
+    const changed = structuredClone(dto); changed.configurationChanges[0].after = '["90/tcp"]';
+    f.service.publishPlan({...reviewed, ...f.service.engine.planSummary(changed, reviewed.planRef)});
+    assert.equal(confirmationDefinition.stale.call(modal), true);
+    assert.equal((await f.service.confirmPendingPlan(reviewed)).code, 'CONFLICT'); assert.equal(f.requests.length, 0);
+  });
+  await test('upgrade configuration preview renders clear values and retains the human confirmation and apply owner', async () => {
+    const f = fixture('enabled'), requests = [];
+    let dto = {...plan(), requestedImage: 'docker:app:1', upgradeStrategy: {startFirst: false, batchSize: 1, intervalMillis: 2000},
+      configurationChanges: [{field: 'ports', before: '["8080:80/tcp"]', after: '[]'}, {field: 'healthCheck', before: '{"port":80}', after: null}]};
+    const transport = async options => {
+      requests.push(options);
+      if (options.url.endsWith('/aiServiceUpgradePlans')) return {body: structuredClone(dto)};
+      if (options.url.endsWith('?action=confirm')) { dto = {...dto, confirmationState: 'approved'}; return {body: structuredClone(dto)}; }
+      if (options.url.endsWith('?action=apply')) {
+        assert.equal(dto.confirmationState, 'approved'); dto = {...dto, status: 'accepted'}; return {body: structuredClone(dto)};
+      }
+      if (options.url.endsWith('/' + dto.id)) return {body: {...structuredClone(dto), status: 'succeeded', verifiedResult: true}};
+      throw Error('Unexpected config upgrade route');
+    };
+    f.service.engine = new CommandEngine({context: f.context, request: transport, ensureSession: async () => {}, wait: async () => {},
+      audit: async () => ({accepted: true, requestId: 'config-audit'}), onPlan: (value, expected) => f.service.publishPlan(value, expected),
+      onOperation: operation => f.service.clearCompletedPlan(operation)});
+    const serviceRef = f.context.reference('service', {id: '1s1'}, f.context.capture());
+    const preview = await f.service.execute('preview_service_upgrade', {serviceRef, ports: [], healthCheck: null});
+    assert.equal(preview.status, 'needs_user'); assert.deepEqual(requests[0].data, {serviceId: '1s1', ports: [], healthCheck: null});
+    const reviewed = f.service.pendingPlan, modal = {get, set, setProperties, commands: f.service, plan: reviewed,
+      intl: {t: key => key}, approved: false, submitDisabled: false};
+    const reviewLabels = confirmationDefinition.reviewLabels.call(modal);
+    assert.equal(reviewLabels.upgradeConfigurationChanges.length, 2);
+    const Handlebars = require('handlebars').create(), template = fs.readFileSync(path.join(app, 'components/modal-confirm-ai-upgrade/template.hbs'), 'utf8');
+    require('@glimmer/syntax').preprocess(template);
+    Handlebars.registerHelper('t', key => key); Handlebars.registerHelper('action', () => '');
+    Handlebars.registerHelper('or', (left, right) => left || right); Handlebars.registerHelper('top-errors', () => '');
+    const html = Handlebars.compile(template)({plan: reviewed, reviewLabels, isResourceChange: false});
+    for (const field of ['ports','healthCheck']) assert.ok(html.includes('data-testid="ai-upgrade-config-' + field + '"'));
+    assert.ok(html.includes('8080:80/tcp')); assert.ok(html.includes('[]')); assert.ok(html.includes('webmcp.nullValue'));
+    await confirmationDefinition.actions.confirm.call(modal); assert.equal(modal.approved, true);
+    const accepted = await f.service.execute('apply_service_upgrade', {planRef: preview.planRef}); assert.equal(accepted.status, 'accepted');
+    const complete = await f.service.execute('get_operation', {operationRef: accepted.operationRef}); assert.equal(complete.verifiedResult, true);
+    assert.equal(f.service.pendingPlan, null); assert.equal(requests.filter(row => row.url.endsWith('?action=apply')).length, 1);
+    assert.deepEqual(requests.find(row => row.url.endsWith('?action=apply')).data, {});
+  });
+
+  await test('Volume create human inbox renders the logical-only warning and binds every reviewed value', async () => {
+    const dto = {...resourcePlan(), resourceType: 'volume', operation: 'create', resourceId: null, targetPath: 'Env / new-data', changes: [
+      {field:'name', before:null, after:'new-data'}, {field:'driver', before:null, after:'local'}, {field:'state', before:null, after:'detached'}]};
+    const f = fixture('off'); assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
+    const reviewed = f.service.pendingPlan, modal = {get, set, setProperties, commands:f.service, plan:reviewed,
+      intl:{t:key=>key}, approved:false, submitDisabled:false};
+    assert.ok(reviewed.reviewSignature);
+    const reviewLabels = confirmationDefinition.reviewLabels.call(modal); assert.equal(reviewLabels.localVolumeCreateNotice,'webmcp.localVolumeCreateNotice');
+    const Handlebars = require('handlebars').create(), template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');
+    require('@glimmer/syntax').preprocess(template); Handlebars.registerHelper('t',key=>key); Handlebars.registerHelper('action',()=> '');
+    Handlebars.registerHelper('or',(left,right)=>left||right); Handlebars.registerHelper('top-errors',()=> '');
+    const html=Handlebars.compile(template)({plan:reviewed,reviewLabels,isResourceChange:true});
+    assert.ok(html.includes('data-testid="ai-volume-create-logical-only"')); assert.ok(html.includes('formVolumes.volumeDriver.local'));
+    const changed=structuredClone(dto); changed.changes[0].after='old-same-name';
+    f.service.publishPlan({...reviewed,...f.service.engine.planSummary(changed,reviewed.planRef)});
+    assert.equal(confirmationDefinition.stale.call(modal),true); assert.equal((await f.service.confirmPendingPlan(reviewed)).code,'CONFLICT');
+    assert.equal(f.requests.length,0);
   });
 
   await test('upgrade strategy human inbox binds every effective value to the exact immutable review', async () => {
@@ -532,7 +629,9 @@ async function main() {
     assert.ok(confirmTemplate.includes('{{change.fieldLabel}}'));
     const strategyTestId = 'data-testid="ai-upgrade-strategy-{{change.field}}"';
     assert.equal(confirmTemplate.split(strategyTestId).length, 2);
-    const assertNoRawField = template => assert.ok(!template.replace(strategyTestId, '').includes('{{change.field}}'));
+    const configurationTestId = 'data-testid="ai-upgrade-config-{{change.field}}"';
+  assert.equal(confirmTemplate.split(configurationTestId).length, 2);
+  const assertNoRawField = template => assert.ok(!template.replace(strategyTestId, '').replace(configurationTestId, '').includes('{{change.field}}'));
     assertNoRawField(confirmTemplate);
     assert.throws(() => assertNoRawField(confirmTemplate + '<dt>{{change.field}}</dt>'), assert.AssertionError);
     assert.throws(() => assertNoRawField(confirmTemplate + '<dd title="{{change.field}}">label</dd>'), assert.AssertionError);

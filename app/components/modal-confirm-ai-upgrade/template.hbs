@@ -15,6 +15,7 @@
     <dt>{{t "webmcp.currentImage"}}</dt><dd class="force-wrap">{{this.plan.currentImage}}</dd>
     <dt>{{t "webmcp.requestedImage"}}</dt><dd class="force-wrap">{{this.plan.requestedImage}}</dd>
     {{#each this.reviewLabels.upgradeStrategyChanges as |change|}}<dt class="force-wrap">{{change.fieldLabel}}</dt><dd class="force-wrap" data-testid="ai-upgrade-strategy-{{change.field}}">{{change.after}}</dd>{{/each}}
+    {{#each this.reviewLabels.upgradeConfigurationChanges as |change|}}<dt class="force-wrap">{{change.fieldLabel}}</dt><dd class="force-wrap" data-testid="ai-upgrade-config-{{change.field}}"><pre class="ai-resource-diff-value">{{change.before}}</pre>→<pre class="ai-resource-diff-value">{{change.after}}</pre></dd>{{/each}}
   {{/if}}
   <dt>{{t "webmcp.expires"}}</dt><dd>{{this.displayExpiry}}</dd>
 </dl>
@@ -43,6 +44,7 @@
   </section>{{/if}}
 {{/if}}
 {{#unless (or this.catalogAfterPreview this.alreadyApproved)}}<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>{{/unless}}
+{{#if this.reviewLabels.localVolumeCreateNotice}}<div class="alert alert-warning" data-testid="ai-volume-create-logical-only">{{this.reviewLabels.localVolumeCreateNotice}}</div>{{/if}}
 {{#if this.reviewLabels.createsStopped}}<div class="alert alert-info" data-testid="ai-resource-create-stopped">{{t "webmcp.createStoppedNotice"}}</div>{{/if}}
 {{#if this.reviewLabels.externalHealthCheckNotice}}<div class="alert alert-info" data-testid="ai-external-health-check-lb-only">{{this.reviewLabels.externalHealthCheckNotice}}</div>{{/if}}
 {{#if this.reviewLabels.mountedDataNotice}}<div class="alert alert-warning" data-testid="ai-resource-mounted-data-notice">{{this.reviewLabels.mountedDataNotice}}</div>{{/if}}

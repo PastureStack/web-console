@@ -64,7 +64,7 @@ test('Service links extend the existing twelve tools and only the ordinary Servi
   assert.equal(condition.then.properties.resourceType.const, 'service');
   assert.deepEqual(condition.then.properties.parameters.required, ['serviceRefs']);
   assert.deepEqual(Object.keys(condition.then.properties.parameters.properties), ['serviceRefs']);
-  assert.deepEqual(COMMANDS.find(row => row.name === 'get_resource').inputSchema.properties.view.enum, ['stack_graph']);
+  assert.deepEqual(COMMANDS.find(row => row.name === 'get_resource').inputSchema.properties.view.enum, ['stack_graph', 'container_logs']);
   assert.match(command.description, /completeness remains unknown/);
   assert.match(command.description, /Active\/inactive state is preserved/);
   const f = fixture('stdio'), capabilities = await f.engine.execute('list_capabilities', {});
