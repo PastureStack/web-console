@@ -76,7 +76,7 @@ async function fixture(dir){
       fields.upgradeStrategy={type:'json',create:false,update:false};
     }
     if(name==='aiResourceChangePlan'){
-      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','scale','archive','restore','finish_upgrade','rollback','cancel_upgrade'];fields.parameters.type='json';
+      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService','registry'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','update_links','scale','archive','restore','finish_upgrade','rollback','cancel_upgrade'];fields.parameters.type='json';
     }
     if(name==='aiCatalogMetadataView'){
       for(const [field,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68}))Object.assign(fields[field],{type:'string',maxLength:limit});
@@ -149,13 +149,15 @@ test('checker rejects omitted writable inputs and mismatched typed lifecycle enu
   await fs.writeFile(file,JSON.stringify(absentProject));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const absentLoadBalancer=structuredClone(original);absentLoadBalancer.resourceFields.resourceType.options=absentLoadBalancer.resourceFields.resourceType.options.filter(type=>type!=='loadBalancerService');
   await fs.writeFile(file,JSON.stringify(absentLoadBalancer));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
+  const absentRegistry=structuredClone(original);absentRegistry.resourceFields.resourceType.options=absentRegistry.resourceFields.resourceType.options.filter(type=>type!=='registry');
+  await fs.writeFile(file,JSON.stringify(absentRegistry));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const extraAccount=structuredClone(original);extraAccount.resourceFields.resourceType.options.push('account');
   await fs.writeFile(file,JSON.stringify(extraAccount));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const wrong=structuredClone(original);wrong.resourceFields.operation.options.push('execute');await fs.writeFile(file,JSON.stringify(wrong));
   await assert.rejects(checkEngineContract(dir),/operation enum mismatch/);
   const catalog=structuredClone(original);catalog.resourceFields.operation.options.push('create_from_catalog');await fs.writeFile(file,JSON.stringify(catalog));
   await assert.rejects(checkEngineContract(dir),/operation enum mismatch/);
-  for(const operation of ['finish_upgrade','rollback','cancel_upgrade']){
+  for(const operation of ['update_links','finish_upgrade','rollback','cancel_upgrade']){
     const missingLifecycle=structuredClone(original);missingLifecycle.resourceFields.operation.options=missingLifecycle.resourceFields.operation.options.filter(item=>item!==operation);
     await fs.writeFile(file,JSON.stringify(missingLifecycle));await assert.rejects(checkEngineContract(dir),/operation enum mismatch/);
   }

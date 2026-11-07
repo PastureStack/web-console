@@ -110,6 +110,43 @@ test('TCP LB create: unsupported protocol/raw configuration/missing choices/stal
   assert.equal((await f.engine.execute('preview_resource_change',base)).code,'STALE_REFERENCE');assert.equal(f.requests.length,before);
 });
 
+test('TCP LB create: exact native 422 PortConflict keeps safe port-choice guidance in browser and stdio without a weaker retry', async () => {
+  for (const transportKind of ['browser', 'stdio']) {
+    const f = fixture({transportKind, audit: async () => ({accepted: true, requestId: 'aitool-11111111-1111-1111-1111-111111111111', supportedReasonDetails: ['BRIDGE_PROJECT_BINDING_REQUIRED', 'PORT_CONFLICT']}),
+      handle: async () => { throw {status: 422, body: {code: 'PortConflict', message: secret, host: secret, launchConfig: {imageUuid: secret}}}; }});
+    const captured = f.context.capture();
+    const parentRef = f.context.reference('resource', {id: 'stack', family: 'stack', resourceType: 'stack', scope: 'project'}, captured);
+    const serviceRef = f.context.reference('resource', {id: 'backend', family: 'service', resourceType: 'service', scope: 'project'}, captured);
+    const result = await f.engine.execute('preview_resource_change', tcpBalancerInput({parentRef, serviceRefs: [serviceRef]}));
+    assert.equal(result.code, 'INVALID_INPUT'); assert.equal(result.reason, 'PORT_CONFLICT'); assert.equal(result.status, 'rejected');
+    const event = f.audits.at(-1);
+    assert.deepEqual({...event, generation: undefined}, {command: 'preview_resource_change', phase: 'result', status: 'rejected', reason: 'INVALID_INPUT',
+      correlationId: 'aitool-11111111-1111-1111-1111-111111111111', generation: undefined});
+    assert.equal(Object.hasOwn(event, 'reasonDetail'), false); assert.equal(JSON.stringify(f.audits).includes('PORT_CONFLICT'), false);
+    assert.match(result.nextStep, /port is already in use/); assert.match(result.nextStep, /Ask the user to choose a different port/);
+    assert.match(result.nextStep, /Do not guess a replacement port, stop another workload, change firewall rules, drop port settings or downgrade/);
+    assert.doesNotMatch(result.nextStep, /1 through 16 complete ordered rules/);
+    assert.equal(JSON.stringify([result, f.audits]).includes(secret), false);
+    assert.equal(result.planRef, undefined); assert.equal(f.requests.length, 1);
+    assert.equal(f.requests[0].url, 'projects/p1/aiResourceChangePlans');
+  }
+});
+
+test('TCP LB create: other statuses codes and body text never masquerade as the closed PortConflict reason', async () => {
+  for (const error of [{status: 400, body: {code: 'PortConflict'}}, {status: 403, body: {code: 'PortConflict'}},
+    {status: 409, body: {code: 'PortConflict'}}, {status: 500, body: {code: 'PortConflict'}},
+    {status: 422, body: {code: 'portconflict'}}, {status: 422, body: {code: 'ResourceChangeInputInvalid'}},
+    {status: 422, body: {message: 'PortConflict'}}, {status: 422, body: 'PortConflict'}]) {
+    const f = fixture({handle: async () => { throw {...error, statusText: secret, host: secret, launchConfig: {imageUuid: secret}}; }});
+    const captured = f.context.capture();
+    const parentRef = f.context.reference('resource', {id: 'stack', family: 'stack', resourceType: 'stack', scope: 'project'}, captured);
+    const serviceRef = f.context.reference('resource', {id: 'backend', family: 'service', resourceType: 'service', scope: 'project'}, captured);
+    const result = await f.engine.execute('preview_resource_change', tcpBalancerInput({parentRef, serviceRefs: [serviceRef]}));
+    assert.equal(result.reason, undefined); assert.doesNotMatch(result.nextStep, /port is already in use/);
+    assert.equal(JSON.stringify([result, f.audits]).includes(secret), false); assert.equal(f.requests.length, 1);
+  }
+});
+
 test('TCP LB create: server omissions/reordering/startup changes and post-approval checkpoint tampering never apply', async () => {
   for(const mutate of [plan=>plan.changes=plan.changes.filter(row=>row.field!=='portRules'),
     plan=>plan.changes.find(row=>row.field==='startOnCreate').after=false,
@@ -350,7 +387,8 @@ test('resource families: every implemented descriptor projects only bounded scal
       assert.deepEqual(f.requests[1].data, {resourceType: descriptor.type, resourceId: 'opaque-server-id'});
     }
     const expectedFields = descriptor.type === 'processInstance' ? {} : descriptor.readTransport === 'catalog' ? descriptor.type === 'catalogTemplateVersion' ? versionFields : templateFields :
-      {description: body.description, name: body.name, state: body.state};
+      {description: body.description, name: body.name, state: body.state,
+        ...(descriptor.type === 'registry' ? {serverAddress: null, addressStatus: 'unknown'} : {})};
     assert.deepEqual(found.items[0].fields, expectedFields); assert.deepEqual(detail.fields, expectedFields);
   }
 });

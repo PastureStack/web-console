@@ -46,7 +46,8 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('orchestration', [project('kubernetesStack', 'kubernetesStacks', ['namespace'])], 'pending-adapter', 'Orchestration APIs require a dedicated adapter.'),
   family('processes', [global('processExecution', 'processExecutions', [], ['Only basic id/created metadata; named process summaries and errors need a dedicated adapter. Raw logs are excluded.']), global('processPool', 'processPools', ['activeTasks', 'poolSize', 'queueSize']), Object.freeze({...global('processInstance', 'processInstances'), fields: Object.freeze(['name', 'processName', 'phase', 'exitReason', 'startTime', 'endTime', 'runAfter', 'created', 'executionCount', 'diagnosticStatus', 'diagnosticCompleteness', 'diagnosticTruncated', 'diagnosticTruncationReason', 'hasException', 'failedHandler'])})],
     'pending-adapter', 'ProcessInstance list and detail use current native global process read permission, never Project ownership. Only registered process/handler names, fixed phase/exitReason, times and bounded diagnostics are returned. Diagnostic completeness remains unknown; no exception text, stack traces, payloads or replay is exposed. Custom Key scopes unsupported by the native owner remain denied. Existing processExecution and processPool metadata remain separate partial subsets.'),
-  family('registry', [project('registry', 'registries')]),
+  family('registry', [resource('registry', 'registries', 'project', ['serverAddress', 'addressStatus'], null,
+    ['Start/stop only, with empty parameters and a separately human-approved plan. Identify the exact registry by its safe serverAddress; unknown addresses cannot be used for lifecycle preview. Credential creation/editing, registry removal and arbitrary storage-pool changes remain in the normal human UI.'])]),
   family('secrets', [project('secret', 'secrets')]),
   family('service', [project('service', 'services', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}),
     resource('dnsService', 'dnsServices', 'project', ['scale', 'healthState', 'archived', 'targetServices', 'linkedServiceCount', 'unresolvedTargetCount'], {type: 'stack', field: 'stackId'}, ['Two-step Alias workflow: create makes an empty stopped Alias with no targets; update_targets needs selected same-session serviceRefs and another human-approved plan. Start is optional and separate. Named/ported/remote links and incoming-consumer cleanup remain pending.']), resource('externalService', 'externalServices', 'project', ['scale', 'healthState', 'archived', 'hostname', 'externalIpAddresses'], {type: 'stack', field: 'stackId'}, ['Typed changes cover name/description, safe DNS/IP targets and optional load-balancer-backend-only TCP health checks during creation only, not standalone monitoring. HTTP health checks, health-check updates, cloning and advanced settings remain pending. Create is inactive until a separately approved start.'])]),
@@ -178,6 +179,7 @@ export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
   cancel_upgrade: Object.freeze({before: Object.freeze(['upgrading', 'finishing-upgrade']), after: 'canceled-upgrade'}),
 });
 export const RESOURCE_CHANGES = Object.freeze({
+  registry: Object.freeze({start: action(), stop: action()}),
   project: Object.freeze({update_metadata: metadata}),
   loadBalancerService: Object.freeze({start: action(), stop: action(), scale: action(['scale'], ['scale']), update_metadata: metadata, create: action(['name', 'description', 'startOnCreate', 'portRules'], ['name', 'startOnCreate', 'portRules'])}),
   certificate: Object.freeze({update_metadata: metadata}),
@@ -186,6 +188,7 @@ export const RESOURCE_CHANGES = Object.freeze({
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(),
     finish_upgrade: action(), rollback: action(), cancel_upgrade: action(), scale: action(['scale'], ['scale']),
+    update_links: action(['serviceRefs'], ['serviceRefs']),
     create: action(['name', 'image', 'scale', 'description', 'command', 'entryPoint', 'ports', 'healthCheck'], ['name', 'image']), update_metadata: metadata}),
   dnsService: Object.freeze({start: action(), stop: action(), remove: action(), update_metadata: metadata,
     create: action(['name', 'description'], ['name']), update_targets: action(['serviceRefs'], ['serviceRefs'])}),
@@ -205,11 +208,25 @@ export function safeResourceFields(body, descriptor) {
   if ( descriptor.type === 'processInstance' ) { return safeProcessFields(body); }
   const result = {};
   for ( const field of descriptor.fields ) {
+    if ( descriptor.type === 'registry' && ['serverAddress', 'addressStatus'].includes(field) ) { continue; }
     const value = body[field];
     if ( typeof value === 'string' ) { result[field] = value.slice(0, field === 'targetServices' ? 100000 : ['description', 'externalIpAddresses'].includes(field) ? 1024 : 512); }
     else if ( typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value) || value === null ) { result[field] = value; }
   }
+  if ( descriptor.type === 'registry' ) {
+    result.serverAddress = safeRegistryAddress(body.serverAddress);
+    result.addressStatus = result.serverAddress === null ? 'unknown' : 'known';
+  }
   return result;
+}
+
+export function safeRegistryAddress(value) {
+  if ( typeof value !== 'string' || !value || value.length > 260 || !/^[A-Za-z0-9.\[\]:-]+$/.test(value) || value.endsWith(':') ) { return null; }
+  try {
+    const endpoint = new URL(`https://${value}`);
+    return endpoint.hostname && !endpoint.username && !endpoint.password && !endpoint.search && !endpoint.hash && endpoint.pathname === '/' &&
+      (!endpoint.port || Number(endpoint.port) >= 1 && Number(endpoint.port) <= 65535) ? value : null;
+  } catch (invalid) { return null; }
 }
 export function truncatedResourceFields(body, descriptor) {
   return descriptor.fields.filter((field) => typeof body[field] === 'string' && body[field].length > (field === 'targetServices' ? 100000 : ['description', 'externalIpAddresses'].includes(field) ? 1024 : 512));
