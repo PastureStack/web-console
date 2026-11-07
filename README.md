@@ -10,24 +10,18 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.223** / Bridge **0.2.25**](https://github.com/PastureStack/web-console/releases/tag/1.6.223)
-is published. The published component is qualified against Engine **0.183.383**;
-deployment requires a qualified compatible Server assembly. Use numeric release
-versions in the [Server installation guide](https://github.com/PastureStack/server#quick-start).
+[Web Console **1.6.224** / Bridge **0.2.26**](https://github.com/PastureStack/web-console/releases/tag/1.6.224)
+is published and qualified against Engine **0.183.384**. Deploy through the
+[Server installation guide](https://github.com/PastureStack/server#quick-start)
+using the current qualified matching component assembly.
 
-This release adds reviewed ordinary-Service dependency-link replacement and
-Registry activation/deactivation to the existing twelve tools. See the
-[release note](docs/releases/web-console-1.6.223.md) for changes, verification and
-upgrade boundaries. Component publication does not establish native workflow or
-complete WebMCP coverage.
-
-## Upcoming component
-
-Source candidate **1.6.224 / Bridge 0.2.26** requires matching Engine 0.183.384
-and a newly qualified Server for typed Service configuration, builtin-local
-logical Volume create and bounded Container logs. CI/artifacts/native acceptance
-remain pending. The current published component remains **1.6.223 / Bridge 0.2.25**.
-See [upcoming notes](docs/releases/web-console-1.6.224.md).
+The existing twelve tools add typed Service ports/health-check configuration
+upgrades, builtin-local logical Volume creation and bounded Container
+application logs. The human inbox also shows CAS-stale Service-link plans with
+Review disabled and authorized cancellation available. See the
+[release note](docs/releases/web-console-1.6.224.md) for component verification,
+matching-Engine corrections and the remaining native acceptance boundaries.
+Component publication does not establish complete WebMCP coverage.
 
 ## Features and operator guides
 
@@ -65,12 +59,14 @@ human review and durable completion receipts; client reports do not establish
 authorization or business success. The Engine's four independent AI flags remain
 default-off, and each Web Console page starts with browser tools off.
 
-Resource views exclude credentials, Certificate PEM material, private audit
-payloads and raw process logs. Process reads use the native global owner;
-Project ownership grants no global process access. Select `apiKeyRestricted`
-explicitly for restricted-Key discovery and audit; the default searches ordinary
-`apiKey` only. API Key policy details describe configured policy, not effective
-grants.
+Ordinary metadata views exclude credentials, Certificate PEM material, private
+audit payloads and raw process logs. The explicit `container_logs` view returns
+bounded application text under native LOGS authority and live Key/session
+ceilings. That text is untrusted and may contain application secrets; audit
+retains metadata only. Process reads use the native global owner; Project
+ownership grants no global process access. Select `apiKeyRestricted` explicitly
+for restricted-Key discovery and audit; the default searches ordinary `apiKey`
+only. Key policy details describe configured policy, not effective grants.
 
 The optional `get_resource({resourceRef, view: "stack_graph"})` reads bounded
 ordinary-Service links. Completeness remains unknown; ordinary detail performs
