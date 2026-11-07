@@ -278,3 +278,32 @@ test('external TCP review explicitly reuses the native LB-only alert in all thir
     for(const other of [{...plan,resourceType:'service'},{...plan,operation:'update_targets'},{...plan,displayDiff:[]}])assert.equal(resourceReviewLabels(other,t).externalHealthCheckNotice,null);
   }
 });
+
+
+test('external HTTP health review matches native TCP fallback in thirteen locales without rewriting review values', () => {
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => {
+      const value = key.split('.').reduce((row, part) => row && row[part], translations);
+      assert.equal(typeof value, 'string', locale + ': ' + key); assert.ok(value.trim()); return value;
+    };
+    for (const [request, type] of [[undefined, 'tcp'], [null, 'tcp'], ['', 'tcp'], ['  ', 'http'],
+      ['GET /health HTTP/1.0', 'http'], ['GET "/ready" "HTTP/1.1"', 'http']]) {
+      const check = {port: 8080, interval: 2000, responseTimeout: 1000, healthyThreshold: 2, unhealthyThreshold: 3};
+      if (request !== undefined) check.requestLine = request;
+      const encoded = JSON.stringify(check);
+      const diff = Object.freeze({field: 'healthCheck', before: encoded, after: encoded});
+      const plan = Object.freeze({resourceType: 'externalService', operation: 'create', displayDiff: Object.freeze([diff])});
+      const original = JSON.stringify(plan), labels = resourceReviewLabels(plan, t), change = labels.displayChanges[0];
+      const rows = [t('formHealthCheck.label') + ': ' + t('formHealthCheck.checkType.' + type), t('formHealthCheck.port.label') + ': 8080'];
+      if (request !== undefined) rows.push(t('formHealthCheck.request.label') + ': ' + (request === '' ? t('webmcp.emptyValue') : String(request)));
+      for (const [field, name] of [['interval', 'interval'], ['responseTimeout', 'timeout'], ['healthyThreshold', 'healthyThreshold'], ['unhealthyThreshold', 'unhealthyThreshold']]) {
+        rows.push(t('formHealthCheck.' + name + '.label') + ': ' + check[field] + ' ' + t('formHealthCheck.' + name + '.unit'));
+      }
+      assert.equal(change.before, rows.join('\n')); assert.equal(change.after, rows.join('\n'));
+      assert.equal(JSON.stringify(plan), original); assert.equal(labels.createsStopped, true);
+      assert.equal(labels.externalHealthCheckNotice, t('newExternalService.alert'));
+      assert.equal(change.fieldLabel, t('newContainer.tabs.healthCheck'));
+    }
+  }
+});

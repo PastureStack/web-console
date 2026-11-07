@@ -55,7 +55,10 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
           const display = key === 'strategy' ? text(`formHealthCheck.strategy.${check[key]}`) : check[key] === '' ? text('webmcp.emptyValue') : String(check[key]);
           return `${text(`formHealthCheck.${name}.label`)}: ${display}${unit}`;
         });
-        if ( plan.resourceType === 'externalService' ) { rows.unshift(`${text('formHealthCheck.label')}: ${text('formHealthCheck.checkType.tcp')}`); }
+        if ( plan.resourceType === 'externalService' ) {
+          const type = typeof check.requestLine === 'string' && check.requestLine.length > 0 ? 'http' : 'tcp';
+          rows.unshift(`${text('formHealthCheck.label')}: ${text(`formHealthCheck.checkType.${type}`)}`);
+        }
         return rows.join('\n');
       } catch (error) { return plan.resourceType === 'externalService' ? text('generic.unknown') : String(input); }
     }
