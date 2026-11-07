@@ -10,18 +10,19 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.224** / Bridge **0.2.26**](https://github.com/PastureStack/web-console/releases/tag/1.6.224)
-is published and qualified against Engine **0.183.384**. Deploy through the
+[Web Console **1.6.225** / Bridge **0.2.27**](https://github.com/PastureStack/web-console/releases/tag/1.6.225)
+is published and qualified against Engine **0.183.385**. Deploy through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
 using the current qualified matching component assembly.
 
-The existing twelve tools add typed Service ports/health-check configuration
-upgrades, builtin-local logical Volume creation and bounded Container
-application logs. The human inbox also shows CAS-stale Service-link plans with
-Review disabled and authorized cancellation available. See the
-[release note](docs/releases/web-console-1.6.224.md) for component verification,
-matching-Engine corrections and the remaining native acceptance boundaries.
-Component publication does not establish complete WebMCP coverage.
+The existing twelve tools add ordinary Stack Group editing and clearer preview
+input guidance. Human confirmation, native role/Key authority, exact references
+and configuration consistency remain binding. Safe validation guidance exposes
+only approved field names. Logical local Volume creation uses the native
+inactive, unallocated terminal record. See the
+[release note](docs/releases/web-console-1.6.225.md) for component verification.
+Server deployment and native acceptance remain separate; this is partial
+WebMCP coverage, not all 243 frontend groups.
 
 ## Features and operator guides
 
