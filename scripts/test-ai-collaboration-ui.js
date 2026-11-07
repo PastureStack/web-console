@@ -304,7 +304,7 @@ async function main() {
 
   await test('Volume create human inbox renders the logical-only warning and binds every reviewed value', async () => {
     const dto = {...resourcePlan(), resourceType: 'volume', operation: 'create', resourceId: null, targetPath: 'Env / new-data', changes: [
-      {field:'name', before:null, after:'new-data'}, {field:'driver', before:null, after:'local'}, {field:'state', before:null, after:'detached'}]};
+      {field:'name', before:null, after:'new-data'}, {field:'driver', before:null, after:'local'}, {field:'state', before:null, after:'inactive'}]};
     const f = fixture('off'); assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
     const reviewed = f.service.pendingPlan, modal = {get, set, setProperties, commands:f.service, plan:reviewed,
       intl:{t:key=>key}, approved:false, submitDisabled:false};

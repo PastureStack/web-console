@@ -1154,7 +1154,7 @@ export class CommandEngine {
       typeof displayDiff.find(row => row.field === 'name').after !== 'string' ||
       displayDiff.some(row => row.field === 'description' && row.after !== null && typeof row.after !== 'string') ||
       !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/.test(displayDiff.find(row => row.field === 'name').after) ||
-      displayDiff.find(row => row.field === 'state').after !== 'detached') ) { throw new CommandError('INVALID_RESPONSE'); }
+      displayDiff.find(row => row.field === 'state').after !== 'inactive') ) { throw new CommandError('INVALID_RESPONSE'); }
     if ( plan.operation === 'update_links' && (plan.resourceType !== 'service' || displayDiff.length !== 1 || displayDiff[0].field !== 'targetServices') ) {
       throw new CommandError('INVALID_RESPONSE');
     }

@@ -58,7 +58,7 @@ test('Service upgrade lifecycle: existing twelve tools advertise only three nati
   const tool = COMMANDS.find(row => row.name === 'preview_resource_change');
   for (const operation of operations) assert(tool.inputSchema.properties.operation.enum.includes(operation));
   assert.equal(tool.inputSchema.properties.operation.enum.includes('cancel_rollback'), false);
-  const conditions = tool.inputSchema.allOf.filter(row => row.if.properties.operation?.enum?.includes('finish_upgrade'));
+  const conditions = tool.inputSchema.allOf.filter(row => row.if?.properties?.operation?.enum?.includes('finish_upgrade'));
   assert.equal(conditions.length, 1);
   const condition = conditions[0];
   assert.deepEqual(condition.if.properties.operation.enum, operations);

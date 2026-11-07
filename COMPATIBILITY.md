@@ -7,8 +7,9 @@ The existing twelve tools add ordinary Stack Group editing through
 case, whitespace and comma-separated tags; null and empty string remain distinct.
 The preview tool also explains its required envelope and complete Service-link
 replacement earlier in its real tool description. Native role/Key authority,
-opaque references and human confirmation remain binding. Publication and native
-acceptance of this candidate are pending.
+opaque references and human confirmation remain binding. Logical Volume create
+previews also use the native inactive state, matching the corrected Engine
+completion predicate. Publication and native acceptance remain pending.
 
 ## Web Console 1.6.224 / Bridge 0.2.26 published
 

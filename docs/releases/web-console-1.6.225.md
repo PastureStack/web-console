@@ -7,6 +7,11 @@ including case, whitespace and comma-separated tags; null and empty string remai
 distinct. Review uses the existing localized Group label in all thirteen locales.
 System/catalog Stacks and other workflows do not accept this new field.
 
+Logical Volume creation previews now use the native `inactive` terminal state,
+matching Engine 0.183.385. This corrects 1.6.224's detached-state assumption;
+identity, driver, no-Host/no-mount boundaries and human confirmation are retained.
+Other lifecycle states are rejected rather than presented as completed creation.
+
 The actual preview tool description now starts with the required request envelope,
 an ordinary Service-link example, replacement/clear semantics and typed-error
 repair guidance. It still requires human confirmation of the exact server plan.

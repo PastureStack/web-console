@@ -17,7 +17,7 @@ function fixture({transportKind = 'browser', mode = 'enabled', mutate = x => x, 
         const p = request.data.parameters;
         plan = mutate({id, resourceType: 'volume', operation: 'create', resourceId: null, targetPath: 'Env / ' + p.name,
           confirmationState: 'pending', status: 'preview', verifiedResult: false, changes: [
-            {field: 'name', before: null, after: p.name}, ...(Object.hasOwn(p, 'description') ? [{field: 'description', before: null, after: p.description}] : []), {field: 'driver', before: null, after: 'local'}, {field: 'state', before: null, after: 'detached'}]});
+            {field: 'name', before: null, after: p.name}, ...(Object.hasOwn(p, 'description') ? [{field: 'description', before: null, after: p.description}] : []), {field: 'driver', before: null, after: 'local'}, {field: 'state', before: null, after: 'inactive'}]});
         return {body: structuredClone(plan)};
       }
       if (request.url.endsWith('?action=confirm')) { plan.confirmationState = 'approved'; return {body: structuredClone(plan)}; }
@@ -70,6 +70,17 @@ test('missing rows plugin driver allocated state and old same-name result cannot
     const f = fixture({mutate}); assert.equal((await f.engine.execute('preview_resource_change', input())).code, 'INVALID_RESPONSE'); assert.equal(f.published.length, 0);
   }
 });
+test('only the native inactive create terminal is reviewable on browser and stdio', async () => {
+  for (const transportKind of ['browser', 'stdio']) {
+    const valid = fixture({transportKind});
+    assert.equal((await valid.engine.execute('preview_resource_change', input())).status, 'needs_user');
+    for (const state of ['requested', 'registering', 'creating', 'activating', 'active', 'detached', 'removing', 'removed', 'purged', 'error']) {
+      const f = fixture({transportKind, mutate: p => ({...p, changes: p.changes.map(row => row.field === 'state' ? {...row, after: state} : row)})});
+      assert.equal((await f.engine.execute('preview_resource_change', input())).code, 'INVALID_RESPONSE', state);
+      assert.equal(f.published.length, 0); assert.equal(f.writes, 0);
+    }
+  }
+});
 test('review drift blocks both human confirmation and approved apply', async () => {
   const f = fixture(), p = await f.engine.execute('preview_resource_change', input()); f.plan.changes[0].after = 'old-same-name'; f.plan.confirmationState = 'approved';
   assert.equal((await f.engine.confirmPlan(p.planRef)).code, 'CONFLICT');
@@ -83,7 +94,7 @@ test('unsupported local scope gives human guidance and hides raw payload', async
 });
 test('closed advertised schema and fixed human notice describe only logical creation', async () => {
   const tool = COMMANDS.find(x => x.name === 'preview_resource_change');
-  const branch = tool.inputSchema.allOf.find(row => row.if.properties.resourceType?.const === 'volume');
+  const branch = tool.inputSchema.allOf.find(row => row.if?.properties?.resourceType?.const === 'volume');
   assert.equal(branch.then.properties.operation.const, 'create'); assert.deepEqual(Object.keys(branch.then.properties.parameters.properties), ['name', 'description']);
   assert.equal(branch.then.properties.parameters.additionalProperties, false);
   const source = readFileSync(new URL('../app/utils/ai-resource-review-labels.js', import.meta.url), 'utf8');
