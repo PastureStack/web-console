@@ -55,8 +55,8 @@ async function fixture(dir){
   const schema=path.join(dir,'resources/content/schema');
   const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent','aiResourceView','aiResourceChangePlan','aiCatalogMetadataView',
     'aiCatalogStackLaunchOptions','aiCatalogStackLaunchPlan','aiCatalogStackLaunchInputs','aiAuditQuery','aiAuditSourcePageInput'];
-  const inputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
-    aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view'],
+  const inputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis','ports','healthCheck'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+    aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view','tailLines'],
     aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
     aiCatalogStackLaunchOptions:['templateId','versionId'],
     aiCatalogStackLaunchPlan:['templateId','versionId','optionsRef','name','description','startOnCreate','answers','referenceBindings'],
@@ -68,15 +68,22 @@ async function fixture(dir){
   for(const name of names){
     const fields=Object.fromEntries(inputs[name].map(field=>[field,{create:true}]));
     if(name==='aiToolCallEvent'){fields.command.options=[...COMMANDS.map(x=>x.name),'unknown'];fields.reason.options=[...PUBLIC_ERROR_CODES,'NONE'];}
-    if(name==='aiResourceView')Object.assign(fields.view,{type:'string',maxLength:32,options:['stack_graph']});
+    if(name==='aiResourceView'){
+      Object.assign(fields.view,{type:'string',maxLength:32,options:['stack_graph','container_logs']});
+      Object.assign(fields.tailLines,{type:'int',min:1,max:200});
+      fields.logs={type:'map[json]',create:false};
+    }
     if(name==='aiServiceUpgradePlan'){
       Object.assign(fields.startFirst,{type:'boolean',update:false,nullable:false});
       Object.assign(fields.batchSize,{type:'int',update:false,nullable:false,min:1,max:Number.MAX_SAFE_INTEGER});
       Object.assign(fields.intervalMillis,{type:'int',update:false,nullable:false,min:100,max:Number.MAX_SAFE_INTEGER});
+      Object.assign(fields.ports,{type:'array[string]',update:false,nullable:false});
+      Object.assign(fields.healthCheck,{type:'json',update:false,nullable:true});
+      fields.configurationChanges={type:'array[json]',create:false,update:false};
       fields.upgradeStrategy={type:'json',create:false,update:false};
     }
     if(name==='aiResourceChangePlan'){
-      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService','registry'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','update_links','scale','archive','restore','finish_upgrade','rollback','cancel_upgrade'];fields.parameters.type='json';
+      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService','registry','volume'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','update_links','scale','archive','restore','finish_upgrade','rollback','cancel_upgrade'];fields.parameters.type='json';
     }
     if(name==='aiCatalogMetadataView'){
       for(const [field,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68}))Object.assign(fields[field],{type:'string',maxLength:limit});
@@ -112,8 +119,8 @@ async function fixture(dir){
     await fs.writeFile(path.join(schema,'base',name+'.json'),JSON.stringify(declaration));
   }
   for(const role of ['admin','user','project'])await fs.writeFile(path.join(schema,role,role+'-auth.json'),JSON.stringify({authorize:Object.fromEntries(names.flatMap(name=>[
-    [name,['aiCatalogStackLaunchInputs','aiAuditSourcePageInput'].includes(name)?'r':name.startsWith('aiCatalogStackLaunch')||name==='aiAuditQuery'?'cr':'c'],
-    ...Object.entries(declarations.get(name).resourceFields).map(([field,value])=>[name+'.'+field,value.create?(name.startsWith('aiCatalogStackLaunch')||name.startsWith('aiAudit')?'cr':'c'):'r'])]))}));
+    [name,['aiCatalogStackLaunchInputs','aiAuditSourcePageInput'].includes(name)?'r':name.startsWith('aiCatalogStackLaunch')||name==='aiAuditQuery'||name==='aiResourceView'?'cr':'c'],
+    ...Object.entries(declarations.get(name).resourceFields).map(([field,value])=>[name+'.'+field,value.create?(name.startsWith('aiCatalogStackLaunch')||name.startsWith('aiAudit')||name==='aiResourceView'?'cr':'c'):'r'])]))}));
   return schema;
 }
 test('checker reads the fixed contract in an explicitly selected Engine checkout',async t=>{
@@ -130,6 +137,11 @@ test('upgrade strategy contract rejects precision bounds required fields and wri
     [value=>{value.resourceFields.startFirst.required=true;},/startFirst must remain optional/],
     [value=>{value.resourceFields.startFirst.nullable=true;},/startFirst must reject null/],
     [value=>{value.resourceFields.upgradeStrategy.create=true;},/upgradeStrategy must be read-only output/],
+    [value=>{delete value.resourceFields.ports;},/ports is not accepted input/],
+    [value=>{value.resourceFields.image.required=true;},/image must remain optional/],
+    [value=>{value.resourceFields.ports.nullable=true;},/ports null semantics mismatch/],
+    [value=>{value.resourceFields.healthCheck.update=true;},/healthCheck must not be client-updatable/],
+    [value=>{value.resourceFields.configurationChanges.create=true;},/configurationChanges must be read-only output/],
   ]){
     const value=JSON.parse(original);mutate(value);await fs.writeFile(file,JSON.stringify(value));
     await assert.rejects(checkEngineContract(dir),pattern);
@@ -151,6 +163,8 @@ test('checker rejects omitted writable inputs and mismatched typed lifecycle enu
   await fs.writeFile(file,JSON.stringify(absentLoadBalancer));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const absentRegistry=structuredClone(original);absentRegistry.resourceFields.resourceType.options=absentRegistry.resourceFields.resourceType.options.filter(type=>type!=='registry');
   await fs.writeFile(file,JSON.stringify(absentRegistry));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
+  const absentVolume=structuredClone(original);absentVolume.resourceFields.resourceType.options=absentVolume.resourceFields.resourceType.options.filter(type=>type!=='volume');
+  await fs.writeFile(file,JSON.stringify(absentVolume));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const extraAccount=structuredClone(original);extraAccount.resourceFields.resourceType.options.push('account');
   await fs.writeFile(file,JSON.stringify(extraAccount));await assert.rejects(checkEngineContract(dir),/resourceType enum mismatch/);
   const wrong=structuredClone(original);wrong.resourceFields.operation.options.push('execute');await fs.writeFile(file,JSON.stringify(wrong));

@@ -45,7 +45,11 @@ test('volume empty, partial, old-server or fifty-row snapshots stay unknown and 
     assert.equal(result.usageReferences.availability, 'unknown'); assert.equal(result.usageReferences.limit,50);
     assert.equal(result.usageReferences.items.length, shape?.length || 0); assert.doesNotMatch(JSON.stringify(result), /hiddenCount|999|PRIVATE_HOST|containerId/);
     assert.match(result.nextStep,/retain the native removal checks/);
-    assert.equal((await f.engine.execute('preview_resource_change',{resourceType:'volume',operation:'remove',targetRef:f.ref,parameters:{}})).code,'INVALID_INPUT');
+    const removal = await f.engine.execute('preview_resource_change',{resourceType:'volume',operation:'remove',targetRef:f.ref,parameters:{}});
+    // Volume is now a registered create-only family; an unavailable removal
+    // must still create neither a plan nor a deletion capability.
+    assert.equal(removal.status,'rejected'); assert.equal(removal.code,'UNAVAILABLE');
+    assert.equal(f.requests.some(request => request.url === 'projects/p1/aiResourceChangePlans'),false);
   }
   assert.equal(COMMANDS.length,12);
 });

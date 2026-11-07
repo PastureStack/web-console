@@ -1,9 +1,10 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
-import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
+import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, SERVICE_UPGRADE_CONFIG_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, safeRegistryAddress, truncatedResourceFields, configuredPolicyRead } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
+import {boundedContainerLogs} from './ai-container-logs';
 import { createCatalogLaunchAdapter, catalogLaunchPlanSummary, CATALOG_LAUNCH_COLLECTION } from './ai-catalog-launch';
 
 const OPERATION_STATUSES = ['accepted', 'running', 'succeeded', 'failed', 'unknown', 'cancelled', 'needs_user'];
@@ -12,14 +13,37 @@ const SERVICE_CREATE_FIELDS = ['ports', 'healthCheck'];
 
 export function serviceCreateReview(summary) {
   return summary && summary.operation === 'create' && Array.isArray(summary.displayDiff) &&
-    (['externalService', 'loadBalancerService'].includes(summary.resourceType) || ['service', 'container'].includes(summary.resourceType) &&
+    (['externalService', 'loadBalancerService', 'volume'].includes(summary.resourceType) || ['service', 'container'].includes(summary.resourceType) &&
       summary.displayDiff.some((change) => [...SERVICE_CREATE_FIELDS, 'portRules'].includes(change.field))) ?
     JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
 }
 
 export function serviceUpgradeReview(summary) {
   return summary && summary.upgradeStrategy ? JSON.stringify([summary.displayPath, summary.currentImage, summary.requestedImage,
-    ...SERVICE_UPGRADE_FIELDS.map((field) => summary.upgradeStrategy[field])]) : null;
+    ...SERVICE_UPGRADE_FIELDS.map((field) => summary.upgradeStrategy[field]),
+    ...(summary.configurationChanges ? [summary.configurationChanges] : [])]) : null;
+}
+
+function upgradeConfigurationValue(field, value) {
+  if ( field === 'healthCheck' && value === null ) { return null; }
+  validateServiceCreateField(field, value);
+  if ( field === 'ports' ) { return JSON.stringify(value); }
+  const check = {strategy: 'recreate', ...value};
+  return JSON.stringify(Object.fromEntries(Object.keys(check).sort().map(key => [key, check[key]])));
+}
+
+function upgradeConfigurationChanges(value) {
+  if ( !Array.isArray(value) || value.length < 1 || value.length > 2 || new Set(value.map(row => row && row.field)).size !== value.length ) { throw new CommandError('INVALID_RESPONSE'); }
+  try {
+    return Object.freeze(value.map(row => {
+      if ( !row || Object.keys(row).sort().join(',') !== 'after,before,field' || !SERVICE_UPGRADE_CONFIG_FIELDS.includes(row.field) ) { throw new CommandError('INVALID_RESPONSE'); }
+      for ( const side of ['before', 'after'] ) {
+        if ( row[side] !== null && (typeof row[side] !== 'string' || row[side].length > 32768) ) { throw new CommandError('INVALID_RESPONSE'); }
+        upgradeConfigurationValue(row.field, row[side] === null ? null : JSON.parse(row[side]));
+      }
+      return Object.freeze({field: row.field, before: row.before, after: row.after});
+    }));
+  } catch (_invalid) { throw new CommandError('INVALID_RESPONSE'); }
 }
 
 function upgradeStrategy(value) {
@@ -105,6 +129,9 @@ export class CommandEngine {
           Number(error && (error.status || error.statusCode)) === 422 && error.body && error.body.code === 'ResourceChangeInputInvalid' && result.code === 'INVALID_INPUT';
       }
     }
+    if ( name === 'preview_resource_change' && input && input.resourceType === 'volume' && ['UNAVAILABLE', 'INVALID_INPUT'].includes(result.code) ) {
+      result.nextStep = 'This tool only creates an unallocated builtin local logical Volume record with name/description in this selected environment. It does not create or mount storage on a Host. Driver options, Host paths, IDs, plugin drivers and size are unsupported here; use the existing human Volume UI for those choices. Names can repeat: choose a distinct name and inspect fresh metadata/usage references without inferring that an existing volume is unused. Never change Key permissions or reuse an old same-name record as the create result.';
+    }
     if ( result.reason === 'TARGET_BUSY' ) {
       const operationRef = this.existingOperation(input, captured);
       if ( operationRef ) { result.operationRef = operationRef; result.nextStep = 'Call get_operation with this existing operationRef and wait for completion. Then read the resource again before previewing. Do not submit parallel changes.'; }
@@ -116,6 +143,9 @@ export class CommandEngine {
     } else if ( name === 'get_resource' && result.code === 'INVALID_INPUT' && result.field === 'resourceRef' &&
       input && /^(stack|service)_/.test(input.resourceRef) ) {
       result.nextStep = 'Call find_resources with family stack or service to obtain a resourceRef, then reuse that returned resourceRef unchanged in get_resource. For a Stack graph, use family stack and get_resource with view stack_graph. stackRef from find_stacks and serviceRef from find_services belong to legacy tools; never pass them as resourceRef or change their prefix. Keep the same environment and credentials.';
+    } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_CONFIG_FIELDS.some(field => Object.prototype.hasOwnProperty.call(input, field)) &&
+      ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
+      result.nextStep = 'Use the supported typed Service upgrade subset. Omit ports/healthCheck to preserve them; [] explicitly clears ports, a nonempty healthCheck object merges only supplied fields, and null clears the entire check. A new check needs port. Use a matching Engine and exact returned review; do not drop settings, send raw launchConfig or retry through a generic Service PUT.';
     } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input, field)) &&
       ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
       result.nextStep = 'Check startFirst, batchSize and intervalMillis against this tool schema and use a matching Engine upgrade-strategy adapter. The exact strategy must be returned for human review. Do not drop requested settings, send inServiceStrategy or launchConfig, or retry through a generic action.';
@@ -432,8 +462,16 @@ export class CommandEngine {
   async get_resource(input, captured, signal) {
     if ( /^(stack|service)_/.test(input.resourceRef) ) { throw new CommandError('INVALID_INPUT', 'resourceRef'); }
     const target = this.context.resolve(input.resourceRef, 'resource', captured);
-    if ( input.view !== undefined && (target.resourceType !== 'stack' || target.scope !== 'project') ) {
+    if ( input.view !== undefined && !(input.view === 'stack_graph' && target.resourceType === 'stack' && target.scope === 'project' ||
+      input.view === 'container_logs' && target.resourceType === 'container' && target.scope === 'project') ) {
       throw new CommandError('INVALID_INPUT', 'view');
+    }
+    if (input.tailLines !== undefined && input.view !== 'container_logs') { throw new CommandError('INVALID_INPUT', 'tailLines'); }
+    if (input.view === 'container_logs') {
+      const descriptor = this.findDescriptor({family: target.family, resourceType: target.resourceType});
+      const view = await this.resourceView(descriptor, captured, {resourceId: target.id, view: 'container_logs', tailLines: input.tailLines}, signal);
+      this.context.assertCurrent(captured, signal);
+      return boundedContainerLogs(view, target, input.resourceRef, captured);
     }
     if (target.auditQuery) {
       if (target.family !== 'audit' || target.resourceType !== 'auditLog') { throw new CommandError('INVALID_INPUT', 'resourceRef'); }
@@ -681,7 +719,7 @@ export class CommandEngine {
 
   async resourceView(descriptor, captured, options, signal) {
     const data = {resourceType: descriptor.type};
-    for ( const field of ['resourceId', 'query', 'marker', 'parentId', 'view'] ) {
+    for ( const field of ['resourceId', 'query', 'marker', 'parentId', 'view', 'tailLines'] ) {
       if ( options[field] !== undefined ) { data[field] = options[field]; }
     }
     const body = await this.call(captured, 'aiResourceViews', 'POST', data, signal);
@@ -833,14 +871,19 @@ export class CommandEngine {
       summary.upgradeStrategy = upgradeStrategy(plan.upgradeStrategy);
       summary.displayDiff.push(...SERVICE_UPGRADE_FIELDS.map((field) => ({field, before: null, after: summary.upgradeStrategy[field]})));
     }
+    if ( Object.prototype.hasOwnProperty.call(plan, 'configurationChanges') ) {
+      if ( !summary.upgradeStrategy ) { throw new CommandError('INVALID_RESPONSE'); }
+      summary.configurationChanges = upgradeConfigurationChanges(plan.configurationChanges);
+      summary.displayDiff.push(...summary.configurationChanges);
+    }
     return summary;
   }
 
   async preview_service_upgrade(input, captured, signal) {
     const target = this.context.resolve(input.serviceRef, 'service', captured);
-    const data = {serviceId: target.id, image: input.image};
-    for ( const field of SERVICE_UPGRADE_FIELDS ) {
-      if ( Object.prototype.hasOwnProperty.call(input, field) ) { data[field] = input[field]; }
+    const data = {serviceId: target.id};
+    for ( const field of ['image', ...SERVICE_UPGRADE_FIELDS, ...SERVICE_UPGRADE_CONFIG_FIELDS] ) {
+      if ( Object.prototype.hasOwnProperty.call(input, field) ) { data[field] = field === 'ports' ? input[field].slice() : field === 'healthCheck' && input[field] !== null ? {...input[field]} : input[field]; }
     }
     const plan = await this.call(captured, 'aiServiceUpgradePlans', 'POST', data, signal);
     if ( !plan || typeof plan.id !== 'string' || (plan.serviceId && plan.serviceId !== target.id) ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -850,6 +893,13 @@ export class CommandEngine {
       const expected = {startFirst: false, batchSize: 1, intervalMillis: 2000, ...data};
       if ( SERVICE_UPGRADE_FIELDS.some((field) => summary.upgradeStrategy[field] !== expected[field]) ) { throw new CommandError('INVALID_RESPONSE'); }
     } else if ( SERVICE_UPGRADE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input, field)) ) {
+      throw new CommandError('INVALID_RESPONSE');
+    }
+    const requested = SERVICE_UPGRADE_CONFIG_FIELDS.filter(field => Object.prototype.hasOwnProperty.call(data, field));
+    const changes = summary.configurationChanges || [];
+    if ( changes.length !== requested.length || requested.some(field => !changes.some(row => row.field === field &&
+      upgradeConfigurationValue(field, row.after === null ? null : JSON.parse(row.after)) === upgradeConfigurationValue(field, field === 'healthCheck' && data[field] !== null ? {...(row.before === null ? {} : JSON.parse(row.before)), ...data[field]} : data[field]))) ||
+      (Object.prototype.hasOwnProperty.call(data, 'image') ? summary.requestedImage !== imageName(data.image) : summary.requestedImage !== summary.currentImage) ) {
       throw new CommandError('INVALID_RESPONSE');
     }
     this.context.resolve(planRef, 'plan', captured).upgradeReview = serviceUpgradeReview(summary);
@@ -864,7 +914,7 @@ export class CommandEngine {
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
-      if ( ['externalService', 'loadBalancerService'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -942,6 +992,16 @@ export class CommandEngine {
     }
     if ( result.status === 'needs_user' ) {
       result.code = 'NEEDS_USER'; result.nextStep = 'Ask the user to complete inputs and approve the existing plan in the console. No launch has been verified; do not create a replacement or submit another apply.';
+    }
+    if ( plan.resourceType === 'volume' && plan.operation === 'create' ) {
+      result.completionScope = 'unallocated-local-volume-record'; result.physicalStorageVerified = false; result.mountVerified = false;
+      if ( result.status === 'succeeded' && result.verifiedResult ) {
+        if ( typeof plan.resourceId !== 'string' || !plan.resourceId || plan.resourceId.length > 128 ) { throw new CommandError('INVALID_RESPONSE'); }
+        const captured = this.context.capture(), operation = this.context.resolve(operationRef, 'operation', captured);
+        if ( !operation.createdResourceRef ) { operation.createdResourceRef = this.context.reference('resource', {id: plan.resourceId, resourceType: 'volume', family: 'storage', scope: 'project'}, captured); }
+        result.createdResource = {resourceType: 'volume', resourceRef: operation.createdResourceRef};
+        result.nextStep = 'Only the exact new unallocated local Volume record is verified. Host storage and mounts are not verified. Reuse this createdResource.resourceRef for a fresh safe metadata read; names can repeat, so never select an older first match. Empty usage references never mean unused or safe to delete. Physical allocation and unsupported drivers remain in the human Volume UI.';
+      }
     }
     if ( plan.resourceType === 'dnsService' && plan.operation === 'create' ) {
       result.workflow = [...ALIAS_WORKFLOW]; result.targetsBound = false;
@@ -1033,6 +1093,7 @@ export class CommandEngine {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
         ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices', 'ports', 'healthCheck', 'portRules'].includes(change.field) ? 100000 : 1024) ||
           typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'driver' && (plan.resourceType !== 'volume' || plan.operation !== 'create' || change.before !== null || change.after !== 'local') ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'portRules' ) {
         if ( plan.resourceType !== 'loadBalancerService' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
         try { validateTcpLoadBalancerReview(JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
@@ -1083,6 +1144,13 @@ export class CommandEngine {
     if ( ['archive', 'restore'].includes(plan.operation) && (displayDiff.length !== 1 || displayDiff[0].field !== 'archived') ) {
       throw new CommandError('INVALID_RESPONSE');
     }
+    if ( plan.resourceType === 'volume' && (plan.operation !== 'create' || ![3, 4].includes(displayDiff.length) ||
+      new Set(displayDiff.map(row => row.field)).size !== displayDiff.length || !['name', 'driver', 'state'].every(field => displayDiff.some(row => row.field === field)) ||
+      displayDiff.some(row => row.before !== null || !['name', 'description', 'driver', 'state'].includes(row.field)) ||
+      typeof displayDiff.find(row => row.field === 'name').after !== 'string' ||
+      displayDiff.some(row => row.field === 'description' && row.after !== null && typeof row.after !== 'string') ||
+      !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/.test(displayDiff.find(row => row.field === 'name').after) ||
+      displayDiff.find(row => row.field === 'state').after !== 'detached') ) { throw new CommandError('INVALID_RESPONSE'); }
     if ( plan.operation === 'update_links' && (plan.resourceType !== 'service' || displayDiff.length !== 1 || displayDiff[0].field !== 'targetServices') ) {
       throw new CommandError('INVALID_RESPONSE');
     }
@@ -1125,6 +1193,7 @@ export class CommandEngine {
       (input.resourceType === 'loadBalancerService' ? parameters.scale < 1 : parameters.scale > 100) ) {
       throw new CommandError('INVALID_INPUT', 'parameters.scale');
     }
+    if ( input.resourceType === 'volume' && !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/.test(parameters.name || '') ) { throw new CommandError('INVALID_INPUT', 'parameters.name'); }
     if ( input.resourceType === 'externalService' ) { validateExternalServiceParameters(input.operation, parameters); }
     if ( input.resourceType === 'dnsService' && input.operation === 'update_targets' ) {
       parameters.serviceIds = aliasTargetIds(parameters.serviceRefs,
@@ -1181,6 +1250,12 @@ export class CommandEngine {
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
+    if ( input.resourceType === 'volume' ) {
+      const expected = ['name', ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? ['description'] : [])];
+      if ( expected.some(field => !plan.changes.some(row => row.field === field && row.after === parameters[field])) ||
+        plan.changes.some(row => row.field === 'description' && !expected.includes('description')) ) { throw new CommandError('INVALID_RESPONSE'); }
+      reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
+    }
     if ( ordinaryLinks ) {
       const summary = this.resourcePlanSummary(plan, null);
       if ( safeAliasTargetSummary(summary.displayDiff[0].after).length !== parameters.serviceIds.length ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -1237,7 +1312,7 @@ export class CommandEngine {
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
-      if ( ['externalService', 'loadBalancerService'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);

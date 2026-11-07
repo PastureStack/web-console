@@ -2,7 +2,7 @@ import { computed } from '@ember/object';
 import { service } from '@ember/service';
 import ModalBase from 'lacsso/components/modal-base';
 import config from 'ui/config/environment';
-import { boundedCollaborationMode, collaborationStatusKey } from 'ui/utils/ai-collaboration-controls';
+import { boundedCollaborationMode, collaborationStatusKey, staleLinkInboxPlan } from 'ui/utils/ai-collaboration-controls';
 import { resourceReviewLabels } from 'ui/utils/ai-resource-review-labels';
 import { safeCatalogQuestions } from 'ui/utils/ai-catalog-launch';
 
@@ -84,7 +84,8 @@ export default ModalBase.extend({
             ...resourceReviewLabels(safe, (key) => this.get('intl').t(key))} : {};
           if ( catalogLaunch ) { Object.assign(typed, {summary: safe.catalogSummary, missingHumanInputs: safeCatalogQuestions(plan.missingHumanInputs || [])}); }
           return Object.assign({id: plan.id, serviceId: plan.serviceId, resourceId: plan.resourceId, status: plan.status, operationId: plan.operationId,
-            canCancel: this.get('commands').canCancelInboxPlan(plan)}, safe, typed);
+            canCancel: this.get('commands').canCancelInboxPlan(plan), staleLink: staleLinkInboxPlan(plan),
+            messageCode: plan.messageCode === 'ResourceChangePlanStale' ? plan.messageCode : null}, safe, typed);
         });
       });
       this._loadedContext = captured;
@@ -137,7 +138,7 @@ export default ModalBase.extend({
       }
     },
     review(plan) {
-      if ( this.isDestroying || this.isDestroyed ) { return; }
+      if ( this.isDestroying || this.isDestroyed || staleLinkInboxPlan(plan) ) { return; }
       const result = this.get('commands').reviewInboxPlan(plan, this._loadedContext);
       if ( result.status !== 'needs_user' ) { this.set('loadError', true); return; }
       this.get('modalService').toggleModal();

@@ -11,6 +11,17 @@ const source = await readFile(path.join(root, 'app/utils/ai-resource-review-labe
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
 const locales = ['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
 
+test('Volume create logical-only warning and fixed local driver labels exist in all thirteen locales', () => {
+  for(const locale of locales){
+    const translations=YAML.load(path.join(root,'translations',locale+'.yaml'));
+    const t=key=>{const value=key.split('.').reduce((row,part)=>row&&row[part],translations);assert.equal(typeof value,'string',locale+': '+key);assert.ok(value.trim());return value;};
+    const result=resourceReviewLabels({resourceType:'volume',operation:'create',displayDiff:[{field:'driver',before:null,after:'local'}]},t);
+    assert.equal(result.localVolumeCreateNotice,t('webmcp.localVolumeCreateNotice'));
+    assert.equal(result.resourceTypeLabel,t('apiKeyAccess.selector.types.volume'));
+    assert.equal(result.displayChanges[0].after,t('formVolumes.volumeDriver.local'));
+  }
+});
+
 test('service upgrade lifecycle review reuses existing action and field labels in all thirteen locales without rewriting the exact native checkpoint', () => {
   const actions = {finish_upgrade: 'action.finishUpgrade', rollback: 'action.rollback', cancel_upgrade: 'action.cancelUpgrade'};
   for (const locale of locales) {
@@ -53,6 +64,23 @@ test('external TCP health review uses clear existing labels and exact values in 
     }
     const malformed = resourceReviewLabels({resourceType: 'externalService', operation: 'create', displayDiff: [{field: 'healthCheck', before: null, after: 'PRIVATE_RAW_JSON'}]}, t);
     assert.equal(malformed.displayChanges[0].after, t('generic.unknown'));
+  }
+});
+
+test('service upgrade configuration review preserves clear and merge labels in thirteen locales', () => {
+  for (const locale of locales) {
+    const translations = YAML.load(path.join(root, 'translations', locale + '.yaml'));
+    const t = key => {
+      const value = key.split('.').reduce((row, part) => row && row[part], translations);
+      assert.equal(typeof value, 'string', locale + ': ' + key); assert.ok(value.trim()); return value;
+    };
+    const plan = {configurationChanges: [{field: 'ports', before: '["80/tcp"]', after: '[]'},
+      {field: 'healthCheck', before: '{"port":80,"strategy":"none","interval":2000}', after: null}]};
+    const original = JSON.stringify(plan), rows = resourceReviewLabels(plan, t).upgradeConfigurationChanges;
+    assert.equal(rows[0].fieldLabel, t('generic.ports')); assert.equal(rows[0].after, '[]');
+    assert.equal(rows[1].fieldLabel, t('newContainer.tabs.healthCheck')); assert.equal(rows[1].after, t('webmcp.nullValue'));
+    assert.ok(rows[1].before.includes(t('formHealthCheck.strategy.none'))); assert.ok(rows[1].before.includes('2000'));
+    assert.equal(JSON.stringify(plan), original);
   }
 });
 
@@ -221,7 +249,9 @@ test('resource review templates use the friendly renderer and escape complete pr
   assert.ok(template.includes('{{change.fieldLabel}}'));
   const strategyTestId = 'data-testid="ai-upgrade-strategy-{{change.field}}"';
   assert.equal(template.split(strategyTestId).length, 2);
-  const assertNoRawField = value => assert.ok(!value.replace(strategyTestId, '').includes('{{change.field}}'));
+  const configurationTestId = 'data-testid="ai-upgrade-config-{{change.field}}"';
+  assert.equal(template.split(configurationTestId).length, 2);
+  const assertNoRawField = value => assert.ok(!value.replace(strategyTestId, '').replace(configurationTestId, '').includes('{{change.field}}'));
   assertNoRawField(template);
   assert.throws(() => assertNoRawField(template + '<dt>{{change.field}}</dt>'), assert.AssertionError);
   assert.throws(() => assertNoRawField(template + '<dd title="{{change.field}}">label</dd>'), assert.AssertionError);

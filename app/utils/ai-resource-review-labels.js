@@ -1,8 +1,8 @@
-const TYPES = {registry: 'registriesPage.index.header',loadBalancerService: 'servicePage.type.loadbalancerservice', project: 'apiKeyAccess.selector.types.project', host: 'apiKeyAccess.selector.types.host', certificate: 'certificatesPage.index.header', dnsService: 'servicePage.type.dnsservice', externalService: 'servicePage.type.externalservice', stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
+const TYPES = {volume: 'apiKeyAccess.selector.types.volume', registry: 'registriesPage.index.header',loadBalancerService: 'servicePage.type.loadbalancerservice', project: 'apiKeyAccess.selector.types.project', host: 'apiKeyAccess.selector.types.host', certificate: 'certificatesPage.index.header', dnsService: 'servicePage.type.dnsservice', externalService: 'servicePage.type.externalservice', stack: 'apiKeyAccess.selector.types.stack', service: 'apiKeyAccess.selector.types.service', container: 'apiKeyAccess.selector.types.container'};
 const OPERATIONS = {update_links: 'servicePage.linksTab.header', update_targets: 'formTarget.target', start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove',
   create: 'saveCancel.create', create_from_catalog: 'newCatalog.saveNew', update_metadata: 'generic.edit', scale: 'serviceInfoPartial.scale', archive: 'archive.action', restore: 'archive.restore',
   finish_upgrade: 'action.finishUpgrade', rollback: 'action.rollback', cancel_upgrade: 'action.cancelUpgrade'};
-const FIELDS = {portRules: 'formBalancerRules.label',startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
+const FIELDS = {driver: 'formVolumes.volumeDriver.label', portRules: 'formBalancerRules.label',startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
   state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint', ports: 'generic.ports', healthCheck: 'newContainer.tabs.healthCheck',
   operation: 'generic.actions', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
   startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
@@ -36,6 +36,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     [change.before, change.after].some((id) => id !== null && !stackName(id)));
   const value = (field, input) => {
     if ( input === null ) { return text('webmcp.nullValue'); }
+    if ( field === 'driver' && plan.resourceType === 'volume' && input === 'local' ) { return text('formVolumes.volumeDriver.local'); }
     if ( field === 'stackId' && stackParent ) { return stackName(input) || text('generic.unknown'); }
     if ( input === '' ) { return text('webmcp.emptyValue'); }
     if ( typeof input === 'boolean' ) { return text(input ? 'generic.yess' : 'generic.noo'); }
@@ -65,6 +66,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
   return {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
     stackTargetUnavailable,
+    localVolumeCreateNotice: plan.resourceType === 'volume' && plan.operation === 'create' ? text('webmcp.localVolumeCreateNotice') : null,
     externalHealthCheckNotice: plan.resourceType === 'externalService' && plan.operation === 'create' &&
       (plan.displayDiff || []).some((change) => change.field === 'healthCheck' && change.after !== null) ? text('newExternalService.alert') : null,
     executionAssignedPorts: plan.executionResult ? JSON.stringify(plan.executionResult.assignedPorts) : null,
@@ -75,6 +77,8 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     archiveNotices: ['archive', 'restore'].includes(plan.operation) ? [text(plan.operation === 'archive' ? 'archive.explanation' : 'archive.restoreExplanation'),
       text(plan.operation === 'archive' ? 'archive.requiresStopped' : 'archive.restoreBeforeStart'), text('archive.dataWarning')] : [],
     mountedDataNotice: (plan.displayDiff || []).some((change) => change.field === 'mountedDataRule' && change.after === 'EXISTING_DOMAIN_RETENTION_NO_ADDITIONAL_PURGE') ? text('webmcp.domainRetentionNotice') : null,
+    upgradeConfigurationChanges: (plan.configurationChanges || []).map(change => ({field: change.field, fieldLabel: text(label(FIELDS, change.field)),
+      before: value(change.field, change.before), after: value(change.field, change.after)})),
     displayChanges: (plan.displayDiff || []).filter((change) => change.field !== 'mountedDataRule').map((change) => {
       const count = ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount'].includes(change.field);
       return {field: change.field, fieldLabel: text(label(FIELDS, change.field)), informational: count || change.field === 'emptyStack',

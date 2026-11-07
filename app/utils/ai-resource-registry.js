@@ -53,7 +53,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
     resource('dnsService', 'dnsServices', 'project', ['scale', 'healthState', 'archived', 'targetServices', 'linkedServiceCount', 'unresolvedTargetCount'], {type: 'stack', field: 'stackId'}, ['Two-step Alias workflow: create makes an empty stopped Alias with no targets; update_targets needs selected same-session serviceRefs and another human-approved plan. Start is optional and separate. Named/ported/remote links and incoming-consumer cleanup remain pending.']), resource('externalService', 'externalServices', 'project', ['scale', 'healthState', 'archived', 'hostname', 'externalIpAddresses'], {type: 'stack', field: 'stackId'}, ['Typed changes cover name/description, safe DNS/IP targets and optional load-balancer-backend-only TCP health checks during creation only, not standalone monitoring. HTTP health checks, health-check updates, cloning and advanced settings remain pending. Create is inactive until a separately approved start.'])]),
   family('settings', [global('setting', 'settings', ['source', 'inDb'])]),
   family('stack', [project('stack', 'stacks', ['system', 'archived'])]),
-  family('storage', [resource('volume', 'volumes', 'project', ['isHostPath', 'isNative', 'driver', 'accessMode', 'size', 'sizeMb'], null, ['Detail-only usage references are bounded to 50 freshly authorized containers. Completeness is unknown, even when empty; never infer unused or safe deletion.']),
+  family('storage', [resource('volume', 'volumes', 'project', ['isHostPath', 'isNative', 'driver', 'accessMode', 'size', 'sizeMb'], null, ['Create supports only an unallocated builtin local logical Volume record, with name/description. Host allocation, mounts, driver options and plugin drivers remain separate human workflows; this is partial workflow coverage.', 'Detail-only usage references are bounded to 50 freshly authorized containers. Completeness is unknown, even when empty; never infer unused or safe deletion.']),
     project('storagePool', 'storagePools'), project('backupTarget', 'backupTargets'), project('snapshot', 'snapshots'), project('backup', 'backups')]),
   family('terminal-logs', [], 'pending-adapter', 'Bounded log reads need a dedicated redaction and stream adapter; interactive terminals require the human UI.'),
   family('virtualmachine', [project('virtualMachine', 'virtualMachines', ['vcpu', 'memoryMb'])]),
@@ -179,6 +179,7 @@ export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
   cancel_upgrade: Object.freeze({before: Object.freeze(['upgrading', 'finishing-upgrade']), after: 'canceled-upgrade'}),
 });
 export const RESOURCE_CHANGES = Object.freeze({
+  volume: Object.freeze({create: action(['name', 'description'], ['name'])}),
   registry: Object.freeze({start: action(), stop: action()}),
   project: Object.freeze({update_metadata: metadata}),
   loadBalancerService: Object.freeze({start: action(), stop: action(), scale: action(['scale'], ['scale']), update_metadata: metadata, create: action(['name', 'description', 'startOnCreate', 'portRules'], ['name', 'startOnCreate', 'portRules'])}),
@@ -200,7 +201,7 @@ export const RESOURCE_CHANGES = Object.freeze({
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
 export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
-  'portRules', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
+  'portRules', 'driver', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can
 // contain credentials (including audit payloads, stack YAML and key policies).

@@ -4406,6 +4406,7 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  localVolumeCreateNotice: "Crée uniquement un enregistrement de volume local non alloué, sans créer ni monter de stockage sur un hôte. Les noms peuvent se répéter ; seul le nouvel enregistrement est vérifié, jamais un ancien volume de même nom. Choisissez un nom distinct."
   bridgeProjectBindingRequired: "Avant de renommer cet environnement avec le pont, demandez à l’utilisateur de créer un nouveau profil local lié à cet environnement, puis de se reconnecter avec ce fichier. Conservez le profil existant sans modification. La description peut toujours être modifiée séparément."
   assignedPorts: Mappages de ports attribués
   backgroundAuthorizationDenied: "Un contrôle des autorisations a refusé l’opération en arrière-plan. Certaines modifications ont peut-être déjà été effectuées ; la fin de l’opération n’a pas été vérifiée. Vérifiez les autorisations actuelles et le reçu de l’opération initiale. Ne soumettez pas et n’approuvez pas à nouveau la modification sans vérification."

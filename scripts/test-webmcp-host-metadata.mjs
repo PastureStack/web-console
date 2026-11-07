@@ -114,7 +114,7 @@ test('host: live denials remain rejected and a lost accepted response never repe
 
 test('host and certificate: machine guidance names the exact metadata subset without new tools', () => {
   const tool = COMMANDS.find(tool => tool.name === 'preview_resource_change');
-  assert.match(tool.description, /certificate, host or loadBalancerService change/);
+  assert.match(tool.description, /certificate, host, volume or loadBalancerService change/);
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('loadBalancerService'));
   assert.match(tool.description, /Certificate and Host support update_metadata with name\/description only/);
   assert.match(tool.description, /material\/private keys.*infrastructure\/credentials.*human console/);
