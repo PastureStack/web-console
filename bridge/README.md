@@ -7,12 +7,11 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-[Bridge **0.2.25** / Web Console **1.6.223**](https://github.com/PastureStack/web-console/releases/tag/1.6.223)
-is published and requires matching Engine **0.183.383** or newer in a qualified
-Server assembly. The release includes the source archive and SBOM, immutable
-asset verification and one new real SDK stdio handshake. The unchanged dependency
-graph retains its original clean-install evidence. Component publication does
-not establish complete platform-native workflow acceptance.
+[Bridge **0.2.27** / Web Console **1.6.225**](https://github.com/PastureStack/web-console/releases/tag/1.6.225)
+is published and qualified against Engine **0.183.385** in a matching Server
+assembly. Its release records bind the original assets, source/SBOM, dependency
+evidence and real SDK handshake. Component publication does not establish
+complete native workflow acceptance.
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -38,12 +37,15 @@ The bridge cannot approve its own plans. Native owner, role, Key and revision
 checks remain authoritative, and unsupported capabilities stay unavailable.
 
 For an ordinary Service, `preview_resource_change` accepts `operation: "update_links"`
-with `parameters: {serviceRefs: [...]}`. Select fresh generic `resourceRef` values
-from `find_resources` or an authorized Stack graph, compare complete Stack/name
-paths, and approve the exact before/after target set. An empty array explicitly
-clears simple links. Named, port-qualified, remote or incomplete links remain
-unsupported. Graph completeness stays unknown; the native server checks the
-complete write snapshot and rejects concurrent changes.
+with `parameters: {serviceRefs: [...]}` for plain links. In source candidate
+1.6.226 / Bridge 0.2.28, use exactly one of that branch or
+`parameters: {links: [{serviceRef, name}]}` for native named/plain pairs. Both
+replace the complete set (at most sixteen); `[]` clears it. Select fresh opaque
+references, compare the complete Stack/service paths and exact aliases, then
+approve the full before/after set. Names preserve native case without trimming;
+null and empty string are plain links. Port-qualified, remote or incomplete links
+remain unsupported. Graph completeness stays unknown and the Engine rejects
+concurrent full-set changes.
 
 For a Registry, only separately approved `start` and `stop` with empty parameters
 are supported. Select its fresh same-session `resourceRef` by a known safe
@@ -97,26 +99,22 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-The published Web Console **1.6.224** / Bridge **0.2.26** requires the qualified
-Engine **0.183.384** Server assembly. Confirm its GitHub release and qualification
-metadata before downloading. Earlier Engines do not provide the complete typed
-contracts used by that release.
-Download the matching numeric release and checksum, verify it, then extract.
-Keep both `bridge/` and `app/utils/`: they contain the exact shared command
-sources. Node.js 24.22.1 and a qualified compatible Server assembly are required.
-The current repository README is authoritative for installation; an immutable
-downloaded archive preserves its packaging-time README snapshot. Component
-publication does not establish native workflow acceptance.
+Current published Web Console **1.6.225** / Bridge **0.2.27** is qualified with
+Engine **0.183.385**. Use the repository's current installation guide and matching
+qualified Server assembly.
 
-This checkout prepares Web Console **1.6.225** / Bridge **0.2.27** with matching
-Engine **0.183.385** for ordinary Stack Group editing. That candidate is not yet
-published or native-qualified. The source-version download instructions below are
-for the matching archive after its release is published; until then use the
-published installation guide linked from the repository README.
+This checkout is the **1.6.226 / 0.2.28 source candidate**, requiring minimum and
+matching Engine **0.183.386**. It adds named ordinary-Service links and only an
+External Service create `healthCheck.requestLine` (0..1024 characters, no NUL/CR/LF).
+Omission or an empty line selects TCP; URL, headers, credentials and health-check
+updates are outside this addition. Human review and native field permissions
+remain mandatory. CI, immutable publication, actual SDK handshake and designated
+native acceptance are pending. The version-bound commands below are for its
+matching archive after publication; until then use the current published guide.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.225
-BRIDGE_VERSION=0.2.27
+WEB_CONSOLE_VERSION=1.6.226
+BRIDGE_VERSION=0.2.28
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
@@ -270,10 +268,3 @@ outside this adapter.
 
 Run `npm test` for transport, credential-boundary and SDK stdio tests. Live
 client and server acceptance is recorded separately.
-
-## Upcoming component
-
-Bridge 0.2.26 / Web Console 1.6.224 require matching Engine 0.183.384 and a
-newly qualified Server for typed Service config, local logical Volume create and
-bounded logs. Current published Bridge 0.2.25 / Web 1.6.223 remain above.
-New CI, source archive, actual SDK and native qualification remain pending.

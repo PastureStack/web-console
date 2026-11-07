@@ -1,5 +1,5 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
-import {aliasTargetIds, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
+import {aliasTargetIds, ordinaryServiceLinks, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
 import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, SERVICE_UPGRADE_CONFIG_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, safeRegistryAddress, truncatedResourceFields, configuredPolicyRead } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
@@ -165,7 +165,7 @@ export class CommandEngine {
         result.nextStep = repairs[result.field] || 'Find the exact named catalogTemplate, list its catalogTemplateVersion candidates with parentRef, select one version resourceRef, then call get_resource to obtain current questionRefs. Use that version as catalogVersionRef; do not pass targetRef, parentRef, raw IDs, YAML or guessed defaults.';
       }
     } else if ( name === 'preview_resource_change' && input && input.resourceType === 'service' && input.operation === 'update_links' && result.code === 'UNAVAILABLE' ) {
-      result.nextStep = 'Ordinary Service link replacement requires the matching server adapter and a completely readable simple-link snapshot. Named, port-qualified, remote, hidden or incomplete existing links are unsupported. Use the normal console; do not drop settings, infer completeness from stack_graph or retry through another operation.';
+      result.nextStep = 'Ordinary Service link replacement requires the matching server adapter and a completely readable plain/named-link snapshot. Port-qualified, remote, hidden or incomplete existing links are unsupported. Use the normal console; do not drop settings, infer completeness from stack_graph or retry through another operation.';
     } else if ( name === 'preview_resource_change' && input && input.resourceType === 'project' && input.operation === 'update_metadata' &&
       result.code === 'INVALID_INPUT' && result.field === 'targetRef' ) {
       result.nextStep = 'Only the currently selected environment can be edited. If the target is another visible environment, ask the user to switch environments normally, then call find_resources again for a fresh project resourceRef. Never guess an ID or modify the original reference.';
@@ -180,15 +180,16 @@ export class CommandEngine {
           'Provide an integer of at least 1 in parameters.scale for a non-Global load balancer. The native int representation ceiling is 2147483647. Scaling does not start an inactive load balancer.' :
           'Provide an integer from 0 through 100 in parameters.scale.',
         'parameters.description': 'Provide the complete description as a string of at most 1024 UTF-16 units, or null. An empty string clears it.',
-        'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the simple targets.',
+        'parameters.links': 'Use at most 16 {serviceRef,name} rows, selected by exact Stack/name. Names preserve case; null or an empty string is plain. Do not send raw IDs, port-qualified or remote links. Use either links or serviceRefs, never both; [] clears the full set.',
+        'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the complete target set.',
         operation: 'Use list_capabilities and choose an implemented operation for this resource type.',
       };
       result.nextStep = input && input.resourceType === 'service' && input.operation === 'update_links' ?
-        'Use find_resources or get_resource with a Stack resourceRef and view stack_graph to select fresh generic resourceRefs for the source and each exact ordinary Service by Stack/name in this environment. Supply only parameters.serviceRefs, at most 16 distinct targets; [] explicitly clears all simple links. Do not use legacy serviceRef, raw IDs, self links, other service kinds, names, ports or remote targets. Graph completeness stays unknown; the server must independently resolve the complete before snapshot. Review and approve a new exact plan.' :
+        'Use find_resources or get_resource with a Stack resourceRef and view stack_graph to select fresh generic resourceRefs for the source and each exact ordinary Service by Stack/name in this environment. Supply exactly one of parameters.serviceRefs for plain targets or parameters.links:[{serviceRef,name}] for plain/named targets, at most 16 entries; [] explicitly clears all links. Names preserve exact native alias case; null or an empty string is plain. Do not use legacy serviceRef, raw IDs, self links, other service kinds, ports or remote targets. Graph completeness stays unknown; the server must independently resolve the complete before snapshot. Review and approve a new exact plan.' :
         input && input.resourceType === 'loadBalancerService' && input.operation === 'create' ?
         'Find the exact Stack and backend services by name and Stack, and reuse their same-session parentRef/serviceRef. Provide explicit startOnCreate and 1 through 16 complete ordered rules: protocol tcp, access public or internal, sourcePort and targetPort 1 through 65535 (listener 42 is reserved). Never guess a target port, raw ID or image. HTTPS/TLS/HTTP, certificates, selectors and arbitrary configuration require the normal console; do not drop or downgrade requested settings.' :
         input && input.resourceType === 'externalService' && input.parameters && Object.prototype.hasOwnProperty.call(input.parameters, 'healthCheck') ?
-        'Only External Service create accepts this TCP healthCheck: required integer port 1 through 65535, with optional integer interval, responseTimeout, healthyThreshold and unhealthyThreshold. Timings are milliseconds and thresholds count checks. Omit the whole healthCheck for none; do not use null, HTTP requestLine, Host, URL, strategy, or send it through update_targets or update_metadata. Reuse the selected Stack parentRef and preserve all requested settings.' : serviceCreateInputRejected ?
+        'Only External Service create accepts this TCP/HTTP healthCheck: required integer port 1 through 65535, optional exact requestLine up to 1024 characters without CR, LF or NUL, and optional integer interval, responseTimeout, healthyThreshold and unhealthyThreshold. Omit requestLine or use an empty string for TCP. Timings are milliseconds and thresholds count checks. Omit the whole healthCheck for none; do not use null, Host, URL, headers, credentials, strategy, or send it through update_targets or update_metadata. Reuse the selected Stack parentRef and preserve all requested settings.' : serviceCreateInputRejected ?
         'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching typed-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
         result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
         'Service and Container create accept ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units. Container create verifies stopped configuration; start and live host bindings need a separate approved plan. Only Service create accepts healthCheck with required port 1 through 65535 and the exact schema fields and bounds. Timings are milliseconds; thresholds count checks. Service create requires the selected Stack parentRef unchanged; Container create has no parentRef.' :
@@ -914,7 +915,7 @@ export class CommandEngine {
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
-      if ( reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -1208,9 +1209,16 @@ export class CommandEngine {
     }
     const ordinaryLinks = input.resourceType === 'service' && input.operation === 'update_links';
     if ( ordinaryLinks ) {
-      parameters.serviceIds = aliasTargetIds(parameters.serviceRefs,
-        (reference) => this.ordinaryServiceReference(reference, captured, 'parameters.serviceRefs'));
-      delete parameters.serviceRefs;
+      const hasLinks = Object.prototype.hasOwnProperty.call(parameters, 'links'), hasRefs = Object.prototype.hasOwnProperty.call(parameters, 'serviceRefs');
+      if ( hasLinks === hasRefs ) { throw new CommandError('INVALID_INPUT', 'parameters'); }
+      if ( hasLinks ) {
+        parameters.links = ordinaryServiceLinks(parameters.links,
+          reference => this.ordinaryServiceReference(reference, captured, 'parameters.links'));
+      } else {
+        parameters.serviceIds = aliasTargetIds(parameters.serviceRefs,
+          reference => this.ordinaryServiceReference(reference, captured, 'parameters.serviceRefs'));
+        delete parameters.serviceRefs;
+      }
     }
     let tcpExpected;
     if ( input.resourceType === 'loadBalancerService' && input.operation === 'create' ) {
@@ -1239,8 +1247,9 @@ export class CommandEngine {
         target.scope === 'global' && target.id === captured.projectId;
       if ( target.resourceType !== input.resourceType ||
         (input.resourceType === 'project' ? !selectedProject : target.scope !== 'project') ) { throw new CommandError('INVALID_INPUT', 'targetRef'); }
-      if ( (input.resourceType === 'dnsService' || ordinaryLinks) && parameters.serviceIds && parameters.serviceIds.includes(target.id) ) {
-        throw new CommandError('INVALID_INPUT', 'parameters.serviceRefs');
+      if ( (input.resourceType === 'dnsService' || ordinaryLinks) && (parameters.serviceIds && parameters.serviceIds.includes(target.id) ||
+        ordinaryLinks && parameters.links && parameters.links.some(link => link.serviceId === target.id)) ) {
+        throw new CommandError('INVALID_INPUT', parameters.links ? 'parameters.links' : 'parameters.serviceRefs');
       }
     }
     if ( this.transportKind === 'stdio' && input.resourceType === 'project' && input.operation === 'update_metadata' &&
@@ -1271,7 +1280,7 @@ export class CommandEngine {
     }
     if ( ordinaryLinks ) {
       const summary = this.resourcePlanSummary(plan, null);
-      if ( safeAliasTargetSummary(summary.displayDiff[0].after).length !== parameters.serviceIds.length ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( safeAliasTargetSummary(summary.displayDiff[0].after).length !== (parameters.links ? parameters.links.length : parameters.serviceIds.length) ) { throw new CommandError('INVALID_RESPONSE'); }
       reference.serviceLinksReview = JSON.stringify([summary.displayPath, summary.displayDiff]);
     }
     if ( input.resourceType === 'loadBalancerService' && input.operation === 'scale' &&
@@ -1325,7 +1334,7 @@ export class CommandEngine {
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
-      if ( reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);

@@ -24,6 +24,16 @@ inactive, unallocated terminal record. See the
 Server deployment and native acceptance remain separate; this is partial
 WebMCP coverage, not all 243 frontend groups.
 
+## Source candidate
+
+Web Console **1.6.226** / Bridge **0.2.28** requires Engine **0.183.386** or newer
+and a newly qualified matching Server assembly. The existing tools add named
+ordinary-Service dependency links and an exact HTTP request line for External
+Service creation. Replacement/clear semantics, opaque references, native role/Key
+authority, complete review and human confirmation remain binding.
+See the [candidate note](docs/releases/web-console-1.6.226.md). New component CI,
+publication, SDK handshake and designated native acceptance remain pending.
+
 ## Features and operator guides
 
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for

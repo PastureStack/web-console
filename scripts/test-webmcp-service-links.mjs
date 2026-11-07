@@ -35,7 +35,10 @@ function fixture(transportKind = 'browser', state = 'active') {
         if (faults.unsupported) throw {status: 422, body: {code: 'ResourceChangeUnsupported', secret: 'PRIVATE_NATIVE_LINKS'}};
         const {resourceType, resourceId, operation, parameters} = request.data;
         const id = `aichange-00000000-0000-0000-0000-${String(++planSequence).padStart(12, '0')}`;
-        const after = parameters.serviceIds.map(id => id === 'green-db' ? 'Green / db' : id.startsWith('db-') ? `Blue / ${id}` : 'Blue / db');
+        const path = id => id === 'green-db' ? 'Green / db' : id.startsWith('db-') ? `Blue / ${id}` : 'Blue / db';
+        const pairKey = link => JSON.stringify([link.serviceId, link.name === null ? '' : link.name]);
+        const after = parameters.links ? [...parameters.links].sort((left, right) => pairKey(left) < pairKey(right) ? -1 : pairKey(left) > pairKey(right) ? 1 : 0)
+          .map(link => `${link.name ? `${link.name}: ` : ''}${path(link.serviceId)}`) : parameters.serviceIds.map(path);
         current = {id, resourceType, resourceId, operation, targetPath: 'Environment / Blue / app',
           changes: [{field: 'targetServices', before: '["Blue / db"]', after: JSON.stringify(after)}],
           confirmationState: 'pending', status: 'preview', verifiedResult: false, expiresAt: '2030-01-01T00:00:00Z'};
@@ -62,8 +65,9 @@ test('Service links extend the existing twelve tools and only the ordinary Servi
   assert.ok(command.inputSchema.properties.operation.enum.includes('update_links'));
   const condition = command.inputSchema.allOf.find(row => row.if?.properties?.operation?.const === 'update_links');
   assert.equal(condition.then.properties.resourceType.const, 'service');
-  assert.deepEqual(condition.then.properties.parameters.required, ['serviceRefs']);
-  assert.deepEqual(Object.keys(condition.then.properties.parameters.properties), ['serviceRefs']);
+  assert.deepEqual(condition.then.properties.parameters.required, []);
+  assert.deepEqual(condition.then.properties.parameters.oneOf.map(row => row.required), [['serviceRefs'], ['links']]);
+  assert.deepEqual(Object.keys(condition.then.properties.parameters.properties), ['serviceRefs', 'links']);
   assert.deepEqual(COMMANDS.find(row => row.name === 'get_resource').inputSchema.properties.view.enum, ['stack_graph', 'container_logs']);
   assert.match(command.description, /completeness remains unknown/);
   assert.match(command.description, /Active\/inactive state is preserved/);
@@ -169,8 +173,8 @@ test('Service link confirmation rejects changed complete before or after review 
   }
 });
 
-test('Unsupported named port-qualified remote or incomplete before links stay backend-denied without fallback or Graph inference', async () => {
-  for (const reason of ['named', 'port-qualified', 'remote', 'incomplete-before']) {
+test('Unsupported port-qualified remote or incomplete before links stay backend-denied without fallback or Graph inference', async () => {
+  for (const reason of ['port-qualified', 'remote', 'incomplete-before']) {
     const f = fixture(); f.faults.unsupported = reason;
     const result = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_links', targetRef: f.ref('source'), parameters: {serviceRefs: []}});
     assert.equal(result.code, 'UNAVAILABLE'); assert.equal(result.planRef, undefined); assert.match(result.nextStep, /incomplete existing links are unsupported/);
@@ -192,4 +196,65 @@ test('Service link review reuses the existing Links label in thirteen locales wi
   }
   assert.equal(JSON.stringify(plan), before);
   assert.equal(resourceReviewLabels({resourceType: 'dnsService', operation: 'update_targets'}, key => key).operationLabel, 'formTarget.target');
+});
+
+
+for (const transportKind of ['browser', 'stdio']) {
+  test(`${transportKind} named ordinary links preserve pair identities and human review without changing legacy refs`, async () => {
+    const f = fixture(transportKind), source = f.ref('source'), blue = f.ref('blue-db'), green = f.ref('green-db');
+    const links = [{serviceRef: green, name: 'Read_DB'}, {serviceRef: blue, name: 'write'}, {serviceRef: blue, name: 'Read_DB'}];
+    const original = structuredClone(links);
+    const preview = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_links', targetRef: source, parameters: {links}});
+    assert.equal(preview.status, 'needs_user'); assert.deepEqual(links, original);
+    assert.deepEqual(f.requests.at(-1).data.parameters, {links: [{serviceId: 'green-db', name: 'Read_DB'}, {serviceId: 'blue-db', name: 'write'}, {serviceId: 'blue-db', name: 'Read_DB'}]});
+    assert.deepEqual(JSON.parse(preview.displayDiff[0].after), ['Read_DB: Blue / db', 'write: Blue / db', 'Read_DB: Green / db']);
+    assert.doesNotMatch(JSON.stringify(preview), /blue-db|green-db/);
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'NEEDS_USER'); assert.equal(f.dispatches(), 0);
+    assert.equal((await f.engine.confirmPlan(preview.planRef)).status, 'succeeded');
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).status, 'accepted'); assert.equal(f.dispatches(), 1);
+    const clear = fixture(transportKind), empty = await clear.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_links', targetRef: clear.ref('source'), parameters: {links: []}});
+    assert.equal(empty.status, 'needs_user'); assert.deepEqual(JSON.parse(empty.displayDiff[0].after), []); assert.equal(clear.dispatches(), 0);
+    for (const name of [null, '']) {
+      const plain = fixture(transportKind), result = await plain.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_links', targetRef: plain.ref('source'), parameters: {links: [{serviceRef: plain.ref('blue-db'), name}]}});
+      assert.equal(result.status, 'needs_user'); assert.equal(plain.requests.at(-1).data.parameters.links[0].name, name);
+      assert.deepEqual(JSON.parse(result.displayDiff[0].after), ['Blue / db']);
+    }
+  });
+}
+
+test('named ordinary links enforce native alias grammar, pair uniqueness, exclusive shapes and opaque authority', async () => {
+  const f = fixture(), source = f.ref('source'), blue = f.ref('blue-db');
+  const input = parameters => ({resourceType: 'service', operation: 'update_links', targetRef: source, parameters});
+  const badNames = [' leading', 'trailing ', '.a', 'a.', 'a..b', '-a', 'a-', 'a--b', 'a'.repeat(64), 'a\nb', 'é', 0, false];
+  for (const name of badNames) assert.equal((await f.engine.execute('preview_resource_change', input({links: [{serviceRef: blue, name}]}))).code, 'INVALID_INPUT');
+  for (const parameters of [{}, {links: [], serviceRefs: []}, {links: [{serviceRef: blue}]}, {links: [{serviceRef: blue, name: 'db', serviceId: 'blue-db'}]},
+    {links: [{serviceRef: blue, name: null}, {serviceRef: blue, name: ''}]}, {links: [{serviceRef: blue, name: 'db'}, {serviceRef: blue, name: 'db'}]},
+    {links: Array.from({length: 17}, (_, index) => ({serviceRef: blue, name: `db${index}`}))}]) {
+    assert.equal((await f.engine.execute('preview_resource_change', input(parameters))).code, 'INVALID_INPUT');
+  }
+  for (const serviceRef of ['blue-db', f.ref('blue-db', 'externalService'), f.ref('blue-db', 'service', 'service', 'global')]) {
+    const result = await f.engine.execute('preview_resource_change', input({links: [{serviceRef, name: 'db'}]}));
+    assert.ok(['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code));
+  }
+  assert.equal((await f.engine.execute('preview_resource_change', input({links: [{serviceRef: source, name: 'self'}]}))).code, 'INVALID_INPUT');
+  assert.equal(f.requests.length, 0);
+  const max = `${'a'.repeat(63)}.${'B'.repeat(63)}.${'c'.repeat(63)}.${'d'.repeat(61)}`;
+  assert.equal(max.length, 253);
+  const good = await f.engine.execute('preview_resource_change', input({links: [{serviceRef: blue, name: max}]})); assert.equal(good.status, 'needs_user');
+  const sixteen = await f.engine.execute('preview_resource_change', input({links: Array.from({length: 16}, (_, index) => ({serviceRef: blue, name: `db${index}`}))}));
+  assert.equal(sixteen.status, 'needs_user'); assert.equal(JSON.parse(sixteen.displayDiff[0].after).length, 16);
+  const stale = fixture(), ref = stale.ref('blue-db'); stale.snapshot.generation = 'g2';
+  assert.equal((await stale.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_links', targetRef: stale.ref('source'), parameters: {links: [{serviceRef: ref, name: 'db'}]}})).code, 'STALE_REFERENCE');
+  assert.equal(stale.requests.length, 0);
+});
+
+test('named ordinary links bind the complete alias review and reject changed or omitted aliases', async () => {
+  for (const after of ['["other: Blue / db"]', '["Blue / db"]']) {
+    const f = fixture(), preview = await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_links', targetRef: f.ref('source'), parameters: {links: [{serviceRef: f.ref('blue-db'), name: 'Read_DB'}]}});
+    assert.equal(preview.status, 'needs_user'); f.plan().changes[0].after = after;
+    assert.equal((await f.engine.confirmPlan(preview.planRef)).code, 'CONFLICT');
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'CONFLICT');
+    assert.equal(f.dispatches(), 0);
+    assert.equal(f.requests.some(row => /\?action=(confirm|apply)$/.test(row.url)), false);
+  }
 });

@@ -16,6 +16,27 @@ export function aliasTargetIds(references, resolve) {
   return ids;
 }
 
+export function isServiceLinkName(value) {
+  if ( value === null || value === '' ) { return true; }
+  return typeof value === 'string' && value.length <= 253 && /^[A-Za-z0-9_.-]+$/.test(value) &&
+    value.split('.').every(part => part.length >= 1 && part.length <= 63 && !part.startsWith('-') && !part.endsWith('-') && !part.includes('--'));
+}
+
+export function ordinaryServiceLinks(links, resolve) {
+  if ( !Array.isArray(links) || links.length > 16 ) { throw new CommandError('INVALID_INPUT', 'parameters.links'); }
+  const pairs = new Set();
+  return links.map(link => {
+    if ( !link || typeof link !== 'object' || Array.isArray(link) || ![Object.prototype, null].includes(Object.getPrototypeOf(link)) ||
+      Object.keys(link).length !== 2 || !Object.prototype.hasOwnProperty.call(link, 'serviceRef') || !Object.prototype.hasOwnProperty.call(link, 'name') || !isServiceLinkName(link.name) ) {
+      throw new CommandError('INVALID_INPUT', 'parameters.links');
+    }
+    const target = resolve(link.serviceRef), pair = JSON.stringify([target.id, link.name === null ? '' : link.name]);
+    if ( target.scope !== 'project' || target.resourceType !== 'service' || pairs.has(pair) ) { throw new CommandError('INVALID_INPUT', 'parameters.links'); }
+    pairs.add(pair);
+    return {serviceId: target.id, name: link.name};
+  });
+}
+
 export function safeAliasTargetSummary(value) {
   if ( value === null ) { return; }
   let names;
