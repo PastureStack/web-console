@@ -97,11 +97,10 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Use the immutable release matching the source versions below. Confirm its GitHub
-release and qualification metadata before downloading. This source requires
-The upcoming source requires Engine **0.183.384** or a later explicitly qualified compatible assembly. Earlier
-Engines do not provide the complete ordinary-Service link replacement and Registry
-lifecycle contracts used by these source adapters.
+The published Web Console **1.6.224** / Bridge **0.2.26** requires the qualified
+Engine **0.183.384** Server assembly. Confirm its GitHub release and qualification
+metadata before downloading. Earlier Engines do not provide the complete typed
+contracts used by that release.
 Download the matching numeric release and checksum, verify it, then extract.
 Keep both `bridge/` and `app/utils/`: they contain the exact shared command
 sources. Node.js 24.22.1 and a qualified compatible Server assembly are required.
@@ -109,14 +108,15 @@ The current repository README is authoritative for installation; an immutable
 downloaded archive preserves its packaging-time README snapshot. Component
 publication does not establish native workflow acceptance.
 
-This checkout prepares the upcoming Web Console 1.6.224 / Bridge 0.2.26. These candidate assets
-are not published. The source-version block below is for packaging and use after
-that matching release is published; continue using the published 1.6.222 / 0.2.24
-baseline until then. Normal CI and native acceptance remain pending.
+This checkout prepares Web Console **1.6.225** / Bridge **0.2.27** with matching
+Engine **0.183.385** for ordinary Stack Group editing. That candidate is not yet
+published or native-qualified. The source-version download instructions below are
+for the matching archive after its release is published; until then use the
+published installation guide linked from the repository README.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.224
-BRIDGE_VERSION=0.2.26
+WEB_CONSOLE_VERSION=1.6.225
+BRIDGE_VERSION=0.2.27
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

@@ -66,6 +66,14 @@ Arbitrary launch configuration is not accepted. Command arrays allow at most 64 
 4096 UTF-16 units per string and 16384 in total; NUL is rejected. The human review
 shows their actual escaped JSON, including empty and null values.
 
+With matching Engine 0.183.385, ordinary Stack `update_metadata` also accepts
+`group`: the existing Group text, up to 255 UTF-16 units, or null. Use a freshly
+queried Stack reference; preserve case, whitespace and comma-separated tags.
+Empty string and null are distinct. Review uses the normal localized Group label,
+and execution retains the native PUT/field/Key ceiling, identity/configuration CAS
+and human confirmation. This extension excludes system/catalog Stacks and does
+not add group to create or other resource types.
+
 Generic stdio reads go through the Engine's safe `aiResourceViews` projection,
 which rechecks the normal resource manager, role and Key scope. Global metadata
 and selected-environment resources have separate descriptors. A view being

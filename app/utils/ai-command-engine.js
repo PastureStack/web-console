@@ -172,7 +172,7 @@ export class CommandEngine {
     } else if ( name === 'preview_resource_change' && input && input.operation === 'update_metadata' && RESOURCE_CHANGES[input.resourceType] && RESOURCE_CHANGES[input.resourceType].update_metadata &&
       result.code === 'INVALID_INPUT' && ['name', 'description'].includes(result.field) && Object.prototype.hasOwnProperty.call(input, result.field) ) {
       result.nextStep = 'Put name and description inside parameters, not at the top level. Keep resourceType, operation and the same selected targetRef at the top level. For example, parameters: {"name":"<requested name>","description":"<requested description>"}; description may also be null. Resubmit preview_resource_change with the corrected envelope. The resulting plan still requires the user to review and confirm it; do not apply it automatically.';
-    } else if ( name === 'preview_resource_change' && result.reason !== 'PORT_CONFLICT' && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
+    } else if ( name === 'preview_resource_change' && !['PORT_CONFLICT', 'REFERENCE_UNAVAILABLE'].includes(result.reason) && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
       const repairs = {
         'parameters.image': 'Provide the exact user-requested image in parameters.image. Ask the user if it is missing; never guess an image or version.',
         'parameters.name': 'Provide the requested name in parameters.name, from 1 to 255 UTF-16 units.',
@@ -914,7 +914,7 @@ export class CommandEngine {
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
-      if ( ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -964,6 +964,7 @@ export class CommandEngine {
       if ( plan.id !== reference.id || plan.resourceType !== reference.resourceType || plan.operation !== reference.operation ||
         reference.resourceId && plan.resourceId !== reference.resourceId ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( reference.serviceCreateReview && serviceCreateReview(summary) !== reference.serviceCreateReview ) { throw new CommandError('CONFLICT'); }
+      if ( reference.stackGroupReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.stackGroupReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.serviceLinksReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.serviceLinksReview ) { throw new CommandError('CONFLICT'); }
       return;
     }
@@ -1093,6 +1094,8 @@ export class CommandEngine {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
         ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices', 'ports', 'healthCheck', 'portRules'].includes(change.field) ? 100000 : 1024) ||
           typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'group' && (plan.resourceType !== 'stack' || plan.operation !== 'update_metadata' ||
+        [change.before, change.after].some(value => value !== null && (typeof value !== 'string' || value.length > 255 || value.includes('\0')))) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'driver' && (plan.resourceType !== 'volume' || plan.operation !== 'create' || change.before !== null || change.after !== 'local') ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'portRules' ) {
         if ( plan.resourceType !== 'loadBalancerService' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -1138,6 +1141,7 @@ export class CommandEngine {
         typeof change.after !== 'boolean' || change.after !== (plan.operation === 'archive')) ) { throw new CommandError('INVALID_RESPONSE'); }
       return {field: change.field, before: change.before, after: change.after};
     });
+    if ( displayDiff.filter(change => change.field === 'group').length > 1 ) { throw new CommandError('INVALID_RESPONSE'); }
     if ( plan.operation === 'remove' && ['affectedInstanceCount', 'affectedMountCount', 'mountedDataRule'].some((field) => !displayDiff.some((change) => change.field === field)) ) {
       throw new CommandError('INVALID_RESPONSE');
     }
@@ -1150,7 +1154,7 @@ export class CommandEngine {
       typeof displayDiff.find(row => row.field === 'name').after !== 'string' ||
       displayDiff.some(row => row.field === 'description' && row.after !== null && typeof row.after !== 'string') ||
       !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/.test(displayDiff.find(row => row.field === 'name').after) ||
-      displayDiff.find(row => row.field === 'state').after !== 'detached') ) { throw new CommandError('INVALID_RESPONSE'); }
+      displayDiff.find(row => row.field === 'state').after !== 'inactive') ) { throw new CommandError('INVALID_RESPONSE'); }
     if ( plan.operation === 'update_links' && (plan.resourceType !== 'service' || displayDiff.length !== 1 || displayDiff[0].field !== 'targetServices') ) {
       throw new CommandError('INVALID_RESPONSE');
     }
@@ -1193,6 +1197,8 @@ export class CommandEngine {
       (input.resourceType === 'loadBalancerService' ? parameters.scale < 1 : parameters.scale > 100) ) {
       throw new CommandError('INVALID_INPUT', 'parameters.scale');
     }
+    if ( Object.prototype.hasOwnProperty.call(parameters, 'group') && parameters.group !== null &&
+      (typeof parameters.group !== 'string' || parameters.group.length > 255 || parameters.group.includes('\0')) ) { throw new CommandError('INVALID_INPUT', 'parameters.group'); }
     if ( input.resourceType === 'volume' && !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/.test(parameters.name || '') ) { throw new CommandError('INVALID_INPUT', 'parameters.name'); }
     if ( input.resourceType === 'externalService' ) { validateExternalServiceParameters(input.operation, parameters); }
     if ( input.resourceType === 'dnsService' && input.operation === 'update_targets' ) {
@@ -1250,6 +1256,13 @@ export class CommandEngine {
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
+    if ( input.resourceType === 'stack' && input.operation === 'update_metadata' && Object.prototype.hasOwnProperty.call(parameters, 'group') ) {
+      const summary = this.resourcePlanSummary(plan, null);
+      if ( summary.displayDiff.length !== Object.keys(parameters).length ||
+        new Set(summary.displayDiff.map(row => row.field)).size !== Object.keys(parameters).length || summary.displayDiff.some(row =>
+        !Object.prototype.hasOwnProperty.call(parameters, row.field) || row.after !== parameters[row.field]) ) { throw new CommandError('INVALID_RESPONSE'); }
+      reference.stackGroupReview = JSON.stringify([summary.displayPath, summary.displayDiff]);
+    }
     if ( input.resourceType === 'volume' ) {
       const expected = ['name', ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? ['description'] : [])];
       if ( expected.some(field => !plan.changes.some(row => row.field === field && row.after === parameters[field])) ||
@@ -1312,7 +1325,7 @@ export class CommandEngine {
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
-      if ( ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);

@@ -60,7 +60,7 @@ test('Service links extend the existing twelve tools and only the ordinary Servi
   assert.equal(COMMANDS.length, 12);
   const command = COMMANDS.find(row => row.name === 'preview_resource_change');
   assert.ok(command.inputSchema.properties.operation.enum.includes('update_links'));
-  const condition = command.inputSchema.allOf.find(row => row.if.properties.operation?.const === 'update_links');
+  const condition = command.inputSchema.allOf.find(row => row.if?.properties?.operation?.const === 'update_links');
   assert.equal(condition.then.properties.resourceType.const, 'service');
   assert.deepEqual(condition.then.properties.parameters.required, ['serviceRefs']);
   assert.deepEqual(Object.keys(condition.then.properties.parameters.properties), ['serviceRefs']);

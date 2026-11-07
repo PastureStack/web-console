@@ -8,7 +8,7 @@ test('complete cohort keeps logs view, Volume create and typed Service configura
   assert.deepEqual(get.inputSchema.properties.view.enum, ['stack_graph', 'container_logs']);
   assert.equal(get.inputSchema.properties.tailLines.maximum, 200);
   const change = COMMANDS.find(x => x.name === 'preview_resource_change');
-  const volume = change.inputSchema.allOf.find(x => x.if.properties.resourceType?.const === 'volume');
+  const volume = change.inputSchema.allOf.find(x => x.if?.properties?.resourceType?.const === 'volume');
   assert.equal(volume.then.properties.operation.const, 'create');
   assert.deepEqual(Object.keys(volume.then.properties.parameters.properties), ['name', 'description']);
   assert.ok(change.description.includes('volume'));

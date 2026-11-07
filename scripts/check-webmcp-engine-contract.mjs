@@ -46,7 +46,8 @@ if(externalTcpOnly){
   assert.equal(external.resourceFields.healthCheck.type,'instanceHealthCheck','External health check must retain its native type');
   assert.equal(user.authorize['externalService.healthCheck'],'cr','External health check is native create/read, never update');
   const tool=COMMANDS.find(item=>item.name==='preview_resource_change');
-  const condition=tool.inputSchema.allOf.find(item=>item.if.properties.resourceType.const==='externalService');
+  const condition=tool.inputSchema.allOf.find(item=>item.if?.properties?.resourceType?.const==='externalService');
+  assert.ok(condition,'External health-check condition must be declared');
   const check=condition.then.properties.parameters.properties.healthCheck;
   assert.equal(condition.then.properties.operation.const,'create');assert.equal(check.additionalProperties,false);
   assert.deepEqual(check.required,['port']);

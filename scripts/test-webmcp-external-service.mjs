@@ -61,7 +61,7 @@ function tcpInput(f, healthCheck = tcp) {
 test('external TCP: shared tool schema describes a closed create-only five-field TCP object', () => {
   assert.equal(COMMANDS.length, 12);
   const tool = COMMANDS.find(item => item.name === 'preview_resource_change');
-  const condition = tool.inputSchema.allOf.find(item => item.if.properties.resourceType.const === 'externalService');
+  const condition = tool.inputSchema.allOf.find(item => item.if?.properties?.resourceType?.const === 'externalService');
   const check = condition.then.properties.parameters.properties.healthCheck;
   assert.equal(condition.then.properties.operation.const, 'create');
   assert.deepEqual(check.required, ['port']); assert.equal(check.additionalProperties, false);

@@ -1,12 +1,24 @@
 # Compatibility Contract
 
-## Upcoming Web Console 1.6.224 / Bridge 0.2.26 source candidate
+## Upcoming Web Console 1.6.225 / Bridge 0.2.27 source candidate
 
-Matching Engine 0.183.384 and a newly qualified Server are required for the
-supported Service config-only subset, detached local logical Volume create
-and bounded Container logs. Roles/Keys, normal human confirmation, CAS and full
-configuration preservation remain. Advanced health checks/drivers, all-frontend
-coverage, new artifact digests and native acceptance are not claimed.
+The existing twelve tools add ordinary Stack Group editing through
+`update_metadata`, with matching Engine 0.183.385. Group text retains native
+case, whitespace and comma-separated tags; null and empty string remain distinct.
+The preview tool also explains its required envelope and complete Service-link
+replacement earlier in its real tool description. Native role/Key authority,
+opaque references and human confirmation remain binding. Logical Volume create
+previews also use the native inactive state, matching the corrected Engine
+completion predicate. Publication and native acceptance remain pending.
+
+## Web Console 1.6.224 / Bridge 0.2.26 published
+
+The immutable component release is qualified against Engine 0.183.384. Original
+CI passed 1,142 browser tests and 269 focused methods; all thirteen public assets
+passed anonymous SHA256 readback and native release verification covered fourteen
+cryptographic subjects. This component evidence does not establish complete
+native workflow or all-frontend coverage. Matching Server assembly and native
+acceptance remain separate; see the component release note for boundaries.
 
 ## Web Console 1.6.223 / bridge 0.2.25 published
 
