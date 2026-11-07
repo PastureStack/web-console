@@ -304,6 +304,7 @@ async function externalTcpFixture(dir){
   const model=path.join(dir,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java');
   await fs.mkdir(path.dirname(model),{recursive:true});
   await fs.writeFile(model,'@Field(required = true, min = 1, max = 65535)\npublic Integer getPort()\n'+
+    '@Field(nullable = true)\npublic String getRequestLine()\n'+
     ['interval','responseTimeout','healthyThreshold','unhealthyThreshold'].map(name=>'Integer '+name+';').join('\n'));
   return schema;
 }
@@ -327,6 +328,16 @@ test('Engine source boundary: optional conditionals retain same-root health cont
     await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),
       {code:'ERR_ASSERTION',message:'External health-check condition must be declared'});
   } finally {tool.inputSchema.allOf=conditions;}
+  const model=path.join(dir,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java');
+  const original=await fs.readFile(model,'utf8');
+  try {
+    for(const invalid of [original.replace('@Field(nullable = true)\npublic String getRequestLine()\n',''),
+      original.replace('public String getRequestLine()','public Integer getRequestLine()')]){
+      assert.notEqual(invalid,original);await fs.writeFile(model,invalid);
+      await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),
+        {code:'ERR_ASSERTION',message:'Native HTTP request line must remain readable/nullable'});
+    }
+  } finally {await fs.writeFile(model,original);}
 });
 
 test('Engine source boundary: preserves checkout selection and internal directory links',async t=>{
