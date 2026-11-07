@@ -1,5 +1,23 @@
 # Compatibility Contract
 
+## Web Console 1.6.226 / Bridge 0.2.28 source candidate
+
+Minimum and matching Engine: **0.183.386**. New `service/update_links`
+`parameters.links[{serviceRef,name}]` is mutually exclusive with `serviceRefs`;
+each is a complete replacement of at most sixteen links, and `[]` clears.
+Aliases preserve native case and punctuation; null/empty names represent plain
+links. External Service create adds only `healthCheck.requestLine` with the
+ordinary-Service bounds: a string of 0..1024 characters without NUL, CR or LF.
+Omission/empty string retains TCP semantics; URL, headers and credentials are
+not added. Native role/Key ceilings and human review remain required.
+
+Six new focused method identities and seven directly affected existing methods
+are selected for assembled-source verification. The existing twelve tools, SDK
+1.32.2, 92-component Bridge dependency graph and source-archive allowlist remain
+unchanged. Final CI/artifact counts, Engine386 binding, real SDK handshake,
+immutable publication and native business acceptance must come from this
+candidate's actual proofs; published 225 evidence does not qualify 226.
+
 ## Web Console 1.6.225 / Bridge 0.2.27 published
 
 Matching Engine 0.183.385 is required. The existing twelve tools add ordinary

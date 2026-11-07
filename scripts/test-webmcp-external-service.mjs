@@ -58,16 +58,16 @@ function tcpInput(f, healthCheck = tcp) {
     parameters: {name: 'orders-db', hostname: 'db.example.test', ...(healthCheck === undefined ? {} : {healthCheck})}};
 }
 
-test('external TCP: shared tool schema describes a closed create-only five-field TCP object', () => {
+test('external TCP/HTTP: shared tool schema describes the closed create-only request-line subset', () => {
   assert.equal(COMMANDS.length, 12);
   const tool = COMMANDS.find(item => item.name === 'preview_resource_change');
   const condition = tool.inputSchema.allOf.find(item => item.if?.properties?.resourceType?.const === 'externalService');
   const check = condition.then.properties.parameters.properties.healthCheck;
   assert.equal(condition.then.properties.operation.const, 'create');
   assert.deepEqual(check.required, ['port']); assert.equal(check.additionalProperties, false);
-  assert.deepEqual(Object.keys(check.properties).sort(), ['port', 'interval', 'responseTimeout', 'healthyThreshold', 'unhealthyThreshold'].sort());
+  assert.deepEqual(Object.keys(check.properties).sort(), ['port', 'requestLine', 'interval', 'responseTimeout', 'healthyThreshold', 'unhealthyThreshold'].sort());
   assert.equal(check.properties.port.minimum, 1); assert.equal(check.properties.port.maximum, 65535);
-  assert.match(tool.description, /TCP healthCheck/); assert.match(tool.description, /no HTTP fields/);
+  assert.equal(check.properties.requestLine.maxLength, 1024); assert.match(tool.description, /TCP or HTTP request-line healthCheck/); assert.match(tool.description, /no URL, headers/);
 });
 
 test('external TCP: exact requested fields and omitted native defaults survive preview and require human approval', async () => {
@@ -100,17 +100,17 @@ test('external TCP: no health check preserves the old intent and ordinary Servic
   assert.deepEqual(JSON.parse(ordinary.displayDiff.find(row => row.field === 'healthCheck').after), input.parameters.healthCheck);
 });
 
-test('external TCP: null wrong types fractional bounds HTTP and unknown fields fail before any preview request', async () => {
+test('external TCP/HTTP: null wrong types fractional bounds and unknown fields fail before any preview request', async () => {
   const f = fixture(), input = tcpInput(f);
   const invalid = [null, [], '', 1, {}, {port: '5432'}, {port: null}, {port: 0}, {port: 65536}, {port: 1.5},
-    ...['strategy', 'requestLine', 'url', 'Host', 'host', 'headers', 'initializingTimeout', 'reinitializingTimeout', 'unknown'].map(field => ({port: 5432, [field]: 'PRIVATE'}))];
+    ...['strategy', 'url', 'Host', 'host', 'headers', 'initializingTimeout', 'reinitializingTimeout', 'unknown'].map(field => ({port: 5432, [field]: 'PRIVATE'}))];
   for (const field of ['interval', 'responseTimeout', 'healthyThreshold', 'unhealthyThreshold']) {
     for (const value of [null, '2', true, 1.5, 0, -1, 2147483648]) invalid.push({port: 5432, [field]: value});
   }
   for (const healthCheck of invalid) {
     const result = await f.engine.execute('preview_resource_change', {...input, parameters: {...input.parameters, healthCheck}});
     assert.equal(result.code, 'INVALID_INPUT', JSON.stringify(healthCheck));
-    assert.match(result.nextStep, /TCP healthCheck/); assert.doesNotMatch(JSON.stringify(result), /PRIVATE/);
+    assert.match(result.nextStep, /TCP\/HTTP healthCheck/); assert.doesNotMatch(JSON.stringify(result), /PRIVATE/);
   }
   const targetRef = f.context.reference('resource', {id: 'external2', family: 'service', resourceType: 'externalService', scope: 'project'}, f.context.capture());
   for (const operation of ['update_targets', 'update_metadata', 'start']) {
@@ -261,4 +261,38 @@ test('external service integration: endpoint editing and deletion retain Catalog
   const {resourceReviewLabels} = await import(`data:text/javascript;base64,${Buffer.from(labelsSource).toString('base64')}`);
   assert.equal(resourceReviewLabels({resourceType: 'service', operation: 'archive'}, key => key).archiveNotices.length, 3);
   assert.equal(resourceReviewLabels({resourceType: 'stack', operation: 'create_from_catalog'}, key => key).operationLabel, 'newCatalog.saveNew');
+});
+
+
+test('external HTTP requestLine preserves exact bounded fields and requires human approval', async () => {
+  for (const requestLine of ['', 'GET /health HTTP/1.0', 'X'.repeat(1024)]) {
+    const f = fixture(), healthCheck = {...tcp, requestLine}, input = tcpInput(f, healthCheck), before = structuredClone(input.parameters);
+    const preview = await f.engine.execute('preview_resource_change', input);
+    assert.equal(preview.status, 'needs_user'); assert.deepEqual(input.parameters, before);
+    assert.deepEqual(f.requests[0].data.parameters.healthCheck, healthCheck);
+    assert.deepEqual(JSON.parse(preview.displayDiff.find(row => row.field === 'healthCheck').after), healthCheck);
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'NEEDS_USER'); assert.equal(f.dispatches(), 0);
+    await f.engine.confirmPlan(preview.planRef); assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).status, 'accepted');
+    assert.equal(f.dispatches(), 1);
+  }
+});
+
+test('external HTTP requestLine rejects CR LF NUL over-bound and unsafe expansions without dispatch', async () => {
+  const f = fixture();
+  for (const requestLine of [null, 1, false, {}, 'X'.repeat(1025), 'PRIVATE\r\nAuthorization', 'PRIVATE\n', 'PRIVATE\0']) {
+    const result = await f.engine.execute('preview_resource_change', tcpInput(f, {...tcp, requestLine}));
+    assert.equal(result.code, 'INVALID_INPUT'); assert.doesNotMatch(JSON.stringify(result), /PRIVATE/);
+  }
+  for (const [field, value] of [['url', 'http://PRIVATE'], ['headers', {Authorization: 'PRIVATE'}], ['Host', 'PRIVATE'], ['strategy', 'recreate']]) {
+    assert.equal((await f.engine.execute('preview_resource_change', tcpInput(f, {...tcp, requestLine: 'GET / HTTP/1.0', [field]: value}))).code, 'INVALID_INPUT');
+  }
+  assert.equal(f.requests.length, 0); assert.equal(f.dispatches(), 0);
+  const changed = fixture(), original = changed.engine.request;
+  changed.engine.request = async request => {
+    const response = await original(request);
+    if (request.url === 'projects/p1/aiResourceChangePlans') changed.plan().changes.find(row => row.field === 'healthCheck').after = JSON.stringify({...tcp, requestLine: 'GET /wrong HTTP/1.0'});
+    return response;
+  };
+  assert.equal((await changed.engine.execute('preview_resource_change', tcpInput(changed, {...tcp, requestLine: 'GET /health HTTP/1.0'}))).code, 'INVALID_RESPONSE');
+  assert.equal(changed.dispatches(), 0);
 });

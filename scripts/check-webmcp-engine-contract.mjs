@@ -51,11 +51,15 @@ if(externalTcpOnly){
   const check=condition.then.properties.parameters.properties.healthCheck;
   assert.equal(condition.then.properties.operation.const,'create');assert.equal(check.additionalProperties,false);
   assert.deepEqual(check.required,['port']);
-  assert.deepEqual(Object.keys(check.properties).sort(),['port','interval','responseTimeout','healthyThreshold','unhealthyThreshold'].sort());
+  assert.deepEqual(Object.keys(check.properties).sort(),['port','interval','responseTimeout','healthyThreshold','unhealthyThreshold','requestLine'].sort());
   const model=await readContainedSource(engine,'code/iaas/model/src/main/java/io/cattle/platform/core/addon/InstanceHealthCheck.java',
     'Native health model escapes selected Engine');
   assert.match(model,/@Field\(required = true, min = 1, max = 65535\)\s+public Integer getPort\(\)/);
   assert.equal(check.properties.port.minimum,1);assert.equal(check.properties.port.maximum,65535);
+  assert.match(model,/@Field\(nullable = true\)\s+public String getRequestLine\(\)/,'Native HTTP request line must remain readable/nullable');
+  assert.equal(check.properties.requestLine.type,'string');assert.equal(check.properties.requestLine.minLength,0);
+  assert.equal(check.properties.requestLine.maxLength,1024);assert.equal(check.properties.requestLine.pattern,'^[^\\u0000\\r\\n]*$');
+  assert.equal(Object.hasOwn(check.properties.requestLine,'default'),false);
   for(const name of ['interval','responseTimeout','healthyThreshold','unhealthyThreshold']){
     assert.match(model,new RegExp('Integer '+name+';'),'Native '+name+' must retain Integer precision');
     // A positive typed subset; native Integer metadata supplies no timing default.
@@ -228,7 +232,7 @@ if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.ur
     throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine [--catalog-options-only|--external-tcp-only]');
   try {
     await checkEngineContract(args[1],{catalogOptionsOnly:args[2]==='--catalog-options-only',externalTcpOnly:args[2]==='--external-tcp-only'});
-    console.log(args[2]==='--external-tcp-only'?'PASS External TCP create/read native schema and closed typed-subset contract':
+    console.log(args[2]==='--external-tcp-only'?'PASS External TCP/HTTP create/read native schema and closed typed-subset contract':
       args[2]==='--catalog-options-only'?'PASS Catalog options readonly schema and three-role contract':'PASS tool wire audit enum and effective role-overlay input contracts');
   } catch {
     console.error('WebMCP Engine contract check failed');
