@@ -24,7 +24,10 @@ test('external TCP create uses the shared bridge schema owner and immutable huma
           {field: 'healthCheck', before: null, after: JSON.stringify(data.parameters.healthCheck)}, {field: 'startOnCreate', before: null, after: false}]};
       return response(plan);
     }
-    if (url.search === '?action=apply') { writes++; return response({...plan, status: 'accepted'}); }
+    if (url.search === '?action=apply') {
+      if (plan.confirmationState !== 'approved') return new Response(JSON.stringify({code: 'ResourceChangeNeedsConfirmation'}), {status: 409});
+      writes++; return response({...plan, status: 'accepted'});
+    }
     if (url.pathname.endsWith('/' + id)) return response(plan);
     throw Error('Unexpected external TCP bridge route');
   }});
@@ -36,13 +39,20 @@ test('external TCP create uses the shared bridge schema owner and immutable huma
     assert.equal(preview.status, 'needs_user');
     assert.deepEqual(requests.find(row => row.path.endsWith('/aiResourceChangePlans')).data,
       {resourceType: 'externalService', operation: 'create', parameters: {...input.parameters, stackId: 'st1'}});
+    const httpHealthCheck = {...healthCheck, requestLine: 'GET / HTTP/1.0'};
+    const httpInput = {...input, parameters: {...input.parameters, healthCheck: httpHealthCheck}};
+    const httpPreview = await bridge.engine.execute('preview_resource_change', httpInput);
+    assert.equal(httpPreview.status, 'needs_user');
+    assert.deepEqual(requests.filter(row => row.path.endsWith('/aiResourceChangePlans')).at(-1).data,
+      {resourceType: 'externalService', operation: 'create', parameters: {...httpInput.parameters, stackId: 'st1'}});
+    assert.equal((await bridge.engine.execute('apply_resource_change', {planRef: httpPreview.planRef})).code, 'NEEDS_USER');
     const count = requests.filter(row => row.path.endsWith('/aiResourceChangePlans')).length;
     assert.equal((await bridge.engine.execute('preview_resource_change', {...input, parameters: {...input.parameters,
-      healthCheck: {...healthCheck, requestLine: 'GET / HTTP/1.0'}}})).code, 'INVALID_INPUT');
+      healthCheck: {...httpHealthCheck, requestLine: 'GET / HTTP/1.0\r\nAuthorization: PRIVATE'}}})).code, 'INVALID_INPUT');
     assert.equal(requests.filter(row => row.path.endsWith('/aiResourceChangePlans')).length, count);
     plan.confirmationState = 'approved'; // Represents a separate human server-side approval.
-    plan.changes.find(row => row.field === 'healthCheck').after = JSON.stringify({...healthCheck, port: 8443});
-    assert.equal((await bridge.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'CONFLICT');
+    plan.changes.find(row => row.field === 'healthCheck').after = JSON.stringify({...httpHealthCheck, port: 8443});
+    assert.equal((await bridge.engine.execute('apply_resource_change', {planRef: httpPreview.planRef})).code, 'CONFLICT');
     assert.equal(writes, 0);
     assert.equal(allowedRequest('projects/p1/aiResourceChangePlans/' + id + '?action=confirm', 'POST', 'p1'), false);
     assert.equal(requests.some(row => row.path.includes('/externalServices')), false);
