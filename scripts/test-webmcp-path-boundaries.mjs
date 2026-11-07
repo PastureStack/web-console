@@ -308,6 +308,27 @@ async function externalTcpFixture(dir){
   return schema;
 }
 
+test('Engine source boundary: optional conditionals retain same-root health contract gates',async t=>{
+  const dir=await temp(t);await externalTcpFixture(dir);
+  const tool=COMMANDS.find(item=>item.name==='preview_resource_change'),conditions=tool.inputSchema.allOf;
+  const unrelated=[{properties:{parameters:{type:'object'}}},{if:{required:['parameters']}}];
+  try {
+    // Legal allOf entries can omit if, properties or resourceType. The real
+    // Group condition also precedes the externalService condition unchanged.
+    tool.inputSchema.allOf=[...unrelated,...conditions];
+    await checkEngineContract(dir,{externalTcpOnly:true});
+    const external=conditions.find(item=>item.if?.properties?.resourceType?.const==='externalService');
+    assert.ok(external);
+    const invalid=structuredClone(external);
+    invalid.then.properties.parameters.properties.healthCheck.properties.interval.minimum=0;
+    tool.inputSchema.allOf=[...unrelated,...conditions.map(item=>item===external?invalid:item)];
+    await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),{code:'ERR_ASSERTION',actual:0,expected:1});
+    tool.inputSchema.allOf=[...unrelated,...conditions.filter(item=>item!==external)];
+    await assert.rejects(checkEngineContract(dir,{externalTcpOnly:true}),
+      {code:'ERR_ASSERTION',message:'External health-check condition must be declared'});
+  } finally {tool.inputSchema.allOf=conditions;}
+});
+
 test('Engine source boundary: preserves checkout selection and internal directory links',async t=>{
   const parent=await temp(t),dir=path.join(parent,'自訂 Engine checkout'),alias=path.join(parent,'selected-alias');
   await fs.mkdir(dir);const schema=await externalTcpFixture(dir);
