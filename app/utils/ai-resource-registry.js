@@ -52,7 +52,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('service', [project('service', 'services', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}),
     resource('dnsService', 'dnsServices', 'project', ['scale', 'healthState', 'archived', 'targetServices', 'linkedServiceCount', 'unresolvedTargetCount'], {type: 'stack', field: 'stackId'}, ['Two-step Alias workflow: create makes an empty stopped Alias with no targets; update_targets needs selected same-session serviceRefs and another human-approved plan. Start is optional and separate. Named/ported/remote links and incoming-consumer cleanup remain pending.']), resource('externalService', 'externalServices', 'project', ['scale', 'healthState', 'archived', 'hostname', 'externalIpAddresses'], {type: 'stack', field: 'stackId'}, ['Typed changes cover name/description, safe DNS/IP targets and optional load-balancer-backend-only TCP health checks during creation only, not standalone monitoring. HTTP health checks, health-check updates, cloning and advanced settings remain pending. Create is inactive until a separately approved start.'])]),
   family('settings', [global('setting', 'settings', ['source', 'inDb'])]),
-  family('stack', [project('stack', 'stacks', ['system', 'archived'])]),
+  family('stack', [project('stack', 'stacks', ['system', 'archived', 'group'])]),
   family('storage', [resource('volume', 'volumes', 'project', ['isHostPath', 'isNative', 'driver', 'accessMode', 'size', 'sizeMb'], null, ['Create supports only an unallocated builtin local logical Volume record, with name/description. Host allocation, mounts, driver options and plugin drivers remain separate human workflows; this is partial workflow coverage.', 'Detail-only usage references are bounded to 50 freshly authorized containers. Completeness is unknown, even when empty; never infer unused or safe deletion.']),
     project('storagePool', 'storagePools'), project('backupTarget', 'backupTargets'), project('snapshot', 'snapshots'), project('backup', 'backups')]),
   family('terminal-logs', [], 'pending-adapter', 'Bounded log reads need a dedicated redaction and stream adapter; interactive terminals require the human UI.'),
@@ -186,7 +186,7 @@ export const RESOURCE_CHANGES = Object.freeze({
   certificate: Object.freeze({update_metadata: metadata}),
   host: Object.freeze({update_metadata: metadata}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
-    create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: metadata}),
+    create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: action(['name', 'description', 'group'], [], 1)}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(),
     finish_upgrade: action(), rollback: action(), cancel_upgrade: action(), scale: action(['scale'], ['scale']),
     update_links: action(['serviceRefs'], ['serviceRefs']),
@@ -200,7 +200,7 @@ export const RESOURCE_CHANGES = Object.freeze({
     create: action(['name', 'image', 'description', 'command', 'entryPoint', 'ports'], ['name', 'image']), update_metadata: metadata}),
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
-export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
+export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'group', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
   'portRules', 'driver', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can
