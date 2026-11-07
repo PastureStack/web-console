@@ -1,15 +1,22 @@
 # Compatibility Contract
 
-## Upcoming Web Console 1.6.225 / Bridge 0.2.27 source candidate
+## Web Console 1.6.225 / Bridge 0.2.27 published
 
-The existing twelve tools add ordinary Stack Group editing through
-`update_metadata`, with matching Engine 0.183.385. Group text retains native
-case, whitespace and comma-separated tags; null and empty string remain distinct.
-The preview tool also explains its required envelope and complete Service-link
-replacement earlier in its real tool description. Native role/Key authority,
-opaque references and human confirmation remain binding. Logical Volume create
-previews also use the native inactive state, matching the corrected Engine
-completion predicate. Publication and native acceptance remain pending.
+Matching Engine 0.183.385 is required. The existing twelve tools add ordinary
+Stack Group editing through update_metadata; group text retains native case,
+whitespace and comma-separated tags, with null distinct from empty string.
+Human review, role/Key checks, opaque identity and CAS remain binding. Preview
+help describes the closed input envelope; validation guidance retains approved
+field names without private native values. Logical local Volume creation uses
+the native inactive, unallocated terminal record.
+
+Original CI passed 1,142 browser tests and
+290 distinct required/affected focused methods;
+only 10 are newly declared source methods. All thirteen
+public assets passed anonymous SHA256 readback and native release verification
+covered fourteen cryptographic subjects. A qualified matching Server assembly,
+designated native acceptance and full frontend coverage remain separate.
+See the current component release note for the exact evidence and boundaries.
 
 ## Web Console 1.6.224 / Bridge 0.2.26 published
 
