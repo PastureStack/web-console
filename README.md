@@ -10,29 +10,18 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.225** / Bridge **0.2.27**](https://github.com/PastureStack/web-console/releases/tag/1.6.225)
-is published and qualified against Engine **0.183.385**. Deploy through the
+[Web Console **1.6.226** / Bridge **0.2.28**](https://github.com/PastureStack/web-console/releases/tag/1.6.226)
+is published and qualified against Engine **0.183.386**. Deploy through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
 using the current qualified matching component assembly.
 
-The existing twelve tools add ordinary Stack Group editing and clearer preview
-input guidance. Human confirmation, native role/Key authority, exact references
-and configuration consistency remain binding. Safe validation guidance exposes
-only approved field names. Logical local Volume creation uses the native
-inactive, unallocated terminal record. See the
-[release note](docs/releases/web-console-1.6.225.md) for component verification.
+The existing twelve tools support named ordinary-Service dependency links and
+a bounded HTTP health-check request line when creating an External Service.
+Human confirmation, native role/Key authority, exact references and configuration
+consistency remain binding. See the
+[release note](docs/releases/web-console-1.6.226.md) for component verification.
 Server deployment and native acceptance remain separate; this is partial
 WebMCP coverage, not all 243 frontend groups.
-
-## Source candidate
-
-Web Console **1.6.226** / Bridge **0.2.28** requires Engine **0.183.386** or newer
-and a newly qualified matching Server assembly. The existing tools add named
-ordinary-Service dependency links and an exact HTTP request line for External
-Service creation. Replacement/clear semantics, opaque references, native role/Key
-authority, complete review and human confirmation remain binding.
-See the [candidate note](docs/releases/web-console-1.6.226.md). New component CI,
-publication, SDK handshake and designated native acceptance remain pending.
 
 ## Features and operator guides
 
