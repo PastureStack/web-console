@@ -15,6 +15,7 @@ node --test scripts/test-audit-object-display.mjs
 ./scripts/check-ui-ember-api-store-fetch-upgrade
 node --test scripts/test-webmcp-path-boundaries.mjs
 node --test scripts/test-webmcp-preview-help.mjs
+node --test scripts/test-webmcp-reference-unavailable.mjs
 node --test scripts/test-webmcp-stack-group.mjs
 node --test scripts/test-ai-catalog-reader.mjs scripts/test-webmcp-catalog.mjs scripts/test-webmcp-catalog-launch.mjs scripts/test-webmcp-archive.mjs scripts/test-webmcp-resources.mjs scripts/test-webmcp-service-create.mjs
 node --test scripts/test-webmcp-volume-usage.mjs

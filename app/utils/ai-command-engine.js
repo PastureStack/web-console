@@ -172,7 +172,7 @@ export class CommandEngine {
     } else if ( name === 'preview_resource_change' && input && input.operation === 'update_metadata' && RESOURCE_CHANGES[input.resourceType] && RESOURCE_CHANGES[input.resourceType].update_metadata &&
       result.code === 'INVALID_INPUT' && ['name', 'description'].includes(result.field) && Object.prototype.hasOwnProperty.call(input, result.field) ) {
       result.nextStep = 'Put name and description inside parameters, not at the top level. Keep resourceType, operation and the same selected targetRef at the top level. For example, parameters: {"name":"<requested name>","description":"<requested description>"}; description may also be null. Resubmit preview_resource_change with the corrected envelope. The resulting plan still requires the user to review and confirm it; do not apply it automatically.';
-    } else if ( name === 'preview_resource_change' && result.reason !== 'PORT_CONFLICT' && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
+    } else if ( name === 'preview_resource_change' && !['PORT_CONFLICT', 'REFERENCE_UNAVAILABLE'].includes(result.reason) && ['INVALID_INPUT', 'STALE_REFERENCE'].includes(result.code) ) {
       const repairs = {
         'parameters.image': 'Provide the exact user-requested image in parameters.image. Ask the user if it is missing; never guess an image or version.',
         'parameters.name': 'Provide the requested name in parameters.name, from 1 to 255 UTF-16 units.',

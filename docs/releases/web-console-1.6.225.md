@@ -17,6 +17,13 @@ an ordinary Service-link example, replacement/clear semantics and typed-error
 repair guidance. It still requires human confirmation of the exact server plan.
 No tool, dependency, role grant or automatic execution path is added.
 
+A confirmed native 422 InvalidReference is reported as STALE_REFERENCE with
+safe reselection guidance. Clients must query again with the same Key and
+environment, then reuse a returned opaque reference. If still unavailable,
+ask the user; do not guess IDs or expand permissions. Missing resources and
+resources outside the caller's permissions remain indistinguishable. Native
+messages, values, identifiers and field names are not copied into this tool result.
+
 Matching Engine 0.183.385 and a qualified Server assembly are required. This is
 source-candidate documentation: normal CI, immutable publication, weak-model
 behavior and native acceptance remain pending. Prior unaffected acceptance is

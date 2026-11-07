@@ -243,6 +243,7 @@ export function publicError(error) {
     code = status === 503 && ['ResourceChangeFeatureDisabled', 'CatalogMetadataUnavailable'].includes(serverCode) ? 'UNAVAILABLE' :
       status === 401 ? 'SESSION_REQUIRED' : [403, 404].includes(status) ||
       status === 405 && serverCode === 'Method not allowed' ? 'FORBIDDEN' :
+      status === 422 && serverCode === 'InvalidReference' ? 'STALE_REFERENCE' :
       status >= 400 && status < 500 && typeof serverCode === 'string' && Object.prototype.hasOwnProperty.call(known, serverCode) ? known[serverCode] :
       [400, 422].includes(status) ? 'INVALID_INPUT' :
       [409, 410, 412].includes(status) ? 'CONFLICT' : 'UNKNOWN_RESULT';
@@ -250,6 +251,10 @@ export function publicError(error) {
   const entry = ERRORS[code] || ERRORS.UNKNOWN_RESULT;
   const result = {status: entry[1], code, nextStep: entry[0], contractVersion: COMMAND_VERSION};
   const serverCode = error && error.body && error.body.code;
+  if ( !(error instanceof CommandError) && code === 'STALE_REFERENCE' && status === 422 && serverCode === 'InvalidReference' ) {
+    result.reason = 'REFERENCE_UNAVAILABLE';
+    result.nextStep = 'The reference is unavailable in the current context. Call find_resources and get_resource again using the same Key and environment, then select a returned opaque resourceRef unchanged. If it is still not visible, ask the user to confirm the intended resource. Do not guess IDs, switch credentials or environments, or expand permissions.';
+  }
   if ( code === 'INVALID_INPUT' && status === 422 && serverCode === 'PortConflict' ) {
     result.reason = 'PORT_CONFLICT';
     result.nextStep = 'The requested port is already in use. Ask the user to choose a different port, then preview the updated request for a new human approval. Do not guess a replacement port, stop another workload, change firewall rules, drop port settings or downgrade the requested configuration.';

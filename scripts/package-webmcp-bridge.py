@@ -61,6 +61,7 @@ SOURCE_FILES = (
     "scripts/test-webmcp-stack-parent-detail.mjs",
     "scripts/test-webmcp-stack-group.mjs",
     "scripts/test-webmcp-preview-help.mjs",
+    "scripts/test-webmcp-reference-unavailable.mjs",
     "scripts/test-webmcp-service-upgrade-lifecycle.mjs",
     "scripts/test-webmcp-service-upgrade-config.mjs",
     "scripts/test-webmcp-volume-create.mjs",
