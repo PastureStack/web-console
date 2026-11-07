@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.226 / Bridge 0.2.28 source candidate
+## Web Console 1.6.226 / Bridge 0.2.28 published
 
 Minimum and matching Engine: **0.183.386**. New `service/update_links`
 `parameters.links[{serviceRef,name}]` is mutually exclusive with `serviceRefs`;
@@ -11,12 +11,13 @@ ordinary-Service bounds: a string of 0..1024 characters without NUL, CR or LF.
 Omission/empty string retains TCP semantics; URL, headers and credentials are
 not added. Native role/Key ceilings and human review remain required.
 
-Six new focused method identities and seven directly affected existing methods
-are selected for assembled-source verification. The existing twelve tools, SDK
-1.32.2, 92-component Bridge dependency graph and source-archive allowlist remain
-unchanged. Final CI/artifact counts, Engine386 binding, real SDK handshake,
-immutable publication and native business acceptance must come from this
-candidate's actual proofs; published 225 evidence does not qualify 226.
+Original CI passed 1,142 browser tests and 310 distinct focused methods, including
+seven new methods. The existing twelve tools, SDK 1.32.2, 92-component Bridge
+dependency graph and 59-source archive allowlist remain unchanged. The actual
+Engine386 binding and real SDK handshake passed. All thirteen public assets
+passed anonymous SHA256 readback, and immutable release verification covered
+fourteen cryptographic subjects. Matching Server deployment and native business
+acceptance remain separate. See the current component release note.
 
 ## Web Console 1.6.225 / Bridge 0.2.27 published
 

@@ -1,9 +1,9 @@
-# Web Console 1.6.226 / Bridge 0.2.28 source candidate
+# Web Console 1.6.226 / Bridge 0.2.28
 
 The existing twelve tools add named ordinary-Service dependency links and an
 External Service create HTTP request line. Engine 0.183.386 or newer and a newly
-qualified matching Server assembly are required. This is candidate documentation;
-normal CI, immutable publication and native acceptance are pending.
+qualified matching Server assembly are required. Component CI and immutable
+publication passed. Matching Server deployment and native acceptance are pending.
 
 `service/update_links` accepts exactly one complete replacement:
 `parameters.serviceRefs` (legacy plain links) or
@@ -29,15 +29,21 @@ normal completion remain mandatory. No new tool, native grant, locale key or
 runtime dependency is added. Unsupported or hidden targets do not trigger raw-ID
 fallback, policy expansion or an alternate mutation route.
 
-The source delta declares six new focused methods and affects seven existing
-methods in the two already registered owning scripts. Earlier local selected
-source results remain scoped evidence; the assembled candidate must run its own
-selected checks. Full CI browser/focused counts, original artifact/provenance,
-SBOM/source closure, real Bridge0.2.28 SDK handshake and matching Engine386 proof
-remain pending and cannot borrow published225 qualification. The source ZIP
-allowlist remains 59 sources (including the existing two test scripts); its normal
-manifest/SBOM/ZIP checks are retained. SDK1.32.2 and the 92-component dependency
-graph are unchanged, without a new install or scan claim.
+The final producer is `2442f5a9b88f296e9305a125b52347c4c8cb097f`, with tested
+tree `48ab6e4579a8d2dfb9dc6e4c54b11e93962ec114` and signed merge/tag target
+`83468cb32d05e14dbf233852a46a878e8489884e`. Original CI
+[42410285361](https://github.com/PastureStack/web-console/actions/runs/42410285361)
+passed 1,142 browser tests and 310 focused methods, including seven new methods.
+The HTTP health-check review displays the selected HTTP mode correctly.
+
+Original archive/provenance, runtime/build SBOMs, source closure, matching
+Engine386 ABI and the real Bridge0.2.28 SDK handshake passed. The source ZIP
+contains 59 sources. SDK1.32.2 and the 92-component dependency graph are unchanged,
+without a new install or scan claim. All thirteen
+[public assets](https://github.com/PastureStack/web-console/releases/tag/1.6.226)
+passed anonymous SHA256 readback; native immutable release verification covered
+fourteen cryptographic subjects. The Web archive SHA256 is
+`7c61ad9996701f8830eab0635e84b21dac3c2690bb01778b92058638ceadfa94`.
 
 Native named add/rename/remove/plain/clear, complete configuration preservation,
 role/Key/cross-ID/CAS, weak-model behavior and HTTP unhealthy/recovery acceptance
