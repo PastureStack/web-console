@@ -7,10 +7,12 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-This checkout's source versions are recorded in `package.json` and
-`bridge/package.json`. Check the matching GitHub release for publication,
-artifact qualification and required Engine support. A source version or CI run
-alone does not establish release availability or native workflow acceptance.
+[Bridge **0.2.25** / Web Console **1.6.223**](https://github.com/PastureStack/web-console/releases/tag/1.6.223)
+is published and requires matching Engine **0.183.383** or newer in a qualified
+Server assembly. The release includes the source archive and SBOM, immutable
+asset verification and one new real SDK stdio handshake. The unchanged dependency
+graph retains its original clean-install evidence. Component publication does
+not establish complete platform-native workflow acceptance.
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context

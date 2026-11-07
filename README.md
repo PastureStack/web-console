@@ -10,21 +10,16 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.222** / Bridge **0.2.24**](https://github.com/PastureStack/web-console/releases/tag/1.6.222)
-is published. The published component is qualified against Engine **0.183.380**;
+[Web Console **1.6.223** / Bridge **0.2.25**](https://github.com/PastureStack/web-console/releases/tag/1.6.223)
+is published. The published component is qualified against Engine **0.183.383**;
 deployment requires a qualified compatible Server assembly. Use numeric release
 versions in the [Server installation guide](https://github.com/PastureStack/server#quick-start).
 
-This release fixes legacy Bridge discovery of native administrator-visible
-private environments and clarifies generic resource references. See the
-[release note](docs/releases/web-console-1.6.222.md) for changes, verification and
+This release adds reviewed ordinary-Service dependency-link replacement and
+Registry activation/deactivation to the existing twelve tools. See the
+[release note](docs/releases/web-console-1.6.223.md) for changes, verification and
 upgrade boundaries. Component publication does not establish native workflow or
 complete WebMCP coverage.
-
-Source candidate 1.6.223 / Bridge 0.2.25 adds reviewed Service dependency-link
-replacement and Registry activation/deactivation with Engine 0.183.383 or newer.
-Its [candidate note](docs/releases/web-console-1.6.223.md) separates source checks
-from pending publication and native acceptance.
 
 ## Features and operator guides
 
