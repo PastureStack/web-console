@@ -1,6 +1,17 @@
 # Compatibility Contract
 
-## Web Console 1.6.232 / Bridge 0.2.34 source candidate
+## Web Console 1.6.233 / Bridge 0.2.35 source candidate
+
+Minimum and matching Engine remains **0.183.391**; Compose remains **0.14.44**.
+The private environment-identity reader accepts the native GDAPI `aiResourceView`
+envelope and the existing four-field DTO. It validates and discards metadata;
+metadata URLs and actions never grant access or drive navigation. Business rows,
+UUID pins, explicit denials, live role/Key ceilings and human approval remain
+unchanged. The twelve tools, SDK **1.32.2** and dependency graph do not change.
+CI, packaged SDK qualification, publication and affected native acceptance remain
+pending. See the [candidate note](docs/releases/web-console-1.6.233.md).
+
+## Web Console 1.6.232 / Bridge 0.2.34 published
 
 Minimum and matching Engine: **0.183.391**; Compose remains **0.14.44**.
 The existing twelve tools and SDK **1.32.2** remain unchanged. Registry removal
@@ -22,9 +33,10 @@ scopes without changing Project GET/PUT or granting broader access. Explicit
 denials, live membership/revision checks and the first server UUID remain binding;
 indistinguishable scoped names fail closed. No public tool or parameter is added.
 
-Source preparation is not CI, packaged SDK, publication or native acceptance.
-All are pending for this candidate; the published baseline remains 231/033 below.
-See the [candidate note](docs/releases/web-console-1.6.232.md).
+Original CI, packaged SDK qualification, publication and anonymous release
+verification passed. Matching native acceptance remains separate. The scoped-only
+startup envelope incompatibility is addressed by the prepared 233/035 correction
+above. See the [published note](docs/releases/web-console-1.6.232.md).
 
 ## Web Console 1.6.231 / Bridge 0.2.33 published
 

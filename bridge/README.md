@@ -16,12 +16,19 @@ non-sensitive linked-credential count. Stop an active Registry through a separat
 approved plan, then query and preview removal again. Native credential cleanup,
 Full/legacy behavior, live role/Key ceilings and human confirmation stay with the
 existing owners. The bridge cannot approve or directly remove credentials.
-Scoped Keys can resolve the selected environment's identity through an already
-readable Stack or Service without gaining ordinary Project read permission.
+Scoped environment identity uses an already readable Stack or Service without
+gaining ordinary Project read permission. The native GDAPI envelope correction
+below is needed for scoped-only startup.
 Browser environment switching and personal-default requests remain human-console
 handoffs. Server assembly, deployment and affected native acceptance remain
 separate; component publication does not update a running Server. See the
 [release note](../docs/releases/web-console-1.6.232.md).
+
+Bridge **0.2.35** / Web Console **1.6.233** is a source candidate, still matching
+Engine **0.183.391**. It validates the normal `aiResourceView` metadata envelope
+and uses only the four business fields. Metadata URLs/actions grant no access.
+Its CI, packaged SDK, publication and native acceptance remain pending; see the
+[candidate note](../docs/releases/web-console-1.6.233.md).
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -114,16 +121,19 @@ native browser support. The operator must separately opt in to
 `api.ai.service.upgrade.enabled`. Resource-change plans independently require
 `api.ai.resource.change.enabled=true`. These Engine flags default to false.
 
-## Install the published Bridge
+## Prepared install recipe
 
-The commands below install published Web Console **1.6.232** /
-Bridge **0.2.34**, requiring matching Engine **0.183.391** and a qualified matching
-Server assembly. They install the local Bridge only; they do not update a
-running Server or establish native workflow acceptance.
+The source below prepares Web Console **1.6.233** / Bridge **0.2.35**, requiring
+matching Engine **0.183.391**. This candidate is not published or available to
+install. Run these commands only after its official release and qualification.
+For the latest published **232/034**, use its
+[versioned installation guide](https://github.com/PastureStack/web-console/blob/1.6.232/bridge/README.md#install-the-published-bridge).
+Installing a local Bridge does not update a running Server or establish native
+workflow acceptance.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.232
-BRIDGE_VERSION=0.2.34
+WEB_CONSOLE_VERSION=1.6.233
+BRIDGE_VERSION=0.2.35
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

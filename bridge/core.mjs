@@ -215,13 +215,38 @@ async function visibleByName(config, transport) {
   return selected;
 }
 
+function contextProjectDto(body) {
+  const fields = ['id', 'resourceType', 'data', 'nextMarker'];
+  const metadata = ['type', 'baseType', 'links', 'actions'];
+  if (!body || typeof body !== 'object' || Array.isArray(body)) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  const keys = Object.keys(body), wrapped = keys.some(key => metadata.includes(key));
+  const expected = wrapped ? [...fields, ...metadata] : fields;
+  if (keys.length !== expected.length || keys.some(key => !expected.includes(key))) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  if (wrapped) {
+    if (body.type !== 'aiResourceView' || body.baseType !== 'aiResourceView') throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+    for (const name of ['links', 'actions']) {
+      const values = body[name];
+      if (!values || typeof values !== 'object' || Array.isArray(values) || Object.keys(values).length > 16) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+      for (const [key, value] of Object.entries(values)) {
+        if (!/^[A-Za-z][A-Za-z0-9_.-]{0,63}$/.test(key) || typeof value !== 'string' || value.length > 2048 || /[\u0000-\u0020\u007f]/.test(value)) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+        let url;
+        try { url = new URL(value); } catch { throw new SetupError('INVALID_ENVIRONMENT_RESPONSE'); }
+        if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+      }
+    }
+  }
+  // Native ResourceImpl metadata is checked and discarded. Its URLs and action
+  // names never select an environment, authorize a request or enter navigation.
+  return Object.fromEntries(fields.map(key => [key, body[key]]));
+}
+
 async function contextProjects(transport, selector, signal) {
   const {body} = await transport({url: 'aiResourceViews', method: 'POST', signal,
     data: {resourceType: 'project', view: 'bridge_context', ...selector}}, null, true);
-  if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).sort().join(',') !== 'data,id,nextMarker,resourceType' ||
-      typeof body.id !== 'string' || !body.id || body.id.length > 128 || body.resourceType !== 'project' ||
-      body.nextMarker !== null || !Array.isArray(body.data) || body.data.length > 50) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
-  const rows = body.data;
+  const dto = contextProjectDto(body);
+  if (typeof dto.id !== 'string' || !dto.id || dto.id.length > 128 || /[\u0000-\u001f\u007f]/.test(dto.id) || dto.resourceType !== 'project' ||
+      dto.nextMarker !== null || !Array.isArray(dto.data) || dto.data.length > 50) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  const rows = dto.data;
   for (const row of rows) {
     if (!row || typeof row !== 'object' || Array.isArray(row) || Object.keys(row).sort().join(',') !== 'id,name,state,uuid' || !validProjectId(row.id) || !validProjectUuid(row.uuid)) {
       throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');

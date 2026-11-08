@@ -463,6 +463,13 @@ function identityRow(row = original) {
   return {id: row.id, uuid: row.uuid, name: row.name, state: row.state};
 }
 
+function contextEnvelope(rows) {
+  // AiResourceViewResourceManager returns ResourceImpl, not the service Map.
+  return {id: 'aiview-11111111-1111-1111-1111-111111111111', type: 'aiResourceView', baseType: 'aiResourceView',
+    links: {self: config.endpoint + '/v2-beta/aiResourceViews/aiview-11111111-1111-1111-1111-111111111111'}, actions: {},
+    resourceType: 'project', data: rows, nextMarker: null};
+}
+
 function scopedServer() {
   const calls = [], state = {rows: [identityRow()], projectError: {status: 403, code: 'KeyScopeDenied'}};
   const fetcher = async (url, options) => {
@@ -478,7 +485,8 @@ function scopedServer() {
       assert.equal(options.headers['X-PastureStack-Key-Expected-Revision'], '7');
       if (state.contextError) return new Response(JSON.stringify({code: state.contextError, message: secret}), {status: 403});
       const rows = state.overrideRows || state.rows.filter(row => data.resourceId ? row.id === data.resourceId : row.name === data.query);
-      return response({id: 'aiview-11111111-1111-1111-1111-111111111111', resourceType: 'project', data: rows, nextMarker: null},
+      const envelope = contextEnvelope(rows);
+      return response(state.contextBody ? state.contextBody(envelope) : envelope,
         'ai-bridge', state.contextRevision || '7');
     }
     if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'event-' + calls.length});
@@ -488,6 +496,46 @@ function scopedServer() {
   };
   return {calls, state, fetcher};
 }
+
+test('scoped environment identity accepts native ResourceImpl and bare DTO envelopes without following metadata', async () => {
+  for (const caller of [createBridge, prepareBoundProfile]) {
+    for (const shape of ['native', 'bare']) {
+      const f = scopedServer(), origins = [];
+      f.state.contextBody = body => {
+        if (shape === 'bare') return {id: body.id, resourceType: body.resourceType, data: body.data, nextMarker: body.nextMarker};
+        return {...body, links: {self: 'https://metadata.invalid/not-an-environment'},
+          actions: {remove: 'https://metadata.invalid/not-an-authorized-action'}};
+      };
+      const result = await caller(bound(), {fetcher: (url, options) => { origins.push(url.origin); return f.fetcher(url, options); }});
+      if (caller === createBridge) {
+        assert.equal(result.engine.context.capture().projectId, original.id); result.close();
+      } else {
+        assert.deepEqual(result.environmentBinding, bound().environmentBinding);
+      }
+      assert.deepEqual(origins, Array(origins.length).fill(config.endpoint));
+      assert.equal(f.calls.some(row => /apply|confirm|action=|not-an-/.test(row.path)), false);
+      assert.deepEqual(f.calls.at(-1).data, {resourceType: 'project', view: 'bridge_context', resourceId: original.id});
+    }
+  }
+});
+
+test('scoped environment identity rejects malformed native metadata and keeps business DTO bounds closed', async () => {
+  const invalid = [body => ({...body, type: 'project'}), body => ({...body, baseType: 'aiResourceChangePlan'}),
+    body => ({...body, authorized: true}), body => { const result = {...body}; delete result.type; return result; },
+    body => ({...body, links: null}), body => ({...body, links: []}), body => ({...body, actions: 'remove'}),
+    body => ({...body, links: {self: 42}}), body => ({...body, links: {self: 'javascript:alert(1)'}}),
+    body => ({...body, links: {self: 'https://account:secret@metadata.invalid/'}}),
+    body => ({...body, actions: Object.fromEntries(Array.from({length: 17}, (_, i) => ['action' + i, 'https://metadata.invalid/']))}),
+    body => ({...body, id: 'bad\nidentity'}), body => ({...body, resourceType: 'stack'}),
+    body => ({...body, nextMarker: 'another-page'}), body => ({...body, data: Array.from({length: 51}, () => identityRow())}),
+    body => ({...body, data: [{...identityRow(), description: 'not authorized by this projection'}]})];
+  for (const change of invalid) {
+    const f = scopedServer(); f.state.contextBody = change;
+    await assert.rejects(createBridge(bound(), {fetcher: f.fetcher}), {code: 'INVALID_ENVIRONMENT_RESPONSE'});
+    assert.equal(f.calls.length, 3);
+    assert.equal(f.calls.some(row => /stacks|apply|confirm|action=/.test(row.path)), false);
+  }
+});
 
 test('scoped bound environment identity falls back only after exact Project scope denial and keeps business reads separate', async () => {
   const f = scopedServer(), bridge = await createBridge(bound(), {fetcher: f.fetcher});

@@ -18,13 +18,21 @@ Compose **0.14.44**. See the
 
 Reviewed Registry removal uses the existing native owner and the complete
 non-sensitive linked-credential set. Stop an active Registry through its own
-approved plan before previewing removal. The Bridge can resolve its selected
-environment through a readable Stack or Service without gaining Project details
-or broader Key access. The twelve tools, SDK **1.32.2**, native role/Key ceilings
+approved plan before previewing removal. Scoped environment identity stays
+separate from ordinary Project access; the prepared fix below addresses its
+native response-envelope incompatibility. The twelve tools, SDK **1.32.2**, native role/Key ceilings
 and human confirmation remain unchanged.
 
 These remain partial workflows. Component publication does not update the
 running Server; deployment and runtime status are tracked in the Server documentation.
+
+## Prepared Bridge correction
+
+Web Console **1.6.233** / Bridge **0.2.35** is a source candidate for Engine
+**0.183.391**. It accepts the native environment-identity response envelope while
+keeping exact business fields, UUID checks and existing permissions. CI, packaged
+SDK qualification, publication and matching native acceptance remain pending.
+See the [candidate note](docs/releases/web-console-1.6.233.md).
 
 ## Features and operator guides
 
