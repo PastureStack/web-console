@@ -7,13 +7,11 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-Bridge **0.2.34** / Web Console **1.6.232** is an unpublished source candidate
-for matching Engine **0.183.391**. The current published baseline is
-[Bridge 0.2.33 / Web Console 1.6.231](https://github.com/PastureStack/web-console/releases/tag/1.6.231),
-qualified against Engine **0.183.390**. Its original CI and packaged SDK handshake
-passed; the candidate still requires its own qualification.
+[Bridge **0.2.34** / Web Console **1.6.232**](https://github.com/PastureStack/web-console/releases/tag/1.6.232)
+is published for matching Engine **0.183.391**. Its original CI, packaged SDK
+handshake and anonymous release verification passed.
 
-The candidate adds separately reviewed removal of an inactive Registry, with a
+The existing tools support separately reviewed removal of an inactive Registry, with a
 non-sensitive linked-credential count. Stop an active Registry through a separate
 approved plan, then query and preview removal again. Native credential cleanup,
 Full/legacy behavior, live role/Key ceilings and human confirmation stay with the
@@ -23,7 +21,7 @@ readable Stack or Service without gaining ordinary Project read permission.
 Browser environment switching and personal-default requests remain human-console
 handoffs. Server assembly, deployment and affected native acceptance remain
 separate; component publication does not update a running Server. See the
-[candidate note](../docs/releases/web-console-1.6.232.md).
+[release note](../docs/releases/web-console-1.6.232.md).
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -63,10 +61,13 @@ null and empty string are plain links. Port-qualified, remote or incomplete link
 remain unsupported. Graph completeness stays unknown and the Engine rejects
 concurrent full-set changes.
 
-For a Registry, only separately approved `start` and `stop` with empty parameters
-are supported. Select its fresh same-session `resourceRef` by a known safe
-`serverAddress`; unknown or unsafe addresses cannot authorize a preview. Registry
-credentials, create/remove and arbitrary storage-pool edits remain human workflows.
+For a Registry, separately approved `start`, `stop` and `remove` accept empty
+parameters. Select its fresh same-session `resourceRef` by a known safe
+`serverAddress`; unknown or unsafe addresses cannot authorize a preview. Removal
+requires an inactive Registry and review of the exact linked-credential count.
+Stop an active Registry in a separate approved plan, then query and preview
+removal again. Credential values, creation and arbitrary storage-pool edits
+remain in their existing human workflows.
 
 For an ordinary Service, the existing resource-change flow also offers
 `finish_upgrade`, `rollback` and `cancel_upgrade` with `parameters: {}` only.
@@ -113,14 +114,12 @@ native browser support. The operator must separately opt in to
 `api.ai.service.upgrade.enabled`. Resource-change plans independently require
 `api.ai.resource.change.enabled=true`. These Engine flags default to false.
 
-## Source-version installation recipe (not yet published)
+## Install the published Bridge
 
-The commands below match this source version, Web Console **1.6.232** /
+The commands below install published Web Console **1.6.232** /
 Bridge **0.2.34**, requiring matching Engine **0.183.391** and a qualified matching
-Server assembly. These candidate assets are not published: do not run this recipe
-until immutable publication and qualification finish. For the current published
-component, use the [1.6.231 release](https://github.com/PastureStack/web-console/releases/tag/1.6.231).
-The commands do not update a running Server or establish native acceptance.
+Server assembly. They install the local Bridge only; they do not update a
+running Server or establish native workflow acceptance.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.232
@@ -202,7 +201,7 @@ its current policy and the account's live permissions. Missing and same-name
 ambiguous environments still fail without selecting a target.
 
 If that authorized listing is empty, or the exact Project read returns only
-`KeyScopeDenied`, the candidate uses Engine's closed, read-only environment
+`KeyScopeDenied`, the Bridge uses Engine's closed, read-only environment
 identity view. It returns only the current name, ID, UUID and active state after
 live Key, role and readable-workload checks. It cannot read Project details,
 approve changes or retry an unrelated denied resource read. Normal Project

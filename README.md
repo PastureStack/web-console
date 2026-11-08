@@ -10,35 +10,21 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.231** / Bridge **0.2.33**](https://github.com/PastureStack/web-console/releases/tag/1.6.231)
-is published for matching Engine **0.183.390**. Stack rollback also requires
+[Web Console **1.6.232** / Bridge **0.2.34**](https://github.com/PastureStack/web-console/releases/tag/1.6.232)
+is published for matching Engine **0.183.391**. Stack rollback also requires
 Compose **0.14.44**. See the
-[release note](docs/releases/web-console-1.6.231.md); deploy a qualified matching assembly through the
+[release note](docs/releases/web-console-1.6.232.md); deploy a qualified matching assembly through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start).
 
-Reviewed Service upgrades preserve primary startup-argument omission, `null`
-and `[]` as distinct native inputs. Ordinary Compose Stacks retain native
-upgrade completion without a Catalog lookup; valid Catalog workflows keep
-their existing queue and permissions. The twelve tools, SDK **1.32.2**,
-native role/Key ceilings and human confirmation remain unchanged.
+Reviewed Registry removal uses the existing native owner and the complete
+non-sensitive linked-credential set. Stop an active Registry through its own
+approved plan before previewing removal. The Bridge can resolve its selected
+environment through a readable Stack or Service without gaining Project details
+or broader Key access. The twelve tools, SDK **1.32.2**, native role/Key ceilings
+and human confirmation remain unchanged.
 
 These remain partial workflows. Component publication does not update the
 running Server; deployment and runtime status are tracked in the Server documentation.
-
-## Source candidate
-
-Web Console **1.6.232** / Bridge **0.2.34** is prepared for matching Engine
-**0.183.391**. It adds separately reviewed removal of an inactive Registry and
-its linked credentials through the existing native owner. An active Registry
-must first be stopped through its own approved plan; removal needs a fresh
-preview and human confirmation. No image, container or volume is removed.
-The Bridge can also resolve its selected environment through a readable Stack
-or Service without granting Project details or broader Key access.
-
-This candidate is not published or qualified. See the
-[candidate note](docs/releases/web-console-1.6.232.md). Server assembly,
-deployment and affected native acceptance remain separate; this does not change
-the published 231/033 baseline or claim complete workflow coverage.
 
 ## Features and operator guides
 

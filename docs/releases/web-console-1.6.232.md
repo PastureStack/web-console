@@ -1,12 +1,12 @@
 # Web Console 1.6.232 / Bridge 0.2.34
 
-## Candidate boundary
+## Published component
 
-Prepared source only; this Web Console and Bridge release has not been published
-or qualified. It requires matching Engine **0.183.391**. The latest published
-baseline is [Web Console 1.6.231 / Bridge 0.2.33](https://github.com/PastureStack/web-console/releases/tag/1.6.231).
-Compose remains **0.14.44**. Server assembly, deployment and native acceptance are
-separate and are not claimed by this candidate.
+Web Console **1.6.232** / Bridge **0.2.34** is published for matching Engine
+**0.183.391**. Compose remains **0.14.44**. Original CI, packaged SDK qualification,
+immutable publication and anonymous release verification passed. Matching Server
+assembly/deployment and designated native acceptance remain separate and pending;
+publication does not update a running Server.
 
 ## Reviewed Registry removal and scoped Bridge startup
 
@@ -37,10 +37,19 @@ existing human confirmation, cancellation and recovery paths.
 
 ## Qualification boundary
 
-The tool count remains **12**, SDK **1.32.2** and the dependency graph is unchanged.
-Twelve new Node method identities cover Registry removal, the human Cookie Inbox
-and scoped Bridge startup;
-their owning scripts remain in normal CI. Source method registration is not a
-CI or browser result. Full/enabled CI, packaged SDK qualification, immutable
-publication and anonymous asset/attestation verification remain pending for this
-candidate. Native workflow acceptance and complete 243-group coverage are not claimed.
+Original full/enabled workflow **42520396566** passed all 372 required methods
+(348 Node / 24 QUnit, 360 retained plus twelve new) and 1,149 browser cases with
+zero failures. The new methods cover Registry removal, the human Cookie Inbox
+and scoped Bridge startup. Bridge **0.2.34** passed its one real packaged SDK
+**1.32.2** handshake with zero failures. The twelve tools and dependency graph
+remain unchanged.
+
+Producer `2377a76d1e9db0d5ca31cdfbeb58e2ac6e8ee91f` and normal merge/tag
+target `02ec2f6afd1fb03b222237ced875c4965966be1e` share tested tree
+`684d83a3e45697574a441d0c4a9055e4babb7a35`. All thirteen public assets passed
+anonymous byte/digest verification; release cryptographic verification covers
+fourteen subjects. See the [published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.232/web232-release-metadata.json).
+
+Earlier failed CI runs remain recorded and do not supply qualification evidence.
+Designated native workflow acceptance remains pending; these component results
+do not claim all 243 frontend groups are complete.
