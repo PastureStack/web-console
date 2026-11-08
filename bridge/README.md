@@ -7,17 +7,13 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-The development source is Bridge **0.2.31** / Web Console **1.6.229**, matching
-Engine **0.183.388**. Browser environment switching and personal-default requests
-return a human console handoff, never a bridge-side mutation. This candidate has
-not yet completed publication. The commands below match this checkout and are
-usable only after that release is published. For the current published component,
-use its release page. [Candidate contract](../docs/releases/web-console-1.6.229.md).
-
-[Bridge **0.2.30** / Web Console **1.6.228**](https://github.com/PastureStack/web-console/releases/tag/1.6.228)
-is published and qualified against Engine **0.183.388**. Its source/SBOM,
-original assets and real SDK handshake remain recorded separately from native
-workflow acceptance.
+[Bridge **0.2.31** / Web Console **1.6.229**](https://github.com/PastureStack/web-console/releases/tag/1.6.229)
+is published and qualified against Engine **0.183.388**. Browser environment
+switching and personal-default requests return a human console handoff, never a
+bridge-side mutation. The original CI and packaged real SDK handshake passed.
+Matching Server assembly, deployment and affected native/UI acceptance remain
+separate and pending or partial. Component publication does not update the running
+Server. See the [release note](../docs/releases/web-console-1.6.229.md).
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -25,7 +21,7 @@ switch and a fresh resource reference; membership, networking, authentication
 and lifecycle changes remain in their normal human workflows.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
-and human-reviewed lifecycle plans. Web Console 1.6.228 supports Host name/description,
+and human-reviewed lifecycle plans. Host plans support name/description,
 explicit custom-name reset and separately approved Host start/stop scheduling
 plans; infrastructure, evacuation, Host removal and daemon
 or Agent actions remain in their normal human workflows.
@@ -107,17 +103,16 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Current published Web Console **1.6.228** / Bridge **0.2.30** is qualified with
+Current published Web Console **1.6.229** / Bridge **0.2.31** is qualified with
 minimum and matching Engine **0.183.388**. Use a qualified matching Server assembly.
 
 Host start/stop maps only to native scheduling
 activate/deactivate, with empty parameters and human approval. It does not stop
 Docker, change the Agent, evacuate or remove workloads. Existing roles/Keys,
 exact references, CAS, and all other typed boundaries remain authoritative.
-Original CI, immutable publication and the packaged SDK handshake passed.
-This checkout's commands select candidate Web Console **1.6.229** / Bridge
-**0.2.31** only after publication. They do not update a running Server or establish
-affected native workflow acceptance.
+Original CI and the packaged SDK handshake passed; the matching component release
+is published. The commands below select that numeric release. They do not update
+a running Server or establish affected native workflow acceptance.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.229
