@@ -4634,6 +4634,8 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
+  affectedCredentialCount: "受影響的 Registry 憑證數"
+  registryRemoveNotice: "關聯憑證由原生 Registry 清理流程移除；這不會刪除容器映像，也不會撤銷外部映像倉庫帳號。"
   stackRollbackNotice: "只回復仍符合條件的服務升級。已完成升級的服務，以及沒有舊版設定的新增啟用服務，會維持原狀；不會刪除新增服務，也不會重建已移除的服務。顯示的服務數量是擷取的總數，並非實際回復請求數。"
   stackServiceCount: "堆疊內服務數量"
   checkpointOnly: "僅驗證堆疊流程檢查點"

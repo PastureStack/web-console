@@ -4258,6 +4258,8 @@ apiKeyAudit:
     load: 키 감사를 불러오지 못했습니다. 새로고침하여 다시 시도하세요.
 
 webmcp:
+  affectedCredentialCount: "영향을 받는 레지스트리 자격 증명 수"
+  registryRemoveNotice: "연결된 자격 증명은 기본 Registry 정리 절차로 삭제됩니다. 컨테이너 이미지를 삭제하거나 외부 레지스트리 계정을 해지하지 않습니다."
   stackRollbackNotice: "아직 롤백할 수 있는 나머지 서비스 업그레이드만 되돌립니다. 완료된 업그레이드와 이전 설정이 없는 새 활성 서비스는 변경하지 않습니다. 추가된 서비스를 삭제하거나 제거된 서비스를 다시 만들지 않습니다. 표시된 서비스 수는 조회한 전체 수이며 롤백 요청 수가 아닙니다."
   stackServiceCount: "스택 내 서비스 수"
   checkpointOnly: "스택 체크포인트만 확인"

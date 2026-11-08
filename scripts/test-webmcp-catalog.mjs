@@ -220,7 +220,7 @@ test('catalog integration: stdio permits only the fixed scoped typed POST and ne
   const bridge = await createBridge({endpoint: 'http://127.0.0.1:8888', environment: 'Default', accessKey: 'public', secretKey: secret}, {
     fetcher: async (url, options) => {
       requests.push({path: url.pathname, method: options.method});
-      if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', name: 'Default', state: 'active'}]});
+      if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', uuid: 'adminProject', name: 'Default', state: 'active'}]});
       if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'ack'});
       if (url.pathname.endsWith('/aiCatalogMetadataViews')) return response(page([template('bridge')]).body);
       throw Error('Unexpected transport path');

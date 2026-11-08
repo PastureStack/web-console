@@ -213,9 +213,10 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
     const field=schema.resourceFields.view;
     const tool=COMMANDS.find(item=>item.name==='get_resource').inputSchema;
     assert.equal(field.type,'string');assert.equal(field.maxLength,32);
-    assert.deepEqual(field.options,['stack_graph','container_logs']);assert.notEqual(field.required,true);assert.notEqual(field.update,true);
+    assert.deepEqual(field.options,['stack_graph','container_logs','bridge_context']);assert.notEqual(field.required,true);assert.notEqual(field.update,true);
     assert.deepEqual(Object.keys(tool.properties).sort(),['resourceRef','tailLines','view']);
-    assert.equal(tool.properties.view.type,'string');assert.deepEqual(tool.properties.view.enum,field.options);
+    // Environment bootstrap is a private Bridge read, never a public get_resource mode.
+    assert.equal(tool.properties.view.type,'string');assert.deepEqual(tool.properties.view.enum,['stack_graph','container_logs']);
     assert.deepEqual(tool.required,['resourceRef']);assert.equal(tool.additionalProperties,false);
     const tail=schema.resourceFields.tailLines,limit=tool.properties.tailLines;
     assert.equal(tail.type,'int');assert.equal(tail.min,1);assert.equal(tail.max,200);

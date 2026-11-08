@@ -21,7 +21,7 @@ test('real SDK stdio handshake, shared tool contract, scoped call and EOF shutdo
     res.setHeader('Content-Type','application/json');
     res.setHeader('X-PastureStack-Key-Purpose','ai-bridge');
     res.setHeader('X-PastureStack-Key-Revision','1');
-    if(req.url.startsWith('/v2-beta/projects?'))return res.end(JSON.stringify({data:[{id:'p1',name:'Default',state:'active'}]}));
+    if(req.url.startsWith('/v2-beta/projects?'))return res.end(JSON.stringify({data:[{id:'p1',uuid:'adminProject',name:'Default',state:'active'}]}));
     if(req.url.endsWith('/aiToolCallEvents'))return res.end(JSON.stringify({accepted:true,requestId:'req-'+requests.length}));
     if(req.url.startsWith('/v2-beta/projects/p1/stacks?'))return res.end(JSON.stringify({data:[{id:'st1',accountId:'p1',name:'My stack'}]}));
     res.statusCode=404;res.end(JSON.stringify({code:'NotFound'}));
@@ -58,7 +58,7 @@ test('bounded stdio create arrays', async t => {
     const data = raw ? JSON.parse(raw) : {};
     requests.push({path: req.url, data});
     res.setHeader('Content-Type', 'application/json'); res.setHeader('X-PastureStack-Key-Purpose', 'ai-bridge'); res.setHeader('X-PastureStack-Key-Revision', '1');
-    if (req.url.startsWith('/v2-beta/projects?')) return res.end(JSON.stringify({data: [{id: 'p1', name: 'Default', state: 'active'}]}));
+    if (req.url.startsWith('/v2-beta/projects?')) return res.end(JSON.stringify({data: [{id: 'p1', uuid: 'adminProject', name: 'Default', state: 'active'}]}));
     if (req.url.endsWith('/aiToolCallEvents')) return res.end(JSON.stringify({accepted: true, requestId: 'ack-' + requests.length}));
     if (req.url.endsWith('/aiResourceChangePlans')) return res.end(JSON.stringify({id: 'aichange-11111111-1111-1111-1111-111111111111',
       resourceType: data.resourceType, operation: data.operation, resourceId: null, targetPath: 'Default/new-container',

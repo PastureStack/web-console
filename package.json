@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.231",
+  "version": "1.6.232",
   "private": true,
   "description": "PastureStack browser console for the compatible control platform.",
   "repository": {

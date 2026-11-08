@@ -5,7 +5,7 @@ const OPERATIONS = {switch_context: 'action.switchEnvironment', set_default: 'ac
 const FIELDS = {selectedEnvironment: 'nav.environment.label', defaultEnvironment: 'action.setDefault', selectedEnvironmentDescription: 'generic.description', sourceContainer: 'apiKeyAccess.selector.types.container', targetContainer: 'formContainerLinks.targetInstance.label', linkName: 'formContainerLinks.name.label', publicPort: 'formPorts.public.label', privatePort: 'formPorts.private.label', protocol: 'formPorts.protocol.label', bindAddress: 'formPorts.bindAddress.label', group: 'editStack.group.label', driver: 'formVolumes.volumeDriver.label', portRules: 'formBalancerRules.label',startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
   state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint', ports: 'generic.ports', healthCheck: 'newContainer.tabs.healthCheck',
   operation: 'generic.actions', checkpointOnly: 'webmcp.checkpointOnly', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
-  startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
+  startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', affectedCredentialCount: 'webmcp.affectedCredentialCount', emptyStack: 'webmcp.emptyStack',
   catalogTemplate: 'newCatalog.catalog', catalogVersion: 'newCatalog.templateVersion', serviceCount: 'apiKeyAccess.selector.types.service',
   volumeCount: 'apiKeyAccess.selector.types.volume', humanInputCount: 'webmcp.catalogHumanInputCount', referenceCount: 'webmcp.catalogReferenceCount', archived: 'archive.filterLabel'};
 const STATES = {active: 'formPorts.preflight.state.active', inactive: 'formPorts.preflight.state.inactive',
@@ -80,6 +80,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
       (plan.displayDiff || []).some(change => change.field === 'checkpointOnly' && change.after === true) ? text('webmcp.stackCancelCheckpointNotice') : null,
     stackRollbackNotice: stackUpgrade && plan.operation === 'rollback' ? text('webmcp.stackRollbackNotice') : null,
     localVolumeCreateNotice: plan.resourceType === 'volume' && plan.operation === 'create' ? text('webmcp.localVolumeCreateNotice') : null,
+    registryRemoveNotice: plan.resourceType === 'registry' && plan.operation === 'remove' ? text('webmcp.registryRemoveNotice') : null,
     externalHealthCheckNotice: plan.resourceType === 'externalService' && plan.operation === 'create' &&
       (plan.displayDiff || []).some((change) => change.field === 'healthCheck' && change.after !== null) ? text('newExternalService.alert') : null,
     executionAssignedPorts: plan.executionResult ? JSON.stringify(plan.executionResult.assignedPorts) : null,
@@ -93,7 +94,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     upgradeConfigurationChanges: (plan.configurationChanges || []).map(change => ({field: change.field, fieldLabel: text(label(FIELDS, change.field)),
       before: value(change.field, change.before), after: value(change.field, change.after)})),
     displayChanges: (plan.displayDiff || []).filter((change) => change.field !== 'mountedDataRule').map((change) => {
-      const count = ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount'].includes(change.field);
+      const count = ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount', 'affectedCredentialCount'].includes(change.field);
       return {field: change.field, fieldLabel: stackUpgrade && change.field === 'affectedServiceCount' ? text('webmcp.stackServiceCount') :
         (plan.resourceType === 'host' && change.field === 'hostname' ? `${text('action.restore')} ${text('generic.name')} (${text('editHost.hostname.label')})` : text(plan.resourceType === 'host' && change.field === 'name' ? 'editHost.customName.label' : label(FIELDS, change.field))), informational: plan.planKind === 'browser-environment' && change.field === 'selectedEnvironmentDescription' || count || change.field === 'checkpointOnly' || change.field === 'emptyStack' || plan.resourceType === 'host' && change.field === 'hostname',
         before: value(change.field, change.before), after: value(change.field, count ? change.before : change.after)};

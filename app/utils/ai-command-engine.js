@@ -24,6 +24,11 @@ export function containerNetworkReview(summary) {
     JSON.stringify([summary.resourceType, summary.operation, summary.displayPath, summary.displayDiff]) : null;
 }
 
+export function registryRemovalReview(summary) {
+  return summary && summary.resourceType === 'registry' && summary.operation === 'remove' ?
+    JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
+}
+
 export function serviceUpgradeReview(summary) {
   return summary && summary.upgradeStrategy ? JSON.stringify([summary.displayPath, summary.currentImage, summary.requestedImage,
     ...SERVICE_UPGRADE_FIELDS.map((field) => summary.upgradeStrategy[field]),
@@ -156,6 +161,8 @@ export class CommandEngine {
     } else if ( name === 'get_resource' && result.code === 'INVALID_INPUT' && result.field === 'resourceRef' &&
       input && /^(stack|service)_/.test(input.resourceRef) ) {
       result.nextStep = 'Call find_resources with family stack or service to obtain a resourceRef, then reuse that returned resourceRef unchanged in get_resource. For a Stack graph, use family stack and get_resource with view stack_graph. stackRef from find_stacks and serviceRef from find_services belong to legacy tools; never pass them as resourceRef or change their prefix. Keep the same environment and credentials.';
+    } else if ( name === 'preview_resource_change' && input && input.resourceType === 'registry' && input.operation === 'remove' && result.code === 'CONFLICT' ) {
+      result.nextStep = 'Registry removal requires an inactive Registry and a stable linked-credential set. If it is active, preview registry/stop using the same returned resourceRef, ask for separate human approval, apply that approved stop plan and wait for completion. Then find/read the Registry again and create a fresh remove preview for another human confirmation. If it is already inactive, wait for native credential transitions to settle and read again. Never stop or remove automatically, drop credentials, force an action or replay an unknown result.';
     } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_CONFIG_FIELDS.some(field => Object.prototype.hasOwnProperty.call(input, field)) &&
       ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
       result.nextStep = 'Use the supported typed Service upgrade subset. Omit configuration fields to preserve them. command/entryPoint require exact ordered argument arrays, not a shell string; null clears their configured override and [] remains a native empty array. [] explicitly clears ports, a nonempty healthCheck object merges only supplied fields, and null clears the entire check. A new check needs port. Use a matching Engine and exact returned review; do not drop settings, send raw launchConfig or retry through a generic Service PUT.';
@@ -950,7 +957,7 @@ export class CommandEngine {
           return {...result, verifiedResult: false, nextStep: 'Check the current browser environment or personal default in the console. If another attempt is needed, create a fresh preview for a new human confirmation; do not replay this action.'};
         }
       }
-      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || reference.stackUpgradeReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.hostResetReview || reference.registryRemovalReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || reference.stackUpgradeReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -1003,6 +1010,7 @@ export class CommandEngine {
       if ( reference.stackGroupReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.stackGroupReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.serviceLinksReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.serviceLinksReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.containerNetworkReview && containerNetworkReview(summary) !== reference.containerNetworkReview ) { throw new CommandError('CONFLICT'); }
+      if ( reference.registryRemovalReview && registryRemovalReview(summary) !== reference.registryRemovalReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.stackUpgradeReview && stackUpgradeReview(summary) !== reference.stackUpgradeReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.hostResetReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.hostResetReview ) { throw new CommandError('CONFLICT'); }
       return;
@@ -1192,7 +1200,8 @@ export class CommandEngine {
         }
       }
       if ( change.field === 'mountedDataRule' && (change.before !== null || change.after !== 'EXISTING_DOMAIN_RETENTION_NO_ADDITIONAL_PURGE') ) { throw new CommandError('INVALID_RESPONSE'); }
-      if ( ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount'].includes(change.field) &&
+      if ( change.field === 'affectedCredentialCount' && (plan.resourceType !== 'registry' || plan.operation !== 'remove') ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount', 'affectedCredentialCount'].includes(change.field) &&
         (!Number.isSafeInteger(change.before) || change.before < 0 || change.after !== null && (!Number.isSafeInteger(change.after) || change.after < 0)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'affectedMountCount' && change.after !== null || change.field === 'affectedInstanceCount' && change.after !== 0 ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'startOnCreate' && (change.before !== null || (plan.resourceType === 'loadBalancerService' && plan.operation === 'create' ? typeof change.after !== 'boolean' : change.after !== false)) ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -1215,6 +1224,15 @@ export class CommandEngine {
     if ( displayDiff.filter(change => change.field === 'group').length > 1 ) { throw new CommandError('INVALID_RESPONSE'); }
     if ( plan.operation === 'remove' && ['affectedInstanceCount', 'affectedMountCount', 'mountedDataRule'].some((field) => !displayDiff.some((change) => change.field === field)) ) {
       throw new CommandError('INVALID_RESPONSE');
+    }
+    if ( plan.resourceType === 'registry' && plan.operation === 'remove' ) {
+      const fields = ['state', 'affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule', 'affectedCredentialCount'];
+      const state = displayDiff.find(row => row.field === 'state'), count = displayDiff.find(row => row.field === 'affectedCredentialCount');
+      if ( displayDiff.length !== fields.length || new Set(displayDiff.map(row => row.field)).size !== fields.length ||
+        displayDiff.some(row => !fields.includes(row.field)) || !state || state.before !== 'inactive' || state.after !== 'removed' || !count ||
+        !Number.isInteger(count.before) || count.before < 0 || count.before > 256 || count.after !== count.before ||
+        displayDiff.some(row => ['affectedServiceCount', 'affectedInstanceCount'].includes(row.field) && (row.before !== 0 || row.after !== 0)) ||
+        displayDiff.some(row => row.field === 'affectedMountCount' && row.before !== 0) ) { throw new CommandError('INVALID_RESPONSE'); }
     }
     if ( ['archive', 'restore'].includes(plan.operation) && (displayDiff.length !== 1 || displayDiff[0].field !== 'archived') ) {
       throw new CommandError('INVALID_RESPONSE');
@@ -1382,6 +1400,9 @@ export class CommandEngine {
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
+    if ( input.resourceType === 'registry' && input.operation === 'remove' ) {
+      reference.registryRemovalReview = registryRemovalReview(this.resourcePlanSummary(plan, null));
+    }
     if ( input.resourceType === 'stack' && input.operation === 'update_metadata' && Object.prototype.hasOwnProperty.call(parameters, 'group') ) {
       const summary = this.resourcePlanSummary(plan, null);
       if ( summary.displayDiff.length !== Object.keys(parameters).length ||
@@ -1472,7 +1493,7 @@ export class CommandEngine {
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     let responded = false;
     try {
-      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || reference.stackUpgradeReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.hostResetReview || reference.registryRemovalReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || reference.stackUpgradeReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);

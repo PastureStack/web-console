@@ -25,6 +25,21 @@ native role/Key ceilings and human confirmation remain unchanged.
 These remain partial workflows. Component publication does not update the
 running Server; deployment and runtime status are tracked in the Server documentation.
 
+## Source candidate
+
+Web Console **1.6.232** / Bridge **0.2.34** is prepared for matching Engine
+**0.183.391**. It adds separately reviewed removal of an inactive Registry and
+its linked credentials through the existing native owner. An active Registry
+must first be stopped through its own approved plan; removal needs a fresh
+preview and human confirmation. No image, container or volume is removed.
+The Bridge can also resolve its selected environment through a readable Stack
+or Service without granting Project details or broader Key access.
+
+This candidate is not published or qualified. See the
+[candidate note](docs/releases/web-console-1.6.232.md). Server assembly,
+deployment and affected native acceptance remain separate; this does not change
+the published 231/033 baseline or claim complete workflow coverage.
+
 ## Features and operator guides
 
 Typed Stack finish-upgrade, cancellation and rollback use the existing native

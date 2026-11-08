@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtemp, writeFile, readFile, chmod, open, readdir, unlink, rmdir} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
-import {createBridge, validateConfig, prepareBoundProfile, allowedRequest} from '../core.mjs';
+import {createBridge, createTransport, validateConfig, prepareBoundProfile, allowedRequest} from '../core.mjs';
 import {bindProfile, main, parseArguments} from '../bind-profile.mjs';
 
 const secret = 'secret-profile-sentinel-do-not-print';
@@ -314,6 +314,11 @@ test('shared discovery requests native all visibility, keeps paging and rechecks
   for (const role of ['admin', 'member', 'denied-key']) {
     const calls = [], fetcher = async (url, options) => {
       calls.push({path: url.pathname, query: url.search, revision: options.headers['X-PastureStack-Key-Expected-Revision']});
+      if (url.pathname === '/v2-beta/aiResourceViews') {
+        assert.equal(role, 'member');
+        assert.deepEqual(JSON.parse(options.body), {resourceType: 'project', view: 'bridge_context', query: target.name});
+        return response({id: 'aiview-member', resourceType: 'project', data: [], nextMarker: null});
+      }
       if (url.pathname.endsWith('/projects')) {
         assert.equal(url.searchParams.get('all'), 'true'); assert.equal(url.searchParams.getAll('all').length, 1);
         if (role === 'member') return response({data: [original]}); // Native policy ignores all=true for non-admin.
@@ -377,8 +382,13 @@ test('legacy native all visibility cannot broaden account or Key visibility or c
   const target = {...original, id: 'p2', uuid: 'native-nonmember-project', name: 'Nonmember'};
   for (const role of ['nonadmin', 'noaccess', 'restricted-key', 'empty', 'ambiguous']) {
     let calls = 0;
-    await assert.rejects(createBridge({...config, environment: target.name}, {fetcher: async url => {
-      calls++; assert.deepEqual(url.searchParams.getAll('all'), ['true']);
+    await assert.rejects(createBridge({...config, environment: target.name}, {fetcher: async (url, options) => {
+      calls++;
+      if (url.pathname === '/v2-beta/aiResourceViews') {
+        assert.deepEqual(JSON.parse(options.body), {resourceType: 'project', view: 'bridge_context', query: target.name});
+        return response({id: 'aiview-hidden', resourceType: 'project', data: [], nextMarker: null});
+      }
+      assert.deepEqual(url.searchParams.getAll('all'), ['true']);
       if (role === 'noaccess') return new Response(JSON.stringify({code: 'PermissionDenied', message: secret}), {status: 403});
       // all=true is only a native listing option. The server still applies the
       // actual principal/Key policy; the bridge never synthesizes hidden rows.
@@ -387,7 +397,7 @@ test('legacy native all visibility cannot broaden account or Key visibility or c
       assert.equal(JSON.stringify(error).includes(secret), false);
       return role === 'noaccess' ? error.status === 403 : error.code === (role === 'ambiguous' ? 'AMBIGUOUS_ENVIRONMENT' : 'ENVIRONMENT_NOT_VISIBLE');
     });
-    assert.equal(calls, 1);
+    assert.equal(calls, ['nonadmin', 'restricted-key', 'empty'].includes(role) ? 2 : 1);
   }
 });
 
@@ -447,4 +457,155 @@ test('writer claims a private exclusive output before config or network and clea
     assert.deepEqual(await inspectCollision(), before, 'fresh pathname FD retains original bytes, permissions and native identity');
     await assert.rejects(open(output, 'r'), error => error.code === 'ENOENT');
   });
+});
+
+function identityRow(row = original) {
+  return {id: row.id, uuid: row.uuid, name: row.name, state: row.state};
+}
+
+function scopedServer() {
+  const calls = [], state = {rows: [identityRow()], projectError: {status: 403, code: 'KeyScopeDenied'}};
+  const fetcher = async (url, options) => {
+    const data = options.body ? JSON.parse(options.body) : undefined;
+    calls.push({path: url.pathname, method: options.method, data,
+      revision: options.headers['X-PastureStack-Key-Expected-Revision']});
+    if (url.pathname.endsWith('/projects')) return response({data: []});
+    if (url.pathname.endsWith('/projects/p1')) {
+      return state.projectError ? new Response(JSON.stringify({code: state.projectError.code, message: secret}), {status: state.projectError.status}) :
+        response(state.rows[0]);
+    }
+    if (url.pathname.endsWith('/v2-beta/aiResourceViews')) {
+      assert.equal(options.headers['X-PastureStack-Key-Expected-Revision'], '7');
+      if (state.contextError) return new Response(JSON.stringify({code: state.contextError, message: secret}), {status: 403});
+      const rows = state.overrideRows || state.rows.filter(row => data.resourceId ? row.id === data.resourceId : row.name === data.query);
+      return response({id: 'aiview-11111111-1111-1111-1111-111111111111', resourceType: 'project', data: rows, nextMarker: null},
+        'ai-bridge', state.contextRevision || '7');
+    }
+    if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'event-' + calls.length});
+    if (url.pathname.endsWith('/stacks')) return response({data: [{id: 'st1', name: 'Own Stack', accountId: 'p1'}]});
+    if (url.pathname.endsWith('/aiResourceViews')) return new Response(JSON.stringify({code: 'KeyScopeDenied', message: secret}), {status: 403});
+    throw new Error('unexpected scoped bridge request');
+  };
+  return {calls, state, fetcher};
+}
+
+test('scoped bound environment identity falls back only after exact Project scope denial and keeps business reads separate', async () => {
+  const f = scopedServer(), bridge = await createBridge(bound(), {fetcher: f.fetcher});
+  try {
+    assert.deepEqual(f.calls.map(row => row.path), ['/v2-beta/projects', '/v2-beta/projects/p1', '/v2-beta/aiResourceViews']);
+    assert.deepEqual(f.calls[2].data, {resourceType: 'project', view: 'bridge_context', resourceId: 'p1'});
+    assert.deepEqual(f.calls.map(row => row.revision), [undefined, '7', '7']);
+    const found = await bridge.engine.execute('find_stacks', {query: 'Own Stack'});
+    assert.equal(found.status, 'succeeded'); assert.ok(found.items[0].stackRef);
+    const before = f.calls.filter(row => row.path === '/v2-beta/aiResourceViews').length;
+    const denied = await bridge.engine.execute('find_resources', {family: 'environment', resourceType: 'project'});
+    assert.equal(denied.code, 'FORBIDDEN');
+    assert.equal(f.calls.filter(row => row.path === '/v2-beta/aiResourceViews').length, before + 1, 'only the private preflight reads an identity');
+    assert.equal(f.calls.at(-2).path, '/v2-beta/projects/p1/aiResourceViews', 'the ordinary business denial is not retried through the identity view');
+    assert.equal(bridge.tools.length, 12); assert.equal(JSON.stringify(denied).includes(secret), false);
+    assert.deepEqual(bridge.tools.find(tool => tool.name === 'get_resource').inputSchema.properties.view.enum, ['stack_graph', 'container_logs']);
+    assert.equal(f.calls.some(row => /apply|confirm|action=/.test(row.path)), false);
+  } finally { bridge.close(); }
+});
+
+test('scoped name discovery pins the first server UUID and prepares an exact binding without model IDs', async () => {
+  const f = scopedServer(), bridge = await createBridge(config, {fetcher: f.fetcher});
+  try {
+    assert.deepEqual(f.calls.map(row => row.path), ['/v2-beta/projects', '/v2-beta/aiResourceViews']);
+    assert.deepEqual(f.calls[1].data, {resourceType: 'project', view: 'bridge_context', query: config.environment});
+    assert.equal(bridge.engine.context.capture().projectId, original.id);
+    f.state.rows[0].uuid = 'replacement-server-identity';
+    const result = await bridge.engine.execute('find_stacks', {query: 'Own Stack'});
+    assert.equal(result.code, 'CONTEXT_CHANGED'); assert.equal(f.calls.some(row => row.path.endsWith('/stacks')), false);
+  } finally { bridge.close(); }
+  const prepared = scopedServer(), result = await prepareBoundProfile(config, {fetcher: prepared.fetcher});
+  assert.deepEqual(result.environmentBinding, bound().environmentBinding);
+  assert.deepEqual(prepared.calls.filter(row => row.path === '/v2-beta/aiResourceViews').map(row => row.data), [
+    {resourceType: 'project', view: 'bridge_context', query: config.environment},
+    {resourceType: 'project', view: 'bridge_context', resourceId: original.id}]);
+  assert.equal(Object.hasOwn(config, 'environmentBinding'), false);
+});
+
+test('scoped same-name identities never use a guessed selection and exact-name drift stays closed', async () => {
+  for (const caller of [createBridge, prepareBoundProfile]) {
+    const f = scopedServer(); f.state.rows.push({...identityRow(), id: 'p2', uuid: 'another-server-identity'});
+    let chosen = 0;
+    await assert.rejects(caller(config, {fetcher: f.fetcher, select: async () => { chosen++; return 0; }}), {code: 'AMBIGUOUS_ENVIRONMENT'});
+    assert.equal(chosen, 0); assert.equal(f.calls.length, 2);
+  }
+  for (const rows of [[{...identityRow(), name: 'before'}], [{...identityRow(), name: 'Before '}],
+    [identityRow(), identityRow()], [{...identityRow(), description: 'not part of this projection'}]]) {
+    const f = scopedServer(); f.state.overrideRows = rows;
+    await assert.rejects(createBridge(config, {fetcher: f.fetcher}), {code: 'INVALID_ENVIRONMENT_RESPONSE'});
+    assert.equal(f.calls.some(row => row.path.endsWith('/stacks')), false);
+  }
+});
+
+test('environment identity fallback cannot absorb authentication policy owner revision or UUID failures', async () => {
+  for (const [status, code] of [[401, 'AuthenticationRequired'], [403, 'ApiKeyRevoked'], [403, 'ApiKeyPolicyChanged'],
+    [403, 'KeyPolicyDenied'], [403, 'OwnerPermissionDenied'], [403, 'PermissionDenied'], [404, 'NotFound']]) {
+    const f = scopedServer(); f.state.projectError = {status, code};
+    await assert.rejects(createBridge(bound(), {fetcher: f.fetcher}), error => error.status === status && error.body.code === code);
+    assert.equal(f.calls.length, 2); assert.equal(f.calls.some(row => row.path === '/v2-beta/aiResourceViews'), false);
+  }
+  for (const mode of ['native-uuid', 'context-uuid', 'missing-uuid', 'inactive', 'context-revision', 'context-denied', 'context-empty']) {
+    const f = scopedServer();
+    if (mode === 'native-uuid') f.state.projectError = null;
+    if (mode.endsWith('uuid')) f.state.rows[0].uuid = mode === 'missing-uuid' ? undefined : 'reused-object';
+    if (mode === 'inactive') f.state.rows[0].state = 'inactive';
+    if (mode === 'context-revision') f.state.contextRevision = '8';
+    if (mode === 'context-denied') f.state.contextError = 'KeyPolicyDenied';
+    if (mode === 'context-empty') f.state.rows = [];
+    await assert.rejects(createBridge(bound(), {fetcher: f.fetcher}), error => mode === 'context-denied' ?
+      error.status === 403 && error.body.code === 'KeyPolicyDenied' :
+      error.code === (mode === 'context-revision' ? 'CONTEXT_CHANGED' : mode === 'missing-uuid' ?
+        'INVALID_ENVIRONMENT_RESPONSE' : 'ENVIRONMENT_BINDING_MISMATCH'));
+    assert.equal(f.calls.length, mode === 'native-uuid' ? 2 : 3);
+  }
+  for (const code of ['ApiKeyRevoked', 'ApiKeyPolicyChanged', 'OwnerPermissionDenied', 'KeyPolicyDenied']) {
+    const f = scopedServer(), bridge = await createBridge(bound(), {fetcher: f.fetcher});
+    try {
+      f.state.contextError = code;
+      const result = await bridge.engine.execute('find_stacks', {query: 'Own Stack'});
+      assert.equal(result.code, 'FORBIDDEN'); assert.equal(f.calls.some(row => row.path.endsWith('/stacks')), false);
+      assert.equal(JSON.stringify(result).includes(secret), false);
+    } finally { bridge.close(); }
+  }
+});
+
+test('private global environment identity transport requires a learned revision and closed selectors', async () => {
+  let calls = 0;
+  const request = createTransport(config, async () => { calls++; return response({data: []}); });
+  const data = {resourceType: 'project', view: 'bridge_context', resourceId: 'p1'};
+  assert.equal(allowedRequest('aiResourceViews', 'POST', null, true), true);
+  for (const [url, method, bootstrap] of [['aiResourceViews', 'POST', false], ['aiResourceViews', 'GET', true],
+    ['aiResourceViews?view=bridge_context', 'POST', true], ['../aiResourceViews', 'POST', true]]) {
+    assert.equal(allowedRequest(url, method, null, bootstrap), false);
+  }
+  await assert.rejects(request({url: 'aiResourceViews', method: 'POST', data}, null, true), {code: 'FORBIDDEN'});
+  assert.equal(calls, 0); await request({url: 'projects?limit=1'}, null, true);
+  for (const patch of [{resourceType: 'stack'}, {view: 'stack_graph'}, {query: 'Before'}, {resourceId: '../p1'},
+    {expectedUUID: 'adminProject'}, {marker: 'p1'}, {sourcePage: {}}, {parentId: 'p1'}, {url: '/projects/p1'}]) {
+    await assert.rejects(request({url: 'aiResourceViews', method: 'POST', data: {...data, ...patch}}, null, true), {code: 'FORBIDDEN'});
+  }
+  assert.equal(calls, 1); await request({url: 'aiResourceViews', method: 'POST', data}, null, true); assert.equal(calls, 2);
+});
+
+test('legacy startup pins its first server UUID before an exact project preflight can create a plan', async () => {
+  const row = {...original}, requests = []; let plans = 0;
+  const bridge = await createBridge(config, {fetcher: async (url, options) => {
+    requests.push(url.pathname);
+    if (url.pathname.endsWith('/aiResourceChangePlans')) { plans++; throw new Error('must not create a plan'); }
+    return server([row])(url, options);
+  }});
+  try {
+    assert.deepEqual(requests, ['/v2-beta/projects']);
+    const found = await bridge.engine.execute('find_resources', {family: 'environment', resourceType: 'project'});
+    row.uuid = 'replaced-after-name-discovery';
+    const result = await bridge.engine.execute('preview_resource_change', {resourceType: 'project', operation: 'update_metadata',
+      targetRef: found.items[0].resourceRef, parameters: {name: row.name}});
+    assert.equal(result.code, 'CONTEXT_CHANGED'); assert.equal(plans, 0);
+  } finally { bridge.close(); }
+  const missing = {...original}; delete missing.uuid;
+  await assert.rejects(createBridge(config, {fetcher: server([missing])}), {code: 'ENVIRONMENT_IDENTITY_UNAVAILABLE'});
 });

@@ -4406,6 +4406,8 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  affectedCredentialCount: "Identifiants de registre concernés"
+  registryRemoveNotice: "La purge normale du Registry supprime les identifiants associés. Elle ne supprime pas les images de conteneur et ne révoque pas les comptes de registre externes."
   stackRollbackNotice: "Seules les mises à niveau restantes pouvant être annulées sont restaurées. Les mises à niveau terminées et les nouveaux services actifs sans configuration précédente restent inchangés. Les services ajoutés ne sont pas supprimés et les services retirés ne sont pas recréés. Le nombre de services indique l’ensemble relevé, pas le nombre de demandes de restauration."
   stackServiceCount: "Services du Stack"
   checkpointOnly: "Point de contrôle du Stack uniquement"

@@ -1,5 +1,5 @@
 import Service, { service } from '@ember/service';
-import { CommandEngine, serviceCreateReview, serviceUpgradeReview, containerNetworkReview, stackUpgradeReview } from 'ui/utils/ai-command-engine';
+import { CommandEngine, serviceCreateReview, serviceUpgradeReview, containerNetworkReview, stackUpgradeReview, registryRemovalReview } from 'ui/utils/ai-command-engine';
 import { publicError, CommandError } from 'ui/utils/ai-command-contract';
 import { safeCatalogQuestions, CATALOG_LAUNCH_COLLECTION } from 'ui/utils/ai-catalog-launch';
 
@@ -71,7 +71,7 @@ export default Service.extend({
     if ( expectedPlanRef !== undefined && this.get('pendingPlan.planRef') !== expectedPlanRef ) { return; }
     this._reviewRevision = (this._reviewRevision || 0) + 1;
     this.set('operationNotice', null);
-    const reviewSignature = stackUpgradeReview(plan) || containerNetworkReview(plan) || serviceCreateReview(plan) || serviceUpgradeReview(plan);
+    const reviewSignature = registryRemovalReview(plan) || stackUpgradeReview(plan) || containerNetworkReview(plan) || serviceCreateReview(plan) || serviceUpgradeReview(plan);
     this.set('pendingPlan', reviewSignature ? Object.assign({}, plan, {reviewSignature}) : plan);
   },
 
@@ -131,14 +131,14 @@ export default Service.extend({
       this.assertReviewContext(plan.context);
       await this.get('access').ensureSession();
       this.assertReviewContext(plan.context);
-      if ( containerNetworkReview(plan) || stackUpgradeReview(plan) ) {
+      if ( registryRemovalReview(plan) || containerNetworkReview(plan) || stackUpgradeReview(plan) ) {
         const fresh = await this.get('userStore').rawRequest({url: `projects/${encodeURIComponent(plan.context.projectId)}/${this.engine.planCollection(plan)}/${encodeURIComponent(plan.serverPlanId)}`, method: 'GET'});
         this.assertReviewContext(plan.context);
         const body = fresh && fresh.body;
         if ( !body || body.id !== plan.serverPlanId || body.resourceType !== plan.resourceType || body.operation !== plan.operation ||
           body.resourceId !== plan.serverResourceId || body.status !== 'preview' || body.operationId ) { throw new CommandError('CONFLICT'); }
         const freshSummary = this.engine.planSummary(body, plan.planRef);
-        if ( (stackUpgradeReview(freshSummary) || containerNetworkReview(freshSummary)) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
+        if ( (registryRemovalReview(freshSummary) || stackUpgradeReview(freshSummary) || containerNetworkReview(freshSummary)) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
       }
       const response = await this.get('userStore').rawRequest({
         url: `projects/${encodeURIComponent(plan.context.projectId)}/${this.engine.planCollection(plan)}/${encodeURIComponent(plan.serverPlanId)}?action=confirm`,
@@ -152,7 +152,7 @@ export default Service.extend({
       if ( plan.planKind === 'catalog-launch' ) { this.assertCatalogHumanPlan(body, plan); }
       else if ( plan.planKind === 'resource-change' ? body.resourceType !== plan.resourceType || body.operation !== plan.operation || body.resourceId !== plan.serverResourceId : body.serviceId !== plan.serverServiceId ) { throw new CommandError('INVALID_RESPONSE'); }
       const summary = this.engine.planSummary(body, plan.planRef);
-      if ( plan.reviewSignature && (stackUpgradeReview(summary) || containerNetworkReview(summary) || serviceCreateReview(summary) || serviceUpgradeReview(summary)) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
+      if ( plan.reviewSignature && (registryRemovalReview(summary) || stackUpgradeReview(summary) || containerNetworkReview(summary) || serviceCreateReview(summary) || serviceUpgradeReview(summary)) !== plan.reviewSignature ) { throw new CommandError('CONFLICT'); }
       this.publishPlan(Object.assign({}, plan, summary), plan.planRef);
       return Object.assign({status: 'succeeded'}, summary);
     } catch (error) { return publicError(error); }
