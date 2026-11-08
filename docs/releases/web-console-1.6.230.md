@@ -1,7 +1,8 @@
 # Web Console 1.6.230 / Bridge 0.2.32
 
-Prepared source candidate only. Current original CI, packaged SDK handshake,
-immutable publication and matching Server/native acceptance have not been qualified.
+Published immutable component. Original CI, the packaged SDK handshake, all
+thirteen anonymous assets and fourteen release-attestation subjects passed.
+Matching Server deployment and native acceptance remain separate and pending.
 Minimum and matching Engine is 0.183.389; Stack rollback requires its matching
 Compose 0.14.44 native support. Do not use older component results for these bytes.
 
@@ -29,7 +30,8 @@ scope. No automatic approval, retry or privilege expansion is added.
 ## Source and qualification boundary
 
 The source delta declares eleven new Node methods and one affected existing
-Service schema method. These are source identities, not new CI PASS claims.
+Service schema method. Original CI verified all 354 required method identities
+and 1,147 Chrome QUnit cases with zero failures.
 No new QUnit method, dependency, tool or Bridge source path is introduced.
 The normal owner retains all carried methods, browser checks, sixty Bridge
 sources, the real SDK handshake, thirteen assets and fourteen crypto subjects.
