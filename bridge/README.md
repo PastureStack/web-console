@@ -7,11 +7,10 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-[Bridge **0.2.27** / Web Console **1.6.225**](https://github.com/PastureStack/web-console/releases/tag/1.6.225)
-is published and qualified against Engine **0.183.385** in a matching Server
-assembly. Its release records bind the original assets, source/SBOM, dependency
-evidence and real SDK handshake. Component publication does not establish
-complete native workflow acceptance.
+[Bridge **0.2.29** / Web Console **1.6.227**](https://github.com/PastureStack/web-console/releases/tag/1.6.227)
+is published and qualified against Engine **0.183.387**. Its source/SBOM,
+original assets and real SDK handshake remain recorded separately from native
+workflow acceptance.
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -19,8 +18,10 @@ switch and a fresh resource reference; membership, networking, authentication
 and lifecycle changes remain in their normal human workflows.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
-and human-reviewed lifecycle plans. Host plans support only name/description;
-infrastructure, evacuation and deactivation stay in normal human workflows.
+and human-reviewed lifecycle plans. Published Web Console 1.6.227 supports Host name/description
+and explicit custom-name reset. The 1.6.228 candidate adds separately approved Host
+start/stop scheduling plans; infrastructure, evacuation, Host removal and daemon
+or Agent actions remain in their normal human workflows.
 Host detail shows at most fifty freshly readable container references. Host and
 Volume detail can include a separately authorized Stack name, including native
 Service containers whose direct Stack field is absent. Ambiguous or unreadable
@@ -37,8 +38,8 @@ The bridge cannot approve its own plans. Native owner, role, Key and revision
 checks remain authoritative, and unsupported capabilities stay unavailable.
 
 For an ordinary Service, `preview_resource_change` accepts `operation: "update_links"`
-with `parameters: {serviceRefs: [...]}` for plain links. In source candidate
-1.6.227 / Bridge 0.2.29, use exactly one of that branch or
+with `parameters: {serviceRefs: [...]}` for plain links. Use exactly one of
+that branch or
 `parameters: {links: [{serviceRef, name}]}` for native named/plain pairs. Both
 replace the complete set (at most sixteen); `[]` clears it. Select fresh opaque
 references, compare the complete Stack/service paths and exact aliases, then
@@ -99,23 +100,21 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Current published Web Console **1.6.225** / Bridge **0.2.27** is qualified with
-Engine **0.183.385**. Use the repository's current installation guide and matching
-qualified Server assembly.
+Current published Web Console **1.6.227** / Bridge **0.2.29** is qualified with
+Engine **0.183.387**. Use the current qualified Server assembly.
 
-This checkout is the **1.6.227 / 0.2.29 source candidate**, requiring minimum and
-matching Engine **0.183.387**. It adds explicit Host custom-name reset and one-child Container Port/Link edits;
-legacy native Port PUT without the new optional header stays supported. It retains named ordinary-Service links and an
-External Service create `healthCheck.requestLine` (0..1024 characters, no NUL/CR/LF).
-Omission or an empty line selects TCP; URL, headers, credentials and health-check
-updates are outside this addition. Human review and native field permissions
-remain mandatory. CI, immutable publication, actual SDK handshake and designated
-native acceptance are pending. The version-bound commands below are for its
-matching archive after publication; until then use the current published guide.
+This checkout is the **1.6.228 / 0.2.30 source candidate**, requiring minimum and
+matching Engine **0.183.388**. Host start/stop maps only to native scheduling
+activate/deactivate, with empty parameters and human approval. It does not stop
+Docker, change the Agent, evacuate or remove workloads. Existing roles/Keys,
+exact references, CAS, and all other typed boundaries remain authoritative.
+The normal CI, immutable publication and actual new SDK handshake are pending.
+The commands below select this candidate's matching archive after publication;
+until then use the current published installation guide.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.227
-BRIDGE_VERSION=0.2.29
+WEB_CONSOLE_VERSION=1.6.228
+BRIDGE_VERSION=0.2.30
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

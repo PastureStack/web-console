@@ -4416,6 +4416,8 @@ webmcp:
   bridgeProjectBindingRequired: "Antes de renomear este ambiente pela ponte, peça ao usuário que crie um novo perfil local vinculado ao ambiente e se reconecte com o novo arquivo. Mantenha o perfil existente sem alterações. A descrição ainda pode ser editada separadamente."
   assignedPorts: Mapeamentos de portas atribuídos
   backgroundAuthorizationDenied: "Uma verificação de permissões negou a operação em segundo plano. Algumas alterações podem já ter ocorrido; a conclusão não foi verificada. Confira as permissões atuais e o comprovante da operação original. Não reenvie nem aprove novamente a alteração sem verificar."
+  operationFailed: "A operação falhou; algumas alterações podem já ter ocorrido. Verifique a operação existente e o estado do recurso antes de criar uma nova prévia para aprovação humana. Não tente novamente automaticamente."
+  operationUnknown: "O resultado da operação não está confirmado. Verifique primeiro a operação existente e o estado do recurso. Não reenvie nem aprove outra alteração até que o resultado seja conhecido."
   catalogReferenceAmbiguous: "Alguns recursos têm nomes de exibição iguais e não podem ser diferenciados com segurança. Confira o destino no console normal antes de selecioná-lo."
   catalogLaunchPermissions: "Uma implantação pelo Catálogo lê os recursos criados, configura vínculos entre serviços e pode iniciar serviços. O escopo de destino precisa de permissões de leitura, criação e atualização."
   catalogExternalVolumesPending: "Referências a volumes externos existentes (external=true) ainda não são compatíveis. Esses modelos são recusados na prévia; use o console normal."

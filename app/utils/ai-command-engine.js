@@ -99,6 +99,7 @@ export class CommandEngine {
 
   async execute(name, input, options = {}) {
     const startedAt = Date.now();
+    const observeOperation = typeof options.onOperation === 'function' ? options.onOperation : this.onOperation;
     let captured, result, startAck, operationNotice, businessStarted = false, descriptionMayHaveSaved = false, serviceCreateInputRejected = false;
     const commandName = COMMANDS.some((item) => item.name === name) ? name : 'unknown';
     try {
@@ -113,7 +114,7 @@ export class CommandEngine {
       this.context.assertCurrent(captured, options.signal);
       if ( this.transportKind === 'stdio' ) { captured = this.context.capture(); }
       businessStarted = true;
-      result = await this[name](input, captured, options.signal);
+      result = await this[name](input, captured, options.signal, observeOperation);
       descriptionMayHaveSaved = name === 'update_service_description' && result.saved === true;
       operationNotice = projectOperationNotices.get(this).get(result);
       projectOperationNotices.get(this).delete(result);
@@ -232,7 +233,7 @@ export class CommandEngine {
     }
     if ( operationNotice ) {
       let labelWarning;
-      try { labelWarning = await this.onOperation(operationNotice, {signal: options.signal, startedAt}); } catch (error) {
+      try { labelWarning = await observeOperation.call(this, operationNotice, {signal: options.signal, startedAt}); } catch (error) {
         // The operation and result ACK are already verified. Report only a
         // fixed label warning, never the private observer error or a failed write.
         labelWarning = 'BRIDGE_PROJECT_LABEL_REFRESH_PENDING';
@@ -542,7 +543,7 @@ export class CommandEngine {
     }
     if ( descriptor.type === 'host' ) {
       result.workloadReferences = this.hostWorkloadReferences(body, captured);
-      result.nextStep = 'Workload completeness is unknown. Only listed containers were freshly authorized on this Host; hidden names, IDs and counts are excluded. Empty results do not mean an empty Host or safe evacuation, deactivation or removal. Use the exact containerRef and readable Stack name to disambiguate; lifecycle actions remain separate normal workflows.';
+      result.nextStep = 'Workload completeness is unknown. Only listed containers were freshly authorized on this Host; hidden names, IDs and counts are excluded. Empty results do not mean an empty Host or safe evacuation, deactivation or removal. Use the exact containerRef and readable Stack name to disambiguate; Host start/stop require a separately human-approved native activate/deactivate plan, never inferred permission from these workload rows. Evacuation, Host removal and daemon/agent actions are unsupported here.';
     }
     if ( descriptor.type === 'dnsService' ) {
       const {linkedServiceCount, unresolvedTargetCount, targetServices} = body;
@@ -938,7 +939,7 @@ export class CommandEngine {
     } catch (error) { return publicError(error); }
   }
 
-  async apply_service_upgrade(input, captured, signal) {
+  async apply_service_upgrade(input, captured, signal, observeOperation = this.onOperation) {
     const reference = this.context.resolve(input.planRef, 'plan', captured);
     if ( reference.planKind ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
     this.context.assertCurrent(captured, signal);
@@ -953,7 +954,7 @@ export class CommandEngine {
       const plan = await this.call(captured, `aiServiceUpgradePlans/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
       responded = true;
       this.assertPlan(plan, reference);
-      return this.operationSummary(plan, operationRef);
+      return this.operationSummary(plan, operationRef, observeOperation);
     } catch (error) {
       if ( responded || publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ) {
         throw new UnknownOperation(operationRef);
@@ -989,7 +990,7 @@ export class CommandEngine {
     if ( reference.upgradeReview && serviceUpgradeReview(this.planSummary(plan, null)) !== reference.upgradeReview ) { throw new CommandError('CONFLICT'); }
   }
 
-  operationSummary(plan, operationRef) {
+  operationSummary(plan, operationRef, observeOperation = this.onOperation) {
     const status = plan.status === 'dispatching' ? 'running' : OPERATION_STATUSES.includes(plan.status) ? plan.status : 'unknown';
     // Terminal success must come with explicit server verification, not merely an HTTP 200.
     const result = {status: status === 'succeeded' && plan.verifiedResult !== true ? 'unknown' : status,
@@ -1041,7 +1042,7 @@ export class CommandEngine {
         const failure = publicError({status: plan.reason === 'CatalogLaunchUnsupported' ? 422 : 409, body: {code: plan.reason}});
         result.code = failure.code; result.nextStep = failure.nextStep;
       }
-      this.onOperation({planId: plan.id, status: result.status, planSummary: catalogLaunchPlanSummary(plan, null)});
+      observeOperation.call(this, {planId: plan.id, status: result.status, planSummary: catalogLaunchPlanSummary(plan, null)});
     } else if ( result.status === 'succeeded' || result.status === 'failed' ) {
       const operation = {planId: plan.id, status: result.status};
       if ( authorizationDenied ) { operation.messageCode = 'ResourceChangeAuthorizationDenied'; }
@@ -1049,12 +1050,12 @@ export class CommandEngine {
       if ( this.transportKind === 'stdio' && plan.resourceType === 'project' && plan.operation === 'update_metadata' ) {
         projectOperationNotices.get(this).set(result, Object.assign({}, operation, {resourceType: plan.resourceType,
           operation: plan.operation, resourceId: plan.resourceId, verifiedResult: result.verifiedResult === true}));
-      } else { this.onOperation(operation); }
+      } else { observeOperation.call(this, operation); }
     }
     return result;
   }
 
-  async get_operation(input, captured, signal) {
+  async get_operation(input, captured, signal, observeOperation = this.onOperation) {
     const reference = this.context.resolve(input.operationRef, 'operation', captured);
     let result;
     for ( let check = 0; check < 10; check++ ) {
@@ -1064,7 +1065,7 @@ export class CommandEngine {
         if ( reference.upgradeReview ) { throw new UnknownOperation(input.operationRef); }
         throw error;
       }
-      result = this.operationSummary(plan, input.operationRef);
+      result = this.operationSummary(plan, input.operationRef, observeOperation);
       if ( !['accepted', 'running'].includes(result.status) ) { return result; }
       if ( check < 9 ) {
         this.context.assertCurrent(captured, signal);
@@ -1105,6 +1106,11 @@ export class CommandEngine {
       !Object.prototype.hasOwnProperty.call(RESOURCE_CHANGES[plan.resourceType], plan.operation) || typeof plan.targetPath !== 'string' ||
       !Array.isArray(plan.changes) || plan.changes.length > 20 || !['pending', 'approved', 'cancelled'].includes(plan.confirmationState) ) {
       throw new CommandError('INVALID_RESPONSE');
+    }
+    if ( plan.resourceType === 'host' && ['start', 'stop'].includes(plan.operation) ) {
+      const before = plan.operation === 'start' ? 'inactive' : 'active', after = plan.operation === 'start' ? 'active' : 'inactive';
+      if ( plan.changes.length !== 1 || !plan.changes[0] || plan.changes[0].field !== 'state' ||
+        plan.changes[0].before !== before || plan.changes[0].after !== after ) { throw new CommandError('INVALID_RESPONSE'); }
     }
     const displayDiff = plan.changes.map((change) => {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
@@ -1386,7 +1392,7 @@ export class CommandEngine {
         {nextStep: 'Ask the user to review and approve this exact change in the console.'})}, summary);
   }
 
-  async apply_resource_change(input, captured, signal) {
+  async apply_resource_change(input, captured, signal, observeOperation = this.onOperation) {
     const reference = this.context.resolve(input.planRef, 'plan', captured);
     if ( !['resource-change', 'catalog-launch'].includes(reference.planKind) ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
     const operationRef = reference.operationRef || this.context.reference('operation', Object.assign({}, reference, {lastStatus: 'unknown'}), captured);
@@ -1398,11 +1404,11 @@ export class CommandEngine {
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
       this.assertPlan(plan, reference);
-      return this.operationSummary(plan, operationRef);
+      return this.operationSummary(plan, operationRef, observeOperation);
     } catch (error) {
       if ( publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ||
         reference.planKind === 'catalog-launch' && error.code === 'INVALID_RESPONSE' ) {
-        if ( reference.planKind === 'catalog-launch' ) { this.onOperation({planId: reference.id, status: 'unknown'}); }
+        if ( reference.planKind === 'catalog-launch' ) { observeOperation.call(this, {planId: reference.id, status: 'unknown'}); }
         throw new UnknownOperation(operationRef);
       }
       const operation = this.context.references.get(operationRef); if ( operation ) { operation.data.lastStatus = 'rejected'; }

@@ -4428,6 +4428,8 @@ webmcp:
   bridgeProjectBindingRequired: "A környezet hídon keresztüli átnevezése előtt kérje meg a felhasználót, hogy hozzon létre egy új, a környezethez rögzített helyi profilt, majd az új fájllal csatlakozzon újra. A meglévő profil maradjon változatlan. A leírás továbbra is külön szerkeszthető."
   assignedPorts: Kiosztott port-hozzárendelések
   backgroundAuthorizationDenied: "A jogosultság-ellenőrzés elutasította a háttérműveletet. Néhány módosítás már megtörténhetett; a teljes befejezés nincs igazolva. Ellenőrizze a jelenlegi jogosultságokat és az eredeti művelet bizonylatát. Ellenőrzés nélkül ne küldje el és ne hagyja jóvá újra a módosítást."
+  operationFailed: "A művelet sikertelen; néhány módosítás már megtörténhetett. Új, emberi jóváhagyásra váró előnézet készítése előtt ellenőrizze a meglévő műveletet és az erőforrás állapotát. Ne próbálja újra automatikusan."
+  operationUnknown: "A művelet eredménye nincs megerősítve. Először ellenőrizze a meglévő műveletet és az erőforrás állapotát. Az eredmény tisztázásáig ne küldje el újra, és ne hagyjon jóvá más módosítást."
   catalogReferenceAmbiguous: "Egyes erőforrások megjelenített neve azonos, ezért nem különböztethetők meg biztonságosan. Kiválasztás előtt ellenőrizze a célt a szokásos konzolon."
   catalogLaunchPermissions: "A katalógusból indítás beolvassa a létrehozott erőforrásokat, beállítja a szolgáltatások kapcsolatait, és szolgáltatásokat indíthat. A célhatókörben olvasási, létrehozási és frissítési jogosultság szükséges."
   catalogExternalVolumesPending: "A meglévő külső kötetekre mutató hivatkozások (external=true) még nem támogatottak. Ezeket a sablonokat az előnézet elutasítja; használja a szokásos konzolt."

@@ -1,5 +1,11 @@
 {{#if this.commands.operationNotice}}
-  <div class="alert alert-danger force-wrap" role="alert" data-testid="ai-resource-authorization-denied">{{t "webmcp.backgroundAuthorizationDenied"}}</div>
+  {{#if this.commands.operationNotice.failed}}
+    <div class="alert alert-danger force-wrap" role="alert" data-testid="ai-resource-operation-failed">{{t "webmcp.operationFailed"}}</div>
+  {{else if this.commands.operationNotice.unknown}}
+    <div class="alert alert-warning force-wrap" role="alert" data-testid="ai-resource-operation-unknown">{{t "webmcp.operationUnknown"}}</div>
+  {{else}}
+    <div class="alert alert-danger force-wrap" role="alert" data-testid="ai-resource-authorization-denied">{{t "webmcp.backgroundAuthorizationDenied"}}</div>
+  {{/if}}
 {{/if}}
 {{#if this.commands.pendingPlan}}
   <div class="alert alert-info ai-upgrade-pending" role="status" data-testid="ai-upgrade-pending">

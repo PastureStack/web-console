@@ -4638,6 +4638,8 @@ webmcp:
   bridgeProjectBindingRequired: "透過橋接器重新命名此環境前，請使用者建立新的已綁定本機設定檔，並以新檔案重新連線。保留原設定檔不變；仍可單獨編輯說明。"
   assignedPorts: 實際配置的連接埠對應
   backgroundAuthorizationDenied: "背景操作因權限檢查遭拒，部分變更可能已完成，整體完成狀態尚未驗證。請檢查目前權限，再開啟原操作紀錄核對；不要直接重新送出或再次核准這項變更。"
+  operationFailed: "操作失敗，部分變更可能已完成。請先檢查原操作紀錄與資源狀態，再建立新預覽供人員核准；不要自動重試。"
+  operationUnknown: "操作結果尚未確認。請先檢查原操作紀錄與資源狀態；結果釐清前，不要重新送出或核准其他變更。"
   catalogReferenceAmbiguous: "部分資源顯示名稱相同，無法安全區分。請先在原有主控台核對目標，再進行選取。"
   catalogLaunchPermissions: "從目錄建立會讀回新資源、設定服務連結，並可能啟動服務，因此目標範圍需要讀取、建立及更新權限。"
   catalogExternalVolumesPending: "既有外部資料卷參照（external=true）尚未支援。這類範本會在預覽階段拒絕，請使用原有主控台。"

@@ -5,29 +5,31 @@ import {readFileSync} from 'node:fs';
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + readFileSync(new URL('../app/utils/ai-resource-review-labels.js', import.meta.url)).toString('base64'));
 
 const id = 'aichange-11111111-1111-1111-1111-111111111111';
-function fixture() {
+function fixture(transportKind = 'stdio') {
   const snapshot = {generation: 'g1', accountId: 'a1', projectId: 'p1', projectName: 'Environment', schemaProjectId: 'p1', schemaGeneration: 1, route: '/hosts'};
   let sequence = 0, plan, dispatches = 0;
   const context = new CommandContext(() => snapshot, () => String(++sequence)); context.setMode('enabled');
   const faults = {}, requests = [], rows = ['first', 'selected'].map(suffix => ({id: `host-${suffix}`, accountId: 'p1', name: 'same-name', description: suffix,
     state: 'active', hostname: `${suffix}.example.test`, info: {secret: 'PRIVATE-INFO-CANARY'}, credentials: 'PRIVATE-CREDENTIAL-CANARY', data: {key: 'PRIVATE-DATA-CANARY'}}));
-  const engine = new CommandEngine({context, transportKind: 'stdio', ensureSession: async () => {}, wait: async () => {},
+  const engine = new CommandEngine({context, transportKind, ensureSession: async () => {}, wait: async () => {},
     audit: async () => ({accepted: true, requestId: `audit${++sequence}`}), request: async request => {
       requests.push(request);
       if (request.url === 'projects/p1/aiResourceViews') return {body: {resourceType: 'host',
         data: request.data.resourceId ? rows.filter(row => row.id === request.data.resourceId) : rows}};
+      if (request.method === 'GET' && request.url.startsWith('projects/p1/hosts?')) return {body: {data: rows}};
       if (request.url === 'projects/p1/aiResourceChangePlans') {
         if (faults.preview) { throw faults.preview; }
         const {resourceType, operation, resourceId, parameters} = request.data;
         plan = {id, resourceType, operation, resourceId, targetPath: 'Environment / same-name',
-          changes: parameters.resetName === true ? [{field: 'name', before: 'same-name', after: ''}, {field: 'hostname', before: 'selected.example.test', after: 'selected.example.test'}, ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? [{field: 'description', before: 'selected', after: parameters.description}] : [])] : Object.entries(parameters).map(([field, after]) => ({field, before: field === 'name' ? 'same-name' : 'selected', after})),
+          changes: ['start', 'stop'].includes(operation) ? [{field: 'state', before: operation === 'start' ? 'inactive' : 'active', after: operation === 'start' ? 'active' : 'inactive'}] : parameters.resetName === true ? [{field: 'name', before: 'same-name', after: ''}, {field: 'hostname', before: 'selected.example.test', after: 'selected.example.test'}, ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? [{field: 'description', before: 'selected', after: parameters.description}] : [])] : Object.entries(parameters).map(([field, after]) => ({field, before: field === 'name' ? 'same-name' : 'selected', after})),
           confirmationState: 'pending', status: 'preview', verifiedResult: false, expiresAt: '2026-11-01T00:00:00Z'};
+        if ( faults.changes ) { plan.changes = faults.changes; }
         return {body: {...plan}};
       }
       if (request.url.endsWith('?action=confirm')) { plan.confirmationState = 'approved'; return {body: {...plan}}; }
       if (request.url.endsWith('?action=apply')) {
         if (plan.confirmationState !== 'approved') throw {status: 409, body: {code: 'ResourceChangeNeedsConfirmation'}};
-        dispatches++; plan.status = 'accepted';
+        if ( plan.status === 'preview' ) { dispatches++; plan.status = 'accepted'; }
         if (faults.apply) { throw faults.apply; }
         return {body: {...plan}};
       }
@@ -81,7 +83,7 @@ test('host: project changes invalidate issued references before preview', async 
 
 test('host: capabilities, closed input enum and human review expose only metadata changes', async () => {
   const f = fixture(), capability = (await f.engine.execute('list_capabilities', {})).families.find(family => family.family === 'host').resources[0];
-  assert.deepEqual(capability.operations, ['update_metadata']);
+  assert.deepEqual(capability.operations, ['start', 'stop', 'update_metadata']);
   const tool = COMMANDS.find(tool => tool.name === 'preview_resource_change');
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('host'));
   const labels = resourceReviewLabels({resourceType: 'host', operation: 'update_metadata', displayDiff: [{field: 'description', before: null, after: ''}]}, key => key);
@@ -155,4 +157,58 @@ test('host reset: false null text name combinations foreign types and a forged h
   const preview = await f.engine.execute('preview_resource_change', {resourceType: 'host', operation: 'update_metadata', targetRef, parameters: {resetName: true}});
   assert.equal(preview.status, 'needs_user'); f.plan().changes[1].after = 'forged.example.test';
   assert.equal((await f.engine.confirmPlan(preview.planRef)).code, 'INVALID_RESPONSE'); assert.equal(f.dispatches(), 0);
+});
+
+
+test('host lifecycle: both transports use exact opaque targets, empty native scheduling plans and human confirmation', async () => {
+  for ( const transport of ['browser', 'stdio'] ) for ( const operation of ['start', 'stop'] ) {
+    const f = fixture(transport); f.rows[1].state = operation === 'start' ? 'inactive' : 'active';
+    const found = await f.engine.execute('find_resources', {family: 'host', query: 'same-name'});
+    const preview = await f.engine.execute('preview_resource_change', {resourceType: 'host', operation,
+      targetRef: found.items[1].resourceRef, parameters: {}});
+    assert.equal(preview.status, 'needs_user'); assert.equal(f.requests.at(-1).data.resourceId, 'host-selected');
+    assert.deepEqual(f.requests.at(-1).data.parameters, {});
+    assert.equal(resourceReviewLabels(preview, key => key).operationLabel, operation === 'start' ? 'action.activate' : 'action.deactivate');
+    assert.deepEqual(preview.displayDiff.map(row => [row.field, row.before, row.after]),
+      [['state', operation === 'start' ? 'inactive' : 'active', operation === 'start' ? 'active' : 'inactive']]);
+    assert.equal(JSON.stringify(preview).includes('host-selected'), false); assert.equal(JSON.stringify(preview).includes('PRIVATE-'), false);
+    assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'NEEDS_USER');
+    assert.equal(f.dispatches(), 0); await f.engine.confirmPlan(preview.planRef);
+    const accepted = await f.engine.execute('apply_resource_change', {planRef: preview.planRef});
+    assert.equal(accepted.status, 'accepted'); assert.equal(f.dispatches(), 1);
+    await f.engine.execute('apply_resource_change', {planRef: preview.planRef}); assert.equal(f.dispatches(), 1);
+    f.plan().status = 'succeeded'; f.plan().verifiedResult = true;
+    assert.equal((await f.engine.execute('get_operation', {operationRef: accepted.operationRef})).verifiedResult, true);
+    assert.equal(f.requests.some(row => row.method !== 'GET' && /\/hosts(?:\/|\?|$)|evacuate|docker|agent/.test(row.url)), false);
+  }
+});
+
+test('host lifecycle: metadata mixing, unsafe plans, stale targets and fresh denials never dispatch', async () => {
+  for ( const operation of ['start', 'stop'] ) {
+    const f = fixture(), found = await f.engine.execute('find_resources', {family: 'host'});
+    const input = {resourceType: 'host', operation, targetRef: found.items[1].resourceRef, parameters: {}};
+    const before = f.requests.length;
+    for ( const parameters of [{name: 'mixed'}, {state: 'active'}, {resetName: true}, {labels: {}}, {evacuate: true}] ) {
+      assert.equal((await f.engine.execute('preview_resource_change', {...input, parameters})).code, 'INVALID_INPUT');
+    }
+    assert.equal((await f.engine.execute('preview_resource_change', {...input, targetRef: 'host-selected'})).code, 'STALE_REFERENCE');
+    assert.equal(f.requests.length, before);
+    for ( const changes of [[], [{field: 'state', before: 'active', after: 'active'}],
+      [{field: 'state', before: 'inactive', after: 'inactive'}], [{field: 'name', before: 'old', after: 'new'}],
+      [{field: 'state', before: 'inactive', after: 'active'}, {field: 'description', before: '', after: 'mixed'}]] ) {
+      f.faults.changes = changes;
+      assert.equal((await f.engine.execute('preview_resource_change', input)).code, 'INVALID_RESPONSE');
+      assert.equal(f.dispatches(), 0);
+    }
+    delete f.faults.changes;
+    for ( const [status, code] of [[401, 'ApiKeyRevoked'], [403, 'PermissionDenied'], [409, 'ResourceChangePlanStale']] ) {
+      f.faults.preview = {status, body: {code, detail: 'PRIVATE-CANARY'}};
+      const rejected = await f.engine.execute('preview_resource_change', input);
+      assert.equal(rejected.status, 'rejected'); assert.equal(JSON.stringify(rejected).includes('PRIVATE-'), false);
+      assert.equal(f.dispatches(), 0);
+    }
+    delete f.faults.preview; f.snapshot.projectId = 'foreign'; f.snapshot.schemaProjectId = 'foreign';
+    assert.ok(['STALE_REFERENCE', 'CONTEXT_CHANGED'].includes((await f.engine.execute('preview_resource_change', input)).code));
+  }
+  assert.equal(COMMANDS.length, 12);
 });
