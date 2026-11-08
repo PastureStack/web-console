@@ -114,6 +114,14 @@ export default Service.extend({
     }
 
     function select(project, overwriteDefault) {
+      if (typeof options.commitSelection === 'function') {
+        let selected;
+        return options.commitSelection(() => { selected = applySelection(project, overwriteDefault); }).then(() => selected);
+      }
+      return applySelection(project, overwriteDefault);
+    }
+
+    function applySelection(project, overwriteDefault) {
       if (typeof options.assertSelection === 'function') { options.assertSelection(project); }
       if ( project )
       {
