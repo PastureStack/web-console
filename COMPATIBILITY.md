@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.231 / Bridge 0.2.33 source candidate
+## Web Console 1.6.231 / Bridge 0.2.33 published
 
 Matching Engine: **0.183.390**; planned matching Server: **1.6.588**.
 Compose remains **0.14.44**. The existing twelve tools and SDK **1.32.2**
@@ -10,10 +10,16 @@ Ordinary Compose Stacks in `upgraded` keep their native finish action without
 querying a nonexistent Catalog identity; valid Catalog lookups keep the original
 queue and native instance-action permissions.
 
-This is source only: original CI, the new QUnit regressions, packaged SDK
-qualification, immutable publication, matching deployment and affected native
-acceptance are pending. The published component below remains the installation
-baseline. See the [candidate note](docs/releases/web-console-1.6.231.md).
+Original full/enabled CI passed 360 distinct methods (336 Node / 24 QUnit,
+354 retained plus six new) and 1,149 browser cases with zero failures. Bridge
+0.2.33 passed its real packaged SDK handshake. All thirteen public assets passed
+anonymous SHA256 readback; the immutable release attestation covers fourteen
+subjects. Producer `33e7e1f0584c7f8723faad7f5d3b3d994880b06a` and normal merge/tag
+target `7958b29a1dd3cb12dfc4399aab25f23cc876e225` share the tested tree.
+See the [published metadata](https://github.com/PastureStack/web-console/releases/download/1.6.231/web231-release-metadata.json)
+and [release note](docs/releases/web-console-1.6.231.md).
+Matching Server **1.6.588** assembly/deployment and affected native/UI acceptance
+remain pending; component publication does not update the running Server.
 
 ## Web Console 1.6.230 / Bridge 0.2.32 published
 
