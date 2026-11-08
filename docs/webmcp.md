@@ -6,7 +6,7 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-The [current published component](../README.md#current-component) lists the
+The [current component status](../README.md#current-component) lists the
 compatible Web Console, bridge and Engine versions. A component release alone
 does not establish acceptance of a Server deployment or every frontend workflow.
 
