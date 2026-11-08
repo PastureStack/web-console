@@ -4413,9 +4413,9 @@ apiKeyAudit:
 
 webmcp:
   stackRollbackNotice: "Somente as atualizações restantes de serviços que ainda podem ser revertidas serão desfeitas. Atualizações concluídas e novos serviços ativos sem configuração anterior permanecem inalterados. Serviços adicionados não são excluídos e serviços removidos não são recriados. A contagem mostra todos os serviços registrados na análise, não o número de solicitações de reversão."
-  stackServiceCount: "Serviços na pilha"
-  checkpointOnly: "Somente o ponto de controle da pilha"
-  stackCancelCheckpointNotice: "Esta ação cancela apenas o processo de atualização da pilha. As atualizações de serviços individuais podem continuar em andamento; verifique o estado de cada um separadamente."
+  stackServiceCount: "Serviços do Stack"
+  checkpointOnly: "Somente o ponto de controle do Stack"
+  stackCancelCheckpointNotice: "Esta ação cancela apenas o processo de atualização do Stack. As atualizações de serviços individuais podem continuar em andamento; verifique o estado de cada um separadamente."
   upgradeCancelledState: "Atualização cancelada"
   finishingUpgradeState: "Concluindo a atualização"
   localVolumeCreateNotice: "Cria apenas um registro de Volume local não alocado, sem criar nem montar armazenamento em um Host. Os nomes podem se repetir; somente o novo registro exato é verificado, nunca um volume antigo com o mesmo nome. Escolha um nome distinto."
