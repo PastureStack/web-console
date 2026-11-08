@@ -49,7 +49,7 @@ jobs:
           curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
             --location --retry 3 --retry-all-errors --retry-delay 2 \
             --connect-timeout 30 --max-time 300 --max-filesize 110709506 \
-            --header 'Accept: application/octet-stream' \
+            --header 'Accept: application/octet-stream' --range 0- \
             --output "$archive" \
             'https://api.github.com/repos/actions/python-versions/releases/assets/662863124'
           test "$(stat --format=%s "$archive")" = 110709506
