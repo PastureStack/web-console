@@ -271,6 +271,14 @@ export function publicError(error) {
   const entry = ERRORS[code] || ERRORS.UNKNOWN_RESULT;
   const result = {status: entry[1], code, nextStep: entry[0], contractVersion: COMMAND_VERSION};
   const serverCode = error && error.body && error.body.code;
+  if ( code === 'CONFLICT' && status === 409 && [
+    'StackRollbackGenerationUnavailable', 'StackRollbackGenerationInvalid', 'StackRollbackChildSetChanged',
+    'StackRollbackUnrelatedUpgrade', 'StackRollbackChildAlreadyFinished',
+    'StackRollbackPreviousGenerationMismatch', 'StackRollbackPreviousGenerationInvalid',
+  ].includes(serverCode) ) {
+    result.reason = 'STACK_ROLLBACK_REVIEW_REQUIRED';
+    result.nextStep = 'The native Stack owner cannot safely verify the previous generation. This rollback was not started. Stop retrying this plan and ask the user to inspect the services and available rollback data in the normal console. Refreshing cannot recreate missing historical configuration. Do not finish, cancel or rewrite individual services to force this plan through.';
+  }
   if ( !(error instanceof CommandError) && code === 'STALE_REFERENCE' && status === 422 && serverCode === 'InvalidReference' ) {
     result.reason = 'REFERENCE_UNAVAILABLE';
     result.nextStep = 'The reference is unavailable in the current context. Call find_resources and get_resource again using the same Key and environment, then select a returned opaque resourceRef unchanged. If it is still not visible, ask the user to confirm the intended resource. Do not guess IDs, switch credentials or environments, or expand permissions.';

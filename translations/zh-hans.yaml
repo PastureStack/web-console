@@ -4301,6 +4301,7 @@ apiKeyAudit:
     load: 无法加载密钥审计。请刷新后重试。
 
 webmcp:
+  stackRollbackReviewRequired: "无法安全回滚此堆栈。部分服务已完成升级，或旧版配置、服务列表已改变。本次回滚未启动；请先在常规界面核对各服务和可用的回滚数据。刷新不会补回已丢失的历史数据，请勿反复提交此计划。"
   stackServiceCount: "堆栈内服务数量"
   checkpointOnly: "仅验证堆栈流程检查点"
   stackCancelCheckpointNotice: "此操作只取消堆栈的升级流程，不代表各服务升级已取消或完成。请另外确认各服务状态。"

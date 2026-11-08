@@ -4408,6 +4408,7 @@ apiKeyAudit:
     load: "Hindi ma-load ang pag-audit ng key. I-refresh upang subukang muli."
 
 webmcp:
+  stackRollbackReviewRequired: "Hindi ligtas na maibalik ang stack. Natapos na ang pag-upgrade ng ilang serbisyo, o nagbago ang dating pagsasaayos o listahan ng serbisyo. Hindi sinimulan ang pagbabalik na ito. Suriin ang mga serbisyo at magagamit na datos para sa pagbabalik sa karaniwang console. Hindi maibabalik ng pag-refresh ang nawawalang kasaysayan; huwag paulit-ulit na isumite ang planong ito."
   stackServiceCount: "Bilang ng mga serbisyo sa stack"
   checkpointOnly: "Checkpoint ng stack lamang"
   stackCancelCheckpointNotice: "Proseso lamang ng pag-upgrade ng stack ang kinakansela nito. Maaaring nagpapatuloy pa ang pag-upgrade ng mga serbisyo; suriin nang hiwalay ang katayuan ng bawat isa."

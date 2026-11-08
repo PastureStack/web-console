@@ -4406,6 +4406,7 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  stackRollbackReviewRequired: "Impossible de restaurer cette pile en toute sécurité. Certains services ont terminé leur mise à niveau, ou la configuration précédente ou la liste des services a changé. Cette restauration n’a pas démarré. Vérifiez les services et les données de restauration disponibles dans la console habituelle. Actualiser ne recrée pas l’historique manquant ; ne soumettez plus ce plan."
   stackServiceCount: "Services de la pile"
   checkpointOnly: "Point de contrôle de la pile uniquement"
   stackCancelCheckpointNotice: "Cette action annule uniquement le processus de mise à niveau de la pile. La mise à niveau de certains services peut se poursuivre ; vérifiez leur état séparément."

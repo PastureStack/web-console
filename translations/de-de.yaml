@@ -4461,6 +4461,7 @@ apiKeyAudit:
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
 
 webmcp:
+  stackRollbackReviewRequired: "Der Stapel kann nicht sicher zurückgesetzt werden. Einige Dienste haben das Upgrade abgeschlossen, oder die vorherige Konfiguration oder Dienstliste wurde geändert. Diese Rücksetzung wurde nicht gestartet. Prüfen Sie die Dienste und verfügbaren Rücksetzungsdaten in der normalen Konsole. Neuladen stellt keinen fehlenden Verlauf wieder her; senden Sie diesen Plan nicht erneut."
   stackServiceCount: "Dienste im Stack"
   checkpointOnly: "Nur Stack-Prüfpunkt"
   stackCancelCheckpointNotice: "Dies bricht nur den Upgrade-Prozess des Stacks ab. Upgrades einzelner Dienste können weiterhin laufen; prüfen Sie deren Status gesondert."

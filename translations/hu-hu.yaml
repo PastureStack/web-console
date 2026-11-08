@@ -4424,6 +4424,7 @@ apiKeyAudit:
     load: Nem sikerült betölteni a kulcsauditot. Frissítsen az újrapróbáláshoz.
 
 webmcp:
+  stackRollbackReviewRequired: "A verem nem állítható vissza biztonságosan. Egyes szolgáltatások frissítése befejeződött, vagy a korábbi konfiguráció vagy a szolgáltatáslista megváltozott. Ez a visszaállítás nem indult el. Ellenőrizze a szolgáltatásokat és az elérhető visszaállítási adatokat a szokásos konzolon. A frissítés nem hozza vissza a hiányzó előzményeket; ne küldje el újra ezt a tervet."
   stackServiceCount: "A verem szolgáltatásainak száma"
   checkpointOnly: "Csak a verem ellenőrzési pontja"
   stackCancelCheckpointNotice: "Ez csak a verem frissítési folyamatát szakítja meg. Az egyes szolgáltatások frissítése még folyamatban lehet; állapotukat külön ellenőrizze."
