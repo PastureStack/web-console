@@ -184,6 +184,8 @@ export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
   rollback: Object.freeze({before: Object.freeze(['upgrading', 'upgraded', 'canceled-upgrade']), after: 'active'}),
   cancel_upgrade: Object.freeze({before: Object.freeze(['upgrading', 'finishing-upgrade']), after: 'canceled-upgrade'}),
 });
+// These native checkpoints share phase names, but Stack child settlement remains server-owned.
+export const STACK_UPGRADE_LIFECYCLE = SERVICE_UPGRADE_LIFECYCLE;
 export const RESOURCE_CHANGES = Object.freeze({
   port: Object.freeze({update_public_port: action(['publicPort'], ['publicPort'])}),
   instanceLink: Object.freeze({update_target: action(['targetInstanceRef'], ['targetInstanceRef'])}),
@@ -194,6 +196,7 @@ export const RESOURCE_CHANGES = Object.freeze({
   certificate: Object.freeze({update_metadata: metadata}),
   host: Object.freeze({start: action(), stop: action(), update_metadata: action(['name', 'description', 'resetName'], [], 1)}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
+    finish_upgrade: action(), rollback: action(), cancel_upgrade: action(),
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name'], 0, 'aiCatalogStackLaunchPlans'), update_metadata: action(['name', 'description', 'group'], [], 1)}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(),
     finish_upgrade: action(), rollback: action(), cancel_upgrade: action(), scale: action(['scale'], ['scale']),
@@ -215,7 +218,7 @@ export const BROWSER_LOCAL_INTENTS = Object.freeze(RESOURCE_CHANGE_INTENTS.filte
   .sort((a, b) => a.operation.localeCompare(b.operation)));
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
 export const RESOURCE_CHANGE_FIELDS = Object.freeze(['sourceContainer', 'targetContainer', 'publicPort', 'privatePort', 'protocol', 'bindAddress', 'linkName', 'name', 'description', 'group', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
-  'portRules', 'driver', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
+  'portRules', 'driver', 'state', 'operation', 'checkpointOnly', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can
 // contain credentials (including audit payloads, stack YAML and key policies).

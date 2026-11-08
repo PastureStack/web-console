@@ -1,7 +1,7 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, ordinaryServiceLinks, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
 import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, SERVICE_UPGRADE_CONFIG_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
-import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, safeRegistryAddress, truncatedResourceFields, configuredPolicyRead } from './ai-resource-registry';
+import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, STACK_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, safeRegistryAddress, truncatedResourceFields, configuredPolicyRead } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
 import {boundedContainerLogs} from './ai-container-logs';
@@ -28,6 +28,11 @@ export function serviceUpgradeReview(summary) {
   return summary && summary.upgradeStrategy ? JSON.stringify([summary.displayPath, summary.currentImage, summary.requestedImage,
     ...SERVICE_UPGRADE_FIELDS.map((field) => summary.upgradeStrategy[field]),
     ...(summary.configurationChanges ? [summary.configurationChanges] : [])]) : null;
+}
+
+export function stackUpgradeReview(summary) {
+  return summary && summary.resourceType === 'stack' && Object.prototype.hasOwnProperty.call(STACK_UPGRADE_LIFECYCLE, summary.operation) ?
+    JSON.stringify([summary.resourceType, summary.operation, summary.displayPath, summary.displayDiff]) : null;
 }
 
 function upgradeConfigurationValue(field, value) {
@@ -201,8 +206,8 @@ export class CommandEngine {
         'Check the native PortSpec strings and healthCheck fields and bounds. The server rejected this input. If these fields are unsupported on this server version, use the matching typed-create adapter or the normal console. Do not drop requested settings, send launchConfig or retry through a generic update.' :
         result.field && /^parameters\.(ports|healthCheck)(\.|\[|$)/.test(result.field) ?
         'Service and Container create accept ports as at most 64 native PortSpec strings of 1 through 128 UTF-16 units. Container create verifies stopped configuration; start and live host bindings need a separate approved plan. Only Service create accepts healthCheck with required port 1 through 65535 and the exact schema fields and bounds. Timings are milliseconds; thresholds count checks. Service create requires the selected Stack parentRef unchanged; Container create has no parentRef.' :
-        input && input.resourceType === 'service' && Object.prototype.hasOwnProperty.call(SERVICE_UPGRADE_LIFECYCLE, input.operation) && result.field && result.field.startsWith('parameters') ?
-        'Use this selected Service targetRef and empty parameters for the existing upgrade lifecycle action. Do not send an image, strategy, state or raw action. A new image upgrade uses preview_service_upgrade and a separate human-approved plan; do not silently substitute it.' :
+        input && ['service', 'stack'].includes(input.resourceType) && Object.prototype.hasOwnProperty.call(SERVICE_UPGRADE_LIFECYCLE, input.operation) && result.field && result.field.startsWith('parameters') ?
+        input.resourceType === 'stack' ? 'Use the selected Stack targetRef and empty parameters: {} for this native Stack upgrade lifecycle action. Do not send an image, count, checkpoint flag, state or raw action. A new Stack image or Catalog upgrade is a different workflow; do not substitute a Service upgrade. The exact plan still requires human confirmation.' : 'Use this selected Service targetRef and empty parameters for the existing upgrade lifecycle action. Do not send an image, strategy, state or raw action. A new image upgrade uses preview_service_upgrade and a separate human-approved plan; do not silently substitute it.' :
         input && ['archive', 'restore'].includes(input.operation) && result.field && result.field.startsWith('parameters') ?
         'Preview archive or restore separately with an existing targetRef and empty parameters. Do not include a service clone, archive flag or other settings.' : repairs[result.field] || (result.field && /^parameters\.(command|entryPoint)(\[\d+\])?$/.test(result.field) ?
         'Use a string array: at most 64 items, 4096 UTF-16 units per item, 16384 in total, and no NUL. These arrays are supported only for service/container create.' :
@@ -944,7 +949,7 @@ export class CommandEngine {
           return {...result, verifiedResult: false, nextStep: 'Check the current browser environment or personal default in the console. If another attempt is needed, create a fresh preview for a new human confirmation; do not replay this action.'};
         }
       }
-      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || reference.stackUpgradeReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -997,6 +1002,7 @@ export class CommandEngine {
       if ( reference.stackGroupReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.stackGroupReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.serviceLinksReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.serviceLinksReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.containerNetworkReview && containerNetworkReview(summary) !== reference.containerNetworkReview ) { throw new CommandError('CONFLICT'); }
+      if ( reference.stackUpgradeReview && stackUpgradeReview(summary) !== reference.stackUpgradeReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.hostResetReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.hostResetReview ) { throw new CommandError('CONFLICT'); }
       return;
     }
@@ -1041,9 +1047,12 @@ export class CommandEngine {
       result.workflow = [...ALIAS_WORKFLOW]; result.targetsBound = false;
       if ( result.status === 'succeeded' && result.verifiedResult === true ) { result.nextStep = ALIAS_CREATE_NEXT_STEP; }
     }
-    if ( plan.resourceType === 'service' && plan.operation === 'cancel_upgrade' && result.status === 'succeeded' && result.verifiedResult === true ) {
+    if ( ['service', 'stack'].includes(plan.resourceType) && plan.operation === 'cancel_upgrade' && result.status === 'succeeded' && result.verifiedResult === true ) {
       result.completionScope = 'cancellation-checkpoint';
       result.nextStep = 'Only the native upgrade cancellation checkpoint is verified. The upgrade or rollback has not been completed. Read the same Service again before requesting a separately approved next operation.';
+      if ( plan.resourceType === 'stack' ) {
+        result.nextStep = 'Only the native Stack cancellation checkpoint is verified. Individual service upgrades may still be in progress; their completion or cancellation is not established. Read the same Stack and its services before a separately approved finish or rollback.';
+      }
     }
     if ( plan.id && plan.id.startsWith('aicataloglaunch-') && plan.createdResource ) {
       const captured = this.context.capture(), created = plan.createdResource;
@@ -1132,6 +1141,8 @@ export class CommandEngine {
       if ( !change || !RESOURCE_CHANGE_FIELDS.includes(change.field) ||
         ![change.before, change.after].every((value) => value === null || typeof value === 'string' && value.length <= (['command', 'entryPoint', 'targetServices', 'ports', 'healthCheck', 'portRules'].includes(change.field) ? 100000 : 1024) ||
           typeof value === 'boolean' || typeof value === 'number' && Number.isFinite(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'checkpointOnly' && (plan.resourceType !== 'stack' ||
+        !Object.prototype.hasOwnProperty.call(STACK_UPGRADE_LIFECYCLE, plan.operation)) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'group' && (plan.resourceType !== 'stack' || plan.operation !== 'update_metadata' ||
         [change.before, change.after].some(value => value !== null && (typeof value !== 'string' || value.length > 255 || value.includes('\0')))) ) { throw new CommandError('INVALID_RESPONSE'); }
       if ( change.field === 'driver' && (plan.resourceType !== 'volume' || plan.operation !== 'create' || change.before !== null || change.after !== 'local') ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -1218,6 +1229,18 @@ export class CommandEngine {
         state = displayDiff.find((change) => change.field === 'state');
       if ( displayDiff.length !== 2 || !operation || operation.before !== null || operation.after !== plan.operation ||
         !state || !expected.before.includes(state.before) || state.after !== expected.after ) { throw new CommandError('INVALID_RESPONSE'); }
+    }
+    if ( plan.resourceType === 'stack' && Object.prototype.hasOwnProperty.call(STACK_UPGRADE_LIFECYCLE, plan.operation) ) {
+      const expected = STACK_UPGRADE_LIFECYCLE[plan.operation], operation = displayDiff.find(row => row.field === 'operation'),
+        state = displayDiff.find(row => row.field === 'state'), count = displayDiff.find(row => row.field === 'affectedServiceCount'),
+        checkpoint = displayDiff.find(row => row.field === 'checkpointOnly');
+      if ( displayDiff.length !== 4 || new Set(displayDiff.map(row => row.field)).size !== 4 ||
+        !operation || operation.before !== null || operation.after !== plan.operation ||
+        !state || !expected.before.includes(state.before) || state.after !== expected.after ||
+        !count || !Number.isSafeInteger(count.before) || count.before < 0 || count.after !== count.before ||
+        !checkpoint || checkpoint.before !== null || checkpoint.after !== (plan.operation === 'cancel_upgrade') ) {
+        throw new CommandError('INVALID_RESPONSE');
+      }
     }
     if ( SERVICE_CREATE_FIELDS.some((field) => displayDiff.filter((change) => change.field === field).length > 1) ) { throw new CommandError('INVALID_RESPONSE'); }
     let executionResult;
@@ -1419,6 +1442,9 @@ export class CommandEngine {
       if ( input.resourceType === 'port' && summary.displayDiff.find(row => row.field === 'publicPort').after !== parameters.publicPort ) { throw new CommandError('INVALID_RESPONSE'); }
       reference.containerNetworkReview = containerNetworkReview(summary);
     }
+    if ( input.resourceType === 'stack' && Object.prototype.hasOwnProperty.call(STACK_UPGRADE_LIFECYCLE, input.operation) ) {
+      reference.stackUpgradeReview = stackUpgradeReview(this.resourcePlanSummary(plan, null));
+    }
     const planRef = this.context.reference('plan', reference, captured);
     const summary = this.resourcePlanSummary(plan, planRef);
     this.onPlan(Object.assign({context: captured}, summary));
@@ -1438,15 +1464,17 @@ export class CommandEngine {
     const operationRef = reference.operationRef || this.context.reference('operation', Object.assign({}, reference, {lastStatus: 'unknown'}), captured);
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
+    let responded = false;
     try {
-      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || reference.stackUpgradeReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);
+      responded = true;
       this.assertPlan(plan, reference);
       return this.operationSummary(plan, operationRef, observeOperation);
     } catch (error) {
-      if ( publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ||
+      if ( responded || publicError(error).status === 'unknown' || error.code === 'CONTEXT_CHANGED' ||
         reference.planKind === 'catalog-launch' && error.code === 'INVALID_RESPONSE' ) {
         if ( reference.planKind === 'catalog-launch' ) { observeOperation.call(this, {planId: reference.id, status: 'unknown'}); }
         throw new UnknownOperation(operationRef);

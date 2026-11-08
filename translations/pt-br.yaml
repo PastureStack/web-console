@@ -4412,6 +4412,11 @@ apiKeyAudit:
     load: "Não foi possível carregar a auditoria da chave. Atualize para tentar novamente."
 
 webmcp:
+  stackServiceCount: "Serviços na pilha"
+  checkpointOnly: "Somente o ponto de controle da pilha"
+  stackCancelCheckpointNotice: "Esta ação cancela apenas o processo de atualização da pilha. As atualizações de serviços individuais podem continuar em andamento; verifique o estado de cada um separadamente."
+  upgradeCancelledState: "Atualização cancelada"
+  finishingUpgradeState: "Concluindo a atualização"
   localVolumeCreateNotice: "Cria apenas um registro de Volume local não alocado, sem criar nem montar armazenamento em um Host. Os nomes podem se repetir; somente o novo registro exato é verificado, nunca um volume antigo com o mesmo nome. Escolha um nome distinto."
   bridgeProjectBindingRequired: "Antes de renomear este ambiente pela ponte, peça ao usuário que crie um novo perfil local vinculado ao ambiente e se reconecte com o novo arquivo. Mantenha o perfil existente sem alterações. A descrição ainda pode ser editada separadamente."
   assignedPorts: Mapeamentos de portas atribuídos

@@ -4634,6 +4634,11 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
+  stackServiceCount: "堆疊內服務數量"
+  checkpointOnly: "僅驗證堆疊流程檢查點"
+  stackCancelCheckpointNotice: "此操作只取消堆疊的升級流程，不代表各服務升級已取消或完成。請另外確認各服務狀態。"
+  upgradeCancelledState: "升級已取消"
+  finishingUpgradeState: "正在完成升級"
   localVolumeCreateNotice: "只建立尚未配置的本機 Volume 紀錄，不會在 Host 建立或掛載儲存空間。名稱可能重複；本計畫只驗證原生回傳的新紀錄，不會採用舊的同名卷。請選擇不同名稱，避免混淆既有資料。"
   bridgeProjectBindingRequired: "透過橋接器重新命名此環境前，請使用者建立新的已綁定本機設定檔，並以新檔案重新連線。保留原設定檔不變；仍可單獨編輯說明。"
   assignedPorts: 實際配置的連接埠對應

@@ -4424,6 +4424,11 @@ apiKeyAudit:
     load: Nem sikerült betölteni a kulcsauditot. Frissítsen az újrapróbáláshoz.
 
 webmcp:
+  stackServiceCount: "A verem szolgáltatásainak száma"
+  checkpointOnly: "Csak a verem ellenőrzési pontja"
+  stackCancelCheckpointNotice: "Ez csak a verem frissítési folyamatát szakítja meg. Az egyes szolgáltatások frissítése még folyamatban lehet; állapotukat külön ellenőrizze."
+  upgradeCancelledState: "Frissítés megszakítva"
+  finishingUpgradeState: "Frissítés befejezése"
   localVolumeCreateNotice: "Csak egy még ki nem osztott helyi kötetrekordot hoz létre; nem hoz létre és nem csatol tárhelyet a gazdagépen. A nevek ismétlődhetnek; csak az új rekordot ellenőrzi, nem egy korábbi azonos nevű kötetet. Válasszon eltérő nevet."
   bridgeProjectBindingRequired: "A környezet hídon keresztüli átnevezése előtt kérje meg a felhasználót, hogy hozzon létre egy új, a környezethez rögzített helyi profilt, majd az új fájllal csatlakozzon újra. A meglévő profil maradjon változatlan. A leírás továbbra is külön szerkeszthető."
   assignedPorts: Kiosztott port-hozzárendelések

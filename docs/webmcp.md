@@ -105,6 +105,26 @@ upgrade or rollback. `cancel_rollback` is unavailable because there is no native
 capability. Keep an accepted, running or unknown operation and read its receipt;
 do not reapply it. The existing dedicated image-upgrade flow remains separate.
 
+### Unreleased Stack upgrade completion and rollback
+
+The next source candidate extends the same three empty-parameter upgrade
+operations to `resourceType: "stack"`. It needs the matching native Engine
+generation safeguards and Compose rollback correction; it is not supported by
+the published component assembly above.
+
+Each Stack review binds the operation, native before/after phase, complete captured
+service count and `checkpointOnly`. The count describes the captured Stack service
+set, not how many child requests will be dispatched. Cancelling verifies only the
+Stack cancellation checkpoint: individual service upgrades may still be running
+and need separate inspection. Finish and rollback require native parent-process
+and child configuration, readiness and old-instance retirement evidence.
+
+A changed review requires a fresh preview. A response that cannot be verified
+after submission retains the same operation reference for read-only recovery;
+it must not cause a second dispatch. Legacy generations that cannot safely
+establish rollback remain explicit failures with their data preserved. These
+source controls do not establish native, role/Key, browser or weak-model acceptance.
+
 ### Project and load-balancer metadata
 
 `preview_resource_change` accepts only `name` and `description` for the currently

@@ -39,6 +39,12 @@ for component evidence.
 
 ## Features and operator guides
 
+Unreleased development work adds typed Stack finish-upgrade, cancellation and
+rollback through the normal native owners. Its matching Engine generation guards
+and Compose rollback fix are still candidates; the published component above does
+not include this workflow. Source tests are separate from a matching release and
+deployed acceptance.
+
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for
   resource discovery, conditional descriptions and server-owned lifecycle plans.
   Disabled by default. Includes human review controls and an optional

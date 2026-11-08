@@ -19,6 +19,7 @@
   {{/if}}
   <dt>{{t "webmcp.expires"}}</dt><dd>{{this.displayExpiry}}</dd>
 </dl>
+{{#if this.reviewLabels.stackCancelCheckpointNotice}}<div class="alert alert-warning" role="note" data-testid="ai-stack-cancel-checkpoint-notice">{{this.reviewLabels.stackCancelCheckpointNotice}}</div>{{/if}}
 {{#if this.reviewLabels.executionAssignedPorts}}<section data-testid="ai-resource-execution-result">
   <h4>{{t "apiKeyAudit.outcome"}}</h4>
   <dl class="horizontal-form"><dt>{{t "webmcp.assignedPorts"}}</dt><dd><pre class="ai-resource-diff-value">{{this.reviewLabels.executionAssignedPorts}}</pre></dd></dl>

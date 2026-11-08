@@ -4858,6 +4858,11 @@ formResources:
     map: "Use non-empty keys and values for advanced options."
 
 webmcp:
+  stackServiceCount: "Services in the Stack"
+  checkpointOnly: "Stack checkpoint only"
+  stackCancelCheckpointNotice: "This cancels only the Stack upgrade process. Individual service upgrades may still be in progress; inspect their status separately."
+  upgradeCancelledState: "Upgrade cancelled"
+  finishingUpgradeState: "Finishing upgrade"
   localVolumeCreateNotice: "Creates only an unallocated local Volume record, without creating or mounting storage on a Host. Names may repeat; this plan verifies the exact new record, never an older same-name volume. Choose a distinct name to avoid confusing existing data."
   bridgeProjectBindingRequired: "To rename this environment through the bridge, ask the user to create a new bound local profile and reconnect with the new file. Keep the existing profile unchanged. Description-only edits remain available."
   assignedPorts: Assigned port mappings
