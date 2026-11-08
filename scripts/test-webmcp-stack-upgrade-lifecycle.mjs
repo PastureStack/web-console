@@ -173,6 +173,8 @@ test('Stack upgrade lifecycle: localized review separates total services, cancel
     const service = resourceReviewLabels({...plan, resourceType: 'service', displayDiff: plan.displayDiff.slice(0, 2)}, key => 'TEXT:' + key);
     assert.equal(service.stackCancelCheckpointNotice, null);
     assert.equal(service.stackRollbackNotice, null);
+    assert.equal(service.displayChanges[1].before, before);
+    assert.equal(service.displayChanges[1].after, operation === 'cancel_upgrade' ? 'canceled-upgrade' : 'TEXT:formPorts.preflight.state.active');
   }
 });
 

@@ -9,11 +9,11 @@ const FIELDS = {selectedEnvironment: 'nav.environment.label', defaultEnvironment
   catalogTemplate: 'newCatalog.catalog', catalogVersion: 'newCatalog.templateVersion', serviceCount: 'apiKeyAccess.selector.types.service',
   volumeCount: 'apiKeyAccess.selector.types.volume', humanInputCount: 'webmcp.catalogHumanInputCount', referenceCount: 'webmcp.catalogReferenceCount', archived: 'archive.filterLabel'};
 const STATES = {active: 'formPorts.preflight.state.active', inactive: 'formPorts.preflight.state.inactive',
-  upgrading: 'upgradeBtn.status.inprogress', upgraded: 'upgradeBtn.status.upgraded',
-  'canceled-upgrade': 'webmcp.upgradeCancelledState', 'finishing-upgrade': 'webmcp.finishingUpgradeState',
   running: 'formPorts.preflight.state.running', stopped: 'formPorts.preflight.state.stopped',
   removed: 'webmcp.removedState', mixed: 'webmcp.mixedState', empty: 'webmcp.emptyStack',
   start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove'};
+const STACK_UPGRADE_STATES = {upgrading: 'upgradeBtn.status.inprogress', upgraded: 'upgradeBtn.status.upgraded',
+  'canceled-upgrade': 'webmcp.upgradeCancelledState', 'finishing-upgrade': 'webmcp.finishingUpgradeState'};
 const HEALTH_FIELDS = {port: 'port', requestLine: 'request', interval: 'interval', responseTimeout: 'timeout', healthyThreshold: 'healthyThreshold',
   unhealthyThreshold: 'unhealthyThreshold', initializingTimeout: 'initializingTimeout', reinitializingTimeout: 'reinitializingTimeout', strategy: 'strategy'};
 
@@ -65,7 +65,10 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
         return rows.join('\n');
       } catch (error) { return plan.resourceType === 'externalService' ? text('generic.unknown') : String(input); }
     }
-    if ( ['state', 'childServiceState'].includes(field) && label(STATES, input) ) { return text(label(STATES, input)); }
+    if ( ['state', 'childServiceState'].includes(field) ) {
+      const stateLabel = label(STATES, input) || (stackUpgrade && label(STACK_UPGRADE_STATES, input));
+      if ( stateLabel ) { return text(stateLabel); }
+    }
     if ( field === 'operation' && label(OPERATIONS, input) ) { return text(label(OPERATIONS, input)); }
     return String(input);
   };
