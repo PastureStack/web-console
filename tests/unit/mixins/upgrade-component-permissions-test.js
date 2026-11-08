@@ -74,7 +74,7 @@ test('valid Catalog upgraded and available states retain the existing queue and 
       }),
     });
     let fetched = new Promise((done) => subject.addObserver('upgradeInfo', () => done()));
-    run(() => subject.updateStatus());
+    // init already queued this lookup; observe that real lifecycle once.
     if (state === 'upgraded') {
       assert.strictEqual(subject.get('upgradeStatus'), 'upgraded', 'native finish remains visible immediately');
     }
