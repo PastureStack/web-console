@@ -20,7 +20,7 @@ function fixture() {
         if (faults.preview) { throw faults.preview; }
         const {resourceType, operation, resourceId, parameters} = request.data;
         plan = {id, resourceType, operation, resourceId, targetPath: 'Environment / same-name',
-          changes: Object.entries(parameters).map(([field, after]) => ({field, before: field === 'name' ? 'same-name' : 'selected', after})),
+          changes: parameters.resetName === true ? [{field: 'name', before: 'same-name', after: ''}, {field: 'hostname', before: 'selected.example.test', after: 'selected.example.test'}, ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? [{field: 'description', before: 'selected', after: parameters.description}] : [])] : Object.entries(parameters).map(([field, after]) => ({field, before: field === 'name' ? 'same-name' : 'selected', after})),
           confirmationState: 'pending', status: 'preview', verifiedResult: false, expiresAt: '2026-11-01T00:00:00Z'};
         return {body: {...plan}};
       }
@@ -121,4 +121,38 @@ test('host and certificate: machine guidance names the exact metadata subset wit
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('certificate'));
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('host'));
   assert.equal(COMMANDS.filter(tool => tool.name === 'preview_resource_change').length, 1);
+});
+
+
+test('host reset: explicit true previews the native hostname and pins human confirmation without direct Host writes', async () => {
+  const f = fixture(), found = await f.engine.execute('find_resources', {family: 'host'});
+  const preview = await f.engine.execute('preview_resource_change', {resourceType: 'host', operation: 'update_metadata', targetRef: found.items[1].resourceRef, parameters: {resetName: true, description: null}});
+  assert.equal(preview.status, 'needs_user'); assert.ok(preview.nextStep.includes('restored displayed name'));
+  assert.deepEqual(f.requests.find(r => r.url === 'projects/p1/aiResourceChangePlans').data.parameters, {resetName: true, description: null});
+  assert.deepEqual(preview.displayDiff.map(r => [r.field, r.after]), [['name', ''], ['hostname', 'selected.example.test'], ['description', null]]);
+  const labels = resourceReviewLabels(preview, key => key);
+  assert.equal(labels.displayChanges[0].fieldLabel, 'editHost.customName.label');
+  assert.equal(labels.displayChanges[0].after, 'webmcp.emptyValue');
+  assert.equal(labels.displayChanges[1].fieldLabel, 'action.restore generic.name (editHost.hostname.label)'); assert.equal(labels.displayChanges[1].informational, true);
+  assert.equal((await f.engine.execute('apply_resource_change', {planRef: preview.planRef})).code, 'NEEDS_USER');
+  f.plan().changes[1].before = f.plan().changes[1].after = 'other.example.test';
+  const before = f.requests.filter(r => r.url.endsWith('?action=confirm')).length;
+  assert.equal((await f.engine.confirmPlan(preview.planRef)).code, 'CONFLICT');
+  assert.equal(f.requests.filter(r => r.url.endsWith('?action=confirm')).length, before); assert.equal(f.dispatches(), 0);
+  assert.ok(f.requests.every(r => r.method !== 'PUT' && !r.url.startsWith('hosts/')));
+});
+
+test('host reset: false null text name combinations foreign types and a forged hostname never reach confirmation', async () => {
+  const f = fixture(), found = await f.engine.execute('find_resources', {family: 'host'}), targetRef = found.items[0].resourceRef;
+  for (const parameters of [{resetName: false}, {resetName: null}, {resetName: 'true'}, {resetName: true, name: 'x'}, {name: ''}, {resetName: true, hostname: 'evil'}]) {
+    const before = f.requests.length;
+    const denied = await f.engine.execute('preview_resource_change', {resourceType: 'host', operation: 'update_metadata', targetRef, parameters});
+    assert.equal(denied.code, 'INVALID_INPUT');
+    if ( !Object.prototype.hasOwnProperty.call(parameters, 'hostname') ) { assert.ok(denied.nextStep.includes('resetName: true')); assert.ok(denied.nextStep.includes('omit name')); }
+    assert.equal(f.requests.length, before);
+  }
+  assert.equal((await f.engine.execute('preview_resource_change', {resourceType: 'service', operation: 'update_metadata', targetRef, parameters: {resetName: true}})).code, 'INVALID_INPUT');
+  const preview = await f.engine.execute('preview_resource_change', {resourceType: 'host', operation: 'update_metadata', targetRef, parameters: {resetName: true}});
+  assert.equal(preview.status, 'needs_user'); f.plan().changes[1].after = 'forged.example.test';
+  assert.equal((await f.engine.confirmPlan(preview.planRef)).code, 'INVALID_RESPONSE'); assert.equal(f.dispatches(), 0);
 });

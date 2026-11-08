@@ -23,6 +23,13 @@ consistency remain binding. See the
 Server deployment and native acceptance remain separate; this is partial
 WebMCP coverage, not all 243 frontend groups.
 
+## Next source candidate
+
+Web Console **1.6.227** / Bridge **0.2.29** targets Engine **0.183.387** for
+Host custom-name reset and single-child Container Port/Link edits through the
+existing twelve tools. CI, publication, matching deployment and native acceptance
+are pending. See the [candidate note](docs/releases/web-console-1.6.227.md).
+
 ## Features and operator guides
 
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for

@@ -38,7 +38,7 @@ checks remain authoritative, and unsupported capabilities stay unavailable.
 
 For an ordinary Service, `preview_resource_change` accepts `operation: "update_links"`
 with `parameters: {serviceRefs: [...]}` for plain links. In source candidate
-1.6.226 / Bridge 0.2.28, use exactly one of that branch or
+1.6.227 / Bridge 0.2.29, use exactly one of that branch or
 `parameters: {links: [{serviceRef, name}]}` for native named/plain pairs. Both
 replace the complete set (at most sixteen); `[]` clears it. Select fresh opaque
 references, compare the complete Stack/service paths and exact aliases, then
@@ -103,8 +103,9 @@ Current published Web Console **1.6.225** / Bridge **0.2.27** is qualified with
 Engine **0.183.385**. Use the repository's current installation guide and matching
 qualified Server assembly.
 
-This checkout is the **1.6.226 / 0.2.28 source candidate**, requiring minimum and
-matching Engine **0.183.386**. It adds named ordinary-Service links and only an
+This checkout is the **1.6.227 / 0.2.29 source candidate**, requiring minimum and
+matching Engine **0.183.387**. It adds explicit Host custom-name reset and one-child Container Port/Link edits;
+legacy native Port PUT without the new optional header stays supported. It retains named ordinary-Service links and an
 External Service create `healthCheck.requestLine` (0..1024 characters, no NUL/CR/LF).
 Omission or an empty line selects TCP; URL, headers, credentials and health-check
 updates are outside this addition. Human review and native field permissions
@@ -113,8 +114,8 @@ native acceptance are pending. The version-bound commands below are for its
 matching archive after publication; until then use the current published guide.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.226
-BRIDGE_VERSION=0.2.28
+WEB_CONSOLE_VERSION=1.6.227
+BRIDGE_VERSION=0.2.29
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

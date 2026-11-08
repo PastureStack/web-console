@@ -9,12 +9,39 @@ import { createOwned, destroyOwned } from '../../helpers/owned-subject';
 
 module('Unit | Component | edit container');
 
+test('Port save sends its exact native before tuple and rolls back a rejected conditional update', async function(assert) {
+  let calls = [];
+  let {component, port} = makeComponent({primarySave: resolve, linkSave: resolve,
+    portSave(options) { calls.push(options); return resolve(port); }}, []);
+  component.set('model.instance.uuid', 'source-uuid');
+  port.setProperties({uuid: 'port-uuid', accountId: '1a5', instanceId: '1i3', privatePort: 80, protocol: 'tcp', bindAddress: ''});
+  await component.savePorts();
+  assert.deepEqual(JSON.parse(calls[0].headers['X-PastureStack-Port-Before']), {uuid: 'port-uuid', sourceUuid: 'source-uuid',
+    accountId: '1a5', instanceId: '1i3', publicPort: 80, privatePort: 80, protocol: 'tcp', bindAddress: ''});
+  port.set('save', () => { throw new Error('PortUpdateConflict'); });
+  component.set('portsArray', A([{public: '9090', obj: port}]));
+  await assert.rejects(component.savePorts(), /PortUpdateConflict/);
+  assert.strictEqual(port.get('publicPort'), 8080, 'a rejected conditional save restores the last value');
+  component.set('portsArray', A([{public: '8080', obj: port}]));
+  await component.savePorts();
+  assert.strictEqual(calls.length, 1, 'an unchanged port does not submit another save');
+  component.set('portsArray', A([{public: '9090', obj: port}]));
+  port.set('uuid', undefined);
+  port.set('save', () => { calls.push('unexpected'); return resolve(port); });
+  await assert.rejects(component.savePorts(), /PortUpdatePreconditionRequired/);
+  assert.strictEqual(port.get('publicPort'), 8080, 'a missing native tuple cannot mutate local state');
+  assert.strictEqual(calls.length, 1, 'a missing native tuple cannot reach save');
+  destroyOwned(component);
+});
+
 function makeComponent({primarySave, portSave, linkSave}, closed) {
   let instance = EmberObject.create({
+    uuid: 'source-uuid',
     validationErrors() { return A([]); },
     save: primarySave,
   });
   let port = EmberObject.create({
+    uuid: 'port-uuid', accountId: '1a5', instanceId: '1i3', privatePort: 80, protocol: 'tcp', bindAddress: '',
     publicPort: 80,
     save: portSave,
   });

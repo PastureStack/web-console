@@ -83,7 +83,7 @@ async function fixture(dir){
       fields.upgradeStrategy={type:'json',create:false,update:false};
     }
     if(name==='aiResourceChangePlan'){
-      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService','registry','volume'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','update_links','scale','archive','restore','finish_upgrade','rollback','cancel_upgrade'];fields.parameters.type='json';
+      fields.resourceType.options=['stack','service','container','externalService','dnsService','certificate','host','project','loadBalancerService','registry','volume','port','instanceLink'];fields.operation.options=['start','stop','restart','remove','create','update_metadata','update_targets','update_links','scale','archive','restore','finish_upgrade','rollback','cancel_upgrade','update_public_port','update_target'];fields.parameters.type='json';
     }
     if(name==='aiCatalogMetadataView'){
       for(const [field,limit] of Object.entries({query:256,marker:128,templateId:68,versionId:68}))Object.assign(fields[field],{type:'string',maxLength:limit});
@@ -121,6 +121,7 @@ async function fixture(dir){
   for(const role of ['admin','user','project'])await fs.writeFile(path.join(schema,role,role+'-auth.json'),JSON.stringify({authorize:Object.fromEntries(names.flatMap(name=>[
     [name,['aiCatalogStackLaunchInputs','aiAuditSourcePageInput'].includes(name)?'r':name.startsWith('aiCatalogStackLaunch')||name==='aiAuditQuery'||name==='aiResourceView'?'cr':'c'],
     ...Object.entries(declarations.get(name).resourceFields).map(([field,value])=>[name+'.'+field,value.create?(name.startsWith('aiCatalogStackLaunch')||name.startsWith('aiAudit')||name==='aiResourceView'?'cr':'c'):'r'])]))}));
+  await containerNetworkFixture(dir);
   return schema;
 }
 test('checker reads the fixed contract in an explicitly selected Engine checkout',async t=>{
@@ -386,4 +387,49 @@ test('checker CLI does not echo an unreadable selected path',()=>{
   const result=spawnSync(process.execPath,[path.join(web,'scripts/check-webmcp-engine-contract.mjs'),'--engine-root',path.join(tmpdir(),marker)],{cwd:web,encoding:'utf8',timeout:10000});
   assert.equal(result.status,1);assert.match(result.stderr,/WebMCP Engine contract check failed/);
   assert.equal((result.stdout+result.stderr).includes(marker),false);
+});
+
+
+async function containerNetworkFixture(dir){
+  const schema=path.join(dir,'resources/content/schema');
+  for(const part of ['base','user','project'])await fs.mkdir(path.join(schema,part),{recursive:true});
+  for(const [type,field] of [['port','publicPort'],['instanceLink','targetInstanceId']])
+    await fs.writeFile(path.join(schema,'base',type+'.json'),JSON.stringify({resourceFields:{[field]:{attributes:{scheduleUpdate:true}}}}));
+  for(const role of ['user','project']){
+    const file=path.join(schema,role,role+'-auth.json');let original={authorize:{}};
+    try{original=JSON.parse(await fs.readFile(file,'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
+    Object.assign(original.authorize,role==='user'?{'port.publicPort':'ru','instanceLink.targetInstanceId':'ru',
+      'port.instanceId':'r','port.privatePort':'r','port.protocol':'r','port.bindAddress':'r','instanceLink.instanceId':'r','instanceLink.linkName':'r'}:{port:'ru',instanceLink:'ru'});
+    await fs.writeFile(file,JSON.stringify(original));
+  }
+  const descriptor=path.join(dir,'code/iaas/auth-logic/src/main/java/io/cattle/platform/iaas/api/auth/change/AiResourceChangeDescriptor.java');
+  const owner=path.join(dir,'code/iaas/api-logic/src/main/java/io/cattle/platform/iaas/api/port/PortUpdateService.java');
+  await fs.mkdir(path.dirname(descriptor),{recursive:true});await fs.mkdir(path.dirname(owner),{recursive:true});
+  await fs.writeFile(descriptor,'add(result,"port","update_public_port","PUT",null,"update",Set.of("publicPort","resourceUuid","sourceId","sourceUuid"));\n'+
+    'add(result,"instanceLink","update_target","PUT",null,"update",Set.of("targetInstanceId","targetInstanceUuid","resourceUuid","sourceId","sourceUuid"));');
+  await fs.writeFile(owner,'if(header==null){if(trusted!=null)returntrusted;if(request.getAttribute(REQUIRED)==Required.BEFORE)throwfail(428,"PortUpdatePreconditionRequired");returnnull;}');
+  return {schema,descriptor,owner};
+}
+
+test('Engine container network contract: native fields exact descriptors and legacy header compatibility remain binding',async t=>{
+  const dir=await temp(t),files=await containerNetworkFixture(dir);
+  await checkEngineContract(dir,{containerNetworkOnly:true});
+  const field=path.join(files.schema,'base/port.json'),role=path.join(files.schema,'user/user-auth.json');
+  for(const [file,change] of [
+    [field,raw=>raw.replace('"scheduleUpdate":true','"scheduleUpdate":false')],
+    [role,raw=>raw.replace('"port.privatePort":"r"','"port.privatePort":"ru"')],
+    [files.descriptor,raw=>raw.replace('"instanceLink","update_target","PUT"','"instanceLink","update_target","POST"')],
+    [files.owner,raw=>raw.replace('returnnull;','throwfail(428,"PortUpdatePreconditionRequired");')]
+  ]){
+    const before=await fs.readFile(file,'utf8'),after=change(before);assert.notEqual(after,before);
+    await fs.writeFile(file,after);await assert.rejects(checkEngineContract(dir,{containerNetworkOnly:true}));await fs.writeFile(file,before);
+  }
+  await checkEngineContract(dir,{containerNetworkOnly:true});
+});
+
+test('Engine container network contract: native source owner cannot escape the selected checkout',async t=>{
+  const dir=await temp(t),outside=await temp(t),files=await containerNetworkFixture(dir);
+  const foreign=path.join(outside,'PortUpdateService.java');await fs.copyFile(files.owner,foreign);await fs.unlink(files.owner);
+  await fs.rmdir(path.dirname(files.owner));await fs.symlink(outside,path.dirname(files.owner),'junction');
+  await assert.rejects(checkEngineContract(dir,{containerNetworkOnly:true}),/Native Port owner escapes selected Engine/);
 });

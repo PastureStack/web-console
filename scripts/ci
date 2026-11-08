@@ -24,6 +24,7 @@ node --test scripts/test-webmcp-alias-service.mjs scripts/test-webmcp-service-li
 node --test scripts/test-webmcp-registry-lifecycle.mjs
 node --test scripts/test-webmcp-certificate-metadata.mjs
 node --test scripts/test-webmcp-host-metadata.mjs
+node --test scripts/test-webmcp-container-network.mjs
 node --test scripts/test-webmcp-project-metadata.mjs
 node --test scripts/test-webmcp-lb-metadata.mjs scripts/test-webmcp-process-diagnostics.mjs scripts/test-webmcp-lb-scale.mjs
 node --test scripts/test-webmcp-stack-parent-detail.mjs

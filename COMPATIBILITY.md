@@ -1,5 +1,15 @@
 # Compatibility Contract
 
+## Web Console 1.6.227 / Bridge 0.2.29 source candidate
+
+Minimum and matching Engine: **0.183.387**. The existing twelve tools add Host
+`resetName:true` and single-child `port/update_public_port` or
+`instanceLink/update_target` plans. Preserve opaque references, native roles/Keys,
+UUID/parent binding, CAS, literal human review and zero automatic dispatch.
+Legacy native Port updates may omit the conditional header; typed plans still
+require their trusted CAS precondition. This candidate has no CI, SDK, release
+or native PASS yet. Published226 evidence below is historical carry.
+
 ## Web Console 1.6.226 / Bridge 0.2.28 published
 
 Minimum and matching Engine: **0.183.386**. New `service/update_links`
