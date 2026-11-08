@@ -49,6 +49,14 @@ export function validateServiceCreateField(field, value) {
   const spec = field === 'ports' ? createPorts : field === 'healthCheck' ? serviceHealthCheck : null;
   validateValue(value, spec, `parameters.${field}`);
 }
+
+export function validateServiceUpgradeField(field, value) {
+  if ( ['command', 'entryPoint'].includes(field) ) {
+    validateValue(value, {...commandArray, type: ['array', 'null']}, field);
+  } else {
+    validateServiceCreateField(field, value);
+  }
+}
 const tcpRuleFields = {
   protocol: {...string('Only TCP is supported; never downgrade HTTPS/TLS/HTTP.'), enum: ['tcp']},
   access: {...string('Explicit native public listener or internal exposure.'), enum: ['public', 'internal']},
@@ -87,7 +95,7 @@ export function validateTcpLoadBalancerReview(value) {
   if ( value.length === 0 || value.some(rule => rule.sourcePort === 42) ) { throw new CommandError('INVALID_RESPONSE'); }
 }
 
-export const SERVICE_UPGRADE_CONFIG_FIELDS = Object.freeze(['ports', 'healthCheck']);
+export const SERVICE_UPGRADE_CONFIG_FIELDS = Object.freeze(['ports', 'healthCheck', 'command', 'entryPoint']);
 export const SERVICE_UPGRADE_FIELDS = Object.freeze(['startFirst', 'batchSize', 'intervalMillis']);
 const upgradeInteger = (description, minimum) => ({type: 'integer', minimum, maximum: Number.MAX_SAFE_INTEGER, description});
 const upgradeFields = {
@@ -179,8 +187,10 @@ export const COMMANDS = Object.freeze([
   {name: 'update_service_description', write: true, description: 'Update only the service description using the saved read snapshot. An empty string clears it. If the description changed, read a new reference before deciding; never retry an unknown write automatically.',
     inputSchema: schema({serviceRef: string('serviceRef from find_services; use get_service first if its description has not been loaded.'),
       description: {type: 'string', minLength: 0, maxLength: 1024, description: 'Full new description, at most 1024 UTF-16 code units. Empty string clears it; preserve whitespace and Unicode.'}}, ['serviceRef', 'description'])},
-  {name: 'preview_service_upgrade', write: true, description: 'Preview an existing ordinary active Service image and/or ports/healthCheck upgrade. Omitted image/configuration is preserved; the same image requires a real configuration difference. [] clears ports; a healthCheck object merges only supplied fields (new checks need port), null clears the whole check; human review shows exact before/after. Preserve all other settings. No raw launchConfig or generic Service PUT. Optional startFirst, batchSize and intervalMillis need matching server support and are shown exactly in human review. Omitted strategy values remain false, 1 and 2000 milliseconds. Never drop requested settings or retry through a generic action. A human must approve the exact plan in the console before apply.',
-    inputSchema: {...schema({serviceRef: string('serviceRef from find_services.'), image: string('Optional exact image. Omit to preserve the current image when changing ports/healthCheck.', 512), ...upgradeFields,
+  {name: 'preview_service_upgrade', write: true, description: 'Preview an existing ordinary active Service image and/or ports/healthCheck/command/entryPoint upgrade. Omitted image/configuration is preserved; the same image requires a real configuration difference. command and entryPoint are exact ordered argument arrays, never a shell string: for example command:["serve","--mode","safe"]. Omit to preserve; null clears the configured override; [] sends the native empty array, kept distinct from null. These changes roll containers through the existing native upgrade; they do not edit a running process in place. [] clears ports; a healthCheck object merges only supplied fields (new checks need port), null clears the whole check; human review shows exact before/after. Preserve all other settings. No raw launchConfig, environment, secrets or generic Service PUT. Optional startFirst, batchSize and intervalMillis need matching server support and are shown exactly in human review. Omitted strategy values remain false, 1 and 2000 milliseconds. Never drop requested settings or retry through a generic action. A human must approve the exact plan in the console before apply.',
+    inputSchema: {...schema({serviceRef: string('serviceRef from find_services.'), image: string('Optional exact image. Omit to preserve the current image when changing typed configuration.', 512), ...upgradeFields,
+      command: {...commandArray, type: ['array', 'null'], description: 'Existing ordinary active Service primary command override. Exact ordered arguments, at most 64 strings/16384 total UTF-16 units; no NUL. Omit to preserve, null clears the override, [] is the native empty array. Human-reviewed native upgrade required; never send a shell string or credentials.'},
+      entryPoint: {...commandArray, type: ['array', 'null'], description: 'Existing ordinary active Service primary entryPoint override, with the same exact array/null/omit semantics as command. No raw launchConfig or changes to secondary launch configurations.'},
       ports: {...createPorts, description: 'Existing ordinary active Service upgrade: ordered PortSpec array. Omit to preserve; [] clears. Native validation and human approval required; preview does not reserve ports.'},
       healthCheck: {...serviceHealthCheck, type: ['object', 'null'], required: [], minProperties: 1, properties: {...serviceHealthCheck.properties,
         port: {...serviceHealthCheck.properties.port, description: 'Container port. Omit to preserve an existing check port; required only when creating a new check.'},

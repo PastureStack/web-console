@@ -1,6 +1,21 @@
 # Compatibility Contract
 
-## Web Console 1.6.230 / Bridge 0.2.32 source candidate
+## Web Console 1.6.231 / Bridge 0.2.33 source candidate
+
+Matching Engine: **0.183.390**; planned matching Server: **1.6.588**.
+Compose remains **0.14.44**. The existing twelve tools and SDK **1.32.2**
+remain unchanged. Reviewed Service startup arguments preserve omission, null,
+empty arrays, item order and literal strings through the original plan owner.
+Ordinary Compose Stacks in `upgraded` keep their native finish action without
+querying a nonexistent Catalog identity; valid Catalog lookups keep the original
+queue and native instance-action permissions.
+
+This is source only: original CI, the new QUnit regressions, packaged SDK
+qualification, immutable publication, matching deployment and affected native
+acceptance are pending. The published component below remains the installation
+baseline. See the [candidate note](docs/releases/web-console-1.6.231.md).
+
+## Web Console 1.6.230 / Bridge 0.2.32 published
 
 Minimum and matching Engine: **0.183.389**. Stack `finish_upgrade`, `rollback`
 and `cancel_upgrade` reuse the existing twelve tools and native plan collection.
@@ -16,11 +31,12 @@ The captured service count is not a child-dispatch count.
 Stack cancellation verifies only the Stack checkpoint, not completion or
 cancellation of every child Service. Finish/rollback also require the matching
 Engine and Compose **0.14.44** native child/configuration/retirement contract.
-Engine/Compose qualification, current Web original CI, the new packaged SDK
-handshake, immutable publication and affected native/UI acceptance remain pending.
+Original component CI, the packaged SDK handshake, immutable publication,
+thirteen anonymous assets and fourteen release-attestation subjects passed.
+Matching Server deployment and affected native/UI acceptance remain separate.
 No new tool, grant, dependency or mandatory legacy-native header is introduced.
-The single published baseline is 229/031 below; its historical evidence is unchanged.
-See the [candidate note](docs/releases/web-console-1.6.230.md).
+The previous 229/031 baseline below retains its historical evidence.
+See the [release note](docs/releases/web-console-1.6.230.md).
 
 ## Web Console 1.6.229 / Bridge 0.2.31 published
 

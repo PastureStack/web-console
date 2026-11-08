@@ -1,6 +1,6 @@
 import {validateExternalServiceParameters, isExternalHostname, isExternalAddress} from './ai-external-service';
 import {aliasTargetIds, ordinaryServiceLinks, safeAliasTargetSummary, ALIAS_WORKFLOW, ALIAS_CREATE_NEXT_STEP} from './ai-alias-service';
-import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, SERVICE_UPGRADE_CONFIG_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
+import { COMMANDS, COMMAND_VERSION, MAX_PAGE_SIZE, SERVICE_UPGRADE_FIELDS, SERVICE_UPGRADE_CONFIG_FIELDS, CommandError, publicError, safeText, validateInput, validateServiceCreateField, validateServiceUpgradeField, validateExternalServiceHealthCheck, validateServiceUpgradeStrategy, validateTcpLoadBalancerRules, validateTcpLoadBalancerReview, TCP_LOAD_BALANCER_CREATE } from './ai-command-contract';
 import { RESOURCE_FAMILIES, RESOURCE_CHANGES, RESOURCE_CHANGE_FIELDS, SERVICE_UPGRADE_LIFECYCLE, STACK_UPGRADE_LIFECYCLE, resourceFamily, resourceDescriptor, safeResourceFields, safeRegistryAddress, truncatedResourceFields, configuredPolicyRead } from './ai-resource-registry';
 import { createCatalogReader } from './ai-catalog-reader';
 import { createAuditReader, AUDIT_FIELDS, auditSafeFields } from './ai-audit-reader';
@@ -37,19 +37,20 @@ export function stackUpgradeReview(summary) {
 
 function upgradeConfigurationValue(field, value) {
   if ( field === 'healthCheck' && value === null ) { return null; }
-  validateServiceCreateField(field, value);
-  if ( field === 'ports' ) { return JSON.stringify(value); }
+  validateServiceUpgradeField(field, value);
+  if ( ['ports', 'command', 'entryPoint'].includes(field) ) { return JSON.stringify(value); }
   const check = {strategy: 'recreate', ...value};
   return JSON.stringify(Object.fromEntries(Object.keys(check).sort().map(key => [key, check[key]])));
 }
 
 function upgradeConfigurationChanges(value) {
-  if ( !Array.isArray(value) || value.length < 1 || value.length > 2 || new Set(value.map(row => row && row.field)).size !== value.length ) { throw new CommandError('INVALID_RESPONSE'); }
+  if ( !Array.isArray(value) || value.length < 1 || value.length > SERVICE_UPGRADE_CONFIG_FIELDS.length || new Set(value.map(row => row && row.field)).size !== value.length ) { throw new CommandError('INVALID_RESPONSE'); }
   try {
     return Object.freeze(value.map(row => {
       if ( !row || Object.keys(row).sort().join(',') !== 'after,before,field' || !SERVICE_UPGRADE_CONFIG_FIELDS.includes(row.field) ) { throw new CommandError('INVALID_RESPONSE'); }
       for ( const side of ['before', 'after'] ) {
-        if ( row[side] !== null && (typeof row[side] !== 'string' || row[side].length > 32768) ) { throw new CommandError('INVALID_RESPONSE'); }
+        const maximum = ['command', 'entryPoint'].includes(row.field) ? 6 * 16384 + 64 * 3 + 2 : 32768;
+        if ( row[side] !== null && (typeof row[side] !== 'string' || row[side].length > maximum) ) { throw new CommandError('INVALID_RESPONSE'); }
         upgradeConfigurationValue(row.field, row[side] === null ? null : JSON.parse(row[side]));
       }
       return Object.freeze({field: row.field, before: row.before, after: row.after});
@@ -157,7 +158,7 @@ export class CommandEngine {
       result.nextStep = 'Call find_resources with family stack or service to obtain a resourceRef, then reuse that returned resourceRef unchanged in get_resource. For a Stack graph, use family stack and get_resource with view stack_graph. stackRef from find_stacks and serviceRef from find_services belong to legacy tools; never pass them as resourceRef or change their prefix. Keep the same environment and credentials.';
     } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_CONFIG_FIELDS.some(field => Object.prototype.hasOwnProperty.call(input, field)) &&
       ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
-      result.nextStep = 'Use the supported typed Service upgrade subset. Omit ports/healthCheck to preserve them; [] explicitly clears ports, a nonempty healthCheck object merges only supplied fields, and null clears the entire check. A new check needs port. Use a matching Engine and exact returned review; do not drop settings, send raw launchConfig or retry through a generic Service PUT.';
+      result.nextStep = 'Use the supported typed Service upgrade subset. Omit configuration fields to preserve them. command/entryPoint require exact ordered argument arrays, not a shell string; null clears their configured override and [] remains a native empty array. [] explicitly clears ports, a nonempty healthCheck object merges only supplied fields, and null clears the entire check. A new check needs port. Use a matching Engine and exact returned review; do not drop settings, send raw launchConfig or retry through a generic Service PUT.';
     } else if ( name === 'preview_service_upgrade' && input && SERVICE_UPGRADE_FIELDS.some((field) => Object.prototype.hasOwnProperty.call(input, field)) &&
       ['INVALID_INPUT', 'INVALID_RESPONSE'].includes(result.code) ) {
       result.nextStep = 'Check startFirst, batchSize and intervalMillis against this tool schema and use a matching Engine upgrade-strategy adapter. The exact strategy must be returned for human review. Do not drop requested settings, send inServiceStrategy or launchConfig, or retry through a generic action.';
@@ -902,7 +903,7 @@ export class CommandEngine {
     const target = this.context.resolve(input.serviceRef, 'service', captured);
     const data = {serviceId: target.id};
     for ( const field of ['image', ...SERVICE_UPGRADE_FIELDS, ...SERVICE_UPGRADE_CONFIG_FIELDS] ) {
-      if ( Object.prototype.hasOwnProperty.call(input, field) ) { data[field] = field === 'ports' ? input[field].slice() : field === 'healthCheck' && input[field] !== null ? {...input[field]} : input[field]; }
+      if ( Object.prototype.hasOwnProperty.call(input, field) ) { data[field] = Array.isArray(input[field]) ? input[field].slice() : field === 'healthCheck' && input[field] !== null ? {...input[field]} : input[field]; }
     }
     const plan = await this.call(captured, 'aiServiceUpgradePlans', 'POST', data, signal);
     if ( !plan || typeof plan.id !== 'string' || (plan.serviceId && plan.serviceId !== target.id) ) { throw new CommandError('INVALID_RESPONSE'); }

@@ -189,6 +189,9 @@ export default Mixin.create({
     let upgradeOnly = this.get('upgradedOnly') === true;
     let state = this.get('model.state');
     let info = this.get('model.externalIdInfo');
+    let catalogIdentity = info && C.EXTERNAL_ID.UPGRADEABLE.indexOf(info.kind) >= 0 &&
+      typeof info.id === 'string' && info.id.trim().length > 0 &&
+      (upgradeOnly || (typeof info.templateId === 'string' && info.templateId.trim().length > 0));
     var queueUpgradeStatus = () => {
       queue.push({
         obj: this,
@@ -201,7 +204,9 @@ export default Mixin.create({
     if ( state === 'upgraded' )
     {
       this.set('upgradeStatus', UPGRADED);
-      queueUpgradeStatus();
+      if ( catalogIdentity ) {
+        queueUpgradeStatus();
+      }
       return;
     }
 
@@ -211,7 +216,7 @@ export default Mixin.create({
       return;
     }
 
-    if ( info && C.EXTERNAL_ID.UPGRADEABLE.indexOf(info.kind) >= 0 )
+    if ( catalogIdentity )
     {
       this.set('upgradeStatus', LOADING);
       queueUpgradeStatus();

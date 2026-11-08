@@ -55,7 +55,7 @@ async function fixture(dir){
   const schema=path.join(dir,'resources/content/schema');
   const names=['aiServiceUpgradePlan','aiServiceDescriptionUpdate','aiToolCallEvent','aiResourceView','aiResourceChangePlan','aiCatalogMetadataView',
     'aiCatalogStackLaunchOptions','aiCatalogStackLaunchPlan','aiCatalogStackLaunchInputs','aiAuditQuery','aiAuditSourcePageInput'];
-  const inputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis','ports','healthCheck'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+  const inputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis','ports','healthCheck','command','entryPoint'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
     aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view','tailLines'],
     aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
     aiCatalogStackLaunchOptions:['templateId','versionId'],
@@ -79,6 +79,7 @@ async function fixture(dir){
       Object.assign(fields.intervalMillis,{type:'int',update:false,nullable:false,min:100,max:Number.MAX_SAFE_INTEGER});
       Object.assign(fields.ports,{type:'array[string]',update:false,nullable:false});
       Object.assign(fields.healthCheck,{type:'json',update:false,nullable:true});
+      for(const field of ['command','entryPoint'])Object.assign(fields[field],{type:'array[string]',update:false,nullable:true});
       fields.configurationChanges={type:'array[json]',create:false,update:false};
       fields.upgradeStrategy={type:'json',create:false,update:false};
     }
@@ -142,6 +143,10 @@ test('upgrade strategy contract rejects precision bounds required fields and wri
     [value=>{value.resourceFields.image.required=true;},/image must remain optional/],
     [value=>{value.resourceFields.ports.nullable=true;},/ports null semantics mismatch/],
     [value=>{value.resourceFields.healthCheck.update=true;},/healthCheck must not be client-updatable/],
+    [value=>{delete value.resourceFields.command;},/command is not accepted input/],
+    [value=>{value.resourceFields.entryPoint.type='string';},/entryPoint type mismatch/],
+    [value=>{value.resourceFields.command.nullable=false;},/command null semantics mismatch/],
+    [value=>{value.resourceFields.entryPoint.update=true;},/entryPoint must not be client-updatable/],
     [value=>{value.resourceFields.configurationChanges.create=true;},/configurationChanges must be read-only output/],
   ]){
     const value=JSON.parse(original);mutate(value);await fs.writeFile(file,JSON.stringify(value));
