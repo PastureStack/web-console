@@ -10,29 +10,26 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.227** / Bridge **0.2.29**](https://github.com/PastureStack/web-console/releases/tag/1.6.227)
-is published and qualified against Engine **0.183.387**. Deploy through the
+[Web Console **1.6.228** / Bridge **0.2.30**](https://github.com/PastureStack/web-console/releases/tag/1.6.228)
+is published and qualified against Engine **0.183.388**. Deploy through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
-using the current qualified matching component assembly.
+using a qualified matching component assembly.
 
 The existing twelve tools include reviewed Host custom-name reset and one-child
 Container public-port and link-target edits. Named Service links and bounded
-External Service HTTP health checks remain available. Human confirmation, native
-roles/Key limits, exact references and concurrent-change checks remain binding.
-These Container edits preserve the parent Service's launch configuration.
-See the [release note](docs/releases/web-console-1.6.227.md) for component evidence;
-matching deployment and native workflow acceptance remain separate.
+External Service HTTP health checks remain available. These Container edits
+preserve the parent Service's launch configuration.
 
-## Next source candidate
+Host scheduling activation/deactivation does not shut down workloads, remove
+Hosts or evacuate VMs. Operation failures and unconfirmed results remain visible
+with safe guidance in thirteen locales; stale terminal results cannot clear a
+newer review. Native role/Key ceilings, exact references, concurrent-change checks
+and human confirmation remain authoritative.
 
-Web Console **1.6.228** / Bridge **0.2.30** requires minimum and matching Engine
-**0.183.388**. Host `start` / `stop` plans use native activate/deactivate with
-empty parameters and separate human approval. They change scheduling state,
-without stopping Docker, changing the Agent or evacuating workloads.
-Failed or unverified operations retain a clear notice and require inspection of
-the existing operation before a new human-reviewed preview. CI, SDK, publication
-and affected native/UI acceptance are pending; see the
-[candidate note](docs/releases/web-console-1.6.228.md).
+These remain partial workflows. Matching Server deployment and affected native/UI
+acceptance are separate and remain pending or partial. Component publication does
+not update a running Server or establish all 243 frontend coverage.
+See the [release note](docs/releases/web-console-1.6.228.md) for component evidence.
 
 ## Features and operator guides
 

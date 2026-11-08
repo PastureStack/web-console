@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.228 / Bridge 0.2.30 source candidate
+## Web Console 1.6.228 / Bridge 0.2.30 published
 
 Minimum and matching Engine: **0.183.388**. The existing twelve tools add only
 Host start/stop scheduling plans through native activate/deactivate, with empty
@@ -9,7 +9,10 @@ roles, Key ceilings, opaque target identity, CAS and human confirmation remain
 required. No daemon/Agent action, evacuation, Host removal or raw identifier and
 credential parameter is added. Failed/unverified browser outcomes show safe
 translated guidance without automatically resubmitting or approving a change.
-CI, SDK, publication and affected native/UI acceptance remain pending.
+Original CI, the packaged SDK handshake and immutable component publication
+are complete. Matching Server deployment and affected native/UI acceptance
+remain separate and pending or partial. See the
+[release note](docs/releases/web-console-1.6.228.md).
 
 ## Web Console 1.6.227 / Bridge 0.2.29 published
 
