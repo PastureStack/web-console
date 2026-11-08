@@ -35,12 +35,52 @@ function auditSourceInputNames(schema, required) {
   return inputs;
 }
 
+
+// This is a source-contract check, not a native authorization/CAS test.
+export async function checkContainerNetworkContract(engineRoot) {
+  const engine=path.resolve(engineRoot);
+  const schemaRoot=await containedSourcePath(engine,'resources/content/schema','Schema root escapes selected Engine');
+  const read=async relative=>JSON.parse(await readContainedSource(schemaRoot,relative,'Schema file escapes selected Engine'));
+  assert.equal(COMMANDS.length,12,'Container network edits must retain twelve tools');
+  const preview=COMMANDS.find(tool=>tool.name==='preview_resource_change').inputSchema;
+  for(const type of ['port','instanceLink'])assert.ok(preview.properties.resourceType.enum.includes(type),'Missing typed child '+type);
+  for(const operation of ['update_public_port','update_target'])assert.ok(preview.properties.operation.enum.includes(operation),'Missing typed child operation '+operation);
+  const parameters=preview.properties.parameters.properties;
+  assert.deepEqual(parameters.publicPort.type,['integer','null']);
+  assert.equal(parameters.publicPort.minimum,1);assert.equal(parameters.publicPort.maximum,65535);
+  assert.equal(Object.hasOwn(parameters.publicPort,'default'),false);
+  assert.equal(parameters.targetInstanceRef.type,'string');
+  for(const field of ['targetInstanceId','resourceUuid','sourceId','sourceUuid'])assert.equal(Object.hasOwn(parameters,field),false,'Native identity must not become a model parameter');
+  const reset=preview.allOf.find(row=>row.if?.properties?.parameters?.required?.includes('resetName'));
+  assert.equal(parameters.resetName.const,true);assert.equal(reset?.then.properties.resourceType.const,'host');
+  assert.equal(reset.then.properties.operation.const,'update_metadata');assert.deepEqual(reset.then.properties.parameters.not,{required:['name']});
+  for(const [type,field] of [['port','publicPort'],['instanceLink','targetInstanceId']]){
+    const schema=await read('base/'+type+'.json');
+    assert.equal(schema.resourceFields[field]?.attributes?.scheduleUpdate,true,type+'.'+field+' must use native scheduling');
+  }
+  const user=(await read('user/user-auth.json')).authorize,project=(await read('project/project-auth.json')).authorize;
+  for(const field of ['port.publicPort','instanceLink.targetInstanceId'])assert.equal(user[field],'ru','Native child field authority drift: '+field);
+  for(const field of ['port.instanceId','port.privatePort','port.protocol','port.bindAddress','instanceLink.instanceId','instanceLink.linkName'])
+    assert.equal(user[field],'r','Native preserved child field authority drift: '+field);
+  for(const type of ['port','instanceLink'])assert.equal(project[type],'ru','Native project child authority drift: '+type);
+  const descriptor=await readContainedSource(engine,'code/iaas/auth-logic/src/main/java/io/cattle/platform/iaas/api/auth/change/AiResourceChangeDescriptor.java','Native descriptor escapes selected Engine');
+  const compact=descriptor.replace(/\s+/g,'');
+  for(const declaration of [
+    'add(result,"port","update_public_port","PUT",null,"update",Set.of("publicPort","resourceUuid","sourceId","sourceUuid"));',
+    'add(result,"instanceLink","update_target","PUT",null,"update",Set.of("targetInstanceId","targetInstanceUuid","resourceUuid","sourceId","sourceUuid"));'
+  ])assert.ok(compact.includes(declaration),'Native child PUT descriptor must retain exact UUID/parent envelope');
+  const native=await readContainedSource(engine,'code/iaas/api-logic/src/main/java/io/cattle/platform/iaas/api/port/PortUpdateService.java','Native Port owner escapes selected Engine');
+  const legacy='if(header==null){if(trusted!=null)returntrusted;if(request.getAttribute(REQUIRED)==Required.BEFORE)throwfail(428,"PortUpdatePreconditionRequired");returnnull;}';
+  assert.ok(native.replace(/\s+/g,'').includes(legacy),'Legacy header omission and trusted typed CAS must remain distinct');
+}
+
 // Release-assembly check for two explicitly selected source checkouts.
 // No network requests, credentials, generated copies or source modification.
-export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false, externalTcpOnly = false} = {}) {
+export async function checkEngineContract(engineRoot, {catalogOptionsOnly = false, externalTcpOnly = false, containerNetworkOnly = false} = {}) {
 const engine=path.resolve(engineRoot);
 const schemaRoot=await containedSourcePath(engine,'resources/content/schema','Schema root escapes selected Engine');
 const read=async relative=>JSON.parse(await readContainedSource(schemaRoot,relative,'Schema file escapes selected Engine'));
+if(containerNetworkOnly){await checkContainerNetworkContract(engine);return;}
 if(externalTcpOnly){
   const external=await read('base/externalService.json'),user=await read('user/user-auth.json');
   assert.equal(external.resourceFields.healthCheck.type,'instanceHealthCheck','External health check must retain its native type');
@@ -69,6 +109,7 @@ if(externalTcpOnly){
   return;
 }
 if(!catalogOptionsOnly){
+  await checkContainerNetworkContract(engine);
   const event=await read('base/aiToolCallEvent.json');
   assert.deepEqual([...event.resourceFields.command.options].sort(),[...COMMANDS.map(t=>t.name),'unknown'].sort(),'Tool audit wire enum does not match the frontend');
   for(const code of [...PUBLIC_ERROR_CODES,'NONE'])assert.ok(event.resourceFields.reason.options.includes(code),'Public error '+code+' cannot be audited');
@@ -228,11 +269,11 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   const args=process.argv.slice(2);
-  if(![2,3].includes(args.length)||args[0]!=='--engine-root'||args.length===3&&!['--catalog-options-only','--external-tcp-only'].includes(args[2]))
-    throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine [--catalog-options-only|--external-tcp-only]');
+  if(![2,3].includes(args.length)||args[0]!=='--engine-root'||args.length===3&&!['--catalog-options-only','--external-tcp-only','--container-network-only'].includes(args[2]))
+    throw Error('Usage: node scripts/check-webmcp-engine-contract.mjs --engine-root /path/to/engine [--catalog-options-only|--external-tcp-only|--container-network-only]');
   try {
-    await checkEngineContract(args[1],{catalogOptionsOnly:args[2]==='--catalog-options-only',externalTcpOnly:args[2]==='--external-tcp-only'});
-    console.log(args[2]==='--external-tcp-only'?'PASS External TCP/HTTP create/read native schema and closed typed-subset contract':
+    await checkEngineContract(args[1],{catalogOptionsOnly:args[2]==='--catalog-options-only',externalTcpOnly:args[2]==='--external-tcp-only',containerNetworkOnly:args[2]==='--container-network-only'});
+    console.log(args[2]==='--container-network-only'?'PASS native child PUT/role/UUID envelope and legacy header compatibility source contract':args[2]==='--external-tcp-only'?'PASS External TCP/HTTP create/read native schema and closed typed-subset contract':
       args[2]==='--catalog-options-only'?'PASS Catalog options readonly schema and three-role contract':'PASS tool wire audit enum and effective role-overlay input contracts');
   } catch {
     console.error('WebMCP Engine contract check failed');

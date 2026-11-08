@@ -91,6 +91,7 @@ export default ModalBase.extend(NewOrEdit, {
 
   savePorts: function() {
     var promises = [];
+    var sourceUuid = this.get('model.instance.uuid');
     this.get('portsArray').forEach(function(port) {
       promises.push(resolve().then(() => {
         var neu = parseInt(port.public,10);
@@ -104,8 +105,23 @@ export default ModalBase.extend(NewOrEdit, {
         if ( neu !== old )
         {
           //console.log('Changing port',obj.serialize(),'to',neu);
+          // A conditional native save is shared with typed writers; these are public identity/mapping fields only.
+          var before = {uuid: get(obj, 'uuid'), sourceUuid: sourceUuid,
+            accountId: get(obj, 'accountId'), instanceId: get(obj, 'instanceId'), publicPort: old === undefined ? null : old,
+            privatePort: get(obj, 'privatePort'), protocol: get(obj, 'protocol'),
+            bindAddress: get(obj, 'bindAddress') === undefined ? null : get(obj, 'bindAddress')};
+          var identity = (value) => typeof value === 'string' && value.trim() && value.length <= 128 || Number.isInteger(value) && value > 0;
+          if ( typeof before.uuid !== 'string' || !before.uuid.trim() || before.uuid.length > 128 ||
+            typeof before.sourceUuid !== 'string' || !before.sourceUuid.trim() || before.sourceUuid.length > 128 ||
+            !identity(before.accountId) || !identity(before.instanceId) ||
+            !Number.isInteger(before.privatePort) || before.privatePort < 1 || before.privatePort > 65535 ||
+            !['tcp', 'udp'].includes(before.protocol) || before.publicPort !== null &&
+            (!Number.isInteger(before.publicPort) || before.publicPort < 1 || before.publicPort > 65535) ||
+            before.bindAddress !== null && (typeof before.bindAddress !== 'string' || before.bindAddress.length > 128) ) {
+            throw new Error('PortUpdatePreconditionRequired');
+          }
           obj.set('publicPort', neu);
-          return resolve().then(() => obj.save()).catch((error) => {
+          return resolve().then(() => obj.save({headers: {'X-PastureStack-Port-Before': JSON.stringify(before)}})).catch((error) => {
             obj.set('publicPort', old);
             throw error;
           });

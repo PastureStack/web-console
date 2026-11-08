@@ -18,6 +18,12 @@ export function serviceCreateReview(summary) {
     JSON.stringify([summary.displayPath, summary.displayDiff]) : null;
 }
 
+export function containerNetworkReview(summary) {
+  return summary && ['port', 'instanceLink'].includes(summary.resourceType) &&
+    ['update_public_port', 'update_target'].includes(summary.operation) && Array.isArray(summary.displayDiff) ?
+    JSON.stringify([summary.resourceType, summary.operation, summary.displayPath, summary.displayDiff]) : null;
+}
+
 export function serviceUpgradeReview(summary) {
   return summary && summary.upgradeStrategy ? JSON.stringify([summary.displayPath, summary.currentImage, summary.requestedImage,
     ...SERVICE_UPGRADE_FIELDS.map((field) => summary.upgradeStrategy[field]),
@@ -179,6 +185,7 @@ export class CommandEngine {
         'parameters.scale': input.resourceType === 'loadBalancerService' ?
           'Provide an integer of at least 1 in parameters.scale for a non-Global load balancer. The native int representation ceiling is 2147483647. Scaling does not start an inactive load balancer.' :
           'Provide an integer from 0 through 100 in parameters.scale.',
+        'parameters.resetName': 'To restore the displayed native hostname, use Host update_metadata with parameters: {resetName: true} and omit name. Description may be combined. Do not send false, null, text, an empty name, hostname or infrastructure fields.',
         'parameters.description': 'Provide the complete description as a string of at most 1024 UTF-16 units, or null. An empty string clears it.',
         'parameters.links': 'Use at most 16 {serviceRef,name} rows, selected by exact Stack/name. Names preserve case; null or an empty string is plain. Do not send raw IDs, port-qualified or remote links. Use either links or serviceRefs, never both; [] clears the full set.',
         'parameters.serviceRefs': 'Find each exact service by name and Stack with find_resources. Select its same-session resourceRef; never choose the first same-name candidate, guess a raw ID or reuse a stale reference. Supply at most 16 distinct serviceRefs; [] explicitly clears the complete target set.',
@@ -434,14 +441,19 @@ export class CommandEngine {
         descriptor.type === 'processInstance' ? `(global)/processes/${safeResourceFields(item, descriptor).name || 'unknown'}` : useCatalog ? this.catalogDisplayPath(item, captured, parent) :
         (!stackParent && safeText(item.displayPath, 768)) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${stackParent ? stackParent.stackName || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
       const target = {id: item.id, family: input.family, resourceType: descriptor.type, scope: descriptor.scope};
+      if ( ['container', 'port', 'instanceLink'].includes(descriptor.type) && typeof item.uuid === 'string' && item.uuid && item.uuid.length <= 128 ) { target.nativeUuid = item.uuid; }
       if ( useCatalog ) {
         target.catalogPath = displayPath;
         target.catalogIdentity = catalogVersion ? {...parent.catalogIdentity, version: item.version, revision: item.revision} :
           {templateKey: item.templateKey, catalogScope: item.catalogScope, catalogId: item.catalogId};
       }
-      if ( catalogVersion ) { target.parentId = parent.id; target.parentRef = input.parentRef; }
+      if ( catalogVersion || ['port', 'instanceLink'].includes(descriptor.type) ) { target.parentId = parent.id; target.parentRef = input.parentRef; }
+      if ( ['port', 'instanceLink'].includes(descriptor.type) ) {
+        if ( !target.nativeUuid || !parent.nativeUuid ) { throw new CommandError('STALE_REFERENCE', 'parentRef'); }
+        target.sourceUuid = parent.nativeUuid;
+      }
       const resourceRef = this.referenceResource(target, captured);
-      const parentRef = catalogVersion ? input.parentRef : stackParent ? stackParent.parentRef : null;
+      const parentRef = catalogVersion || ['port', 'instanceLink'].includes(descriptor.type) ? input.parentRef : stackParent ? stackParent.parentRef : null;
       return {resourceRef, resourceType: descriptor.type, scope: descriptor.scope,
         parentRef, parentResolution: catalogVersion ? 'resolved' : stackParent ? stackParent.parentResolution : null,
         displayPath,
@@ -915,7 +927,7 @@ export class CommandEngine {
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
-      if ( reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=confirm`, 'POST', {});
@@ -967,6 +979,8 @@ export class CommandEngine {
       if ( reference.serviceCreateReview && serviceCreateReview(summary) !== reference.serviceCreateReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.stackGroupReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.stackGroupReview ) { throw new CommandError('CONFLICT'); }
       if ( reference.serviceLinksReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.serviceLinksReview ) { throw new CommandError('CONFLICT'); }
+      if ( reference.containerNetworkReview && containerNetworkReview(summary) !== reference.containerNetworkReview ) { throw new CommandError('CONFLICT'); }
+      if ( reference.hostResetReview && JSON.stringify([summary.displayPath, summary.displayDiff]) !== reference.hostResetReview ) { throw new CommandError('CONFLICT'); }
       return;
     }
     if ( !plan || plan.id !== reference.id || (plan.serviceId && plan.serviceId !== reference.serviceId) ) {
@@ -995,6 +1009,7 @@ export class CommandEngine {
     if ( result.status === 'needs_user' ) {
       result.code = 'NEEDS_USER'; result.nextStep = 'Ask the user to complete inputs and approve the existing plan in the console. No launch has been verified; do not create a replacement or submit another apply.';
     }
+    if ( ['port', 'instanceLink'].includes(plan.resourceType) ) { result.completionScope = 'native-container-network-configuration'; result.applicationConnectivityVerified = false; result.linkEnvironmentRebuilt = false; }
     if ( plan.resourceType === 'volume' && plan.operation === 'create' ) {
       result.completionScope = 'unallocated-local-volume-record'; result.physicalStorageVerified = false; result.mountVerified = false;
       if ( result.status === 'succeeded' && result.verifiedResult ) {
@@ -1102,7 +1117,12 @@ export class CommandEngine {
         if ( plan.resourceType !== 'loadBalancerService' || plan.operation !== 'create' || change.before !== null || typeof change.after !== 'string' ) { throw new CommandError('INVALID_RESPONSE'); }
         try { validateTcpLoadBalancerReview(JSON.parse(change.after)); } catch (error) { throw new CommandError('INVALID_RESPONSE'); }
       }
-      if ( change.field === 'hostname' && [change.before, change.after].some((value) => value !== null && !isExternalHostname(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      if ( change.field === 'hostname' ) {
+        if ( plan.resourceType === 'host' ) {
+          if ( plan.operation !== 'update_metadata' || typeof change.after !== 'string' || !change.after.trim() || change.after.includes('\0') ||
+            change.before !== change.after || !plan.changes.some(row => row.field === 'name' && row.after === '') ) { throw new CommandError('INVALID_RESPONSE'); }
+        } else if ( [change.before, change.after].some(value => value !== null && !isExternalHostname(value)) ) { throw new CommandError('INVALID_RESPONSE'); }
+      }
       if ( change.field === 'targetServices' ) {
         const ordinaryLinks = plan.resourceType === 'service' && plan.operation === 'update_links';
         if ( !(plan.resourceType === 'dnsService' || ordinaryLinks) || change.after === null || ordinaryLinks && change.before === null ) { throw new CommandError('INVALID_RESPONSE'); }
@@ -1142,6 +1162,18 @@ export class CommandEngine {
         typeof change.after !== 'boolean' || change.after !== (plan.operation === 'archive')) ) { throw new CommandError('INVALID_RESPONSE'); }
       return {field: change.field, before: change.before, after: change.after};
     });
+    if ( ['port', 'instanceLink'].includes(plan.resourceType) ) {
+      const expected = plan.resourceType === 'port' ? ['sourceContainer', 'publicPort', 'privatePort', 'protocol', 'bindAddress'] : ['sourceContainer', 'linkName', 'targetContainer'];
+      if ( plan.operation !== (plan.resourceType === 'port' ? 'update_public_port' : 'update_target') || displayDiff.length !== expected.length ||
+        new Set(displayDiff.map(row => row.field)).size !== expected.length || displayDiff.some(row => !expected.includes(row.field)) ||
+        displayDiff.some(row => !['publicPort', 'targetContainer'].includes(row.field) && row.before !== row.after) ) { throw new CommandError('INVALID_RESPONSE'); }
+      for ( const row of displayDiff ) {
+        if ( ['publicPort', 'privatePort'].includes(row.field) && [row.before, row.after].some(value => value !== null && (!Number.isInteger(value) || value < 1 || value > 65535)) ||
+          row.field === 'protocol' && !['tcp', 'udp'].includes(row.before) ||
+          ['sourceContainer', 'linkName'].includes(row.field) && (typeof row.before !== 'string' || !row.before) ||
+          row.field === 'targetContainer' && (typeof row.after !== 'string' || !row.after || row.before !== null && typeof row.before !== 'string') ) { throw new CommandError('INVALID_RESPONSE'); }
+      }
+    }
     if ( displayDiff.filter(change => change.field === 'group').length > 1 ) { throw new CommandError('INVALID_RESPONSE'); }
     if ( plan.operation === 'remove' && ['affectedInstanceCount', 'affectedMountCount', 'mountedDataRule'].some((field) => !displayDiff.some((change) => change.field === field)) ) {
       throw new CommandError('INVALID_RESPONSE');
@@ -1194,12 +1226,21 @@ export class CommandEngine {
     if ( Object.keys(parameters).some((field) => !descriptor.fields.includes(field)) || Object.keys(parameters).length < descriptor.minFields ) {
       throw new CommandError('INVALID_INPUT', 'parameters');
     }
+    if ( input.resourceType === 'port' && parameters.publicPort !== null && (!Number.isInteger(parameters.publicPort) || parameters.publicPort < 1 || parameters.publicPort > 65535) ) { throw new CommandError('INVALID_INPUT', 'parameters.publicPort'); }
+    if ( input.resourceType === 'instanceLink' ) {
+      const destination = this.resolveResourceReference(parameters.targetInstanceRef, 'container', captured, 'parameters.targetInstanceRef');
+      if ( destination.resourceType !== 'container' || destination.scope !== 'project' ) { throw new CommandError('INVALID_INPUT', 'parameters.targetInstanceRef'); }
+      if ( !destination.nativeUuid ) { throw new CommandError('STALE_REFERENCE', 'parameters.targetInstanceRef'); }
+      parameters.targetInstanceId = destination.id; parameters.targetInstanceUuid = destination.nativeUuid; delete parameters.targetInstanceRef;
+    }
     if ( Object.prototype.hasOwnProperty.call(parameters, 'scale') &&
       (input.resourceType === 'loadBalancerService' ? parameters.scale < 1 : parameters.scale > 100) ) {
       throw new CommandError('INVALID_INPUT', 'parameters.scale');
     }
     if ( Object.prototype.hasOwnProperty.call(parameters, 'group') && parameters.group !== null &&
       (typeof parameters.group !== 'string' || parameters.group.length > 255 || parameters.group.includes('\0')) ) { throw new CommandError('INVALID_INPUT', 'parameters.group'); }
+    if ( Object.prototype.hasOwnProperty.call(parameters, 'resetName') &&
+      (input.resourceType !== 'host' || input.operation !== 'update_metadata' || parameters.resetName !== true || Object.prototype.hasOwnProperty.call(parameters, 'name')) ) { throw new CommandError('INVALID_INPUT', 'parameters.resetName'); }
     if ( input.resourceType === 'volume' && !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/.test(parameters.name || '') ) { throw new CommandError('INVALID_INPUT', 'parameters.name'); }
     if ( input.resourceType === 'externalService' ) { validateExternalServiceParameters(input.operation, parameters); }
     if ( input.resourceType === 'dnsService' && input.operation === 'update_targets' ) {
@@ -1260,8 +1301,13 @@ export class CommandEngine {
       this.context.assertCurrent(captured, signal);
       if ( ready !== true ) { throw new CommandError('NEEDS_USER', 'bridge.environmentBinding'); }
     }
+    if ( ['port', 'instanceLink'].includes(input.resourceType) ) {
+      if ( !target.nativeUuid || !target.parentId || !target.sourceUuid ) { throw new CommandError('STALE_REFERENCE', 'targetRef'); }
+      Object.assign(parameters, {resourceUuid: target.nativeUuid, sourceId: target.parentId, sourceUuid: target.sourceUuid});
+    }
     const data = {resourceType: input.resourceType, operation: input.operation, parameters};
     if ( target ) { data.resourceId = target.id; }
+
     const plan = await this.call(captured, 'aiResourceChangePlans', 'POST', data, signal);
     const reference = {id: plan.id, planKind: 'resource-change', resourceType: input.resourceType, operation: input.operation, resourceId: target && target.id};
     this.assertPlan(plan, reference);
@@ -1271,6 +1317,13 @@ export class CommandEngine {
         new Set(summary.displayDiff.map(row => row.field)).size !== Object.keys(parameters).length || summary.displayDiff.some(row =>
         !Object.prototype.hasOwnProperty.call(parameters, row.field) || row.after !== parameters[row.field]) ) { throw new CommandError('INVALID_RESPONSE'); }
       reference.stackGroupReview = JSON.stringify([summary.displayPath, summary.displayDiff]);
+    }
+    if ( input.resourceType === 'host' && parameters.resetName === true ) {
+      const summary = this.resourcePlanSummary(plan, null), fields = ['name', 'hostname', ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? ['description'] : [])];
+      if ( summary.displayDiff.length !== fields.length || new Set(summary.displayDiff.map(row => row.field)).size !== fields.length ||
+        fields.some(field => !summary.displayDiff.some(row => row.field === field)) ||
+        summary.displayDiff.some(row => row.field === 'name' && row.after !== '' || row.field === 'description' && row.after !== parameters.description) ) { throw new CommandError('INVALID_RESPONSE'); }
+      reference.hostResetReview = JSON.stringify([summary.displayPath, summary.displayDiff]);
     }
     if ( input.resourceType === 'volume' ) {
       const expected = ['name', ...(Object.prototype.hasOwnProperty.call(parameters, 'description') ? ['description'] : [])];
@@ -1318,12 +1371,18 @@ export class CommandEngine {
         ['protocol', 'access', 'sourcePort', 'targetPort'].some(field => rule[field] !== tcpExpected[index][field])) ) { throw new CommandError('INVALID_RESPONSE'); }
       reference.serviceCreateReview = serviceCreateReview(this.resourcePlanSummary(plan, null));
     }
+    if ( ['port', 'instanceLink'].includes(input.resourceType) ) {
+      const summary = this.resourcePlanSummary(plan, null);
+      if ( input.resourceType === 'port' && summary.displayDiff.find(row => row.field === 'publicPort').after !== parameters.publicPort ) { throw new CommandError('INVALID_RESPONSE'); }
+      reference.containerNetworkReview = containerNetworkReview(summary);
+    }
     const planRef = this.context.reference('plan', reference, captured);
     const summary = this.resourcePlanSummary(plan, planRef);
     this.onPlan(Object.assign({context: captured}, summary));
     return Object.assign({status: 'needs_user', resourceTextIsUntrusted: true,
       ...(input.resourceType === 'dnsService' && input.operation === 'create' ? {workflow: [...ALIAS_WORKFLOW], targetsBound: false,
         nextStep: `Ask the user to review and approve this create stage. ${ALIAS_CREATE_NEXT_STEP}`} :
+        input.resourceType === 'host' && parameters.resetName === true ? {nextStep: 'The custom Host name will be cleared. The read-only hostname row is the restored displayed name; hostname itself is unchanged. Ask the user to review and approve this exact plan.'} :
         {nextStep: 'Ask the user to review and approve this exact change in the console.'})}, summary);
   }
 
@@ -1334,7 +1393,7 @@ export class CommandEngine {
     reference.operationRef = operationRef;
     this.context.resolve(operationRef, 'operation', captured).lastStatus = 'unknown';
     try {
-      if ( reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
+      if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET', undefined, signal), reference);
       }
       const plan = await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}?action=apply`, 'POST', {}, signal);

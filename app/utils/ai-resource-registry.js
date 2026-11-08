@@ -3,7 +3,7 @@
 const common = ['name', 'description', 'state', 'created', 'removed'];
 const bridgeReads = ['project', 'stack', 'service'];
 const nativeReads = ['project', 'stack', 'service', 'container', 'host', 'network', 'volume', 'storagePool', 'backupTarget', 'snapshot', 'virtualMachine'];
-const viewReads = ['project', 'account', 'stack', 'service', 'loadBalancerService', 'dnsService', 'externalService', 'container', 'virtualMachine', 'host',
+const viewReads = ['project', 'account', 'stack', 'service', 'loadBalancerService', 'dnsService', 'externalService', 'container', 'port', 'instanceLink', 'virtualMachine', 'host',
   'volume', 'snapshot', 'backup', 'backupTarget', 'storagePool', 'storageDriver', 'network', 'networkDriver', 'certificate', 'registry', 'registryCredential',
   'apiKey', 'apiKeyRestricted', 'setting', 'activeSetting', 'machineDriver', 'secret', 'processInstance', 'processExecution', 'projectTemplate', 'processPool', 'auditLog'];
 const resource = (type, collection, scope, fields = [], parent = null, limitations = []) => Object.freeze({
@@ -34,11 +34,13 @@ export const RESOURCE_FAMILIES = Object.freeze([
   'pending-adapter', 'Template and version metadata use the dedicated authorized Catalog adapter. Configured defaultVersion and version bounds do not establish compatibility. Typed stack launch needs target-scope read, create and update permissions and a dedicated human-approved plan. External volume references (external=true), Catalog administration and upgrades still need adapters.'),
   family('certificates', [resource('certificate', 'certificates', 'project', ['CN', 'issuer', 'issuedAt', 'expiresAt', 'algorithm', 'keySize'], null,
     ['Typed changes support name/description only. PEM, private keys, certificate chains, issuance, renewal and removal remain in the normal human certificate UI.'])]),
-  family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount'])]),
+  family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount']),
+    project('port', 'ports', ['publicPort', 'privatePort', 'protocol', 'bindAddress'], {type: 'container', field: 'instanceId', required: true}),
+    project('instanceLink', 'instanceLinks', ['linkName'], {type: 'container', field: 'instanceId', required: true})]),
   family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine'], ['Typed changes support name/description only for the currently selected environment. Other visible environments remain queryable; use the normal environment switch and search again for a fresh reference before editing. Membership, authentication, networking, orchestration and lifecycle changes remain in their normal human workflows.']), global('projectTemplate', 'projectTemplates')]),
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
   family('host', [resource('host', 'hosts', 'project', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb'], null,
-    ['Host detail may include at most 50 freshly authorized container references with readable Stack names. Workload completeness stays unknown, including when empty; it does not establish an empty Host or authorize evacuation, deactivation or scheduling. Typed changes support nonempty custom name and description only. Clearing the custom name, labels, capacity/scheduling, hostname, agent lifecycle and credentials remain in the normal human host UI.']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
+    ['Host detail may include at most 50 freshly authorized container references with readable Stack names. Workload completeness stays unknown, including when empty; it does not establish an empty Host or authorize evacuation, deactivation or scheduling. Typed changes support nonempty custom name and description only. Use resetName:true to clear only the custom name and restore native hostname display. Labels, capacity/scheduling, hostname, agent lifecycle and credentials remain in the normal human host UI.']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
   family('load-balancer', [resource('loadBalancerService', 'loadBalancerServices', 'project', ['scale', 'healthState', 'archived'], {type: 'stack', field: 'stackId'}, ['Typed create is the ordered TCP service-reference subset only, with explicit startOnCreate, scale 1 and the current server-managed image. HTTPS/TLS/HTTP, certificates, selectors, custom configuration, scheduling, and existing LB port/configuration edits remain outside it. Shared Service start/stop accept empty parameters, fresh targetRef and a separate human approval. Non-Global manual scale accepts only an integer scale of at least 1, preserves active/inactive state and never starts an inactive load balancer. Restart/remove/upgrade are not offered. Metadata updates still support name/description only.'])]),
   family('mfa-passkey', [], 'human-ceremony', 'MFA enrollment, challenges, recovery codes and passkeys require the existing human security flow.'),
   family('network', [project('network', 'networks', ['kind', 'defaultPolicyAction'])]),
@@ -179,12 +181,14 @@ export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
   cancel_upgrade: Object.freeze({before: Object.freeze(['upgrading', 'finishing-upgrade']), after: 'canceled-upgrade'}),
 });
 export const RESOURCE_CHANGES = Object.freeze({
+  port: Object.freeze({update_public_port: action(['publicPort'], ['publicPort'])}),
+  instanceLink: Object.freeze({update_target: action(['targetInstanceRef'], ['targetInstanceRef'])}),
   volume: Object.freeze({create: action(['name', 'description'], ['name'])}),
   registry: Object.freeze({start: action(), stop: action()}),
   project: Object.freeze({update_metadata: metadata}),
   loadBalancerService: Object.freeze({start: action(), stop: action(), scale: action(['scale'], ['scale']), update_metadata: metadata, create: action(['name', 'description', 'startOnCreate', 'portRules'], ['name', 'startOnCreate', 'portRules'])}),
   certificate: Object.freeze({update_metadata: metadata}),
-  host: Object.freeze({update_metadata: metadata}),
+  host: Object.freeze({update_metadata: action(['name', 'description', 'resetName'], [], 1)}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
     create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: action(['name', 'description', 'group'], [], 1)}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(),
@@ -200,7 +204,7 @@ export const RESOURCE_CHANGES = Object.freeze({
     create: action(['name', 'image', 'description', 'command', 'entryPoint', 'ports'], ['name', 'image']), update_metadata: metadata}),
 });
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
-export const RESOURCE_CHANGE_FIELDS = Object.freeze(['name', 'description', 'group', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
+export const RESOURCE_CHANGE_FIELDS = Object.freeze(['sourceContainer', 'targetContainer', 'publicPort', 'privatePort', 'protocol', 'bindAddress', 'linkName', 'name', 'description', 'group', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
   'portRules', 'driver', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);
 
 // Only scalar allowlisted values cross the boundary. Nested structures can
