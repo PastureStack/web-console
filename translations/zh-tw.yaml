@@ -4634,7 +4634,7 @@ formResources:
     map: "進階選項的鍵與值不可留空。"
 
 webmcp:
-  stackRollbackReviewRequired: "無法安全回復此堆疊。部分服務已完成升級，或舊版設定、服務清單已改變。這次回復未啟動；請先在一般介面核對各服務與可用的回復資料。重新整理不會補回已遺失的歷史資料，請勿反覆送出此計畫。"
+  stackRollbackNotice: "只回復仍符合條件的服務升級。已完成升級的服務，以及沒有舊版設定的新增啟用服務，會維持原狀；不會刪除新增服務，也不會重建已移除的服務。顯示的服務數量是擷取的總數，並非實際回復請求數。"
   stackServiceCount: "堆疊內服務數量"
   checkpointOnly: "僅驗證堆疊流程檢查點"
   stackCancelCheckpointNotice: "此操作只取消堆疊的升級流程，不代表各服務升級已取消或完成。請另外確認各服務狀態。"

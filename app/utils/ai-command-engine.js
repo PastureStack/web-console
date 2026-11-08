@@ -1054,6 +1054,10 @@ export class CommandEngine {
         result.nextStep = 'Only the native Stack cancellation checkpoint is verified. Individual service upgrades may still be in progress; their completion or cancellation is not established. Read the same Stack and its services before a separately approved finish or rollback.';
       }
     }
+    if ( plan.resourceType === 'stack' && plan.operation === 'rollback' && result.status === 'succeeded' && result.verifiedResult === true ) {
+      result.completionScope = 'native-stack-remaining-service-upgrades';
+      result.nextStep = 'Only the native Stack rollback of remaining eligible service upgrades is verified. Services whose upgrades were finished, and new active services without previous configuration, remain unchanged. This does not delete added services or recreate removed services. Read the same Stack and its services before any further change.';
+    }
     if ( plan.id && plan.id.startsWith('aicataloglaunch-') && plan.createdResource ) {
       const captured = this.context.capture(), created = plan.createdResource;
       if ( created.resourceType !== 'stack' || !this.resourceIdentity(created, resourceDescriptor('stack'), captured) || typeof created.name !== 'string' ) {
@@ -1452,6 +1456,7 @@ export class CommandEngine {
       ...(input.resourceType === 'dnsService' && input.operation === 'create' ? {workflow: [...ALIAS_WORKFLOW], targetsBound: false,
         nextStep: `Ask the user to review and approve this create stage. ${ALIAS_CREATE_NEXT_STEP}`} :
         input.resourceType === 'host' && parameters.resetName === true ? {nextStep: 'The custom Host name will be cleared. The read-only hostname row is the restored displayed name; hostname itself is unchanged. Ask the user to review and approve this exact plan.'} :
+        input.resourceType === 'stack' && input.operation === 'rollback' ? {nextStep: 'Ask the user to review and approve this native Stack rollback of remaining eligible service upgrades. The displayed service count is the full captured set, not the number of rollback requests. Finished upgrades and new active services without previous configuration remain unchanged; this does not delete added services or recreate removed services.'} :
         {nextStep: 'Ask the user to review and approve this exact change in the console.'})}, summary);
   }
 

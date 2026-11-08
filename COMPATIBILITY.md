@@ -8,8 +8,10 @@ They require empty parameters, an exact opaque Stack reference, live role/Key
 ceilings and human approval. Four immutable review rows bind operation, state,
 complete captured service count and `checkpointOnly`; normal and inbox approval
 reread that same plan. A post-submit invalid response remains unknown with its
-original recovery reference. Rollback provenance conflicts require human review
-of the saved upgrade history; repeatedly refreshing or resubmitting is not a fix.
+original recovery reference. Stack rollback affects the remaining eligible service
+upgrades; finished upgrades and new active services without previous configuration
+stay unchanged. It does not delete added services or recreate removed services.
+The captured service count is not a child-dispatch count.
 
 Stack cancellation verifies only the Stack checkpoint, not completion or
 cancellation of every child Service. Finish/rollback also require the matching

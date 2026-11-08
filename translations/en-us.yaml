@@ -4858,7 +4858,7 @@ formResources:
     map: "Use non-empty keys and values for advanced options."
 
 webmcp:
-  stackRollbackReviewRequired: "The Stack cannot be rolled back safely. Some services have finished upgrading, or the previous configuration or service list has changed. This rollback was not started. Inspect the services and available rollback data in the normal console. Refreshing cannot recreate missing history; do not keep submitting this plan."
+  stackRollbackNotice: "Rolls back only remaining eligible service upgrades. Finished upgrades and new active services without previous configuration stay unchanged. Added services are not deleted, and removed services are not recreated. The service count is the total captured set, not the number of rollback requests."
   stackServiceCount: "Services in the Stack"
   checkpointOnly: "Stack checkpoint only"
   stackCancelCheckpointNotice: "This cancels only the Stack upgrade process. Individual service upgrades may still be in progress; inspect their status separately."

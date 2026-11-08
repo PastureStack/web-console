@@ -20,13 +20,15 @@ This does not add cancel-rollback, arbitrary Compose input, credentials or raw I
 
 If an acknowledged apply response is invalid or review data changes after submit,
 retain the original operation reference and recover by reading; never resubmit to
-make an unknown result look successful. A rollback provenance conflict requires
-human inspection of saved upgrade history and current state, not an endless
-refresh/retry loop. No automatic approval, retry or privilege expansion is added.
+make an unknown result look successful. Rollback applies only to remaining eligible
+service upgrades. Finished upgrades and new active services without previous
+configuration remain unchanged; added services are not deleted and removed services
+are not recreated. The human review and tool result explicitly describe this native
+scope. No automatic approval, retry or privilege expansion is added.
 
 ## Source and qualification boundary
 
-The source delta declares twelve new Node methods and one affected existing
+The source delta declares eleven new Node methods and one affected existing
 Service schema method. These are source identities, not new CI PASS claims.
 No new QUnit method, dependency, tool or Bridge source path is introduced.
 The normal owner retains all carried methods, browser checks, sixty Bridge

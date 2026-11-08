@@ -4412,7 +4412,7 @@ apiKeyAudit:
     load: "Não foi possível carregar a auditoria da chave. Atualize para tentar novamente."
 
 webmcp:
-  stackRollbackReviewRequired: "Não é possível reverter esta pilha com segurança. Alguns serviços concluíram a atualização, ou a configuração anterior ou a lista de serviços mudou. Esta reversão não foi iniciada. Confira os serviços e os dados de reversão disponíveis no console habitual. Atualizar a página não recria o histórico perdido; não envie este plano novamente."
+  stackRollbackNotice: "Somente as atualizações restantes de serviços que ainda podem ser revertidas serão desfeitas. Atualizações concluídas e novos serviços ativos sem configuração anterior permanecem inalterados. Serviços adicionados não são excluídos e serviços removidos não são recriados. A contagem mostra todos os serviços registrados na análise, não o número de solicitações de reversão."
   stackServiceCount: "Serviços na pilha"
   checkpointOnly: "Somente o ponto de controle da pilha"
   stackCancelCheckpointNotice: "Esta ação cancela apenas o processo de atualização da pilha. As atualizações de serviços individuais podem continuar em andamento; verifique o estado de cada um separadamente."

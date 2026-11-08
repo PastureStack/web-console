@@ -43,7 +43,7 @@ for component evidence.
 ## Features and operator guides
 
 Unreleased development work adds typed Stack finish-upgrade, cancellation and
-rollback through the normal native owners. Its matching Engine 0.183.389 generation guards
+rollback through the normal native owners. Its matching Engine 0.183.389 native-owner correction
 and Compose 0.14.44 rollback fix are still candidates; the published component above does
 not include this workflow. Source tests are separate from a matching release and
 deployed acceptance.

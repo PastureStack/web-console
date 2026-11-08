@@ -109,7 +109,7 @@ do not reapply it. The existing dedicated image-upgrade flow remains separate.
 
 The next source candidate extends the same three empty-parameter upgrade
 operations to `resourceType: "stack"`. It needs the matching native Engine
-generation safeguards and Compose rollback correction; it is not supported by
+Service-owner correction and Compose rollback correction; it is not supported by
 the published component assembly above.
 
 Each Stack review binds the operation, native before/after phase, complete captured
@@ -121,8 +121,10 @@ and child configuration, readiness and old-instance retirement evidence.
 
 A changed review requires a fresh preview. A response that cannot be verified
 after submission retains the same operation reference for read-only recovery;
-it must not cause a second dispatch. Legacy generations that cannot safely
-establish rollback remain explicit failures with their data preserved. These
+it must not cause a second dispatch. Rollback applies to remaining eligible
+service upgrades. Finished upgrades and new active services without previous
+configuration remain unchanged; added services are not deleted and removed
+services are not recreated. The human review and tool result state this scope. These
 source controls do not establish native, role/Key, browser or weak-model acceptance.
 
 ### Project and load-balancer metadata

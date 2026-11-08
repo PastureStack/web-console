@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {COMMANDS, CommandContext, CommandEngine} from '../bridge/shared-modules.mjs';
-const {resourceReviewLabels, resourceConfirmationErrorKey} = await import('data:text/javascript;base64,' +
+const {resourceReviewLabels} = await import('data:text/javascript;base64,' +
   fs.readFileSync(new URL('../app/utils/ai-resource-review-labels.js', import.meta.url)).toString('base64'));
 
 const operations = ['finish_upgrade', 'rollback', 'cancel_upgrade'];
@@ -102,6 +102,11 @@ test('Stack upgrade lifecycle: duplicate-name choice and the exact Stack checkpo
     if (operation === 'cancel_upgrade') {
       assert.match(done.nextStep, /Stack.*checkpoint/i); assert.match(done.nextStep, /service/i);
     }
+    if (operation === 'rollback') {
+      assert.match(result.nextStep, /remaining eligible/); assert.match(result.nextStep, /full captured set/);
+      assert.equal(done.completionScope, 'native-stack-remaining-service-upgrades');
+      assert.match(done.nextStep, /remain unchanged/); assert.match(done.nextStep, /does not delete added services or recreate removed services/);
+    }
     assert.equal(f.requests.some(request => request.method === 'DELETE' || /stacks\/.*action=/.test(request.url)), false);
   }
 });
@@ -162,10 +167,12 @@ test('Stack upgrade lifecycle: localized review separates total services, cancel
     const checkpoint = labels.displayChanges.find(row => row.field === 'checkpointOnly');
     assert.equal(checkpoint.fieldLabel, 'TEXT:webmcp.checkpointOnly'); assert.equal(checkpoint.informational, true);
     assert.equal(Boolean(labels.stackCancelCheckpointNotice), operation === 'cancel_upgrade');
+    assert.equal(Boolean(labels.stackRollbackNotice), operation === 'rollback');
     assert(labels.displayChanges.find(row => row.field === 'state').before.startsWith('TEXT:'));
     assert.equal(JSON.stringify(plan), original);
     const service = resourceReviewLabels({...plan, resourceType: 'service', displayDiff: plan.displayDiff.slice(0, 2)}, key => 'TEXT:' + key);
     assert.equal(service.stackCancelCheckpointNotice, null);
+    assert.equal(service.stackRollbackNotice, null);
   }
 });
 
@@ -173,7 +180,7 @@ test('Stack upgrade lifecycle: all thirteen locales have complete native-languag
   const root = new URL('../translations/', import.meta.url);
   const locales = fs.readdirSync(root).filter(name => name.endsWith('.yaml') && name !== 'none.yaml');
   assert.equal(locales.length, 13);
-  const keys = ['stackServiceCount', 'checkpointOnly', 'stackCancelCheckpointNotice', 'upgradeCancelledState', 'finishingUpgradeState', 'stackRollbackReviewRequired'];
+  const keys = ['stackServiceCount', 'checkpointOnly', 'stackCancelCheckpointNotice', 'upgradeCancelledState', 'finishingUpgradeState', 'stackRollbackNotice'];
   const values = new Map();
   for (const locale of locales) {
     const lines = fs.readFileSync(new URL(locale, root), 'utf8').split(/\r?\n/), start = lines.indexOf('webmcp:');
@@ -210,26 +217,4 @@ test('Stack upgrade lifecycle: an invalid post-submit review retains the origina
   const recovered = await f.engine.execute('get_operation', {operationRef: result.operationRef});
   assert.equal(recovered.status, 'succeeded'); assert.equal(recovered.verifiedResult, true); assert.equal(f.dispatches(), 1);
   }
-});
-
-test('Stack upgrade lifecycle: native rollback provenance conflicts stop retries with fixed localized guidance', async () => {
-  const codes = ['StackRollbackGenerationUnavailable', 'StackRollbackGenerationInvalid', 'StackRollbackChildSetChanged',
-    'StackRollbackUnrelatedUpgrade', 'StackRollbackChildAlreadyFinished',
-    'StackRollbackPreviousGenerationMismatch', 'StackRollbackPreviousGenerationInvalid'];
-  for (const code of codes) {
-    const f = fixture({rejectPreview: {status: 409, body: {code, message: 'PRIVATE_CONFIGURATION_SENTINEL'}}});
-    const result = await preview(f, 'rollback', await selected(f));
-    assert.equal(result.status, 'rejected'); assert.equal(result.code, 'CONFLICT');
-    assert.equal(result.reason, 'STACK_ROLLBACK_REVIEW_REQUIRED');
-    assert(result.nextStep.includes('Stop retrying this plan'));
-    assert(!JSON.stringify(result).includes('PRIVATE_CONFIGURATION_SENTINEL'));
-    assert.equal(resourceConfirmationErrorKey(result.code, result.reason), 'webmcp.stackRollbackReviewRequired');
-    assert.equal(f.dispatches(), 0);
-  }
-  for (const status of [403, 500]) {
-    const f = fixture({rejectPreview: {status, body: {code: codes[0]}}});
-    const result = await preview(f, 'rollback', await selected(f));
-    assert.equal(result.reason, undefined); assert.equal(f.dispatches(), 0);
-  }
-  assert.equal(resourceConfirmationErrorKey('FORBIDDEN', 'STACK_ROLLBACK_REVIEW_REQUIRED'), 'webmcp.forbidden');
 });

@@ -20,7 +20,6 @@ const HEALTH_FIELDS = {port: 'port', requestLine: 'request', interval: 'interval
 // Only an already sanitized public code selects fixed human guidance.
 export function resourceConfirmationErrorKey(code, reason) {
   if ( code === 'NEEDS_USER' && reason === 'BRIDGE_PROJECT_BINDING_REQUIRED' ) { return 'webmcp.bridgeProjectBindingRequired'; }
-  if ( code === 'CONFLICT' && reason === 'STACK_ROLLBACK_REVIEW_REQUIRED' ) { return 'webmcp.stackRollbackReviewRequired'; }
   if ( code === 'FORBIDDEN' ) { return 'webmcp.forbidden'; }
   return ['CONFLICT', 'SESSION_REQUIRED', 'STALE_REFERENCE', 'STALE_REF', 'CONTEXT_CHANGED'].includes(code) ? 'webmcp.stale' : 'webmcp.failed';
 }
@@ -76,6 +75,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     stackTargetUnavailable,
     stackCancelCheckpointNotice: stackUpgrade && plan.operation === 'cancel_upgrade' &&
       (plan.displayDiff || []).some(change => change.field === 'checkpointOnly' && change.after === true) ? text('webmcp.stackCancelCheckpointNotice') : null,
+    stackRollbackNotice: stackUpgrade && plan.operation === 'rollback' ? text('webmcp.stackRollbackNotice') : null,
     localVolumeCreateNotice: plan.resourceType === 'volume' && plan.operation === 'create' ? text('webmcp.localVolumeCreateNotice') : null,
     externalHealthCheckNotice: plan.resourceType === 'externalService' && plan.operation === 'create' &&
       (plan.displayDiff || []).some((change) => change.field === 'healthCheck' && change.after !== null) ? text('newExternalService.alert') : null,
