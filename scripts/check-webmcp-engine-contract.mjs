@@ -154,7 +154,7 @@ if(!catalogOptionsOnly){
   assert.deepEqual([...event.resourceFields.command.options].sort(),[...COMMANDS.map(t=>t.name),'unknown'].sort(),'Tool audit wire enum does not match the frontend');
   for(const code of [...PUBLIC_ERROR_CODES,'NONE'])assert.ok(event.resourceFields.reason.options.includes(code),'Public error '+code+' cannot be audited');
 }
-const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis','ports','healthCheck'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
+const wireInputs={aiServiceUpgradePlan:['serviceId','image','startFirst','batchSize','intervalMillis','ports','healthCheck','command','entryPoint'],aiServiceDescriptionUpdate:['serviceId','description','expectedDescription'],
   aiToolCallEvent:['command','phase','status','reason','correlationId'],aiResourceView:['resourceType','resourceId','query','marker','parentId','view','tailLines'],
   aiResourceChangePlan:['resourceType','operation','resourceId','parameters'],aiCatalogMetadataView:['query','marker','templateId','versions','versionId'],
   aiCatalogStackLaunchOptions:['templateId','versionId'],
@@ -186,7 +186,7 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
       }
     }
     assert.notEqual(schema.resourceFields.image.required,true,type+'.image must remain optional');
-    for(const [name,kind,nullable] of [['ports','array[string]',false],['healthCheck','json',true]]){
+    for(const [name,kind,nullable] of [['ports','array[string]',false],['healthCheck','json',true],['command','array[string]',true],['entryPoint','array[string]',true]]){
       const field=schema.resourceFields[name];
       assert.equal(field.type,kind,type+'.'+name+' type mismatch');
       assert.equal(field.update,false,type+'.'+name+' must not be client-updatable');

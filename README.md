@@ -39,6 +39,18 @@ publication does not update the running Server or establish complete
 frontend coverage. See the [release note](docs/releases/web-console-1.6.230.md)
 for component evidence.
 
+## Next source candidate
+
+Web Console **1.6.231** / Bridge **0.2.33** targets matching Engine
+**0.183.390** and Server **1.6.588**; Compose remains **0.14.44**.
+This source candidate is not published or deployed. It extends the existing
+reviewed Service startup-argument workflow and preserves ordinary
+Compose upgrade completion without a Catalog lookup. The twelve tools, SDK
+**1.32.2**, native role/Key ceilings and human confirmation remain unchanged.
+Fresh component CI, packaged SDK qualification, publication, matched Server
+deployment and affected native acceptance remain required. See the
+[candidate note](docs/releases/web-console-1.6.231.md).
+
 ## Features and operator guides
 
 Typed Stack finish-upgrade, cancellation and rollback use the existing native

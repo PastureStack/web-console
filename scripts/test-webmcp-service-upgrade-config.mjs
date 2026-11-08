@@ -22,13 +22,18 @@ function fixture({transportKind = 'browser', mutate = x => x, pause, rejectPrevi
         if (Object.hasOwn(data, 'ports')) rows.push({field: 'ports', before: '["8080:80/tcp"]', after: JSON.stringify(data.ports)});
         if (Object.hasOwn(data, 'healthCheck')) rows.push({field: 'healthCheck', before: null,
           after: data.healthCheck === null ? null : JSON.stringify({strategy: 'recreate', ...data.healthCheck})});
+        for (const field of ['command', 'entryPoint']) if (Object.hasOwn(data, field)) rows.push({field,
+          before: '["old"]', after: data[field] === null ? null : JSON.stringify(data[field])});
         if (rows.length) plan.configurationChanges = rows;
         plan = mutate(plan);
         if (pause) await pause();
         return {body: structuredClone(plan)};
       }
       if (request.url.endsWith('?action=confirm')) { plan.confirmationState = 'approved'; return {body: structuredClone(plan)}; }
-      if (request.url.endsWith('?action=apply')) { writes++; return {body: {...structuredClone(plan), status: 'accepted', verifiedResult: false}}; }
+      if (request.url.endsWith('?action=apply')) {
+        if (plan.confirmationState !== 'approved') throw {status: 409, body: {code: 'UpgradeNeedsConfirmation'}};
+        writes++; return {body: {...structuredClone(plan), status: 'accepted', verifiedResult: false}};
+      }
       if (request.url.endsWith('/' + id)) return {body: structuredClone(plan)};
       throw Error('Unexpected fixed route');
     }});
@@ -54,6 +59,53 @@ test('explicit same image with config reaches the server and clear/omit are exac
   assert.equal(result.status, 'needs_user'); assert.deepEqual(f.calls[0].data, {serviceId: 's1', image: 'app:1', ports: [], healthCheck: null});
   const omitted = fixture(); await omitted.engine.execute('preview_service_upgrade', {serviceRef: omitted.ref, ports: ['90/tcp']});
   assert.equal(Object.hasOwn(omitted.calls[0].data, 'image'), false); assert.equal(Object.hasOwn(omitted.calls[0].data, 'healthCheck'), false);
+});
+
+for (const transportKind of ['browser', 'stdio']) {
+  test(`${transportKind} startup argument upgrade preserves exact arrays and needs the original human approval`, async () => {
+    const f = fixture({transportKind}), command = ['serve', '  keep spacing  ', '', '繁體中文', '|'], entryPoint = ['/bin/app'];
+    const result = await f.engine.execute('preview_service_upgrade', {serviceRef: f.ref, command, entryPoint});
+    assert.equal(result.status, 'needs_user'); assert.equal(result.currentImage, result.requestedImage);
+    assert.deepEqual(f.calls[0].data, {serviceId: 's1', command, entryPoint}); assert.equal(f.writes, 0);
+    assert.deepEqual(result.configurationChanges.map(row => [row.field, JSON.parse(row.after)]), [['command', command], ['entryPoint', entryPoint]]);
+    command[0] = 'changed'; entryPoint[0] = 'changed';
+    assert.equal(f.calls[0].data.command[0], 'serve'); assert.equal(f.calls[0].data.entryPoint[0], '/bin/app');
+    const unapproved = await f.engine.execute('apply_service_upgrade', {planRef: result.planRef});
+    assert.equal(unapproved.status, 'needs_user'); assert.equal(f.writes, 0);
+    f.plan.confirmationState = 'approved';
+    assert.equal((await f.engine.execute('apply_service_upgrade', {planRef: result.planRef})).status, 'accepted');
+    assert.equal(f.writes, 1); assert.deepEqual(f.calls.at(-1).data, {});
+    assert.equal(f.calls.some(call => call.method === 'PUT' || /\/services/.test(call.url)), false);
+  });
+}
+
+test('startup argument upgrade keeps native null empty and omitted values distinct', async () => {
+  const f = fixture(), result = await f.engine.execute('preview_service_upgrade', {serviceRef: f.ref, command: null, entryPoint: []});
+  assert.equal(result.status, 'needs_user'); assert.deepEqual(f.calls[0].data, {serviceId: 's1', command: null, entryPoint: []});
+  assert.deepEqual(result.configurationChanges.map(row => [row.field, row.after]), [['command', null], ['entryPoint', '[]']]);
+  const omitted = fixture(); await omitted.engine.execute('preview_service_upgrade', {serviceRef: omitted.ref, ports: ['90/tcp']});
+  assert.equal(Object.hasOwn(omitted.calls[0].data, 'command'), false); assert.equal(Object.hasOwn(omitted.calls[0].data, 'entryPoint'), false);
+  const all = fixture(); assert.equal((await all.engine.execute('preview_service_upgrade',
+    {serviceRef: all.ref, command: ['serve'], entryPoint: ['/app'], ports: [], healthCheck: null})).configurationChanges.length, 4);
+});
+
+test('startup argument upgrade rejects coercion excess limits forged reviews and confirmation drift', async () => {
+  for (const value of ['serve --flag', {}, [1], [null], ['bad\0arg'], Array(65).fill(''), ['x'.repeat(4097)], Array(5).fill('x'.repeat(4096))]) {
+    for (const field of ['command', 'entryPoint']) {
+      const f = fixture(); assert.equal((await f.engine.execute('preview_service_upgrade', {serviceRef: f.ref, [field]: value})).code, 'INVALID_INPUT');
+      assert.equal(f.calls.length, 0); assert.equal(f.writes, 0);
+    }
+  }
+  for (const after of ['["changed"]', '"serve"', '[1]', '["bad\\u0000arg"]']) {
+    const f = fixture({mutate: p => ({...p, configurationChanges: [{field: 'command', before: null, after}]})});
+    assert.equal((await f.engine.execute('preview_service_upgrade', {serviceRef: f.ref, command: ['serve']})).code, 'INVALID_RESPONSE');
+    assert.equal(f.review.length, 0); assert.equal(f.writes, 0);
+  }
+  const f = fixture(), preview = await f.engine.execute('preview_service_upgrade', {serviceRef: f.ref, command: ['serve']});
+  f.plan.configurationChanges[0].after = '["changed"]';
+  assert.equal((await f.engine.confirmPlan(preview.planRef)).code, 'CONFLICT'); assert.equal(f.writes, 0);
+  const max = fixture(); assert.equal((await max.engine.execute('preview_service_upgrade',
+    {serviceRef: max.ref, command: Array(4).fill('\u0001'.repeat(4096))})).status, 'needs_user');
 });
 test('schema rejects missing intent raw LC unknown fields malformed config and readonly writes before transport', async () => {
   for (const extra of [{}, {launchConfig: {}}, {ports: null}, {ports: '80/tcp'}, {ports: [80]}, {healthCheck: {}},
@@ -126,6 +178,12 @@ test('human configuration review uses existing field translations and escaped be
   const result = resourceReviewLabels({configurationChanges: rows}, key => key);
   assert.equal(result.upgradeConfigurationChanges.length, 2); assert.equal(result.upgradeConfigurationChanges[0].fieldLabel, 'generic.ports');
   assert.match(result.upgradeConfigurationChanges[1].after, /90/);
+  const startup = resourceReviewLabels({configurationChanges: [
+    {field: 'command', before: '["<old>"]', after: '["serve","  exact  "]'},
+    {field: 'entryPoint', before: null, after: '[]'}]}, key => key);
+  assert.equal(startup.upgradeConfigurationChanges[0].fieldLabel, 'sidekickAddtlInfo.command');
+  assert.equal(startup.upgradeConfigurationChanges[1].fieldLabel, 'sidekickAddtlInfo.entryPoint');
+  assert.equal(startup.upgradeConfigurationChanges[0].after, '["serve","  exact  "]');
   const template = readFileSync(new URL('../app/components/modal-confirm-ai-upgrade/template.hbs', import.meta.url), 'utf8');
   assert.match(template, /reviewLabels.upgradeConfigurationChanges/); assert.match(template, /<pre[^>]*>{{change.before}}<\/pre>/);
   assert.match(template, /<pre[^>]*>{{change.after}}<\/pre>/); assert.doesNotMatch(template, /{{{change\.(before|after)}}}/);
