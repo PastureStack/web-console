@@ -36,6 +36,7 @@ node --test scripts/test-webmcp-host-workloads.mjs
 node --test scripts/test-webmcp-stack-ref-guidance.mjs
 node --test scripts/test-webmcp-audit.mjs scripts/test-webmcp-audit-extension.mjs
 node scripts/test-webmcp-commands.js --filter=audit
+node scripts/test-webmcp-commands.js --filter='post-ack parse failure:'
 node scripts/test-webmcp-commands.js --filter='upgrade strategy:'
 node --test bridge/test/core.test.mjs
 node --test bridge/test/profile-binding.test.mjs
