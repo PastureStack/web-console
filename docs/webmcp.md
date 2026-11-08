@@ -6,7 +6,7 @@ Ordinary console actions and general-purpose Keys retain their existing behavior
 
 ## Tools and workflow
 
-The [current published component](../README.md#current-component) lists the
+The [current component status](../README.md#current-component) lists the
 compatible Web Console, bridge and Engine versions. A component release alone
 does not establish acceptance of a Server deployment or every frontend workflow.
 
@@ -104,6 +104,28 @@ readback. A cancel receipt verifies cancellation only; it does not finish an
 upgrade or rollback. `cancel_rollback` is unavailable because there is no native
 capability. Keep an accepted, running or unknown operation and read its receipt;
 do not reapply it. The existing dedicated image-upgrade flow remains separate.
+
+### Unreleased Stack upgrade completion and rollback
+
+The next source candidate extends the same three empty-parameter upgrade
+operations to `resourceType: "stack"`. It needs the matching native Engine
+Service-owner correction and Compose rollback correction; it is not supported by
+the published component assembly above.
+
+Each Stack review binds the operation, native before/after phase, complete captured
+service count and `checkpointOnly`. The count describes the captured Stack service
+set, not how many child requests will be dispatched. Cancelling verifies only the
+Stack cancellation checkpoint: individual service upgrades may still be running
+and need separate inspection. Finish and rollback require native parent-process
+and child configuration, readiness and old-instance retirement evidence.
+
+A changed review requires a fresh preview. A response that cannot be verified
+after submission retains the same operation reference for read-only recovery;
+it must not cause a second dispatch. Rollback applies to remaining eligible
+service upgrades. Finished upgrades and new active services without previous
+configuration remain unchanged; added services are not deleted and removed
+services are not recreated. The human review and tool result state this scope. These
+source controls do not establish native, role/Key, browser or weak-model acceptance.
 
 ### Project and load-balancer metadata
 

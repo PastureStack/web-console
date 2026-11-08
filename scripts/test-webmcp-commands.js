@@ -611,6 +611,38 @@ async function main() {
     }
   });
 
+  await test('post-ack parse failure: dedicated Service upgrade preserves its original recovery reference', async () => {
+    for (const body of [null, '<invalid-response>']) {
+      const f = fixture(), plan = await preview(f); await f.engine.confirmPlan(plan.planRef);
+      const request = f.engine.request;
+      f.engine.request = async options => {
+        const response = await request(options);
+        return options.url.endsWith('?action=apply') ? {body} : response;
+      };
+      const result = await f.engine.execute('apply_service_upgrade', {planRef: plan.planRef});
+      assert.equal(result.status, 'unknown'); assert.equal(typeof result.operationRef, 'string');
+      f.setStatus('succeeded', true);
+      const recovered = await f.engine.execute('get_operation', {operationRef: result.operationRef});
+      assert.equal(recovered.status, 'succeeded'); assert.equal(recovered.operationRef, result.operationRef);
+      assert.equal(f.requests.filter(row => row.url.endsWith('?action=apply')).length, 1);
+    }
+  });
+
+  await test('post-ack parse failure: description mutation reports uncertainty and recovers by reading without repeating POST', async () => {
+    const f = fixture(), ref = await serviceRef(f); await f.engine.execute('get_service', {serviceRef: ref});
+    const request = f.engine.request;
+    f.engine.request = async options => {
+      const response = await request(options);
+      return options.url.endsWith('aiServiceDescriptionUpdates') ? {body: null} : response;
+    };
+    const result = await f.engine.execute('update_service_description', {serviceRef: ref, description: 'Changed once'});
+    assert.equal(result.status, 'unknown'); assert.equal(result.code, 'UNKNOWN_RESULT');
+    const refreshedRef = await serviceRef(f);
+    const recovered = await f.engine.execute('get_service', {serviceRef: refreshedRef});
+    assert.equal(recovered.description, 'Changed once');
+    assert.equal(f.requests.filter(row => row.url.endsWith('aiServiceDescriptionUpdates')).length, 1);
+  });
+
   await test('lost apply response preserves the existing operation reference and recovers without resubmission', async () => {
     const f = fixture(), plan = await preview(f), accepted = deferred(), response = deferred();
     await f.engine.confirmPlan(plan.planRef);

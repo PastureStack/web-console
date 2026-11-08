@@ -3,6 +3,7 @@
 set -Eeuo pipefail
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 work=$(mktemp -d "${RUNNER_TEMP:-/tmp}/pasturestack-ci-python.XXXXXX")
+python -B "$root/tools/pip-security-overlay/test-build-input-download.py"
 python "$root/tools/pip-security-overlay/build-pip-overlay.py" --work "$work/build" --output "$work/dist"
 python -m venv --without-pip "$work/env"
 export PATH="$work/env/bin:$PATH"

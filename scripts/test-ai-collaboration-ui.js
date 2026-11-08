@@ -252,6 +252,41 @@ async function main() {
     assert.equal((await f.service.confirmPendingPlan()).code, 'CONTEXT_CHANGED');
   });
 
+  await test('Stack lifecycle human inbox freezes all impact fields and checks the fresh plan before confirmation', async () => {
+    const dto = {id: 'aichange-22222222-2222-2222-2222-222222222222', resourceType: 'stack', operation: 'cancel_upgrade',
+      resourceId: 'stack-selected', targetPath: 'Environment/same', status: 'preview', confirmationState: 'pending', verifiedResult: false,
+      changes: [{field: 'operation', before: null, after: 'cancel_upgrade'}, {field: 'state', before: 'upgrading', after: 'canceled-upgrade'},
+        {field: 'affectedServiceCount', before: 2, after: 2}, {field: 'checkpointOnly', before: null, after: true}]};
+    for (const scenario of ['matching', 'changed-count', 'changed-checkpoint', 'changed-response']) {
+      const f = fixture('off');
+      f.service.userStore.rawRequest = async options => {
+        f.requests.push(options);
+        const changed = JSON.parse(JSON.stringify(dto));
+        if (scenario === 'changed-count' && options.method === 'GET' || scenario === 'changed-response' && options.method === 'POST') {
+          changed.changes[2] = {field: 'affectedServiceCount', before: 3, after: 3};
+        }
+        if (scenario === 'changed-checkpoint' && options.method === 'GET') changed.changes[3].after = false;
+        if (options.method === 'POST') changed.confirmationState = 'approved';
+        return {body: changed};
+      };
+      assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
+      const reviewed = f.service.pendingPlan;
+      assert.equal(typeof reviewed.reviewSignature, 'string');
+      const result = await f.service.confirmPendingPlan(reviewed);
+      assert.equal(f.requests[0].method, 'GET');
+      assert.equal(f.requests[0].url, 'projects/project/aiResourceChangePlans/' + dto.id);
+      if (scenario === 'matching') {
+        assert.equal(result.status, 'succeeded'); assert.equal(result.confirmationState, 'approved');
+        assert.deepEqual(f.requests.map(row => row.method), ['GET', 'POST']);
+      } else {
+        assert.equal(result.code, scenario === 'changed-checkpoint' ? 'INVALID_RESPONSE' : 'CONFLICT');
+        assert.equal(f.service.pendingPlan, reviewed);
+        assert.equal(f.requests.filter(row => row.method === 'POST').length, scenario === 'changed-response' ? 1 : 0);
+      }
+      assert.equal(f.context.references.size, 0);
+    }
+  });
+
   await test('upgrade configuration human inbox freezes exact before-after and rejects a replaced review', async () => {
     const dto = {...plan(), requestedImage: 'docker:app:1', upgradeStrategy: {startFirst: false, batchSize: 1, intervalMillis: 2000},
       configurationChanges: [{field: 'ports', before: '["8080:80/tcp"]', after: '[]'}, {field: 'healthCheck', before: '{"port":80}', after: null}]};

@@ -4,7 +4,7 @@ const OPERATIONS = {switch_context: 'action.switchEnvironment', set_default: 'ac
   finish_upgrade: 'action.finishUpgrade', rollback: 'action.rollback', cancel_upgrade: 'action.cancelUpgrade'};
 const FIELDS = {selectedEnvironment: 'nav.environment.label', defaultEnvironment: 'action.setDefault', selectedEnvironmentDescription: 'generic.description', sourceContainer: 'apiKeyAccess.selector.types.container', targetContainer: 'formContainerLinks.targetInstance.label', linkName: 'formContainerLinks.name.label', publicPort: 'formPorts.public.label', privatePort: 'formPorts.private.label', protocol: 'formPorts.protocol.label', bindAddress: 'formPorts.bindAddress.label', group: 'editStack.group.label', driver: 'formVolumes.volumeDriver.label', portRules: 'formBalancerRules.label',startFirst: 'formUpgrade.startStop', batchSize: 'formUpgrade.size', intervalMillis: 'formUpgrade.interval', targetServices: 'formTarget.target', hostname: 'formTarget.pointHostname', externalIpAddresses: 'formTarget.pointAddress', name: 'generic.name', description: 'generic.description', image: 'generic.image', scale: 'serviceInfoPartial.scale',
   state: 'generic.state', stackId: 'apiKeyAccess.selector.types.stack', command: 'sidekickAddtlInfo.command', entryPoint: 'sidekickAddtlInfo.entryPoint', ports: 'generic.ports', healthCheck: 'newContainer.tabs.healthCheck',
-  operation: 'generic.actions', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
+  operation: 'generic.actions', checkpointOnly: 'webmcp.checkpointOnly', childServiceState: 'webmcp.childServiceState', affectedInstanceCount: 'webmcp.affectedInstanceCount', affectedMountCount: 'webmcp.affectedMountCount',
   startOnCreate: 'webmcp.startOnCreate', affectedServiceCount: 'webmcp.affectedServiceCount', emptyStack: 'webmcp.emptyStack',
   catalogTemplate: 'newCatalog.catalog', catalogVersion: 'newCatalog.templateVersion', serviceCount: 'apiKeyAccess.selector.types.service',
   volumeCount: 'apiKeyAccess.selector.types.volume', humanInputCount: 'webmcp.catalogHumanInputCount', referenceCount: 'webmcp.catalogReferenceCount', archived: 'archive.filterLabel'};
@@ -12,6 +12,8 @@ const STATES = {active: 'formPorts.preflight.state.active', inactive: 'formPorts
   running: 'formPorts.preflight.state.running', stopped: 'formPorts.preflight.state.stopped',
   removed: 'webmcp.removedState', mixed: 'webmcp.mixedState', empty: 'webmcp.emptyStack',
   start: 'action.start', stop: 'action.stop', restart: 'action.restart', remove: 'action.remove'};
+const STACK_UPGRADE_STATES = {upgrading: 'upgradeBtn.status.inprogress', upgraded: 'upgradeBtn.status.upgraded',
+  'canceled-upgrade': 'webmcp.upgradeCancelledState', 'finishing-upgrade': 'webmcp.finishingUpgradeState'};
 const HEALTH_FIELDS = {port: 'port', requestLine: 'request', interval: 'interval', responseTimeout: 'timeout', healthyThreshold: 'healthyThreshold',
   unhealthyThreshold: 'unhealthyThreshold', initializingTimeout: 'initializingTimeout', reinitializingTimeout: 'reinitializingTimeout', strategy: 'strategy'};
 
@@ -27,6 +29,7 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
   const text = (key) => String(translate(key || 'generic.unknown'));
   const label = (map, key) => Object.prototype.hasOwnProperty.call(map, key) ? map[key] : null;
   const stackParent = plan.operation === 'create' && ['service', 'container'].includes(plan.resourceType);
+  const stackUpgrade = plan.resourceType === 'stack' && ['finish_upgrade', 'rollback', 'cancel_upgrade'].includes(plan.operation);
   const stackName = (id) => {
     if ( typeof id !== 'string' || !plan.context || typeof plan.context.projectId !== 'string' ) { return null; }
     const matches = stacks.filter((stack) => stack.id === id && stack.accountId === plan.context.projectId && !stack.removed);
@@ -62,7 +65,10 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
         return rows.join('\n');
       } catch (error) { return plan.resourceType === 'externalService' ? text('generic.unknown') : String(input); }
     }
-    if ( ['state', 'childServiceState'].includes(field) && label(STATES, input) ) { return text(label(STATES, input)); }
+    if ( ['state', 'childServiceState'].includes(field) ) {
+      const stateLabel = label(STATES, input) || (stackUpgrade && label(STACK_UPGRADE_STATES, input));
+      if ( stateLabel ) { return text(stateLabel); }
+    }
     if ( field === 'operation' && label(OPERATIONS, input) ) { return text(label(OPERATIONS, input)); }
     return String(input);
   };
@@ -70,6 +76,9 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(plan.resourceType === 'host' && ['start', 'stop'].includes(plan.operation) ?
       plan.operation === 'start' ? 'action.activate' : 'action.deactivate' : label(OPERATIONS, plan.operation)),
     stackTargetUnavailable,
+    stackCancelCheckpointNotice: stackUpgrade && plan.operation === 'cancel_upgrade' &&
+      (plan.displayDiff || []).some(change => change.field === 'checkpointOnly' && change.after === true) ? text('webmcp.stackCancelCheckpointNotice') : null,
+    stackRollbackNotice: stackUpgrade && plan.operation === 'rollback' ? text('webmcp.stackRollbackNotice') : null,
     localVolumeCreateNotice: plan.resourceType === 'volume' && plan.operation === 'create' ? text('webmcp.localVolumeCreateNotice') : null,
     externalHealthCheckNotice: plan.resourceType === 'externalService' && plan.operation === 'create' &&
       (plan.displayDiff || []).some((change) => change.field === 'healthCheck' && change.after !== null) ? text('newExternalService.alert') : null,
@@ -85,7 +94,8 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
       before: value(change.field, change.before), after: value(change.field, change.after)})),
     displayChanges: (plan.displayDiff || []).filter((change) => change.field !== 'mountedDataRule').map((change) => {
       const count = ['affectedServiceCount', 'affectedInstanceCount', 'affectedMountCount'].includes(change.field);
-      return {field: change.field, fieldLabel: (plan.resourceType === 'host' && change.field === 'hostname' ? `${text('action.restore')} ${text('generic.name')} (${text('editHost.hostname.label')})` : text(plan.resourceType === 'host' && change.field === 'name' ? 'editHost.customName.label' : label(FIELDS, change.field))), informational: plan.planKind === 'browser-environment' && change.field === 'selectedEnvironmentDescription' || count || change.field === 'emptyStack' || plan.resourceType === 'host' && change.field === 'hostname',
+      return {field: change.field, fieldLabel: stackUpgrade && change.field === 'affectedServiceCount' ? text('webmcp.stackServiceCount') :
+        (plan.resourceType === 'host' && change.field === 'hostname' ? `${text('action.restore')} ${text('generic.name')} (${text('editHost.hostname.label')})` : text(plan.resourceType === 'host' && change.field === 'name' ? 'editHost.customName.label' : label(FIELDS, change.field))), informational: plan.planKind === 'browser-environment' && change.field === 'selectedEnvironmentDescription' || count || change.field === 'checkpointOnly' || change.field === 'emptyStack' || plan.resourceType === 'host' && change.field === 'hostname',
         before: value(change.field, change.before), after: value(change.field, count ? change.before : change.after)};
     }),
   };

@@ -62,7 +62,7 @@ test('Service upgrade lifecycle: existing twelve tools advertise only three nati
   assert.equal(conditions.length, 1);
   const condition = conditions[0];
   assert.deepEqual(condition.if.properties.operation.enum, operations);
-  assert.equal(condition.then.properties.resourceType.const, 'service');
+  assert.deepEqual(condition.then.properties.resourceType.enum, ['service', 'stack']);
   assert.deepEqual(condition.then.properties.parameters.properties, {});
   assert.equal(condition.then.properties.parameters.additionalProperties, false);
   assert.match(tool.description, /cancellation checkpoint/); assert.match(tool.description, /cancel_rollback.*unsupported/);

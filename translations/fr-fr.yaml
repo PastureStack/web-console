@@ -4406,6 +4406,12 @@ apiKeyAudit:
     load: "Impossible de charger l’audit de la clé. Actualisez pour réessayer."
 
 webmcp:
+  stackRollbackNotice: "Seules les mises à niveau restantes pouvant être annulées sont restaurées. Les mises à niveau terminées et les nouveaux services actifs sans configuration précédente restent inchangés. Les services ajoutés ne sont pas supprimés et les services retirés ne sont pas recréés. Le nombre de services indique l’ensemble relevé, pas le nombre de demandes de restauration."
+  stackServiceCount: "Services du Stack"
+  checkpointOnly: "Point de contrôle du Stack uniquement"
+  stackCancelCheckpointNotice: "Cette action annule uniquement le processus de mise à niveau du Stack. La mise à niveau de certains services peut se poursuivre ; vérifiez leur état séparément."
+  upgradeCancelledState: "Mise à niveau annulée"
+  finishingUpgradeState: "Finalisation de la mise à niveau"
   localVolumeCreateNotice: "Crée uniquement un enregistrement de volume local non alloué, sans créer ni monter de stockage sur un hôte. Les noms peuvent se répéter ; seul le nouvel enregistrement est vérifié, jamais un ancien volume de même nom. Choisissez un nom distinct."
   bridgeProjectBindingRequired: "Avant de renommer cet environnement avec le pont, demandez à l’utilisateur de créer un nouveau profil local lié à cet environnement, puis de se reconnecter avec ce fichier. Conservez le profil existant sans modification. La description peut toujours être modifiée séparément."
   assignedPorts: Mappages de ports attribués

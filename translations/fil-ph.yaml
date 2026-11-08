@@ -4408,6 +4408,12 @@ apiKeyAudit:
     load: "Hindi ma-load ang pag-audit ng key. I-refresh upang subukang muli."
 
 webmcp:
+  stackRollbackNotice: "Tanging ang natitirang pag-upgrade ng mga serbisyong maaari pang ibalik ang ibabalik. Mananatiling hindi nagbabago ang mga natapos na pag-upgrade at bagong aktibong serbisyong walang dating pagsasaayos. Hindi buburahin ang mga idinagdag na serbisyo o muling lilikhain ang mga inalis. Ang bilang ay lahat ng serbisyong nakuha sa pagsusuri, hindi ang dami ng kahilingan sa pagbabalik."
+  stackServiceCount: "Bilang ng mga serbisyo sa stack"
+  checkpointOnly: "Checkpoint ng stack lamang"
+  stackCancelCheckpointNotice: "Proseso lamang ng pag-upgrade ng stack ang kinakansela nito. Maaaring nagpapatuloy pa ang pag-upgrade ng mga serbisyo; suriin nang hiwalay ang katayuan ng bawat isa."
+  upgradeCancelledState: "Nakansela ang pag-upgrade"
+  finishingUpgradeState: "Tinatapos ang pag-upgrade"
   localVolumeCreateNotice: "Rekord lamang ng local Volume na hindi pa nakatalaga ang gagawin; walang storage na gagawin o ikakabit sa Host. Maaaring maulit ang pangalan; ang eksaktong bagong rekord lamang ang susuriin. Pumili ng ibang pangalan upang hindi malito sa dati nang data."
   bridgeProjectBindingRequired: "Bago palitan ang pangalan ng environment sa pamamagitan ng bridge, hilingin sa user na gumawa ng bagong lokal na profile na nakatali sa environment at kumonekta muli gamit ang bagong file. Huwag baguhin ang dating profile. Maaari pa ring baguhin nang hiwalay ang paglalarawan."
   assignedPorts: Mga naitalagang pagtutugma ng port

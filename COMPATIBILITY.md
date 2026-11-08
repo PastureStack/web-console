@@ -1,5 +1,27 @@
 # Compatibility Contract
 
+## Web Console 1.6.230 / Bridge 0.2.32 source candidate
+
+Minimum and matching Engine: **0.183.389**. Stack `finish_upgrade`, `rollback`
+and `cancel_upgrade` reuse the existing twelve tools and native plan collection.
+They require empty parameters, an exact opaque Stack reference, live role/Key
+ceilings and human approval. Four immutable review rows bind operation, state,
+complete captured service count and `checkpointOnly`; normal and inbox approval
+reread that same plan. A post-submit invalid response remains unknown with its
+original recovery reference. Stack rollback affects the remaining eligible service
+upgrades; finished upgrades and new active services without previous configuration
+stay unchanged. It does not delete added services or recreate removed services.
+The captured service count is not a child-dispatch count.
+
+Stack cancellation verifies only the Stack checkpoint, not completion or
+cancellation of every child Service. Finish/rollback also require the matching
+Engine and Compose **0.14.44** native child/configuration/retirement contract.
+Engine/Compose qualification, current Web original CI, the new packaged SDK
+handshake, immutable publication and affected native/UI acceptance remain pending.
+No new tool, grant, dependency or mandatory legacy-native header is introduced.
+The single published baseline is 229/031 below; its historical evidence is unchanged.
+See the [candidate note](docs/releases/web-console-1.6.230.md).
+
 ## Web Console 1.6.229 / Bridge 0.2.31 published
 
 Minimum and matching Engine remains **0.183.388**. Two browser-only environment

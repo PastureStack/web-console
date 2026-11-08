@@ -4301,6 +4301,12 @@ apiKeyAudit:
     load: 无法加载密钥审计。请刷新后重试。
 
 webmcp:
+  stackRollbackNotice: "仅回滚仍符合条件的服务升级。已完成升级的服务，以及没有旧版配置的新增活动服务，将保持不变；不会删除新增服务，也不会重建已移除的服务。显示的服务数量是获取的总数，并非实际回滚请求数。"
+  stackServiceCount: "堆栈内服务数量"
+  checkpointOnly: "仅验证堆栈流程检查点"
+  stackCancelCheckpointNotice: "此操作只取消堆栈的升级流程，不代表各服务升级已取消或完成。请另外确认各服务状态。"
+  upgradeCancelledState: "升级已取消"
+  finishingUpgradeState: "正在完成升级"
   localVolumeCreateNotice: "Creates only an unallocated local Volume record, without creating or mounting storage on a Host. Names may repeat; only the exact new record is verified. Choose a distinct name to avoid confusing existing data."
   bridgeProjectBindingRequired: "通过桥接器重命名此环境前，请用户创建新的已绑定本地配置文件，并使用新文件重新连接。保留原配置文件不变；仍可单独编辑描述。"
   assignedPorts: 实际分配的端口映射

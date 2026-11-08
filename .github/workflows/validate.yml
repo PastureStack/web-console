@@ -37,6 +37,31 @@ jobs:
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test -z "$(git status --short)"
 
+      - name: Seed pinned Python from its official release asset API
+        env:
+          PYTHON_ARCHIVE_SHA256: 987af6a6858a59529d8f66a54d6484c7bc8127bafc19e651134ad3e01ea578d4
+        run: |
+          set -euo pipefail
+          test "$RUNNER_OS" = Linux
+          test "$RUNNER_ARCH" = X64
+          archive="$RUNNER_TEMP/python-3.14.9-linux-24.04-x64.tar.gz"
+          install_dir=$(mktemp -d "$RUNNER_TEMP/python-3.14.9-official.XXXXXX")
+          curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
+            --location --retry 3 --retry-all-errors --retry-delay 2 \
+            --connect-timeout 30 --max-time 300 --max-filesize 110709506 \
+            --header 'Accept: application/octet-stream' --range 0- \
+            --output "$archive" \
+            'https://api.github.com/repos/actions/python-versions/releases/assets/662863124'
+          test "$(stat --format=%s "$archive")" = 110709506
+          printf '%s  %s\n' "$PYTHON_ARCHIVE_SHA256" "$archive" | sha256sum --check
+          tar -xzf "$archive" -C "$install_dir"
+          (
+            cd "$install_dir"
+            AGENT_TOOLSDIRECTORY="$RUNNER_TOOL_CACHE" \
+              LD_LIBRARY_PATH="$install_dir/lib" bash ./setup.sh
+          )
+          test -f "$RUNNER_TOOL_CACHE/Python/3.14.9/x64.complete"
+
       - name: Install pinned Python verifier
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:

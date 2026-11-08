@@ -10,10 +10,13 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.229** / Bridge **0.2.31**](https://github.com/PastureStack/web-console/releases/tag/1.6.229)
-is published and qualified against Engine **0.183.388**. Deploy through the
-[Server installation guide](https://github.com/PastureStack/server#quick-start)
-using a qualified matching component assembly.
+Web Console **1.6.230** / Bridge **0.2.32** is a prepared source candidate for
+minimum and matching Engine **0.183.389**. Its source changes are not a release,
+SDK qualification or deployed acceptance. The published baseline remains
+[Web Console 1.6.229 / Bridge 0.2.31](https://github.com/PastureStack/web-console/releases/tag/1.6.229).
+See the [candidate note](docs/releases/web-console-1.6.230.md); deploy only a
+qualified matching assembly through the
+[Server installation guide](https://github.com/PastureStack/server#quick-start).
 
 The existing twelve tools support human-reviewed browser environment switching
 and personal default-environment selection. Switching does not change the personal
@@ -38,6 +41,12 @@ frontend coverage. See the [release note](docs/releases/web-console-1.6.229.md)
 for component evidence.
 
 ## Features and operator guides
+
+Unreleased development work adds typed Stack finish-upgrade, cancellation and
+rollback through the normal native owners. Its matching Engine 0.183.389 native-owner correction
+and Compose 0.14.44 rollback fix are still candidates; the published component above does
+not include this workflow. Source tests are separate from a matching release and
+deployed acceptance.
 
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for
   resource discovery, conditional descriptions and server-owned lifecycle plans.

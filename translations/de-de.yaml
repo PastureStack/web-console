@@ -4461,6 +4461,12 @@ apiKeyAudit:
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
 
 webmcp:
+  stackRollbackNotice: "Nur noch rücksetzbare Dienst-Upgrades werden zurückgesetzt. Abgeschlossene Upgrades und neue aktive Dienste ohne vorherige Konfiguration bleiben unverändert. Hinzugefügte Dienste werden nicht gelöscht und entfernte Dienste nicht neu erstellt. Die Dienstanzahl zeigt den gesamten erfassten Bestand, nicht die Anzahl der Rücksetzungsanfragen."
+  stackServiceCount: "Dienste im Stack"
+  checkpointOnly: "Nur Stack-Prüfpunkt"
+  stackCancelCheckpointNotice: "Dies bricht nur den Upgrade-Prozess des Stacks ab. Upgrades einzelner Dienste können weiterhin laufen; prüfen Sie deren Status gesondert."
+  upgradeCancelledState: "Upgrade abgebrochen"
+  finishingUpgradeState: "Upgrade wird abgeschlossen"
   localVolumeCreateNotice: "Erstellt nur einen nicht zugewiesenen lokalen Volume-Datensatz. Auf einem Host wird kein Speicher erstellt oder eingebunden. Namen können mehrfach vorkommen; geprüft wird nur der neue Datensatz, kein älteres gleichnamiges Volume. Wählen Sie einen eindeutigen Namen."
   bridgeProjectBindingRequired: "Bevor diese Umgebung über die Bridge umbenannt wird, muss der Benutzer ein neues, fest zugeordnetes lokales Profil erstellen und sich damit erneut verbinden. Das bisherige Profil bleibt unverändert. Die Beschreibung kann weiterhin separat bearbeitet werden."
   assignedPorts: Zugewiesene Portzuordnungen
