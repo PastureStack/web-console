@@ -1,6 +1,6 @@
 # Compatibility Contract
 
-## Web Console 1.6.229 / Bridge 0.2.31 candidate
+## Web Console 1.6.229 / Bridge 0.2.31 published
 
 Minimum and matching Engine remains **0.183.388**. Two browser-only environment
 intents use empty parameters and a freshly selected opaque project reference.
@@ -9,9 +9,11 @@ the personal default; setting the default uses the authenticated user's existing
 preference API and readback. Neither is an Engine lifecycle process or a verified
 native operation. Model apply and the stdio bridge require human console action.
 Original role/Key ceilings, session generation, Cookie ownership and stale-event
-protection remain binding. Source checks, original CI, packaged SDK, publication
-and actual UI acceptance must be recorded separately. See the
-[candidate note](docs/releases/web-console-1.6.229.md).
+protection remain binding. Original full/enabled CI and the packaged SDK handshake
+passed, and this component is published. Matching Server assembly, deployment and
+affected native/UI acceptance remain separate and pending or partial; publication
+does not update the running Server. See the
+[release note](docs/releases/web-console-1.6.229.md).
 
 ## Web Console 1.6.228 / Bridge 0.2.30 published
 

@@ -10,12 +10,17 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.228** / Bridge **0.2.30**](https://github.com/PastureStack/web-console/releases/tag/1.6.228)
+[Web Console **1.6.229** / Bridge **0.2.31**](https://github.com/PastureStack/web-console/releases/tag/1.6.229)
 is published and qualified against Engine **0.183.388**. Deploy through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
 using a qualified matching component assembly.
 
-The existing twelve tools include reviewed Host custom-name reset and one-child
+The existing twelve tools support human-reviewed browser environment switching
+and personal default-environment selection. Switching does not change the personal
+default. The bridge returns a console handoff for these browser-only actions;
+it cannot change the browser or approve its own request.
+
+Other supported workflows include reviewed Host custom-name reset and one-child
 Container public-port and link-target edits. Named Service links and bounded
 External Service HTTP health checks remain available. These Container edits
 preserve the parent Service's launch configuration.
@@ -26,19 +31,11 @@ with safe guidance in thirteen locales; stale terminal results cannot clear a
 newer review. Native role/Key ceilings, exact references, concurrent-change checks
 and human confirmation remain authoritative.
 
-These remain partial workflows. Matching Server deployment and affected native/UI
-acceptance are separate and remain pending or partial. Component publication does
-not update a running Server or establish all 243 frontend coverage.
-See the [release note](docs/releases/web-console-1.6.228.md) for component evidence.
-
-## Development candidate
-
-Web Console **1.6.229** / Bridge **0.2.31** adds human-reviewed browser environment
-switching and personal default-environment selection through the existing twelve
-tools. The bridge returns a console handoff for these browser-only actions; it
-cannot change the browser or approve its own request. Matching Engine remains
-**0.183.388**. This source candidate is not yet a published release. See the
-[candidate contract](docs/releases/web-console-1.6.229.md).
+These remain partial workflows. A matching Server assembly, deployment and
+affected native/UI acceptance remain separate and pending or partial. Component
+publication does not update the running Server or establish complete
+frontend coverage. See the [release note](docs/releases/web-console-1.6.229.md)
+for component evidence.
 
 ## Features and operator guides
 
