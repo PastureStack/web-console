@@ -67,7 +67,8 @@ export function resourceReviewLabels(plan, translate, stacks = []) {
     return String(input);
   };
   return {
-    resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(label(OPERATIONS, plan.operation)),
+    resourceTypeLabel: text(label(TYPES, plan.resourceType)), operationLabel: text(plan.resourceType === 'host' && ['start', 'stop'].includes(plan.operation) ?
+      plan.operation === 'start' ? 'action.activate' : 'action.deactivate' : label(OPERATIONS, plan.operation)),
     stackTargetUnavailable,
     localVolumeCreateNotice: plan.resourceType === 'volume' && plan.operation === 'create' ? text('webmcp.localVolumeCreateNotice') : null,
     externalHealthCheckNotice: plan.resourceType === 'externalService' && plan.operation === 'create' &&

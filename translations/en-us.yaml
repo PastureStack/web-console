@@ -4862,6 +4862,8 @@ webmcp:
   bridgeProjectBindingRequired: "To rename this environment through the bridge, ask the user to create a new bound local profile and reconnect with the new file. Keep the existing profile unchanged. Description-only edits remain available."
   assignedPorts: Assigned port mappings
   backgroundAuthorizationDenied: "A background authorization check denied the operation. Some changes may already have occurred; completion has not been verified. Check the current permissions and the original operation receipt. Do not blindly resubmit or approve the change again."
+  operationFailed: "The operation failed; some changes may already have occurred. Check the existing operation and resource state before creating a new preview for human approval. Do not automatically retry."
+  operationUnknown: "The operation result is not confirmed. Check the existing operation and resource state first. Do not resubmit or approve another change until the outcome is known."
   catalogReferenceAmbiguous: "Some resources have identical display names and cannot be distinguished safely. Verify the target in the normal console before selecting it."
   catalogLaunchPermissions: "A Catalog launch reads the created resources, configures service links and may start services. The target scope needs read, create and update permissions."
   catalogExternalVolumesPending: "References to existing external volumes (external=true) are not supported yet. These templates are rejected during preview; use the normal console."

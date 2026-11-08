@@ -32,10 +32,42 @@ export default Service.extend({
     this.get('commandContext').on('changed', this, this.dismissPendingPlan);
   },
 
-  execute(name, input, options) { return this.engine.execute(name, input, options); },
+  async execute(name, input, options) {
+    const pending = this.get('pendingPlan'), revision = this._reviewRevision || 0, notice = this.get('operationNotice');
+    // A private observer belongs to this invocation, never to shared engine state.
+    // Wait for its final result/audit before updating the captured human review.
+    const notifications = [];
+    const result = await this.engine.execute(name, input, {...options, onOperation: operation => notifications.push(operation)});
+    if ( pending && this.get('pendingPlan') === pending && revision === (this._reviewRevision || 0) &&
+      this.get('operationNotice') === notice ) {
+      try {
+        this.assertReviewContext(pending.context);
+        const notification = notifications[notifications.length - 1];
+        if ( notification && (result.status !== 'unknown' || notification.status === 'unknown') ) {
+          this.clearCompletedPlan(notification);
+        }
+      } catch (error) { /* A replaced review or generation cannot consume this invocation's result. */ }
+    }
+    const operationRef = result.operationRef || name === 'get_operation' && input && input.operationRef;
+    if ( pending && pending.planKind !== 'catalog-launch' && result.status === 'unknown' && operationRef &&
+      revision === (this._reviewRevision || 0) && this.get('operationNotice') === notice ) {
+      try {
+        this.assertReviewContext(pending.context);
+        const context = this.get('commandContext').context;
+        const id = pending.humanOnly ? pending.serverPlanId : context.resolve(pending.planRef, 'plan', pending.context).id;
+        const operation = context.resolve(operationRef, 'operation', pending.context);
+        if ( operation.id === id && (!this.get('pendingPlan') || this.get('pendingPlan') === pending) ) {
+          this.set('pendingPlan', null);
+          if ( !this.get('operationNotice.unknown') ) { this.set('operationNotice', {code: 'UNKNOWN_RESULT', unknown: true}); }
+        }
+      } catch (error) { /* An old actor, plan or reference cannot publish a new notice. */ }
+    }
+    return result;
+  },
 
   publishPlan(plan, expectedPlanRef) {
     if ( expectedPlanRef !== undefined && this.get('pendingPlan.planRef') !== expectedPlanRef ) { return; }
+    this._reviewRevision = (this._reviewRevision || 0) + 1;
     this.set('operationNotice', null);
     const reviewSignature = containerNetworkReview(plan) || serviceCreateReview(plan) || serviceUpgradeReview(plan);
     this.set('pendingPlan', reviewSignature ? Object.assign({}, plan, {reviewSignature}) : plan);
@@ -115,7 +147,7 @@ export default Service.extend({
     } catch (error) { return publicError(error); }
   },
 
-  dismissPendingPlan() { this.set('operationNotice', null); this.set('pendingPlan', null); },
+  dismissPendingPlan() { this._reviewRevision = (this._reviewRevision || 0) + 1; this.set('operationNotice', null); this.set('pendingPlan', null); },
 
   catalogHumanPlanId(plan) {
     if ( !plan || plan.planKind !== 'catalog-launch' || this.get('pendingPlan.planRef') !== plan.planRef ) { throw new CommandError('STALE_REFERENCE', 'planRef'); }
@@ -232,6 +264,7 @@ export default Service.extend({
     const pending = this.get('pendingPlan');
     if ( !pending ) { return; }
     try {
+      this.assertReviewContext(pending.context);
       let samePlan;
       if ( pending.humanOnly ) {
         this.assertReviewContext(pending.context);
@@ -249,7 +282,8 @@ export default Service.extend({
         this.publishPlan({...pending, executionResult: summary.executionResult, planStatus: 'succeeded', verifiedResult: true}, pending.planRef);
       } else if ( ['succeeded', 'failed'].includes(operation.status) ) {
         const denied = pending.planKind === 'resource-change' && operation.status === 'failed' && operation.messageCode === 'ResourceChangeAuthorizationDenied';
-        this.set('operationNotice', denied ? {code: 'ResourceChangeAuthorizationDenied'} : null);
+        this.set('operationNotice', denied ? {code: 'ResourceChangeAuthorizationDenied'} :
+          operation.status === 'failed' ? {code: 'OPERATION_FAILED', failed: true} : null);
         this.set('pendingPlan', null);
       }
       else if ( pending.planKind === 'catalog-launch' && operation.planSummary && operation.planSummary.planKind === 'catalog-launch' ) {

@@ -1,14 +1,26 @@
 # Compatibility Contract
 
-## Web Console 1.6.227 / Bridge 0.2.29 source candidate
+## Web Console 1.6.228 / Bridge 0.2.30 source candidate
 
-Minimum and matching Engine: **0.183.387**. The existing twelve tools add Host
-`resetName:true` and single-child `port/update_public_port` or
-`instanceLink/update_target` plans. Preserve opaque references, native roles/Keys,
-UUID/parent binding, CAS, literal human review and zero automatic dispatch.
-Legacy native Port updates may omit the conditional header; typed plans still
-require their trusted CAS precondition. This candidate has no CI, SDK, release
-or native PASS yet. Published226 evidence below is historical carry.
+Minimum and matching Engine: **0.183.388**. The existing twelve tools add only
+Host start/stop scheduling plans through native activate/deactivate, with empty
+parameters. Host workload-list completeness grants no permission. Current native
+roles, Key ceilings, opaque target identity, CAS and human confirmation remain
+required. No daemon/Agent action, evacuation, Host removal or raw identifier and
+credential parameter is added. Failed/unverified browser outcomes show safe
+translated guidance without automatically resubmitting or approving a change.
+CI, SDK, publication and affected native/UI acceptance remain pending.
+
+## Web Console 1.6.227 / Bridge 0.2.29 published
+
+Minimum and matching Engine: **0.183.387**. Reviewed Host custom-name reset and
+single-child Container Port/InstanceLink edits retain native roles/Keys, UUID and
+parent binding, before-CAS and human confirmation. Native Port clients without
+the optional header remain compatible. Container edits preserve parent Service
+launch settings. Original CI passed 326 focused cases and 1,144 browser cases;
+Bridge 0.2.29 passed its SDK handshake and normal immutable publication checks.
+These are component results; affected native and complete frontend acceptance
+remain separate. See the [release note](docs/releases/web-console-1.6.227.md).
 
 ## Web Console 1.6.226 / Bridge 0.2.28 published
 

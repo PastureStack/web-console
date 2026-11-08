@@ -839,6 +839,126 @@ async function main() {
     assert.ok(f.service.pendingPlan); assert.equal(f.service.operationNotice, null, 'unknown is not a verified authorization failure');
   });
 
+
+  await test('operation outcome: native failure stays visible while AUTH and verified success retain their behavior', async () => {
+    const f = fixture('enabled'), dto = {...resourcePlan(), confirmationState: 'approved'};
+    f.service.reviewInboxPlan(dto); const reviewed = f.service.pendingPlan;
+    f.service.engine.onOperation = operation => f.service.clearCompletedPlan(operation);
+    f.service.engine.operationSummary({...dto, status: 'failed', verifiedResult: false, messageCode: 'ResourceChangeProcessFailed', exception: 'PRIVATE_PROCESS_DATA'}, 'existing-operation');
+    assert.equal(f.service.pendingPlan, null);
+    assert.deepEqual(f.service.operationNotice, {code: 'OPERATION_FAILED', failed: true});
+    assert.equal(JSON.stringify(f.service.operationNotice).includes('PRIVATE_PROCESS_DATA'), false);
+    const notice = f.service.operationNotice;
+    f.service.clearCompletedPlan({planId:dto.id,status:'failed'});
+    assert.equal(f.service.operationNotice, notice, 'duplicate polls do not republish a notice');
+    assert.equal((await f.service.confirmPendingPlan(reviewed)).code, 'STALE_REFERENCE');
+    assert.equal(f.requests.length, 0, 'a retry needs a fresh preview and human approval, never another automatic POST');
+    f.service.reviewInboxPlan(dto);
+    f.service.engine.operationSummary({...dto,status:'failed',messageCode:'ResourceChangeAuthorizationDenied'},'existing-operation');
+    assert.deepEqual(f.service.operationNotice,{code:'ResourceChangeAuthorizationDenied'});
+    f.service.reviewInboxPlan(dto);
+    f.service.engine.operationSummary({...dto,status:'succeeded',verifiedResult:true},'existing-operation');
+    assert.equal(f.service.pendingPlan,null);assert.equal(f.service.operationNotice,null);
+  });
+
+  await test('operation outcome: unverified results bind the exact operation and ignore replaced, dismissed or stale reviews', async () => {
+    for (const scenario of ['matching','newer','dismissed','generation','other-operation','new-notice']) {
+      const f=fixture('enabled'),dto={...resourcePlan(),confirmationState:'approved'};
+      f.service.reviewInboxPlan(dto);const original=f.service.pendingPlan;
+      const ref=f.context.reference('operation',{id:scenario==='other-operation'?resourcePlan('3').id:dto.id},f.context.capture());
+      const entered=deferred(),barrier=deferred();
+      f.service.engine.execute=async()=>{entered.resolve();await barrier.promise;return f.service.engine.operationSummary({...dto,status:'succeeded',verifiedResult:false},ref);};
+      const pending=f.service.execute('get_operation',{operationRef:ref});await entered.promise;
+      if(scenario==='newer')f.service.reviewInboxPlan(resourcePlan('2'));
+      if(scenario==='dismissed')f.service.dismissPendingPlan();
+      if(scenario==='generation')f.snapshot.generation='new-generation';
+      if(scenario==='new-notice')f.service.clearCompletedPlan({planId:dto.id,status:'failed',messageCode:'ResourceChangeAuthorizationDenied'});
+      const current=f.service.pendingPlan,currentNotice=f.service.operationNotice;barrier.resolve();const result=await pending;assert.equal(result.status,'unknown');
+      if(scenario==='matching'){
+        assert.equal(f.service.pendingPlan,null);assert.deepEqual(f.service.operationNotice,{code:'UNKNOWN_RESULT',unknown:true});
+        const notice=f.service.operationNotice;await f.service.execute('get_operation',{operationRef:ref});assert.equal(f.service.operationNotice,notice);
+        assert.equal((await f.service.confirmPendingPlan(original)).code,'STALE_REFERENCE');
+      }else{assert.equal(f.service.pendingPlan,current);assert.equal(f.service.operationNotice,currentNotice,'an older result cannot overwrite a newer notice');}
+      assert.equal(f.requests.length,0);
+    }
+    for(const scenario of ['newer','generation']){
+      const f=fixture('enabled'),dto={...resourcePlan(),confirmationState:'approved'};f.service.reviewInboxPlan(dto);
+      if(scenario==='newer')f.service.reviewInboxPlan(resourcePlan('2'));else f.snapshot.generation='changed';
+      const current=f.service.pendingPlan,notice={code:'UNKNOWN_RESULT',unknown:true};f.service.operationNotice=notice;
+      f.service.clearCompletedPlan({planId:dto.id,status:'failed'});assert.equal(f.service.pendingPlan,current);assert.equal(f.service.operationNotice,notice);
+    }
+  });
+
+
+  await test('operation outcome: concurrent terminal callbacks retain the exact caller review even when its plan ID is reused', async () => {
+    for(const status of ['failed','succeeded','authorization-denied'])for(const scenario of ['same-id-review','current','new-notice','generation']){
+      const f=fixture('enabled'),dto={...resourcePlan(),confirmationState:'approved'},entered=deferred(),barrier=deferred();
+      const wireStatus=status==='authorization-denied'?'failed':status;
+      f.service.reviewInboxPlan(dto);let defaultObserverCalls=0;
+      f.service.engine=new CommandEngine({context:f.context,ensureSession:async()=>{},
+        audit:async()=>({accepted:true,requestId:'review-race-audit'}),
+        request:async options=>{f.requests.push(options);entered.resolve();await barrier.promise;return{body:{...dto,status:wireStatus,verifiedResult:status==='succeeded',...(status==='authorization-denied'?{messageCode:'ResourceChangeAuthorizationDenied'}:{})}};},
+        onOperation:operation=>{defaultObserverCalls++;f.service.clearCompletedPlan(operation);}});
+      const observer=f.service.engine.onOperation;
+      const op=f.context.reference('operation',{id:dto.id,planKind:'resource-change',resourceType:dto.resourceType,operation:dto.operation,resourceId:dto.resourceId},f.context.capture());
+      const running=f.service.execute('get_operation',{operationRef:op});await entered.promise;
+      if(scenario==='same-id-review')f.service.reviewInboxPlan(dto);
+      if(scenario==='new-notice')f.service.operationNotice={code:'UNKNOWN_RESULT',unknown:true};
+      if(scenario==='generation')f.snapshot.generation='replacement-generation';
+      const current=f.service.pendingPlan,notice=f.service.operationNotice;barrier.resolve();const result=await running;
+      if(scenario==='current'){
+        assert.equal(result.status,wireStatus);assert.equal(f.service.pendingPlan,null);
+        assert.deepEqual(f.service.operationNotice,status==='authorization-denied'?{code:'ResourceChangeAuthorizationDenied'}:status==='failed'?{code:'OPERATION_FAILED',failed:true}:null);
+        const once=f.service.operationNotice;await f.service.execute('get_operation',{operationRef:op});assert.equal(f.service.operationNotice,once,'duplicate terminal polls do not publish a new notice');
+      }else{
+        assert.equal(f.service.pendingPlan,current,scenario+': old terminal callback cannot clear a same-ID replacement review');
+        assert.equal(f.service.operationNotice,notice,scenario+': old terminal callback cannot replace a newer notice');
+      }
+      assert.equal(f.service.engine.onOperation,observer,'no invocation mutates the shared observer');
+      assert.equal(defaultObserverCalls,0,'this Web invocation uses only its private observer');
+      assert.ok(f.requests.every(row=>row.method==='GET'),'terminal observation never applies or confirms');
+    }
+    // Two truly concurrent polls receive independent observers. The later
+    // completed failure must not be erased by an earlier delayed success.
+    const f=fixture('enabled'),dto={...resourcePlan(),confirmationState:'approved'},barriers=[deferred(),deferred()],entered=[deferred(),deferred()];
+    f.service.reviewInboxPlan(dto);let calls=0;
+    f.service.engine=new CommandEngine({context:f.context,ensureSession:async()=>{},audit:async()=>({accepted:true,requestId:'parallel-audit'}),
+      request:async()=>{const n=calls++;entered[n].resolve();await barriers[n].promise;return{body:{...dto,status:n===0?'succeeded':'failed',verifiedResult:n===0}};},
+      onOperation:operation=>f.service.clearCompletedPlan(operation)});
+    const op=f.context.reference('operation',{id:dto.id,planKind:'resource-change',resourceType:dto.resourceType,operation:dto.operation,resourceId:dto.resourceId},f.context.capture());
+    const first=f.service.execute('get_operation',{operationRef:op});await entered[0].promise;
+    const second=f.service.execute('get_operation',{operationRef:op});await entered[1].promise;
+    barriers[1].resolve();await second;const notice=f.service.operationNotice;assert.equal(notice.code,'OPERATION_FAILED');
+    barriers[0].resolve();await first;assert.equal(f.service.operationNotice,notice);assert.equal(f.service.pendingPlan,null);
+  });
+
+  await test('operation outcome: the original alert renders thirteen translated safe notices without an apply action', async () => {
+    const YAML=require('yamljs'),Handlebars=require('handlebars').create(),{preprocess,traverse}=require('@glimmer/syntax');
+    const template=fs.readFileSync(path.join(app,'components/ai-upgrade-review/template.hbs'),'utf8');preprocess(template);
+    Handlebars.registerHelper('t',function(key){return key.split('.').reduce((row,part)=>row&&row[part],this.translations);});
+    Handlebars.registerHelper('action',()=> '');const render=Handlebars.compile(template);
+    const locales=['en-us','zh-tw','zh-hans','de-de','fa-ir','fil-ph','fr-fr','hu-hu','ja-jp','ko-kr','pt-br','ru-ru','uk-ua'];
+    const seen=new Set();
+    for(const locale of locales){
+      const translations=YAML.load(path.join(app,'../translations',locale+'.yaml'));
+      for(const [notice,key,testId]of [[{code:'OPERATION_FAILED',failed:true},'operationFailed','ai-resource-operation-failed'],
+        [{code:'UNKNOWN_RESULT',unknown:true},'operationUnknown','ai-resource-operation-unknown'],
+        [{code:'ResourceChangeAuthorizationDenied'},'backgroundAuthorizationDenied','ai-resource-authorization-denied']]){
+        const text=translations.webmcp[key];assert.equal(typeof text,'string',locale+': '+key);assert.ok(text.trim());
+        if(key!=='backgroundAuthorizationDenied')seen.add(text);
+        const elements=[];traverse(preprocess(render({commands:{operationNotice:notice,pendingPlan:null},translations})),{ElementNode(node){elements.push(node);}});
+        const attr=(node,name)=>node.attributes.find(row=>row.name===name)?.value.chars;
+        const alert=elements.find(node=>attr(node,'data-testid')===testId);assert.ok(alert);assert.equal(attr(alert,'role'),'alert');
+        assert.equal(alert.children.map(node=>node.chars||'').join(''),text);
+        assert.equal(elements.filter(node=>['button','a','input','script'].includes(node.tag)).length,0);
+        assert.equal(elements.filter(node=>attr(node,'role')==='alert').length,1);
+      }
+    }
+    assert.equal(seen.size,26,'new notices are genuine translations, not an English fallback');
+    const traditional=YAML.load(path.join(app,'../translations/zh-tw.yaml')).webmcp;
+    assert.match(traditional.operationFailed,/部分變更可能已完成/);assert.match(traditional.operationUnknown,/不要重新送出/);
+  });
+
   await test('combined preflight notice does not claim an approved Archive or Catalog plan is still unapplied',async()=>{
     const template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');
     assert.ok(template.includes('{{#unless (or this.catalogAfterPreview this.alreadyApproved)}}'));

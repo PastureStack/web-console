@@ -4465,6 +4465,8 @@ webmcp:
   bridgeProjectBindingRequired: "Bevor diese Umgebung über die Bridge umbenannt wird, muss der Benutzer ein neues, fest zugeordnetes lokales Profil erstellen und sich damit erneut verbinden. Das bisherige Profil bleibt unverändert. Die Beschreibung kann weiterhin separat bearbeitet werden."
   assignedPorts: Zugewiesene Portzuordnungen
   backgroundAuthorizationDenied: "Die Berechtigungsprüfung hat einen Hintergrundvorgang abgelehnt. Änderungen können teilweise erfolgt sein; der vollständige Abschluss ist nicht bestätigt. Prüfen Sie die aktuellen Berechtigungen und den ursprünglichen Vorgangsbeleg. Senden oder genehmigen Sie die Änderung nicht blind erneut."
+  operationFailed: "Der Vorgang ist fehlgeschlagen; einige Änderungen könnten bereits erfolgt sein. Prüfen Sie den vorhandenen Vorgang und den Ressourcenzustand, bevor Sie eine neue Vorschau zur menschlichen Freigabe erstellen. Nicht automatisch wiederholen."
+  operationUnknown: "Das Ergebnis des Vorgangs ist nicht bestätigt. Prüfen Sie zuerst den vorhandenen Vorgang und den Ressourcenzustand. Senden oder genehmigen Sie keine weitere Änderung, bis das Ergebnis feststeht."
   catalogReferenceAmbiguous: "Einige Ressourcen haben identische Anzeigenamen und lassen sich nicht sicher unterscheiden. Prüfen Sie das Ziel vor der Auswahl in der normalen Konsole."
   catalogLaunchPermissions: "Ein Katalogstart liest die erstellten Ressourcen, konfiguriert Dienstverknüpfungen und kann Dienste starten. Der Zielbereich benötigt Lese-, Erstellungs- und Aktualisierungsrechte."
   catalogExternalVolumesPending: "Verweise auf vorhandene externe Volumes (external=true) werden noch nicht unterstützt. Solche Vorlagen werden bei der Vorschau abgelehnt; verwenden Sie die normale Konsole."

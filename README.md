@@ -10,25 +10,29 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.226** / Bridge **0.2.28**](https://github.com/PastureStack/web-console/releases/tag/1.6.226)
-is published and qualified against Engine **0.183.386**. Deploy through the
+[Web Console **1.6.227** / Bridge **0.2.29**](https://github.com/PastureStack/web-console/releases/tag/1.6.227)
+is published and qualified against Engine **0.183.387**. Deploy through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start)
 using the current qualified matching component assembly.
 
-The existing twelve tools support named ordinary-Service dependency links and
-a bounded HTTP health-check request line when creating an External Service.
-Human confirmation, native role/Key authority, exact references and configuration
-consistency remain binding. See the
-[release note](docs/releases/web-console-1.6.226.md) for component verification.
-Server deployment and native acceptance remain separate; this is partial
-WebMCP coverage, not all 243 frontend groups.
+The existing twelve tools include reviewed Host custom-name reset and one-child
+Container public-port and link-target edits. Named Service links and bounded
+External Service HTTP health checks remain available. Human confirmation, native
+roles/Key limits, exact references and concurrent-change checks remain binding.
+These Container edits preserve the parent Service's launch configuration.
+See the [release note](docs/releases/web-console-1.6.227.md) for component evidence;
+matching deployment and native workflow acceptance remain separate.
 
 ## Next source candidate
 
-Web Console **1.6.227** / Bridge **0.2.29** targets Engine **0.183.387** for
-Host custom-name reset and single-child Container Port/Link edits through the
-existing twelve tools. CI, publication, matching deployment and native acceptance
-are pending. See the [candidate note](docs/releases/web-console-1.6.227.md).
+Web Console **1.6.228** / Bridge **0.2.30** requires minimum and matching Engine
+**0.183.388**. Host `start` / `stop` plans use native activate/deactivate with
+empty parameters and separate human approval. They change scheduling state,
+without stopping Docker, changing the Agent or evacuating workloads.
+Failed or unverified operations retain a clear notice and require inspection of
+the existing operation before a new human-reviewed preview. CI, SDK, publication
+and affected native/UI acceptance are pending; see the
+[candidate note](docs/releases/web-console-1.6.228.md).
 
 ## Features and operator guides
 
