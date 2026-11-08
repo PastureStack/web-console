@@ -4858,6 +4858,8 @@ formResources:
     map: "Use non-empty keys and values for advanced options."
 
 webmcp:
+  affectedCredentialCount: "Affected registry credentials"
+  registryRemoveNotice: "The normal Registry purge cleans up linked credentials. This does not delete container images or revoke external registry accounts."
   stackRollbackNotice: "Rolls back only remaining eligible service upgrades. Finished upgrades and new active services without previous configuration stay unchanged. Added services are not deleted, and removed services are not recreated. The service count is the total captured set, not the number of rollback requests."
   stackServiceCount: "Services in the Stack"
   checkpointOnly: "Stack checkpoint only"

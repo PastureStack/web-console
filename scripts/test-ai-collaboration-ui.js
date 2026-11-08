@@ -287,6 +287,54 @@ async function main() {
     }
   });
 
+  await test('Registry removal human Cookie inbox rechecks the exact complete review before confirmation and pins its response', async () => {
+    const dto = {id: 'aichange-33333333-3333-3333-3333-333333333333', resourceType: 'registry', resourceId: 'registry-selected',
+      operation: 'remove', targetPath: 'Environment/registry.example:5000', status: 'preview', confirmationState: 'pending', verifiedResult: false,
+      changes: [{field: 'state', before: 'inactive', after: 'removed'}, {field: 'affectedServiceCount', before: 0, after: 0},
+        {field: 'affectedInstanceCount', before: 0, after: 0}, {field: 'affectedMountCount', before: 0, after: null},
+        {field: 'mountedDataRule', before: null, after: 'EXISTING_DOMAIN_RETENTION_NO_ADDITIONAL_PURGE'},
+        {field: 'affectedCredentialCount', before: 2, after: 2}]};
+    for (const mode of ['off', 'read-only']) {
+      for (const scenario of ['matching', 'changed-count', 'missing-count', 'missing-retention', 'changed-response', 'missing-response-count']) {
+        const f = fixture(mode); let sessions = 0;
+        f.service.access.ensureSession = async () => { sessions++; };
+        f.service.userStore.rawRequest = async options => {
+          f.requests.push(options);
+          const body = JSON.parse(JSON.stringify(dto));
+          if (scenario === 'changed-count' && options.method === 'GET' || scenario === 'changed-response' && options.method === 'POST') {
+            body.changes[5] = {field: 'affectedCredentialCount', before: 3, after: 3};
+          }
+          if (scenario === 'missing-count' && options.method === 'GET' || scenario === 'missing-response-count' && options.method === 'POST') {
+            body.changes = body.changes.filter(row => row.field !== 'affectedCredentialCount');
+          }
+          if (scenario === 'missing-retention' && options.method === 'GET') body.changes = body.changes.filter(row => row.field !== 'mountedDataRule');
+          if (options.method === 'POST') body.confirmationState = 'approved';
+          return {body};
+        };
+        assert.equal(f.service.reviewInboxPlan(dto).status, 'needs_user');
+        const reviewed = f.service.pendingPlan;
+        assert.equal(reviewed.humanOnly, true); assert.equal(typeof reviewed.reviewSignature, 'string');
+        assert.equal(reviewed.displayDiff.find(row => row.field === 'affectedCredentialCount').before, 2);
+        const result = await f.service.confirmPendingPlan(reviewed);
+        assert.equal(sessions, 1); assert.equal(f.requests[0].method, 'GET');
+        assert.equal(f.requests[0].url, 'projects/project/aiResourceChangePlans/' + dto.id);
+        if (scenario === 'matching') {
+          assert.equal(result.status, 'succeeded'); assert.equal(result.confirmationState, 'approved');
+          assert.equal(f.service.pendingPlan.reviewSignature, reviewed.reviewSignature);
+          assert.deepEqual(f.requests.map(row => row.method), ['GET', 'POST']);
+          assert.equal(f.requests[1].url, 'projects/project/aiResourceChangePlans/' + dto.id + '?action=confirm');
+          assert.deepEqual(f.requests[1].data, {});
+        } else {
+          assert.equal(result.code, scenario.startsWith('missing-') ? 'INVALID_RESPONSE' : 'CONFLICT');
+          assert.equal(f.service.pendingPlan, reviewed); assert.equal(reviewed.confirmationState, 'pending');
+          assert.equal(f.requests.filter(row => row.method === 'POST').length, scenario.endsWith('response') || scenario === 'missing-response-count' ? 1 : 0);
+        }
+        assert.equal(f.context.references.size, 0, 'human Cookie inbox must not issue or use model/Key references');
+        assert.equal(f.requests.some(row => /action=apply|registry[Cc]redential|storage[Pp]ool/.test(row.url)), false);
+      }
+    }
+  });
+
   await test('upgrade configuration human inbox freezes exact before-after and rejects a replaced review', async () => {
     const dto = {...plan(), requestedImage: 'docker:app:1', upgradeStrategy: {startFirst: false, batchSize: 1, intervalMillis: 2000},
       configurationChanges: [{field: 'ports', before: '["8080:80/tcp"]', after: '[]'}, {field: 'healthCheck', before: '{"port":80}', after: null}]};

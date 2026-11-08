@@ -1,5 +1,25 @@
 # Compatibility Contract
 
+## Web Console 1.6.232 / Bridge 0.2.34 source candidate
+
+Minimum and matching Engine: **0.183.391**; Compose remains **0.14.44**.
+The existing twelve tools and SDK **1.32.2** remain unchanged. Registry removal
+uses an opaque Registry reference, empty parameters and a separate human review.
+The Registry must be inactive, with the complete non-sensitive linked-credential
+count and existing data-retention boundary pinned through fresh confirmation
+and apply. Active Registries need an independently approved stop and a new
+remove preview; no automatic stop or retry is added.
+
+Credential cleanup stays with the native Registry owner and its parent/child
+locks. Full/legacy native operations, current role/Key ceilings, UUID/CAS and
+human approval remain binding. No credential values, external-account revocation,
+image, container or volume deletion enter the typed request. Primary/secondary
+startup arguments and the ordinary/Catalog Stack distinction remain unchanged.
+
+Source preparation is not CI, packaged SDK, publication or native acceptance.
+All are pending for this candidate; the published baseline remains 231/033 below.
+See the [candidate note](docs/releases/web-console-1.6.232.md).
+
 ## Web Console 1.6.231 / Bridge 0.2.33 published
 
 Matching Engine: **0.183.390**; planned matching Server: **1.6.588**.

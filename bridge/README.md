@@ -7,16 +7,21 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-Bridge **0.2.33** / Web Console **1.6.231** is an unpublished source candidate for
-matching Engine **0.183.390** and planned Server **1.6.588**. The published baseline is
-[Bridge 0.2.32 / Web Console 1.6.230](https://github.com/PastureStack/web-console/releases/tag/1.6.230),
-qualified against Engine **0.183.389**. Browser environment
-switching and personal-default requests return a human console handoff, never a
-bridge-side mutation. The baseline's original CI and packaged real SDK handshake passed;
-the candidate requires its own qualification.
-Matching Server assembly, deployment and affected native/UI acceptance remain
-separate and pending or partial. Component publication does not update the running
-Server. See the [candidate note](../docs/releases/web-console-1.6.231.md).
+Bridge **0.2.34** / Web Console **1.6.232** is an unpublished source candidate
+for matching Engine **0.183.391**. The current published baseline is
+[Bridge 0.2.33 / Web Console 1.6.231](https://github.com/PastureStack/web-console/releases/tag/1.6.231),
+qualified against Engine **0.183.390**. Its original CI and packaged SDK handshake
+passed; the candidate still requires its own qualification.
+
+The candidate adds separately reviewed removal of an inactive Registry, with a
+non-sensitive linked-credential count. Stop an active Registry through a separate
+approved plan, then query and preview removal again. Native credential cleanup,
+Full/legacy behavior, live role/Key ceilings and human confirmation stay with the
+existing owners. The bridge cannot approve or directly remove credentials.
+Browser environment switching and personal-default requests remain human-console
+handoffs. Server assembly, deployment and affected native acceptance remain
+separate; component publication does not update a running Server. See the
+[candidate note](../docs/releases/web-console-1.6.232.md).
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -28,6 +33,8 @@ and human-reviewed lifecycle plans. Host plans support name/description,
 explicit custom-name reset and separately approved Host start/stop scheduling
 plans; infrastructure, evacuation, Host removal and daemon
 or Agent actions remain in their normal human workflows.
+Host start/stop maps only to native scheduling activate/deactivate with empty
+parameters. It does not stop Docker, change the Agent or evacuate workloads.
 Host detail shows at most fifty freshly readable container references. Host and
 Volume detail can include a separately authorized Stack name, including native
 Service containers whose direct Stack field is absent. Ambiguous or unreadable
@@ -106,23 +113,16 @@ native browser support. The operator must separately opt in to
 
 ## Source-version installation recipe (not yet published)
 
-The commands below match this source version, Web Console **1.6.231** /
-Bridge **0.2.33**, requiring matching Engine **0.183.390** and a qualified matching
+The commands below match this source version, Web Console **1.6.232** /
+Bridge **0.2.34**, requiring matching Engine **0.183.391** and a qualified matching
 Server assembly. These candidate assets are not published: do not run this recipe
 until immutable publication and qualification finish. For the current published
-component, use the [1.6.230 release](https://github.com/PastureStack/web-console/releases/tag/1.6.230).
-
-Host start/stop maps only to native scheduling
-activate/deactivate, with empty parameters and human approval. It does not stop
-Docker, change the Agent, evacuate or remove workloads. Existing roles/Keys,
-exact references, CAS, and all other typed boundaries remain authoritative.
-The 231/033 candidate still requires its own CI, packaged SDK qualification and publication.
-The commands do not update a running Server or establish affected native workflow
-acceptance.
+component, use the [1.6.231 release](https://github.com/PastureStack/web-console/releases/tag/1.6.231).
+The commands do not update a running Server or establish native acceptance.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.231
-BRIDGE_VERSION=0.2.33
+WEB_CONSOLE_VERSION=1.6.232
+BRIDGE_VERSION=0.2.34
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

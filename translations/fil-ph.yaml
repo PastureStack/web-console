@@ -4408,6 +4408,8 @@ apiKeyAudit:
     load: "Hindi ma-load ang pag-audit ng key. I-refresh upang subukang muli."
 
 webmcp:
+  affectedCredentialCount: "Bilang ng mga apektadong kredensiyal ng registry"
+  registryRemoveNotice: "Nililinis ng karaniwang proseso ng Registry ang mga kaugnay na kredensiyal. Hindi nito binubura ang mga image ng container o binabawi ang mga account sa panlabas na registry."
   stackRollbackNotice: "Tanging ang natitirang pag-upgrade ng mga serbisyong maaari pang ibalik ang ibabalik. Mananatiling hindi nagbabago ang mga natapos na pag-upgrade at bagong aktibong serbisyong walang dating pagsasaayos. Hindi buburahin ang mga idinagdag na serbisyo o muling lilikhain ang mga inalis. Ang bilang ay lahat ng serbisyong nakuha sa pagsusuri, hindi ang dami ng kahilingan sa pagbabalik."
   stackServiceCount: "Bilang ng mga serbisyo sa stack"
   checkpointOnly: "Checkpoint ng stack lamang"

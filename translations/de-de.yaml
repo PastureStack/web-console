@@ -4461,6 +4461,8 @@ apiKeyAudit:
     load: "Das Schlüssel-Audit konnte nicht geladen werden. Aktualisieren Sie die Ansicht, um es erneut zu versuchen."
 
 webmcp:
+  affectedCredentialCount: "Betroffene Registry-Zugangsdaten"
+  registryRemoveNotice: "Die reguläre Bereinigung der Registry entfernt zugehörige Zugangsdaten. Container-Images werden nicht gelöscht und externe Registry-Konten werden nicht widerrufen."
   stackRollbackNotice: "Nur noch rücksetzbare Dienst-Upgrades werden zurückgesetzt. Abgeschlossene Upgrades und neue aktive Dienste ohne vorherige Konfiguration bleiben unverändert. Hinzugefügte Dienste werden nicht gelöscht und entfernte Dienste nicht neu erstellt. Die Dienstanzahl zeigt den gesamten erfassten Bestand, nicht die Anzahl der Rücksetzungsanfragen."
   stackServiceCount: "Dienste im Stack"
   checkpointOnly: "Nur Stack-Prüfpunkt"

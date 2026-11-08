@@ -4301,6 +4301,8 @@ apiKeyAudit:
     load: 无法加载密钥审计。请刷新后重试。
 
 webmcp:
+  affectedCredentialCount: "受影响的 Registry 凭据数"
+  registryRemoveNotice: "关联凭据由原生 Registry 清理流程移除；这不会删除容器镜像，也不会撤销外部镜像仓库账号。"
   stackRollbackNotice: "仅回滚仍符合条件的服务升级。已完成升级的服务，以及没有旧版配置的新增活动服务，将保持不变；不会删除新增服务，也不会重建已移除的服务。显示的服务数量是获取的总数，并非实际回滚请求数。"
   stackServiceCount: "堆栈内服务数量"
   checkpointOnly: "仅验证堆栈流程检查点"

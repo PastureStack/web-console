@@ -4412,6 +4412,8 @@ apiKeyAudit:
     load: "Não foi possível carregar a auditoria da chave. Atualize para tentar novamente."
 
 webmcp:
+  affectedCredentialCount: "Credenciais de registro afetadas"
+  registryRemoveNotice: "A limpeza normal do Registry remove as credenciais associadas. Isso não exclui imagens de contêiner nem revoga contas em registros externos."
   stackRollbackNotice: "Somente as atualizações restantes de serviços que ainda podem ser revertidas serão desfeitas. Atualizações concluídas e novos serviços ativos sem configuração anterior permanecem inalterados. Serviços adicionados não são excluídos e serviços removidos não são recriados. A contagem mostra todos os serviços registrados na análise, não o número de solicitações de reversão."
   stackServiceCount: "Serviços do Stack"
   checkpointOnly: "Somente o ponto de controle do Stack"
