@@ -108,6 +108,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     transition.authGeneration = transition.authGeneration ||
       this.get('access').captureGeneration();
     let requestGeneration = transition.authGeneration;
+    const environmentHandoff = this.environmentHandoffGuard(transition);
     // Save whether the user is admin
     let type = this.get(`session.${C.SESSION.USER_TYPE}`);
     let isAdmin = (type === C.USER.TYPE_ADMIN) || !this.get('access.enabled');
@@ -122,8 +123,8 @@ export default Route.extend(Subscribe, PromiseToCb, {
         preferences:                                    this.toCb('loadPreferences'),
         settings:                                       this.toCb('loadPublicSettings'),
         regions:            ['userSchemas',             this.toCb('loadRegions')],
-        project:            ['projects', 'preferences', this.toCb('selectProject',transition)],
-        projectSchemas:     ['project',                 this.toCb('loadProjectSchemas')],
+        project:            ['projects', 'preferences', this.toCb('selectProject',transition,environmentHandoff)],
+        projectSchemas:     ['project',                 this.toCb('loadProjectSchemas',environmentHandoff)],
         catalogs:           ['project',                 this.toCb('loadCatalogs')],
         orchestrationState: ['projectSchemas',          this.toCb('updateOrchestration')],
         instances:          ['projectSchemas',          this.cbFindProject('instance')],
@@ -235,7 +236,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     });
   },
 
-  loadProjectSchemas() {
+  loadProjectSchemas(assertHandoff) {
     var store = this.get('store');
     let projects = this.get('projects');
     let schemaLoadGeneration = projects.incrementProperty('schemaLoadGeneration');
@@ -249,6 +250,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     return store.rawRequest({url:'schema', dataType: 'json'}).then((xhr) => {
       if ( projects.get('current.id') === projectId &&
         projects.get('schemaLoadGeneration') === schemaLoadGeneration ) {
+        if (typeof assertHandoff === 'function') { assertHandoff(); }
         store._bulkAdd('schema', xhr.body.data);
         projects.set('schemaProjectId', projectId);
       }
@@ -307,9 +309,52 @@ export default Route.extend(Subscribe, PromiseToCb, {
     }
   },
 
-  selectProject(transition) {
+  selectProject(transition, assertHandoff) {
     // Make sure a valid project is selected
-    return this.get('projects').selectDefault(projectIdFromTransition(transition));
+    return this.get('projects').selectDefault(projectIdFromTransition(transition), typeof assertHandoff === 'function' ?
+      {assertSelection: assertHandoff, preserveDefault: true} : {});
+  },
+
+  // Optional guard belongs only to the exact human handoff which owns this transition.
+  environmentHandoffGuard(transition) {
+    const handoff = this._browserEnvironmentHandoff;
+    if (!handoff || handoff.transition && handoff.transition !== transition) { return null; }
+    handoff.transition = transition;
+    return (project) => {
+      if (this._browserEnvironmentHandoff !== handoff || transition.isAborted) { throw new Error('Environment handoff replaced'); }
+      handoff.assertSession();
+      if (project !== undefined && (!project || project.get('id') !== handoff.target.id || project.get('uuid') !== handoff.target.uuid || project.get('name') !== handoff.target.name)) {
+        throw new Error('Selected environment changed');
+      }
+    };
+  },
+
+  // Browser-only human handoff. Existing UI actions keep their original behavior.
+  async switchProjectExact(target, assertBeforeCommit, commit, assertSession) {
+    await new Promise((done) => this.disconnectSubscribe(done));
+    assertBeforeCommit();
+    let transition;
+    const handoff = {target, assertSession};
+    try {
+      await commit(() => {
+        this.get('projects').incrementProperty('schemaLoadGeneration');
+        this.get('projects').set('schemaProjectId', null);
+        this.get('storeReset').reset();
+        this.intermediateTransitionTo('authenticated');
+        this.set(`tab-session.${C.TABSESSION.PROJECT}`, target.id);
+        this._browserEnvironmentHandoff = handoff;
+        transition = this.refresh(); handoff.transition = transition;
+      });
+      await transition; assertSession();
+      const projects = this.get('projects'), current = projects.get('current');
+      if (this._browserEnvironmentHandoff !== handoff || !current || current.get('id') !== target.id || current.get('uuid') !== target.uuid ||
+        current.get('name') !== target.name || projects.get('schemaProjectId') !== target.id) {
+        throw new Error('Selected environment did not settle');
+      }
+      return current;
+    } finally {
+      if (this._browserEnvironmentHandoff === handoff) { this._browserEnvironmentHandoff = null; }
+    }
   },
 
   actions: {
@@ -334,6 +379,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     },
 
     switchProject(projectId, transition=true) {
+      this._browserEnvironmentHandoff = null;
       console.log('Switch to ' + projectId);
       this.disconnectSubscribe(() => {
         console.log('Switch is disconnected');
@@ -342,6 +388,7 @@ export default Route.extend(Subscribe, PromiseToCb, {
     },
 
     finishSwitchProject(projectId, transition) {
+      this._browserEnvironmentHandoff = null;
       console.log('Switch finishing');
       this.get('storeReset').reset();
       if ( transition ) {

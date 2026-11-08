@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFile, realpath} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
-import {COMMANDS,PUBLIC_ERROR_CODES} from '../bridge/shared-modules.mjs';
+import {COMMANDS,PUBLIC_ERROR_CODES,RESOURCE_CHANGES,NATIVE_CHANGE_OPERATIONS,BROWSER_LOCAL_INTENTS} from '../bridge/shared-modules.mjs';
 
 async function containedSourcePath(root, relative, message) {
   // Enforce the selected owner before metadata access and again after links
@@ -35,6 +35,46 @@ function auditSourceInputNames(schema, required) {
   return inputs;
 }
 
+
+// Every public intent must have a closed owner. No unknown operation is filtered away.
+export function checkResourceChangeIntentContract(nativeOptions, {
+  commands=COMMANDS, resourceChanges=RESOURCE_CHANGES, nativeOperations=NATIVE_CHANGE_OPERATIONS, localIntents=BROWSER_LOCAL_INTENTS,
+} = {}) {
+  const preview=commands.find(tool=>tool.name==='preview_resource_change').inputSchema;
+  const entries=Object.entries(resourceChanges).flatMap(([resourceType, operations])=>
+    Object.entries(operations).map(([operation, descriptor])=>({resourceType,operation,...descriptor})));
+  const wire=[],local=[],catalog=[];
+  for(const intent of entries){
+    if(intent.execution==='native-wire'){
+      assert.ok(['aiResourceChangePlans','aiCatalogStackLaunchPlans'].includes(intent.wire),'Unknown native wire owner');
+      if(intent.wire==='aiResourceChangePlans')wire.push(intent.operation);
+      else catalog.push([intent.resourceType,intent.operation]);
+    }else if(intent.execution==='browser-human-confirmation')local.push(intent);
+    else assert.fail('Unclassified resource-change intent');
+  }
+  assert.deepEqual(catalog,[['stack','create_from_catalog']],'Catalog owner must not hide other operations');
+  const derivedNative=[...new Set(wire)].sort();
+  assert.deepEqual([...nativeOperations].sort(),derivedNative,'Native operation index differs from its descriptors');
+  assert.deepEqual([...nativeOptions].sort(),derivedNative,'Typed change operation enum mismatch');
+  const expectedLocal=[['set_default','account-preference'],['switch_context','browser-context']].map(([operation,effectScope])=>({
+    resourceType:'project',operation,fields:[],required:[],minFields:0,execution:'browser-human-confirmation',wire:null,
+    transport:'browser',bridge:'manual-handoff',modelApply:'needs_user',effectScope,
+  }));
+  const byOperation=(a,b)=>a.operation.localeCompare(b.operation);
+  assert.deepEqual(local.sort(byOperation),expectedLocal,'Browser intents must retain exact project/human/effect/Bridge bounds');
+  assert.deepEqual([...localIntents].sort(byOperation),expectedLocal,'Browser intent index differs from its closed descriptors');
+  assert.deepEqual([...preview.properties.operation.enum].sort(),[...new Set(entries.map(intent=>intent.operation))].sort(),
+    'Public intent enum must be complete and contain no undeclared operations');
+  const conditions=preview.allOf.filter(row=>Array.isArray(row.if?.properties?.operation?.enum) &&
+    row.if.properties.operation.enum.some(operation=>local.some(intent=>intent.operation===operation)));
+  assert.equal(conditions.length,1,'One closed Browser-local schema condition is required');
+  assert.deepEqual(conditions[0],{
+    if:{properties:{operation:{enum:local.map(intent=>intent.operation)}},required:['operation']},
+    then:{properties:{resourceType:{const:'project'},parameters:{type:'object',properties:{},required:[],additionalProperties:false}},
+      required:['targetRef'],not:{anyOf:[{required:['parentRef']},{required:['catalogVersionRef']}]}}},
+    'Browser inputs must be project-only opaque selection with empty parameters');
+  return {nativeOperations:derivedNative,localIntents:expectedLocal,publicOperations:[...preview.properties.operation.enum]};
+}
 
 // This is a source-contract check, not a native authorization/CAS test.
 export async function checkContainerNetworkContract(engineRoot) {
@@ -164,8 +204,9 @@ for(const [type,requiredInputs] of Object.entries(wireInputs)){
     const properties=COMMANDS.find(tool=>tool.name==='preview_resource_change').inputSchema.properties;
     // Catalog launch has its own closed collection and input contract; it must
     // never be silently admitted by the ordinary lifecycle plan endpoint.
-    for(const name of ['resourceType','operation'])assert.deepEqual([...schema.resourceFields[name].options].sort(),
-      properties[name].enum.filter(value=>name!=='operation'||value!=='create_from_catalog').sort(),'Typed change '+name+' enum mismatch');
+    assert.deepEqual([...schema.resourceFields.resourceType.options].sort(),[...properties.resourceType.enum].sort(),
+      'Typed change resourceType enum mismatch');
+    checkResourceChangeIntentContract(schema.resourceFields.operation.options);
     assert.equal(schema.resourceFields.parameters.type,'json','Typed parameters must preserve JSON values');
   }
   if(type==='aiResourceView'){

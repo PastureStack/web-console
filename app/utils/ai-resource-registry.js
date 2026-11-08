@@ -37,7 +37,7 @@ export const RESOURCE_FAMILIES = Object.freeze([
   family('container', [project('container', 'containers', ['healthState', 'memory', 'cpuShares', 'startCount']),
     project('port', 'ports', ['publicPort', 'privatePort', 'protocol', 'bindAddress'], {type: 'container', field: 'instanceId', required: true}),
     project('instanceLink', 'instanceLinks', ['linkName'], {type: 'container', field: 'instanceId', required: true})]),
-  family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine'], ['Typed changes support name/description only for the currently selected environment. Other visible environments remain queryable; use the normal environment switch and search again for a fresh reference before editing. Membership, authentication, networking, orchestration and lifecycle changes remain in their normal human workflows.']), global('projectTemplate', 'projectTemplates')]),
+  family('environment', [global('project', 'projects', ['orchestration', 'virtualMachine'], ['Typed changes support name/description only for the currently selected environment. Browser-only switch_context/set_default use an empty-parameter preview and the existing human confirmation UI, never a model apply or native Engine process. The fixed-profile Bridge requires a manual console handoff. Other visible environments remain queryable; use the normal environment switch and search again for a fresh reference before editing. Membership, authentication, networking, orchestration and lifecycle changes remain in their normal human workflows.']), global('projectTemplate', 'projectTemplates')]),
   family('global', [], 'pending-adapter', 'Shared navigation and UI controls need semantic UI helpers, not a synthetic resource endpoint.'),
   family('host', [resource('host', 'hosts', 'project', ['hostname', 'agentState', 'memory', 'milliCpu', 'localStorageMb'], null,
     ['Host detail may include at most 50 freshly authorized container references with readable Stack names. Workload completeness stays unknown, including when empty; it does not establish an empty Host or authorize evacuation, deactivation or scheduling. Typed start/stop use empty parameters and a separately human-approved native Host activate/deactivate plan. They change Host scheduling state, not Docker or agent state, and never evacuate workloads. Metadata changes support nonempty custom name and description only. Use resetName:true to clear only the custom name and restore native hostname display. Labels, capacity/scheduling, hostname, agent lifecycle and credentials remain in the normal human host UI.']), global('machineDriver', 'machineDrivers', ['active', 'builtin'])]),
@@ -172,7 +172,11 @@ export function resourceDescriptor(familyName, type) {
 }
 export function resourceDescriptors() { return RESOURCE_FAMILIES.flatMap((entry) => entry.resources); }
 
-const action = (fields = [], required = [], minFields = 0) => Object.freeze({fields: Object.freeze(fields), required: Object.freeze(required), minFields});
+const action = (fields = [], required = [], minFields = 0, wire = 'aiResourceChangePlans') => Object.freeze({
+  fields: Object.freeze(fields), required: Object.freeze(required), minFields, execution: 'native-wire', wire,
+});
+const browserAction = (effectScope) => Object.freeze({fields: Object.freeze([]), required: Object.freeze([]), minFields: 0,
+  execution: 'browser-human-confirmation', wire: null, transport: 'browser', bridge: 'manual-handoff', modelApply: 'needs_user', effectScope});
 const metadata = action(['name', 'description'], [], 1);
 // Closed human-review projection; native authorization and generation CAS remain server-owned.
 export const SERVICE_UPGRADE_LIFECYCLE = Object.freeze({
@@ -185,12 +189,12 @@ export const RESOURCE_CHANGES = Object.freeze({
   instanceLink: Object.freeze({update_target: action(['targetInstanceRef'], ['targetInstanceRef'])}),
   volume: Object.freeze({create: action(['name', 'description'], ['name'])}),
   registry: Object.freeze({start: action(), stop: action()}),
-  project: Object.freeze({update_metadata: metadata}),
+  project: Object.freeze({update_metadata: metadata, switch_context: browserAction('browser-context'), set_default: browserAction('account-preference')}),
   loadBalancerService: Object.freeze({start: action(), stop: action(), scale: action(['scale'], ['scale']), update_metadata: metadata, create: action(['name', 'description', 'startOnCreate', 'portRules'], ['name', 'startOnCreate', 'portRules'])}),
   certificate: Object.freeze({update_metadata: metadata}),
   host: Object.freeze({start: action(), stop: action(), update_metadata: action(['name', 'description', 'resetName'], [], 1)}),
   stack: Object.freeze({start: action(), stop: action(), remove: action(), archive: action(), restore: action(), create: action(['name', 'description'], ['name']),
-    create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name']), update_metadata: action(['name', 'description', 'group'], [], 1)}),
+    create_from_catalog: action(['name', 'description', 'startOnCreate', 'answers'], ['name'], 0, 'aiCatalogStackLaunchPlans'), update_metadata: action(['name', 'description', 'group'], [], 1)}),
   service: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(), archive: action(), restore: action(),
     finish_upgrade: action(), rollback: action(), cancel_upgrade: action(), scale: action(['scale'], ['scale']),
     update_links: action(['serviceRefs', 'links'], [], 1),
@@ -203,6 +207,12 @@ export const RESOURCE_CHANGES = Object.freeze({
   container: Object.freeze({start: action(), stop: action(), restart: action(), remove: action(),
     create: action(['name', 'image', 'description', 'command', 'entryPoint', 'ports'], ['name', 'image']), update_metadata: metadata}),
 });
+export const RESOURCE_CHANGE_INTENTS = Object.freeze(Object.entries(RESOURCE_CHANGES).flatMap(([resourceType, operations]) =>
+  Object.entries(operations).map(([operation, descriptor]) => Object.freeze({resourceType, operation, ...descriptor}))));
+export const NATIVE_CHANGE_OPERATIONS = Object.freeze([...new Set(RESOURCE_CHANGE_INTENTS.filter(intent =>
+  intent.execution === 'native-wire' && intent.wire === 'aiResourceChangePlans').map(intent => intent.operation))]);
+export const BROWSER_LOCAL_INTENTS = Object.freeze(RESOURCE_CHANGE_INTENTS.filter(intent => intent.execution === 'browser-human-confirmation')
+  .sort((a, b) => a.operation.localeCompare(b.operation)));
 export const CHANGE_OPERATIONS = Object.freeze([...new Set(Object.values(RESOURCE_CHANGES).flatMap((entry) => Object.keys(entry)))]);
 export const RESOURCE_CHANGE_FIELDS = Object.freeze(['sourceContainer', 'targetContainer', 'publicPort', 'privatePort', 'protocol', 'bindAddress', 'linkName', 'name', 'description', 'group', 'hostname', 'externalIpAddresses', 'targetServices', 'image', 'scale', 'command', 'entryPoint', 'ports', 'healthCheck', 'stackId', 'archived',
   'portRules', 'driver', 'state', 'operation', 'childServiceState', 'startOnCreate', 'affectedServiceCount', 'emptyStack', 'affectedInstanceCount', 'affectedMountCount', 'mountedDataRule']);

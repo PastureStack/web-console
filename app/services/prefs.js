@@ -93,6 +93,39 @@ export default Service.extend({
     return value;
   },
 
+  // The original preference setter remains synchronous for legacy UI callers.
+  // This explicit path settles only the current user's default-environment write.
+  async readDefaultProject(accountId) {
+    const rows = await this.get('userStore').find('userpreference', null, {
+      url: 'userpreferences', filter: {name: C.PREFS.PROJECT_DEFAULT}, forceReload: true,
+    });
+    if (!rows || typeof rows.filter !== 'function') { throw new Error('Default preference unavailable'); }
+    const matches = rows.filter((row) => row.get('name') === C.PREFS.PROJECT_DEFAULT && !row.get('removed'));
+    if (matches.length > 1) { throw new Error('Default preference unavailable'); }
+    const record = matches[0];
+    if (!record) { return {id: null, projectId: null, record: null}; }
+    if (record.get('accountId') !== accountId) { throw new Error('Default preference owner changed'); }
+    const projectId = JSON.parse(record.get('value'));
+    if (projectId !== null && typeof projectId !== 'string') { throw new Error('Default preference unavailable'); }
+    return {id: record.get('id'), projectId, record};
+  },
+
+  async saveDefaultProject(projectId, accountId, expected, assertCurrent, commit) {
+    const before = await this.readDefaultProject(accountId); assertCurrent();
+    if (before.id !== expected.id || before.projectId !== expected.projectId) { throw new Error('Default preference changed'); }
+    const record = before.record || this.get('userStore').createRecord({type: 'userPreference', name: C.PREFS.PROJECT_DEFAULT});
+    if (before.projectId !== projectId) {
+      let saving;
+      await commit(() => { record.set('value', JSON.stringify(projectId)); saving = record.save(); });
+      await saving;
+    }
+    assertCurrent();
+    const after = await this.readDefaultProject(accountId); assertCurrent();
+    if (!after.record || after.projectId !== projectId) { throw new Error('Default preference readback failed'); }
+    this.notifyPropertyChange(C.PREFS.PROJECT_DEFAULT);
+    return after;
+  },
+
   clear: function() {
     this.beginPropertyChanges();
 

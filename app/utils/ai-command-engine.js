@@ -87,8 +87,8 @@ export function waitForOperationPoll(milliseconds, signal) {
 const projectOperationNotices = new WeakMap();
 
 export class CommandEngine {
-  constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta', transportKind = 'browser', canRenameSelectedProject = async () => false}) {
-    Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint, transportKind, canRenameSelectedProject});
+  constructor({context, request, ensureSession, audit = async () => { throw new CommandError('UNAVAILABLE'); }, wait = waitForOperationPoll, onPlan = () => {}, onOperation = () => {}, origin = 'https://localhost', apiEndpoint = '/v2-beta', transportKind = 'browser', browserEnvironment = null, canRenameSelectedProject = async () => false}) {
+    Object.assign(this, {context, request, ensureSession, audit, wait, onPlan, onOperation, origin, apiEndpoint, transportKind, browserEnvironment, canRenameSelectedProject});
     projectOperationNotices.set(this, new WeakMap());
     this.catalogReader = createCatalogReader({request, context});
     this.auditReader = createAuditReader({request, context, transportKind,
@@ -921,13 +921,29 @@ export class CommandEngine {
     return Object.assign({status: 'needs_user', nextStep: 'Ask the user to review and confirm the plan in the console.'}, summary);
   }
 
-  async confirmPlan(planRef) {
+  async confirmPlan(planRef, options = {}) {
     try {
       const captured = this.context.capture();
       if ( captured.mode !== 'enabled' ) { throw new CommandError('UNAVAILABLE'); }
       const reference = this.context.resolve(planRef, 'plan', captured);
       await this.ensureSession();
       this.context.assertCurrent(captured);
+      if ( reference.planKind === 'browser-environment' ) {
+        if (this.transportKind !== 'browser' || !this.browserEnvironment || typeof options.currentReview !== 'function' ||
+          !options.currentReview() || options.reviewSignature !== reference.reviewSignature || reference.phase !== 'preview' || Date.now() >= reference.expiresAt) { throw new CommandError('CONFLICT'); }
+        reference.phase = 'executing';
+        try {
+          const effect = await this.browserEnvironment.confirm(reference.binding, captured,
+            () => options.currentReview() && Date.now() < reference.expiresAt);
+          reference.phase = 'completed';
+          if (options.currentReview()) { this.onPlan(null, planRef); }
+          return {status: 'succeeded', confirmationState: 'approved', verifiedResult: false, ...effect};
+        } catch (error) {
+          reference.phase = 'failed';
+          const result = publicError(error);
+          return {...result, verifiedResult: false, nextStep: 'Check the current browser environment or personal default in the console. If another attempt is needed, create a fresh preview for a new human confirmation; do not replay this action.'};
+        }
+      }
       if ( reference.hostResetReview || reference.containerNetworkReview || reference.serviceLinksReview || reference.stackGroupReview || ['externalService', 'loadBalancerService', 'volume'].includes(reference.resourceType) && reference.operation === 'create' ) {
         this.assertPlan(await this.call(captured, `${this.planCollection(reference)}/${encodeURIComponent(reference.id)}`, 'GET'), reference);
       }
@@ -1224,6 +1240,27 @@ export class CommandEngine {
     const descriptor = operations && Object.prototype.hasOwnProperty.call(operations, input.operation) && operations[input.operation];
     if ( !descriptor ) { throw new CommandError('INVALID_INPUT', 'operation'); }
     const parameters = Object.assign({}, input.parameters || {});
+    if (descriptor.execution === 'browser-human-confirmation') {
+      if (input.resourceType !== 'project' || !input.targetRef || input.parentRef || Object.keys(parameters).length) { throw new CommandError('INVALID_INPUT', 'parameters'); }
+      const target = this.resolveResourceReference(input.targetRef, 'project', captured, 'targetRef');
+      if (target.scope !== 'global') { throw new CommandError('INVALID_INPUT', 'targetRef'); }
+      if (this.transportKind !== 'browser' || !this.browserEnvironment) {
+        return {status: 'needs_user', nextStep: 'Use the normal browser console to choose the environment or personal default. This fixed-profile Bridge will not change its identity or environment binding.'};
+      }
+      const binding = await this.browserEnvironment.preview({id: target.id, operation: input.operation}, captured);
+      this.context.assertCurrent(captured, signal);
+      const expiresAt = Date.now() + 300000;
+      const reference = {planKind: 'browser-environment', binding, expiresAt, phase: 'preview'};
+      const planRef = this.context.reference('plan', reference, captured);
+      const summary = {planRef, planKind: 'browser-environment', resourceType: 'project', operation: input.operation,
+        displayPath: binding.after, displayDiff: [{field: input.operation === 'switch_context' ? 'selectedEnvironment' : 'defaultEnvironment',
+          before: binding.before, after: binding.after}, {field: 'selectedEnvironmentDescription', before: null, after: binding.description}],
+        confirmationState: 'pending', expiresAt: new Date(expiresAt).toISOString(), verifiedResult: false};
+      summary.reviewSignature = JSON.stringify([summary.operation, summary.displayPath, summary.displayDiff, summary.expiresAt]);
+      reference.reviewSignature = summary.reviewSignature;
+      this.onPlan(Object.assign({context: captured}, summary));
+      return {status: 'needs_user', ...summary, nextStep: 'Ask the user to review and perform this browser action with the console confirmation button. Do not call apply to perform it. No native process or native execution proof is created.'};
+    }
     // New nested input must not change while the server preview is in flight.
     if ( Array.isArray(parameters.ports) ) { parameters.ports = parameters.ports.slice(); }
     if ( parameters.healthCheck ) { parameters.healthCheck = Object.assign({}, parameters.healthCheck); }
@@ -1394,6 +1431,9 @@ export class CommandEngine {
 
   async apply_resource_change(input, captured, signal, observeOperation = this.onOperation) {
     const reference = this.context.resolve(input.planRef, 'plan', captured);
+    if (reference.planKind === 'browser-environment') {
+      return {status: 'needs_user', verifiedResult: false, nextStep: reference.phase === 'preview' ? 'Only the user can perform this browser action with the console confirmation button. This tool does not submit it.' : 'This browser confirmation has been consumed. Check the current environment or personal default in the console, then create a fresh preview if needed. Do not replay it.'};
+    }
     if ( !['resource-change', 'catalog-launch'].includes(reference.planKind) ) { throw new CommandError('INVALID_INPUT', 'planRef'); }
     const operationRef = reference.operationRef || this.context.reference('operation', Object.assign({}, reference, {lastStatus: 'unknown'}), captured);
     reference.operationRef = operationRef;
