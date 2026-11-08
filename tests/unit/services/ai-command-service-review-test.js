@@ -35,6 +35,7 @@ test('Human Port approval re-reads the exact displayed plan and rejects a change
     let commandContext = EmberObject.create({context, on() {}, off() {}});
     let service = createOwned(AiCommandService, {
       commandContext,
+      environmentActions: EmberObject.create({}),
       access: EmberObject.create({async ensureSession() {}}),
       app: EmberObject.create({apiEndpoint: '/v2-beta'}),
       userStore: EmberObject.create({async rawRequest(request) {

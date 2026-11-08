@@ -22,7 +22,14 @@ test('selected project review uses existing translated type and keeps literal me
 
 test('project collaboration contract stays within twelve tools and one human-approved metadata operation', function(assert) {
   assert.strictEqual(COMMANDS.length, 12);
-  assert.deepEqual(Object.keys(RESOURCE_CHANGES.project), ['update_metadata']);
+  assert.deepEqual(Object.keys(RESOURCE_CHANGES.project), ['update_metadata', 'switch_context', 'set_default']);
+  assert.deepEqual(Object.entries(RESOURCE_CHANGES.project).filter(([, descriptor]) => descriptor.execution === 'native-wire').map(([operation]) => operation), ['update_metadata']);
+  for (const operation of ['switch_context', 'set_default']) {
+    assert.strictEqual(RESOURCE_CHANGES.project[operation].execution, 'browser-human-confirmation');
+    assert.strictEqual(RESOURCE_CHANGES.project[operation].wire, null);
+    assert.strictEqual(RESOURCE_CHANGES.project[operation].modelApply, 'needs_user');
+    assert.deepEqual(RESOURCE_CHANGES.project[operation].fields, []);
+  }
   assert.deepEqual(RESOURCE_CHANGES.project.update_metadata.fields, ['name', 'description']);
   const preview = COMMANDS.find(command => command.name === 'preview_resource_change');
   assert.true(preview.inputSchema.properties.resourceType.enum.includes('project'));

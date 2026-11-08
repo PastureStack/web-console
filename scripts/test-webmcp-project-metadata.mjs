@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {COMMANDS, CommandContext, CommandEngine} from '../bridge/shared-modules.mjs';
+import {COMMANDS, CommandContext, CommandEngine, RESOURCE_CHANGES} from '../bridge/shared-modules.mjs';
 import {readFileSync} from 'node:fs';
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + readFileSync(new URL('../app/utils/ai-resource-review-labels.js', import.meta.url)).toString('base64'));
 
@@ -130,7 +130,14 @@ test('project: native live denials and lost accepted response stay closed withou
 test('project: exact tool/parameters and existing locale review labels describe selected metadata without another tool', async () => {
   assert.equal(COMMANDS.length, 12); const f = fixture();
   const capability = (await f.engine.execute('list_capabilities', {})).families.find(x => x.family === 'environment').resources.find(x => x.resourceType === 'project');
-  assert.deepEqual(capability.operations, ['update_metadata']);
+  assert.deepEqual(capability.operations, ['update_metadata', 'switch_context', 'set_default']);
+  assert.deepEqual(Object.entries(RESOURCE_CHANGES.project).filter(([, descriptor]) => descriptor.execution === 'native-wire').map(([operation]) => operation), ['update_metadata']);
+  for (const operation of ['switch_context', 'set_default']) {
+    const descriptor = RESOURCE_CHANGES.project[operation];
+    assert.equal(descriptor.execution, 'browser-human-confirmation');
+    assert.equal(descriptor.wire, null); assert.equal(descriptor.modelApply, 'needs_user');
+    assert.deepEqual(descriptor.fields, []);
+  }
   const tool = COMMANDS.find(t => t.name === 'preview_resource_change');
   assert.ok(tool.inputSchema.properties.resourceType.enum.includes('project')); assert.match(tool.description, /currently selected environment/); assert.match(tool.description, /switch environments normally/);
   const plan = {resourceType: 'project', operation: 'update_metadata', displayDiff: [{field: 'description', before: null, after: ''},{field: 'name', before: 'old', after: '<script>فارسی</script>'}]};
