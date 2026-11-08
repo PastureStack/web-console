@@ -22,6 +22,15 @@ test('Port save sends its exact native before tuple and rolls back a rejected co
   component.set('portsArray', A([{public: '9090', obj: port}]));
   await assert.rejects(component.savePorts(), /PortUpdateConflict/);
   assert.strictEqual(port.get('publicPort'), 8080, 'a rejected conditional save restores the last value');
+  component.set('portsArray', A([{public: '8080', obj: port}]));
+  await component.savePorts();
+  assert.strictEqual(calls.length, 1, 'an unchanged port does not submit another save');
+  component.set('portsArray', A([{public: '9090', obj: port}]));
+  port.set('uuid', undefined);
+  port.set('save', () => { calls.push('unexpected'); return resolve(port); });
+  await assert.rejects(component.savePorts(), /PortUpdatePreconditionRequired/);
+  assert.strictEqual(port.get('publicPort'), 8080, 'a missing native tuple cannot mutate local state');
+  assert.strictEqual(calls.length, 1, 'a missing native tuple cannot reach save');
   destroyOwned(component);
 });
 

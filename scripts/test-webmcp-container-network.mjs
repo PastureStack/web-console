@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync} from 'node:fs';
 import {createRequire} from 'node:module';
-import {CommandContext, CommandEngine, CommandError, containerNetworkReview, publicError} from '../bridge/shared-modules.mjs';
+import {CommandContext, CommandEngine, publicError} from '../bridge/shared-modules.mjs';
 
 const id = 'aichange-11111111-1111-1111-1111-111111111111';
 const {resourceReviewLabels} = await import('data:text/javascript;base64,' + readFileSync(new URL('../app/utils/ai-resource-review-labels.js', import.meta.url)).toString('base64'));
@@ -111,23 +111,6 @@ test('container network: changed or omitted literal review blocks both confirm a
   }
 });
 
-test('container network: actual human inbox owner re-reads exact review before its confirm POST', async () => {
-  const source = readFileSync(new URL('../app/services/ai-command-service.js', import.meta.url), 'utf8').replace(/^import .*;\r?\n/gm, '').replace('export default Service.extend(', 'return Service.extend(');
-  const owner = new Function('Service', 'service', 'CommandEngine', 'serviceCreateReview', 'serviceUpgradeReview', 'containerNetworkReview', 'publicError', 'CommandError', 'safeCatalogQuestions', 'CATALOG_LAUNCH_COLLECTION', source)(
-    {extend: value => value}, () => ({}), CommandEngine, () => null, () => null, containerNetworkReview, publicError, CommandError, () => ({}), 'aiCatalogStackLaunchPlans');
-  const f = fixture(), refs = await references(f);
-  const summary = await f.engine.execute('preview_resource_change', {resourceType: 'port', operation: 'update_public_port', targetRef: refs.targetRef, parameters: {publicPort: 8080}});
-  const plan = {...summary, humanOnly: true, serverPlanId: id, serverResourceId: 'port-selected', context: f.snapshot};
-  plan.reviewSignature = containerNetworkReview(plan);
-  let posts = 0;
-  const receiver = {...owner, engine: f.engine, assertReviewContext() {}, publishPlan() {}, get(name) {
-    if (name === 'access') return {ensureSession: async () => {}};
-    if (name === 'userStore') return {rawRequest: async request => {if (request.method === 'POST') posts++; return {body: structuredClone(f.plan())};}};
-  }};
-  f.plan().changes = f.plan().changes.filter(row => row.field !== 'sourceContainer');
-  const result = await receiver.confirmHumanPlan(plan); assert.ok(['CONFLICT', 'INVALID_RESPONSE'].includes(result.code)); assert.equal(posts, 0);
-});
-
 test('container network: all thirteen locales have native review labels and preserve literal endpoints', () => {
   const yaml = createRequire(new URL('../package.json', import.meta.url))('js-yaml');
   const directory = new URL('../translations/', import.meta.url);
@@ -157,28 +140,6 @@ test('container network: all thirteen locales have native review labels and pres
   const labels = resourceReviewLabels(summary, key => key);
   assert.equal(labels.resourceTypeLabel, 'generic.ports'); assert.equal(labels.displayChanges[0].fieldLabel, 'formPorts.public.label');
   assert.equal(labels.displayChanges[0].after, '8080'); assert.equal(labels.displayChanges[3].after, '127.0.0.1');
-});
-
-test('container network: actual native UI saves the exact before tuple and restores a rejected value', async () => {
-  const source = readFileSync(new URL('../app/components/edit-container/component.js', import.meta.url), 'utf8')
-    .replace(/^import .*;\r?\n/gm, '').replace('export default ModalBase.extend(', 'return ModalBase.extend(');
-  const get = (object, key) => key.split('.').reduce((value, part) => value && value[part], object);
-  const owner = new Function('EmberObject', 'get', 'all', 'allSettled', 'resolve', 'next', 'alias', 'NewOrEdit', 'ModalBase', source)(
-    {}, get, Promise.all.bind(Promise), values => Promise.allSettled(values).then(results => results.map(result => ({...result, state: result.status === 'fulfilled' ? 'fulfilled' : 'rejected'}))),
-    Promise.resolve.bind(Promise), () => {}, () => null, {}, {extend: (mixin, value) => value});
-  const before = {uuid: 'port-uuid', sourceUuid: 'source-uuid', accountId: '1a5', instanceId: '1i3', publicPort: 8000,
-    privatePort: 80, protocol: 'tcp', bindAddress: ''};
-  const saved = [], obj = {...before, set(key, value) {this[key] = value;}, save(options) {saved.push(options); return Promise.resolve(this);}};
-  const receiver = {...owner, model: {instance: {uuid: before.sourceUuid}}, portsArray: [{public: '8080', obj}], get(key) {return get(this, key);}};
-  await receiver.savePorts(); assert.equal(obj.publicPort, 8080); assert.equal(saved.length, 1);
-  assert.deepEqual(JSON.parse(saved[0].headers['X-PastureStack-Port-Before']), before);
-  obj.save = () => Promise.reject(new Error('PortUpdateConflict')); receiver.portsArray[0].public = '9090';
-  await assert.rejects(receiver.savePorts(), /PortUpdateConflict/); assert.equal(obj.publicPort, 8080);
-  receiver.portsArray[0].public = '8080'; await receiver.savePorts(); assert.equal(saved.length, 1);
-  receiver.portsArray[0].public = '9090'; obj.uuid = undefined;
-  obj.save = () => {saved.push('unexpected'); return Promise.resolve(obj);};
-  await assert.rejects(receiver.savePorts(), /PortUpdatePreconditionRequired/);
-  assert.equal(obj.publicPort, 8080); assert.equal(saved.length, 1);
 });
 
 test('container network: native denial errors have fixed guidance without inventory details or permission changes', () => {

@@ -332,6 +332,9 @@ test('resource families: every implemented descriptor projects only bounded scal
       token: secret, password: secret, recoveryEmailMasked: secret, serverAddress: secret, description: 'Readable untrusted description', labels: {x: secret},
       environment: {x: secret}, apiKeyPolicy: {x: secret}, requestObject: secret, responseObject: secret, dockerCompose: secret,
       actionLinks: {remove: secret}, links: {self: secret}, nfsConfig: {x: secret}, driverOpts: {x: secret}};
+    const child = ['port', 'instanceLink'].includes(descriptor.type);
+    const parentContainer = {...body, id: 'native-parent-container', type: 'container', uuid: 'parent-container-uuid'};
+    if (child) Object.assign(body, {uuid: 'native-child-uuid', instanceId: parentContainer.id});
     const templateId = 'ctm-' + 'a'.repeat(64), versionId = 'cvm-' + 'b'.repeat(64);
     const templateFields = {name: body.name, description: body.description, catalogId: 'library', templateBase: 'infra', templateKey: 'database',
       catalogScope: 'global', defaultVersion: '1.0', maintainer: 'Community', license: 'Apache-2.0'};
@@ -339,6 +342,10 @@ test('resource families: every implemented descriptor projects only bounded scal
     const template = {...body, ...templateFields, id: templateId, type: 'catalogTemplate'};
     const version = {...body, ...versionFields, id: versionId, type: 'catalogTemplateVersion', templateId};
     const f = fixture({handle: async ({url, method, data}) => {
+      if (child && url === 'projects/p1/containers?limit=50') {
+        assert.equal(method, 'GET');
+        return {body: {data: [parentContainer]}};
+      }
       if (descriptor.readTransport === 'catalog') {
         assert.equal(method, 'POST');
         if (url === 'projects/p1/aiCatalogStackLaunchOptions') {
@@ -358,6 +365,14 @@ test('resource families: every implemented descriptor projects only bounded scal
       return {body: method === 'POST' ? {resourceType: data.resourceType, data: [body]} : url.includes('?') ? {data: [body]} : body};
     }});
     const input = {family: family.family, resourceType: resource.resourceType};
+    if (child) {
+      const before = f.requests.length;
+      assert.equal((await f.engine.execute('find_resources', input)).code, 'INVALID_INPUT');
+      assert.equal(f.requests.length, before, 'omitted parent stops before business transport');
+      const parents = await f.engine.execute('find_resources', {family: 'container', resourceType: 'container'});
+      assert.equal(parents.status, 'succeeded'); assert.equal(parents.items.length, 1);
+      input.parentRef = parents.items[0].resourceRef;
+    }
     if (descriptor.type === 'catalogTemplateVersion') {
       const parents = await f.engine.execute('find_resources', {family: 'catalog', resourceType: 'catalogTemplate'});
       assert.equal(parents.status, 'succeeded'); input.parentRef = parents.items[0].resourceRef;
@@ -381,15 +396,40 @@ test('resource families: every implemented descriptor projects only bounded scal
         assert.equal(detail.parentRef, input.parentRef); assert.equal(detail.launchOptions.launchEnabled, false);
         assert.deepEqual(detail.launchOptions.requiredOperations, ['read', 'create', 'update']);
       }
-    } else assert.equal(f.requests[0].url, descriptor.readTransport === 'view' ? 'projects/p1/aiResourceViews' : `${descriptor.scope === 'project' ? 'projects/p1/' : ''}${descriptor.collection}?limit=50`);
+    } else assert.equal(f.requests[child ? 1 : 0].url, descriptor.readTransport === 'view' ? 'projects/p1/aiResourceViews' : `${descriptor.scope === 'project' ? 'projects/p1/' : ''}${descriptor.collection}?limit=50`);
     if (descriptor.readTransport === 'view') {
-      assert.deepEqual(f.requests[0].data, {resourceType: descriptor.type});
-      assert.deepEqual(f.requests[1].data, {resourceType: descriptor.type, resourceId: 'opaque-server-id'});
+      const reads = child ? f.requests.slice(1) : f.requests;
+      assert.deepEqual(reads[0].data, {resourceType: descriptor.type, ...(child ? {parentId: parentContainer.id} : {})});
+      assert.deepEqual(reads[1].data, {resourceType: descriptor.type, resourceId: 'opaque-server-id'});
+      if (child) assert.equal(found.items[0].parentRef, input.parentRef);
     }
     const expectedFields = descriptor.type === 'processInstance' ? {} : descriptor.readTransport === 'catalog' ? descriptor.type === 'catalogTemplateVersion' ? versionFields : templateFields :
       {description: body.description, name: body.name, state: body.state,
         ...(descriptor.type === 'registry' ? {serverAddress: null, addressStatus: 'unknown'} : {})};
     assert.deepEqual(found.items[0].fields, expectedFields); assert.deepEqual(detail.fields, expectedFields);
+    if (child) {
+      assert.equal(JSON.stringify([found, detail]).includes(parentContainer.id), false);
+      assert.equal(JSON.stringify([found, detail]).includes(body.uuid), false);
+      for (const [parentUuid, childUuid, instanceId, code] of [
+        [undefined, 'native-child-uuid', parentContainer.id, 'STALE_REFERENCE'],
+        ['parent-container-uuid', undefined, parentContainer.id, 'STALE_REFERENCE'],
+        ['parent-container-uuid', 'native-child-uuid', 'another-parent', null],
+      ]) {
+        parentContainer.uuid = parentUuid; body.uuid = childUuid; body.instanceId = instanceId;
+        const bad = fixture({handle: async ({url, method, data}) => {
+          if (url === 'projects/p1/containers?limit=50') { assert.equal(method, 'GET'); return {body: {data: [parentContainer]}}; }
+          assert.equal(url, 'projects/p1/aiResourceViews'); assert.equal(method, 'POST');
+          return {body: {resourceType: data.resourceType, data: [body]}};
+        }});
+        const parents = await bad.engine.execute('find_resources', {family: 'container', resourceType: 'container'});
+        assert.equal(parents.status, 'succeeded');
+        const result = await bad.engine.execute('find_resources', {...input, parentRef: parents.items[0].resourceRef});
+        if (code) assert.equal(result.code, code);
+        else { assert.equal(result.status, 'succeeded'); assert.deepEqual(result.items, [], 'foreign child is not issued a reference'); }
+        assert.equal(JSON.stringify(result).includes(secret), false);
+        assert.equal(JSON.stringify(result).includes('opaque-server-id'), false);
+      }
+    }
   }
 });
 
