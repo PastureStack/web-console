@@ -5,6 +5,7 @@ import { safeCatalogQuestions, CATALOG_LAUNCH_COLLECTION } from 'ui/utils/ai-cat
 
 export default Service.extend({
   commandContext: service('ai-command-context'),
+  environmentActions: service('ai-environment-actions'),
   access: service(),
   userStore: service('user-store'),
   pendingPlan: null,
@@ -16,6 +17,7 @@ export default Service.extend({
       context: this.get('commandContext').context,
       request: (options) => this.get('userStore').rawRequest(options),
       ensureSession: () => this.get('access').ensureSession(),
+      browserEnvironment: this.get('environmentActions'),
       audit: async (event, captured) => {
         const data = {command: event.command, phase: event.phase, status: event.status, reason: event.reason};
         if ( event.correlationId ) { data.correlationId = event.correlationId; }
@@ -111,6 +113,14 @@ export default Service.extend({
     if ( !plan ) { return Promise.resolve(publicError(new CommandError('STALE_REFERENCE', 'planRef'))); }
     if ( reviewedPlan && (reviewedPlan.planRef !== plan.planRef || reviewedPlan.reviewSignature !== plan.reviewSignature) ) {
       return Promise.resolve(publicError(new CommandError('CONFLICT', 'planRef')));
+    }
+    if (plan.planKind === 'browser-environment') {
+      if (reviewedPlan !== plan) { return Promise.resolve(publicError(new CommandError('CONFLICT'))); }
+      const revision = this._reviewRevision || 0, notice = this.get('operationNotice');
+      const reviewed = () => JSON.stringify([plan.operation, plan.displayPath, plan.displayDiff, plan.expiresAt]);
+      const reviewSignature = reviewed();
+      return this.engine.confirmPlan(plan.planRef, {reviewSignature, currentReview: () => this.get('pendingPlan') === plan &&
+        (this._reviewRevision || 0) === revision && this.get('operationNotice') === notice && reviewed() === reviewSignature});
     }
     if ( plan.humanOnly ) { return this.confirmHumanPlan(plan); }
     return this.engine.confirmPlan(plan.planRef);

@@ -39,6 +39,8 @@ node scripts/test-webmcp-commands.js --filter='upgrade strategy:'
 node --test bridge/test/core.test.mjs
 node --test bridge/test/profile-binding.test.mjs
 node --test bridge/test/audit-detail.test.mjs
+node scripts/test-ai-browser-environment.js
+node scripts/test-ai-environment-model-order.js
 node scripts/test-ai-collaboration-ui.js
 node scripts/test-ai-resource-review-labels.mjs
 node --test scripts/test-ai-resource-confirm-errors.mjs

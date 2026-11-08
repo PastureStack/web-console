@@ -961,13 +961,15 @@ async function main() {
 
   await test('combined preflight notice does not claim an approved Archive or Catalog plan is still unapplied',async()=>{
     const template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');
-    assert.ok(template.includes('{{#unless (or this.catalogAfterPreview this.alreadyApproved)}}'));
-    for(const planKind of ['resource-change','catalog-launch']){
+    assert.ok(template.includes('{{#unless (or this.catalogAfterPreview this.alreadyApproved this.isBrowserEnvironment)}}'));
+    for(const planKind of ['resource-change','catalog-launch','browser-environment']){
       const modal={get,approved:false,isCatalogLaunch:planKind==='catalog-launch',plan:{planKind,operation:planKind==='catalog-launch'?'create_from_catalog':'archive',
         confirmationState:'approved',planStatus:planKind==='catalog-launch'?'needs_user':undefined}};
       const approved=confirmationDefinition.alreadyApproved.call(modal),after=confirmationDefinition.catalogAfterPreview.call(modal);
-      assert.equal(approved,true);assert.equal(!(after||approved),false);
+      const browser=confirmationDefinition.isBrowserEnvironment.call(modal);
+      assert.equal(approved,true);assert.equal(!(after||approved||browser),false);
       modal.plan.confirmationState='pending';assert.equal(confirmationDefinition.alreadyApproved.call(modal),false);
+      assert.equal(!(after||browser),planKind!=='browser-environment','only Browser intents omit the native mutation notice while pending');
     }
   });
 
@@ -1059,7 +1061,7 @@ async function main() {
       assert.equal(confirmationDefinition.catalogAfterPreview.call(modal),status!=='needs_user');
     }
     assert.equal(confirmationDefinition.catalogStatusKey.call({get,plan:{planStatus:'succeeded',verifiedResult:true}}),'apiKeyAudit.outcomes.SUCCEEDED');
-    const template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');assert.ok(template.includes('unless (or this.catalogAfterPreview this.alreadyApproved)'));
+    const template=fs.readFileSync(path.join(app,'components/modal-confirm-ai-upgrade/template.hbs'),'utf8');assert.ok(template.includes('unless (or this.catalogAfterPreview this.alreadyApproved this.isBrowserEnvironment)'));
   });
 
   await test('human inbox cancellation works while tools are off and only clears the verified own plan', async () => {

@@ -73,7 +73,8 @@ export default Service.extend({
     });
   },
 
-  selectDefault: function(desired) {
+  selectDefault: function(desired, options = {}) {
+    options = options || {};
     var self = this;
     var tabSession = this.get('tab-session');
     var candidates = [
@@ -113,13 +114,22 @@ export default Service.extend({
     }
 
     function select(project, overwriteDefault) {
+      if (typeof options.commitSelection === 'function') {
+        let selected;
+        return options.commitSelection(() => { selected = applySelection(project, overwriteDefault); }).then(() => selected);
+      }
+      return applySelection(project, overwriteDefault);
+    }
+
+    function applySelection(project, overwriteDefault) {
+      if (typeof options.assertSelection === 'function') { options.assertSelection(project); }
       if ( project )
       {
         tabSession.set(C.TABSESSION.PROJECT, project.get('id'));
 
         // If there is no default project, set it
         var def = self.get('prefs').get(C.PREFS.PROJECT_DEFAULT);
-        if ( !def || overwriteDefault === true )
+        if ( options.preserveDefault !== true && (!def || overwriteDefault === true) )
         {
           self.get('prefs').set(C.PREFS.PROJECT_DEFAULT, project.get('id'));
         }

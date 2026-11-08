@@ -22,7 +22,8 @@ export default ModalBase.extend({
   approved: false,
   alreadyApproved: computed('approved', 'plan.confirmationState', function() { return this.get('approved') || this.get('plan.confirmationState') === 'approved'; }),
   errors: null,
-  isResourceChange: computed('plan.planKind', function() { return ['resource-change', 'catalog-launch'].includes(this.get('plan.planKind')); }),
+  isResourceChange: computed('plan.planKind', function() { return ['resource-change', 'catalog-launch', 'browser-environment'].includes(this.get('plan.planKind')); }),
+  isBrowserEnvironment: computed('plan.planKind', function() { return this.get('plan.planKind') === 'browser-environment'; }),
   isCatalogLaunch: computed('plan.planKind', function() { return this.get('plan.planKind') === 'catalog-launch'; }),
   catalogIdentityLabels: computed('plan.catalogSummary', 'intl.primaryLocale', function() {
     const summary = this.get('plan.catalogSummary') || {};
@@ -186,17 +187,18 @@ export default ModalBase.extend({
     confirm() {
       if (this.get('submitDisabled')) { return; }
       this.setProperties({saving: true, errors: null});
-      return this.get('commands').confirmPendingPlan(this.get('plan')).then((result) => {
-        if (this.isDestroyed || this.isDestroying) { return; }
+      const reviewedPlan = this.get('plan');
+      return this.get('commands').confirmPendingPlan(reviewedPlan).then((result) => {
+        if (this.isDestroyed || this.isDestroying || this.get('plan') !== reviewedPlan || this.get('stale')) { return; }
         if (result.status !== 'succeeded' || result.confirmationState !== 'approved') {
           this.set('errors', [this.get('intl').t(resourceConfirmationErrorKey(result.code, result.reason))]);
           return;
         }
         this.set('approved', true);
       }, () => {
-        if (!this.isDestroyed && !this.isDestroying) { this.set('errors', [this.get('intl').t('webmcp.failed')]); }
+        if (!this.isDestroyed && !this.isDestroying && this.get('plan') === reviewedPlan && !this.get('stale')) { this.set('errors', [this.get('intl').t('webmcp.failed')]); }
       }).finally(() => {
-        if (!this.isDestroyed && !this.isDestroying) { this.set('saving', false); }
+        if (!this.isDestroyed && !this.isDestroying && this.get('plan') === reviewedPlan && !this.get('stale')) { this.set('saving', false); }
       });
     },
     cancel() {

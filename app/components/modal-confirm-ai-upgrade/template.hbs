@@ -43,7 +43,7 @@
     <button type="button" class="btn btn-primary" disabled={{this.savingHumanInputs}} {{action "completeInputs"}} data-testid="ai-catalog-complete-inputs">{{t "webmcp.catalogCompleteInputs"}}</button>
   </section>{{/if}}
 {{/if}}
-{{#unless (or this.catalogAfterPreview this.alreadyApproved)}}<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>{{/unless}}
+{{#unless (or this.catalogAfterPreview this.alreadyApproved this.isBrowserEnvironment)}}<div class="alert alert-warning">{{#if this.isResourceChange}}{{t "webmcp.resourceChangeNotice"}}{{else}}{{t "webmcp.notice"}}{{/if}}</div>{{/unless}}
 {{#if this.reviewLabels.localVolumeCreateNotice}}<div class="alert alert-warning" data-testid="ai-volume-create-logical-only">{{this.reviewLabels.localVolumeCreateNotice}}</div>{{/if}}
 {{#if this.reviewLabels.createsStopped}}<div class="alert alert-info" data-testid="ai-resource-create-stopped">{{t "webmcp.createStoppedNotice"}}</div>{{/if}}
 {{#if this.reviewLabels.externalHealthCheckNotice}}<div class="alert alert-info" data-testid="ai-external-health-check-lb-only">{{this.reviewLabels.externalHealthCheckNotice}}</div>{{/if}}
@@ -53,11 +53,11 @@
 {{#if this.reviewLabels.stackTargetUnavailable}}<div class="alert alert-warning" data-testid="ai-resource-stack-unavailable">
   {{#if this.loadingReviewStack}}<span role="status">{{t "generic.loading"}}</span>{{else}}<button type="button" class="btn btn-link" {{action "retryReviewStack"}}>{{t "action.retry"}}</button>{{/if}}
 </div>{{/if}}
-{{#if this.alreadyApproved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{t "webmcp.approved"}}</div>{{/if}}
+{{#if this.alreadyApproved}}<div class="alert alert-success" role="status" data-testid="ai-upgrade-approved">{{#if this.isBrowserEnvironment}}{{t "generic.saved"}}{{else}}{{t "webmcp.approved"}}{{/if}}</div>{{/if}}
 {{top-errors errors=this.errors}}
 <div class="footer-actions">
   <button type="button" class="btn btn-primary" disabled={{this.submitDisabled}} {{action "confirm"}} data-testid="ai-upgrade-confirm">
-    {{#if this.saving}}{{t "saveCancel.saving"}}{{else}}{{t "webmcp.approve"}}{{/if}}
+    {{#if this.saving}}{{t "saveCancel.saving"}}{{else}}{{#if this.isBrowserEnvironment}}{{this.reviewLabels.operationLabel}}{{else}}{{t "webmcp.approve"}}{{/if}}{{/if}}
   </button>
   <button type="button" class="btn btn-link" disabled={{or this.saving this.savingHumanInputs}} {{action "cancel"}} data-testid="ai-upgrade-cancel">{{t "generic.closeModal"}}</button>
 </div>

@@ -41,5 +41,5 @@ const [contract, context, engine] = await Promise.all([
 export const {COMMANDS, CommandError, PUBLIC_ERROR_CODES, publicError} = contract;
 export const {CommandContext} = context;
 export const {CommandEngine, containerNetworkReview} = engine;
-export const {resourceDescriptors} = await import(moduleUrl('ai-resource-registry'));
+export const {resourceDescriptors, RESOURCE_CHANGES, NATIVE_CHANGE_OPERATIONS, BROWSER_LOCAL_INTENTS} = await import(moduleUrl('ai-resource-registry'));
 export const {safeCatalogQuestions, catalogLaunchPlanSummary} = await import(moduleUrl('ai-catalog-launch'));
