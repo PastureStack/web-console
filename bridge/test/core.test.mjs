@@ -14,7 +14,7 @@ test('external TCP create uses the shared bridge schema owner and immutable huma
   let plan, writes = 0;
   const bridge = await createBridge(config, {fetcher: async (url, options) => {
     const data = options.body ? JSON.parse(options.body) : undefined; requests.push({path: url.pathname, search: url.search, data});
-    if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', name: 'Default', state: 'active'}]});
+    if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', uuid: 'adminProject', name: 'Default', state: 'active'}]});
     if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'request-' + requests.length});
     if (url.pathname.endsWith('/aiResourceViews')) return response({resourceType: 'stack', data: [{id: 'st1', name: 'Stack', accountId: 'p1'}]});
     if (url.pathname.endsWith('/aiResourceChangePlans')) {
@@ -67,7 +67,7 @@ test('upgrade strategy uses the shared bridge engine and exact preview with sepa
     displayPath: 'Default/Stack/web', currentImage: 'docker:app:1', requestedImage: 'docker:app:2', upgradeStrategy: strategy};
   const bridge = await createBridge(config, {fetcher: async (url, options) => {
     const data = options.body ? JSON.parse(options.body) : undefined; requests.push({path: url.pathname, search: url.search, data});
-    if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', name: 'Default', state: 'active'}]});
+    if (url.pathname.endsWith('/projects')) return response({data: [{id: 'p1', uuid: 'adminProject', name: 'Default', state: 'active'}]});
     if (url.pathname.endsWith('/aiToolCallEvents')) return response({accepted: true, requestId: 'request-' + requests.length});
     if (url.pathname.endsWith('/services')) return response({data: [{id: 's1', accountId: 'p1', stackId: 'st1', name: 'web'}]});
     if (url.pathname.endsWith('/stacks')) return response({data: [{id: 'st1', accountId: 'p1', name: 'Stack'}]});
@@ -192,7 +192,7 @@ test('audit admission reports real transport auth and revision failures without 
     let admitted=false;const calls=[];
     const bridge=await createBridge(config,{fetcher:async(url,options)=>{
       calls.push({path:url.pathname,method:options.method,revision:options.headers['X-PastureStack-Key-Expected-Revision']});
-      if(!admitted)return response({data:[{id:'p1',name:'Default',state:'active'}]});
+      if(!admitted)return response({data:[{id:'p1',uuid:'adminProject',name:'Default',state:'active'}]});
       return status===200?response({accepted:true,requestId:'ack'},'2'):
         new Response(JSON.stringify({code,message:secret}),{status});
     }});
@@ -211,7 +211,7 @@ test('shared business engine lists scoped refs and reports authorization failure
   const calls=[];
   const bridge=await createBridge(config,{fetcher:async(url,opts)=>{
     calls.push({url:String(url),method:opts.method});
-    if(url.pathname.endsWith('/projects'))return response({data:[{id:'p1',name:'Default',state:'active'}]});
+    if(url.pathname.endsWith('/projects'))return response({data:[{id:'p1',uuid:'adminProject',name:'Default',state:'active'}]});
     if(url.pathname.endsWith('/aiToolCallEvents'))return response({accepted:true,requestId:'request-'+calls.length});
     if(url.pathname.endsWith('/services'))return response({data:[{id:'s1',accountId:'p1',stackId:'st1',name:'web',description:null}]});
     if(url.pathname.endsWith('/stacks'))return response({data:[{id:'st1',accountId:'p1',name:'Stack'}]});

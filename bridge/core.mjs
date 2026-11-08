@@ -100,6 +100,7 @@ export function allowedRequest(path, method, projectId, bootstrap = false) {
   const parsed = new URL(path, 'https://local.invalid/');
   if (parsed.origin !== 'https://local.invalid' || parsed.hash || parsed.pathname.slice(1) !== path.split('?')[0]) return false;
   if (path === 'pasturestack/ai-audit-queries' && method === 'POST') return true;
+  if (bootstrap && path === 'aiResourceViews' && method === 'POST') return true;
   if (method === 'POST' && ['aiResourceViews', 'aiCatalogMetadataViews', 'aiCatalogStackLaunchOptions'].some(kind => parsed.pathname === `/projects/${projectId}/${kind}`) && !parsed.search) return true;
   if (bootstrap && method === 'GET' && parsed.pathname === '/projects') {
     return [...parsed.searchParams.keys()].every(key => ['limit', 'marker', 'all'].includes(key)) &&
@@ -128,6 +129,14 @@ export function allowedRequest(path, method, projectId, bootstrap = false) {
   return !id && !parsed.search && ['aiServiceDescriptionUpdates', 'aiToolCallEvents'].includes(kind);
 }
 
+function bridgeContextInput(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data) ||
+      data.resourceType !== 'project' || data.view !== 'bridge_context') return false;
+  const fields = Object.keys(data).sort().join(',');
+  return fields === 'resourceId,resourceType,view' && validProjectId(data.resourceId) ||
+    fields === 'query,resourceType,view' && typeof data.query === 'string' && !!data.query.trim() && data.query.length <= 256;
+}
+
 export function createTransport(config, fetcher = fetch) {
   const base = new URL(config.endpoint + '/v2-beta/');
   // The credential never enters tool arguments, returned data, URLs, or logs.
@@ -135,6 +144,8 @@ export function createTransport(config, fetcher = fetch) {
   let verifiedRevision = null;
   return async function request({url, method = 'GET', data, signal}, projectId, bootstrap = false) {
     if (!allowedRequest(url, method, projectId, bootstrap)) throw new CommandError('FORBIDDEN');
+    // This global route is private environment navigation, never the tools' generic read path.
+    if (url === 'aiResourceViews' && (verifiedRevision === null || !bridgeContextInput(data))) throw new CommandError('FORBIDDEN');
     const deadline = url === 'pasturestack/ai-audit-queries' ? 55000 : 15000;
     const combined = signal ? AbortSignal.any([signal, AbortSignal.timeout(deadline)]) : AbortSignal.timeout(deadline);
     let response;
@@ -204,9 +215,45 @@ async function visibleByName(config, transport) {
   return selected;
 }
 
+async function contextProjects(transport, selector, signal) {
+  const {body} = await transport({url: 'aiResourceViews', method: 'POST', signal,
+    data: {resourceType: 'project', view: 'bridge_context', ...selector}}, null, true);
+  if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).sort().join(',') !== 'data,id,nextMarker,resourceType' ||
+      typeof body.id !== 'string' || !body.id || body.id.length > 128 || body.resourceType !== 'project' ||
+      body.nextMarker !== null || !Array.isArray(body.data) || body.data.length > 50) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  const rows = body.data;
+  for (const row of rows) {
+    if (!row || typeof row !== 'object' || Array.isArray(row) || Object.keys(row).sort().join(',') !== 'id,name,state,uuid' || !validProjectId(row.id) || !validProjectUuid(row.uuid)) {
+      throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+    }
+    verifyProject(row, selector.resourceId || row.id);
+    if (selector.query !== undefined && row.name !== selector.query) throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  }
+  if (new Set(rows.map(row => row.id)).size !== rows.length || new Set(rows.map(row => row.uuid)).size !== rows.length) {
+    throw new SetupError('INVALID_ENVIRONMENT_RESPONSE');
+  }
+  return rows;
+}
+
+async function projectsByName(config, transport) {
+  const projects = await visibleByName(config, transport);
+  // Preserve the ordinary authorized Project list and its human description/date picker.
+  // Only a successful, filtered-empty discovery may ask for scoped navigation identities.
+  return projects.length ? {projects, scoped: false} :
+    {projects: await contextProjects(transport, {query: config.environment}), scoped: true};
+}
+
 async function exactProject(transport, id, uuid, signal, bootstrap = false) {
-  const {body} = await transport({url: 'projects/' + id, signal}, id, bootstrap);
-  return verifyProject(body, id, uuid);
+  try {
+    const {body} = await transport({url: 'projects/' + id, signal}, id, bootstrap);
+    return {project: verifyProject(body, id, uuid), scoped: false};
+  } catch (error) {
+    // Never turn authentication, explicit policy/owner denials, hidden IDs or UUID drift into a fallback.
+    if (error?.status !== 403 || error.body?.code !== 'KeyScopeDenied') throw error;
+    const rows = await contextProjects(transport, {resourceId: id}, signal);
+    if (rows.length !== 1) throw new SetupError('ENVIRONMENT_BINDING_MISMATCH');
+    return {project: verifyProject(rows[0], id, uuid), scoped: true};
+  }
 }
 
 async function boundProject(transport, binding) {
@@ -222,19 +269,20 @@ export async function prepareBoundProfile(input, {fetcher, select} = {}) {
   const config = validateConfig(input), transport = createTransport(config, fetcher);
   let project;
   if (config.environmentBinding) {
-    project = await boundProject(transport, config.environmentBinding);
+    ({project} = await boundProject(transport, config.environmentBinding));
   } else {
-    const candidates = await visibleByName(config, transport);
+    const {projects: candidates, scoped} = await projectsByName(config, transport);
     if (!candidates.length) throw new SetupError('ENVIRONMENT_NOT_VISIBLE');
     let index = 0;
     if (candidates.length > 1) {
+      if (scoped) throw new SetupError('AMBIGUOUS_ENVIRONMENT');
       if (typeof select !== 'function') throw new SetupError('AMBIGUOUS_ENVIRONMENT');
       index = await select(candidates.map(item => Object.freeze({name: item.name, description: item.description, created: item.created})));
       if (index === null) throw new SetupError('PROFILE_BINDING_CANCELLED');
       if (!Number.isInteger(index) || index < 0 || index >= candidates.length) throw new SetupError('AMBIGUOUS_ENVIRONMENT');
     }
     const selected = candidates[index];
-    project = await exactProject(transport, selected.id, selected.uuid, undefined, true);
+    ({project} = await exactProject(transport, selected.id, selected.uuid, undefined, true));
     if (project.name !== config.environment) throw new SetupError('ENVIRONMENT_SELECTION_CHANGED');
   }
   if (!validProjectUuid(project.uuid)) throw new SetupError('ENVIRONMENT_IDENTITY_UNAVAILABLE');
@@ -245,14 +293,17 @@ export async function prepareBoundProfile(input, {fetcher, select} = {}) {
 export async function createBridge(config, {fetcher, random = () => randomBytes(24).toString('hex')} = {}) {
   config = validateConfig(config);
   const transport = createTransport(config, fetcher);
-  let project;
+  let project, scopedIdentity = false;
   if (config.environmentBinding) {
-    project = await boundProject(transport, config.environmentBinding);
+    ({project, scoped: scopedIdentity} = await boundProject(transport, config.environmentBinding));
   } else {
-    const selected = await visibleByName(config, transport);
+    const {projects: selected, scoped} = await projectsByName(config, transport);
     if (selected.length !== 1) throw new SetupError(selected.length ? 'AMBIGUOUS_ENVIRONMENT' : 'ENVIRONMENT_NOT_VISIBLE');
     project = selected[0];
+    scopedIdentity = scoped;
   }
+  // Legacy name-based profiles also pin the first server UUID in this process.
+  if (!validProjectUuid(project.uuid)) throw new SetupError('ENVIRONMENT_IDENTITY_UNAVAILABLE');
   const snapshot = {generation: random(), accountId: config.accessKey, projectId: project.id,
     projectName: project.name, schemaProjectId: project.id, schemaGeneration: 1, route: 'stdio'};
   const context = new CommandContext(() => snapshot, random);
@@ -269,8 +320,9 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
       const deadline = AbortSignal.timeout(Math.max(1, Math.min(1000, remaining)));
       const signal = observation?.signal ? AbortSignal.any([observation.signal, deadline]) : deadline;
       const captured = context.capture();
-      const current = await exactProject(transport, project.id, config.environmentBinding.uuid, signal);
+      const {project: current, scoped} = await exactProject(transport, project.id, project.uuid, signal);
       context.assertCurrent(captured, signal);
+      scopedIdentity ||= scoped;
       snapshot.projectName = current.name;
       nameFailure = null; nameRetryable = false;
     } catch (error) {
@@ -288,7 +340,10 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
   };
   const canRenameSelectedProject = async ({name, signal}) => {
     let current;
-    try { current = await exactProject(transport, project.id, config.environmentBinding && config.environmentBinding.uuid, signal); }
+    try {
+      const selected = await exactProject(transport, project.id, project.uuid, signal);
+      current = selected.project; scopedIdentity ||= selected.scoped;
+    }
     catch (error) {
       throw identityFailure(error);
     }
@@ -298,6 +353,16 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
     if (nameFailure) {
       if (!nameRetryable) throw nameFailure;
       await refreshName(null); // One read-only recovery before this command's business dispatch.
+    }
+    if (scopedIdentity) {
+      const captured = context.capture();
+      const rows = await contextProjects(transport, {resourceId: project.id});
+      if (rows.length !== 1) throw new CommandError('CONTEXT_CHANGED');
+      let current;
+      try { current = verifyProject(rows[0], project.id, project.uuid); }
+      catch (error) { throw identityFailure(error); }
+      context.assertCurrent(captured);
+      snapshot.projectName = current.name;
     }
   }, canRenameSelectedProject,
     onPlan: summary => {

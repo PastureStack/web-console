@@ -18,6 +18,8 @@ non-sensitive linked-credential count. Stop an active Registry through a separat
 approved plan, then query and preview removal again. Native credential cleanup,
 Full/legacy behavior, live role/Key ceilings and human confirmation stay with the
 existing owners. The bridge cannot approve or directly remove credentials.
+Scoped Keys can resolve the selected environment's identity through an already
+readable Stack or Service without gaining ordinary Project read permission.
 Browser environment switching and personal-default requests remain human-console
 handoffs. Server assembly, deployment and affected native acceptance remain
 separate; component publication does not update a running Server. See the
@@ -159,9 +161,10 @@ local file readable only by the operating-system account running the client:
 ```
 
 The exact environment name must identify one visible active environment. A
-default-deny Key needs an exact read rule for that environment resource as well
-as separate rules for allowed workloads. An environment-resource rule does not
-grant access to all stacks. Do not put credentials in prompts, command-line
+default-deny Key can resolve its identity through an already readable Stack or
+Service; explicit parent/global read denials still win. Ordinary Project details
+and changes retain their own permissions, and an environment-resource rule does
+not grant access to all stacks. Do not put credentials in prompts, command-line
 arguments, repository files or URLs. HTTPS is required except for loopback tests.
 
 To allow this bridge to rename its selected environment permanently, first
@@ -197,6 +200,17 @@ Project listing, including private environments visible to a native administrato
 who is not a member. This query does not grant access: the Key remains limited by
 its current policy and the account's live permissions. Missing and same-name
 ambiguous environments still fail without selecting a target.
+
+If that authorized listing is empty, or the exact Project read returns only
+`KeyScopeDenied`, the candidate uses Engine's closed, read-only environment
+identity view. It returns only the current name, ID, UUID and active state after
+live Key, role and readable-workload checks. It cannot read Project details,
+approve changes or retry an unrelated denied resource read. Normal Project
+access keeps the existing description/date picker. Indistinguishable scoped
+same-name results fail without an index choice; ask a person to use an already
+verified bound profile or resolve the naming ambiguity through their authorized
+UI. Do not broaden the Key or ask a model to supply IDs. Both profile formats pin
+the first server UUID; replacement, revocation and revision changes fail closed.
 
 Change your MCP client's `PASTURESTACK_BRIDGE_CONFIG` to the new private profile
 and reconnect normally. The legacy four-field profile remains supported, but

@@ -32,6 +32,8 @@ Web Console **1.6.232** / Bridge **0.2.34** is prepared for matching Engine
 its linked credentials through the existing native owner. An active Registry
 must first be stopped through its own approved plan; removal needs a fresh
 preview and human confirmation. No image, container or volume is removed.
+The Bridge can also resolve its selected environment through a readable Stack
+or Service without granting Project details or broader Key access.
 
 This candidate is not published or qualified. See the
 [candidate note](docs/releases/web-console-1.6.232.md). Server assembly,

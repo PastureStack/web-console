@@ -16,6 +16,12 @@ human approval remain binding. No credential values, external-account revocation
 image, container or volume deletion enter the typed request. Primary/secondary
 startup arguments and the ordinary/Catalog Stack distinction remain unchanged.
 
+Bridge startup preserves ordinary Project access and its friendly same-name
+picker. A closed environment-identity fallback supports readable Stack/Service
+scopes without changing Project GET/PUT or granting broader access. Explicit
+denials, live membership/revision checks and the first server UUID remain binding;
+indistinguishable scoped names fail closed. No public tool or parameter is added.
+
 Source preparation is not CI, packaged SDK, publication or native acceptance.
 All are pending for this candidate; the published baseline remains 231/033 below.
 See the [candidate note](docs/releases/web-console-1.6.232.md).

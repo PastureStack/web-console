@@ -69,7 +69,7 @@ async function fixture(dir){
     const fields=Object.fromEntries(inputs[name].map(field=>[field,{create:true}]));
     if(name==='aiToolCallEvent'){fields.command.options=[...COMMANDS.map(x=>x.name),'unknown'];fields.reason.options=[...PUBLIC_ERROR_CODES,'NONE'];}
     if(name==='aiResourceView'){
-      Object.assign(fields.view,{type:'string',maxLength:32,options:['stack_graph','container_logs']});
+      Object.assign(fields.view,{type:'string',maxLength:32,options:['stack_graph','container_logs','bridge_context']});
       Object.assign(fields.tailLines,{type:'int',min:1,max:200});
       fields.logs={type:'map[json]',create:false};
     }
@@ -126,7 +126,13 @@ async function fixture(dir){
   return schema;
 }
 test('checker reads the fixed contract in an explicitly selected Engine checkout',async t=>{
-  const dir=await temp(t);await fixture(dir);await checkEngineContract(dir);
+  const dir=await temp(t),schema=await fixture(dir);await checkEngineContract(dir);
+  const file=path.join(schema,'base/aiResourceView.json'),original=await fs.readFile(file,'utf8');
+  for(const options of [['stack_graph','container_logs'],['stack_graph','container_logs','bridge_context','generic_proxy']]){
+    const value=JSON.parse(original);value.resourceFields.view.options=options;await fs.writeFile(file,JSON.stringify(value));
+    await assert.rejects(checkEngineContract(dir),/Expected values to be strictly deep-equal/);
+  }
+  await fs.writeFile(file,original);
 });
 
 test('upgrade strategy contract rejects precision bounds required fields and writable review output drift',async t=>{
