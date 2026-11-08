@@ -7,8 +7,8 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-[Bridge **0.2.29** / Web Console **1.6.227**](https://github.com/PastureStack/web-console/releases/tag/1.6.227)
-is published and qualified against Engine **0.183.387**. Its source/SBOM,
+[Bridge **0.2.30** / Web Console **1.6.228**](https://github.com/PastureStack/web-console/releases/tag/1.6.228)
+is published and qualified against Engine **0.183.388**. Its source/SBOM,
 original assets and real SDK handshake remain recorded separately from native
 workflow acceptance.
 
@@ -18,9 +18,9 @@ switch and a fresh resource reference; membership, networking, authentication
 and lifecycle changes remain in their normal human workflows.
 
 The twelve shared typed tools support resource discovery, safe metadata reads
-and human-reviewed lifecycle plans. Published Web Console 1.6.227 supports Host name/description
-and explicit custom-name reset. The 1.6.228 candidate adds separately approved Host
-start/stop scheduling plans; infrastructure, evacuation, Host removal and daemon
+and human-reviewed lifecycle plans. Web Console 1.6.228 supports Host name/description,
+explicit custom-name reset and separately approved Host start/stop scheduling
+plans; infrastructure, evacuation, Host removal and daemon
 or Agent actions remain in their normal human workflows.
 Host detail shows at most fifty freshly readable container references. Host and
 Volume detail can include a separately authorized Stack name, including native
@@ -100,17 +100,16 @@ native browser support. The operator must separately opt in to
 
 ## Install the matching release
 
-Current published Web Console **1.6.227** / Bridge **0.2.29** is qualified with
-Engine **0.183.387**. Use the current qualified Server assembly.
+Current published Web Console **1.6.228** / Bridge **0.2.30** is qualified with
+minimum and matching Engine **0.183.388**. Use a qualified matching Server assembly.
 
-This checkout is the **1.6.228 / 0.2.30 source candidate**, requiring minimum and
-matching Engine **0.183.388**. Host start/stop maps only to native scheduling
+Host start/stop maps only to native scheduling
 activate/deactivate, with empty parameters and human approval. It does not stop
 Docker, change the Agent, evacuate or remove workloads. Existing roles/Keys,
 exact references, CAS, and all other typed boundaries remain authoritative.
-The normal CI, immutable publication and actual new SDK handshake are pending.
-The commands below select this candidate's matching archive after publication;
-until then use the current published installation guide.
+Original CI, immutable publication and the packaged SDK handshake passed.
+The commands below select the published matching archive; they do not update a
+running Server or establish affected native workflow acceptance.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.228
