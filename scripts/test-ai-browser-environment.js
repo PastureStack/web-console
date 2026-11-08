@@ -62,7 +62,7 @@ async function main() {
     let sequence = 0;
     const snapshot = {generation: 'g1', accountId: 'actor', projectId: 'p1', projectName: 'same-name', schemaProjectId: 'p1', schemaGeneration: 1, route: '/env/p1'};
     const context = new CommandContext(() => ({...snapshot, schemaProjectId: projects ? projects.schemaProjectId : snapshot.schemaProjectId, schemaGeneration: projects ? projects.schemaLoadGeneration : snapshot.schemaGeneration}), () => `ref${++sequence}`); context.setMode('enabled');
-    const state = {rows: [], writes: [], requests: [], notifications: 0, changes: 0, cookie: 'cookie-one', disconnect: gate(), refresh: gate(), fault: null};
+    const state = {rows: [], writes: [], writeOptions: [], requests: [], notifications: 0, changes: 0, cookie: 'cookie-one', disconnect: gate(), refresh: gate(), fault: null};
     const projects = Object.assign({}, projectsOwner, {get, set, schemaLoadGeneration: 1, incrementProperty(key) { return ++this[key]; },
       current: row({id: 'p1', uuid: 'project-one', kind: 'project', description: 'current candidate', name: 'same-name', state: 'active'}),
       schemaProjectId: 'p1', store: {}, access: {admin: false}, 'tab-session': {get: () => state.tabProject, set: (_key, value) => { state.tabProject = value; }}});
@@ -77,7 +77,7 @@ async function main() {
         const value = callback(); assert.equal(Boolean(value && value.then), false); return value; }};
     function record(values) {
       const value = row({...values});
-      value.save = async () => { state.writes.push({...value}); if (state.saveGate) await state.saveGate.promise;
+      value.save = async options => { state.writes.push({...value}); state.writeOptions.push(options); if (state.saveGate) await state.saveGate.promise;
         if (state.fault === 'save') throw Error('PRIVATE SERVER ERROR');
         const saved = {id: value.id || 'pref-one', name: value.name, accountId: 'actor', value: value.value};
         state.rows = [saved]; return record(saved); };
@@ -167,6 +167,34 @@ async function main() {
     const same = fixture(); same.state.rows = [{id: 'pref-one', accountId: 'actor', name: 'defaultProjectId', value: '"p2"'}];
     await same.preview('set_default'); const settled = await same.service.confirmPendingPlan(same.service.pendingPlan);
     assert.equal(settled.status, 'succeeded'); assert.equal(settled.readbackComplete, true); assert.equal(same.state.writes.length, 0);
+  });
+  await test('preference requests bind the original actor without shared cookies or option reuse', async () => {
+    for (const existing of [false, true]) {
+      const f = fixture();
+      if (existing) f.state.rows = [{id: 'pref-one', accountId: 'actor', name: 'defaultProjectId', value: '"p1"'}];
+      await f.preview('set_default');
+      const result = await f.service.confirmPendingPlan(f.service.pendingPlan);
+      assert.equal(result.status, 'succeeded');
+      const requests = [...f.state.requests.filter(request => request.url === 'userpreferences'), ...f.state.writeOptions];
+      assert.equal(requests.length, 4, 'preview, pre-write read, write and readback retain the same actor');
+      for (const request of requests) {
+        assert.equal(request.credentials, 'omit');
+        assert.equal(request.headers.Authorization, 'Bearer cookie-one');
+      }
+      assert.equal(new Set(requests.map(request => request.headers)).size, requests.length, 'each request owns its header object');
+      assert.equal(JSON.stringify(result).includes('cookie-one'), false);
+    }
+    const f = fixture(); await f.preview('set_default'); f.state.saveGate = gate();
+    const submitted = f.service.confirmPendingPlan(f.service.pendingPlan); await tick();
+    assert.equal(f.state.writes.length, 1);
+    f.state.cookie = 'cookie-two'; f.auth.tokenSnapshot = 'cookie-two'; f.snapshot.accountId = 'other-actor';
+    const newer = {planRef: 'new-actor-review'}; f.service.publishPlan(newer);
+    f.state.saveGate.resolve(); const result = await submitted;
+    assert.equal(result.status, 'unknown'); assert.equal(f.state.writes.length, 1);
+    assert.equal(f.state.writeOptions[0].headers.Authorization, 'Bearer cookie-one');
+    assert.equal(f.state.writeOptions[0].credentials, 'omit');
+    assert.equal(f.state.requests.filter(request => request.url === 'userpreferences').length, 2, 'no new-actor readback or automatic retry');
+    assert.equal(f.service.pendingPlan, newer);
   });
   await test('human review revision generation expiry and repeated confirms cannot submit stale or duplicate writes', async () => {
     for (const change of ['generation', 'account', 'cookie', 'adopt', 'review', 'notice', 'payload', 'expiry']) {

@@ -95,9 +95,10 @@ export default Service.extend({
 
   // The original preference setter remains synchronous for legacy UI callers.
   // This explicit path settles only the current user's default-environment write.
-  async readDefaultProject(accountId) {
+  async readDefaultProject(accountId, actorOptions) {
     const rows = await this.get('userStore').find('userpreference', null, {
       url: 'userpreferences', filter: {name: C.PREFS.PROJECT_DEFAULT}, forceReload: true,
+      ...actorOptions(),
     });
     if (!rows || typeof rows.filter !== 'function') { throw new Error('Default preference unavailable'); }
     const matches = rows.filter((row) => row.get('name') === C.PREFS.PROJECT_DEFAULT && !row.get('removed'));
@@ -110,17 +111,17 @@ export default Service.extend({
     return {id: record.get('id'), projectId, record};
   },
 
-  async saveDefaultProject(projectId, accountId, expected, assertCurrent, commit) {
-    const before = await this.readDefaultProject(accountId); assertCurrent();
+  async saveDefaultProject(projectId, accountId, expected, assertCurrent, commit, actorOptions) {
+    const before = await this.readDefaultProject(accountId, actorOptions); assertCurrent();
     if (before.id !== expected.id || before.projectId !== expected.projectId) { throw new Error('Default preference changed'); }
     const record = before.record || this.get('userStore').createRecord({type: 'userPreference', name: C.PREFS.PROJECT_DEFAULT});
     if (before.projectId !== projectId) {
       let saving;
-      await commit(() => { record.set('value', JSON.stringify(projectId)); saving = record.save(); });
+      await commit(() => { record.set('value', JSON.stringify(projectId)); saving = record.save(actorOptions()); });
       await saving;
     }
     assertCurrent();
-    const after = await this.readDefaultProject(accountId); assertCurrent();
+    const after = await this.readDefaultProject(accountId, actorOptions); assertCurrent();
     if (!after.record || after.projectId !== projectId) { throw new Error('Default preference readback failed'); }
     this.notifyPropertyChange(C.PREFS.PROJECT_DEFAULT);
     return after;

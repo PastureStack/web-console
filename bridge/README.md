@@ -7,6 +7,13 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
+The development source is Bridge **0.2.31** / Web Console **1.6.229**, matching
+Engine **0.183.388**. Browser environment switching and personal-default requests
+return a human console handoff, never a bridge-side mutation. This candidate has
+not yet completed publication. The commands below match this checkout and are
+usable only after that release is published. For the current published component,
+use its release page. [Candidate contract](../docs/releases/web-console-1.6.229.md).
+
 [Bridge **0.2.30** / Web Console **1.6.228**](https://github.com/PastureStack/web-console/releases/tag/1.6.228)
 is published and qualified against Engine **0.183.388**. Its source/SBOM,
 original assets and real SDK handshake remain recorded separately from native
@@ -108,12 +115,13 @@ activate/deactivate, with empty parameters and human approval. It does not stop
 Docker, change the Agent, evacuate or remove workloads. Existing roles/Keys,
 exact references, CAS, and all other typed boundaries remain authoritative.
 Original CI, immutable publication and the packaged SDK handshake passed.
-The commands below select the published matching archive; they do not update a
-running Server or establish affected native workflow acceptance.
+This checkout's commands select candidate Web Console **1.6.229** / Bridge
+**0.2.31** only after publication. They do not update a running Server or establish
+affected native workflow acceptance.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.228
-BRIDGE_VERSION=0.2.30
+WEB_CONSOLE_VERSION=1.6.229
+BRIDGE_VERSION=0.2.31
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"

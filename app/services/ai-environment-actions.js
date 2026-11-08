@@ -37,6 +37,7 @@ export default Service.extend({
 
   async preview(selection, captured) {
     const originalToken = this.get('authSession.tokenSnapshot');
+    const actorOptions = () => ({credentials: 'omit', headers: {Authorization: 'Bearer ' + originalToken}});
     const check = () => { this.get('commandContext').context.assertCurrent(captured); this.assertSession(captured, originalToken); };
     check();
     const target = await this.selected(selection.id, selection.operation); check();
@@ -44,7 +45,7 @@ export default Service.extend({
     if (source.id !== captured.projectId) { throw new CommandError('CONTEXT_CHANGED'); }
     let preference = null, before = captured.projectName;
     if (selection.operation === 'set_default') {
-      preference = await this.get('prefs').readDefaultProject(captured.accountId); check();
+      preference = await this.get('prefs').readDefaultProject(captured.accountId, actorOptions); check();
       before = this.get('intl').t('generic.none');
       if (preference.projectId) {
         try { before = (await this.selected(preference.projectId, 'switch_context')).name; }
@@ -63,6 +64,7 @@ export default Service.extend({
 
   async confirm(binding, captured, currentReview) {
     const originalToken = privateSessionPins.get(binding);
+    const actorOptions = () => ({credentials: 'omit', headers: {Authorization: 'Bearer ' + originalToken}});
     const check = () => {
       if (!currentReview()) { throw new CommandError('CONFLICT'); }
       this.get('commandContext').context.assertCurrent(captured); this.assertSession(captured, originalToken);
@@ -75,7 +77,7 @@ export default Service.extend({
       if (JSON.stringify(target) !== JSON.stringify(binding.target)) { throw new CommandError('CONFLICT'); }
       const commit = (action) => this.get('authSession').runPassiveSynchronous(() => { check(); submitted = true; action(); });
       if (binding.operation === 'set_default') {
-        await this.get('prefs').saveDefaultProject(target.id, captured.accountId, binding.preference, check, commit);
+        await this.get('prefs').saveDefaultProject(target.id, captured.accountId, binding.preference, check, commit, actorOptions);
         check();
         const settled = await this.selected(target.id, binding.operation); check();
         if (JSON.stringify(settled) !== JSON.stringify(target)) { throw new CommandError('CONFLICT'); }

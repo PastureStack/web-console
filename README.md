@@ -31,6 +31,15 @@ acceptance are separate and remain pending or partial. Component publication doe
 not update a running Server or establish all 243 frontend coverage.
 See the [release note](docs/releases/web-console-1.6.228.md) for component evidence.
 
+## Development candidate
+
+Web Console **1.6.229** / Bridge **0.2.31** adds human-reviewed browser environment
+switching and personal default-environment selection through the existing twelve
+tools. The bridge returns a console handoff for these browser-only actions; it
+cannot change the browser or approve its own request. Matching Engine remains
+**0.183.388**. This source candidate is not yet a published release. See the
+[candidate contract](docs/releases/web-console-1.6.229.md).
+
 ## Features and operator guides
 
 - [Experimental AI collaboration](docs/webmcp.md): twelve typed tools for
