@@ -29,6 +29,14 @@ module('Unit | Service | AI environment actions actual owner', function(hooks) {
     app.register('service:ai-environment-actions', AiEnvironmentActions);
     app.register('service:prefs', PrefsService);
     app.register('service:projects', ProjectsService);
+    // ProjectsService validates each declared injection when the real owner
+    // instantiates it, including orchestration services unused by this project.
+    app.register('service:access', Service.extend({enabled: true, admin: false}));
+    app.register('service:tab-session', Service.extend());
+    app.register('service:k8s', Service.extend());
+    app.register('service:swarm', Service.extend());
+    app.register('service:mesos', Service.extend());
+    app.register('service:store', Service.extend());
     app.register('service:auth-session', Service.extend({
       accountId: '1a1', tokenSnapshot: 'token-one',
       capture() { return state.generation; },
