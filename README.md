@@ -10,46 +10,20 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.230** / Bridge **0.2.32**](https://github.com/PastureStack/web-console/releases/tag/1.6.230)
-is published for matching Engine **0.183.389**. Stack rollback also requires
-Compose **0.14.44**. Original CI, packaged SDK handshake, all thirteen anonymous
-assets and native release attestation passed. See the
-[release note](docs/releases/web-console-1.6.230.md); deploy a qualified matching assembly through the
+[Web Console **1.6.231** / Bridge **0.2.33**](https://github.com/PastureStack/web-console/releases/tag/1.6.231)
+is published for matching Engine **0.183.390**. Stack rollback also requires
+Compose **0.14.44**. See the
+[release note](docs/releases/web-console-1.6.231.md); deploy a qualified matching assembly through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start).
 
-The existing twelve tools support human-reviewed browser environment switching
-and personal default-environment selection. Switching does not change the personal
-default. The bridge returns a console handoff for these browser-only actions;
-it cannot change the browser or approve its own request.
+Reviewed Service upgrades preserve primary startup-argument omission, `null`
+and `[]` as distinct native inputs. Ordinary Compose Stacks retain native
+upgrade completion without a Catalog lookup; valid Catalog workflows keep
+their existing queue and permissions. The twelve tools, SDK **1.32.2**,
+native role/Key ceilings and human confirmation remain unchanged.
 
-Other supported workflows include reviewed Host custom-name reset and one-child
-Container public-port and link-target edits. Named Service links and bounded
-External Service HTTP health checks remain available. These Container edits
-preserve the parent Service's launch configuration.
-
-Host scheduling activation/deactivation does not shut down workloads, remove
-Hosts or evacuate VMs. Operation failures and unconfirmed results remain visible
-with safe guidance in thirteen locales; stale terminal results cannot clear a
-newer review. Native role/Key ceilings, exact references, concurrent-change checks
-and human confirmation remain authoritative.
-
-These remain partial workflows. A matching Server assembly, deployment and
-affected native/UI acceptance remain separate and pending or partial. Component
-publication does not update the running Server or establish complete
-frontend coverage. See the [release note](docs/releases/web-console-1.6.230.md)
-for component evidence.
-
-## Next source candidate
-
-Web Console **1.6.231** / Bridge **0.2.33** targets matching Engine
-**0.183.390** and Server **1.6.588**; Compose remains **0.14.44**.
-This source candidate is not published or deployed. It extends the existing
-reviewed Service startup-argument workflow and preserves ordinary
-Compose upgrade completion without a Catalog lookup. The twelve tools, SDK
-**1.32.2**, native role/Key ceilings and human confirmation remain unchanged.
-Fresh component CI, packaged SDK qualification, publication, matched Server
-deployment and affected native acceptance remain required. See the
-[candidate note](docs/releases/web-console-1.6.231.md).
+These remain partial workflows. Component publication does not update the
+running Server; deployment and runtime status are tracked in the Server documentation.
 
 ## Features and operator guides
 
