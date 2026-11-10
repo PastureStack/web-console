@@ -26,6 +26,16 @@ and human confirmation remain unchanged.
 These remain partial workflows. Component publication does not update the
 running Server; deployment and runtime status are tracked in the Server documentation.
 
+## Candidate 1.6.234 / Bridge 0.2.36
+
+A scoped Registry removal receipt can continue through its native operation
+owner after the Registry stops supplying an active navigation witness. The
+allowance is limited to an existing context-bound removal receipt; native
+actor, Key revision, role and target checks remain authoritative. Discovery
+and new changes keep their original scoped navigation check. Publication and
+matching Server/native acceptance are pending. See the
+[candidate note](docs/releases/web-console-1.6.234.md).
+
 ## Features and operator guides
 
 Typed Stack finish-upgrade, cancellation and rollback use the existing native

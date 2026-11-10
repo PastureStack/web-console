@@ -374,13 +374,20 @@ export async function createBridge(config, {fetcher, random = () => randomBytes(
     }
     return !!config.environmentBinding || current.name === name;
   };
-  const engine = new CommandEngine({context, request, ensureSession: async () => {
+  const engine = new CommandEngine({context, request, ensureSession: async (observation = {}) => {
     if (nameFailure) {
       if (!nameRetryable) throw nameFailure;
       await refreshName(null); // One read-only recovery before this command's business dispatch.
     }
     if (scopedIdentity) {
       const captured = context.capture();
+      const receipt = observation.operationRef && context.resolve(observation.operationRef, 'operation', captured);
+      // Only an already-issued Registry removal receipt can outlive this
+      // child's navigation witness. Its GET still goes through the original
+      // transport and native receipt owner: live role/Key revision, same actor,
+      // same Key and exact target identity are rechecked there. No resource
+      // discovery, new preview, approval or mutation receives this exception.
+      if (receipt?.planKind === 'resource-change' && receipt.resourceType === 'registry' && receipt.operation === 'remove') return;
       const rows = await contextProjects(transport, {resourceId: project.id});
       if (rows.length !== 1) throw new CommandError('CONTEXT_CHANGED');
       let current;

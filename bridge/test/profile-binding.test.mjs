@@ -6,6 +6,102 @@ import path from 'node:path';
 import {createBridge, createTransport, validateConfig, prepareBoundProfile, allowedRequest} from '../core.mjs';
 import {bindProfile, main, parseArguments} from '../bind-profile.mjs';
 
+// A native remove receipt outlives the last active child that provided scoped
+// navigation. Its own GET remains subject to native owner/Key authorization.
+async function removedRegistryObserver() {
+  const base = scopedServer(), calls = [];
+  let plan, removed = false, denial;
+  const native = async (url, options) => {
+    const data = options.body ? JSON.parse(options.body) : undefined;
+    calls.push({path: url.pathname, method: options.method, data});
+    if (url.pathname === '/v2-beta/aiResourceViews' && removed) {
+      return response({id:'context',resourceType:'project',data:[],nextMarker:null});
+    }
+    if (url.pathname === '/v2-beta/projects/p1/aiResourceViews' && data?.resourceType === 'registry') {
+      return response({resourceType:'registry',data:[{id:'native-registry',type:'registry',accountId:'p1',state:'inactive',serverAddress:'registry.example'}]});
+    }
+    if (url.pathname === '/v2-beta/projects/p1/aiResourceChangePlans') {
+      plan={id:'aichange-00000000-0000-4000-8000-000000000099',resourceType:'registry',operation:'remove',resourceId:'native-registry',targetPath:'Before / registry.example',
+        changes:[{field:'state',before:'inactive',after:'removed'},{field:'affectedServiceCount',before:0,after:0},{field:'affectedInstanceCount',before:0,after:0},
+          {field:'affectedMountCount',before:0,after:null},{field:'mountedDataRule',before:null,after:'EXISTING_DOMAIN_RETENTION_NO_ADDITIONAL_PURGE'},
+          {field:'affectedCredentialCount',before:1,after:1}],confirmationState:'pending',status:'preview',verifiedResult:false,expiresAt:'2030-01-01T00:00:00Z'};
+      return response({...plan});
+    }
+    if (url.pathname.includes('/aiResourceChangePlans/')) {
+      if (options.method === 'POST' && url.search === '?action=confirm') { plan.confirmationState='approved'; return response({...plan}); }
+      if (options.method === 'POST' && url.search === '?action=apply') {
+        removed=true; plan.status='accepted'; plan.operationId=plan.id; return response({...plan});
+      }
+      assert.equal(options.method,'GET');
+      if (denial) return new Response(JSON.stringify({code:denial.code}),{status:denial.status,headers:{'Content-Type':'application/json'}});
+      plan.status='succeeded'; plan.verifiedResult=true; return response({...plan});
+    }
+    return base.fetcher(url,options);
+  };
+  const bridge=await createBridge(bound(),{fetcher:native});
+  const found=await bridge.engine.execute('find_resources',{family:'registry',resourceType:'registry'});
+  assert.equal(found.status,'succeeded');
+  const preview=await bridge.engine.execute('preview_resource_change',{resourceType:'registry',operation:'remove',targetRef:found.items[0].resourceRef,parameters:{}});
+  assert.equal(preview.status,'needs_user');
+  // The separate human Inbox owner confirms; the Bridge does not confirm.
+  plan.confirmationState='approved';
+  const applied=await bridge.engine.execute('apply_resource_change',{planRef:preview.planRef}); assert.equal(applied.status,'accepted');
+  return {bridge,calls,applied,deny:value=>{denial=value;}};
+}
+
+test('scoped Registry remove observation survives its removed navigation witness without a second apply',async()=>{
+  const f=await removedRegistryObserver();
+  try {
+    const afterApply=f.calls.length;
+    const result=await f.bridge.engine.execute('get_operation',{operationRef:f.applied.operationRef});
+    assert.equal(result.status,'succeeded'); assert.equal(result.verifiedResult,true);
+    assert.equal(f.calls.slice(afterApply).some(r=>r.path==='/v2-beta/aiResourceViews'),false);
+    assert.equal(f.calls.filter(r=>r.method==='POST'&&r.path.includes('/aiResourceChangePlans/')).length,1);
+    assert.equal(f.calls.slice(afterApply).filter(r=>r.method==='GET'&&r.path.includes('/aiResourceChangePlans/')).length,1);
+    const beforeOther=f.calls.length;
+    assert.equal((await f.bridge.engine.execute('find_stacks',{query:'Other'})).code,'CONTEXT_CHANGED');
+    assert.equal(f.calls.slice(beforeOther).some(r=>r.path.endsWith('/stacks')),false);
+  }finally{f.bridge.close();}
+});
+
+test('removed Registry observation still rejects native revocation, scope denial and foreign receipt',async()=>{
+  for (const denial of [{status:401,code:'AuthenticationRequired'},{status:403,code:'OwnerPermissionDenied'},
+    {status:403,code:'KeyPolicyDenied'},{status:403,code:'ApiKeyPolicyChanged'},{status:404,code:'NotFound'}]) {
+    const f=await removedRegistryObserver();
+    try {
+      f.deny(denial); const result=await f.bridge.engine.execute('get_operation',{operationRef:f.applied.operationRef});
+      assert.notEqual(result.status,'succeeded'); assert.notEqual(result.verifiedResult,true);
+      assert.equal(f.calls.filter(r=>r.method==='POST'&&r.path.includes('/aiResourceChangePlans/')).length,1);
+    }finally{f.bridge.close();}
+  }
+});
+
+test('removed Registry observation cannot use forged or stale operation refs',async()=>{
+  const f=await removedRegistryObserver();
+  try{
+    let before=f.calls.length;
+    assert.equal((await f.bridge.engine.execute('get_operation',{operationRef:'operation_'+'0'.repeat(48)})).code,'STALE_REFERENCE');
+    assert.equal(f.calls.slice(before).some(r=>r.path.includes('/aiResourceChangePlans/')),false);
+    f.bridge.engine.context.invalidate();before=f.calls.length;
+    assert.notEqual((await f.bridge.engine.execute('get_operation',{operationRef:f.applied.operationRef})).status,'succeeded');
+    assert.equal(f.calls.slice(before).some(r=>r.path.includes('/aiResourceChangePlans/')),false);
+  }finally{f.bridge.close();}
+});
+
+test('the removed navigation allowance never applies to other valid operation references',async()=>{
+  const f=await removedRegistryObserver();
+  try {
+    const context=f.bridge.engine.context,captured=context.capture();
+    const original=context.resolve(f.applied.operationRef,'operation',captured);
+    for(const changed of [{operation:'stop'},{resourceType:'service'},{planKind:'catalog-launch'}]) {
+      const operationRef=context.reference('operation',{...original,...changed},captured),before=f.calls.length;
+      const result=await f.bridge.engine.execute('get_operation',{operationRef});
+      assert.equal(result.code,'CONTEXT_CHANGED');
+      assert.equal(f.calls.slice(before).some(r=>r.path.includes('/aiResourceChangePlans/')),false);
+    }
+  }finally{f.bridge.close();}
+});
+
 const secret = 'secret-profile-sentinel-do-not-print';
 const config = {endpoint: 'http://127.0.0.1:8888', environment: 'Before', accessKey: 'access-profile-sentinel', secretKey: secret};
 const original = {id: 'p1', uuid: 'adminProject', name: 'Before', description: 'first environment', created: '2026-01-01T00:00:00Z', state: 'active'};
