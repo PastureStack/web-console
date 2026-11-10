@@ -1,5 +1,12 @@
 # Compatibility Contract
 
+## Candidate 1.6.235 / Bridge 0.2.37
+
+Find Hosts by native hostname or custom name. Nameless Hosts have a readable
+hostname path while their editable name and native permissions stay unchanged.
+The matching assembly uses Engine 0.183.395. Publication and native scheduling
+acceptance are pending. See the [candidate note](docs/releases/web-console-1.6.235.md).
+
 ## Web Console 1.6.234 / Bridge 0.2.36 published
 
 The existing Engine receipt GET retains authorization after Registry removal.

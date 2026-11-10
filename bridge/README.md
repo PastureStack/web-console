@@ -5,6 +5,13 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
+## Candidate 1.6.235 / Bridge 0.2.37
+
+Find Hosts by native hostname or custom name. Nameless Hosts have a readable
+hostname path while their editable name and native permissions stay unchanged.
+The matching assembly uses Engine 0.183.395. Publication and native scheduling
+acceptance are pending. See the [candidate note](../docs/releases/web-console-1.6.235.md).
+
 ## Release identity and support
 
 [Bridge **0.2.36** / Web Console **1.6.234**](https://github.com/PastureStack/web-console/releases/tag/1.6.234)
