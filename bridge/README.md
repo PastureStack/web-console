@@ -123,16 +123,17 @@ native browser support. The operator must separately opt in to
 `api.ai.service.upgrade.enabled`. Resource-change plans independently require
 `api.ai.resource.change.enabled=true`. These Engine flags default to false.
 
-## Install the published bridge
+## Install the matching bridge release
 
-The commands below install published Web Console **1.6.234** / Bridge **0.2.36**.
-Use the qualified Engine **0.183.394** assembly for exact Registry Key scopes.
+The commands below target Web Console **1.6.235** / Bridge **0.2.37**.
+This candidate must be published before these release URLs are available.
+Use the matching Engine **0.183.395** assembly for Host hostname discovery.
 Verify the downloaded SHA256 before unpacking. Installing a local Bridge does
 not update the running Server or establish native workflow acceptance.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.234
-BRIDGE_VERSION=0.2.36
+WEB_CONSOLE_VERSION=1.6.235
+BRIDGE_VERSION=0.2.37
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
