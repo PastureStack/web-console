@@ -7,28 +7,25 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-[Bridge **0.2.34** / Web Console **1.6.232**](https://github.com/PastureStack/web-console/releases/tag/1.6.232)
-is published for matching Engine **0.183.391**. Its original CI, packaged SDK
-handshake and anonymous release verification passed.
+[Bridge **0.2.35** / Web Console **1.6.233**](https://github.com/PastureStack/web-console/releases/tag/1.6.233)
+is published. Original CI, packaged SDK handshake, thirteen anonymous assets
+and fourteen cryptographically verified release subjects passed. Component
+publication does not establish matching Server deployment or native acceptance.
 
-The existing tools support separately reviewed removal of an inactive Registry, with a
-non-sensitive linked-credential count. Stop an active Registry through a separate
-approved plan, then query and preview removal again. Native credential cleanup,
-Full/legacy behavior, live role/Key ceilings and human confirmation stay with the
-existing owners. The bridge cannot approve or directly remove credentials.
-Scoped environment identity uses an already readable Stack or Service without
-gaining ordinary Project read permission. The native GDAPI envelope correction
-below is needed for scoped-only startup.
-Browser environment switching and personal-default requests remain human-console
-handoffs. Server assembly, deployment and affected native acceptance remain
-separate; component publication does not update a running Server. See the
-[release note](../docs/releases/web-console-1.6.232.md).
+Bridge **0.2.36** / Web Console **1.6.234** is a source candidate. It observes an
+existing Registry removal receipt through its native owner after the last
+active navigation witness disappears. Discovery and new changes still require
+their original scoped witness. Current actor, Key revision and native target
+permissions are rechecked; no confirmation or replay shortcut is added.
+The matching assembly uses Engine **0.183.394** for exact Registry scopes.
+Publication and affected native acceptance remain pending. See the
+[candidate note](../docs/releases/web-console-1.6.234.md).
 
-Bridge **0.2.35** / Web Console **1.6.233** is a source candidate, still matching
-Engine **0.183.391**. It validates the normal `aiResourceView` metadata envelope
-and uses only the four business fields. Metadata URLs/actions grant no access.
-Its CI, packaged SDK, publication and native acceptance remain pending; see the
-[candidate note](../docs/releases/web-console-1.6.233.md).
+Stop an active Registry through a separate approved plan, then preview removal
+again. Native credential cleanup and data retention stay with the Registry
+owner. The bridge cannot approve changes or directly remove credentials.
+
+## Supported workflows
 
 Project metadata plans support name/description only for the selected
 environment. Editing another visible environment requires a normal context
@@ -123,17 +120,17 @@ native browser support. The operator must separately opt in to
 
 ## Prepared install recipe
 
-The source below prepares Web Console **1.6.233** / Bridge **0.2.35**, requiring
-matching Engine **0.183.391**. This candidate is not published or available to
+The source below prepares Web Console **1.6.234** / Bridge **0.2.36**, requiring
+matching Engine **0.183.394**. This candidate is not published or available to
 install. Run these commands only after its official release and qualification.
-For the latest published **232/034**, use its
-[versioned installation guide](https://github.com/PastureStack/web-console/blob/1.6.232/bridge/README.md#install-the-published-bridge).
+For the latest published **233/035**, use its
+[versioned installation guide](https://github.com/PastureStack/web-console/blob/1.6.233/bridge/README.md#install-the-published-bridge).
 Installing a local Bridge does not update a running Server or establish native
 workflow acceptance.
 
 ```sh
-WEB_CONSOLE_VERSION=1.6.233
-BRIDGE_VERSION=0.2.35
+WEB_CONSOLE_VERSION=1.6.234
+BRIDGE_VERSION=0.2.36
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
 curl --fail --location --remote-name "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
 sha256sum --check "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip.sha256"
