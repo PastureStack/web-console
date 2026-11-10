@@ -124,7 +124,6 @@ export class CommandEngine {
       // An existing operation is a context-bound receipt, not a new target.
       // The transport may validate its session without requiring that the
       // resource which this operation removes still supplies navigation.
-      if ( name === 'get_operation' ) { this.context.resolve(input.operationRef, 'operation', captured); }
       await this.ensureSession(name === 'get_operation' ? Object.freeze({operationRef: input.operationRef}) : undefined);
       this.context.assertCurrent(captured, options.signal);
       if ( this.transportKind === 'stdio' ) { captured = this.context.capture(); }

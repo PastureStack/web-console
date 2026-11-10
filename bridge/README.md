@@ -123,8 +123,8 @@ native browser support. The operator must separately opt in to
 The source below prepares Web Console **1.6.234** / Bridge **0.2.36**, requiring
 matching Engine **0.183.394**. This candidate is not published or available to
 install. Run these commands only after its official release and qualification.
-For the latest published **233/035**, use its
-[versioned installation guide](https://github.com/PastureStack/web-console/blob/1.6.233/bridge/README.md#install-the-published-bridge).
+The latest published **233/035** assets and their verification records remain on
+the [published release page](https://github.com/PastureStack/web-console/releases/tag/1.6.233).
 Installing a local Bridge does not update a running Server or establish native
 workflow acceptance.
 
