@@ -456,7 +456,7 @@ export class CommandEngine {
       const stackParent = this.stackParentProjection(item, descriptor, captured);
       const displayPath = descriptor.type === 'registry' ? `${safeText(captured.projectName)}/registry/${safeRegistryAddress(item.serverAddress) || '(unknown)'}` :
         descriptor.type === 'processInstance' ? `(global)/processes/${safeResourceFields(item, descriptor).name || 'unknown'}` : useCatalog ? this.catalogDisplayPath(item, captured, parent) :
-        (!stackParent && safeText(item.displayPath, 768)) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${stackParent ? stackParent.stackName || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type}`;
+        (!stackParent && safeText(item.displayPath, 768)) || `${descriptor.scope === 'project' ? safeText(captured.projectName) : '(global)'}/${stackParent ? stackParent.stackName || '(parent unavailable)' : input.family}/${safeText(item.name) || descriptor.type === 'host' && safeText(item.hostname) || descriptor.type}`;
       const target = {id: item.id, family: input.family, resourceType: descriptor.type, scope: descriptor.scope};
       if ( ['container', 'port', 'instanceLink'].includes(descriptor.type) && typeof item.uuid === 'string' && item.uuid && item.uuid.length <= 128 ) { target.nativeUuid = item.uuid; }
       if ( useCatalog ) {
@@ -803,8 +803,10 @@ export class CommandEngine {
   }
 
   matches(item, query, descriptor) {
-    return !query || safeText(item.name).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()) || descriptor && descriptor.type === 'registry' &&
-      safeText(safeRegistryAddress(item.serverAddress)).toLocaleLowerCase().includes(query.trim().toLocaleLowerCase());
+    const needle = query && query.trim().toLocaleLowerCase();
+    return !needle || safeText(item.name).toLocaleLowerCase().includes(needle) || descriptor &&
+      (descriptor.type === 'host' && safeText(item.hostname).toLocaleLowerCase().includes(needle) ||
+       descriptor.type === 'registry' && safeText(safeRegistryAddress(item.serverAddress)).toLocaleLowerCase().includes(needle));
   }
 
   async find_stacks(input, captured, signal) {

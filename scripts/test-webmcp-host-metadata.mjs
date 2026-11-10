@@ -15,7 +15,9 @@ function fixture(transportKind = 'stdio') {
     audit: async () => ({accepted: true, requestId: `audit${++sequence}`}), request: async request => {
       requests.push(request);
       if (request.url === 'projects/p1/aiResourceViews') return {body: {resourceType: 'host',
-        data: request.data.resourceId ? rows.filter(row => row.id === request.data.resourceId) : rows}};
+        data: request.data.resourceId ? rows.filter(row => row.id === request.data.resourceId) :
+          faults.firstPage && !request.data.marker ? faults.firstPage : rows,
+        nextMarker: faults.firstPage && !request.data.marker ? '50' : null}};
       if (request.method === 'GET' && request.url.startsWith('projects/p1/hosts?')) return {body: {data: rows}};
       if (request.url === 'projects/p1/aiResourceChangePlans') {
         if (faults.preview) { throw faults.preview; }
@@ -38,6 +40,55 @@ function fixture(transportKind = 'stdio') {
     }});
   return {engine, context, snapshot, requests, rows, faults, plan: () => plan, dispatches: () => dispatches};
 }
+
+test('host search: nameless Hosts use native hostname without changing editable name in either transport', async () => {
+  for (const transport of ['browser', 'stdio']) {
+    const f = fixture(transport); f.rows[1].name = null;
+    const found = await f.engine.execute('find_resources', {family: 'host', query: 'SELECTED.example'});
+    assert.equal(found.items.length, 1); assert.equal(found.items[0].displayPath, 'Environment/host/selected.example.test');
+    assert.equal(found.items[0].fields.name, null); assert.equal(found.items[0].fields.hostname, 'selected.example.test');
+    assert.equal((await f.engine.execute('get_resource', {resourceRef: found.items[0].resourceRef})).fields.name, null);
+    assert.equal(f.dispatches(), 0); assert.ok(f.requests.every(request => !['PUT', 'DELETE'].includes(request.method)));
+  }
+});
+
+test('host search: custom name and native hostname both resolve the same opaque target', async () => {
+  const f = fixture(); f.rows[1].name = 'Friendly custom name';
+  const byName = await f.engine.execute('find_resources', {family: 'host', query: 'friendly'});
+  const byHost = await f.engine.execute('find_resources', {family: 'host', query: 'selected.example'});
+  assert.equal(byName.items.length, 1); assert.equal(byHost.items.length, 1);
+  for (const result of [byName, byHost]) {
+    assert.equal(result.items[0].fields.name, 'Friendly custom name');
+    assert.equal(result.items[0].displayPath, 'Environment/host/Friendly custom name');
+    const detail = await f.engine.execute('get_resource', {resourceRef: result.items[0].resourceRef});
+    assert.equal(detail.fields.hostname, 'selected.example.test');
+  }
+});
+
+test('host search: duplicate hostnames remain separate candidates and foreign project rows stay hidden', async () => {
+  const f = fixture(); f.rows.forEach(row => { row.name = null; row.hostname = 'shared.example'; });
+  f.rows.push({...f.rows[0], id: 'foreign', accountId: 'other'});
+  const found = await f.engine.execute('find_resources', {family: 'host', query: 'shared'});
+  assert.equal(found.items.length, 2); assert.notEqual(found.items[0].resourceRef, found.items[1].resourceRef);
+  assert.equal(f.dispatches(), 0);
+});
+
+test('host search: an empty matching page retains its query-bound cursor for later hostname matches', async () => {
+  const f = fixture(); f.rows[1].name = null; f.faults.firstPage = [f.rows[0]];
+  const first = await f.engine.execute('find_resources', {family: 'host', query: 'selected'});
+  assert.equal(first.items.length, 0); assert.equal(first.complete, false); assert.ok(first.nextCursor);
+  const next = await f.engine.execute('find_resources', {family: 'host', query: 'selected', cursor: first.nextCursor});
+  assert.equal(next.items.length, 1); assert.equal(next.complete, true);
+  assert.equal(f.requests.at(-1).data.marker, '50');
+  assert.equal((await f.engine.execute('find_resources', {family: 'host', query: 'other', cursor: first.nextCursor})).code, 'INVALID_INPUT');
+});
+
+test('host search: hostname matching is limited to Hosts and preserves Registry address matching', () => {
+  const f = fixture();
+  assert.equal(f.engine.matches({name: null, hostname: 'native.example'}, 'native', {type: 'container'}), false);
+  assert.equal(f.engine.matches({name: null, serverAddress: 'registry.example'}, 'registry', {type: 'registry'}), true);
+  assert.equal(f.engine.matches({name: null, hostname: {secret: 'native'}}, 'native', {type: 'host'}), false);
+});
 
 test('host: selected same-name opaque reference -> safe metadata -> human approved plan -> verified receipt', async () => {
   const f = fixture(), found = await f.engine.execute('find_resources', {family: 'host', query: 'same-name'});
