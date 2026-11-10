@@ -1,4 +1,4 @@
-# Web Console 1.6.234 / Bridge 0.2.36 candidate
+# Web Console 1.6.234 / Bridge 0.2.36
 
 ## Scope
 
@@ -15,9 +15,14 @@ only for an already-issued Registry removal receipt.
 
 ## Validation boundary
 
-Four new regression tests and 54 adjacent tests pass locally, including native
-revocation/owner/policy/foreign-receipt errors, forged/stale references and no
-second dispatch. The existing thirteen localized Registry review-label checks
-also pass. Original CI, packaged SDK verification, immutable publication and
-matching Server/native acceptance remain pending. No production or runtime
-patch is included.
+Original full/enabled CI passed 378 specified methods (374 retained, four new)
+and 1,149 browser tests with zero failures. The packaged Bridge passed its real
+SDK handshake. All thirteen published assets passed anonymous SHA256 readback,
+and the immutable release attestation covers fourteen subjects.
+
+Producer `0f512502326499096f61dda7d21078a4f475a778` and merge/tag
+`e75e227ced8dde7ad1c8ba4c8b89df2be81d9af8` share tested tree
+`99f9e7611e7b5d4a129f870ba3d889f9174b7543`. Native actor/Key revocation,
+policy denial, forged/stale receipt and unrelated-operation controls remain
+binding. Matching Server and Registry business acceptance are separate and not
+claimed by component checks. No production or runtime patch is included.

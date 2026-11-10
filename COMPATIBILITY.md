@@ -1,14 +1,16 @@
 # Compatibility Contract
 
-## Web Console 1.6.234 / Bridge 0.2.36 candidate
+## Web Console 1.6.234 / Bridge 0.2.36 published
 
 The existing Engine receipt GET retains authorization after Registry removal.
-This candidate uses it without requiring that same removed Registry to remain
+This component uses it without requiring that same removed Registry to remain
 an active navigation witness. Only an existing context-bound Registry removal
 operation qualifies. Native actor/Key identity and revision, role ceilings,
 target identity and denials remain unchanged. The matching assembly uses Engine
 0.183.394 for exact Registry scopes. No endpoint or public schema is added.
-Publication and matching native acceptance are pending.
+Original full/enabled CI passed 378 specified methods and 1,149 browser tests.
+The packaged SDK handshake, thirteen anonymous assets and fourteen signed
+release subjects passed. Matching Server/native acceptance remains separate.
 
 ## Web Console 1.6.233 / Bridge 0.2.35 published
 

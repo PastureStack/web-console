@@ -7,19 +7,17 @@ Node.js toolchain. It cannot approve its own change plans.
 
 ## Release identity and support
 
-[Bridge **0.2.35** / Web Console **1.6.233**](https://github.com/PastureStack/web-console/releases/tag/1.6.233)
-is published. Original CI, packaged SDK handshake, thirteen anonymous assets
-and fourteen cryptographically verified release subjects passed. Component
-publication does not establish matching Server deployment or native acceptance.
+[Bridge **0.2.36** / Web Console **1.6.234**](https://github.com/PastureStack/web-console/releases/tag/1.6.234)
+is published. Original CI, the packaged SDK handshake, thirteen anonymous assets
+and fourteen cryptographically verified release subjects passed. Matching
+Server deployment and affected native acceptance remain separate.
 
-Bridge **0.2.36** / Web Console **1.6.234** is a source candidate. It observes an
-existing Registry removal receipt through its native owner after the last
-active navigation witness disappears. Discovery and new changes still require
-their original scoped witness. Current actor, Key revision and native target
-permissions are rechecked; no confirmation or replay shortcut is added.
-The matching assembly uses Engine **0.183.394** for exact Registry scopes.
-Publication and affected native acceptance remain pending. See the
-[candidate note](../docs/releases/web-console-1.6.234.md).
+An existing context-bound Registry removal receipt stays observable through its
+native owner after the last active navigation witness disappears. Native actor,
+Key revision, role and target permissions are rechecked. Discovery and new
+changes retain their original scoped witness; no approval or replay shortcut
+is added. Use the qualified assembly with Engine **0.183.394** for exact Registry
+scopes. See the [published note](../docs/releases/web-console-1.6.234.md).
 
 Stop an active Registry through a separate approved plan, then preview removal
 again. Native credential cleanup and data retention stay with the Registry
@@ -118,15 +116,12 @@ native browser support. The operator must separately opt in to
 `api.ai.service.upgrade.enabled`. Resource-change plans independently require
 `api.ai.resource.change.enabled=true`. These Engine flags default to false.
 
-## Prepared install recipe
+## Install the published bridge
 
-The source below prepares Web Console **1.6.234** / Bridge **0.2.36**, requiring
-matching Engine **0.183.394**. This candidate is not published or available to
-install. Run these commands only after its official release and qualification.
-The latest published **233/035** assets and their verification records remain on
-the [published release page](https://github.com/PastureStack/web-console/releases/tag/1.6.233).
-Installing a local Bridge does not update a running Server or establish native
-workflow acceptance.
+The commands below install published Web Console **1.6.234** / Bridge **0.2.36**.
+Use the qualified Engine **0.183.394** assembly for exact Registry Key scopes.
+Verify the downloaded SHA256 before unpacking. Installing a local Bridge does
+not update the running Server or establish native workflow acceptance.
 
 ```sh
 WEB_CONSOLE_VERSION=1.6.234

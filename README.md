@@ -10,31 +10,21 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.233** / Bridge **0.2.35**](https://github.com/PastureStack/web-console/releases/tag/1.6.233)
-is published for matching Engine **0.183.391**. Stack rollback also requires
-Compose **0.14.44**. See the
-[release note](docs/releases/web-console-1.6.233.md); deploy a qualified matching assembly through the
+[Web Console **1.6.234** / Bridge **0.2.36**](https://github.com/PastureStack/web-console/releases/tag/1.6.234)
+is published. Its existing wire contract requires Engine **0.183.391** or a
+qualified compatible assembly; use Engine **0.183.394** for exact Registry Key
+scopes and Compose **0.14.45** for current Stack rollback. Deploy through the
 [Server installation guide](https://github.com/PastureStack/server#quick-start).
 
-Reviewed Registry removal uses the existing native owner and the complete
-non-sensitive linked-credential set. Stop an active Registry through its own
-approved plan before previewing removal. Scoped environment identity stays
-separate from ordinary Project access. The Bridge accepts the native response
-envelope without using its metadata as authorization. The twelve tools, SDK **1.32.2**, native role/Key ceilings
-and human confirmation remain unchanged.
+Scoped Registry removal keeps observing its existing native receipt after the
+last navigation witness disappears. Native actor, Key revision, role and target
+checks remain authoritative. Discovery and new changes retain their original
+scope checks. Stop an active Registry through a separate approved plan before
+previewing removal. No extra apply or client approval tool is introduced.
 
-These remain partial workflows. Component publication does not update the
-running Server; deployment and runtime status are tracked in the Server documentation.
-
-## Candidate 1.6.234 / Bridge 0.2.36
-
-A scoped Registry removal receipt can continue through its native operation
-owner after the Registry stops supplying an active navigation witness. The
-allowance is limited to an existing context-bound removal receipt; native
-actor, Key revision, role and target checks remain authoritative. Discovery
-and new changes keep their original scoped navigation check. Publication and
-matching Server/native acceptance are pending. See the
-[candidate note](docs/releases/web-console-1.6.234.md).
+Original CI, packaged SDK handshake and publication checks passed. These remain
+partial workflows; component publication does not update the running Server or
+establish native acceptance. See the [release note](docs/releases/web-console-1.6.234.md).
 
 ## Features and operator guides
 
