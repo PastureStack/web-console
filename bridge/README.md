@@ -5,26 +5,18 @@ command layer. It needs a compatible Engine with `api.ai.bridge.enabled=true`,
 a dedicated **AI collaboration bridge** Key and the parent repository's supported
 Node.js toolchain. It cannot approve its own change plans.
 
-## Candidate 1.6.235 / Bridge 0.2.37
-
-Find Hosts by native hostname or custom name. Nameless Hosts have a readable
-hostname path while their editable name and native permissions stay unchanged.
-The matching assembly uses Engine 0.183.395. Publication and native scheduling
-acceptance are pending. See the [candidate note](../docs/releases/web-console-1.6.235.md).
-
 ## Release identity and support
 
-[Bridge **0.2.36** / Web Console **1.6.234**](https://github.com/PastureStack/web-console/releases/tag/1.6.234)
-is published. Original CI, the packaged SDK handshake, thirteen anonymous assets
-and fourteen cryptographically verified release subjects passed. Matching
-Server deployment and affected native acceptance remain separate.
+[Bridge **0.2.37** / Web Console **1.6.235**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
+is published. Original CI, the real packaged SDK handshake, thirteen anonymous
+assets and fourteen cryptographically verified subjects passed. Native Host
+scheduling acceptance and matching Server deployment remain pending.
 
-An existing context-bound Registry removal receipt stays observable through its
-native owner after the last active navigation witness disappears. Native actor,
-Key revision, role and target permissions are rechecked. Discovery and new
-changes retain their original scoped witness; no approval or replay shortcut
-is added. Use the qualified assembly with Engine **0.183.394** for exact Registry
-scopes. See the [published note](../docs/releases/web-console-1.6.234.md).
+Host search and display now support native hostnames without changing custom
+names or granting authority. The full lookup fix needs Engine **0.183.395**,
+which is not yet published. The existing protocol minimum remains Engine
+**0.183.391**; exact Registry scopes use Engine **0.183.394**. See the
+[release note](../docs/releases/web-console-1.6.235.md).
 
 Stop an active Registry through a separate approved plan, then preview removal
 again. Native credential cleanup and data retention stay with the Registry
@@ -123,11 +115,11 @@ native browser support. The operator must separately opt in to
 `api.ai.service.upgrade.enabled`. Resource-change plans independently require
 `api.ai.resource.change.enabled=true`. These Engine flags default to false.
 
-## Install the matching bridge release
+## Install the published bridge
 
-The commands below target Web Console **1.6.235** / Bridge **0.2.37**.
-This candidate must be published before these release URLs are available.
-Use the matching Engine **0.183.395** assembly for Host hostname discovery.
+The commands below install published Web Console **1.6.235** / Bridge **0.2.37**.
+Engine **0.183.395** is still pending; it is needed for complete nameless-Host
+lookup. Other supported workflows retain their existing Engine requirements.
 Verify the downloaded SHA256 before unpacking. Installing a local Bridge does
 not update the running Server or establish native workflow acceptance.
 
