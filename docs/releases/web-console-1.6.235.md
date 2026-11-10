@@ -1,4 +1,4 @@
-# Web Console 1.6.235 / Bridge 0.2.37 candidate
+# Web Console 1.6.235 / Bridge 0.2.37
 
 ## Scope
 
@@ -15,8 +15,14 @@ Other resource search behavior and Registry address lookup are retained.
 
 ## Validation boundary
 
-Five new Host search regressions and 24 adjacent Host/Registry cases pass
-locally (29 tests). These cover both transports, null/custom names, duplicates,
-foreign-project filtering, empty pages and cursor query binding. Original CI,
-packaged SDK checks, immutable publication and matching Server native Host
-scheduling acceptance remain pending. No production or runtime patch is used.
+Original full/enabled CI passed 383 specified methods (378 retained, five new)
+and 1,149 browser cases with zero failures. The real packaged SDK handshake
+passed. Thirteen published assets passed anonymous SHA256 readback; the
+immutable release attestation covers fourteen subjects.
+
+Producer `6dd59932fa60718225e5129454ddb5959e917fb9` and merge/tag
+`a980b389c2038dfc73d54d14970e55573a59438c` share tested tree `5f7fa79cdc5bff1a96c276a9bfcaa5d4883005dd`.
+The Engine 0.183.395 lookup fix is still pending publication because required
+builds could not fetch Ubuntu snapshot APT indexes. Matching Server deployment
+and native Host stop/start acceptance are not claimed by these component
+checks. No production or runtime patch is included.

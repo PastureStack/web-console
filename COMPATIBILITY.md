@@ -1,11 +1,14 @@
 # Compatibility Contract
 
-## Candidate 1.6.235 / Bridge 0.2.37
+## Web Console 1.6.235 / Bridge 0.2.37 published
 
-Find Hosts by native hostname or custom name. Nameless Hosts have a readable
-hostname path while their editable name and native permissions stay unchanged.
-The matching assembly uses Engine 0.183.395. Publication and native scheduling
-acceptance are pending. See the [candidate note](docs/releases/web-console-1.6.235.md).
+Native hostname search and readable Host paths retain custom names, duplicate
+candidates, bounded cursors and authorization. Complete nameless-Host lookup
+also needs Engine 0.183.395, whose publication and native scheduling acceptance
+are pending. The unchanged wire protocol still has Engine 0.183.391 as its
+minimum; this does not establish that earlier Engines contain the lookup fix.
+Original CI passed 383 specified methods and 1,149 browser cases. The actual
+packaged SDK, thirteen public assets and fourteen signed subjects passed.
 
 ## Web Console 1.6.234 / Bridge 0.2.36 published
 

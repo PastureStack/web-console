@@ -8,30 +8,22 @@ Rancher 1.6 ecosystem. It is not affiliated with Rancher Labs or SUSE.
 This fork of [`rancher/ui`](https://github.com/rancher/ui) preserves upstream
 history, authorship, licenses, and dependency notices.
 
-## Candidate 1.6.235 / Bridge 0.2.37
-
-Find Hosts by native hostname or custom name. Nameless Hosts have a readable
-hostname path while their editable name and native permissions stay unchanged.
-The matching assembly uses Engine 0.183.395. Publication and native scheduling
-acceptance are pending. See the [candidate note](docs/releases/web-console-1.6.235.md).
-
 ## Current component
 
-[Web Console **1.6.234** / Bridge **0.2.36**](https://github.com/PastureStack/web-console/releases/tag/1.6.234)
-is published. Its existing wire contract requires Engine **0.183.391** or a
-qualified compatible assembly; use Engine **0.183.394** for exact Registry Key
-scopes and Compose **0.14.45** for current Stack rollback. Deploy through the
-[Server installation guide](https://github.com/PastureStack/server#quick-start).
+[Web Console **1.6.235** / Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
+is published. Host results match custom names or native hostnames and display
+the hostname when no custom name exists, without rewriting the stored name.
+Duplicate candidates and bounded query cursors remain distinct.
 
-Scoped Registry removal keeps observing its existing native receipt after the
-last navigation witness disappears. Native actor, Key revision, role and target
-checks remain authoritative. Discovery and new changes retain their original
-scope checks. Stop an active Registry through a separate approved plan before
-previewing removal. No extra apply or client approval tool is introduced.
+The full nameless-Host lookup fix also requires Engine **0.183.395**, whose
+release is pending. The existing wire protocol remains compatible with Engine
+**0.183.391** or a qualified compatible assembly. Registry Key scopes require
+Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
+Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-Original CI, packaged SDK handshake and publication checks passed. These remain
-partial workflows; component publication does not update the running Server or
-establish native acceptance. See the [release note](docs/releases/web-console-1.6.234.md).
+Original CI, packaged SDK and immutable publication checks passed. Component
+publication does not update a running Server or establish native scheduling
+acceptance. See the [release note](docs/releases/web-console-1.6.235.md).
 
 ## Features and operator guides
 
