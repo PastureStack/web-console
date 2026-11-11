@@ -11,9 +11,9 @@
   }
 }
 
-.lacsso.modal-overlay.modal-open {
+body .lacsso.modal-overlay.lacsso.modal-open {
   // The fixed console workspace establishes its own stacking context at 20000.
-  // Keep the whole dialog, including its backdrop, above that context.
+  // Match the compiled Lacsso classes and outrank their default open layer.
   z-index: 21000;
 }
 
