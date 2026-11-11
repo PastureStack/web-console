@@ -10,21 +10,19 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.235** / Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
-is published. Host results match custom names or native hostnames and display
-the hostname when no custom name exists, without rewriting the stored name.
-Duplicate candidates and bounded query cursors remain distinct.
+[Web Console **1.6.236**](https://github.com/PastureStack/web-console/releases/tag/1.6.236)
+places shared dialogs above the floating Shell and Log workspace. The optional
+[Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
+is compatible with this console.
 
 The full nameless-Host lookup fix requires the published Engine **0.183.395**,
-included in [Server **1.6.596**](https://github.com/PastureStack/server/releases/tag/v1.6.596).
+included in [Server **1.6.597**](https://github.com/PastureStack/server/releases/tag/v1.6.597).
 The existing wire protocol remains compatible with Engine
 **0.183.391** or a qualified compatible assembly. Registry Key scopes require
 Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-Original CI, packaged SDK and immutable publication checks passed. Component
-publication does not update a running Server or establish native scheduling
-acceptance. See the [release note](docs/releases/web-console-1.6.235.md).
+See the [release note](docs/releases/web-console-1.6.236.md) for the dialog change.
 
 ## Features and operator guides
 
