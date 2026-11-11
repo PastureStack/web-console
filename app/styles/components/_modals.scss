@@ -10,6 +10,13 @@
     margin: 15px 10px 30px 10px;
   }
 }
+
+body .lacsso.modal-overlay.lacsso.modal-open {
+  // The fixed console workspace establishes its own stacking context at 20000.
+  // Match the compiled Lacsso classes and outrank their default open layer.
+  z-index: 21000;
+}
+
 .lacsso.modal-overlay.modal-open .modal-container.modal-logs {
     max-height: 100%;
 }
