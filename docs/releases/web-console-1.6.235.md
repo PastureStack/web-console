@@ -22,7 +22,8 @@ immutable release attestation covers fourteen subjects.
 
 Producer `6dd59932fa60718225e5129454ddb5959e917fb9` and merge/tag
 `a980b389c2038dfc73d54d14970e55573a59438c` share tested tree `5f7fa79cdc5bff1a96c276a9bfcaa5d4883005dd`.
-The Engine 0.183.395 lookup fix is still pending publication because required
-builds could not fetch Ubuntu snapshot APT indexes. Matching Server deployment
-and native Host stop/start acceptance are not claimed by these component
-checks. No production or runtime patch is included.
+The initial Engine build was delayed by unavailable Ubuntu snapshot APT indexes.
+Those signed-index downloads recovered, and Engine 0.183.395 passed its required
+checks and was published. Server 1.6.596 includes this matching assembly.
+Deployment and native Host stop/start acceptance remain separate from these
+component checks.
