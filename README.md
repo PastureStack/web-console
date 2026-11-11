@@ -15,8 +15,9 @@ is published. Host results match custom names or native hostnames and display
 the hostname when no custom name exists, without rewriting the stored name.
 Duplicate candidates and bounded query cursors remain distinct.
 
-The full nameless-Host lookup fix also requires Engine **0.183.395**, whose
-release is pending. The existing wire protocol remains compatible with Engine
+The full nameless-Host lookup fix requires the published Engine **0.183.395**,
+included in [Server **1.6.596**](https://github.com/PastureStack/server/releases/tag/v1.6.596).
+The existing wire protocol remains compatible with Engine
 **0.183.391** or a qualified compatible assembly. Registry Key scopes require
 Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
@@ -26,6 +27,10 @@ publication does not update a running Server or establish native scheduling
 acceptance. See the [release note](docs/releases/web-console-1.6.235.md).
 
 ## Features and operator guides
+
+Browser users can review switching to a visible environment or setting their
+own default environment. Both require a human confirmation in the console.
+See the [environment workflow](docs/webmcp.md#browser-environment-selection).
 
 Typed Stack finish-upgrade, cancellation and rollback use the existing native
 owners and separately reviewed plans. Cancellation proves the parent checkpoint;

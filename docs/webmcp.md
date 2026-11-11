@@ -176,6 +176,25 @@ successful Service create may return read-only `executionResult.assignedPorts`;
 those native assignments are shown separately and never amend the approved
 `changes`. An accepted or unknown result is not completion.
 
+### Browser environment selection
+
+Use `find_resources` with `family: "environment"`, `resourceType: "project"`
+and the environment name. Inspect each same-name candidate with `get_resource`
+and select its returned reference. Preview `switch_context` or `set_default`
+with `resourceType: "project"`, that `targetRef`, and `parameters: {}`.
+The normal console review shows the environment name and description.
+
+The human confirmation performs the switch or saves only that account's default
+environment. Switching preserves the personal default. A read-only environment
+member can still choose a visible environment and their own preference, subject
+to the normal account permissions. Search again after switching because previous
+references belong to the previous context. Each reloaded page starts with tools
+off and requires explicit activation before further tool calls.
+
+`apply_resource_change` returns a human handoff for these operations. The fixed
+Bridge profile also hands off to the console and preserves its environment
+binding. Environment selection creates no Engine workload process.
+
 ## Browser and human controls
 
 Build with `WEBMCP_MODE=read-only` or `WEBMCP_MODE=enabled` to include the
