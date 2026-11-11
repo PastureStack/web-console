@@ -10,6 +10,13 @@
     margin: 15px 10px 30px 10px;
   }
 }
+
+.lacsso.modal-overlay.modal-open {
+  // The fixed console workspace establishes its own stacking context at 20000.
+  // Keep the whole dialog, including its backdrop, above that context.
+  z-index: 21000;
+}
+
 .lacsso.modal-overlay.modal-open .modal-container.modal-logs {
     max-height: 100%;
 }
