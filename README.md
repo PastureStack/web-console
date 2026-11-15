@@ -10,7 +10,7 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.238**](https://github.com/PastureStack/web-console/releases/tag/1.6.238)
+[Web Console **1.6.239**](https://github.com/PastureStack/web-console/releases/tag/1.6.239)
 loads the AWS SDK for JavaScript v3 when the Amazon EC2 host wizard connects.
 The optional
 [Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
@@ -23,7 +23,7 @@ The existing wire protocol remains compatible with Engine
 Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-See the [release note](docs/releases/web-console-1.6.238.md) for the EC2 loader fix.
+See the [release note](docs/releases/web-console-1.6.239.md) for the EC2 tags fix.
 
 ## Features and operator guides
 

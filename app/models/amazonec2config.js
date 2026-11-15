@@ -9,7 +9,7 @@ Amazonec2config.reopenClass({
   //tags are in a really dumb format, key1,value1,key2,value2
   // so we need to fix them before they get to the user
   mangleIn: function(data/* , store */) {
-    if ( data.tags.length > 0 ) {
+    if ( typeof data.tags === 'string' && data.tags.length > 0 ) {
       let tags    = data.tags.split(',');
       let tagsOut = {};
 
@@ -23,7 +23,7 @@ Amazonec2config.reopenClass({
     return data;
   },
   mangleOut: function(data/* , store */) {
-    if ( data.tags && Object.keys(data.tags) ) {
+    if ( data.tags && typeof data.tags === 'object' ) {
       let tags    = data.tags;
       let tagsOut = [];
 

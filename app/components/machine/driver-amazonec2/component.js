@@ -1092,15 +1092,11 @@ export default Component.extend(Driver, {
       errors.push('Name is required');
     }
 
-    if (Object.keys(config.get('tags'))) {
-      let tags = config.get('tags');
-
-      Object.keys(tags).forEach((tag) => {
-        if (tag.indexOf(',') > -1 || tags[tag].indexOf(',') > -1) {
-          errors.push(this.get('intl').t('machine.driverAmazon.tags.error', {tag: tag}));
-        }
-      });
-    }
+    Object.entries(config.get('tags') || {}).forEach(([tag, value]) => {
+      if (tag.includes(',') || value.includes(',')) {
+        errors.push(this.get('intl').t('machine.driverAmazon.tags.error', {tag}));
+      }
+    });
 
     this.set('errors', errors);
     return errors.length === 0;

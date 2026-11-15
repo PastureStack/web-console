@@ -27,6 +27,12 @@ const html = `<!doctype html><head><meta charset="utf-8">
 ${bootstrap.map(source => `<script src="${source}"></script>`).join('\n')}
 <script>
 (async () => {
+  const config = window.require('ui/models/amazonec2config').default;
+  if (Object.hasOwn(config.mangleIn({}), 'tags')) throw new Error('Missing EC2 tags changed');
+  const tagged = config.mangleIn({tags: 'Name,qa,Environment,test'});
+  if (tagged.tags.Environment !== 'test' || config.mangleOut(tagged).tags !== 'Name,qa,Environment,test') {
+    throw new Error('EC2 tag round trip failed');
+  }
   const createEc2Client = window.require('ui/utils/ec2-client').default;
   await fetch('/fixture-start');
   const client = await createEc2Client({region: 'us-west-2', accessKeyId: 'AKIDEXAMPLE',
