@@ -45,6 +45,10 @@ module.exports = function(defaults) {
     sassOptions: {
       implementation: dartSass
     },
+    babel: {
+      // Transform browser-facing dependency imports into the Auto Import loader.
+      plugins: [require.resolve('ember-auto-import/babel-plugin')]
+    },
     outputPaths: {
       app: {
         js: '/assets/ui.js',
