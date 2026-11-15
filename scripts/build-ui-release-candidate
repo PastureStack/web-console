@@ -94,6 +94,7 @@ build_inside_container() {
       | sha256sum --check
   )
   node --test scripts/test-ui-sbom.js scripts/test-ui-build-module-boundary.js scripts/test-ui-webpack-inventory.js scripts/test-ui-finalize-webpack-inventory.js scripts/test-ui-build-dependency-security.js
+  node --test scripts/test-ui-ec2-proxy.mjs
   node scripts/test-ai-collaboration-ui.js --filter=initialization
   python3 -B scripts/test-ui-builder-inventory.py
   python3 -B scripts/test-ui-builder-boundary.py
