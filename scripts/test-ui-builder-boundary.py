@@ -147,7 +147,7 @@ class BuilderBoundaryTests(unittest.TestCase):
         self.assertIn('cmp dist/webmcp-build.json "$canonical_dist/webmcp-build.json"', script)
         self.assertIn('"$work_root/web-console-a.tar.gz.tree/$package_version/webmcp-build.json"', script)
         self.assertIn('"web-console-${package_version}-webmcp.json" >"web-console-${package_version}-sbom.sha256"', script)
-        self.assertRegex(workflow, r"webmcp_mode:\n(?:.*\n){2}        options: \[off, read-only, enabled\]\n        default: off")
+        self.assertRegex(workflow, r"webmcp_mode:\n(?:.*\n){2}        options: \['off', read-only, enabled\]\n        default: 'off'")
         self.assertIn("WEBMCP_MODE: ${{ inputs.webmcp_mode }}", workflow)
         self.assertIn('"web-console-${package_version}-webmcp.json"', workflow)
         self.assertIn("${{ runner.temp }}/web-console-${{ steps.build.outputs.package_version }}-webmcp.json", workflow)
