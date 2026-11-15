@@ -11,8 +11,8 @@ on:
       webmcp_mode:
         description: AI collaboration build ceiling (every page starts off)
         type: choice
-        options: [off, read-only, enabled]
-        default: off
+        options: ['off', read-only, enabled]
+        default: 'off'
 
 permissions:
   contents: read
@@ -46,12 +46,20 @@ jobs:
           test "$RUNNER_ARCH" = X64
           archive="$RUNNER_TEMP/python-3.14.9-linux-24.04-x64.tar.gz"
           install_dir=$(mktemp -d "$RUNNER_TEMP/python-3.14.9-official.XXXXXX")
-          curl --proto '=https' --tlsv1.2 --fail --silent --show-error \
-            --location --retry 3 --retry-all-errors --retry-delay 2 \
-            --connect-timeout 30 --max-time 300 --max-filesize 110709506 \
+          curl_flags=(--proto '=https' --tlsv1.2 --fail --silent --show-error
+            --location --retry 3 --retry-all-errors --retry-delay 2
+            --connect-timeout 30 --max-time 300 --max-filesize 110709506)
+          if status=$(curl "${curl_flags[@]}" --write-out '%{http_code}' \
             --header 'Accept: application/octet-stream' --range 0- \
             --output "$archive" \
-            'https://api.github.com/repos/actions/python-versions/releases/assets/662863124'
+            'https://api.github.com/repos/actions/python-versions/releases/assets/662863124'); then
+            :
+          elif [[ "$status" == 403 ]]; then
+            curl "${curl_flags[@]}" --output "$archive" \
+              'https://github.com/actions/python-versions/releases/download/3.14.9-39619022138/python-3.14.9-linux-24.04-x64.tar.gz'
+          else
+            exit 1
+          fi
           test "$(stat --format=%s "$archive")" = 110709506
           printf '%s  %s\n' "$PYTHON_ARCHIVE_SHA256" "$archive" | sha256sum --check
           tar -xzf "$archive" -C "$install_dir"
