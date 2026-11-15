@@ -1,19 +1,24 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { promisify } from 'node:util';
 
-const root = resolve(process.argv[2]);
-const chrome = process.argv[3];
-const assetPath = /^\/assets\/[a-z0-9.-]+\.js$/i;
+const root = resolve('build/ec2-release-browser');
+const chrome = 'google-chrome';
+const jsAssets = new Map();
+const assetDirectory = join(root, 'assets');
+for (const item of await readdir(assetDirectory, { withFileTypes: true })) {
+  if (item.isFile() && /^[a-z0-9.-]+\.js$/i.test(item.name)) {
+    jsAssets.set(`/assets/${item.name}`, await readFile(join(assetDirectory, item.name)));
+  }
+}
 const index = await readFile(join(root, 'index.html'), 'utf8');
 const bootstrap = Array.from(index.matchAll(/<script src="(\/assets\/[a-z0-9.-]+\.js)"><\/script>/gi),
   ([, source]) => source);
 assert.ok(bootstrap.some(source => /\/ui(?:-[a-f\d]+)?\.js$/.test(source)), 'Missing application script');
-assert.ok(chrome, 'A Chromium executable is required');
 
 const html = `<!doctype html><head><meta charset="utf-8">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; connect-src 'self'">
@@ -67,13 +72,10 @@ const server = createServer(async (request, response) => {
     }
   }
 
-  if (request.method === 'GET' && assetPath.test(path)) {
-    const data = await readFile(join(root, path.slice(1))).catch(() => null);
-    if (data) {
-      (started ? lateScripts : earlyScripts).push(path);
-      response.writeHead(200, { 'content-type': 'text/javascript' }).end(data);
-      return;
-    }
+  if (request.method === 'GET' && jsAssets.has(path)) {
+    (started ? lateScripts : earlyScripts).push(path);
+    response.writeHead(200, { 'content-type': 'text/javascript' }).end(jsAssets.get(path));
+    return;
   }
   response.writeHead(404).end();
 });

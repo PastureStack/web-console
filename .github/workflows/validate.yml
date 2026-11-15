@@ -148,9 +148,9 @@ jobs:
           [[ "$producer_output" = "$RUNNER_TEMP"/web-console-producer.* ]]
           trap 'rm -rf "$producer_output"' EXIT
           bash scripts/build-ui-release-candidate "$producer_output"
-          mkdir "$producer_output/browser-smoke"
-          tar -xzf "$producer_output/web-console-${package_version}.tar.gz" -C "$producer_output/browser-smoke"
-          node scripts/test-ui-ec2-release.mjs "$producer_output/browser-smoke/$package_version" "$(command -v google-chrome)"
+          mkdir -p build/ec2-release-browser
+          tar -xzf "$producer_output/web-console-${package_version}.tar.gz" --strip-components=1 -C build/ec2-release-browser
+          node scripts/test-ui-ec2-release.mjs
           for asset in \
             "web-console-${package_version}.tar.gz" \
             "web-console-${package_version}.tar.gz.sha256" \
