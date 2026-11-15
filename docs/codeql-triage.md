@@ -11,7 +11,7 @@ The first complete analysis identified two distinct boundaries:
   matching, a preloaded repository-root-enumerated static asset map that keeps
   request paths away from filesystem APIs and takes its validated root from the
   harness working directory instead of an environment path, complete
-  query-fragment encoding,
+  query-fragment encoding in the former vendored AWS SDK v2,
   complete noVNC line-break replacement, and unambiguous dagre edge IDs.
 - Five medium-severity log-injection paths are also fixed in source. All four
   noVNC logging levels now emit severity-specific constant events without
@@ -31,3 +31,7 @@ record. `scripts/check-ui-codeql-critical-high` prevents the reviewed runtime
 fixes from silently regressing. A release candidate remains blocked whenever an
 open Critical or High dependency or code-scanning alert exists, or when a
 reviewed medium log-injection path is open.
+
+Web Console 1.6.237 removes the vendored AWS SDK v2 and its browser initializer.
+The source gate checks that both files stay absent. The EC2 proxy transport test
+checks AWS SDK v3 request encoding and credential forwarding.

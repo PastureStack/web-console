@@ -1,6 +1,6 @@
 {
   "name": "@pasturestack/web-console",
-  "version": "1.6.236",
+  "version": "1.6.237",
   "private": true,
   "description": "PastureStack browser console for the compatible control platform.",
   "repository": {
@@ -65,12 +65,14 @@
     "sass": "1.103.1"
   },
   "devDependencies": {
+    "@aws-sdk/client-ec2": "3.1169.0",
     "@ember/legacy-built-in-components": "0.5.0",
     "@ember/string": "4.0.1",
     "@ember/test-helpers": "5.4.3",
     "@formatjs/icu-messageformat-parser": "3.5.17",
     "@glimmer/component": "2.1.1",
     "@glimmer/tracking": "1.1.2",
+    "@smithy/fetch-http-handler": "5.8.1",
     "@xterm/addon-fit": "0.11.0",
     "@xterm/xterm": "6.0.0",
     "ansi_up": "6.0.6",

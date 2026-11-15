@@ -106,20 +106,6 @@
       "modified": true
     },
     {
-      "id": "aws-sdk-ec2",
-      "name": "AWS SDK for JavaScript EC2 browser bundle",
-      "version": "2.1.27",
-      "purl": "pkg:npm/aws-sdk@2.1.27",
-      "inputs": [
-        "vendor/aws-sdk-ec2.js"
-      ],
-      "files": {
-        "vendor/aws-sdk-ec2.js": "a75c638861c437cd8ef7f57995cb07a8ccea6c115005b7b0056f309946841ba1"
-      },
-      "provenance": "vendor/aws-sdk-ec2.js header and AWS.VERSION identify 2.1.27; license reference is https://sdk.amazonaws.com/js/BUNDLE_LICENSE.txt.",
-      "coverage": "Frozen AWS browser bundle has embedded modules whose individual versions and license composition are not established."
-    },
-    {
       "id": "novnc",
       "name": "noVNC frozen browser bundle",
       "inputs": [

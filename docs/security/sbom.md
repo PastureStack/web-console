@@ -50,8 +50,12 @@ metadata and artifact manifest record both verifier source hashes. These tools
 are excluded from the runtime BOM. If the optional verifier input is omitted
 outside the release producer, build coverage explicitly states that exclusion.
 
-The published runtime composition is `incomplete`. Frozen AWS and noVNC bundles
-still lack complete embedded-module version/license metadata; Bootswatch and
+Starting in Web Console 1.6.237, the EC2 browser client and its embedded modules
+are attributed from the locked AWS SDK v3 npm inputs and the packaged Webpack
+module inventory. The retired AWS SDK v2 files are absent from that build.
+
+The published runtime composition is `incomplete`. The frozen noVNC bundle
+still lacks complete embedded-module version/license metadata; Bootswatch and
 Lato upstream identity or font-license evidence is also incomplete. Generated
 module attribution, shared addon app-tree ownership and fixed Sass inputs retain
 their stated limitations. Publication and passing checks do not close these

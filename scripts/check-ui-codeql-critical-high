@@ -32,9 +32,6 @@ checks = {
     "app/utils/driver-display-url.js": [
         "github\\.com\\/([^/?#]+)\\/([^/?#]+)",
     ],
-    "vendor/aws-sdk-ec2.js": [
-        "search = search.replace(/#/g, '%23')",
-    ],
     "vendor/novnc.js": [
         'console.log("[noVNC] debug message")',
         'console.log("[noVNC] information message")',
@@ -61,9 +58,6 @@ forbidden = {
     "app/models/machinedriver.js": [
         "url.indexOf('github.com')",
     ],
-    "vendor/aws-sdk-ec2.js": [
-        "search = search.replace('#', '%23')",
-    ],
     "vendor/novnc.js": [
         'replace("\\n", " ")',
         "String(msg)",
@@ -86,6 +80,10 @@ for filename, markers in forbidden.items():
     for marker in markers:
         if marker in source:
             failures.append(f"forbidden_marker={filename}:{marker}")
+
+for filename in ("vendor/aws-sdk-ec2.js", "app/initializers/aws-sdk.js"):
+    if Path(filename).exists():
+        failures.append(f"retired_aws_sdk_file={filename}")
 
 novnc_source = Path("vendor/novnc.js").read_text(encoding="utf-8")
 if novnc_source.count('console.log("[noVNC] debug message")') != 1:

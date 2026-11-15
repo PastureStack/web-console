@@ -151,7 +151,6 @@ module.exports = function(defaults) {
   app.import('node_modules/lodash/lodash.js');
   app.import('node_modules/async/dist/async.js');
   app.import('vendor/position-calculator.js');
-  app.import('vendor/aws-sdk-ec2.js');
   app.import('node_modules/identicon.js/pnglib.js');
   app.import('node_modules/identicon.js/identicon.js');
   app.import('node_modules/md5-jkmyers/md5.js');

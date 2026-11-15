@@ -5,6 +5,7 @@ import { alias, equal, gte } from '@ember/object/computed';
 import { service } from '@ember/service';
 import Component from '@ember/component';
 import Driver from 'ui/mixins/driver';
+import createEc2Client from 'ui/utils/ec2-client';
 
 let RANCHER_TAG           = 'rancher-ui';
 let RANCHER_GROUP         = 'rancher-machine';
@@ -726,8 +727,7 @@ export default Component.extend(Driver, {
 
 
   actions: {
-    awsLogin: function() {
-      let self = this;
+    async awsLogin() {
       this.set('errors',null);
       this.set('step',2);
 
@@ -736,61 +736,45 @@ export default Component.extend(Driver, {
 
       let subnets = [];
       let rName = this.get('amazonec2Config.region');
-      let ec2 = new AWS.EC2({
-        accessKeyId     : this.get('amazonec2Config.accessKey'),
-        secretAccessKey : this.get('amazonec2Config.secretKey'),
-        region          : rName,
-      });
-
       let vpcNames = {};
 
-      ec2.describeVpcs({}, (err, vpcs) => {
-        if ( err ) {
-          let errors = self.get('errors')||[];
-          errors.pushObject(err);
-          this.set('errors', errors);
-          this.set('step', 1);
-          return;
-        }
-
-        vpcs.Vpcs.forEach((vpc) => {
+      try {
+        const ec2 = await createEc2Client({
+          accessKeyId     : this.get('amazonec2Config.accessKey'),
+          secretAccessKey : this.get('amazonec2Config.secretKey'),
+          region          : rName,
+          proxyEndpoint   : this.get('app.proxyEndpoint'),
+        });
+        const { Vpcs = [] } = await ec2.describeVpcs();
+        Vpcs.forEach((vpc) => {
           vpcNames[vpc.VpcId] = nameFromResource(vpc, 'VpcId');
         });
 
-        ec2.describeSubnets({}, (err, data) => {
-          if ( err ) {
-            let errors = self.get('errors')||[];
-            errors.pushObject(err);
-            this.set('errors', errors);
-            this.set('step', 1);
+        const { Subnets = [] } = await ec2.describeSubnets();
+        this.get('clients').set(rName, ec2);
+
+        Subnets.forEach((subnet) => {
+          if ( (subnet.State||'').toLowerCase() !== 'available' ) {
             return;
           }
 
-          this.get('clients').set(rName, ec2);
-
-          data.Subnets.forEach((subnet) => {
-            if ( (subnet.State||'').toLowerCase() !== 'available' )
-            {
-              return;
-            }
-
-            subnets.pushObject(EmberObject.create({
-              subnetName: nameFromResource(subnet, 'SubnetId'),
-              subnetId:   subnet.SubnetId,
-              vpcName:    vpcNames[subnet.VpcId] || subnet.VpcId,
-              vpcId:      subnet.VpcId,
-              zone:       subnet.AvailabilityZone,
-              region:     rName
-            }));
-          });
-
-          this.set('allSubnets', subnets);
-          this.set('step', 3);
+          subnets.pushObject(EmberObject.create({
+            subnetName: nameFromResource(subnet, 'SubnetId'),
+            subnetId:   subnet.SubnetId,
+            vpcName:    vpcNames[subnet.VpcId] || subnet.VpcId,
+            vpcId:      subnet.VpcId,
+            zone:       subnet.AvailabilityZone,
+            region:     rName
+          }));
         });
-      });
+
+        this.setProperties({ allSubnets: subnets, step: 3 });
+      } catch (error) {
+        this.setProperties({ errors: [error], step: 1 });
+      }
     },
 
-    selectSubnet: function() {
+    async selectSubnet() {
       this.set('errors',null);
 
       if ( !this.get('selectedZone') ) {
@@ -808,17 +792,12 @@ export default Component.extend(Driver, {
       let ec2    = this.get('clients').get(this.get('amazonec2Config.region'));
       let filter = {Name: 'vpc-id', Values: [ this.get('amazonec2Config.vpcId')]};
 
-      ec2.describeSecurityGroups({Filters: [filter]}, (err, data) => {
-        if ( err ) {
-          this.set('errors',[err]);
-          this.set('step', 3);
-          return;
-        }
-
+      try {
+        const { SecurityGroups = [] } = await ec2.describeSecurityGroups({ Filters: [filter] });
         let groups = [];
         let defaultGroup = null;
 
-        data.SecurityGroups.forEach((group) => {
+        SecurityGroups.forEach((group) => {
           let tags = {};
 
           // Skip launch-wizard groups
@@ -845,10 +824,14 @@ export default Component.extend(Driver, {
           }
         });
 
-        this.set('step', 5);
-        this.set('allSecurityGroups', groups);
-        this.set('defaultSecurityGroup', defaultGroup);
-      });
+        this.setProperties({
+          allSecurityGroups: groups,
+          defaultSecurityGroup: defaultGroup,
+          step: 5,
+        });
+      } catch (error) {
+        this.setProperties({ errors: [error], step: 3 });
+      }
     },
 
     multiSecurityGroupSelect: function() {
@@ -862,65 +845,58 @@ export default Component.extend(Driver, {
       this.set('selectedSecurityGroup', selectedOptions);
     },
 
-    selectSecurityGroup: function() {
+    async selectSecurityGroup() {
       this.set('errors',null);
-
-      let self = this;
-      let ec2  = this.get('clients').get(this.get('amazonec2Config.region'));
 
       if ( this.get('isCustomSecurityGroup') ) {
         this.set('amazonec2Config.securityGroup', this.get('selectedSecurityGroup'));
-        done();
-      } else {
-        this.set('step', 6);
-        this.set('amazonec2Config.securityGroup', this.get('defaultSecurityGroupName'));
-        let group = this.get('defaultSecurityGroup');
-        if ( group ) {
-          if ( group.isRancher ) {
-            this.set('amazonec2Config.securityGroup', group.name);
-            done();
-          } else {
-            addRules(group.id, done);
-          }
-        } else {
-          ec2.createSecurityGroup({
-            GroupName   : this.get('defaultSecurityGroupName'),
-            Description : `${this.get('settings.appName')} default security group`,
-            VpcId       : this.get('amazonec2Config.vpcId'),
-          }, function(err, data) {
-            if ( err ) {
-              return done(err);
-            } else {
-              return addRules(data.GroupId, done);
-            }
+        this.set('step', 7);
+        return;
+      }
+
+      const groupName = this.get('defaultSecurityGroupName');
+      let group = this.get('defaultSecurityGroup');
+      this.set('amazonec2Config.securityGroup', groupName);
+      if (group && group.isRancher) {
+        this.set('amazonec2Config.securityGroup', group.name);
+        this.set('step', 7);
+        return;
+      }
+
+      this.set('step', 6);
+      const ec2 = this.get('clients').get(this.get('amazonec2Config.region'));
+
+      try {
+        if (!group) {
+          const { GroupId } = await ec2.createSecurityGroup({
+            GroupName: groupName,
+            Description: `${this.get('settings.appName')} default security group`,
+            VpcId: this.get('amazonec2Config.vpcId'),
           });
+          group = { id: GroupId, name: groupName };
+          this.set('defaultSecurityGroup', group);
         }
-      }
 
-      function addRules(groupId, cb) {
-        async.each(RANCHER_INGRESS_RULES, function(item, cb) {
-          let params = JSON.parse(JSON.stringify(item)); // Don't change the original
-          params.GroupId = groupId;
-          ec2.authorizeSecurityGroupIngress(params, cb);
-        }, function(err) {
-          if ( err ) {
-            return cb(err);
-          }
+        const results = await Promise.allSettled(RANCHER_INGRESS_RULES.map(({ CidrIp, ...rule }) =>
+          ec2.authorizeSecurityGroupIngress({
+            GroupId: group.id,
+            IpPermissions: [{ ...rule, IpRanges: [{ CidrIp }] }],
+          })
+        ));
+        const failure = results.find(({ status, reason }) =>
+          status === 'rejected' && reason?.name !== 'InvalidPermission.Duplicate'
+        );
+        if (failure) {
+          throw failure.reason;
+        }
 
-          ec2.createTags({
-            Resources : [groupId],
-            Tags      : [ {Key     : RANCHER_TAG, Value : self.get('app.version') }]
-          }, cb);
+        await ec2.createTags({
+          Resources: [group.id],
+          Tags: [{ Key: RANCHER_TAG, Value: this.get('app.version') }],
         });
-      }
-
-      function done(err) {
-        if ( err ) {
-          this.set('errors', [err]);
-          self.set('step', 5);
-        } else {
-          self.set('step', 7);
-        }
+        this.set('step', 7);
+      } catch (error) {
+        this.setProperties({ errors: [error], step: 5 });
       }
     },
   },

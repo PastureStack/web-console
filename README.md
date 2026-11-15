@@ -10,8 +10,8 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.236**](https://github.com/PastureStack/web-console/releases/tag/1.6.236)
-places shared dialogs above the floating Shell and Log workspace. The optional
+[Web Console **1.6.237**](https://github.com/PastureStack/web-console/releases/tag/1.6.237)
+uses AWS SDK for JavaScript v3 in the Amazon EC2 host wizard. The optional
 [Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
 is compatible with this console.
 
@@ -22,7 +22,7 @@ The existing wire protocol remains compatible with Engine
 Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-See the [release note](docs/releases/web-console-1.6.236.md) for the dialog change.
+See the [release note](docs/releases/web-console-1.6.237.md) for the EC2 change.
 
 ## Features and operator guides
 
