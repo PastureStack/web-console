@@ -7,8 +7,8 @@
   "advisoryWithdrawnAt": "2026-10-23T12:53:02Z",
   "upstreamPatchedVersion": null,
   "upstreamLatestVersion": "3.0.3",
-  "reviewedAt": "2026-11-05T02:40:52Z",
-  "reviewUntil": "2026-11-12",
+  "reviewedAt": "2026-11-15T09:51:47Z",
+  "reviewUntil": "2026-11-22",
   "officialStatusSources": [
     "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
     "https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm",
@@ -16,17 +16,17 @@
   ],
   "currentAuditEvidence": {
     "npmVersion": "12.0.2",
-    "checkedAt": "2026-11-05T02:40:52Z",
-    "rawReportSha256": "ef302b41fa9feecdef108b7eb2cafbb61817da4a6382a754f173d7f9c928d217",
+    "checkedAt": "2026-11-15T09:51:47Z",
+    "rawReportSha256": "3a4004f229d7525a9020a06ff7d4ec5100c302b32e38696efb159236c3e8f5fa",
     "advisoryPresent": false,
-    "totals": { "info": 0, "low": 0, "moderate": 49, "high": 0, "critical": 0, "total": 49 }
+    "totals": { "info": 0, "low": 0, "moderate": 50, "high": 0, "critical": 0, "total": 50 }
   },
   "scope": "controlled-dev-build-inputs-only",
   "risk": "GitHub withdrew this advisory on 2026-10-23 as not practically exploitable. Its historical High severity and original affected range are retained; no patched release is claimed. Raw audit severity is not rewritten. This review covers only the unchanged, controlled build-input closure, not arbitrary untrusted brace patterns or a browser-runtime not-affected claim.",
   "publicationBlockedIfShippedNodes": true,
   "shippedNodes": [],
   "boundaryEvidence": [
-    "Official GitHub advisory API and npm registry rechecked on 2026-11-05 retain historical severity high, original range <=3.0.3 and no first patched version, and withdrawal at 2026-10-23T12:53:02Z. Registry latest remains 3.0.3 with the exact reviewed integrity. Fresh npm 12.0.2 audit of this unchanged lock reports 49 Moderate, zero High/Critical and no occurrence of this withdrawn advisory; the original raw report is retained separately.",
+    "The GitHub advisory API and npm registry recheck on 2026-11-15 confirmed withdrawal at 2026-10-23T12:53:02Z, historical High severity, affected range <=3.0.3, and no first patched version. npm latest is still 3.0.3 with the reviewed integrity. The 1.6.237 lock audit reported 50 Moderate and zero High/Critical, with no occurrence of the withdrawn advisory. The reviewed reverse closure remains unchanged.",
     "The exact reverse lock dependency closure below is dev:true and is not reachable from package-lock root production dependencies.",
     "The closure enters through ember-cli, a build CLI. The gate checks literal imports in app/config/vendor JavaScript and ember-cli-build.js; only the exact build entry require('ember-cli/lib/broccoli/ember-app') may reach this closure. This static check is not packaged-browser proof.",
     "CI builds an immutable checkout with npm ci --ignore-scripts; this decision does not authorize running a build on untrusted patterns or shipping these nodes.",

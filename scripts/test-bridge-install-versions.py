@@ -13,14 +13,14 @@ spec.loader.exec_module(owner)
 
 class BridgeInstallVersionTest(unittest.TestCase):
     def setUp(self):
-        self.web = json.loads((ROOT / "package.json").read_bytes())["version"]
+        self.web = owner.BRIDGE_RELEASE_WEB_TAG
         self.bridge = json.loads((ROOT / "bridge/package.json").read_bytes())["version"]
         self.readme = (ROOT / "bridge/README.md").read_bytes().decode("utf-8")
 
     def check(self, text):
         return owner.verify_install_versions(self.web, self.bridge, text)
 
-    def test_current_install_matches_both_package_versions(self):
+    def test_current_install_matches_published_release_and_bridge_package(self):
         self.assertEqual(self.check(self.readme), {"webVersion": self.web, "bridgeVersion": self.bridge})
         self.assertEqual(owner.VERSION, self.bridge)
         server = (ROOT / "bridge/server.mjs").read_text(encoding="utf-8")

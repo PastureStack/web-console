@@ -37,14 +37,19 @@ require_file tests/unit/utils/localized-catalog-field-test.js
 
 version=$(python3 - <<'PY'
 import json
-with open('package.json', encoding='utf-8') as f:
-    print(json.load(f).get('version', ''))
+import re
+from pathlib import Path
+
+package = json.loads(Path('package.json').read_text(encoding='utf-8'))
+lock = json.loads(Path('package-lock.json').read_text(encoding='utf-8'))
+version = package.get('version')
+if not isinstance(version, str) or not re.fullmatch(r'1\.6\.\d+', version):
+    raise SystemExit(f'UNEXPECTED_UI_ARTIFACT_VERSION version={version}')
+if lock.get('version') != version or lock.get('packages', {}).get('', {}).get('version') != version:
+    raise SystemExit(f'UI_ARTIFACT_LOCK_VERSION_MISMATCH version={version}')
+print(version)
 PY
 )
-if [[ "$version" != "1.6.235" ]]; then
-  echo "UNEXPECTED_UI_ARTIFACT_VERSION version=$version expected=1.6.235"
-  failures=$((failures + 1))
-fi
 
 if [[ "$(tr -d '\r' < app/application/template.hbs | grep -Fxc '<BasicDropdownWormhole />')" != "1" ]]; then
   echo "MISSING_BASIC_DROPDOWN_DESTINATION"

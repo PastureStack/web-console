@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "description": "Reviewed browser source ownership; hashes use LF-normalized text and raw binary. Snapshot identifiers are not asserted upstream releases.",
   "guards": {
-    "ember-cli-build.js": "63ec6443128ff35d5595777f89e2057f0192ac64908b08f2641da4e372b43552",
+    "ember-cli-build.js": "3adbe49570fe804160aba09829e55072e0e35b5c65d125a99fe70c8283a002d6",
     "app/styles/app-light.scss": "5135dcf2d7257ba4ae59676243fbd46dc50f0e71e048f9ad83f9f3879d1eeb67",
     "app/styles/app-dark.scss": "2a7df97325751ab28c9ba439b46a67407b24107e9f588eb7d6d478f319bd42d0"
   },
@@ -104,20 +104,6 @@
       },
       "provenance": "vendor/position-calculator.js header identifies version 1.1.2, MIT and github.com/tlindig/position-calculator; named AMD integration is retained.",
       "modified": true
-    },
-    {
-      "id": "aws-sdk-ec2",
-      "name": "AWS SDK for JavaScript EC2 browser bundle",
-      "version": "2.1.27",
-      "purl": "pkg:npm/aws-sdk@2.1.27",
-      "inputs": [
-        "vendor/aws-sdk-ec2.js"
-      ],
-      "files": {
-        "vendor/aws-sdk-ec2.js": "a75c638861c437cd8ef7f57995cb07a8ccea6c115005b7b0056f309946841ba1"
-      },
-      "provenance": "vendor/aws-sdk-ec2.js header and AWS.VERSION identify 2.1.27; license reference is https://sdk.amazonaws.com/js/BUNDLE_LICENSE.txt.",
-      "coverage": "Frozen AWS browser bundle has embedded modules whose individual versions and license composition are not established."
     },
     {
       "id": "novnc",

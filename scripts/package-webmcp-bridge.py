@@ -12,6 +12,7 @@ import zipfile
 
 
 VERSION = "0.2.37"
+BRIDGE_RELEASE_WEB_TAG = "1.6.235"
 SOURCE_FILES = (
     "LICENSE",
     "app/utils/ai-command-context.js",
@@ -113,17 +114,17 @@ def verify_archive(path, prefix, payloads):
             raise ValueError("ZIP CRC verification failed")
 
 
-def verify_install_versions(web_version, bridge_version, readme):
-    """Keep the active install block bound to both source package versions."""
+def verify_install_versions(bridge_release_web_tag, bridge_version, readme):
+    """Keep the install block bound to the published Bridge asset and package version."""
     readme = readme.replace("\r\n", "\n")
     blocks = [part.split("```", 1)[0] for part in readme.split("```sh\n")[1:]]
     installs = [block for block in blocks if "WEB_CONSOLE_VERSION=" in block or "BRIDGE_VERSION=" in block]
     if len(installs) != 1:
         raise ValueError("Exactly one version-bound Bridge install block is required")
     lines = [line.strip() for line in installs[0].splitlines() if line.strip()]
-    for name, version in (("WEB_CONSOLE_VERSION", web_version), ("BRIDGE_VERSION", bridge_version)):
+    for name, version in (("WEB_CONSOLE_VERSION", bridge_release_web_tag), ("BRIDGE_VERSION", bridge_version)):
         if [line for line in lines if line.startswith(name + "=")] != [name + "=" + version]:
-            raise ValueError("Bridge install versions must match the source packages")
+            raise ValueError("Bridge install versions must match the published asset tag and Bridge package")
     archive = "pasturestack-webmcp-bridge-${BRIDGE_VERSION}.zip"
     url = "https://github.com/PastureStack/web-console/releases/download/${WEB_CONSOLE_VERSION}/" + archive
     expected = [f'curl --fail --location --remote-name "{url}"',
@@ -133,7 +134,7 @@ def verify_install_versions(web_version, bridge_version, readme):
     commands = [line for line in lines if line.startswith(("curl ", "sha256sum ", "unzip ", "cd "))]
     if commands != expected:
         raise ValueError("Download, checksum, extraction and cd must use the source-version variables")
-    return {"webVersion": web_version, "bridgeVersion": bridge_version}
+    return {"webVersion": bridge_release_web_tag, "bridgeVersion": bridge_version}
 
 
 def main():
@@ -144,7 +145,7 @@ def main():
     parser.add_argument("--version", default=VERSION, choices=[VERSION], help="Expected bridge source version")
     args = parser.parse_args()
     root = args.source_root.resolve(strict=True)
-    verify_install_versions(json.loads(checked_source(root, "package.json"))["version"],
+    verify_install_versions(BRIDGE_RELEASE_WEB_TAG,
                             json.loads(checked_source(root, "bridge/package.json"))["version"],
                             checked_source(root, "bridge/README.md").decode("utf-8"))
     output = args.output.resolve()
