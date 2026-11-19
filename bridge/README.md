@@ -171,14 +171,14 @@ arguments, repository files or URLs. HTTPS is required except for loopback tests
 To allow this bridge to rename its selected environment permanently, first
 create a stable-bound profile using the explicit local writer:
 
-Use Node.js 24.22.1. Quote each path; the following examples work with spaces
+Use Node.js 24.22.3. Quote each path; the following examples work with spaces
 in private profile paths. In a POSIX shell:
 
 ```sh
 node "/absolute/path/to/bridge/bind-profile.mjs" --from "/private/path/Existing profile.json" --output "/private/path/New bound profile.json"
 ```
 
-In Windows PowerShell, use the installed Node.js 24.22.1 executable:
+In Windows PowerShell, use the installed Node.js 24.22.3 executable:
 
 ```powershell
 & "C:\path\to\node.exe" "C:\path\to\bridge\bind-profile.mjs" --from "C:\private\Existing profile.json" --output "C:\private\New bound profile.json"

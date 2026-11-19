@@ -3,7 +3,7 @@ set -euo pipefail
 
 # The host launches this same script inside the immutable builder. Only source
 # and a dedicated artifact directory cross the boundary; host SDKs do not.
-builder_image='node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a'
+builder_image='node:24.22.3-bookworm@sha256:9d266751ca3d7fdbe651c878ffd5ad0a42fed49a18c283509267c97f025b7496'
 
 configure_webmcp_profile() {
   case "${WEBMCP_MODE:-off}" in
@@ -59,7 +59,7 @@ PY
 build_inside_container() {
   local source_dir=$1 output_dir=$2 package_version schema_dir verifier_manifest_sha verifier_lock_sha
   test -f /.dockerenv
-  test "$(node --version)" = v24.22.1
+  test "$(node --version)" = v24.22.3
   command -v python3 >/dev/null
   work_root=$(mktemp -d /tmp/pasturestack-ui-release.XXXXXX)
   [[ "$work_root" = /tmp/pasturestack-ui-release.* ]]
