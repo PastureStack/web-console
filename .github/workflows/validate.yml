@@ -89,8 +89,8 @@ jobs:
       - name: Install pinned Node.js for host-side tests
         if: ${{ inputs.validation_scope != 'sbom' }}
         env:
-          NODE_VERSION: 24.22.1
-          NODE_ARCHIVE_SHA256: 6c172a9ab6718f7b801fb5a7bd486af2ee5e32758086a04b84fcce2aa77095e6
+          NODE_VERSION: 24.22.3
+          NODE_ARCHIVE_SHA256: 4f2b175a6d53a5c617a80dba2676238a0688cef28c6da4eba35c7d844e66fcfb
           NPM_VERSION: 12.0.2
         run: |
           set -euo pipefail
@@ -124,14 +124,14 @@ jobs:
       - name: Test and build twice in the isolated release producer
         id: build
         env:
-          PASTURESTACK_NODE24_IMAGE: node:24.22.1-bookworm@sha256:6449e19d8184d84062525b6a7524def03146c2cb04a7f08b076680d0e8e4240a
+          PASTURESTACK_NODE24_IMAGE: node:24.22.3-bookworm@sha256:9d266751ca3d7fdbe651c878ffd5ad0a42fed49a18c283509267c97f025b7496
           VALIDATION_SCOPE: ${{ inputs.validation_scope }}
           WEBMCP_MODE: ${{ inputs.webmcp_mode }}
         run: |
           set -euo pipefail
           python -B scripts/test-ui-builder-boundary.py
           if [[ "$VALIDATION_SCOPE" != sbom ]]; then
-            test "$(node --version)" = v24.22.1
+            test "$(node --version)" = v24.22.3
             test "$(npm --version)" = 12.0.2
             npm ci --ignore-scripts --no-audit --no-fund
             node scripts/apply-minimatch-security-backport.cjs
