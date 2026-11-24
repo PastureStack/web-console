@@ -7,8 +7,8 @@
   "advisoryWithdrawnAt": "2026-10-23T12:53:02Z",
   "upstreamPatchedVersion": null,
   "upstreamLatestVersion": "3.0.3",
-  "reviewedAt": "2026-11-15T09:51:47Z",
-  "reviewUntil": "2026-11-22",
+  "reviewedAt": "2026-11-24T01:16:02Z",
+  "reviewUntil": "2026-12-01",
   "officialStatusSources": [
     "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
     "https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm",
@@ -16,8 +16,8 @@
   ],
   "currentAuditEvidence": {
     "npmVersion": "12.0.2",
-    "checkedAt": "2026-11-15T09:51:47Z",
-    "rawReportSha256": "3a4004f229d7525a9020a06ff7d4ec5100c302b32e38696efb159236c3e8f5fa",
+    "checkedAt": "2026-11-24T01:16:02Z",
+    "rawReportSha256": "9a3c10d01d3ad0f6e5155bf00fb1c5abda79d8bffe06d930bec5da5de66beaa6",
     "advisoryPresent": false,
     "totals": { "info": 0, "low": 0, "moderate": 50, "high": 0, "critical": 0, "total": 50 }
   },
@@ -26,7 +26,7 @@
   "publicationBlockedIfShippedNodes": true,
   "shippedNodes": [],
   "boundaryEvidence": [
-    "The GitHub advisory API and npm registry recheck on 2026-11-15 confirmed withdrawal at 2026-10-23T12:53:02Z, historical High severity, affected range <=3.0.3, and no first patched version. npm latest is still 3.0.3 with the reviewed integrity. The 1.6.237 lock audit reported 50 Moderate and zero High/Critical, with no occurrence of the withdrawn advisory. The reviewed reverse closure remains unchanged.",
+    "The GitHub advisory API and npm registry recheck on 2026-11-24 confirmed withdrawal at 2026-10-23T12:53:02Z, historical High severity, affected range <=3.0.3, and no first patched version. npm latest is still 3.0.3 with the reviewed integrity. The 1.6.240 lock audit with official Node 24.22.3 and npm 12.0.2 reported 50 Moderate and zero High/Critical, with no occurrence of the withdrawn advisory. The reviewed reverse closure remains unchanged. Raw official-response hashes and the lock digest are recorded in npm-review-2026-11-24.json.",
     "The exact reverse lock dependency closure below is dev:true and is not reachable from package-lock root production dependencies.",
     "The closure enters through ember-cli, a build CLI. The gate checks literal imports in app/config/vendor JavaScript and ember-cli-build.js; only the exact build entry require('ember-cli/lib/broccoli/ember-app') may reach this closure. This static check is not packaged-browser proof.",
     "CI builds an immutable checkout with npm ci --ignore-scripts; this decision does not authorize running a build on untrusted patterns or shipping these nodes.",

@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-11-24T01:16:02Z",
+  "reviewUntil": "2026-12-01",
+  "lockSha256": "53b08b5e041cfff204b94cdd0513a4b45235979db49f2643d4fef4e3464a66a8",
+  "advisory": {
+    "url": "https://api.github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+    "responseSha256": "975ae15193105aa8f546bb0b454de80aba9f0cec066f114b7de4b70336dfaefa",
+    "ghsa_id": "GHSA-vfj7-8cjw-p6xm",
+    "cve_id": "CVE-2026-93687",
+    "severity": "high",
+    "withdrawn_at": "2026-10-23T12:53:02Z",
+    "updated_at": "2026-10-23T12:53:05Z",
+    "vulnerabilities": [
+      {
+        "package": {
+          "ecosystem": "npm",
+          "name": "braces"
+        },
+        "vulnerable_version_range": "<= 3.0.3",
+        "first_patched_version": null,
+        "vulnerable_functions": []
+      }
+    ]
+  },
+  "registry": {
+    "url": "https://registry.npmjs.org/braces/latest",
+    "responseSha256": "08e69b2f40acb66f194ae02bf9bd03fa9a1f596d5f622d368fe97ee6a9fdd3bc",
+    "version": "3.0.3",
+    "tarball": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
+    "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="
+  },
+  "audit": {
+    "nodeVersion": "24.22.3",
+    "npmVersion": "12.0.2",
+    "rawReportSha256": "9a3c10d01d3ad0f6e5155bf00fb1c5abda79d8bffe06d930bec5da5de66beaa6",
+    "advisoryPresent": false,
+    "totals": {
+      "info": 0,
+      "low": 0,
+      "moderate": 50,
+      "high": 0,
+      "critical": 0,
+      "total": 50
+    }
+  },
+  "scope": "Existing seven-node controlled development build-input closure only; no dependency or runtime change and no runtime not-affected claim."
+}
