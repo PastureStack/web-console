@@ -1127,6 +1127,7 @@ servicePage:
         placeholder: 예를 들어 MyApp의 현재 버전
   newBalancer:
     upgradeImage: '밸런서 소프트웨어 이미지는 다음에서 업그레이드됩니다. <code>{from}</code> 에 <code>{to}</code>.'
+    upgradeImageUnavailable: "이 로드 밸런서에 사용할 수 있는 관리형 이미지 업데이트가 없습니다. 기존 이미지는 변경되지 않았습니다."
     form:
       name:
         placeholder: 예를 들어 웹사이트

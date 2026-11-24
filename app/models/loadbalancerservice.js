@@ -4,6 +4,7 @@ import C from 'ui/utils/constants';
 import Util from 'ui/utils/util';
 import { parsePortSpec } from 'ui/utils/parse-port';
 import escapeHtml from 'ui/utils/escape-html';
+import { loadBalancerImageCandidate } from 'ui/utils/image-reference';
 
 const esc = escapeHtml;
 
@@ -125,11 +126,14 @@ var LoadBalancerService = Service.extend({
     return out.htmlSafe();
   }.property('lbConfig.portRules.@each.{service,selector}', 'intl._locale'),
 
-  imageUpgradeAvailable: function() {
-    let cur = (this.get('launchConfig.imageUuid')||'').replace(/^docker:/,'');
-    let available = this.get(`settings.${C.SETTING.BALANCER_IMAGE}`);
-    return cur.indexOf(available) === -1 && !!this.get('actionLinks.upgrade');
+  imageUpgradeCandidate: function() {
+    return loadBalancerImageCandidate(this.get('launchConfig.imageUuid'),
+      this.get(`settings.${C.SETTING.BALANCER_IMAGE}`), this.get('actionLinks.upgrade'));
   }.property('launchConfig.imageUuid',`settings.${C.SETTING.BALANCER_IMAGE}`,'actionLinks.upgrade'),
+
+  imageUpgradeAvailable: function() {
+    return !!this.get('imageUpgradeCandidate');
+  }.property('imageUpgradeCandidate'),
 });
 
 export default LoadBalancerService;

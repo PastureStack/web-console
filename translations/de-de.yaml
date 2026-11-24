@@ -1192,6 +1192,7 @@ servicePage:
         placeholder: z.B. Aktuelle Version von meineapp
   newBalancer:
     upgradeImage: 'Das Balancer-Software-Image wird von <code>{from}</code> auf <code>{to}</code> aktualisiert.'
+    upgradeImageUnavailable: "Für diesen Load Balancer ist keine verwaltete Image-Aktualisierung verfügbar. Das vorhandene Image wurde nicht geändert."
     form:
       name:
         placeholder: z.B. website

@@ -1184,6 +1184,7 @@ servicePage:
         placeholder: напр. Текущая версия приложения MyApp
   newBalancer:
     upgradeImage: 'Образ программного обеспечения балансировщика будет обновлен с <code>{from}</code> чтобы <code>{to}</code>.'
+    upgradeImageUnavailable: "Для этого балансировщика нагрузки нет доступного управляемого обновления образа. Текущий образ не изменён."
     form:
       name:
         placeholder: напр. website

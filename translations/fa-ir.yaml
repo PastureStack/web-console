@@ -1145,6 +1145,7 @@ servicePage:
         placeholder: 'برای مثال: نسخه فعلی MyApp'
   newBalancer:
     upgradeImage: 'تصویر نرم افزار متعادل کننده از <code>{from}</code> به <code>{to}</code> ارتقا می یابد.'
+    upgradeImageUnavailable: "برای این متعادل‌کنندهٔ بار، به‌روزرسانی مدیریت‌شدهٔ تصویر در دسترس نیست. تصویر فعلی تغییر نکرده است."
     form:
       name:
         placeholder: مثال. website

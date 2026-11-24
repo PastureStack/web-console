@@ -1175,6 +1175,7 @@ servicePage:
         placeholder: hal. Kasalukuyang bersyon ng MyApp
   newBalancer:
     upgradeImage: 'Ang imahe ng balancer software ay ia-upgrade mula sa <code>{from}</code> sa <code>{to}</code>.'
+    upgradeImageUnavailable: "Walang available na pinamamahalaang pag-update ng imahe para sa load balancer na ito. Hindi binago ang kasalukuyang imahe nito."
     form:
       name:
         placeholder: hal. website

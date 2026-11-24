@@ -1,0 +1,7 @@
+{{#if this.service.imageUpgradeAvailable}}
+  <button type="button" class="btn-link text-warning lb-image-upgrade" data-testid="lb-image-upgrade" {{action "upgradeImage"}}>
+    <i class="icon icon-arrow-circle-up" aria-hidden="true"></i>
+    <span>{{t 'stackSection.upgradeImage'}}</span>
+    <span class="lb-image-upgrade-versions" dir="ltr">{{this.service.imageUpgradeCandidate.fromLabel}} → {{this.service.imageUpgradeCandidate.toLabel}}</span>
+  </button>
+{{/if}}
