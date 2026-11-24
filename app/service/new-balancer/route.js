@@ -31,7 +31,13 @@ export default Route.extend(RequireCreatePermission, {
           service = hash.existingService.clone();
 
           if ( params.upgradeImage+'' === 'true' ) {
-            service.set('launchConfig.imageUuid', 'docker:' + this.get(`settings.${C.SETTING.BALANCER_IMAGE}`));
+            let candidate = hash.existingService.get('imageUpgradeCandidate');
+            if ( !candidate ) {
+              this.get('growl').error(this.get('intl').t('routePermission.title'),
+                this.get('intl').t('servicePage.newBalancer.upgradeImageUnavailable'));
+              return this.get('router').replaceWith('service', hash.existingService.get('stackId'), hash.existingService.get('id'));
+            }
+            service.set('launchConfig.imageUuid', 'docker:' + candidate.to);
           }
 
           hash.existing = hash.existingService;

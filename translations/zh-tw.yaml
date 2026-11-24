@@ -1448,6 +1448,7 @@ servicePage:
         placeholder: 例如：MyApp 最新版本
   newBalancer:
     upgradeImage: '負載平衡器映像版本將由 <code>{from}</code> 升級到 <code>{to}</code>.'
+    upgradeImageUnavailable: "此負載平衡器沒有可用的受管映像更新。現有映像未變更。"
     form:
       name:
         placeholder: 例如：website

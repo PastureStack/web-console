@@ -1180,6 +1180,7 @@ servicePage:
         placeholder: par exemple la version actuelle de MyApp
   newBalancer:
     upgradeImage: 'L’image de l''équilibreur sera mis à jour depuis <code>{from}</code> vers <code>{to}</code>.'
+    upgradeImageUnavailable: "Aucune mise à jour gérée de l’image n’est disponible pour cet équilibreur de charge. Son image actuelle n’a pas été modifiée."
     form:
       name:
         placeholder: 'par exemple : site web'

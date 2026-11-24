@@ -1192,6 +1192,7 @@ servicePage:
         placeholder: напр. Поточна версія програми MyApp
   newBalancer:
     upgradeImage: 'Система балансування навантажень буде оновлена з <code>{from}</code> до <code>{to}</code>.'
+    upgradeImageUnavailable: "Для цього балансувальника навантаження немає доступного керованого оновлення образу. Поточний образ не змінено."
     form:
       name:
         placeholder: напр. сайт

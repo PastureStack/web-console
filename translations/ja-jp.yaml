@@ -1403,6 +1403,7 @@ servicePage:
         placeholder: 例えばMyApp の現在のバージョン
   newBalancer:
     upgradeImage: 'バランサーのソフトウェア イメージは、<code>{from}</code> から <code>{to}</code> にアップグレードされます。'
+    upgradeImageUnavailable: "このロードバランサーには、管理対象イメージの更新候補がありません。既存のイメージは変更されていません。"
     form:
       name:
         placeholder: '例: ウェブサイト'

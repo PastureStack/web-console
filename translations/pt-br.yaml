@@ -1170,6 +1170,7 @@ servicePage:
         placeholder: p.ex. A versão atual do MyApp
   newBalancer:
     upgradeImage: 'A imagem do software do balanceador será atualizada de <code>{from}</code> para <code>{to}</code>.'
+    upgradeImageUnavailable: "Não há atualização gerenciada de imagem disponível para este balanceador de carga. A imagem existente não foi alterada."
     form:
       name:
         placeholder: p.ex. site

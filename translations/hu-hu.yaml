@@ -1189,6 +1189,7 @@ servicePage:
         placeholder: pl. SajátAlkalmazásom jelenlegi verziója
   newBalancer:
     upgradeImage: 'A terheléselosztó szoftver kép frissítve lesz <code>{from}</code> -ról <code>{to}</code>-ra.'
+    upgradeImageUnavailable: "Ehhez a terheléselosztóhoz nem érhető el felügyelt lemezképfrissítés. A meglévő lemezkép nem változott."
     form:
       name:
         placeholder: pl. weboldal

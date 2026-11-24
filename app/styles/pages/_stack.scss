@@ -665,3 +665,16 @@ $light-yellow: #FFBE18;
   .archive-switch,
   .archive-switch-thumb { transition: none; }
 }
+
+.lb-image-upgrade {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  max-width: 100%;
+  margin-block: 4px;
+  padding-inline: 0;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.lb-image-upgrade-versions { unicode-bidi: isolate; }
