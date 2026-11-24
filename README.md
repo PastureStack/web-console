@@ -10,7 +10,7 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.240**](https://github.com/PastureStack/web-console/releases/tag/1.6.240)
+[Web Console **1.6.241**](https://github.com/PastureStack/web-console/releases/tag/1.6.241)
 upgrades load-balancer images through the native upgrade action, preserving the
 previous launch configuration for rollback.
 The optional
@@ -24,8 +24,8 @@ The existing wire protocol remains compatible with Engine
 Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-See the [release note](docs/releases/web-console-1.6.240.md) for the load-balancer
-upgrade fix.
+See the [release note](docs/releases/web-console-1.6.241.md) for the Server-compatible
+release profile and retained load-balancer upgrade fix.
 
 ## Features and operator guides
 
@@ -135,8 +135,8 @@ Repeat the step after reinstalling dependencies; a missing or altered backport
 fails with a diagnostic instead of silently running an unpatched build.
 See [the backport provenance](vendor/minimatch-security-backport/UPSTREAM.md).
 
-To produce a release candidate with Docker, use the same isolated producer as
-CI. It installs the frozen application and schema-verifier dependencies,
+To produce a Server-compatible release candidate with Docker, use the same isolated
+producer as CI. It installs the frozen application and schema-verifier dependencies,
 captures final module/file evidence, packages twice, verifies both SBOM sets
 and writes the release sidecars to a dedicated output directory:
 
@@ -144,7 +144,7 @@ and writes the release sidecars to a dedicated output directory:
 export GITHUB_SHA=$(git rev-parse HEAD)
 export SOURCE_DATE_EPOCH=$(git show -s --format=%ct "$GITHUB_SHA")
 export VALIDATION_SCOPE=sbom
-export WEBMCP_MODE=off
+export WEBMCP_MODE=enabled
 release_dir=$(mktemp -d)
 bash scripts/build-ui-release-candidate "$release_dir"
 ```
@@ -161,6 +161,10 @@ still starts with browser tools off, until the user opts in through that panel.
 The archive's `webmcp-build.json` and matching `*-webmcp.json` release sidecar
 record the ceiling and fixed `initialMode: off`; their bytes are covered by the
 archive/manifest and sidecar checksums. Publish one selected profile per version.
+Server assemblies require the `enabled` ceiling with `initialMode: off`: dispatch
+the validation workflow with `webmcp_mode=enabled` and verify the original archive
+with the Server's `verify-web-console-sbom.py --webmcp-ceiling enabled` before
+publishing it. An off-ceiling component archive cannot replace that Server profile.
 
 Component tests, artifact verification, and real-host/browser acceptance are
 separate evidence. Do not infer full resource/role/hardware coverage from a
