@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-24T01:16:02Z",
+  "checkedAt": "2026-11-24T01:18:43Z",
   "reviewUntil": "2026-12-01",
   "lockSha256": "53b08b5e041cfff204b94cdd0513a4b45235979db49f2643d4fef4e3464a66a8",
   "advisory": {
@@ -24,7 +24,7 @@
   },
   "registry": {
     "url": "https://registry.npmjs.org/braces/latest",
-    "responseSha256": "08e69b2f40acb66f194ae02bf9bd03fa9a1f596d5f622d368fe97ee6a9fdd3bc",
+    "responseSha256": "8fd4c1db771542ab5456bb4806408fea9cdb5bf77f6cb9d5d563a3bd0ebb0b13",
     "version": "3.0.3",
     "tarball": "https://registry.npmjs.org/braces/-/braces-3.0.3.tgz",
     "integrity": "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="
@@ -41,7 +41,8 @@
       "high": 0,
       "critical": 0,
       "total": 50
-    }
+    },
+    "checkedAt": "2026-11-24T01:16:02Z"
   },
   "scope": "Existing seven-node controlled development build-input closure only; no dependency or runtime change and no runtime not-affected claim."
 }
