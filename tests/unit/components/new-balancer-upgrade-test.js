@@ -81,6 +81,7 @@ function setup(extra = {}) {
     component = createOwned(NewBalancerComponent, Object.assign({
       renderer: inertRenderer(),
       intl: EmberObject.create({t(key) { return key; }}),
+      settings: EmberObject.create(),
       service, existing, editing: true, upgradeImage: 'true',
       upgradeOptions: {batchSize: 2, intervalMillis: 3500, startFirst: true},
       validateRules() { calls.push('validateRules'); this.set('ruleErrors', []); },

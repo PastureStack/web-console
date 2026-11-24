@@ -430,6 +430,10 @@ export default Component.extend(NewOrEdit, {
         return service.doAction('upgrade', {inServiceStrategy: strategy});
       }).then(() => service);
     }
+    else if ( this.get('editing') )
+    {
+      return this._super.apply(this,arguments).then(() => undefined);
+    }
     else
     {
       return this._super.apply(this,arguments);
