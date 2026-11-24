@@ -4,6 +4,7 @@ import { run } from '@ember/runloop';
 import { defer, resolve, reject } from 'rsvp';
 import { module, test } from 'qunit';
 import Resource from 'ember-api-store/models/resource';
+import PortRule from 'ui/models/portrule';
 import NewBalancerComponent from 'ui/components/new-balancer/component';
 import inertRenderer from '../../helpers/inert-renderer';
 import { createOwned, destroyOwned } from '../../helpers/owned-subject';
@@ -54,7 +55,9 @@ function setup(extra = {}) {
     launchConfig: record(Object.assign({}, oldConfig, {imageUuid: NEW_IMAGE})),
     secondaryLaunchConfigs: A([record(secondary)]),
     lbConfig: record(Object.assign({}, lbConfig, {
-      portRules: A(lbConfig.portRules.map((rule) => record(rule))), config: null, needsCertificate: true,
+      portRules: A(lbConfig.portRules.map((rule, index) => PortRule.create(Object.assign({}, rule, {
+        access: index === 0 ? 'public' : 'internal', validationErrors() { return A(); },
+      })))), config: null, needsCertificate: true,
     })),
     publicEndpoints: [{instanceId: '1i-deleted', port: 18090}],
     initPorts() {},
