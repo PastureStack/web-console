@@ -5,6 +5,38 @@ import { service } from '@ember/service';
 import Component from '@ember/component';
 import NewOrEdit from 'ui/mixins/new-or-edit';
 import C from 'ui/utils/constants';
+import { resolve } from 'rsvp';
+
+function serialized(value) {
+  return value && typeof value.serialize === 'function' ? value.serialize() : value;
+}
+
+function ordered(value) {
+  if ( Array.isArray(value) ) {
+    return value.map(ordered);
+  }
+  if ( value && typeof value === 'object' ) {
+    let result = {};
+    Object.keys(value).sort().forEach((key) => { result[key] = ordered(value[key]); });
+    return result;
+  }
+  return value;
+}
+
+function comparableMetadata(key, value) {
+  if ( key === 'description' && value == null ) {
+    return null;
+  }
+  if ( key === 'lbConfig' && value ) {
+    value = Object.assign({}, value);
+    // The nullable custom-config string is materialized by the form. Its
+    // absent and null representations both mean no custom configuration.
+    if ( value.config == null ) {
+      delete value.config;
+    }
+  }
+  return JSON.stringify(ordered(value));
+}
 
 export default Component.extend(NewOrEdit, {
   intl                      : service(),
@@ -365,23 +397,38 @@ export default Component.extend(NewOrEdit, {
   },
 
   doSave() {
-    if ( this.get('editing') )
+    if ( this.get('editing') && this.get('needsUpgrade') )
     {
       let service = this.get('service');
-      return this._super.apply(this,arguments).then(() => {
-        if ( this.get('needsUpgrade') ) {
-          return service.waitForAction('upgrade').then(() => {
-            return service.doAction('upgrade', {
-              inServiceStrategy: {
-                batchSize: this.get('upgradeOptions.batchSize'),
-                intervalMillis: this.get('upgradeOptions.intervalMillis'),
-                startFirst: this.get('upgradeOptions.startFirst'),
-                launchConfig: service.get('launchConfig'),
-              },
-            });
-          });
+      let existing = this.get('existing');
+      let fields = {};
+      ['name', 'description', 'scale', 'lbConfig'].forEach((key) => {
+        let value = serialized(service.get(key));
+        let previous = serialized(existing.get(key));
+        if ( comparableMetadata(key, value) !== comparableMetadata(key, previous) ) {
+          fields[key] = value;
         }
       });
+
+      let strategy = {
+        batchSize: this.get('upgradeOptions.batchSize'),
+        intervalMillis: this.get('upgradeOptions.intervalMillis'),
+        startFirst: this.get('upgradeOptions.startFirst'),
+        launchConfig: serialized(service.get('launchConfig')),
+        secondaryLaunchConfigs: (service.get('secondaryLaunchConfigs') || []).map(serialized),
+      };
+
+      // The native upgrade captures previous launch configs from persistence.
+      // Saving the full edited clone first destroys that rollback source and
+      // can also resend stale publicEndpoints. Only separately editable service
+      // metadata uses PUT: ServiceUpgrade does not accept those fields.
+      return resolve().then(() => {
+        if ( Object.keys(fields).length ) {
+          return service.save({data: fields});
+        }
+      }).then(() => service.waitForAction('upgrade')).then(() => {
+        return service.doAction('upgrade', {inServiceStrategy: strategy});
+      }).then(() => service);
     }
     else
     {
