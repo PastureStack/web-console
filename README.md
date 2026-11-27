@@ -10,9 +10,10 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.242**](https://github.com/PastureStack/web-console/releases/tag/1.6.242)
+[Web Console **1.6.243**](https://github.com/PastureStack/web-console/releases/tag/1.6.243)
 upgrades load-balancer images through the native upgrade action, preserving the
-previous launch configuration for rollback.
+previous launch configuration for rollback. Unchanged sticky settings do not
+trigger a metadata PUT; actual setting changes still persist.
 The optional
 [Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
 is compatible with this console.
@@ -24,7 +25,7 @@ The existing wire protocol remains compatible with Engine
 Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-See the [release note](docs/releases/web-console-1.6.242.md) for the Server-compatible
+See the [release note](docs/releases/web-console-1.6.243.md) for the Server-compatible
 release profile, precise image candidates and retained native LB rollback.
 
 ## Features and operator guides
