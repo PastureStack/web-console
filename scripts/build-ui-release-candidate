@@ -174,7 +174,7 @@ main() {
   configure_webmcp_profile
   [[ "${GITHUB_SHA:-}" =~ ^[a-fA-F0-9]{40}$ ]]
   [[ "${SOURCE_DATE_EPOCH:-}" =~ ^[0-9]+$ ]]
-  case "${VALIDATION_SCOPE:-full}" in full|dependency-security|host-disk|sbom) ;; *) exit 2 ;; esac
+  case "${VALIDATION_SCOPE:-full}" in full|dependency-security|host-disk|lb-upgrade|sbom) ;; *) exit 2 ;; esac
   export VALIDATION_SCOPE=${VALIDATION_SCOPE:-full}
   if [[ "${1:-}" = --inside-container ]]; then
     [[ $# -eq 3 ]]
