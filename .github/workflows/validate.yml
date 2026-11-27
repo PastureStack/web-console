@@ -6,7 +6,7 @@ on:
       validation_scope:
         description: Validation scope (required CodeQL checks are separate)
         type: choice
-        options: [full, dependency-security, host-disk, sbom]
+        options: [full, dependency-security, host-disk, lb-upgrade, sbom]
         default: full
       webmcp_mode:
         description: AI collaboration build ceiling (every page starts off)
@@ -135,13 +135,15 @@ jobs:
             test "$(npm --version)" = 12.0.2
             npm ci --ignore-scripts --no-audit --no-fund
             node scripts/apply-minimatch-security-backport.cjs
-            if [[ "$VALIDATION_SCOPE" = dependency-security || "$VALIDATION_SCOPE" = host-disk ]]; then
+            if [[ "$VALIDATION_SCOPE" = dependency-security || "$VALIDATION_SCOPE" = host-disk || "$VALIDATION_SCOPE" = lb-upgrade ]]; then
               bash scripts/check-ui-critical-high-dependencies
               node --test scripts/check-ui-handlebars-security.js scripts/test-ui-npm-audit.js scripts/test-ui-build-module-boundary.js
               node scripts/check-ui-npm-audit.js
               test_filter='legacy context partial'
               if [[ "$VALIDATION_SCOPE" = host-disk ]]; then
                 test_filter='Unit | Model | host'
+              elif [[ "$VALIDATION_SCOPE" = lb-upgrade ]]; then
+                test_filter='new balancer'
               fi
               CHROME_BIN=$(command -v google-chrome) ./node_modules/.bin/ember test \
                 --ssl=false --host 127.0.0.1 --config-file testem.js --filter "$test_filter"

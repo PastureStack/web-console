@@ -144,6 +144,32 @@ test('real metadata edits PUT only the editable fields and retain complete LB se
   destroyOwned(component);
 });
 
+test('an absent sticky-policy name materialized as null does not submit metadata', async function(assert) {
+  let fixture = setup();
+  let policy = {type: 'loadBalancerCookieStickinessPolicy', cookie: 'QA_ROUTE', mode: 'insert', indirect: true, nocache: true};
+  run(() => {
+    fixture.existing.set('lbConfig.stickinessPolicy', structuredClone(policy));
+    fixture.service.set('lbConfig.stickinessPolicy', record(Object.assign({}, policy, {name: null})));
+  });
+  await fixture.save();
+  assert.deepEqual(fixture.requests.map((request) => request.method), ['POST']);
+  assert.equal(fixture.previous().imageUuid, OLD_IMAGE);
+  assert.notOk(Object.prototype.hasOwnProperty.call(policy, 'name'), 'comparison does not mutate source policy');
+  destroyOwned(fixture.component);
+});
+
+test('real sticky changes and clearing an explicit name still persist', async function(assert) {
+  for (let change of [{cookie: 'new-session'}, {name: null}]) {
+    let fixture = setup();
+    run(() => fixture.service.set('lbConfig.stickinessPolicy', Object.assign({}, fixture.lbConfig.stickinessPolicy, change)));
+    await fixture.save();
+    assert.deepEqual(fixture.requests.map((request) => request.method), ['PUT', 'POST']);
+    assert.deepEqual(fixture.requests[0].data.lbConfig.stickinessPolicy, Object.assign({}, fixture.lbConfig.stickinessPolicy, change));
+    assert.notOk('launchConfig' in fixture.requests[0].data, 'metadata update cannot contaminate rollback source');
+    destroyOwned(fixture.component);
+  }
+});
+
 test('clearing a real LB value is not hidden by nullable custom-config equivalence', async function(assert) {
   let fixture = setup();
   run(() => fixture.service.set('lbConfig.certificateIds', null));
