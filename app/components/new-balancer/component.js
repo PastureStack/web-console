@@ -34,6 +34,13 @@ function comparableMetadata(key, value) {
     if ( value.config == null ) {
       delete value.config;
     }
+    // Ember materializes the inherited optional resource name as null on a
+    // nested policy. It has no effect when absent/null, and must not turn an
+    // untouched image-only form into a metadata write.
+    if ( value.stickinessPolicy && value.stickinessPolicy.name == null ) {
+      value.stickinessPolicy = Object.assign({}, value.stickinessPolicy);
+      delete value.stickinessPolicy.name;
+    }
   }
   return JSON.stringify(ordered(value));
 }

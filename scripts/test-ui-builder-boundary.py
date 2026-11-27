@@ -162,6 +162,8 @@ class BuilderBoundaryTests(unittest.TestCase):
         self.assertIn('"$VALIDATION_SCOPE" = dependency-security || "$VALIDATION_SCOPE" = host-disk', host_tests)
         self.assertIn("test_filter='legacy context partial'", host_tests)
         self.assertIn("test_filter='Unit | Model | host'", host_tests)
+        self.assertIn("test_filter='new balancer'", host_tests)
+        self.assertIn('full|dependency-security|host-disk|lb-upgrade|sbom)', SCRIPT.read_text(encoding="utf-8"))
         self.assertIn("bash scripts/ci", host_tests)
         self.assertIn('export SOURCE_DATE_EPOCH=$(git show -s --format=%ct "$GITHUB_SHA")', workflow)
         self.assertEqual(workflow.count("uses: actions/attest@"), 2)
