@@ -334,6 +334,15 @@ export default Component.extend(NewOrEdit, {
     let user = this.get('userLabels');
     let scale = this.get('scaleLabels');
     let scheduling = this.get('schedulingLabels');
+
+    // Child editors initialize at different times and read the same launch
+    // config. An incomplete merge can erase labels before the later editors
+    // have read them. Empty arrays are ready and still allow explicit removal.
+    let ready = !!(user && scale && scheduling);
+    this.set('labelsReady', ready);
+    if ( !ready ) {
+      return;
+    }
     var out = {};
 
     (this.get('userLabels')||[]).forEach((row) => { out[row.key] = row.value; });
@@ -345,8 +354,6 @@ export default Component.extend(NewOrEdit, {
     {
       this.set('launchConfig.labels', out);
     }
-
-    this.set('labelsReady', user && scale && scheduling);
   },
 
   editLabel: function() {
