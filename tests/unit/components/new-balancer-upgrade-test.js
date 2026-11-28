@@ -100,6 +100,42 @@ async function turn() {
   }
 }
 
+for (let last of ['user', 'scale', 'scheduling']) {
+  test(`label initialization preserves the original config until ${last} is ready`, function(assert) {
+    let {component, service} = setup();
+    assert.deepEqual(service.get('launchConfig.labels'), {keep: 'label'}, 'the initial runloop never clears persisted labels');
+    let original = {keep: 'label', 'io.rancher.sidekicks': 'sentinel', 'io.rancher.scheduler.global': 'true'};
+    let sections = {
+      user: A([{key: 'keep', value: 'label'}, {key: 'io.rancher.sidekicks', value: 'sentinel'}]),
+      scale: A([{key: 'io.rancher.scheduler.global', value: 'true'}]),
+      scheduling: A(),
+    };
+    run(() => service.set('launchConfig.labels', original));
+    for (let section of Object.keys(sections).filter((name) => name !== last)) {
+      run(() => component.get('actions').setLabels.call(component, section, sections[section]));
+      assert.deepEqual(service.get('launchConfig.labels'), original, 'an incomplete section cannot overwrite the shared input');
+      assert.false(component.get('labelsReady'));
+    }
+    run(() => component.get('actions').setLabels.call(component, last, sections[last]));
+    assert.true(component.get('labelsReady'));
+    assert.deepEqual(service.get('launchConfig.labels'), original, 'all user, sidekick and scheduling labels survive');
+    destroyOwned(component);
+  });
+}
+
+test('ready empty label sections preserve deliberate user removal', function(assert) {
+  let {component, service} = setup();
+  run(() => component.setProperties({
+    userLabels: A([{key: 'keep', value: 'label'}]), scaleLabels: A(), schedulingLabels: A(),
+  }));
+  assert.true(component.get('labelsReady'));
+  assert.deepEqual(service.get('launchConfig.labels'), {keep: 'label'});
+  run(() => component.get('actions').setLabels.call(component, 'user', A()));
+  assert.deepEqual(service.get('launchConfig.labels'), {}, 'an explicit empty user section is not replaced by stale persisted labels');
+  assert.true(component.get('labelsReady'));
+  destroyOwned(component);
+});
+
 test('image upgrade follows the UI save chain without a PUT or rollback-source pollution', async function(assert) {
   let fixture = setup();
   let {component, service, calls, requests, callbacks, oldConfig, secondary} = fixture;
