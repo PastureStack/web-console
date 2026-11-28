@@ -10,22 +10,25 @@ history, authorship, licenses, and dependency notices.
 
 ## Current component
 
-[Web Console **1.6.243**](https://github.com/PastureStack/web-console/releases/tag/1.6.243)
+[Web Console **1.6.246**](https://github.com/PastureStack/web-console/releases/tag/1.6.246)
 upgrades load-balancer images through the native upgrade action, preserving the
 previous launch configuration for rollback. Unchanged sticky settings do not
 trigger a metadata PUT; actual setting changes still persist.
+The LB form waits for all label editors and retains existing settings whose
+controls do not belong to it; intentional editable-label removal remains
+supported. A deployed nonempty dependent-sidekick upgrade/rollback and separate
+finish transaction passed in Server 1.6.609.
 The optional
 [Bridge **0.2.37**](https://github.com/PastureStack/web-console/releases/tag/1.6.235)
 is compatible with this console.
 
-The full nameless-Host lookup fix requires the published Engine **0.183.395**,
-included in [Server **1.6.597**](https://github.com/PastureStack/server/releases/tag/v1.6.597).
-The existing wire protocol remains compatible with Engine
-**0.183.391** or a qualified compatible assembly. Registry Key scopes require
-Engine **0.183.394**; current Stack rollback uses Compose **0.14.45**.
+[Server **1.6.609**](https://github.com/PastureStack/server/releases/tag/v1.6.609)
+supplies the tested Engine **0.183.395** and Compose **0.14.46** assembly.
+The existing wire protocol remains compatible with Engine **0.183.391** or a
+qualified compatible assembly; Registry Key scopes require Engine **0.183.394**.
 Deploy through the [Server guide](https://github.com/PastureStack/server#quick-start).
 
-See the [release note](docs/releases/web-console-1.6.243.md) for the Server-compatible
+See the [release note](docs/releases/web-console-1.6.246.md) for the Server-compatible
 release profile, precise image candidates and retained native LB rollback.
 
 ## Features and operator guides
