@@ -136,6 +136,23 @@ test('ready empty label sections preserve deliberate user removal', function(ass
   destroyOwned(component);
 });
 
+test('LB label editors preserve controls they do not own while removing editable labels', function(assert) {
+  let {component, service} = setup();
+  let unrepresented = {
+    'io.rancher.container.pull_image': 'always',
+    'io.rancher.container.dns': 'true',
+    'io.rancher.container.hostname_override': 'container_name',
+  };
+  run(() => service.set('launchConfig.labels', Object.assign({
+    keep: 'label', 'io.rancher.scheduler.global': 'true',
+  }, unrepresented)));
+  run(() => component.setProperties({userLabels: A(), scaleLabels: A(), schedulingLabels: A()}));
+  assert.true(component.get('labelsReady'));
+  assert.deepEqual(service.get('launchConfig.labels'), unrepresented,
+    'editable user/global labels are removed; settings without LB controls survive');
+  destroyOwned(component);
+});
+
 test('image upgrade follows the UI save chain without a PUT or rollback-source pollution', async function(assert) {
   let fixture = setup();
   let {component, service, calls, requests, callbacks, oldConfig, secondary} = fixture;

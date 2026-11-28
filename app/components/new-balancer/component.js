@@ -345,6 +345,16 @@ export default Component.extend(NewOrEdit, {
     }
     var out = {};
 
+    // Shared label editors hide keys owned by other feature controls. This LB
+    // form owns global scale and affinity, but has no DNS/pull-image/etc.
+    // controls. Preserve those unrepresented values instead of deleting them.
+    let current = this.get('launchConfig.labels') || {};
+    C.SYSTEM_LABELS_WITH_CONTROL.forEach((key) => {
+      if ( key !== C.LABEL.SCHED_GLOBAL && Object.prototype.hasOwnProperty.call(current, key) ) {
+        out[key] = current[key];
+      }
+    });
+
     (this.get('userLabels')||[]).forEach((row) => { out[row.key] = row.value; });
     (this.get('scaleLabels')||[]).forEach((row) => { out[row.key] = row.value; });
     (this.get('schedulingLabels')||[]).forEach((row) => { out[row.key] = row.value; });
