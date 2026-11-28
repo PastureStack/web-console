@@ -1,4 +1,4 @@
-# Web Console 1.6.244 candidate
+# Web Console 1.6.244
 
 ## Existing LB labels during form initialization
 
@@ -15,9 +15,9 @@ Four focused regression cases cover each section completing last and explicit
 removal after initialization. The native nonempty-secondary QA transaction is
 separate deployed evidence; source tests do not qualify its browser lifecycle.
 
-## Boundaries
+## Publication boundary
 
-The LB resource's direct secondary field remains hidden by the existing policy.
-The supported native upgrade strategy and read-only Compose export are used for
-the isolated nonempty fixture. No field permission or backend API is broadened.
-Publication, exact Server integration and deployed acceptance remain pending.
+This immutable component artifact uses the default off build ceiling. It was
+rejected by the Server consumer before deployment. Web Console 1.6.246 supplies
+the matching Server build ceiling with every page still initially off. Deployed
+nonempty-secondary evidence belongs to Server 1.6.609 with 1.6.246.
